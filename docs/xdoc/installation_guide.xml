@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 ESB - Installation Guide
+        </title>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1>
+            WSO2 Enterprise Service Bus (ESB) Installation Guide
+        </h1>
+        <p/>
+
+        <p>This installation guide provides information on,</p>
+        <ol>
+            <li>Prerequisites for installing WSO2 ESB</li>
+            <li>Installation instructions</li>
+            <li>Starting up WSO2 ESB</li>
+            <li>Accessing the management console</li>
+        </ol>
+
+        <p>
+            This document describes the distribution packages available in WSO2 ESB -
+            the binary distribution and the source distribution for more advanced
+            users. It is followed by simple instructions on how to install and run
+            WSO2 ESB using the binary distribution and how to build WSO2 ESB using the
+            source distribution.
+        </p>
+
+        <h2>Contents</h2>
+        <div class="toc">
+            <ul>
+                <li>
+                    <a href="#Distributi">Distribution Packages</a>
+                </li>
+                <li>
+                    <a href="#Installing">Installing and Running WSO2 ESB using the
+                        Binary Distribution
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="#Prerequisi">Prerequisites</a>
+                        </li>
+                        <li>
+                            <a href="#Installing2">Installing on Linux</a>                            
+                        </li>
+                        <li>
+                            <a href="#Installing1">Installing on MS Windows</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#Building">Building WSO2 ESB Using the Source Distribution</a>
+                    <ul>
+                        <li>
+                            <a href="#Prerequisi1">Prerequisites</a>
+                        </li>
+                        <li>
+                            <a href="#Setting">Setting Up the Environment and Tools</a>
+                        </li>
+                        <li>
+                            <a href="#Building1">Building WSO2 ESB</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <h2 id="Distributi">
+            Distribution Packages
+        </h2>
+        <p>
+            The following distribution packages are available for <a
+                href="http://wso2.org/downloads/esb/">download</a>.
+        </p>
+        <p>
+            1. Binary Distribution : Includes binary files for both MS Windows and
+            Linux operating systems, compressed into a single a zip file. Recommended
+            for normal users.
+        </p>
+        <p>
+            2. Source Distribution : Includes the source code for both MS Windows and Linux
+            operating systems, compressed into a single zip file which can be used to build the binary files.
+            Recommended for more advanced users.
+        </p>
+        <h2 id="Installing">
+            Installing and Running WSO2 ESB using the Binary Distribution
+        </h2>
+        <h3 id="Prerequisi">
+            Prerequisites
+        </h3>
+        <p/>
+        <table border="2">
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="http://java.sun.com/javase/downloads/index.jsp">Java SE
+                            Development Kit
+                        </a>
+                    </td>
+                    <td>
+                        1.6.0_23 or higher (For instructions on setting up the JDK on different operating
+                        systems, visit <a href="http://java.sun.com">http://www.oracle.com/technetwork/java/index.html</a>)
+                        <p/>
+                        <p>
+                            To build WSO2 ESB from the Source distribution, it is necessary
+                            that you have JDK 1.6.x version and Maven 2.2.0 or later
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://activemq.apache.org/">Apache ActiveMQ</a>
+                        -JMS Provider
+                    </td>
+                    <td>
+                        <p>
+                            Apache ActiveMQ 5.0.0 or higher is required to enable the WSO2 ESB JMS
+                            transport and try out JMS samples. The ActiveMQ client libraries must
+                            be installed in the ESB classpath before you can enable the JMS transport.
+                            Alternatively you may use the built-in Qpid broker that comes with
+                            WSO2 ESB.
+                        </p>
+                        <p>
+                            If you are using any other JMS provider (eg: IBM Websphere), you will need
+                            to install necessary libraries.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://ant.apache.org/">Apache Ant</a>
+                        - To run ESB samples
+                    </td>
+                    <td>
+                        <p>
+                            To compile and run the sample clients, an Ant installation is required.
+                            Ant 1.7.0 version or higher is recommended.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://maven.apache.org/">Apache Maven</a>- To
+                        build ESB from Source
+                    </td>
+                    <td>
+                        To build the WSO2 ESB from its source distribution, you will need
+                        Maven 2.2.0 or later
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Web browser - To start the ESB Management Console
+                    </td>
+                    <td>
+                        Mozilla Firefox 3.0 or higher at a resolution of 1024x768 is recommended. MS
+                        Internet Explorer 7 or Google Chrome may be used as well. Once
+                        the WSO2 ESB is started with the default settings, point the browser to
+                        https://localhost:9443/carbon in order to access your Management Console.
+                        See the <a href="user_guide.html">WSO2 ESB User Guide</a> for more details.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Memory
+                    </td>
+                    <td>
+                        No minimum requirement - A heap size of 1GB is generally
+                        sufficient to process typical SOAP messages. Requirements may vary
+                        with larger message size and on the number of messages processed
+                        concurrently
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Disk
+                    </td>
+                    <td>
+                        No minimum requirement. The installation will require ~125 MB
+                        excluding space allocated for log files and Databases.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Operating System
+                    </td>
+                    <td>
+                        Linux, Solaris, MS Windows - XP/2003/2008 (Not fully tested on Windows
+                        Vista or Windows 7). Since WSO2 ESB is a Java application, it will generally
+                        be possible to run it on other operating systems with a JDK 1.6.x
+                        runtime. Linux/Solaris is recommended for a production deployment.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p/>
+
+        <h2 id="Installing2">Installing on Linux/Unix</h2>
+        <p>
+            The following steps will take you through the binary distribution
+            installation on Unix/Linux systems.
+        </p>
+        <ol>
+            <li>
+                <a href="http://wso2.org/downloads/esb/">Download</a> the WSO2 ESB binary distribution.
+            </li>
+            <li>
+                Extract the zip archive where you want the WSO2 ESB installed (e.g. into /opt)
+            </li>
+            <li>
+                Set the <a href="setting_java_home.html">JAVA_HOME</a> environment variable to your
+                Java home using the export command or by editing /etc/profile, and add the Java /bin
+                directory to your PATH
+            </li>
+            <li>
+                Execute the WSO2 ESB start script or the daemon script from the bin
+                directory. e.g. ./wso2server.sh OR ./daemon.sh start OR
+                ./wso2server.sh --console
+            </li>
+            <li>
+                Check your WSO2 ESB instance using the URL https://localhost:9443/carbon
+                which will take you to the WSO2 ESB Management Console. (Note that server
+                start up may take time)
+            </li>
+            <li>
+                Login as "admin" using the default password "admin"
+            </li>
+        </ol>
+
+        <h2 id="Installing1">
+            <strong>Installing on MS Windows</strong>
+        </h2>
+        <p>
+            The following steps will take you through the installation for the MS
+            Windows operating system.
+        </p>
+        <ol>
+            <li>
+                <a href="http://wso2.org/downloads/esb/">Download</a> the WSO2 ESB binary distribution.
+            </li>
+            <li>
+                Extract the zip archive where you want the WSO2 ESB installed
+            </li>
+            <li>
+                Set the <a href="setting_java_home.html">JAVA_HOME</a> environment variable to your
+                Java installation, and the PATH environment variable to the Java /bin directory.
+            </li>
+            <li>
+                Execute the WSO2 ESB start script from the bin folder. e.g. wso2server.bat
+            </li>
+            <li>
+                If you would like to install the WSO2 ESB as a Windows service, use the
+                install.bat script
+            </li>
+            <li>
+                Check your WSO2 ESB instance using the URL https://localhost:9443/carbon
+                which will take you to the WSO2 ESB Management Console.
+            </li>
+            <li>
+                Login as "admin" using the default password "admin"
+            </li>
+        </ol>
+        <h2 id="Building">
+            Building WSO2 ESB Using the Source Distribution
+        </h2>
+        <h3 id="Prerequisi1">
+            Prerequisites
+        </h3>
+        <p/>
+        <table border="2">
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="http://java.sun.com/javase/downloads/index.jsp">Java SE
+                            Development Kit
+                        </a>
+                    </td>
+                    <td>
+                        1.6.x (For instructions on setting up the JDK in different operating
+                        systems, visit <a href="http://java.sun.com">http://java.sun.com</a>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://maven.apache.org/">Apache Maven</a>- To
+                        build ESB from Source
+                    </td>
+                    <td>
+                        To build the WSO2 ESB from its source distribution, you will need
+                        Maven 2.2.0 or later
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Operating System
+                    </td>
+                    <td>
+                        Linux, Solaris, MS Windows - XP/2003/2008 (Not fully tested on Windows
+                        Vista)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p/>
+        <h3 id="Setting">
+            Setting up the Environment and Tools
+        </h3>
+        <p/>
+        <p>
+            <strong>Maven:</strong>
+        </p>
+        <p>
+            The WSO2 ESB build is based on <a href="http://maven.apache.org/">Apache
+            Maven 2</a>. Hence, it is a prerequisite to have Maven (version 2.2.0 or later)
+            and JDK (version 1.6.x) installed in order to build WSO2 ESB from the
+            source distribution. Extensive instructions on using Maven 2 are available
+            on the Maven website.
+        </p>
+        <p>
+            Please refer to the
+            <a
+                    href="http://maven.apache.org/guides/getting-started/index.html">Maven
+                Getting Started Guide
+            </a>
+            for more information on Maven
+        </p>
+        <ul>
+            <li>
+                Unix based OS (e.g., Linux)
+            </li>
+        </ul>
+        <ol>
+            <li>
+                Download Apache Maven tar ball or the zip archive.
+            </li>
+            <li>
+                Expand it to a directory of choice.
+            </li>
+            <li>
+                Set the environment variable M2_HOME and add M2_HOME/bin to the
+                path as well.
+            </li>
+            <li>
+                Run mvn --version to verify that it is correctly installed.
+            </li>
+        </ol>
+        <ul>
+            <li>
+                MS Windows
+            </li>
+        </ul>
+        <ol>
+            <li>
+                Download and run the Apache Maven Windows installer package.
+            </li>
+            <li>
+                Set the 'Environment Variables' (create the system variable M2_HOME
+                and edit the path. e.g., "C:\Program Files\Apache Software
+                Foundation\maven-2.2.1"; path %M2_HOME%\bin)
+            </li>
+            <li>
+                Make sure that the system variable
+                <a href="setting_java_home.html">JAVA_HOME</a>
+                is set to the location of your JDK, e.g., C:\Program Files\Java\jdk1.6
+            </li>
+            <li>
+                Run mvn --version to verify that it is correctly installed.
+            </li>
+        </ol>
+        <p>
+            Once Maven is properly installed, you can start building the WSO2 ESB.
+        </p>
+        <h3 id="Building1">
+            Building WSO2 ESB
+        </h3>
+        <ol>
+            <li>
+                <a href="http://wso2.org/downloads/esb/">Download</a>
+                the source distribution, which is available as a zip archive.
+            </li>
+            <li>
+                Extract the source archive to a directory of your choice.
+            </li>
+            <li>
+                All the necessary build scripts are included with the source distribution.
+            </li>
+            <li>
+                You can run the following command inside that directory to build the
+                WSO2 ESB. Note that you will require a connection to the Internet for the Maven build
+                to download dependencies required for the build.
+                <br/>
+                <p>
+                    Command: <strong>mvn clean install</strong>
+                </p>
+            </li>
+        </ol>
+        <p>
+            This will create the complete release artifacts including the binary and
+            source distributions in the modules/distribution/target/ directory which can be installed using
+            the above instructions.
+        </p>
+        <p>
+            Note: The first time you run Maven it will automatically download the
+            dependency jar files. Therefore, the first run will take more time. It is also
+            recommended to allocate for memory for Maven since the ESB build process takes up
+            a significant amount of resources. More memory can be allocated for Maven by setting
+            the MAVEN_OPTS environment variable.
+        </p>
+    </body>
+</html>                                                 

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - OAuth Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>OAuth Mediator</h2>
+
+<p>The OAuth Mediator supports 2-legged OAuth. This by passes the RESTFull requests and authenticate users against WSO2 Identity Server.
+</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve">
+&lt;oauthService remoteServiceUrl="" /&gt;
+</pre>
+
+
+<h3>UI Configuration</h3>
+
+    <p><img src="../oauth-mediator/docs/images/oauth_mediator_screenshot.png" alt=""
+/> </p>
+
+<p>Figure 1: OAuth Mediator Options</p>
+
+<p>You have the following configurations under the OAuth Mediator.</p>
+<ul>
+  <li>OAuth Server: Server url of the WSO2 Identity Server[e.g.:https://localhost:9443/services]</li>
+
+</ul>
+<h3>Example</h3>
+
+<p></p>
+<pre xml:space="preserve">
+&lt;oauthService xmlns="http://ws.apache.org/ns/synapse" remoteServiceUrl="https://localhost:9443/service" /&gt;
+</pre>
+<p></p>
+</body>
+</html>

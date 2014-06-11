@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+        <title>
+            WSO2 Enterprise Service Bus (ESB) Templates
+        </title>
+        <link href="css/esb-docs.css" rel="stylesheet"/>
+        <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+    </head>
+    <body xml:lang="en">
+        [ <a href="docs_index.html"> Documentation Index </a> ]
+        <h1> WSO2 Enterprise Service Bus (ESB) Templates</h1>
+        <h2>Contents</h2>
+        <div class="toc">
+            <ol>
+                <li>
+                    <a href="#intro">Introduction</a>
+                </li>
+                <li>
+                    <a href="#templates">Templates</a>
+                </li>
+                <li>
+                    <a href="#seqt">Sequence Template Configuration</a>
+                </li>
+                <li>
+                    <a href="#callm">Call Template Mediator</a>
+                </li>
+                <li>
+                    <a href="#ept">Endpoint Template Configurations</a>
+                </li>
+                <li>
+                    <a href="#tempep">Template Endpoint</a>
+                </li> 
+            </ol>
+        </div>
+        <h2 id="intro" >Introduction</h2>
+
+        <p>ESB configuration language is a very powerful and robust way of driving enterprise
+data/messages through ESB mediation engine. However your requirements can become
+such that very large amount of configuration files in the form of sequences,
+endpoints ,proxies and transformations would be required to satisfy all the
+mediation requirements of your system. In such cases number of configuration files
+will be scattered all over and would be extremely hard to manage. What would be
+frustrating to note is that , most of the configurations of particular types are
+redundant in nature.</p>
+        <p>ESB Templates try to minimize this redundancy by creating prototypes that users
+can re-use and utilize as and when needed. This is very much analogous to classes
+and instances of classes where-as, a template is a class that can be used to wield
+instance objects such as templates and endpoints. Thus ESB Templates is an ideal
+way to improve re-usability and readability of ESB configurations/xml s. Addition
+to that users can utilize predefined Templates that reflect commonly used EIP
+patterns for rapid development of ESB message/mediation flows.
+</p>
+
+        <h2 id="templates" >Templates</h2>
+        <p>ESB templates comes in two different forms.
+</p>
+
+        <ul>
+            <li>Sequence Templates
+                <p>This defines a templated form of a ESB sequence. Sequence
+                    Template has the ability to parameterize xpath expressions used
+                    within a sequence defined inside a template. We invoke a Sequence
+                    Template with a mediator named call-template by passing parameter
+                    values
+                    ie:-
+
+</p>
+                <pre xml:space="preserve">&lt;call-template target=&#8221;template&#8221; &gt;
+                    &lt;parameter name=&#8221;name&#8221; value=&#8221;value&#8221;/&gt;
+                    .....
+&lt;/call-template&gt;</pre>
+
+            </li>
+            <li>Endpoint Templates
+                <p>Defines a templated form of an endpoint. Endpoint Template has
+                  the ability to parameterize a endpoint defined within it.
+                  Invoking a template of this kind is achieved using a template
+                  Endpoint
+                  ie:-
+                </p>
+                <pre xml:space="preserve">&lt;endpoint template=&#8221;name&#8221; ...&gt;
+                    &lt;parameter name=&#8221;name&#8221; value=&#8221;value&#8221;/&gt;
+                    .....
+&lt;/endpoint&gt;</pre>
+
+
+            </li>
+        </ul>
+
+
+        <h2 id="seqt">Sequence Template Configuration</h2>
+
+        <p>
+Template is a parametrized sequence defined in ESB. Parameters of a template are defined in the form
+of xpath statement/s.
+Callers can invoke such a template by populating parameters with static values /xpath  expressions . We call such an artifact, Call-Template mediator.
+        </p>
+
+        <p>In other words template sequence is an abstract/generic form of a ESB sequence. Only a call template mediator can make
+a sequence template in to a concrete sequence. Let's illustrate this with a simple example. Suppose we have a sequence which
+logs hello world in four different languages. You would do that in ESB in following way,</p>
+
+        <pre xml:space="preserve">&lt;sequence&gt;
+   &lt;switch source=&quot;//m0:greeting/m0:lang&quot; xmlns:m0=&quot;http://services.samples&quot;&gt;
+        &lt;case regex=&quot;EN&quot;&gt;
+            &lt;log level=&quot;custom&quot;&gt;
+
+      		  &lt;property name=&#8221;GREETING_MESSAGE&#8221; value=&#8221;HELLO WORLD!!!!!!&#8221; /&gt;
+
+   	    &lt;/log&gt;
+        &lt;/case&gt;
+        &lt;case regex=&quot;FR&quot;&gt;
+	    &lt;log level=&quot;custom&quot;&gt;
+
+      		  &lt;property name=&#8221;GREETING_MESSAGE&#8221; value=&#8221;Bonjour tout le monde!!!!!!&#8221; /&gt;
+
+   	    &lt;/log&gt;
+        &lt;/case&gt;
+	&lt;case regex=&quot;IT&quot;&gt;
+	    &lt;log level=&quot;custom&quot;&gt;
+
+      		  &lt;property name=&#8221;GREETING_MESSAGE&#8221; value=&#8221;Ciao a tutti!!!!!!!&#8221; /&gt;
+
+   	    &lt;/log&gt;
+        &lt;/case&gt;
+	&lt;case regex=&quot;JPN&quot;&gt;
+	    &lt;log level=&quot;custom&quot;&gt;
+
+      		  &lt;property name=&#8221;GREETING_MESSAGE&#8221; value=&#8221;&#12495;&#12525;&#12540;&#12527;&#12540;&#12523;&#12489;!!!!!!!&#8221; /&gt;
+
+   	    &lt;/log&gt;
+        &lt;/case&gt;
+    &lt;/switch&gt;
+
+&lt;/sequence&gt;</pre>
+
+        <p>Instead of printing our hello world message for each and every language inside the sequence, we can create a generalized template of this
+actions which will accept any greeting message(from a particular language) and log it on screen. For example we can create the following template, which
+you may name "HelloWorld_Logger".</p>
+
+        <pre xml:space="preserve">&lt;template name=&quot;HelloWorld_Logger&quot;&gt;
+   &lt;parameter name=&quot;message&quot;/&gt;
+   &lt;sequence&gt;
+        &lt;log level=&quot;custom&quot;&gt;
+      		  &lt;property name=&#8221;GREETING_MESSAGE&#8221; expression=&#8221;$func:message&#8221; /&gt;
+   	&lt;/log&gt;
+   &lt;/sequence&gt;
+&lt;/template&gt;</pre>
+
+        <p>With our "HelloWorld_Logger" in place,  call-template mediator can populate this template with actual hello world messages and execute
+            the sequence of actions defined within the template like with any other sequence. This is illustrated below</p>
+
+        <pre xml:space="preserve">&lt;sequence&gt;
+   &lt;switch source=&quot;//m0:greeting/m0:lang&quot; xmlns:m0=&quot;http://services.samples&quot;&gt;
+        &lt;case regex=&quot;EN&quot;&gt;
+            &lt;call-template target=&quot;HelloWorld_Logger&quot;&gt;
+		&lt;with-param name=&quot;message&quot; value=&quot;HELLO WORLD!!!!!!&quot; /&gt;
+	    &lt;/call-template&gt;
+        &lt;/case&gt;
+        &lt;case regex=&quot;FR&quot;&gt;
+	    &lt;call-template target=&quot;HelloWorld_Logger&quot;&gt;
+		&lt;with-param name=&quot;message&quot; value=&quot;Bonjour tout le monde!!!!!!&quot; /&gt;
+	    &lt;/call-template&gt;
+        &lt;/case&gt;
+	&lt;case regex=&quot;IT&quot;&gt;
+	    &lt;call-template target=&quot;HelloWorld_Logger&quot;&gt;
+		&lt;with-param name=&quot;message&quot; value=&quot;Ciao a tutti!!!!!!!&quot; /&gt;
+	    &lt;/call-template&gt;
+        &lt;/case&gt;
+	&lt;case regex=&quot;JPN&quot;&gt;
+	    &lt;call-template target=&quot;HelloWorld_Logger&quot;&gt;
+		&lt;with-param name=&quot;message&quot; value=&quot;&#12495;&#12525;&#12540;&#12527;&#12540;&#12523;&#12489;!!!!!!!&quot; /&gt;
+	    &lt;/call-template&gt;
+        &lt;/case&gt;
+    &lt;/switch&gt;
+
+&lt;/sequence&gt;</pre>
+
+        <p>Note how call template mediator/s point to the same template "HelloWorld_Logger" and pass different arguments to it. This way sequence templates make it easy to
+stereotype different workflows inside ESB. </p>
+
+
+        <h3>Syntax</h3>
+        <pre xml:space="preserve">&lt;template name=&quot;string&quot;&gt;
+   &lt;!-- parameters this sequence template will be supporting --&gt;
+   (
+   &lt;parameter name=&quot;string&quot;/&gt;
+   ) *
+   &lt;!--this is the in-line sequence of the template     --&gt;
+   &lt;sequence&gt;
+        mediator+
+   &lt;/sequence&gt;
+ &lt;/template&gt;</pre>
+        <p>
+sequence template is a top level element defined with the name attribute in ESB
+configuration. Both endpoint and sequence template starts with a template element.
+Parameters (ie:-&lt;parameter&gt;) are the inputs supported by this sequence template .
+These sequence template parameters can be referred by a xpath expression defined
+inside the in-line sequence.     For example parameter named 'foo' can be referred
+by a property mediator (defined inside the in-line sequence of the template) in
+following ways
+        </p>
+        <p><b>&lt;property name=&#8221;fooValue&#8221; expression=&#8221;$func:foo&#8221; /&gt;</b></p>
+        <p><b>OR</b></p>
+        <p><b>&lt;property name=&#8221;fooValue&#8221; expression=&#8221;get-property(&#39;foo&#39;,&#39;func&#39;)&#8221; /&gt;</b></p>
+        <p>
+Note the scope variable used in the xpath expression. We use function scope or
+?func? to refer to template parameters. Only through this parameter name, we can
+refer to a particular parameter value passed externally by a invoker such as call-
+template mediator. WSO2 Management console UI provide easy way of adding these parameters. An example is
+shown below.</p>
+        <p>
+      <img alt="Defining/Accessing Seqeunce Template Parameters " src="images/templates_sequence_params.png"/>
+    </p>
+    <p>Figure 1: Defining/Accessing Seqeunce Template Parameters</p>
+
+        <h2 id="callm">Call Template Mediator</h2>
+        <h3>Syntax</h3>
+        <pre xml:space="preserve">&lt;call-template target=&quot;string&quot;&gt;
+   &lt;!-- parameter values will be passed on to a sequence template --&gt;
+   (
+    &lt;!--passing plain static values --&gt;
+   &lt;with-param name=&quot;string&quot; value=&quot;string&quot; /&gt; |
+    &lt;!--passing xpath expressions --&gt;
+   &lt;with-param name=&quot;string&quot; value=&quot;{string}&quot; /&gt; |
+    &lt;!--passing dynamic xpath expressions where values will be compiled
+dynamically--&gt;
+   &lt;with-param name=&quot;string&quot; value=&quot;{{string}}&quot; /&gt; |
+   ) *
+   &lt;!--this is the in-line sequence of the template    --&gt;
+ &lt;/call-template&gt;</pre>
+
+        <p>call-template mediator should define a target template it should be invoking ,
+with 'target' attribute.</p>
+        <p>&lt;with-param&gt; element is used to parse parameter values to a target sequence
+template. Note that parameter names has to be exact match to the names specified
+in target template. Parameter element can contain three types of parameterized
+values. xpath values are passed in within curly braces (ie:- {}) for value
+attribute. Special type of xpath expressions can be declared in double curly
+braces. These xpath expressions will be evaluated dynamically (others are
+evaluated before invoking a template or outside the template ) .</p>
+
+        <p>Please note that this is currently
+only supported for special type of mediators such as iterator and aggregate mediator, where actual
+xpath operations are made on a different soap message than the message coming in
+to the mediator.  Following shows how users can declare parameters inside call-template mediator UI</p>
+
+        <p>
+      <img alt="Passing Values with Call Template Mediator " src="images/templates_call-template-parameters.png"/>
+    </p>
+    <p>Figure 2: Passing Values with Call Template Mediator </p>
+        <h2 id="ept">Endpoint Template Configuration</h2>
+        <p>Endpoint Template is a generalized form of endpoint configuration used in ESB. Unlike sequence
+templates , endpoint templates are always parameterized using '$' prefixed values (ie:- NOT xpath expressions).</p>
+        <p>Template Endpoint is the artifact that makes a template of endpoint type into a concrete endpoint. In other words an
+endpoint template would be useless without a Template Endpoint referring to it.
+This is semantically similar to the relationship between a Sequence template and a Call-template mediator.
+For example lets say we have two default endpoints with following hypothetical configurations,</p>
+
+        <pre xml:space="preserve">&lt;endpoint  name=&quot;ep1&quot;&gt;
+            &lt;default&gt;
+               &lt;suspendOnFailure&gt;
+                     &lt;errorCodes&gt;10001,10002&lt;/errorCodes&gt;
+                     &lt;progressionFactor&gt;1.0&lt;/progressionFactor&gt;
+                &lt;/suspendOnFailure&gt;
+                &lt;markForSuspension&gt;
+                     &lt;retriesBeforeSuspension&gt;5&lt;/retriesBeforeSuspension&gt;
+                     &lt;retryDelay&gt;0&lt;/retryDelay&gt;
+                &lt;/markForSuspension&gt;
+            &lt;/default&gt;
+&lt;/endpoint&gt;
+&lt;endpoint  name=&quot;ep2&quot;&gt;
+            &lt;default&gt;
+               &lt;suspendOnFailure&gt;
+                     &lt;errorCodes&gt;10001,10003&lt;/errorCodes&gt;
+                     &lt;progressionFactor&gt;2.0&lt;/progressionFactor&gt;
+                &lt;/suspendOnFailure&gt;
+                &lt;markForSuspension&gt;
+                     &lt;retriesBeforeSuspension&gt;3&lt;/retriesBeforeSuspension&gt;
+                     &lt;retryDelay&gt;0&lt;/retryDelay&gt;
+                &lt;/markForSuspension&gt;
+            &lt;/default&gt;
+&lt;/endpoint&gt;</pre>
+
+        <p>We can see that these two endpoints have different set of error codes and different progression factors for suspension. Futhermore number of retries are different between them. By defining a endpoint template we can converge these
+            two endpoints to a generalized form. This is illustrated in the follwoing (Note how '$' is used to paramaeterize configuration and $name is a implicit/default parameter) ,</p>
+
+        <pre xml:space="preserve">&lt;template name=&quot;ep_template&quot;&gt;
+     &lt;parameter name=&quot;codes&quot;/&gt;
+     &lt;parameter name=&quot;factor&quot;/&gt;
+     &lt;parameter name=&quot;retries&quot;/&gt;
+     &lt;endpoint name=&quot;$name&quot;&gt;
+            &lt;default&gt;
+               &lt;suspendOnFailure&gt;
+                     &lt;errorCodes&gt;$codes&lt;/errorCodes&gt;
+                     &lt;progressionFactor&gt;$factor&lt;/progressionFactor&gt;
+                &lt;/suspendOnFailure&gt;
+                &lt;markForSuspension&gt;
+                     &lt;retriesBeforeSuspension&gt;$retries&lt;/retriesBeforeSuspension&gt;
+                     &lt;retryDelay&gt;0&lt;/retryDelay&gt;
+                &lt;/markForSuspension&gt;
+            &lt;/default&gt;
+     &lt;/endpoint&gt;
+&lt;/template&gt;</pre>
+
+        <p>Since we have a template defined we can use template endpoints to create two concrete endpoint instances with different parameter values for this scenario.
+            This is shown below.</p>
+
+        <pre xml:space="preserve">&lt;endpoint name=&quot;ep1&quot; template=&quot;ep_template&quot;&gt;
+           &lt;parameter name=&quot;codes&quot; value=&quot;10001,10002&quot; /&gt;
+	   &lt;parameter name=&quot;factor&quot; value=&quot;1.0&quot; /&gt;
+	   &lt;parameter name=&quot;retries&quot; value=&quot;5&quot; /&gt;
+&lt;/endpoint&gt;
+&lt;endpoint name=&quot;ep2&quot; template=&quot;ep_template&quot;&gt;
+           &lt;parameter name=&quot;codes&quot; value=&quot;10001,10003&quot; /&gt;
+	   &lt;parameter name=&quot;factor&quot; value=&quot;2.0&quot; /&gt;
+	   &lt;parameter name=&quot;retries&quot; value=&quot;3&quot; /&gt;
+&lt;/endpoint&gt;</pre>
+
+        <p>As with call-template mediator , above template endpoint will stereotype endpoints with customized configuration parameters.
+            This makes it very easy to understand and maintain certain ESB configurations and improves reusability in a certain way.</p>
+
+        <h3>Syntax</h3>
+        <pre xml:space="preserve">&lt;template name=&quot;string&quot;&gt;
+   &lt;!-- parameters this endpoint template will be supporting --&gt;
+   (
+   &lt;parameter name=&quot;string&quot;/&gt;
+   ) *
+   &lt;!--this is the in-line endpoint of the template    --&gt;
+   &lt;endpoint [name=&quot;string&quot;] &gt;
+           address-endpoint | default-endpoint | wsdl-endpoint | load-balanced-
+endpoint | fail-over-endpoint
+     &lt;/endpoint&gt;
+&lt;/template&gt;</pre>
+
+        <p>Similar to sequence templates ,endpoint templates are defined as top level element
+(with the name specified by the name attribute )of ESB configuration
+Parameters (ie:-&lt;parameter&gt;) are the inputs supported by this endpoint template .
+These endpoint template parameters can be referred by $ prefixed parameter name.
+For example parameter named 'foo' can be referred by $foo. Most of the parameters
+of the endpoint definition can be parametrized with $ prefixed values. This is
+shown in the following extract,</p>
+        <pre xml:space="preserve">&lt;template name=&quot;sample_ep_template&quot;&gt;
+            &lt;parameter name=&quot;foo&quot;/&gt;
+            &lt;parameter name=&quot;bar&quot;/&gt;
+            &lt;default&gt;
+               &lt;suspendOnFailure&gt;
+                     &lt;errorCodes&gt;$foo&lt;/errorCodes&gt;
+                     &lt;progressionFactor&gt;$bar&lt;/progressionFactor&gt;
+                &lt;/suspendOnFailure&gt;
+                &lt;markForSuspension&gt;
+                     &lt;retriesBeforeSuspension&gt;0&lt;/retriesBeforeSuspension&gt;
+                     &lt;retryDelay&gt;0&lt;/retryDelay&gt;
+                &lt;/markForSuspension&gt;
+            &lt;/default&gt;
+     &lt;/endpoint&gt;
+&lt;/template&gt;</pre>
+        <p>Note $name and $uri are default parameters that a template can use anywhere within
+the endpoint template (usually used as parameters for endpoint name and address
+attributes). Following figure shows, how a endpoint template design page is rendered in WSO2 Management console
+            UI.
+</p>
+        <p>
+        <img alt="Designing an Endpoint Template" src="images/templates_endpoint_templ_design.png"/>
+    </p>
+    <p>Figure 3: Designing an Endpoint Template</p>
+
+         <h2 id="tempep">Template Endpoint</h2>
+        <h3>Syntax</h3>
+        <pre xml:space="preserve">&lt;endpoint [name=&quot;string&quot;] [key=&quot;string&quot;] template=&quot;string&quot;&gt;
+      &lt;!-- parameter values will be passed on to a endpoint template --&gt;
+   (
+           &lt;parameter name=&quot;string&quot; value=&quot;string&quot; /&gt;
+   ) *
+&lt;/endpoint&gt;</pre>
+        <p>Template endpoint defines parameter values that can parameterize endpoint . The 'template' attribute
+points to a target endpoint template.</p>
+        <p>As in the endpoint template , Note that parameter names has to be exact match to
+the names specified in target endpoint template. UI for a template endpoint is depicted below
+</p>
+     <p>
+        <img alt="Template Endpoint UI " src="images/templates_template_endpoint.png"/>
+    </p>
+    <p>Figure 4: Template Endpoint UI</p>
+    </body>
+</html>

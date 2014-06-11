@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+    <title>WSO2 ESB - Throttle Mediator </title>
+    <link href="css/esb-docs.css" rel="stylesheet" />
+    <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+    media="all" />
+  </head>
+  <body>
+    <h2>Throttle Mediator</h2>
+    <p>
+      The Throttle mediator can be used for rate limiting as well as concurrency
+      based limiting. A WS-Policy dictates the throttling configuration and may be
+      specified inline or loaded from the registry. Please refer to the samples
+      document for sample throttling policies. The Throttle mediator could be added
+      in the request path for rate limiting and concurrent access limitation. When
+      using for concurrent access limitation, the same throttle mediator 'id' must be
+      triggered on the response flow so that completed responses are deducted from
+      the available limit. (i.e. two instances of the throttle mediator with the same
+      'id' attribute in the request and response flows). The 'onReject' and
+      'onAccept' sequence references or inline sequences define how accepted and
+      rejected messages are to be handled.
+    </p>
+    <h3>Syntax</h3>
+    <pre xml:space="preserve">
+  &lt;throttle [onReject="string"] [onAccept="string"] id="string"&gt;
+    (&lt;policy key="string"/&gt; | &lt;policy&gt;..&lt;/policy&gt;)
+    &lt;onReject&gt;..&lt;/onReject&gt;?
+    &lt;onAccept&gt;..&lt;/onAccept&gt;?
+  &lt;/throttle&gt;</pre>
+    <h3>UI Configuration</h3>
+    <p>
+    <img src="../throttle-mediator/docs/images/throttle_mediator.jpg" alt=""/>
+    </p>
+    <ul>
+      <li>
+        Throttle Group ID: The id for the throttle group. Note you would have two throttle mediator configuration in
+        request and response paths with the same group id.
+      </li>
+      <li>
+        Referring Policy: The policy for the throttling. You can specify it inline or refer from the regsitry
+      </li>
+      <li>
+        On Acceptance Referring Sequence: The sequence to act on accpetance
+      </li>
+      <li>
+        On Rejection Referring Sequence: The sequence to act on rejection
+      </li>
+    </ul>
+
+      <h3>Example</h3>
+     <pre xml:space="preserve">
+
+ &lt;in&gt;
+    &lt;throttle id="A"&gt;
+        &lt;policy&gt;
+            &lt;!-- define throttle policy --&gt;
+            &lt;wsp:Policy xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+                        xmlns:throttle="http://www.wso2.org/products/wso2commons/throttle"&gt;
+                &lt;throttle:ThrottleAssertion>
+                    &lt;throttle:MaximumConcurrentAccess>10&lt;/throttle:MaximumConcurrentAccess&gt;
+                &lt;/throttle:ThrottleAssertion&gt;
+            &lt;/wsp:Policy&gt;
+        &lt;/policy&gt;
+        &lt;onAccept&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text" value="**Access Accept**"/&gt;
+            &lt;/log&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                &lt;/endpoint&gt;
+            &lt;/send&gt;
+        &lt;/onAccept&gt;
+        &lt;onReject&gt;
+            &lt;log level="custom"&gt;
+                &lt;property name="text" value="**Access Denied**"/&gt;
+            &lt;/log&gt;
+            &lt;makefault&gt;
+                &lt;code value="tns:Receiver"
+                      xmlns:tns="http://www.w3.org/2003/05/soap-envelope"/&gt;
+                &lt;reason value="**Access Denied**"/&gt;
+            &lt;/makefault&gt;
+            &lt;property name="RESPONSE" value="true"/&gt;
+            &lt;header name="To" action="remove"/&gt;
+            &lt;send/&gt;
+            &lt;drop/&gt;
+        &lt;/onReject&gt;
+    &lt;/throttle&gt;
+&lt;/in&gt;
+     </pre>
+      <p>
+          Above example specifies a throttle mediator inside the in mediator. Therefore, all request messages
+          directed to the main sequence will be subjected to throttling. Throttle mediator has 'policy', 'onAccept' and
+          'onReject' tags at top level. The 'policy' tag specifies the throttling policy for throttling messages. This 
+          sample policy only contains a component called "MaximumConcurrentAccess" .This indicates the maximum number of
+          concurrent requests that can pass through Synapse on a single unit of time.
+      </p>
+
+     <p></p>
+
+  </body>
+</html>
