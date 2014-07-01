@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Target</title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Target</h2>
+
+<p>Target is a common configuration used across many ESB conofugrations. Some
+mediators that uses this configuration are Clone, Iterate and Router. </p>
+
+<p>A target specifies a mediation sequence, and endpoint or both. If a sequnce
+is specified it will be executed. If a endpoint is specified message will be
+sent to the endpoint. If both sequence and endpoint are specified, first
+sequence will be executed and then endpoint will be executed.</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve">  &lt;target [sequence="string"] [endpoint="string"]&gt;
+    &lt;sequence ....../&gt;?
+    &lt;endpoint ....../&gt;?
+  &lt;/target&gt;  </pre>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../target-mediator/docs/images/target_mediator_screenshot.jpg"
+alt="" /> </p>
+
+<p>Here you can prepare a message to send to an endpoint or mediate through
+some more sequences. </p>
+<ul>
+  <li>SOAP Action: The SOAP action of the message. </li>
+  <li>To Address: Then target endpoint address. </li>
+  <li>Sequence: Mediate the message through a sequence. You can either pick a
+    named sequence from the registry or define an anonymous sequence by adding
+    mediators to the current Target mediator as children. </li>
+  <li>Endpoint: Send the message to an endpoint. Here you can pick a named
+    endpoint from the registry (which you can add in the Endpoint panel that
+    can be accessed from the Manage-&gt; Mediation-&gt; Endpoints menu in the
+    left hand side menu bar.) or keep the endpoint as anonymous. </li>
+</ul>
+
+<h3>Example</h3>
+
+<p>Please go to the specific mediators for examples.</p>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>WSO2 ESB - DBLookup Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>DBLookup Mediator</h2>
+
+<p>The dblookup mediator is capable of executing an arbitrary SQL select
+statement, and then set some resulting values as local message properties on
+the message context. The DB connection used maybe looked up from an external
+DataSource or specified in-line, in which case an Apache DBCP connection pool
+is established and used. </p>
+
+<p><strong>In-lined Data Source</strong></p>
+<ul>
+  <li><strong>driver</strong> - Database driver class name</li>
+  <li><strong>url</strong> - Database URL</li>
+  <li><strong>user</strong> - User name for access Database</li>
+  <li><strong>password</strong> Password for access Database</li>
+</ul>
+
+<p>This new Datasource is based on Apache DBCP connection pools. This
+connection pool support the following configuration properties: </p>
+<ul>
+  <li>autocommit = true | false </li>
+  <li>isolation = Connection.TRANSACTION_NONE |
+    Connection.TRANSACTION_READ_COMMITTED |
+    Connection.TRANSACTION_READ_UNCOMMITTED |
+    Connection.TRANSACTION_REPEATABLE_READ |
+    Connection.TRANSACTION_SERIALIZABLE </li>
+  <li>initialsize = int </li>
+  <li>maxactive = int </li>
+  <li>maxidle = int </li>
+  <li>maxopenstatements = int </li>
+  <li>maxwait = long </li>
+  <li>minidle = int </li>
+  <li>poolstatements = true | false </li>
+  <li>testonborrow = true | false </li>
+  <li>testonreturn = true | false </li>
+  <li>testwhileidle = true | false </li>
+  <li>validationquery = String </li>
+</ul>
+
+<p><strong>External Data Source</strong></p>
+<ul>
+  <li><strong>dsName</strong> - The name of the Datasource to be looked up</li>
+  <li><strong>icClass</strong> - Initial context factory class. The
+    corresponding java environment property is
+    <strong>java.naming.factory.initial</strong></li>
+  <li><strong>url</strong> - The naming service provider url . The
+    corresponding java environment property is
+    <strong>java.naming.provider.url</strong></li>
+  <li><strong>user</strong> - This is corresponding to the java environment
+    property <strong>java.naming.security.principal</strong></li>
+  <li><strong>password</strong> - This is corresponding to the java environment
+    property This is corresponding to the java environment property
+    <strong>java.naming.security.principal</strong></li>
+</ul>
+
+<p><strong>SQL Statements </strong></p>
+<ul>
+  <li><strong>sql </strong>- One or more SQL Statements </li>
+  <li><strong>parameter</strong> - Specify how the values of parameter in the
+    SQL would be calculated. A value can be static literal text and can be
+    calculated at runtime based on the given expression.</li>
+  <li><strong>result</strong> - Specify how to deal with rerun result from
+    Database query execution. </li>
+</ul>
+
+<p>More than one statement may be specified, and the SQL statement may specify
+parameters which could be specified as values or XPath expressions. The types
+of parameters could be any valid SQL types. Only the first row of a result set
+will be considered and any others are ignored. The single
+<strong>&lt;result&gt;</strong> element contains the '<strong>name</strong>'
+and the '<strong>column</strong>' attributes. The '<strong>name</strong>'
+attribute defines the name under which the result is stored in the Synapse
+message context, and the column attribute specifies a column number or name .
+</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve">&lt;dblookup&gt;
+   &lt;connection&gt;
+     &lt;pool&gt;
+      (
+       &lt;driver/&gt;
+       &lt;url/&gt;
+       &lt;user/&gt;
+       &lt;password/&gt;
+     |
+       &lt;dsName/&gt;
+       &lt;icClass/&gt;
+       &lt;url/&gt;
+       &lt;user/&gt;
+       &lt;password/&gt;
+     )
+       &lt;property name="name" value="value"/&gt;*
+     &lt;/pool&gt;
+   &lt;/connection&gt;
+   &lt;statement&gt;
+     &lt;sql&gt;select something from table where something_else = ?&lt;/sql&gt;
+     &lt;parameter [value="" | expression=""] type="CHAR|VARCHAR|LONGVARCHAR|NUMERIC|DECIMAL|BIT|TINYINT|SMALLINT|INTEGER|BIGINT|REAL|FLOAT|DOUBLE|DATE|TIME|TIMESTAMP"/&gt;*
+     &lt;result name="string" column="int|string"/&gt;*
+   &lt;/statement&gt;+
+&lt;/dblookup&gt;</pre>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../dblookup-mediator/docs/images/dblookup_mediator_screenshot.png" alt="" />
+</p>
+
+<div class="image">
+<p>Figure 1: DBLookup mediator options </p>
+</div>
+
+<p>DBLookup mediator options field descriptions, </p>
+<ul>
+  <li>Connection Information - Specify whether the connection is taken from a
+    connection pool or from a data source </li>
+  <li>Driver - Database driver</li>
+  <li>Url - JDBC URL of the database that data will be looked up.</li>
+  <li>User - Username that's used to connect to the database.</li>
+  <li>Password - Password used to connect to the database. </li>
+</ul>
+
+<h4>Data sources</h4>
+
+<h4>Carbon Datasources</h4>
+
+<p>If existing data source is choosen, clicking "Load Data Sources" will give
+the available datasource. Then a data source can be selected.</p>
+<div>
+<img src="../dblookup-mediator/docs/images/ds.png" alt="" />
+<p>Figure 2: Carbon Datasources</p>
+</div>
+
+<h4>External Datasources</h4>
+
+<p>Like in Pool connection data source configuration properties should be
+specified.</p>
+<div>
+<img src="../dblookup-mediator/docs/images/ds_external.png" alt="" />
+<p>Figure 3: External Datasources</p>
+</div>
+
+
+<h4>Adding properties</h4>
+
+<div class="image">
+<img src="../dblookup-mediator/docs/images/dblookup_prop.png" alt="" />
+
+<p>Figure 4: Adding a property </p>
+</div>
+
+<p>Property field descriptions, </p>
+<ul>
+  <li>autocommit = true | false </li>
+  <li>isolation = Connection.TRANSACTION_NONE |
+    Connection.TRANSACTION_READ_COMMITTED |
+    Connection.TRANSACTION_READ_UNCOMMITTED |
+    Connection.TRANSACTION_REPEATABLE_READ |
+    Connection.TRANSACTION_SERIALIZABLE </li>
+  <li>initialsize = int </li>
+  <li>maxactive = int </li>
+  <li>maxidle = int </li>
+  <li>maxopenstatements = int </li>
+  <li>maxwait = long </li>
+  <li>minidle = int </li>
+  <li>poolstatements = true | false </li>
+  <li>testonborrow = true | false </li>
+  <li>testwhileidle = true | false </li>
+  <li>validationquery = String </li>
+</ul>
+
+<h4>Adding SQL statements</h4>
+<ol>
+  <li>Click Add Statement link shown in figure 2 and it'll open up the screen
+    where you could enter SQL statement option. This is shown in figure 3. </li>
+  <li>More than one statement may be specified.</li>
+</ol>
+<ul>
+  <li>The SQL statement may specify parameters which could be specified as
+    values or XPath expressions. </li>
+  <li>The types of parameters could be any valid SQL types. Only the first row
+    of a result set will be considered and any others are ignored. </li>
+</ul>
+
+<div class="image">
+<img src="../dblookup-mediator/docs/images/dblookup_sql.png" alt="" />
+
+<p>Figure 5: Adding SQL statements </p>
+</div>
+
+<h3>Example</h3>
+<pre xml:space="preserve">
+
+&lt;dblookup xmlns="http://ws.apache.org/ns/synapse"&gt;
+    &lt;connection&gt;
+        &lt;pool&gt;
+            &lt;driver&gt;org.apache.derby.jdbc.ClientDriver&lt;/driver&gt;
+            &lt;url&gt;jdbc:derby://localhost:1527/esbdb;create=false&lt;/url&gt;
+            &lt;user&gt;esb&lt;/user&gt;
+            &lt;password&gt;esb&lt;/password&gt;
+        &lt;/pool&gt;
+    &lt;/connection&gt;
+    &lt;statement&gt;
+        &lt;sql&gt;select * from company where name =?&lt;/sql&gt;
+        &lt;parameter expression="//m0:getQuote/m0:request/m0:symbol"
+                   xmlns:m0="http://services.samples/xsd" type="VARCHAR"/&gt;
+        &lt;result name="company_id" column="id"/&gt;
+    &lt;/statement&gt;
+&lt;/dblookup&gt;
+</pre>
+
+<p>In this example, when a message arrives at dblookup mediator, it opens a connection to the database and executes the
+    SQL query. The SQL query use '?' character for attributes that will be filled at runtime. The parameters define how
+    to calculate the value of those attributes at runtime. In this sample a dblookup mediator has been used
+    to extract 'id' of the company from the company database using the symbol which is evaluated using an xpath against
+    the SOAP envelope.</p>
+
+
+<p></p>
+</body>
+</html>

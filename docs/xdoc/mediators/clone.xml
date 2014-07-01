@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Clone Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Clone Mediator</h2>
+
+<p>As the name suggests clone meditor can be used to clone a message in to
+several messages.</p>
+
+<p>The clone mediator closely resembles the Message Splitter EIP and will split
+the message into number of identical messages which will be processed in
+parallel. They can also be set to process sequentially by setting
+the value of the optional 'sequential' attribute to 'true'.
+The original message cloned can be continued or dropped depending on
+the boolean value of the optional 'continueParent' attribute. Optionally a
+custom 'To' address and/or a 'Action' may be specified for cloned messages.
+The optional 'id' attribute can be used to identify the clone mediator which 
+created a particular splitted message when nested clone mediators are used. 
+This is particularly useful when aggregating responses of messages that are 
+created using nested clone mediators. 
+</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;clone [id="id"] [continueParent=(true | false)] [sequential=(true | false)]&gt;
+   &lt;target [to="uri"] [soapAction="qname"] [sequence="sequence_ref"] [endpoint="endpoint_ref"]&gt;
+     &lt;sequence&gt;
+       (mediator)+
+     &lt;/sequence&gt;?
+     &lt;endpoint&gt;
+       endpoint
+     &lt;/endpoint&gt;?
+   &lt;/target&gt;+
+ &lt;/clone&gt;</pre>
+
+<h3>UI Configuration</h3>
+
+<div class="image">
+<img src="../clone-mediator/docs/images/clone-options.png" alt="" />
+
+<p>Figure 1: Clone mediator options </p>
+</div>
+
+<p>Clone mediator field descriptions, </p>
+<ul>
+  <li>Clone ID - This can be used to identify messages created by this clone mediator. This is 
+    particularly useful when aggregating responses of messages that are created using nested 
+    iterate mediators.
+  </li>
+  <li>Sequential Mediation - If "Yes" created messages will be processed sequentially, otherwise 
+    they will be processed in parallel.
+  </li>
+  <li>Continue Parent - If "Yes" the original message will be continued. If
+    "No" the original message will be dropped. </li>
+  <li>Number of clones - Number of clones created. This can be controlled by
+    adding one or more clone targets by clicking <span
+    style="font-weight: bold;">Add Clone Target</span>.Targets can then have it's own set of mediators. </li>
+</ul>
+
+<p><img src="../clone-mediator/docs/images/clone-target.png" alt="" /> </p>
+
+<p>Figure 2: Adding a clone target </p>
+
+<p>For more information about target refer <a href="target.html">Target.</a></p>
+
+
+
+<h3>Example</h3>
+<pre xml:space="preserve">
+&lt;clone xmlns="http://ws.apache.org/ns/synapse"&gt;
+   &lt;target&gt;
+      &lt;endpoint name="endpoint_urn_uuid_73A47733EB1E6F30812921609540392-849227072"&gt;
+         &lt;default /&gt;
+      &lt;/endpoint&gt;
+   &lt;/target&gt;
+   &lt;target sequence="test1" /&gt;
+&lt;/clone&gt;
+
+</pre>
+
+<p>In this example the clone mediator clones messages and redirect them two a default endpoint and an existing sequence. </p>
+
+
+<p></p>
+</body>
+</html>

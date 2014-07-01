@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Rule Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Rule Mediator</h2>
+
+<p>Rule mediator is to integrate the WSO2 Rules component to the WSO2 ESB in
+order to define dynamic integration decisions in terms of rules.</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve">  &lt;rule&gt;
+
+    &lt;ruleset&gt;
+        &lt;source [ key="xs:string" ]&gt;
+            [ in-Lined ]
+        &lt;/source&gt;
+        &lt;creation&gt;
+            &lt;property name="xs:string" value="xs:string"/&gt;*
+        &lt;/creation&gt;
+    &lt;/ruleset&gt;
+
+    &lt;session type="[stateless|stateful]"/&gt;*
+
+    &lt;facts&gt;
+        &lt;fact name="xs:string" type="xs:string" expression="xs:string" value="xs:string"/&gt;+
+    &lt;/facts&gt;
+
+    &lt;results&gt;
+        &lt;result name="xs:string" type="xs:string" expression="xs:string" value="xs:string"/&gt;*
+    &lt;/results&gt;
+
+    [ &lt;childMediators&gt;
+        &lt;mediator/&gt;*
+      &lt;/childMediators&gt; ]
+
+  &lt;/rule&gt;
+        </pre>
+
+<h4 id="RuleSource">RuleSet</h4>
+
+<p>The source is the only mandatory element of the ruleset. However, the
+properties required for the creation of the ruleset can also be specified
+within ruleset. The key attribute is a registry key, which is to lookup the
+rule script from the registry if the rule script is in the registry. The rule
+set can be given as a child node of source elemenent. If the rule set is
+non-XML, you may need to wrap it with a CDATA section inside a XML tag ex:
+&lt;X&gt;&lt;![CDATA[ native code]]&gt;&lt;/X&gt;</p>
+
+<p>Note : The key or in-lined rule script must be defined. Otherwise, the rule
+mediator configuration is invalid. </p>
+
+<h4 id="RuleSessio">RuleSession</h4>
+
+<p>Rule Session specify the stateful or stateless behavior of the rule engine.
+If this has value 'stateful', then the rule engine will execute rules in a
+stateful manner, for any other value, it assumes as stateless. There are
+optional properties, which are used when creating the rule session. Rule
+session is optional and the default one is stateful.</p>
+
+<h4 id="Input">Facts / Results</h4>
+<ul>
+  <li>name - the unique name</li>
+  <li>value - Represents any static value</li>
+  <li>expression - XPath expression for extracting data from the message being
+    passed between ESB components. The default value is the first child of the
+    SOAP Body. </li>
+  <li>type - Defines the type of the input data. There are a few built in types
+    such as Message, Context, Map, POJO and Mediator and there are samples
+    using these. Using the rule-component.conf, you can register new types
+    along with adapters, which are responsible for formulating specified types
+    from the data. If there is no registered adapter for a given type, then, we
+    assume the given type as a valid java class name and uses POJO adapter to
+    formulate the POJO instance whose class is the given type.</li>
+</ul>
+
+<p>Facts specify the facts being used in rule set. It also defines how to
+formulate facts from the message, etc. Results define how to handle results
+from the rule set execution. Usually, results adapters enrich the message with
+results. For example, If you are using POJO adapter (i.e. a java class as the
+type; the class name of a result), then we transform POJO into an XML and
+attached to the SOAP message. </p>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../rule-mediator/docs/images/rule_mediator_1.JPG" alt="Rule" />
+</p>
+
+<p><strong>Figure1: Rule Mediator</strong> </p>
+
+<p>Each of configuration elements is described in following section</p>
+
+<h4>RuleSource</h4>
+
+<p>Rule script can be given as a registry key or an in-lined script. To give
+rule script as in-lined, you can use editor. </p>
+
+<p>The format (language) of the rule script . If it is a XML, then this
+attribute should be 'xml'. Any other value, rule mediator assumes that the rule
+script is in native format. If the rule script is in native format, it should
+be given by wrapping as a CDATA section inside a XML tag ex:
+&lt;X&gt;&lt;![CDATA[ native code]]&gt;&lt;/X&gt;. </p>
+
+<p>Note: The key or in-lined rule script must be defined. Otherwise, rule
+mediator is invalid. </p>
+
+<h4>RuleSession</h4>
+
+<p>Session Type - Indicates the stateful or stateless behavior of the rule
+engine. If this has value ' stateful ' , then rule engine will executes rules
+in a state full manner , for any other value , it assumes as stateless. </p>
+
+<p>property - Those are used when creating rule session.</p>
+
+<h4>RuleSet</h4>
+
+<p>It is possible to exists properties for rules set creation, registration,
+deregistration and there are add property options for each. </p>
+
+<p>Example Usage: When using Drool native language (.drl) for rule script, it
+is needed to provide .dsl file .This can be done using attribute named 'source'
+and value 'drl'. </p>
+
+<p>&lt;ruleSet&gt;</p>
+
+<p>&lt;creation&gt;</p>
+
+<p>&lt;property name="source" value="drl"/&gt;</p>
+
+<p>&lt;/creation&gt;</p>
+
+<p>&lt;/ruleSet&gt;</p>
+
+<h4>Facts / Results</h4>
+
+<p>Input defines what are the facts that should injected to Rule Engine in
+order to fire rules whereas Output describes what should do with return value
+form rule engine. </p>
+
+<h4>Adding Facts / Results</h4>
+
+<p>Figure 2 shows a one senario of addting input</p>
+
+<p><img alt="Rule Mediator Inputs"
+src="../rule-mediator/docs/images/rule_mediator_input.JPG" /> width="1319"
+height="122"&gt; </p>
+
+<p>Figure 2 Inputs of the Rule Mediator </p>
+
+<p><strong>Type :</strong> According to current implementation valid types are
+as bellow. </p>
+
+<p><strong>Name :</strong> Value Type Static Value or XPath expression </p>
+
+<p><strong>Value / Expression :</strong> <em>value</em> - Represents any static
+value. <em>expression</em>- XPath expression is used to extract data from
+either external XML source or SOAP envelope. There is no default value. </p>
+
+<p><strong>Registry Key : </strong>The registry or Message context key .This is
+used for getting data from either registry or message context </p>
+
+<p><strong>Registry Browser :</strong> If the key is registry resource, the
+browser to select the resource. </p>
+
+<p><strong>NS Editor</strong> : You can click this link to add namespaces if
+you are providing an expression. You will be provided another panel named
+'Namespace Editor' where you can provide any number of namespace prefixes and
+url </p>
+
+<p><strong>Action</strong> : Delete the input out put </p>
+
+<h4>Adding Properties</h4>
+
+<p>Adding properties option is in RuleServiceProvider , RuleSet and
+RuleSession. Figure 3 shows UI on adding property. </p>
+
+<p><img alt="Property Adding"
+src="../rule-mediator/docs/images/rule_mediator_property.JPG" /> </p>
+
+<p>Figure3: Rule Mediator Properties</p>
+
+<p><strong>Name</strong>: Name for the property </p>
+
+<p><strong>Value</strong>: The type of the property value. </p>
+
+<p><strong>Action</strong>: Delete the property </p>
+
+<h3>Example</h3>
+<ol>
+  <li><pre> &lt;rule&gt;
+        &lt;ruleset&gt;
+        &lt;source key="rule/sample.xml"/&gt;
+        &lt;/ruleset&gt;
+        &lt;facts&gt;
+            &lt;fact name="symbol" type="java.lang.String"
+                  expression="//m0:getQuote/m0:request/m0:symbol/child::text()"
+                  xmlns:m0="http://services.samples"/&gt;
+        &lt;/facts&gt;
+        &lt;childMediators&gt;
+            &lt;send&gt;
+                &lt;endpoint&gt;
+                    &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+                &lt;/endpoint&gt;
+                &lt;/send&gt;
+                &lt;drop/&gt;
+        &lt;/childMediators&gt;
+
+    &lt;/rule&gt;
+</pre>
+    In the above configuration, Rule script is picked from the registry with
+    key <strong>rule/sample.xml</strong>. There is a one <strong>fact</strong>
+    and it is a string variable. Its value is calculated from the current SOAP
+    message using an expression. Rule engine uses these facts to decide what
+    rules should fire. </li>
+</ol>
+</body>
+</html>

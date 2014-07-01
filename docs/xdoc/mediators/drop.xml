@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Send Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Drop Mediator</h2>
+
+<p>Drop mediator stops the processing of the current message. </p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;drop/&gt;</pre>
+
+<h3>UI Configuration</h3>
+
+<p>none.</p>
+
+<h3>Usage Scenario</h3>
+<pre xml:space="preserve">&lt;definitions xmlns="http://ws.apache.org/ns/synapse"&gt;    
+    &lt;filter source="get-property('To')" regex=".*/StockQuote.*"&gt;
+        &lt;send&gt;
+            &lt;endpoint&gt;
+                &lt;address uri="http://localhost:9000/services/SimpleStockQuoteService"/&gt;
+            &lt;/endpoint&gt;
+        &lt;/send&gt;
+        &lt;drop/&gt;
+    &lt;/filter&gt;
+    &lt;send/&gt;
+&lt;/definitions&gt; </pre>
+
+<p>In this scenario message is dropped after it is sent to the end point. This
+will prevent message being sent twice from the in-path.</p>
+</body>
+</html>

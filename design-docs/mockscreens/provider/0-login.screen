@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Browser" x="139" y="72" width="761" height="593" text="Browser&#xA;http://..." measuredWidth="761" measuredHeight="593" id="1"/>
+  <widgets xsi:type="model:Label" x="424" y="634" text="Copyright @ 2012, WSO2" measuredWidth="140" measuredHeight="21" textAlignment="Center" id="80">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" x="362" y="341" text="User Name" measuredWidth="63" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" x="448" y="341" width="172" measuredWidth="172" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" x="362" y="371" text="Password" measuredWidth="56" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" x="448" y="372" width="172" text=" " measuredWidth="172" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" x="448" y="407" text="Login" measuredWidth="50" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Hotspot" x="336" y="281" width="337" height="200" measuredWidth="337" measuredHeight="200"/>
+  <hRuler/>
+  <vRuler/>
+  <font/>
+</model:Screen>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Browser" id="1" x="133" y="72" width="761" height="593" text="Browser&#xA;http://..." measuredWidth="761" measuredHeight="593"/>
+  <widgets xsi:type="model:Menu" id="2" x="200" y="184" width="641" text="&amp;APIs                            | ,&amp;Applications                | ,&amp;API Providers                  |,    &amp;Help" measuredWidth="641" measuredHeight="23" selection="2">
+    <items x="5" y="0" width="138" height="23" text="&amp;APIs                            | "/>
+    <items x="143" y="0" width="140" height="23" text="&amp;Applications                | "/>
+    <items x="283" y="0" width="147" height="23" text="&amp;API Providers                  |"/>
+    <items x="430" y="0" width="45" height="23" text="   &amp;Help"/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="3" x="686" y="156" text="Search" measuredWidth="66" measuredHeight="24"/>
+  <widgets xsi:type="model:Tree" id="5" x="154" y="252" width="209" height="377" text="&#xA;--API1&#xA;-API2&#xA;-API3&#xA;-API3&#xA;" measuredWidth="209" measuredHeight="377">
+    <items x="0" y="5" width="209" height="20"/>
+    <items x="0" y="25" width="209" height="20" text="--API1"/>
+    <items x="0" y="45" width="209" height="20" text="-API2"/>
+    <items x="0" y="65" width="209" height="20" text="-API3"/>
+    <items x="0" y="85" width="209" height="20" text="-API3"/>
+  </widgets>
+  <widgets xsi:type="model:Tabs" id="6" x="154" y="230" text="My APIs" measuredWidth="64" measuredHeight="23" selection="0">
+    <items x="1" y="0" width="62" height="23" text="My APIs"/>
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="7" x="263" y="157" width="329" measuredWidth="329" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Combo" id="11" x="597" y="157" text="API Providers" measuredWidth="94" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Rectangle" id="14" x="372" y="252" width="499" height="377" measuredWidth="499" measuredHeight="377">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="20" x="150" y="131" text="API Store" measuredWidth="71" measuredHeight="25" foreground="#ff9900">
+    <font size="14" bold="true" italic="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="21" x="398" y="260" text="My APIs -> API45 -> Documentation" measuredWidth="216" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Group" id="78" x="686" y="127" width="193" height="29" text="Welcome Jonathan @ APIFactory" measuredWidth="193" measuredHeight="29">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="79" x="718" y="135" width="153" text="Notifications(3)" measuredWidth="153" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="80" x="424" y="634" text="Copyright @ 2012, WSO2" measuredWidth="140" measuredHeight="21" textAlignment="Center">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Tooltip" id="130" x="216" y="357" text="Status: Draft" measuredWidth="77" measuredHeight="38" background="#ffe599" position="topLeft">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Tooltip" id="129" x="223" y="290" width="156" height="54" text="Status: Published&#xA;Latest Version : 3.4.1" measuredWidth="156" measuredHeight="54" background="#ffe599" position="topLeft">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="131" x="183" y="256" width="162" text="Search" measuredWidth="162" measuredHeight="24"/>
+  <widgets xsi:type="model:Group" id="148" x="402" y="496" width="455" height="121" text=" Edit Existing" measuredWidth="455" measuredHeight="121">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Group" id="157" x="402" y="278" width="455" height="214" text="Add New" measuredWidth="455" measuredHeight="214">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="170" x="424" y="455" text="Save" measuredWidth="44" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Tabs" id="172" x="378" y="230" text="API Details" measuredWidth="79" measuredHeight="23" selection="0">
+    <items x="1" y="0" width="77" height="23" text="API Details"/>
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:List" id="174" x="574" y="314" text="(o) How To(selected)&#xA;( ) Samples &amp; SDK&#xA;( ) Public Forum&#xA;( ) Support Forum&#xA;( ) API Message Formats&#xA;( ) Other (specify)" measuredWidth="143" measuredHeight="142" border="false" alpha="0">
+    <font/>
+    <items x="0" y="2" width="143" height="23" text="(o) How To(selected)"/>
+    <items x="0" y="25" width="143" height="23" text="( ) Samples &amp; SDK"/>
+    <items x="0" y="48" width="143" height="23" text="( ) Public Forum"/>
+    <items x="0" y="71" width="143" height="23" text="( ) Support Forum"/>
+    <items x="0" y="94" width="143" height="23" text="( ) API Message Formats"/>
+    <items x="0" y="117" width="143" height="23" text="( ) Other (specify)"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="175" x="578" y="296" text="Type" measuredWidth="33" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="176" x="722" y="296" text="Source" measuredWidth="43" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:List" id="177" x="716" y="318" text="(o) In-line(selected)&#xA;( )  URL&#xA;" measuredWidth="117" measuredHeight="50" border="false" alpha="0">
+    <font/>
+    <items x="0" y="2" width="117" height="23" text="(o) In-line(selected)"/>
+    <items x="0" y="25" width="117" height="23" text="( )  URL"/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="178" x="424" y="316" width="81" measuredWidth="81" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="179" x="424" y="296" text="Name" measuredWidth="38" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="180" x="424" y="347" text="Summary" measuredWidth="58" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:TextArea" id="181" x="422" y="368" width="111" height="53" measuredWidth="111" measuredHeight="53">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:VLine" id="182" x="711" y="306" height="149" measuredWidth="6" measuredHeight="149"/>
+  <widgets xsi:type="model:VLine" id="183" x="559" y="306" height="149" measuredWidth="6" measuredHeight="149"/>
+  <widgets xsi:type="model:Icon" id="184" x="543" y="353" measuredWidth="32" measuredHeight="32" icon="arrow-right (large)"/>
+  <widgets xsi:type="model:Icon" id="185" x="696" y="353" measuredWidth="32" measuredHeight="32" icon="arrow-right (large)"/>
+  <widgets xsi:type="model:Table" id="187" x="412" y="520" text="Name,Type,Content,Modified By,Modified On,(align:center). Actions&#xA;[Doc1],HOWTO,[View],sumedha,11/11/10,[Update] [Delete] [Copy]&#xA;[Doc2],Public Forum,[View],Chanaka,12/03/12,[Update] [Delete] [Copy]" measuredWidth="439" measuredHeight="64" alternative="#eeeeee">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="188" x="736" y="365" width="105" measuredWidth="105" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="189" x="597" y="453" width="100" measuredWidth="100" measuredHeight="21">
+    <font/>
+  </widgets>
+  <hRuler/>
+  <vRuler/>
+  <font/>
+</model:Screen>

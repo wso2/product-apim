@@ -1,0 +1,28 @@
+{ 
+                                         'name':'org.wso2.apimgt.statistics.response', 
+                                         'version':'1.0.0', 
+                                         'nickName': 'API Manager Reponse Data', 
+                                         'description': 'Response Data', 
+                                         'metaData':[ 
+                                                 {'name':'clientType','type':'STRING'} 
+                                         ], 
+                                         'payloadData':[ 
+                                                 {'name':'consumerKey','type':'STRING'}, 
+                                                 {'name':'context','type':'STRING'}, 
+                                                 {'name':'api_version','type':'STRING'}, 
+                                                 {'name':'api','type':'STRING'}, 
+                                                 {'name':'resourcePath','type':'STRING'}, 
+                                                 {'name':'method','type':'STRING'}, 
+                                                 {'name':'version','type':'STRING'}, 
+                                                 {'name':'response','type':'INT'}, 
+                                                 {'name':'responseTime','type':'LONG'}, 
+                                                 {'name':'serviceTime','type':'LONG'}, 
+                                                 {'name':'userId','type':'STRING'}, 
+					         {'name':'tenantDomain','type':'STRING'},
+                    		                 {'name':'hostName','type':'STRING'},
+   		                                 {'name':'apiPublisher','type':'STRING'},
+				                 {'name':'applicationName','type':'STRING'},
+                    		                 {'name':'applicationId','type':'STRING'}
+                                         ] 
+
+                                       }
