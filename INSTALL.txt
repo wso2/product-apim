@@ -1,0 +1,73 @@
+Installing  WSO2 API Manager (AM)
+=================================
+
+
+Running WSO2 API Manager in standalone mode
+===========================================
+1. The directory containing this INSTALL.txt file will be the root and it will be
+   treated as Carbon home directory and let it be CARBON_HOME.
+
+2. All the shell scripts and .bat files are available in CARBON_HOME/bin folder.
+
+3. To start WSO2 AM one can use either wso2server.sh or daemon.sh in all Unix
+   systems & wso2server.bat file on Windows operating systems.
+
+4. Either of the following commands can be used to start AM
+      i)  ./wso2server.sh {console|start|stop|restart|status|dump|version}   
+     ii)  wso2server.bat {start|stop|version}
+
+        Usage: wso2server.sh [command] [options] [system-properties]
+
+            command:               
+                --start		    Start AM as a Unix daemon in the background
+                --console	    Start AM as a Unix daemon in the foreground
+                --stop		    Stop the AM Unix daemon           
+                --restart	    Restart the AM Unix daemon
+                --version	    What version of the AM server are you running
+               
+            options:
+                --debug <port> 	Start the server in remote debugging mode.
+                                port: The remote debugging port.               
+                --cleanRegistry	Clean registry space
+                --reset		    Clean the cache & component repository and the
+                                registry space
+
+            system-properties:
+                -DhttpPort	Overrides the HTTP port defined in the
+                                repository/conf/tomcat/catalina-server.xml file
+                -DhttpsPort	Overrides the HTTPS port defined in the
+                                repository/conf/tomcat/catalina-server.xml file
+                -DSynapseServerName=[server-name]
+                                Server name of the synapse server
+                -DosgiConsole=[port]
+                                Start Carbon with Equinox OSGi console.
+                                If the optional 'port' parameter is provided, a
+                                telnet port will be opened
+                -DosgiDebugOptions=[options-file]
+                                Start Carbon with OSGi debugging enabled.
+                                If the optional 'options-file is provided, the
+                                OSGi debug options will be loaded from it.
+                -Dsetup		Clean the Registry database & other
+                                configuration, recreate DB, re-populate the
+                                configuration, and start Carbon
+                -Dcarbon.registry.root
+                                The root of the Registry used by
+                                this Carbon instance
+                -Dweb.location	The directory into which UI artifacts
+                                included in an Axis2 AAR file are extracted to
+
+System Requirements
+=======================
+1. Minimum memory - 1GB
+2. Processor      - Pentium 800MHz or equivalent at minimum
+3. Java SE Development Kit 1.6.24 or higher
+4. The Management Console requires you to enable Javascript of the Web browser,
+   with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
+   with IE. This can be achieved by setting your security level to
+   medium or lower.
+5. To compile and run the sample clients, an Ant version is required. Ant 1.7.0
+   version is recommended
+6. To build WSO2 AM from the Source distribution, it is necessary that you have
+   JDK 1.6.x version and Maven 3.0.0 or later
+
+

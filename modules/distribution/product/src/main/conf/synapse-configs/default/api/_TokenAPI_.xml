@@ -1,0 +1,17 @@
+<api xmlns="http://ws.apache.org/ns/synapse" name="_WSO2AMTokenAPI_" context="/token">
+    <resource methods="POST" url-mapping="/*" faultSequence="_token_fault_">
+        <inSequence>
+            <send>
+                <endpoint>
+                    <address uri="https://localhost:9443/oauth2/token"/>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+    </resource>
+    <handlers>
+        <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerCacheExtensionHandler"/>
+    </handlers>
+</api>

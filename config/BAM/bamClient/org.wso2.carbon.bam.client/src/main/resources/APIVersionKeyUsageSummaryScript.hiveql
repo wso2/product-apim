@@ -1,0 +1,30 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS KeyUsage (key STRING,
+	context STRING,consumerKey 
+	STRING,userId STRING,
+	version STRING,request STRING) STORED BY 
+	'org.apache.hadoop.hive.cassandra.CassandraStorageHandler' WITH SERDEPROPERTIES ( "cassandra.host" = 
+	"127.0.0.1",
+	"cassandra.port" = "9161","cassandra.ks.name" = "EVENT_KS",
+	"cassandra.ks.username" 
+	= "admin","cassandra.ks.password" = "admin",
+	"cassandra.cf.name" = 
+	"org_wso2_apimgt_statistics_request",
+	"cassandra.columns.mapping" = 
+	":key,payload_context,
+	payload_consumerKey,payload_userId,payload_version,
+	payload_request" );
+CREATE EXTERNAL TABLE IF NOT EXISTS KeyUsageSummary (context STRING,
+	consumerKey STRING,userId 
+	STRING,version STRING,
+	request INT) STORED BY 
+	'org.wso2.carbon.hadoop.hive.jdbc.storage.JDBCStorageHandler' TBLPROPERTIES ( 'wso2.carbon.datasource.name'='WSO2AM_STATS_DB',
+	'hive.jdbc.update.on.duplicate' = 'true',
+	'hive.jdbc.table.create.query' = 'CREATE TABLE KeyUsageSummary (context 
+	VARCHAR(100),
+	consumerKey VARCHAR(100),userId VARCHAR(100),
+	version VARCHAR(100),request INT)' );
+insert overwrite table KeyUsageSummary select context,
+	consumerKey,userId,version,sum(cast(request as INT)) from KeyUsage group by context,
+	consumerKey,userId,version;
+
+                                    

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2005-2007 WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project name="apimgt-sample" default="populate-user-database">
+    <property environment="env"/>
+    <property name="carbonhome" value="../.."/>
+    <property name="src" value="src"/>
+    <property name="classes" value="classes"/>
+    <property name="db.dir" value="repository/database"/>
+
+    <property name="carbon.home" value="${carbonhome}"/>
+    <property name="carbonhome.lib" value="${carbonhome}/lib"/>
+    <property name="carbonhome.components.lib" value="${carbonhome}/repository/components/lib"/>
+
+    <property name="userid" value="wso2carbon"/>
+    <property name="password" value="wso2carbon"/>
+
+    <property name="dbURL"
+              value="jdbc:h2:file:${carbonhome}/${db.dir}/WSO2CARBON_DB"/>
+
+
+    <path id="all.jar.classpath">
+        <fileset dir="${carbonhome}/repository/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+    </target>
+
+    <target name="populate-user-database" depends="init">
+        <sql driver="org.h2.Driver"
+             url="${dbURL}"
+             userid="${userid}" password="${password}"
+             autocommit="true" onerror="continue">
+            <classpath>
+                <path refid="all.jar.classpath"/>
+            </classpath>
+            <fileset file="UserPopulator.sql"/>
+        </sql>
+    </target>
+
+</project>
+
+
