@@ -325,8 +325,7 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.community.features.server.feature:${carbon.platform.version}</featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ec2.client.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.throttle.feature:${carbon.platform.version}</featureArtifactDef>
-
-
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.thrift.authentication.feature:${carbon.platform.version}</featureArtifactDef>
                                 <!-- reporting features -->
                                <!-- <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.reporting.feature:${carbon.patch.version.401}</featureArtifactDef>-->
                                 <!-- end reporting features -->
@@ -353,9 +352,10 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.usage.agent.feature:${stratos.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.throttling.agent.feature:${stratos.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.deployment.feature:2.2.1</featureArtifactDef-->
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.tenant.common.feature:${carbon.platform.version}</featureArtifactDef>
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.authenticator.saml2.sso.server.feature:${carbon.platform.version}</featureArtifactDef>
 								<featureArtifactDef> org.wso2.carbon:org.wso2.carbon.identity.authenticator.saml2.sso.ui.feature:${carbon.platform.version}</featureArtifactDef>
-
+                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.uddi.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <!--Identity Feature-->
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.user.mgt.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.core.feature:${carbon.platform.version}</featureArtifactDef>
@@ -545,6 +545,10 @@
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${synapse.version}</version>
                                 </feature>
@@ -647,6 +651,10 @@
                                 </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.mex.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
                                 <feature>
@@ -863,6 +871,10 @@
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
                                 </feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -954,6 +966,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
@@ -1060,6 +1076,10 @@
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.ui.menu.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1221,6 +1241,10 @@
                                     <version>2.2.1</version>
                                 </feature-->
                                 <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
                                 </feature>
@@ -1303,6 +1327,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
@@ -1409,6 +1437,10 @@
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.registry.ui.menu.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1570,6 +1602,10 @@
                                     <version>2.2.1</version>
                                 </feature-->
                                 <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
                                 </feature>
@@ -1683,6 +1719,10 @@
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${synapse.version}</version>
                                 </feature>
@@ -1791,6 +1831,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1989,6 +2033,10 @@
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
                                 </feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2088,6 +2136,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
@@ -2199,6 +2251,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2396,6 +2452,10 @@
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
                                 </feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2480,6 +2540,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                 <feature>
@@ -2593,6 +2657,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.registry.uddi.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2757,6 +2825,10 @@
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
                                 </feature-->
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>

@@ -48,7 +48,6 @@
                 <exclude>**/dbscripts/mysql.sql</exclude>
                 <exclude>**/dbscripts/db2.sql</exclude>
                 <exclude>**/dbscripts/mysql_cluster.sql</exclude>
-	        	<exclude>**/lib/org.wso2.carbon.server-4.3.0-SNAPSHOT.jar</exclude>
                 <exclude>**/bin/ciphertool.bat</exclude>
                 <exclude>**/cipher-text.properties</exclude>
                 <exclude>**/cipher-tool.properties</exclude>
@@ -322,7 +321,7 @@
         </fileSet>
 
         <!--Multitenancy related file -->
-        <fileSet>
+        <!--fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.stratos.common.server_2.2.1/conf</directory>
             <outputDirectory>wso2am-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <includes>
@@ -330,8 +329,19 @@
                 <include>**/multitenancy-packages.xml</include>
                 <include>**/usage-throttling-agent-config.xml</include>
             </includes>
-        </fileSet>       
-        
+        </fileSet--> 
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/multitenancy</outputDirectory>
+            <includes>
+                <include>**/stratos.xml</include>
+                <include>**/multitenancy-packages.xml</include>
+                <include>**/usage-throttling-agent-config.xml</include>
+                <include>**/cloud-services-desc.xml</include>
+            </includes>
+        </fileSet>      
 	<!--fileSet>
              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.1.0-0001</directory>
              <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
@@ -558,6 +568,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
         <!--End of claim management feature-->
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/security/idp-config.xml
+            </source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/security</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
 
 
 	    <file>
@@ -650,7 +667,7 @@
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/logging-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
         </file>
-        <file>
+        <!--file>
             <source>../../../LICENSE.txt</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <filtered>true</filtered>
@@ -667,7 +684,7 @@
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
+        </file-->
         <file>
             <source>../../distribution/product/target/repository/database/WSO2AM_DB.h2.db</source>
             <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
@@ -744,6 +761,11 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/thrift-authentication.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+	<file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/security/application-authentication.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
             <fileMode>644</fileMode>
