@@ -47,7 +47,7 @@
         <!--module>modules/jaggery-apps/api-provider-web</module>
         <module>modules/jaggery-apps/api-store-web</module-->
         <module>modules/distribution</module>
-        <module>modules/integration</module>
+        <!--module>modules/integration</module-->
     </modules>
 
     <scm>

@@ -355,7 +355,7 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.tenant.common.feature:${carbon.platform.version}</featureArtifactDef>
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.authenticator.saml2.sso.server.feature:${carbon.platform.version}</featureArtifactDef>
 								<featureArtifactDef> org.wso2.carbon:org.wso2.carbon.identity.authenticator.saml2.sso.ui.feature:${carbon.platform.version}</featureArtifactDef>
-                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.uddi.feature:${carbon.platform.version}</featureArtifactDef-->
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.uddi.feature:${carbon.platform.version}</featureArtifactDef>
                                 <!--Identity Feature-->
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.user.mgt.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.core.feature:${carbon.platform.version}</featureArtifactDef>
@@ -653,10 +653,10 @@
                                     <id>org.wso2.carbon.mex.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1076,10 +1076,10 @@
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.ui.menu.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1437,10 +1437,10 @@
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.ui.menu.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1831,10 +1831,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2251,10 +2251,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2657,10 +2657,10 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.registry.uddi.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature-->
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
