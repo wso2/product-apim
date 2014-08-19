@@ -568,13 +568,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
         <!--End of claim management feature-->
-        <file>
+        <!--file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/security/idp-config.xml
             </source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/security</outputDirectory>
             <fileMode>644</fileMode>
-        </file>
+        </file-->
 
 
 	    <file>
