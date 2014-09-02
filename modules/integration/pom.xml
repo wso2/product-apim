@@ -11,12 +11,13 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.am</groupId>
     <artifactId>integration</artifactId>
     <name>WSO2 API Manager - Integration Tests</name>
     <packaging>pom</packaging>
 
     <modules>
+        <module>tests-common</module>
+        <module>tests-integration/tests-sample</module>
         <module>backend-service</module>
         <module>tests</module>
         <!--<module>tests-new</module>-->

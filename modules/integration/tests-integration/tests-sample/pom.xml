@@ -4,42 +4,36 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.wso2.am</groupId>
-        <artifactId>integration</artifactId>
+        <artifactId>am-integration-tests</artifactId>
         <version>1.7.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <version>1.7.0-SNAPSHOT</version>
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Integration Test Module</name>
-    <artifactId>org.wso2.carbon.am.integration.test</artifactId>
+    <artifactId>org.wso2.carbon.am.tests.sample</artifactId>
+    <name>API Manager test Module - Sample</name>
     <packaging>jar</packaging>
 
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <inherited>false</inherited>
                 <version>2.12.4</version>
+                <inherited>false</inherited>
                 <configuration>
-                    <!--argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006</argLine-->
-                    <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-
+                    <!--     <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
+                             -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
+                             -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
+                         </argLine>-->
+                    <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m</argLine>
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <disableXmlReport>false</disableXmlReport>
+                    <parallel>false</parallel>
                     <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-
                     <systemProperties>
-                        <property>
-                            <name>maven.test.haltafterfailure</name>
-                            <value>false</value>
-                        </property>
-                        <property>
-                            <name>carbon.zip</name>
-                            <value>
-                                ${basedir}/../../distribution/product/target/wso2am-${project.version}.zip
-                            </value>
-                        </property>
                         <property>
                             <name>framework.resource.location</name>
                             <value>
@@ -57,6 +51,10 @@
                             <value>false</value>
                         </property>
                         <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
+                        <maven.test.haltafterfailure>false</maven.test.haltafterfailure>
+                        <carbon.zip>
+                            ${basedir}/../../../distribution/product/target/wso2am-${project.version}.zip
+                        </carbon.zip>
                         <emma.home>${basedir}/target/emma</emma.home>
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
@@ -68,7 +66,6 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-
                     <execution>
                         <id>copy-emma-dependencies</id>
                         <phase>compile</phase>
@@ -82,7 +79,6 @@
                             </includeArtifactIds>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>copy-secVerifier</id>
                         <phase>compile</phase>
@@ -96,7 +92,6 @@
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>unpack-mar-jks</id>
                         <phase>compile</phase>
@@ -112,11 +107,12 @@
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${basedir}/target/tobeCopied/</outputDirectory>
-                                    <includes>**/*.jks,**/*.mar,**/axis2_client.xml</includes>
+                                    <includes>**/*.jks,**/*.mar,**/synapse_sample*.xml</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
+
                 </executions>
             </plugin>
             <plugin>
@@ -127,23 +123,6 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.7.1</version>
-                <configuration>
-                    <outputDirectory>${basedir}/target/report</outputDirectory>
-                    <outputName>registry-api-test</outputName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>report-only</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -175,21 +154,42 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-axis2files</id>
+                        <id>copy-stratos-jks</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/src/test/resources/axis2config
+                            <outputDirectory>${basedir}/src/test/resources/keystores/stratos
                             </outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>
-                                        ${basedir}/target/tobeCopied/wso2am-${project.version}/repository/conf/axis2/
+                                        ${basedir}/target/tobeCopied/wso2am-${project.version}/repository/resources/security/
                                     </directory>
                                     <includes>
-                                        <include>**/*.xml</include>
+                                        <include>**/*.jks</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-sample-jks</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/src/test/resources/keystores/products
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>
+                                        ${basedir}/target/tobeCopied/wso2am-${project.version}/repository/samples/resources/security/
+                                    </directory>
+                                    <includes>
+                                        <include>**/*.jks</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -220,77 +220,17 @@
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>org.wso2.am</groupId>
- 	    <artifactId>org.wso2.am.backend.service</artifactId>
- 	    <version>1.7.0-SNAPSHOT</version>
- 	</dependency> 
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>1.2.0</version>
+            <artifactId>admin-clients</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jettison.wso2</groupId>
-            <artifactId>jettison</artifactId>
-            <version>${orbit.version.jettison}</version>
-        </dependency>
-        <dependency>
-            <groupId>emma</groupId>
-            <artifactId>emma</artifactId>
-            <version>${emma.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>SecVerifier</artifactId>
-           <version>${carbon.platform.version}</version>
-            <type>aar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.api</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.core</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.utils</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-	       <groupId>org.wso2.carbon.automation</groupId>
-	       <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
-	       <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.integration.framework</artifactId>
-            <version>4.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-        <dependency>
- 	    <groupId>commons-digester</groupId>
-            <artifactId>commons-digester</artifactId>
-            <version>2.1</version>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>integration-test-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
-    <properties>
-        <test-automation-framework-version>4.2.5</test-automation-framework-version>
-    </properties>
+
 </project>

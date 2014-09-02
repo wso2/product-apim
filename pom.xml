@@ -39,25 +39,26 @@
 
     <modules>
         <module>modules/styles</module>
-	<module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
-	<module>modules/org.wso2.stratos.apimgt.login.ui</module>
+        <module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
+        <module>modules/org.wso2.stratos.apimgt.login.ui</module>
         <module>modules/features</module>
         <module>modules/p2-profile</module>
-	<module>/modules/distribution/product/src/main/statistics</module>
+        <module>/modules/distribution/product/src/main/statistics</module>
         <!--module>modules/jaggery-apps/api-provider-web</module>
         <module>modules/jaggery-apps/api-store-web</module-->
         <module>modules/distribution</module>
-        <!--module>modules/integration</module-->
+        <module>modules/integration</module>
     </modules>
 
     <scm>
         <connection>scm:svn:http://wso2.org/repos/wso2/trunk/carbon/products/esb</connection>
-        <developerConnection>scm:svn:https://wso2.org/repos/wso2/trunk/carbon/products/esb</developerConnection>
+        <developerConnection>scm:svn:https://wso2.org/repos/wso2/trunk/carbon/products/esb
+        </developerConnection>
         <url>https://wso2.org/repos/wso2/trunk/carbon/products/esb</url>
     </scm>
 
     <repositories>
-    <repository>
+        <repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
             <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
@@ -131,12 +132,12 @@
 
 
     <distributionManagement>
-	<repository>
+        <repository>
             <id>wso2.releases</id>
             <name>WSO2 internal Repository</name>
             <url>http://maven.wso2.org/nexus/content/repositories/releases/</url>
         </repository>
-	<snapshotRepository>
+        <snapshotRepository>
             <id>wso2.snapshots</id>
             <name>WSO2 Snapshot Repository</name>
             <url>http://maven.wso2.org/nexus/content/repositories/snapshots/</url>
@@ -230,7 +231,7 @@
 
     <dependencyManagement>
         <dependencies>
-	    <dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.ui</artifactId>
                 <version>${carbon.kernel.version}</version>
@@ -238,7 +239,7 @@
             <dependency>
                 <groupId>org.eclipse.osgi</groupId>
                 <artifactId>org.eclipse.osgi</artifactId>
-		<version>${version.equinox.osgi}</version>
+                <version>${version.equinox.osgi}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.equinox</groupId>
@@ -327,7 +328,7 @@
                 <artifactId>axiom</artifactId>
                 <version>${axiom.wso2.version}</version>
             </dependency>
-	     <!-- For stratos service -->
+            <!-- For stratos service -->
             <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.framework</artifactId>
@@ -353,15 +354,76 @@
                 <artifactId>javax.servlet.jsp</artifactId>
                 <version>${javax.servlet.jsp.version}</version>
             </dependency>
+
+            <!--Test Framework Dependencies-->
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.engine</artifactId>
+                <version>${automation.framework.verion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+                <version>${automation.framework.verion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.jmeter</groupId>
+                        <artifactId>ApacheJMeter</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.jmeter</groupId>
+                        <artifactId>ApacheJMeter_core</artifactId>
+                    </exclusion>
+                </exclusions>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.test.utils</artifactId>
+                <version>${automation.framework.verion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.integration.common.admin.client</artifactId>
+                <version>${automation.framework.utills.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.integration.common.extensions</artifactId>
+                <version>${automation.framework.utills.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+                <version>${automation.framework.utills.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.integration.common.tests</artifactId>
+                <version>${automation.framework.utills.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.esb</groupId>
+                <artifactId>integration-test-utils</artifactId>
+                <version>${esb.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <properties>
-	<carbon.version>4.3.0-SNAPSHOT</carbon.version>
-	  <carbon.kernel.version>4.3.0-SNAPSHOT</carbon.kernel.version>
-	  <apimserver.version>1.7.0-SNAPSHOT</apimserver.version>
-	  <apim.version>4.3.0-SNAPSHOT</apim.version>
+        <carbon.version>4.3.0-SNAPSHOT</carbon.version>
+        <carbon.kernel.version>4.3.0-SNAPSHOT</carbon.kernel.version>
+        <apimserver.version>1.7.0-SNAPSHOT</apimserver.version>
+        <apim.version>4.3.0-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
@@ -370,38 +432,41 @@
         <carbon.platform.version>4.3.0-SNAPSHOT</carbon.platform.version>
         <synapse.version>2.1.3-wso2v1-SNAPSHOT</synapse.version>
         <axis2.transport.version>1.1.0-wso2v6</axis2.transport.version>
-        <esb.version>4.0.0</esb.version>
         <passthru.transport.version>1.0.0</passthru.transport.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v11-SNAPSHOT</axis2.wso2.version>
-	<axiom.wso2.version>1.2.11.wso2v5-SNAPSHOT</axiom.wso2.version>
-	<servlet-api.version>2.4</servlet-api.version>
+        <axiom.wso2.version>1.2.11.wso2v5-SNAPSHOT</axiom.wso2.version>
+        <servlet-api.version>2.4</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
-	<javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
+        <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
         <javax.servlet.jsp.version>2.2.0.v201112011158</javax.servlet.jsp.version>
-	<apache.derby.version>10.3.2.1wso2v1</apache.derby.version>
-	<hibernate.version>3.2.5.ga-wso2v1</hibernate.version>
-	<bcel.version>5.2.0.wso2v1</bcel.version>
+        <apache.derby.version>10.3.2.1wso2v1</apache.derby.version>
+        <hibernate.version>3.2.5.ga-wso2v1</hibernate.version>
+        <bcel.version>5.2.0.wso2v1</bcel.version>
         <asm.version>1.5.3.wso2v1</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
-	<orbit.version.axis2>1.6.1.wso2v11-SNAPSHOT</orbit.version.axis2>
+        <orbit.version.axis2>1.6.1.wso2v11-SNAPSHOT</orbit.version.axis2>
         <axis2.jibx.version>${orbit.version.axis2}</axis2.jibx.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
         <axis2.jaxb.version>${orbit.version.axis2}</axis2.jaxb.version>
         <jaxb.version>2.2.5.wso2v1</jaxb.version>
-		<stratos.version>2.2.0</stratos.version>
+        <stratos.version>2.2.0</stratos.version>
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
-	<version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
-	<version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
+        <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
+        <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
         <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
-	<carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
-	<emma.version>2.1.5320</emma.version>
-	<orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
-	<orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
-	<version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
+        <carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
+        <emma.version>2.1.5320</emma.version>
+        <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
+        <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
+        <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
         <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
+
+        <automation.framework.verion>4.3.1-SNAPSHOT</automation.framework.verion>
+        <automation.framework.utills.version>4.3.0-SNAPSHOT</automation.framework.utills.version>
+        <esb.version>4.9.0-SNAPSHOT</esb.version>
     </properties>
 
 </project>
