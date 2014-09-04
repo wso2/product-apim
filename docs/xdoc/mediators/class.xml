@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Class Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Class Mediator</h2>
+
+<p>The class mediator creates an instance of a custom specified class and sets it as a mediator. The class must
+    implement the org.apache.synapse.api.Mediator interface. If any properties are specified, the corresponding
+    setter methods are invoked on the class, once, during initialization.  </p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;class name="class-name"&gt;
+   &lt;property name="string" value="literal"&gt; 
+    (either literal or XML child)
+   &lt;/property&gt;
+ &lt;/class&gt;
+</pre>
+
+<h3>UI Configuration</h3><div class="image"><img src="../class-mediator/docs/images/add-class.png" alt="" /><p>
+      Figure 1: Adding a Class mediator
+    </p>
+</div><p>
+  Clicking on the 'Class' mediator option as shown in above figure,  will open
+  up the 'Class' mediator specific options. You can specify the specific implementaion class and load it by
+  clicking 'LoadClass' button. Once you load the  class, you'll see the configuration options
+  as in figure2.</p>
+<div class="image"><img src="../class-mediator/docs/images/class_mediator_screenshot.jpg" alt="" /></div>
+  <p>
+  Class mediator configuration descriptions
+  </p>
+  <ul>
+    <li>
+       Class Name: The class name of the class. You have to give the qualified name of the class and click
+        "Load Class" button.
+    </li>
+    <li>
+        Properties defined for Class mediator: This list the properties with setter functions of the uploaded class.
+        Following fields are listed for each property.
+        <ul>
+            <li>
+                Property Name - Name of the property.
+            </li>
+            <li>
+                Property Value - The value to be set to the property. 
+            </li>
+            <li>
+                Action - Link to delete the unused properties, from the list.
+            </li>
+        </ul>
+    </li>
+  </ul>
+
+    <h3>Example</h3>
+    <pre xml:space="preserve">&lt;definitions xmlns=&quot;http://ws.apache.org/ns/synapse&quot;&gt;
+
+        &lt;sequence name=&quot;fault&quot;&gt;
+            &lt;makefault&gt;
+                &lt;code value=&quot;tns:Receiver&quot; xmlns:tns=&quot;http://www.w3.org/2003/05/soap-envelope&quot;/&gt;
+                &lt;reason value=&quot;Mediation failed.&quot;/&gt;
+            &lt;/makefault&gt;
+            &lt;send/&gt;
+        &lt;/sequence&gt;
+
+        &lt;sequence name=&quot;main&quot; onError=&quot;fault&quot;&gt;
+            &lt;in&gt;
+                &lt;send&gt;
+                    &lt;endpoint name=&quot;stockquote&quot;&gt;
+                        &lt;address uri=&quot;http://localhost:9000/services/SimpleStockQuoteService&quot;/&gt;
+                    &lt;/endpoint&gt;
+                &lt;/send&gt;
+            &lt;/in&gt;
+            &lt;out&gt;
+                &lt;class name=&quot;samples.mediators.SimpleClassMediator&quot;&gt;
+                    &lt;property name=&quot;varible1&quot; value=&quot;10&quot;/&gt;
+                    &lt;property name=&quot;varible2&quot; value=&quot;5&quot;/&gt;
+                &lt;/class&gt;
+                &lt;send/&gt;
+            &lt;/out&gt;
+        &lt;/sequence&gt;
+
+    &lt;/definitions&gt;</pre>
+
+    <p>In this configuration, ESB hands over the request message to the specified endpoint, which sends it to the
+        Axis2 server running on port 9000. But the response message is passed through the class mediator before sending it
+        back to the client. Two parameters named "varible1" and "varible2" are passed to the instance mediator
+        implementation class(SimpleClassMediator). Look at the following sample class mediator. Note how the
+        SynapseMessageContext and to the full Synapse API in there. </p>
+    <p>A simple class mediator implementaion. </p>
+
+    <pre xml:space="preserve">package samples.mediators;
+
+    import org.apache.synapse.MessageContext;
+    import org.apache.synapse.Mediator;
+    import org.apache.axiom.om.OMElement;
+    import org.apache.axiom.om.OMAbstractFactory;
+    import org.apache.axiom.om.OMFactory;
+    import org.apache.axiom.soap.SOAPFactory;
+    import org.apache.commons.logging.Log;
+    import org.apache.commons.logging.LogFactory;
+
+    import javax.xml.namespace.QName;
+
+    public class SimpleClassMediator implements Mediator {
+
+        private static final Log log = LogFactory.getLog(DiscountQuoteMediator.class);
+
+        private String varible1=&quot;10&quot;;
+
+        private String varible2=&quot;10&quot;;
+
+        private int varible3=0;
+
+        public DiscountQuoteMediator(){}
+
+        public boolean mediate(MessageContext mc) {
+            // Do somthing useful..
+            // Note the access to the Synapse Message context
+            return true;
+        }
+
+        public String getType() {
+            return null;
+        }
+
+        public void setTraceState(int traceState) {
+            traceState = 0;
+        }
+
+        public int getTraceState() {
+            return 0;
+        }
+
+        public void setvarible1(String newValue) {
+            varible1=newValue;
+        }
+
+        public String getvarible1() {
+            return varible1;
+        }
+
+        public void setvarible2(String newValue){
+            varible2=newValue;
+        }
+
+        public String getvarible2(){
+            return varible2;
+        }
+    }</pre>
+
+    <p>A fully working sample is availble. See synapase configuration lanaguge guide for detailed(under
+        section called class mediator) working sample.</p>
+
+</body>
+</html>

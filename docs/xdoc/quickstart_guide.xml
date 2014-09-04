@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+        
+<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" >
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+    <title>
+      WSO2 ESB - Quick Start Guide
+    </title>
+    <link href="css/esb-docs.css" rel="stylesheet"/>
+    <link href="styles/dist-docs.css" rel="stylesheet" type="text/css" media="all"/>
+  </head>
+  <body>
+      [ <a href="docs_index.html"> Documentation Index </a> ]
+    <h1>
+      WSO2 Enterprise Service Bus (ESB) Quick Start Guide
+    </h1>
+    <p>
+      This guide demonstrates two sample applications covering the basic and the
+      most common usage scenarios of WSO2 ESB, namely Message Mediation
+      and Service Mediation (using Proxy Services). You will be guided through a
+      series of steps to create, execute, and analyze these mediation 
+      configurations using the ESB Management Console.
+    </p>
+    <h2>Contents</h2>
+    <div class="toc">
+      <ul>
+        <li>
+          <a href="#Pre-requis">Prerequisites</a>
+        </li>
+        <li>
+          <a href="#Message">Message Mediation</a>
+          <ul>
+            <li>
+              <a href="#Download">Download</a>
+            </li>
+            <li>
+              <a href="#Installati">Installation</a>
+            </li>
+            <li>
+              <a href="#Running">Running the Sample Scenario</a>
+              <ul>
+                <li>
+                  <a href="#Starting">Starting WSO2 ESB</a>
+                </li>
+                <li>
+                  <a href="#Configurin">Configuring the ESB to Perform
+                  Message Mediation</a>
+                </li>
+                <li>
+                  <a href="#Starting1">Starting the Sample Apache Axis2
+                  Server</a>
+                </li>
+                <li>
+                  <a href="#Running1">Running the Client</a>
+                </li>
+                <li>
+                  <a href="#Monitoring">Monitoring the Mediation</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#Proxy">Proxy Services</a>
+          <ul>
+            <li>
+              <a href="#Running2">Running the Sample Scenario</a>
+              <ul>
+                <li>
+                  <a href="#Configurin1">Configuring WSO2 ESB</a>
+                </li>
+                <li>
+                  <a href="#Starting2">Starting the Sample Apache Axis2
+                  Server</a>
+                </li>
+                <li>
+                  <a href="#Client">Running the Client</a>
+                </li>
+                <li>
+                  <a href="#Monitoring1">Monitoring the Mediation</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <h2 id="Pre-requis">
+      Prerequisites
+    </h2>
+    <p>
+      You should have the following prerequisites installed on your system to
+      follow this guide.
+    </p>
+    <ul>
+      <li>
+        Java SE - JDK or JRE version 1.6.x or higher
+      </li>
+      <li>
+        <a href="http://ant.apache.org">Apache Ant</a> version 1.7.0 or higher
+      </li>
+    </ul>
+    <p/>
+    <h2 id="Message">
+      Message Mediation
+    </h2>
+    <p/>
+    <p>
+      In this example, ESB will be used to filter and log the messages passing
+      through it. Although this simple scenario only performs simple filtering
+      and logging, it demonstrates the basics of message mediation, where this
+      simple functionality could be replaced with any combination of advanced
+      mediations such as transformations, and content based routing as well as
+      bridging between different communication protocols. Let's start with
+      the basics.
+    </p>
+    <h3 id="Download">
+      Download
+    </h3>
+    <p>
+      Our first task is to download WSO2 ESB. Open a Web browser and access
+      <a href="http://wso2.org/downloads/esb" target="_blank">
+      http://wso2.org/downloads/esb</a>. You will then
+      see the list of available releases. Click on the latest release version,
+      and you will be directed to the WSO2 ESB latest release download page. Now
+      download the binary distribution as a ZIP archive.
+    </p>
+    <h3 id="Installati">
+      Installation
+    </h3>
+    <p>
+      WSO2 ESB can be installed by simply extracting the downloaded binary archive. A
+      directory named wso2esb with the version number will be created in the
+      current working directory, containing all the files required by the ESB.
+      We will refer to this directory as &lt;esb-home&gt; from now on.
+    </p>
+    <h3 id="Running">
+      Running the Sample Scenario
+    </h3>
+    <p>
+      WSO2 ESB acts as the intermediary between the client and the server.
+      Hence, you will need to run three programs to get an idea of message
+      mediation. The destination server that hosts the backend service that has
+      to be invoked to service the client, the client itself, and the WSO2 ESB,
+      which sits in between to perform the mediation.
+    </p>
+    <p/>
+    <p/>
+     <p>
+         <a name="Starting"/><strong>Starting WSO2 ESB
+      </strong>
+    </p>
+    <p/>
+    <p>
+      Let's first start the WSO2 ESB. Set the log level of org.apache.synapse
+      to DEBUG by editing the
+      &lt;esb-home&gt;/lib/log4j.properties file. This will cause the ESB
+      to output debug messages for the actions it is performing. We can inspect
+      these logs later using the Management Console. Then go to the &lt;esb-home&gt;/bin
+      folder and execute the following command.
+    </p>
+<pre xml:space="preserve">Linux: ./wso2server.sh
+Windows: wso2server.bat</pre>
+    <p>
+      You will see the following message on the console to indicate that the
+      ESB started successfully.
+    </p>
+<pre xml:space="preserve">
+[2011-05-23 13:57:03,248]  INFO - StartupFinalizerServiceComponent WSO2 Carbon started in 20 sec
+</pre>
+<p/><p/>
+    <p>
+        <a name="Configurin"/><strong>Configuring the ESB to Perform Message Mediation
+        </strong>
+  </p>
+    <p/>
+    <p>
+      After starting the ESB, we have to configure it to perform the required
+      message mediation. WSO2 ESB starts with a default configuration, which is
+      sufficient for our first scenario. Later on, we will change this
+      configuration using the management console to build different mediations.
+      Now examine the default configuration using the ESB console. Open a Web
+      browser and point it to 
+      <a href="https://localhost:9443/carbon" target="_blank">
+      https://localhost:9443/carbon</a>. You will be
+      directed to the login screen of the Management Console shown below.
+    </p>
+    <p/>
+    <p>
+      <img alt="Login screen" src="images/login.png"/>
+    </p>
+    <p/>
+    <p>
+      The Management Console ships with a default username and password
+      combination: "admin", "admin". 
+      Type "admin" in both the username and password fields and click
+      Sign In. You will be directed to the main page of the ESB Management
+      Console, which displays information about the ESB as well as brief
+      descriptions about its environment. Click on <strong>
+      Monitor > System Logs</strong> in the left-hand side navigation pane
+      to display log messages of the system. You will see the same
+      set of log messages displayed in the command line, when starting the ESB.
+      Now click <strong>Monitor > System Statistics</strong> 
+      to view runtime statistics of the
+      system. You will notice that currently there are no runtime statistics as
+      no message mediation has happened.
+    </p>
+    <p/>
+    <p>
+      Now it is time to examine the mediation configuration visually. Click on
+      the <strong>Sequences</strong> link on the left panel. In the 
+      <strong>Defined Sequences</strong> tab you will see that two sequences
+      named "fault" and "main" are currently available. These two sequences are
+      generated automatically by the ESB at start up. We can add any number of
+      sequences using this page to suit our mediation requirements. However these
+      pre-defined sequences are sufficient for this sample application. Let's
+      analyze what happens to the messages inside the main sequence by clicking
+      on the <strong>Edit</strong> link of the "main" sequence. You will see a
+      set of mediators listed for the main sequence as shown below.
+    </p>
+    <p/>
+    <p>
+      <img alt="Main sequence" src="images/main_seq.png"/>
+    </p>
+    <p/>
+    <p/>
+    <p>
+      You will see there are two mediators named "In" and "Out" at the top 
+      level. These two mediators handle request messages
+      and response messages respectively. Inside the In Mediator, two mediators
+      named Log Mediator and Filter Mediator are listed as children. Therefore,
+      incoming messages will flow through these two mediators.
+    </p>
+    <p>
+      You will notice that Log Mediator is configured to log all the details of
+      the messages (i.e. full log level) and Filter Mediator is configured only
+      to pass through messages containing "http://localhost:9000" in the
+      WS-Addressing header. You can change this default configuration by
+      clicking on the corresponding mediator icon and modifying the parameter values
+      in the form which appears below. A Send Mediator is listed as
+      the child of the Filter Mediator. Therefore, filtered messages will be
+      sent to the specified WS-Addressing destination. That's all we do for the
+      request messages. Now let's look at the Out Mediator. There is only a Send
+      Mediator defined in the Out Mediator by default. This will just send
+      response messages back to the client.
+    </p>
+    <p>
+      Now we have a basic understanding about the message flow inside the ESB.
+      We are going to make a small modification to the main sequence to enable
+      statistics monitoring and tracing. Just click on the "Sequences"
+      link in the left menu to display all the available sequences.
+    </p>
+    <p>
+      Now click on the first two icons under the Actions heading of the "main"
+      sequence, namely <strong>Enable Statistics</strong> and 
+      <strong>Enable Tracing</strong>.
+    </p>
+    <p>
+      Now we are done with the ESB configuration. It's time to continue the rest
+      of the steps and see it in action.
+  </p>
+  <p/>
+  <p/>
+
+  <p>
+      <a name="Starting1"/><strong>Starting the Sample Apache Axis2 Server
+      </strong>
+  </p>
+  <p/>
+    <p>
+      Here we are using a standalone Apache Axis2 Web services engine as the
+      server. You don't have to get it now, as it is already bundled with your
+      ESB distribution. We have to deploy a sample service to which the client
+      can send requests. Go to &lt;esb-home&gt;/samples/axis2Server/src/SimpleStockQuoteService
+      directory. Run "ant" to build and deploy this service to the sample Axis2
+      server.
+    </p>
+<pre xml:space="preserve">user@host:~/wso2esb/samples/axis2Server/src/SimpleStockQuoteService$ ant
+Buildfile: build.xml
+
+clean:
+
+init:
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/classes
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Server/repository/services
+
+compile-all:
+    [javac] Compiling 9 source files to /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/classes
+
+build-service:
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/SimpleStockQuote
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/SimpleStockQuote/META-INF
+     [copy] Copying 1 file to /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/SimpleStockQuote/META-INF
+     [copy] Copying 1 file to /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/SimpleStockQuote/META-INF
+     [copy] Copying 9 files to /home/user/wso2esb/samples/axis2Server/src/SimpleStockQuoteService/temp/SimpleStockQuote
+      [jar] Building jar: /home/user/wso2esb/samples/axis2Server/repository/services/SimpleStockQuoteService.aar
+
+BUILD SUCCESSFUL
+Total time: 1 second</pre>
+    <p>
+      Now go to &lt;esb-home&gt;/samples/axis2Server directory and start the
+      server using the following command. This will start Axis2 server on port
+      9000 (HTTP).
+    </p>
+    <div class="command">
+      Linux / Unix: ./axis2server.sh<br/> Windows: axis2server.bat
+    </div>
+    <p>
+      You will see the following messages on the console.
+    </p>
+<pre xml:space="preserve">user@host:~/wso2esb/samples/axis2Server$ ./axis2server.sh
+ Using JAVA_HOME:   /usr/java
+ Using AXIS2 Repository :   /home/user/wso2esb/samples/axis2Server/repository
+ Using AXIS2 Configuration :   /home/user/wso2esb/samples/axis2Server/repository/conf/axis2.xml
+2007-11-08 18:00:54,283 [-] [main]  INFO SimpleHTTPServer [SimpleAxisServer] Starting
+[SimpleAxisServer] Using the Axis2 Repository : /home/user/wso2esb/samples/axis2Server/repository
+[SimpleAxisServer] Using the Axis2 Configuration File : /home/user/wso2esb/samples/axis2Server/repository/conf/axis2.xml
+2007-11-08 18:00:55,494 [-] [main]  INFO HttpCoreNIOSender HTTPS Sender starting
+2007-11-08 18:00:55,495 [-] [main]  INFO HttpCoreNIOSender HTTP Sender starting
+2007-11-08 18:00:55,798 [-] [main]  INFO HttpCoreNIOListener HTTPS Listener starting on port : 9002
+2007-11-08 18:00:55,804 [-] [main]  INFO HttpCoreNIOListener HTTP Listener starting on port : 9000
+2007-11-08 18:00:55,805 [-] [main]  INFO SimpleHTTPServer [SimpleAxisServer] Started</pre>
+    <p/>
+    <p/>
+    <p>
+        <a name="Running1"/><strong>Running the Client
+        </strong>
+    </p>
+    <p/>
+    <p>
+      The final step is running the client. Go to &lt;esb-home&gt;/samples/axis2Client
+      directory and type the following command.
+    </p>
+<pre xml:space="preserve">ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280 -Dsymbol=IBM -Dmode=quote</pre>
+    <p>
+      You can see the following output with the quote price sent by the server.
+    </p>
+<pre xml:space="preserve">user@host:~/wso2esb/samples/axis2Client$ ant stockquote -Daddurl=http://localhost:9000/services/SimpleStockQuoteService -Dtrpurl=http://localhost:8280 -Dsymbol=IBM -Dmode=quote
+Buildfile: build.xml
+
+init:
+    [mkdir] Created dir: /home/user/wso2esb/samples/axis2Client/target/classes
+
+compile:
+    [javac] Compiling 10 source files to /home/user/wso2esb/samples/axis2Client/target/classes
+
+stockquote:
+     [java] Standard :: Stock price = $82.19300717003419
+
+BUILD SUCCESSFUL
+Total time: 4 seconds</pre>
+    <p>
+      This sends a request for a stock quote for the symbol IBM, sets the
+      transport URL to the ESB (http://localhost:8280), and the WS-Addressing
+      EPR set to the actual server
+      (http://localhost:9000/services/SimpleStockQuoteService). The actual wire
+      level HTTP message sent by the client is as follows, and is sent over port
+      8280 to the ESB instance on the localhost.
+    </p>
+<pre xml:space="preserve">POST / HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+SOAPAction: "urn:getQuote"
+User-Agent: Axis2
+Host: 127.0.0.1
+Transfer-Encoding: chunked
+
+218
+&lt;?xml version='1.0' encoding='UTF-8'?&gt;
+   &lt;soapenv:Envelope xmlns:wsa="http://www.w3.org/2005/08/addressing" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+      &lt;soapenv:Header&gt;
+         &lt;wsa:To&gt;http://localhost:9000/services/SimpleStockQuoteService&lt;/wsa:To&gt;
+         &lt;wsa:MessageID&gt;urn:uuid:D538B21E30B32BB8291177589283717&lt;/wsa:MessageID&gt;
+         &lt;wsa:Action&gt;urn:getQuote&lt;/wsa:Action&gt;
+      &lt;/soapenv:Header&gt;
+      &lt;soapenv:Body&gt;
+         &lt;m0:getQuote xmlns:m0="http://services.samples"&gt;
+            &lt;m0:request&gt;
+               &lt;m0:symbol&gt;IBM&lt;/m0:symbol&gt;
+            &lt;/m0:request&gt;
+         &lt;/m0:getQuote&gt;
+      &lt;/soapenv:Body&gt;
+   &lt;/soapenv:Envelope&gt;0</pre>
+    <p/>
+    <p/>
+    <p>
+        <a name="Monitoring"/><strong>Monitoring the Mediation
+        </strong>
+    </p>
+    <p/>
+    <p>
+      We have just performed a message mediation using the WSO2 ESB. Now let's
+      analyze how ESB has behaved by looking at the various visual monitoring
+      tools provided by the ESB. First click on <strong>Monitor > System Logs
+      </strong> to see the log
+      messages produced by the ESB. You will see a log messages view as shown
+      below, displaying the actions performed by the ESB in the mediation
+      process.
+    </p>
+    <p/>
+    <p>
+      <img alt="System logs" src="images/logs.png"/>
+    </p>
+    <p>
+      Now click on <strong>Monitor > Mediation Tracer</strong> to view the 
+      trace messages emitted by the ESB.
+      You will see trace messages as shown in the following image.
+    </p>
+    <p/>
+    <p>
+      <img alt="Trace messages" src="images/trace.png"/>
+    </p>
+    <p/>
+    <p>
+      Now let's move on to viewing mediation statistics. Click 
+      <strong>Monitor > Mediation Statistics</strong> to view the overall 
+      runtime statistics graphically. You will see the updated statistics 
+      reflecting the message mediation we have just performed.
+    </p>
+    <p/>
+    <p>
+      <img alt="Overall statistics" src="images/statistics.png"/>
+    </p>
+    <p>
+      Top left box displays the mediated messages per server. Bottom right box 
+      displays the mediated messages per sequence.
+    </p>
+    <p/>
+    <p>
+      Now let's go deeper into the statistics console and get more information
+      about the runtime statistics. First click on the 
+      <strong>Server Statistics</strong>
+      in the top left box. You will be presented with a summary of the
+      server statistics containing total messages, average response time, etc.
+      In the same way, you will be able to view summarized statistics for
+      sequences by clicking on <strong>Sequence Statistics</strong> in the
+      bottom right box.
+    </p>
+    <p>  
+      You have successfully completed the first part of this
+      guide. Now let's look at the next scenario, Proxy Services.
+    </p>
+    <p/>
+    <h2 id="Proxy">
+      Proxy Services
+    </h2>
+    <p/>
+    <p>
+      As the name implies, a proxy service acts as a service hosted in the WSO2
+      ESB, and typically fronts an existing service endpoint. A proxy service
+      can be created and exposed on a different transport, schema, WSDL, or QoS
+      (such as WS-Security, WS-Reliable Messaging) aspect than the real service,
+      and can mediate the messages before being delivered to the actual
+      endpoint, and the responses before they reach the client.
+    </p>
+    <p>
+      Clients can send requests for proxy services directly to the ESB, as the
+      client sees it as being hosted on it. For example it can perform ?wsdl and
+      view the WSDL of the virtual proxy service. In the ESB configuration, such
+      requests can be handled in anyway you like. The most obvious thing would
+      be to process the message and send it to the actual service, probably
+      running on a different computer, but it is not necessary to always send
+      the message to the actual service. You may list any combination of tasks
+      to be performed on the messages received for the proxy service and
+      terminate the flow or send some message back to the client even without
+      sending it to an actual service. Let's explore a simple proxy services
+      scenario to get a better understanding. As you have downloaded and
+      installed the WSO2 ESB in the previous section, now you can start directly
+      on the sample application.
+    </p>
+    <p/>
+    <h3 id="Running2">
+      Running the Sample Scenario
+    </h3>
+    <p>
+      As in the previous section, there should be three entities running to
+      demonstrate proxy services, the server, client, and the ESB. Let's start
+      with configuring the ESB with a proxy service to suit our scenario.
+    </p>
+    <p/>
+    <p/>
+    <p>
+        <a name="Configurin1"/><strong>Configuring WSO2 ESB
+        </strong>
+    </p>
+    <p/>
+    <p>
+      Start the ESB as the previous section and log in to the Management
+      Console. Click <strong>Web Services > List</strong> on the left panel. 
+      You will see that currently no proxy services have been defined. 
+      Let's add a new proxy
+      service by clicking <strong>Web Services > Add > Proxy Service</strong>
+      on left panel. You will be shown a list of
+      standard proxy service templates to choose from.
+    </p>
+    <p/>
+    <p>
+      <img alt="Proxy Service Templates"
+      src="images/proxy_templates.png"/>
+    </p>
+    <p/>
+    <p>
+      Select the <strong>Custom Proxy</strong> template from the list and you
+      will be directed to the proxy service creation wizard as shown below.
+    </p>
+    <p/>
+    <p>
+      <img alt="Proxy service creation wizard"
+      src="images/proxy_service_step1.png"/>
+    </p>
+    <p/>
+    <p>
+      First give a name to the new proxy service. In this sample type
+      "StockQuoteProxy" as the name of the proxy service.
+    </p>
+      <p>
+      Next we are going to specify a WSDL for this proxy service. It can be
+      displayed using the ?wsdl operation with an actual service. Select
+      'Specify Source URL' in the 'Publishing WSDL' drop down list under 'General Settings'.
+      You will be prompted with a text box to enter the URL of the WSDL. Type
+      file:repository/samples/resources/proxy/sample_proxy_1.wsdl as the WSDL
+      URL and click on 'Test URI' button to instantly validate the path.
+    </p>
+    <p>
+        Next, select the transports that you need to expose the proxy service. By default proxy
+        service will available in both HTTP and HTTPS transports. Also you can add service parameters to proxy service.
+        During ESB startup process, it will start all proxy services and that may need to fetch WSDLs associated
+        with proxy services. If ESB cannot locate those WSDLs during statup, it
+        will ignore such services and continue with the startup process.
+    </p>
+    <p>
+      Then click <strong>Next</strong> at the bottom of the page to proceed to the next step of the
+      proxy service creation wizard. As the next step of the wizard we will add a
+      target endpoint to handle request messages and a target in sequence to
+      handle request messages. To add a target endpoint, select the option 'Define Inline'
+      under 'Define Endpoint' and click on <strong>Create</strong> button that appears.
+      In the next sub menu select <strong>Address Endpoint</strong>. A web form
+      will be displayed to configure the new endpoint.
+    </p>
+    <p/>
+    <p>
+        <img src="images/simple_address_endpoint.png" alt="Create Address Endpoint"/>
+    </p>
+    <p/>
+     <p>
+      Type the EPR of the target endpoint in the Address field. In this case it is
+      "http://localhost:9000/services/SimpleStockQuoteService". Address endpoint
+      editor is shown above. Keep other fields unchanged and
+      click <strong>Save</strong> to add the endpoint to the proxy service.
+    </p>
+    <p>
+      As for the In Sequence, we will leave it empty for this sample. So click on
+      <strong>Next</strong> to proceed to the next step of the wizard.
+    </p>
+    <p/>
+    <p>
+        <img src="images/qs_proxy_wizard3.png" alt="Proxy Service Wizard - Final Step"/>
+    </p>
+    <p>
+      The next step is to add an out sequence to the proxy service. We just want
+      to send the response messages back to the client in this out sequence.
+      Select 'Define Inline' under 'Define Out Sequence' and click 
+      <strong>Create</strong>. You will be presented with a
+      sequence editor. Click on the 'Add Child' icon and select 'Core' and then
+      'Send', from the sub menu. A send mediator with default configuration will
+      be added. Click <strong>Save</strong> to save the out sequence 
+      configuration. Finally on the wizard click <strong>Finish</strong> to save
+      and quit the wizard.
+    </p>
+    <p/>
+    <p>
+      Now on the services listing page you will be able to see the newly created
+      proxy service. Click on the service name link to enter the service dashboard.
+      On the service dashboard page you will see the actions that can be
+      performed on our new proxy service. Enable the statistics and tracing for
+      the proxy service by clicking on the appropriate icons.
+    </p>
+    <p/>
+    <p>
+      <img alt="Service Dashboard" src="images/proxy.png"/>
+    </p>
+    <p/>
+    <p>
+      We have finished configuring the proxy service for our sample. Now let's
+      continue the rest of the sample.
+    </p>
+    <p/>
+    <p/>
+    <p>
+        <a name="Starting2"/><strong>Starting the Sample Apache Axis2 Server
+        </strong>
+    </p>
+<p/>
+<p>
+  As you have built and deployed the SimpleStockQuote service in the
+  previous section, you can simply start the server by switching to the &lt;esb-home&gt;/samples/axis2Server
+  directory and running the following command.
+</p>
+<div class="command">
+  <p>
+    Linux / Unix: ./axis2server.sh
+  </p>
+  <p>
+    Windows: axis2server.bat
+  </p>
+</div>
+<p>
+  You can see the console messages as in the previous section.
+</p>
+<p/>
+<p/>
+<p>
+    <a name="Client"/><strong>Running the Client
+    </strong>
+  </p>
+  <p/>
+  
+    <p>
+      Go to the &lt;esb-home&gt;/samples/axis2Clients directory and type the
+      following command:
+    </p>
+    <div class="command">
+      ant stockquote -Dtrpurl=http://localhost:8280/services/StockQuoteProxy
+      -Dmode=quote -Dsymbol=IBM
+    </div>
+    <p>
+      The above command sends a stockquote request directly to the provided
+      transport endpoint at: http://localhost:8280/services/StockQuoteProxy. You
+      will see the response from the server displayed on the console as follows:
+    </p>
+    <div class="consoleOutput">
+      Standard :: Stock price = $165.32687331383468
+    </div>
+    <p/>
+    <p/>
+    <p>
+        <a name="Monitoring1"/><strong>Monitoring the Mediation
+        </strong>
+    </p>
+    <p/>
+    <p>
+      As with the previous message mediation sample, you will be able to monitor
+      log messages, trace messages, and statistics for the proxy services based
+      mediation. We will look only at the statistics section, which is going to
+      be different from the previous sample. Click 
+      <strong>Monitor > Mediation Statistics</strong>. You will be
+      directed to the overall statistics page.
+    </p>
+    <p>
+      To get more information about proxy service statistics, click on 
+      <strong>Proxy Service Statistics</strong> in the top right box. You will 
+      see the summarized
+      statistics for the StockQuoteProxy service, we have created in this
+      example.
+    </p>
+    <p/>
+    <p>
+        <img src="images/qs_ps_stats.png" alt="Proxy Service Statistics"/>
+    </p>
+    <p>
+      This quick guide illustrates the visual construction of a proxy service
+      and a simple use case. Please refer to samples #150 and above in the
+      Samples guide, for in-depth coverage of more advanced use cases. You don't
+      have to worry about the configuration language too much when reading the
+      samples. You can build all those samples visually using the ESB management
+      console without editing any file at all.
+    </p>
+    <p/>
+    <p>
+      Yes, you are done with a quick look at the WSO2 ESB. Now it is time to go
+      deeper and reveal the advanced features of it. You can browse through the
+      samples of interested areas. If you have any issue regarding the ESB as a
+      user, feel free to let us know through the WSO2 ESB user mailing list
+      (esb-java-user@wso2.org).
+    </p>
+  </body>
+</html>

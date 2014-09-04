@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>WSO2 ESB - Script Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2><a id="script">Script Mediator</a> </h2>
+
+<p>Synapse supports Mediators implemented in a variety of scripting languages
+such as JavaScript, Python or Ruby. There are two ways of defining script
+mediators, either with the script program statements stored in a separate file
+which is referenced via the local or remote registry entry, or with the script
+program statements embedded in-line within the Synapse configuration. Synapse
+uses the Apache <a href="http://jakarta.apache.org/bsf/">Bean Scripting
+Framework </a> for the scripting language support, any script language
+supported by BSF may be used to implement a Synapse Mediator. With the script
+mediator, you can invoke a function in the corresponding script. With in these
+functions, it is possible to access the Synapse predefined in a script variable
+named '<strong>mc</strong>’. This ‘<strong>mc</strong>’ represents an
+implementation of the MessageContext, named
+<strong>ScriptMessageContext.java</strong>. That contains following additional
+methods that can be accessed within the script by
+<strong>mc.methodNam</strong><strong>e</strong>. </p>
+<ul>
+  <li><em>public Object getPayloadXML() - getting the XML representation of
+    SOAP Body payload</em></li>
+  <li><em>public void setPayloadXML(Object payload) - Set the SOAP body payload
+    from XML</em></li>
+  <li><em>public void addHeader(boolean mustUnderstand, Object content) - Add a
+    new SOAP header to the message.</em></li>
+  <li><em>public Object getEnvelopeXML() - Get the XML representation of the
+    complete SOAP envelope</em></li>
+  <li><em>public void setTo(String reference)</em></li>
+  <li><em>public void setFaultTo(String reference)</em></li>
+  <li><em>public void setFrom(String reference)</em></li>
+  <li><em>public void setReplyTo(String reference) </em></li>
+</ul>
+
+<p>Implementing a Mediator with a script language can have advantages over
+using the built in Synapse Mediator types or implementing a custom Java class
+Mediator. Script Mediators have all the flexibility of a class Mediator with
+access to the Synapse MessageContext and SynapseEnvironment APIs, and the ease
+of use and dynamic nature of scripting languages allows rapid development and
+prototyping of custom mediators. An additional benefit of some scripting
+languages is that they have very simple and elegant XML manipulation
+capabilities, for example JavaScript E4X or Ruby REXML, so this makes them well
+suited for use in the Synapse mediation environment. For both types of script
+mediator definition the MessageContext passed into the script has additional
+methods over the standard Synapse MessageContext to enable working with the XML
+in a way natural to the scripting language. For example when using JavaScript
+getPayloadXML and setPayloadXML, E4X XML objects, and when using Ruby, REXML
+documents. </p>
+
+<p></p>
+
+<h3>Syntax </h3>
+<ul>
+  <li>Script mediator using a script off the registry 
+    <p></p>
+    <pre>&lt;script key="string" language="string" [function="script-function-name"]/&gt;
+    </pre>
+    <p>The attribute <strong>key</strong> is the registry key to load the
+    script. The <strong>language</strong> attribute specifies the scripting
+    language of the script code (e.g. "js" for Javascript, "rb" for ruby,
+    "groovy" for Groovy, "py" for Python..). The <strong>function</strong> is
+    an optional attribute defining the name of the script function to invoke,
+    if not specified it defaults to a function named
+    '<strong>mediate</strong>'. The function is passed a single parameter -
+    which is the <strong>Synapse MessageContext</strong>. The function may
+    return a boolean, if it does not, then true is assumed, and the script
+    mediator returns this value. </p>
+  </li>
+  <li>Script mediator using a In-lined script 
+    <p></p>
+    <pre>&lt;script language="string"&gt;...script source code...&lt;script/&gt;</pre>
+  </li>
+</ul>
+
+<h3>UI Configuration</h3>
+
+<h4>Script Type</h4>
+<ul>
+  <li>Inline: Specify the script inline</li>
+  <li>Registry: Store the script in registry and refer it using the key</li>
+</ul>
+
+<h4>If Inline Selected</h4>
+
+<p><img alt="Script Mediator with Inlinded Source"
+src="../script-mediator/docs/images/script.PNG" /> </p>
+
+<h4>Language</h4>
+
+<p>Choose from variety of scripting languages supported</p>
+
+<h4>Source</h4>
+
+<p>If inline selected as the Script type, specify the source</p>
+
+<h4>If Registry Selected</h4>
+
+<p><img alt="Script Mediator with Registry Source"
+src="../script-mediator/docs/images/script_registry.PNG" /> </p>
+
+<h4>Function</h4>
+
+<p>Function of the script language to execute</p>
+
+<h4>Key</h4>
+
+<p>Registry location of the source</p>
+
+<h4>Include Keys</h4>
+
+<p>Scripts sources to be included</p>
+
+<h3>Example </h3>
+<ol>
+  <li><pre>&lt;script language="js"&gt;mc.getPayloadXML()..symbol != "IBM";&lt;script/&gt;</pre>
+    <p>The above configuration is an example of an inline mediator using
+    JavaScript/E4X which returns false if the SOAP message body contains an
+    element named 'symbol' which has a value of 'IBM' would be:</p>
+  </li>
+  <li><pre>&lt;script language="js"
+    key="repository/samples/resources/script/test.js"
+    function="testFunction"/&gt;
+    </pre>
+    <p>In the above example, script is loaded from the registry by using the
+    key <strong>repository/conf/sample/resources/script/test.js.</strong> The
+    script is written in java script. The function to be invoked is
+    <strong>testFunction</strong> . As example for test.js shown in the bellow.
+    </p>
+    <pre>function testFunction(<strong>mc</strong>) {
+     var symbol = <strong>mc.getPayloadXML()</strong>..*::Code.toString();
+     <strong>mc.setPayloadXML</strong>(
+        &lt;m:getQuote xmlns:m="http://services.samples"&gt;
+           &lt;m:request&gt;
+              &lt;m:symbol&gt;{symbol}&lt;/m:symbol&gt;
+           &lt;/m:request&gt;
+        &lt;/m:getQuote&gt;);
+}</pre>
+  </li>
+</ol>
+</body>
+</html>
