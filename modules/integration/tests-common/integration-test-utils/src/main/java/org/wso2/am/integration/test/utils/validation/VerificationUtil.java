@@ -25,7 +25,8 @@ public class VerificationUtil {
 	public static void checkErrors(HttpResponse response) throws Exception {
 		JSONObject jsonObject = new JSONObject(response.getData());
 		if ((Boolean) jsonObject.get("error")) {
-			throw new Exception("Operation not successful: " + jsonObject.get("message").toString());
+			throw new Exception(
+					"Operation not successful: " + jsonObject.get("message").toString());
 		}
 	}
 }

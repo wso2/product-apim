@@ -23,7 +23,7 @@ package org.wso2.am.integration.test.utils.bean;
  */
 public class GenerateAppKeyRequest extends AbstractRequest {
 
-	private String application ="DefaultApplication";
+	private String application = "DefaultApplication";
 	private String keyType = "PRODUCTION";
 	private String callbackUrl = "some-url";
 	private String authorizedDomains = "ALL";

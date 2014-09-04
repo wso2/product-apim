@@ -21,9 +21,8 @@ package org.wso2.am.integration.test.utils.clients;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.validation.VerificationUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -64,9 +63,10 @@ public class APIPublisherRestClient {
 	public HttpResponse addAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
-				, apiRequest.generateRequestParameters()
-				, requestHeaders);
+		HttpResponse response =
+				HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
+						, apiRequest.generateRequestParameters()
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -78,9 +78,10 @@ public class APIPublisherRestClient {
 	public HttpResponse updateAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
-				, apiRequest.generateRequestParameters("updateAPI")
-				, requestHeaders);
+		HttpResponse response =
+				HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
+						, apiRequest.generateRequestParameters("updateAPI")
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -89,11 +90,11 @@ public class APIPublisherRestClient {
 		}
 	}
 
-
 	public HttpResponse changeAPILifeCycleStatusTo(APILifeCycleStateRequest updateRequest)
 			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+		HttpResponse response = HttpRequestUtil.doPost(new URL(
+				backEndUrl + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
 				, updateRequest.generateRequestParameters()
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
@@ -108,9 +109,11 @@ public class APIPublisherRestClient {
 	public HttpResponse getApi(String apiName, String provider)
 			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
-				, "action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + ""
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
+						,
+						"action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + ""
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -122,12 +125,14 @@ public class APIPublisherRestClient {
 
 	}
 
-	public HttpResponse deleteApi(String name,String version,String provider)
+	public HttpResponse deleteApi(String name, String version, String provider)
 			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
-				, "action=removeAPI&name=" + name + "&version="+version+"&provider="+provider
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
+						, "action=removeAPI&name=" + name + "&version=" + version + "&provider=" +
+						  provider
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -170,11 +175,14 @@ public class APIPublisherRestClient {
 	 * @return
 	 * @throws Exception when invocation does ont return 200 response
 	 */
-	public HttpResponse removeAPI(String apiName, String version, String provider) throws Exception {
+	public HttpResponse removeAPI(String apiName, String version, String provider)
+			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
-				, "action=removeAPI" + "&name=" + apiName + "&version=" + version + "&provider=" + provider
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
+						, "action=removeAPI" + "&name=" + apiName + "&version=" + version +
+						  "&provider=" + provider
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -183,13 +191,17 @@ public class APIPublisherRestClient {
 		}
 	}
 
-
-	public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType, String sourceType, String docUrl, String summary, String docLocation) throws Exception {
+	public HttpResponse addDocument(String apiName, String version, String provider, String docName,
+	                                String docType, String sourceType, String docUrl,
+	                                String summary, String docLocation) throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
-				, "action=addDocumentation" + "&provider=" + provider + "&apiName=" + apiName + "&version=" + version + "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
-				  + summary + "&docLocation=" + docLocation
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+						, "action=addDocumentation" + "&provider=" + provider + "&apiName=" +
+						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
+						  docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
+						  + summary + "&docLocation=" + docLocation
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -198,16 +210,16 @@ public class APIPublisherRestClient {
 		}
 	}
 
-	/*
-				docDetails.name = request.getParameter("docName");
-		  docDetails.content = request.getParameter("content");
-		  result = mod.addInlineContent(apiDetails, docDetails);
-	 */
-	public HttpResponse inlineContent(String apiName, String version, String provider, String docName, String content, String docDetails) throws Exception {
+	public HttpResponse inlineContent(String apiName, String version, String provider,
+	                                  String docName, String content, String docDetails)
+			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
-				, "action=addInlineContent" + "&provider=" + provider + "&apiName=" + apiName + "&version=" + version + "&docName=" + docName + "&content=" + content + "&docDetails=" + docDetails
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+						, "action=addInlineContent" + "&provider=" + provider + "&apiName=" +
+						  apiName + "&version=" + version + "&docName=" + docName + "&content=" +
+						  content + "&docDetails=" + docDetails
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -216,11 +228,15 @@ public class APIPublisherRestClient {
 		}
 	}
 
-	public HttpResponse removeDocumentation(String apiName, String version, String provider, String docName, String docType) throws Exception {
+	public HttpResponse removeDocumentation(String apiName, String version, String provider,
+	                                        String docName, String docType) throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
-				, "action=removeDocumentation" + "&provider=" + provider + "&apiName=" + apiName + "&version=" + version + "&docName=" + docName + "&docType=" + docType
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+						, "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
+						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
+						  docType
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -231,9 +247,10 @@ public class APIPublisherRestClient {
 
 	public HttpResponse getAccessTokenData(String accessToken) throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/token.jag")
-				, "action=getAccessTokenData" + "&accessToken=" + accessToken
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/token.jag")
+						, "action=getAccessTokenData" + "&accessToken=" + accessToken
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -242,11 +259,16 @@ public class APIPublisherRestClient {
 		}
 	}
 
-	public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser) throws Exception {
+	public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser)
+			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
-				, "action=revokeAccessToken" + "&accessToken=" + accessToken+"&authUser="+authUser+"&consumerKey="+consumerKey
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
+						,
+						"action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
+						authUser + "&consumerKey=" + consumerKey
+						, requestHeaders
+				);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -254,11 +276,14 @@ public class APIPublisherRestClient {
 			throw new Exception("API Subscription failed> " + response.getData());
 		}
 	}
+
 	public HttpResponse revokeAccessTokenBySubscriber(String subscriberName) throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
-				, "action=revokeAccessTokenBySubscriber" + "&subscriberName=" + subscriberName
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
+						,
+						"action=revokeAccessTokenBySubscriber" + "&subscriberName=" + subscriberName
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -267,11 +292,16 @@ public class APIPublisherRestClient {
 		}
 	}
 
-	public HttpResponse updatePermissions(String tierName, String permissionType, String roles) throws Exception {
+	public HttpResponse updatePermissions(String tierName, String permissionType, String roles)
+			throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/tiers/ajax/tiers.jag")
-				, "action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" + permissionType + "&roles=" + roles
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tiers/ajax/tiers.jag")
+						,
+						"action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
+						permissionType + "&roles=" + roles
+						, requestHeaders
+				);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -280,12 +310,14 @@ public class APIPublisherRestClient {
 		}
 	}
 
-
-	public HttpResponse createNewAPI(String provider, String apiName, String version, String newVersion) throws Exception {
+	public HttpResponse createNewAPI(String provider, String apiName, String version,
+	                                 String newVersion) throws Exception {
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/overview/ajax/overview.jag")
-				, "action=createNewAPI" + "&provider=" + provider + "&apiName=" + apiName + "&version=" + version +"&newVersion="+newVersion
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil
+				.doPost(new URL(backEndUrl + "/publisher/site/blocks/overview/ajax/overview.jag")
+						, "action=createNewAPI" + "&provider=" + provider + "&apiName=" + apiName +
+						  "&version=" + version + "&newVersion=" + newVersion
+						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;

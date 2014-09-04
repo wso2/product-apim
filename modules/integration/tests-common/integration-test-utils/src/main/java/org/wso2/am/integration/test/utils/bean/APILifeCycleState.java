@@ -1,4 +1,3 @@
-package org.wso2.am.integration.test.utils.bean;
 /*
 *Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
@@ -16,6 +15,8 @@ package org.wso2.am.integration.test.utils.bean;
 *specific language governing permissions and limitations
 *under the License.
 */
+
+package org.wso2.am.integration.test.utils.bean;
 
 public enum APILifeCycleState {
 

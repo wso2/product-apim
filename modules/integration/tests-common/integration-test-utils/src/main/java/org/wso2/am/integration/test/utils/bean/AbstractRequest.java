@@ -19,12 +19,11 @@
 package org.wso2.am.integration.test.utils.bean;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public abstract class AbstractRequest {
 	public String action;
-	private Map parameterMap = new HashMap<String, String>();
+	private Map<String, String> parameterMap = new HashMap<String, String>();
 	private static final String ACTION_PARAMETER_VALUE = "action";
 
 	public String generateRequestParameters() {
@@ -32,9 +31,7 @@ public abstract class AbstractRequest {
 		setAction();
 		init();
 		String requestParams = ACTION_PARAMETER_VALUE + "=" + action;
-		Iterator<String> irt = parameterMap.keySet().iterator();
-		while (irt.hasNext()) {
-			String key = irt.next();
+		for (String key : parameterMap.keySet()) {
 			requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
 		}
 		return requestParams;
@@ -45,9 +42,7 @@ public abstract class AbstractRequest {
 		setAction();
 		init();
 		String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
-		Iterator<String> irt = parameterMap.keySet().iterator();
-		while (irt.hasNext()) {
-			String key = irt.next();
+		for (String key : parameterMap.keySet()) {
 			requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
 		}
 		return requestParams;

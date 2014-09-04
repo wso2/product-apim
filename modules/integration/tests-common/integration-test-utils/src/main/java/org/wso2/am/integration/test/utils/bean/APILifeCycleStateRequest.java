@@ -33,6 +33,7 @@ public class APILifeCycleStateRequest extends AbstractRequest {
 		this.status = status.getState();
 		this.provider = provider;
 	}
+
 	@Override
 	public void setAction() {
 		setAction("updateStatus");
@@ -40,7 +41,7 @@ public class APILifeCycleStateRequest extends AbstractRequest {
 
 	@Override
 	public void init() {
-		addParameter("name",name);
+		addParameter("name", name);
 		addParameter("status", status);
 		addParameter("provider", provider);
 

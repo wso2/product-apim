@@ -49,7 +49,8 @@ public class APIRequest extends AbstractRequest {
 	private String tiersCollection = "Gold";
 	private String resourceCount = "0";
 	private String resourceMethod = "GET,POST";
-	private String resourceMethodAuthType = "Application & Application User,Application & Application User";
+	private String resourceMethodAuthType =
+			"Application & Application User,Application & Application User";
 	private String resourceMethodThrottlingTier = "Unlimited,Unlimited";
 	private String uriTemplate = "/*";
 	private String roles = "";
@@ -81,16 +82,15 @@ public class APIRequest extends AbstractRequest {
 		this.wsdl = wsdl;
 	}
 
-
-
-	private String provider ="admin";
+	private String provider = "admin";
 
 	public APIRequest(String apiName, String context, URL endpointUrl) {
 		this.name = apiName;
 		this.context = context;
 		try {
 			this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-			                               + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+			                               + endpointUrl +
+			                               "\",\"config\":null},\"endpoint_type\":\""
 			                               + endpointUrl.getProtocol() + "\"}");
 		} catch (JSONException e) {
 			//ignore
@@ -112,7 +112,7 @@ public class APIRequest extends AbstractRequest {
 		addParameter("name", name);
 		addParameter("context", context);
 		addParameter("endpoint_config", endpoint.toString());
-		addParameter("provider",getProvider());
+		addParameter("provider", getProvider());
 		addParameter("visibility", getVisibility());
 		addParameter("version", getVersion());
 		addParameter("description", getDescription());
@@ -128,13 +128,13 @@ public class APIRequest extends AbstractRequest {
 		addParameter("resourceMethodAuthType-0", getResourceMethodAuthType());
 		addParameter("resourceMethodThrottlingTier-0", getResourceMethodThrottlingTier());
 		addParameter("uriTemplate-0", getUriTemplate());
-		if(roles.length()>1){
+		if (roles.length() > 1) {
 			addParameter("roles", getRoles());
 		}
-		if(wsdl.length()>1) {
+		if (wsdl.length() > 1) {
 			addParameter("wsdl", getWsdl());
 		}
-		if(sandbox.length()>1) {
+		if (sandbox.length() > 1) {
 			addParameter("sandbox", getSandbox());
 		}
 

@@ -17,11 +17,12 @@
 
     <modules>
         <module>tests-common</module>
-        <module>tests-integration/tests-sample</module>
-        <module>backend-service</module>
-        <module>tests</module>
+        <module>tests-integration/tests-scenario</module>
+        <!--<module>tests-integration/tests-jmeter</module>-->
+        <!--<module>backend-service</module>-->
+        <!--<module>tests</module>-->
         <!--<module>tests-new</module>-->
-        <module>tests-ui</module>
+        <!--<module>tests-ui</module>-->
     </modules>
 
     <build>
