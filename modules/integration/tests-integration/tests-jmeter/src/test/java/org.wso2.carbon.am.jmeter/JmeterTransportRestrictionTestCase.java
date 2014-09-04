@@ -19,25 +19,24 @@
 package org.wso2.jmeter.tests;
 
 import org.testng.annotations.Test;
-import org.wso2.automation.tools.jmeter.JMeterTest;
-import org.wso2.automation.tools.jmeter.JMeterTestManager;
-import org.wso2.carbon.automation.core.ProductConstant;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 
 import java.io.File;
 
-public class JmeterTransportRestrictionTestCase {
+public class JmeterTransportRestrictionTestCase extends APIManagerIntegrationTest {
 
-    @Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
-                                            " subscribe users to default app, invoke api - On a" +
-                                            " super tenant setup")
-    public void testListServices() throws Exception {
-        JMeterTest script =
-                new JMeterTest(new File(ProductConstant.SYSTEM_TEST_RESOURCE_LOCATION + File.separator + "artifacts"
-                                        + File.separator + "AM" + File.separator + "scripts"
-                                        + File.separator + "transport_restriction_check.jmx"));
+	@Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
+	                                        " subscribe users to default app, invoke api - On a" +
+	                                        " super tenant setup")
+	public void testListServices() throws Exception {
+		JMeterTest script =
+				new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
+				                        + File.separator + "transport_restriction_check.jmx"));
 
-        JMeterTestManager manager = new JMeterTestManager();
-        manager.runTest(script);
-    }
+		JMeterTestManager manager = new JMeterTestManager();
+		manager.runTest(script);
+	}
 }
 
