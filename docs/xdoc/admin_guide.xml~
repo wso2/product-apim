@@ -29,7 +29,7 @@
 <body>
     [ <a href="docs_index.html"> Documentation Index </a> ]
 <h1>
-  WSO2 Enterprise Service Bus -ESB System Administration Guide
+  WSO2 Enterprise Service Bus (ESB) System Administration Guide
 </h1>
 <p>
 This is a manual on how to maintain and administrate a WSO2 ESB instance. It explains how various
