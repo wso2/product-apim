@@ -19,7 +19,6 @@
         <module>tests-common</module>
         <module>tests-integration/tests-scenario</module>
         <module>tests-integration/tests-jmeter</module>
-        <!--<module>tests-integration/tests-jmeter</module>-->
         <!--<module>backend-service</module>-->
         <!--<module>tests</module>-->
         <!--<module>tests-new</module>-->

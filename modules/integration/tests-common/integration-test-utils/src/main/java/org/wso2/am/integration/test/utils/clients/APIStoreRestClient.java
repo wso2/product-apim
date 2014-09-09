@@ -419,10 +419,9 @@ public class APIStoreRestClient {
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
-				.doGet(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+				.doPost(new URL(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
 				       "action=addComment&name=" + name + "&version=" + version + "&provider=" +
-				       provider + "&comment=" + comment
-						, requestHeaders);
+				       provider + "&comment=" + comment), "", requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;

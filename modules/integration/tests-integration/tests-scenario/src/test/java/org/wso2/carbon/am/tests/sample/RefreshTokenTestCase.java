@@ -99,16 +99,18 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
 		subscriptionRequest.setTier("Gold");
+		subscriptionRequest.setApplicationName("TokenTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		//Generate production token and invoke with that
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("TokenTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 
@@ -175,6 +177,7 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("TokenTestAPI-Application");
 		super.cleanup();
 		serverConfigurationManager.restoreToLastConfiguration();
 	}

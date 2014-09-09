@@ -77,6 +77,7 @@ public class ESBTestCaseUtils {
 	private static final String PRIORITY_EXECUTOR = "priorityExecutor";
 	private static final String KEY = "key";
 	private static final String NAME = "name";
+	private static final String VERSION = "version";
 
 	/**
 	 * Loads the specified resource from the classpath and returns its content as an OMElement.
@@ -1666,7 +1667,12 @@ public class ESBTestCaseUtils {
 
 		Iterator<OMElement> apiList = synapseConfig.getChildrenWithLocalName(API);
 		while (apiList.hasNext()) {
-			String apiName = apiList.next().getAttributeValue(new QName(NAME));
+			OMElement api = apiList.next();
+			String apiName = api.getAttributeValue(new QName(NAME));
+			String version = api.getAttributeValue(new QName(VERSION));
+			if(version != null && !version.equals("")){
+				apiName = apiName +  ":v" + version;
+			}
 			Assert.assertTrue(isApiDeployed(backendURL, sessionCookie, apiName),
 			                  apiName + " API Deployment not found or time out");
 		}

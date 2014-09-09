@@ -16,49 +16,30 @@
 *under the License.
 */
 
-package org.wso2.jmeter.tests;
+package org.wso2.carbon.am.jmeter;
 
-import org.apache.axiom.om.OMElement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.automation.tools.jmeter.JMeterTest;
-import org.wso2.automation.tools.jmeter.JMeterTestManager;
-import org.wso2.carbon.automation.core.ProductConstant;
-import org.wso2.carbon.automation.core.utils.UserInfo;
-import org.wso2.carbon.automation.core.utils.UserListCsvReader;
-import org.wso2.carbon.automation.core.utils.environmentutils.EnvironmentBuilder;
-import org.wso2.carbon.automation.core.utils.environmentutils.EnvironmentVariables;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 
 import java.io.File;
 
-public class JmeterLoginTestCase {
+public class JmeterLoginTestCase extends APIManagerIntegrationTest {
 
-    protected Log log = LogFactory.getLog(getClass());
-    protected EnvironmentVariables amServer;
-    protected UserInfo userInfo;
-    protected OMElement synapseConfiguration = null;
+	@BeforeClass(alwaysRun = true)
+	public void init() throws Exception {
+		super.init();
+	}
 
-    @BeforeClass(alwaysRun = true)
-    public void testChangeTransportMechanism() throws Exception {
-        init(0);
-    }
+	@Test(groups = "wso2.am", description = "Login to api manager as user2")
+	public void testListServices() throws Exception {
+		JMeterTest script =
+				new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
+				                        + File.separator + "API_Manager_Login_Test.jmx"));
 
-    protected void init(int userId) throws Exception {
-        userInfo = UserListCsvReader.getUserInfo(userId);
-        EnvironmentBuilder builder = new EnvironmentBuilder().am(userId);
-        amServer = builder.build().getAm();
-    }
-
-    @Test(groups = "wso2.am", description = "Login to api manager as user2")
-    public void testListServices() throws Exception {
-        JMeterTest script =
-                new JMeterTest(new File(ProductConstant.SYSTEM_TEST_RESOURCE_LOCATION + File.separator + "artifacts"
-                                        + File.separator + "AM" + File.separator + "scripts"
-                                        + File.separator + "API_Manager_Login_Test.jmx"));
-
-        JMeterTestManager manager = new JMeterTestManager();
-        manager.runTest(script);
-    }
+		JMeterTestManager manager = new JMeterTestManager();
+		manager.runTest(script);
+	}
 }

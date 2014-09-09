@@ -120,14 +120,16 @@ public class DAOTestCase extends APIManagerIntegrationTest {
 		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("DAOTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
+		subscriptionRequest.setApplicationName("DAOTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("DAOTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -196,6 +198,7 @@ public class DAOTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("DAOTestAPI-Application");
 		super.cleanup();
 	}
 }

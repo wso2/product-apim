@@ -214,25 +214,13 @@ public abstract class APIManagerIntegrationTest {
 	}
 
 	private String getServerBackendUrlHttp() throws XPathExpressionException {
-		//		FrameworkProperties frameworkProperties = FrameworkFactory.getFrameworkProperties(ProductConstant.AM_SERVER_NAME);
-		//		boolean webContextEnabled = frameworkProperties.getEnvironmentSettings().isEnableCarbonWebContext();
-		boolean webContextEnabled = true;
-		//		boolean portEnabled = frameworkProperties.getEnvironmentSettings().isEnablePort();
-		boolean portEnabled = true;
-		//
-		//		ProductVariables amServerInfo = frameworkProperties.getProductVariables();
-		//		String webContextRoot = context.getWebContextRoot();
 		String httpPort = context.getInstance().getPorts().get("http");
 		String hostName = context.getInstance().getHosts().get("default");
 
 		String url = "http://" + hostName;
-		if (portEnabled && httpPort != null) {
+		if (httpPort != null) {
 			url = url + ":" + httpPort;
 		}
-		//		if (webContextEnabled && webContextRoot != null) {
-		//			url = url + "/" + webContextRoot;
-		//		}
-
 		return url;
 	}
 
@@ -896,6 +884,7 @@ public abstract class APIManagerIntegrationTest {
 
 
 
+	// todo: Need to implement the following urls for clustered setup
 	/*
 	am.distributed.store.http.url=http://localhost:9763
 am.distributed.store.https.url=https://localhost:9443
