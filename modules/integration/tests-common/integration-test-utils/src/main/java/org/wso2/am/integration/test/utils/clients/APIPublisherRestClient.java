@@ -60,6 +60,25 @@ public class APIPublisherRestClient {
 
 	}
 
+    public HttpResponse logout()
+            throws Exception {
+        HttpResponse response = HttpRequestUtil
+                .doGet(backEndUrl + URL_SURFIX + "/user/login/ajax/login.jag?action=logout",
+                        requestHeaders);
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            String session = getSession(response.getHeaders());
+            if (session == null) {
+                throw new Exception("No session cookie found with response");
+            }
+            setSession(session);
+            return response;
+        } else {
+            throw new Exception("User Login failed> " + response.getData());
+        }
+
+    }
+
 	public HttpResponse addAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();
