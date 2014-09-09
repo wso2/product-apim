@@ -12,16 +12,15 @@
 <test name="AM-Sample-Test" preserve-order="true" verbose="2">
     <classes>
         <!--<class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase" />-->
+        <class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase" />
         <!--<class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.RefreshTokenTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />                -->
-        <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase"/>
+        <class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.RefreshTokenTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />
     </classes>
 </test>
 

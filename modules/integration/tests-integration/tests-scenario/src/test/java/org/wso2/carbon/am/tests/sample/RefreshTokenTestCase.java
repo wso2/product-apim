@@ -78,8 +78,8 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 
 	@Test(groups = { "wso2.am" }, description = "Token API Test sample")
 	public void testTokenAPITestCase() throws Exception {
-		String APIName = "TokenTestAPI";
-		String APIContext = "tokenTestAPI";
+		String APIName = "RefreshTokenTestAPI";
+		String APIContext = "refreshTokenTestAPI";
 		String tags = "youtube, token, media";
 		String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
 		String description = "This is test API create by API manager integration test";
@@ -99,18 +99,18 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
-		apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
+		apiStore.addApplication("RefreshTokenTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
 		subscriptionRequest.setTier("Gold");
-		subscriptionRequest.setApplicationName("TokenTestAPI-Application");
+		subscriptionRequest.setApplicationName("RefreshTokenTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		//Generate production token and invoke with that
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("TokenTestAPI-Application");
+				new GenerateAppKeyRequest("RefreshTokenTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 
@@ -142,7 +142,7 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 		requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 		Thread.sleep(2000);
 		HttpResponse youTubeResponse = HttpRequestUtil
-				.doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
+				.doGet(getApiInvocationURLHttp("refreshTokenTestAPI/1.0.0/most_popular"), requestHeaders);
 		//check JWT headers here
 		Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
 		Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
@@ -165,7 +165,7 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 		requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 		Thread.sleep(2000);
 		youTubeResponse = HttpRequestUtil
-				.doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
+				.doGet(getApiInvocationURLHttp("refreshTokenTestAPI/1.0.0/most_popular"), requestHeaders);
 		//check JWT headers here
 		Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
 		Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
@@ -177,7 +177,7 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
-		apiStore.removeApplication("TokenTestAPI-Application");
+		apiStore.removeApplication("RefreshTokenTestAPI-Application");
 		super.cleanup();
 		serverConfigurationManager.restoreToLastConfiguration();
 	}

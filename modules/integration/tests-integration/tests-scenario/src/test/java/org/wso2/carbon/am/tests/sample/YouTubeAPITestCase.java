@@ -55,34 +55,35 @@ public class YouTubeAPITestCase extends APIManagerIntegrationTest {
 
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
+
+		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
+		                   context.getContextTenant().getContextUser().getPassword());
+		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+		               context.getContextTenant().getContextUser().getPassword());
 	}
 
 	@Test(groups = { "wso2.am" }, description = "You Tube sample")
 	public void testYouTubeApiSample() throws Exception {
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
 		APIRequest apiRequest = new APIRequest("YoutubeFeeds", "youtube",
 		                                       new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
 		apiPublisher.addAPI(apiRequest);
-
 		APILifeCycleStateRequest updateRequest =
 				new APILifeCycleStateRequest("YoutubeFeeds", context
 						.getContextTenant().getContextUser().getUserName(),
 				                             APILifeCycleState.PUBLISHED
 				);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
-
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName()
 		);
+		subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("YoutubeFeeds-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -106,6 +107,7 @@ public class YouTubeAPITestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("YoutubeFeeds-Application");
 		super.cleanup();
 	}
 }
