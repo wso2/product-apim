@@ -5,8 +5,8 @@
 var publisher = require('apipublisher');
 var publisherHostObj = new publisher.APIProvider("admin");
 print("==");
-print(publisherHostObj.getExternalAPIStores());
-print("==");
+//print(publisherHostObj.getExternalAPIStores());
+//print("==");
 print(publisherHostObj.validateRoles('admin', 'admin'));
 print("==");
 print(publisherHostObj.isURLValid("https","https://www.google.com"));
@@ -51,10 +51,10 @@ print(publisherHostObj.isSynapseGateway());
 print("==");
 print(publisherHostObj.loadRegistryOfTenant("carbon.super"));
 print("==");
-print(publisherHostObj.updateDocumentation("admin","HostObjectTestAPI","1.0.0","Doc-Name", "How To", "summary","In-line"));
-print("==");
-print(publisherHostObj.addInlineContent("admin","HostObjectTestAPI","1.0.0","help","this is helpe"));
-print("==");
+//print(publisherHostObj.updateDocumentation("admin","HostObjectTestAPI","1.0.0","Doc-Name", "How To", "summary","In-line","","",""));
+//print("==");
+//print(publisherHostObj.addInlineContent("admin","HostObjectTestAPI","1.0.0","help","this is help"));
+//print("==");
 print(publisherHostObj.getInlineContent("admin","HostObjectTestAPI","1.0.0","help"));
 print("==");
 print(publisherHostObj.getAllDocumentation("admin@carbon.super","HostObjectTestAPI","1.0.0"));
@@ -65,8 +65,8 @@ print(publisherHostObj.getSubscriberCountByAPIs("admin@carbon.super"));
 print("==");
 print(publisherHostObj.getSubscriberCountByAPIVersions("admin@carbon.super"));
 print("==");
-print(publisherHostObj.getExternalAPIStores());
-print("==");
+//print(publisherHostObj.getExternalAPIStores());
+//print("==");
 var apiData = {};
 apiData["provider"] = "admin";
 apiData["name"] = "HostObjectTestAPI";
@@ -83,6 +83,23 @@ tierData["permissiontype"] = "Deny";
 tierData["roles"] = "admin";
 print(publisherHostObj.updateTierPermissions(tierData));
 print("==");
+
+print(publisherHostObj.searchAPIs("admin","provider:admin"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","context:HostObjectTestAPIAPIContext"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","name:HOSTOBJECTTESTAPI"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","name:hostobjecttestapi"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","name:tobjecttesta"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","provider:min"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","context:APIContext"));
+print("==")
+print(publisherHostObj.searchAPIs("admin","context:invalid"));
+print("==")
 //print(publisherHostObj.updateExternalAPIStores(apiData));
 //print(publisherHostObj.createNewAPIVersion("admin","HostObjectTestAPI","1.0.0","1.0.1"));
 //print(publisherHostObj.searchAccessTokens("admin"));

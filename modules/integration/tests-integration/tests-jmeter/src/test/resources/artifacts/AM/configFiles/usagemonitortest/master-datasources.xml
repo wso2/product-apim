@@ -1,4 +1,4 @@
-<datasources-configuration xmlns:svns="http://org.wso2.securevault/configuration">
+<datasources-configuration>
 <!--This is master data source file used for API manager usage integration tests-->
     <providers>
         <provider>org.wso2.carbon.ndatasource.rdbms.RDBMSDataSourceReader</provider>

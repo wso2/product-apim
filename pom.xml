@@ -38,15 +38,15 @@
     </licenses>
 
     <modules>
-        <module>modules/styles</module>
-        <module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
-        <module>modules/org.wso2.stratos.apimgt.login.ui</module>
-        <module>modules/features</module>
-        <module>modules/p2-profile</module>
-        <module>/modules/distribution/product/src/main/statistics</module>
+        <!--<module>modules/styles</module>-->
+        <!--<module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>-->
+        <!--<module>modules/org.wso2.stratos.apimgt.login.ui</module>-->
+        <!--<module>modules/features</module>-->
+        <!--<module>modules/p2-profile</module>-->
+        <!--<module>/modules/distribution/product/src/main/statistics</module>-->
         <!--module>modules/jaggery-apps/api-provider-web</module>
         <module>modules/jaggery-apps/api-store-web</module-->
-        <module>modules/distribution</module>
+        <!--<module>modules/distribution</module>-->
         <module>modules/integration</module>
     </modules>
 
