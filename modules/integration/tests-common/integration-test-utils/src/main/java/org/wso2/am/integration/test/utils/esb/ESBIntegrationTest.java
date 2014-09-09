@@ -511,7 +511,7 @@ public abstract class ESBIntegrationTest {
 			throws SecurityAdminServiceSecurityConfigExceptionException, RemoteException,
 			       InterruptedException {
 
-		SecurityAdminServiceClient securityAdminServiceClient =
+		/*SecurityAdminServiceClient securityAdminServiceClient =
 				new SecurityAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
 		securityAdminServiceClient.applySecurity(serviceName, policyPath,
 		                                         new String[] { "wso2carbon.jks" },
@@ -519,7 +519,7 @@ public abstract class ESBIntegrationTest {
 
 		log.info("Security Scenario " + policyPath + " Applied");
 
-		Thread.sleep(1000);
+		Thread.sleep(1000);*/
 
 	}
 

@@ -1,9 +1,5 @@
 package org.wso2.jmeter.tests;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
@@ -21,9 +17,10 @@ import org.wso2.carbon.automation.core.utils.UserListCsvReader;
 import org.wso2.carbon.automation.core.utils.environmentutils.EnvironmentBuilder;
 import org.wso2.carbon.automation.core.utils.environmentutils.EnvironmentVariables;
 import org.wso2.carbon.automation.core.utils.serverutils.ServerConfigurationManager;
-import org.wso2.carbon.automation.utils.esb.StockQuoteClient;
-import org.wso2.carbon.h2.osgi.utils.CarbonUtils;
 import org.wso2.carbon.utils.ServerConstants;
+
+import java.io.File;
+import java.io.IOException;
 
 public class JmeterTestCases {
 

@@ -270,7 +270,9 @@
 
         <platformExecutionManager>
             <extentionClasses>
-                <className>org.wso2.carbon.integration.common.extensions.carbonserver.CarbonServerExtension</className>
+                <class>
+                    <name>org.wso2.carbon.integration.common.extensions.carbonserver.CarbonServerExtension</name>
+                </class>
             </extentionClasses>
         </platformExecutionManager>
 

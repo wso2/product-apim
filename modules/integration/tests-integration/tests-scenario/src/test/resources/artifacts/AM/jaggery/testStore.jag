@@ -32,7 +32,7 @@ print(storeHostObj.searchAPIbyType("HostObjectTestAPI","carbon.super"));
 print("==");
 print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
 print("==");
-print(storeHostObj.getPublishedAPIsByProvider("admin@carbon.super","admin"));
+print(storeHostObj.getPublishedAPIsByProvider("admin@carbon.super","admin","2"));
 print("==");
 print(storeHostObj.getAllSubscriptions("admin@carbon.super"));
 print("==");

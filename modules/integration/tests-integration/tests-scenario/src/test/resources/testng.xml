@@ -13,7 +13,7 @@
     <classes>
         <!--<class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase" />-->
-        <!--<class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleITestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase" />-->
@@ -21,7 +21,7 @@
         <!--<class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />                -->
-        <class name="org.wso2.carbon.am.tests.sample.YouTubeAPITestCase"/>
+        <class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase"/>
     </classes>
 </test>
 

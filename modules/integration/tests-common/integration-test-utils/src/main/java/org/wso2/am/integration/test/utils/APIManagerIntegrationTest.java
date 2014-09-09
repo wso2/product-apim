@@ -248,7 +248,7 @@ public abstract class APIManagerIntegrationTest {
 	}
 
 	protected String getAMResourceLocation() {
-		return FrameworkPathUtil.getSystemResourceLocation() + File.separator + "artifacts" +
+		return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
 		       File.separator + "AM";
 	}
 
@@ -600,7 +600,7 @@ public abstract class APIManagerIntegrationTest {
 			throws SecurityAdminServiceSecurityConfigExceptionException, RemoteException,
 			       InterruptedException {
 
-		SecurityAdminServiceClient securityAdminServiceClient =
+		/*SecurityAdminServiceClient securityAdminServiceClient =
 				new SecurityAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
 		securityAdminServiceClient.applySecurity(serviceName, policyPath,
 		                                         new String[] { "wso2carbon.jks" },
@@ -608,7 +608,7 @@ public abstract class APIManagerIntegrationTest {
 
 		log.info("Security Scenario " + policyPath + " Applied");
 
-		Thread.sleep(1000);
+		Thread.sleep(1000);*/
 
 	}
 

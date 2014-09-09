@@ -19,6 +19,8 @@
 package org.wso2.carbon.am.jmeter;
 
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 
