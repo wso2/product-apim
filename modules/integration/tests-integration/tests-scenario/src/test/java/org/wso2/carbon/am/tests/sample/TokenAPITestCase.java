@@ -58,7 +58,7 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 			publisherURLHttp = getServerURLHttp();
 			storeURLHttp = getServerURLHttp();
 			serverConfigurationManager = new ServerConfigurationManager(context);
-			serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+			serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
 			                                                       + File.separator +
 			                                                       "configFiles/tokenTest/" +
 			                                                       "api-manager.xml"));
@@ -99,17 +99,19 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName()
 		);
 		subscriptionRequest.setTier("Gold");
+		subscriptionRequest.setApplicationName("TokenTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		//Generate sandbox Token and invoke with that
 		GenerateAppKeyRequest generateAppKeyRequestSandBox =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("TokenTestAPI-Application");
 		generateAppKeyRequestSandBox.setKeyType("SANDBOX");
 		String responseStringSandBox =
 				apiStore.generateApplicationKey(generateAppKeyRequestSandBox).getData();
@@ -126,7 +128,7 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 
 		//Generate production token and invoke with that
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("TokenTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
          /*Response would be like -
@@ -231,6 +233,7 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("TokenTestAPI-Application");
 		super.cleanup();
 		serverConfigurationManager.restoreToLastConfiguration();
 	}

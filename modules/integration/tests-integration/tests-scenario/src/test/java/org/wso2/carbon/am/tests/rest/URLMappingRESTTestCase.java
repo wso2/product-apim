@@ -37,7 +37,7 @@ public class URLMappingRESTTestCase extends APIManagerIntegrationTest {
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
 		super.init();
-		loadESBConfigurationFromClasspath(getAMResourceLocation()
+		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
 		                                  + File.separator + "synapseconfigs" + File.separator +
 		                                  "rest"
 		                                  + File.separator + "url-mapping-synapse.xml");

@@ -156,6 +156,11 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 
 	@Test(groups = { "wso2.am" }, description = "API Life cycle test case")
 	public void usageDataTestCase() throws Exception {
+		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
+		                   context.getContextTenant().getContextUser().getPassword());
+		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+		               context.getContextTenant().getContextUser().getPassword());
+
 		String APIName = "UsageTestAPI";
 		String APIContext = "UsageTestAPI";
 		String tags = "youtube, video, media";
@@ -163,8 +168,7 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 		String description = "This is test API create by API manager usage integration test";
 		String providerName = "admin";
 		String APIVersion = "1.0.0";
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
+
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
 		apiRequest.setTags(tags);
 		apiRequest.setDescription(description);
@@ -172,22 +176,21 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 		apiPublisher.addAPI(apiRequest);
 		apiPublisher.deleteApi(APIName, APIVersion, providerName);
 		apiPublisher.addAPI(apiRequest);
-		APIBean apiBean = APIMgtTestUtil
-				.getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
 		APILifeCycleStateRequest updateRequest =
 				new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
+
+		apiStore.addApplication("UsageTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
+		subscriptionRequest.setApplicationName("UsageTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 		apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
 		                         "url-no-need", "summary", "");
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("UsageTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -204,6 +207,8 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 					       requestHeaders);
 		}
 		Thread.sleep(60000);
+
+
 		//Here will do 20 faulty invocations
 		String APINameFaultyAPI = "UsageTestAPIFaultyAPI";
 		String APIContextFaultyAPI = "UsageTestAPIFaultyAPI";
@@ -225,15 +230,18 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 				new APILifeCycleStateRequest(APINameFaultyAPI, providerName,
 				                             APILifeCycleState.PUBLISHED);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequestFaultyAPI);
+		apiStore.addApplication("UsageTestAPIFaultyAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequestFaultyAPI = new SubscriptionRequest(APINameFaultyAPI,
 		                                                                           context.getContextTenant()
 		                                                                                  .getContextUser()
 		                                                                                  .getUserName());
+		subscriptionRequestFaultyAPI.setApplicationName("UsageTestAPIFaultyAPI-Application");
 		apiStore.subscribe(subscriptionRequestFaultyAPI);
 		apiPublisher.addDocument(APINameFaultyAPI, APIVersionFaultyAPI, providerName, "Doc-Name",
 		                         "How To", "In-line", "url-no-need", "summary", "");
+
 		GenerateAppKeyRequest generateAppKeyRequestFaultyAPI =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("UsageTestAPIFaultyAPI-Application");
 		String responseStringFaultyAPI =
 				apiStore.generateApplicationKey(generateAppKeyRequestFaultyAPI).getData();
 		JSONObject responseFaultyAPI = new JSONObject(responseStringFaultyAPI);
@@ -285,6 +293,8 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("UsageTestAPI-Application");
+		apiStore.removeApplication("UsageTestAPIFaultyAPI-Application");
 		super.cleanup();
 	}
 

@@ -93,14 +93,16 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
+		subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("CommentRatingAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -144,7 +146,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 
 		apiStore.getAllPublishedAPIs();
 		apiStore.getAllApplications();
-		apiStore.getPublishedAPIsByApplication("DefaultApplication");
+		apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application");
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI(APIName, APIVersion, providerName, "4");
 		apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
@@ -152,7 +154,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		//apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
 		//Negative cases
 		//add assert
-		apiStore.getPublishedAPIsByApplication("DefaultApplicationWrong");
+		apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application-Wrong");
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
 		apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
@@ -161,6 +163,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("CommentRatingAPI-Application");
 		super.cleanup();
 	}
 

@@ -102,15 +102,17 @@ public class APIApplicationLifeCycleITestCase extends APIManagerIntegrationTest 
 		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
 		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
 		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("APILifeCycleTestAPI-application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName()
 		);
+		subscriptionRequest.setApplicationName("APILifeCycleTestAPI-application");
 		apiStore.subscribe(subscriptionRequest);
 
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("APILifeCycleTestAPI-application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -152,7 +154,7 @@ public class APIApplicationLifeCycleITestCase extends APIManagerIntegrationTest 
 
 		apiStore.getAllPublishedAPIs();
 		apiStore.getAllApplications();
-		apiStore.getPublishedAPIsByApplication("DefaultApplication");
+		apiStore.getPublishedAPIsByApplication("APILifeCycleTestAPI-application");
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI(APIName, APIVersion, providerName, "4");
 		apiStore.addRatingToAPI(APIName, APIVersion, providerName, "2");
@@ -161,7 +163,7 @@ public class APIApplicationLifeCycleITestCase extends APIManagerIntegrationTest 
 		apiStore.getAllDocumentationOfApi(APIName, APIVersion, providerName);
 		//apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
 		//Negative cases
-		apiStore.getPublishedAPIsByApplication("DefaultApplicationWrong");
+		apiStore.getPublishedAPIsByApplication("APILifeCycleTestAPI-application-wrong");
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
 		apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
@@ -235,6 +237,7 @@ public class APIApplicationLifeCycleITestCase extends APIManagerIntegrationTest 
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("APILifeCycleTestAPI-application");
 		super.cleanup();
 	}
 }

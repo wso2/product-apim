@@ -50,7 +50,7 @@ public class ThrottlingTestCase extends APIManagerIntegrationTest {
 		super.init();
 		serverConfigurationManager = new ServerConfigurationManager(context);
 		super.init();
-		loadESBConfigurationFromClasspath(getAMResourceLocation()
+		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
 		                                  + File.separator + "synapseconfigs" + File.separator +
 		                                  "throttling"
 		                                  + File.separator + "throttling-api-synapse.xml");
