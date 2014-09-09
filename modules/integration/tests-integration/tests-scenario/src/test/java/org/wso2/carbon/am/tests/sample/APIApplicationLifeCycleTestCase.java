@@ -299,7 +299,7 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         addPublicAPI(apiPublisherRestClient);
         addVisibleToDomainOnlyAPI(apiPublisherRestClient);
         addVisibleToRolesAPI(apiPublisherRestClient);
-
+        //apiPublisherRestClient.logout();
         boolean bPublishedAPI = false;
         String publishedAPIs;
        /* publishedAPIs = apiStore.getAllPublishedAPIsAsAnonUser().getData();
@@ -343,7 +343,6 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
             bPublishedAPI = true;
         }
 
-        apiPublisherRestClient.logout();
     }
 
     public void addPublicAPI(APIPublisherRestClient apiPublisherRestClient) throws Exception {

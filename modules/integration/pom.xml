@@ -13,6 +13,23 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>integration</artifactId>
     <name>WSO2 API Manager - Integration Tests</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.automation</groupId>
+            <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+            <version>4.3.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automation</groupId>
+            <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+            <version>4.3.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
     <packaging>pom</packaging>
 
     <modules>
