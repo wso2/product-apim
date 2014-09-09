@@ -13,12 +13,12 @@
 
     <test name="AM-Sample-Test" preserve-order="true" verbose="2">
         <classes>
-            <!--<class name="org.wso2.carbon.am.jmeter.JmeterDomainRestrictionTestCase"/>-->
-            <!--<class name="org.wso2.carbon.am.jmeter.JmeterLoginTestCase"/>-->
-            <!--<class name="org.wso2.carbon.am.jmeter.JmeterSuperTenantTestCase"/>-->
-            <!--<class name="org.wso2.carbon.am.jmeter.JmeterTestCases"/>-->
-            <!--<class name="org.wso2.carbon.am.jmeter.JmeterTransportRestrictionTestCase"/>-->
-            <!--<class name="org.wso2.carbon.am.jmeter.PassthroughTestCase"/>-->
+            <class name="org.wso2.carbon.am.jmeter.JmeterDomainRestrictionTestCase"/>
+            <class name="org.wso2.carbon.am.jmeter.JmeterLoginTestCase"/>
+            <class name="org.wso2.carbon.am.jmeter.JmeterSuperTenantTestCase"/>
+            <class name="org.wso2.carbon.am.jmeter.JmeterTestCases"/>
+            <class name="org.wso2.carbon.am.jmeter.JmeterTransportRestrictionTestCase"/>
+            <class name="org.wso2.carbon.am.jmeter.PassthroughTestCase"/>
         </classes>
     </test>
 

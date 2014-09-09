@@ -231,6 +231,11 @@
             <artifactId>integration-test-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automation</groupId>
+            <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
+            <version>4.2.5</version>
+        </dependency>
     </dependencies>
 
 </project>

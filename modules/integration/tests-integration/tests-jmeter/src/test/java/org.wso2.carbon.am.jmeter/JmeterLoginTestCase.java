@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.jmeter.tests;
+package org.wso2.carbon.am.jmeter;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;

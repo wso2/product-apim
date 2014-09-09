@@ -15,7 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.jmeter.tests;
+package org.wso2.carbon.am.jmeter;
 
 import org.apache.axis2.AxisFault;
 import org.testng.annotations.AfterClass;
