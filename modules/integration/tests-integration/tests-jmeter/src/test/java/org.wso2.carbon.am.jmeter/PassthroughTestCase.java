@@ -25,7 +25,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.am.integration.test.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -39,7 +38,7 @@ public class PassthroughTestCase extends APIManagerIntegrationTest {
 	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception, AxisFault {
-		super.init(TestUserMode.SUPER_TENANT_USER);
+		super.init();
 	}
 
 	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
