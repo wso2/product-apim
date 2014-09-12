@@ -94,6 +94,23 @@ public class APIPublisherRestClient {
 		}
 	}
 
+    public HttpResponse copyAPI(String provider, String APIName, String oldVersion,
+                                String newVersion, String isDefaultVersion)
+            throws Exception {
+        checkAuthentication();
+        HttpResponse response =
+                HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/overview/ajax/overview.jag")
+                        , "action=createNewAPI&provider=" + provider + "&apiName=" + APIName + "&version="
+                            + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion
+                        , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("API Copying failed> " + response.getData());
+        }
+    }
+
 	public HttpResponse updateAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();

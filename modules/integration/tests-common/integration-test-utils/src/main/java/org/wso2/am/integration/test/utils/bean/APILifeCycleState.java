@@ -20,7 +20,7 @@ package org.wso2.am.integration.test.utils.bean;
 
 public enum APILifeCycleState {
 
-	PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED");
+	PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"), RETIRED("RETIRED");
 
 	private String state;
 

@@ -21,7 +21,7 @@
         <!--<class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />-->
         <!--<class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />                -->
-        <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase"/>
+        <class name="org.wso2.carbon.am.tests.publisher.AddAPITestCase"/>
     </classes>
 </test>
 

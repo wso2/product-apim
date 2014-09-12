@@ -345,6 +345,279 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
 
     }
 
+    @Test(groups = {"wso2.am"}, description = "API visibility", enabled = false)
+    public void copyAPILifeCycleTestCase() throws Exception {
+
+        String APIName = "APILifeCycleTestAPI";
+        String APIContext = "testAPI";
+        String tags = "youtube, video, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String providerName = "admin";
+        String APIVersionOld = "1.0.0";
+        String APIVersionNew = "2.0.0";
+        String defaultVersion = "default_version";
+
+        //add all option methods
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherRestClient.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersionOld);
+        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
+                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
+        apiRequest.setVisibility("restricted");
+        apiRequest.setRoles("admin");
+        apiPublisherRestClient.addAPI(apiRequest);
+
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+                APIName, providerName));
+        APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
+                APILifeCycleState.PUBLISHED);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+
+        apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
+        //add assertion
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+                providerName));
+        APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
+                providerName, APILifeCycleState.PUBLISHED);
+        updateRequest2.setVersion(APIVersionNew);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+
+        APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+        String apiData = apiStore.getAllPublishedAPIs().getData();
+
+        Assert.assertTrue(!apiData.contains(APIVersionOld),
+                "Old version available in the store");
+
+        Assert.assertTrue(apiData.contains(APIVersionNew),
+                "New version not available in the store");
+
+        //subscribe to the old API version
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
+                context.getContextTenant().getContextUser().getUserName());
+        apiData = apiStore.subscribe(subscriptionRequest).getData();
+
+        Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
+                "Can subscribe to the old API version");
+
+        //subscribe to the new API version
+        subscriptionRequest.setVersion(APIVersionNew);
+        apiData = apiStore.subscribe(subscriptionRequest).getData();
+
+        Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
+                "Can not subscribe to the old API version");
+
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        //Here add API tags and check same have in response.
+        //Here check same tags are there
+        //Add some comment to API
+        //check comment is there
+        //Add rating
+        //check rating
+        Thread.sleep(60000);
+
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
+
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API visibility", enabled = false)
+    public void otherAPILifeCycleStatesTestCase() throws Exception {
+
+        String APIName = "APILifeCycleTestAPI";
+        String APIContext = "testAPI";
+        String tags = "youtube, video, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String providerName = "admin";
+        String APIVersionOld = "1.0.0";
+        String APIVersionNew = "2.0.0";
+        String defaultVersion = "default_version";
+
+        //add all option methods
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherRestClient.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersionOld);
+        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
+                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
+        apiRequest.setVisibility("restricted");
+        apiRequest.setRoles("admin");
+        apiPublisherRestClient.addAPI(apiRequest);
+
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+                APIName, providerName));
+        APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
+                APILifeCycleState.PUBLISHED);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+
+        APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+        String apiData = apiStore.getAllPublishedAPIs().getData();
+
+        Assert.assertTrue(apiData.contains(APIName),
+                "Added API not available in store");
+
+        APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName, providerName,
+                APILifeCycleState.RETIRED);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+
+        apiData = apiStore.getAllPublishedAPIs().getData();
+
+        Assert.assertTrue(!apiData.contains(APIName),
+                "Retired API available in store");
+
+
+        APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName, providerName,
+                APILifeCycleState.BLOCKED);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+
+        apiData = apiStore.getAllPublishedAPIs().getData();
+
+        Assert.assertTrue(!apiData.contains(APIName),
+                "Blocked API available in store");
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API visibility", enabled = false)
+    public void copyAndDepricateAPILifeCycleTestCase() throws Exception {
+
+        String APIName = "APILifeCycleTestAPI";
+        String APIContext = "testAPI";
+        String tags = "youtube, video, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String providerName = "admin";
+        String APIVersionOld = "1.0.0";
+        String APIVersionNew = "2.0.0";
+        String defaultVersion = "default_version";
+
+        //add all option methods
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherRestClient.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersionOld);
+        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
+                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
+        apiRequest.setVisibility("restricted");
+        apiRequest.setRoles("admin");
+        apiPublisherRestClient.addAPI(apiRequest);
+
+        //publish initial version
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+                APIName, providerName));
+        APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
+                APILifeCycleState.PUBLISHED);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+
+        //publish new version
+        apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
+        //add assertion
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+                providerName));
+        APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
+                providerName, APILifeCycleState.PUBLISHED);
+        updateRequest2.setVersion(APIVersionNew);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+
+        //deprecate old version
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+                providerName));
+        APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName,
+                providerName, APILifeCycleState.DEPRECATED);
+        updateRequest3.setVersion(APIVersionOld);
+        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+
+        APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+        String apiData = apiStore.getAllPublishedAPIs().getData();
+
+        Assert.assertTrue(!apiData.contains(APIVersionOld),
+                "Old version available in the store");
+
+        Assert.assertTrue(apiData.contains(APIVersionNew),
+                "New version not available in the store");
+
+        //subscribe to the old API version
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
+                context.getContextTenant().getContextUser().getUserName());
+        apiData = apiStore.subscribe(subscriptionRequest).getData();
+
+        Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
+                "Can subscribe to the old API version");
+
+        //subscribe to the new API version
+        subscriptionRequest.setVersion(APIVersionNew);
+        apiData = apiStore.subscribe(subscriptionRequest).getData();
+
+        Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
+                "Can not subscribe to the old API version");
+
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        //Here add API tags and check same have in response.
+        //Here check same tags are there
+        //Add some comment to API
+        //check comment is there
+        //Add rating
+        //check rating
+        Thread.sleep(60000);
+
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
+
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
+        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
+
+    }
+
     public void addPublicAPI(APIPublisherRestClient apiPublisherRestClient) throws Exception {
 
         String APIName = "APILifeCycleTestAPIPublic";
