@@ -56,6 +56,11 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		}
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
+
+		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
+		                   context.getContextTenant().getContextUser().getPassword());
+		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+		               context.getContextTenant().getContextUser().getPassword());
 	}
 
 	@Test(groups = { "wso2.am" }, description = "Comment Rating Test case")
@@ -67,8 +72,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		String description = "This is test API create by API manager integration test";
 		String providerName = "admin";
 		String APIVersion = "1.0.0";
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
+
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
 		apiRequest.setTags(tags);
 		apiRequest.setDescription(description);
@@ -91,8 +95,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 			Assert.assertTrue(tags.contains(tag), "API tag data mismatched");
 		}
 		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
+
 		apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()

@@ -74,6 +74,11 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
 
+		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
+		                   context.getContextTenant().getContextUser().getPassword());
+		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+		               context.getContextTenant().getContextUser().getPassword());
+
 	}
 
 	@Test(groups = { "wso2.am" }, description = "Token API Test sample")
@@ -85,8 +90,7 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 		String description = "This is test API create by API manager integration test";
 		String providerName = "admin";
 		String APIVersion = "1.0.0";
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
+
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
 		apiRequest.setTags(tags);
 		apiRequest.setDescription(description);
@@ -97,8 +101,6 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 				new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
 		apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()

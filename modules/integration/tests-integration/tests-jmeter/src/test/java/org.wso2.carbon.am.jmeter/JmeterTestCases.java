@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -40,7 +39,7 @@ public class JmeterTestCases extends APIManagerIntegrationTest {
 	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 	@BeforeClass(alwaysRun = true)
 	public void testChangeTransportMechanism() throws Exception, AxisFault {
-		super.init(TestUserMode.SUPER_TENANT_USER);
+		super.init();
 		serverConfigurationManager = new ServerConfigurationManager(context);
 		String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
 

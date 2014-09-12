@@ -233,39 +233,8 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.api</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.core</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.utils</artifactId>
-            <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
             <version>${test-automation-framework-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.integration.framework</artifactId>
-            <version>4.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
-            <version>4.2.5</version>
         </dependency>
     </dependencies>
     <properties>

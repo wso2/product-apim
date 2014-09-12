@@ -81,6 +81,11 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 		}
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
+
+		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
+		                   context.getContextTenant().getContextUser().getPassword());
+		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
+		               context.getContextTenant().getContextUser().getPassword());
 	}
 
 	private void copySampleFile(String sourcePath, String destPath) {
@@ -128,8 +133,7 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 		String description = "This is test API create by API manager integration test";
 		String providerName = "admin";
 		String APIVersion = "1.0.0";
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
+
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
 		apiRequest.setTags(tags);
 		apiRequest.setDescription(description);
@@ -154,17 +158,17 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 			Assert.assertTrue(tags.contains(tag), "API tag data mismatched");
 		}
 		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
+		apiStore.addApplication("HostObjectTestAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
 		                                                                  context.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
+		subscriptionRequest.setApplicationName("HostObjectTestAPI-Application");
 		apiStore.subscribe(subscriptionRequest);
 		apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
 		                         "url-no-need", "summary", "");
 		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+				new GenerateAppKeyRequest("HostObjectTestAPI-Application");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
 		String accessToken =
@@ -244,6 +248,7 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+		apiStore.removeApplication("HostObjectTestAPI-Application");
 		super.cleanup();
 	}
 

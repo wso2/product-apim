@@ -18,7 +18,6 @@
  */
 package org.wso2.carbon.am.tests.header;
 
-import org.apache.axiom.om.OMElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,9 +26,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.am.integration.test.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 
 import java.io.*;
@@ -41,41 +38,21 @@ import java.net.URL;
 
 public class ContentLengthHeaderTestCase extends APIManagerIntegrationTest {
 	public WireMonitorServer wireServer;
-	private TenantManagementServiceClient tenantManagementServiceClient;
-	private AutomationContext context;
 
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
 		super.init();
 
-		// todo set the correct user and create context
-		//        int userId = 16;
-		//        userInfo = UserListCsvReader.getUserInfo(userId);
-		//        EnvironmentBuilder builder = new EnvironmentBuilder().am(userId);
-		//        context = builder.build().getAm();
-
-		// UserInfo userInfo = UserListCsvReader.getUserInfo(16);
-		AuthenticatorClient loginUtil = new AuthenticatorClient(contextUrls.getBackEndUrl());
-
-		String sessionCookieAdmin = loginUtil.login(
-				context.getContextTenant().getContextUser().getUserName(),
-				context.getContextTenant().getContextUser().getPassword(),
-				contextUrls.getBackEndUrl());
-
 		// https://localhost:9443/t/abc.com/services
 
-		tenantManagementServiceClient =
-				new TenantManagementServiceClient(contextUrls.getBackEndUrl(), sessionCookieAdmin);
+		TenantManagementServiceClient tenantManagementServiceClient =
+				new TenantManagementServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
 		tenantManagementServiceClient.addTenant("abc.com", "abc123", "abc", "demo");
 
-		String apiMngrSynapseConfigPath =
-				"/artifacts/AM/synapseconfigs/property/FORCE_HTTP_CONTENT_LENGTH.xml";
-		String relativeFilePath = apiMngrSynapseConfigPath.replaceAll("[\\\\/]", File.separator);
-		OMElement apiMngrSynapseConfig = esbUtils.loadResource(relativeFilePath);
-
-		esbUtils.updateESBConfiguration(setEndpoints(apiMngrSynapseConfig),
-		                                contextUrls.getBackEndUrl(),
-		                                sessionCookie);
+		loadESBConfigurationFromClasspath(
+				"artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
+				File.separator + "property" + File.separator + "FORCE_HTTP_CONTENT_LENGTH.xml"
+		);
 
 		wireServer = new WireMonitorServer(8991);
 	}
@@ -89,7 +66,8 @@ public class ContentLengthHeaderTestCase extends APIManagerIntegrationTest {
 
 		//axis2Client.sendSimpleStockQuoteRequest("http://localhost:8280/t/abc.com/helloabc/1.0.0", null, "WSO2");
 		FileInputStream fis = new FileInputStream(
-				"/artifacts/AM/synapseconfigs/property/FORCE_HTTP_CONTENT_LENGTH.xml");
+				getAMResourceLocation() + File.separator + "synapseconfigs" + File.separator +
+				"property" + File.separator + "FORCE_HTTP_CONTENT_LENGTH.xml");
 		InputStreamReader isr = new InputStreamReader(fis, "UTF8");
 		Reader inputReader = new BufferedReader(isr);
 

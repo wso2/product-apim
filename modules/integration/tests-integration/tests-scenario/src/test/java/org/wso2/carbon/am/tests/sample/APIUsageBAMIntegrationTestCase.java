@@ -254,7 +254,7 @@ public class APIUsageBAMIntegrationTestCase extends APIManagerIntegrationTest {
 				.doGet(getApiInvocationURLHttp("UsageTestAPIFaultyAPI/1.0.0/most_popular"),
 				       requestHeadersFaultyAPI);
 		Assert.assertEquals(youTubeResponseFaultyAPI.getResponseCode(), 500,
-		                    "Respofnse code mismatched");
+		                    "Response code mismatched");
 		for (int i = 0; i < 20; i++) {
 			youTubeResponseFaultyAPI = HttpRequestUtil
 					.doGet(getApiInvocationURLHttp("UsageTestAPIFaultyAPI/1.0.0/incorrect"),
