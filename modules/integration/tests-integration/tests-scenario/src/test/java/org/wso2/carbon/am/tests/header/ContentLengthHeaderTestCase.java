@@ -18,15 +18,16 @@
  */
 package org.wso2.carbon.am.tests.header;
 
+import org.apache.axiom.om.OMElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.am.integration.test.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 
 import java.io.*;
@@ -34,46 +35,60 @@ import java.net.URL;
 
 /**
  * Property Mediator FORCE_HTTP_CONTENT_LENGTH Property Test
+ * https://wso2.org/jira/browse/ESBJAVA-2686
  */
 
 public class ContentLengthHeaderTestCase extends APIManagerIntegrationTest {
+
 	public WireMonitorServer wireServer;
 
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
 		super.init();
 
-		// https://localhost:9443/t/abc.com/services
-
+		// Create tenant
 		TenantManagementServiceClient tenantManagementServiceClient =
 				new TenantManagementServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
 		tenantManagementServiceClient.addTenant("abc.com", "abc123", "abc", "demo");
 
-		loadESBConfigurationFromClasspath(
-				"artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
-				File.separator + "property" + File.separator + "FORCE_HTTP_CONTENT_LENGTH.xml"
-		);
+		// Upload the synapse
+		String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
+		              File.separator + "property" + File.separator +
+		              "FORCE_HTTP_CONTENT_LENGTH.xml";
 
+		OMElement synapseConfig = esbUtils.loadResource(file);
+
+		AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
+		String session = login.login("abc@abc.com", "abc123", "localhost");
+
+		esbUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
+		                                session);
+		Thread.sleep(5000);
+
+		// Start wireserver
 		wireServer = new WireMonitorServer(8991);
 	}
 
 	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-	@Test(groups = "wso2.am",
-	      description = "Test for reading the Content-Length header in the request")
+	@org.testng.annotations.Test(groups = "wso2.am",
+	                             description = "Test for reading the Content-Length header in the request")
 	public void testFORCE_HTTP_CONTENT_LENGTHPropertyTest() throws Exception {
 
 		wireServer.start();
 
-		//axis2Client.sendSimpleStockQuoteRequest("http://localhost:8280/t/abc.com/helloabc/1.0.0", null, "WSO2");
 		FileInputStream fis = new FileInputStream(
 				getAMResourceLocation() + File.separator + "synapseconfigs" + File.separator +
-				"property" + File.separator + "FORCE_HTTP_CONTENT_LENGTH.xml");
+				"property" + File.separator + "placeOrder.xml"
+		);
 		InputStreamReader isr = new InputStreamReader(fis, "UTF8");
 		Reader inputReader = new BufferedReader(isr);
 
 		URL postEndpoint = new URL("http://localhost:8280/t/abc.com/stock/1.0.0");
+
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("foo.out")));
+
 		HttpRequestUtil.sendPostRequest(inputReader, postEndpoint, out);
+
 		String response = wireServer.getCapturedMessage();
 		Assert.assertTrue(response.contains("Content-Length"),
 		                  "Content-Length not found in out going message");

@@ -178,11 +178,11 @@
                 <property name="FORCE_HTTP_CONTENT_LENGTH" value="true" scope="axis2"/>
                 <property name="COPY_CONTENT_LENGTH_FROM_INCOMING" value="true" scope="axis2"/>
                 <property name="POST_TO_URI" value="true" scope="axis2"/>
-                <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
-                    <then>
+                <!--<filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">-->
+                    <!--<then>-->
                         <send>
                             <endpoint name="abc-AT-abc.com--stockapi_APIEndpoint_0">
-                                <http uri-template="http://localhost:9000/services/SimpleStockQuoteService">
+                                <http uri-template="http://localhost:8991/services/SimpleStockQuoteService">
                                     <timeout>
                                         <duration>30000</duration>
                                         <responseAction>fault</responseAction>
@@ -199,72 +199,24 @@
                                 </http>
                             </endpoint>
                         </send>
-                    </then>
-                    <else>
-                        <sequence key="_sandbox_key_error_"/>
-                    </else>
-                </filter>
+                    <!--</then>-->
+                    <!--<else>-->
+                        <!--<sequence key="_sandbox_key_error_"/>-->
+                    <!--</else>-->
+                <!--</filter>-->
             </inSequence>
             <outSequence>
                 <send/>
             </outSequence>
         </resource>
         <handlers>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler"/>
+            <!--<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler"/>-->
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler">
                 <property name="id" value="A"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
             </handler>
             <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageHandler"/>
-            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler"/>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
-        </handlers>
-    </api>
-    <api name="abc-AT-abc.com--helloapiabc" context="/t/abc.com/helloabc" version="1.0.0" version-type="url">
-        <resource methods="POST GET OPTIONS DELETE PUT" url-mapping="/*">
-            <inSequence>
-                <property name="POST_TO_URI" value="true" scope="axis2"/>
-                <property name="FORCE_HTTP_CONTENT_LENGTH" value="true" scope="axis2"/>
-                <property name="COPY_CONTENT_LENGTH_FROM_INCOMING" value="true" scope="axis2"/>
-                <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
-                    <then>
-                        <send>
-                            <endpoint name="abc-AT-abc.com--helloapiabc_APIEndpoint_0">
-                                <http uri-template="http://localhost:9765/services/HelloService/">
-                                    <timeout>
-                                        <duration>30000</duration>
-                                        <responseAction>fault</responseAction>
-                                    </timeout>
-                                    <suspendOnFailure>
-                                        <errorCodes>-1</errorCodes>
-                                        <initialDuration>0</initialDuration>
-                                        <progressionFactor>1.0</progressionFactor>
-                                        <maximumDuration>0</maximumDuration>
-                                    </suspendOnFailure>
-                                    <markForSuspension>
-                                        <errorCodes>-1</errorCodes>
-                                    </markForSuspension>
-                                </http>
-                            </endpoint>
-                        </send>
-                    </then>
-                    <else>
-                        <sequence key="_sandbox_key_error_"/>
-                    </else>
-                </filter>
-            </inSequence>
-            <outSequence>
-                <send/>
-            </outSequence>
-        </resource>
-        <handlers>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler"/>
-            <handler class="org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler">
-                <property name="id" value="A"/>
-                <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
-            </handler>
-            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageHandler"/>
-            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler"/>
+            <!--<handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler"/>-->
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>
     </api>
