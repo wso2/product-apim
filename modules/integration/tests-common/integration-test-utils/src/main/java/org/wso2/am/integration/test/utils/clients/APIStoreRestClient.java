@@ -392,6 +392,24 @@ public class APIStoreRestClient {
 
 	}
 
+    public HttpResponse removeAPISubscription(String API, String version, String provider, String applicationId)
+            throws Exception {
+        checkAuthentication();
+
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+                "/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
+                API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId)
+                , ""
+                , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("Get Api Information failed> " + response.getData());
+        }
+
+    }
+
 	public HttpResponse getAllTags()
 			throws Exception {
 		checkAuthentication();

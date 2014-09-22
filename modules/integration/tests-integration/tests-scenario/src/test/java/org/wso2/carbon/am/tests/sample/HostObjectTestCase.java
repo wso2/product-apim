@@ -322,9 +322,17 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 		                  "Error while update Application from API store host object (updateApplication)");
 		Assert.assertTrue(array[38].contains("200"),
 		                  "Error while validate WF Permission from API store host object (validateWFPermission)");
-		/*Assert.assertTrue(array[39].contains(
-				"/apimgt/applicationdata/api-docs/HostObjectTestAPI-1.0.0/api-doc.json"),
-		                  "Error while getting Swagger Discovery Url from API store host object (getSwaggerDiscoveryUrl)");*/
+        Assert.assertTrue(array[38].contains("200"),
+                "Error while validate WF Permission from API store host object (validateWFPermission)");
+        Assert.assertTrue(array[40].contains("HostObjectTestAPI"),
+                "Error while getting all published APIs from API store host object search by context(search)");
+        Assert.assertTrue(array[41].contains("HostObjectTestAPI"),
+                "Error while getting all published APIs from API store host object search by version(search)");
+        Assert.assertTrue(!array[42].contains("HostObjectTestAPI"),
+                "Error while getting all published APIs from API store host object search by non-existing context (search)");
+        Assert.assertTrue(!array[43].contains("HostObjectTestAPI"),
+                "Error while getting all published APIs from API store host object search by non-existing version(search)");
+
 		return true;
 	}
 

@@ -233,7 +233,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
-						, "action=addDocumentation" + "&provider=" + provider + "&apiName=" +
+						, "action=addDocumentation" + "&mode=''&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
 						  docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
 						  + summary + "&docLocation=" + docLocation
@@ -245,6 +245,25 @@ public class APIPublisherRestClient {
 			throw new Exception("API Subscription failed> " + response.getData());
 		}
 	}
+
+    public HttpResponse updateDocument(String apiName, String version, String provider, String docName,
+                                    String docType, String sourceType, String docUrl,
+                                    String summary, String docLocation) throws Exception {
+        checkAuthentication();
+        HttpResponse response = HttpRequestUtil
+                .doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+                        , "action=addDocumentation" + "&mode=Update&provider=" + provider + "&apiName=" +
+                        apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
+                        docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
+                        + summary + "&docLocation=" + docLocation
+                        , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("API Subscription failed> " + response.getData());
+        }
+    }
 
 	public HttpResponse inlineContent(String apiName, String version, String provider,
 	                                  String docName, String content, String docDetails)

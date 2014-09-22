@@ -24,18 +24,13 @@
             <artifactId>testng</artifactId>
             <version>6.8.5</version>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.extensions</artifactId>
-            <version>4.3.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     <packaging>pom</packaging>
 
     <modules>
         <module>tests-common</module>
         <module>tests-integration/tests-scenario</module>
-        <module>tests-integration/tests-jmeter</module>
+        <!--<module>tests-integration/tests-jmeter</module>-->
         <!--<module>backend-service</module>-->
         <!--<module>tests</module>-->
         <!--<module>tests-new</module>-->

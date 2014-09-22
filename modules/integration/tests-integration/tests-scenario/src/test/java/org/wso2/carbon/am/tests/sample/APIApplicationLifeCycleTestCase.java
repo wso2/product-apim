@@ -72,6 +72,8 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case", enabled = false)
     public void testAPIApplicationLifeCycleITestCase() throws Exception {
+
+        String apiData = "";
         String APIName = "APILifeCycleTestAPI";
         String APIContext = "testAPI";
         String tags = "youtube, video, media";
@@ -180,6 +182,7 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         apiPublisher.removeDocumentation(APIName, APIVersion, providerName, "Doc Name", "How To");
         //create application
         apiStore.addApplication("test-application", "Gold", "", "this-is-test");
+        apiStore.addApplication("test-application2", "Gold", "", "this-is-test");
         apiStore.getAllApplications();
 
         //Test case to create new application and make subscriptions to that application
@@ -204,11 +207,15 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         apiStore.addComment(APIName, APIVersion, providerName, "this-is-comment");
         apiStore.getRecentlyAddedAPIs("carbon.super", "5");
 
-
         apiStore.updateApplication("test-application", "test-updated-application", "test-url", "this-is-updated", "bronze");
         apiStore.getAllApplications();
-        apiStore.removeApplication("test-updated-application");
-        apiStore.getAllSubscriptions();
+        apiData = apiStore.removeApplication("test-updated-application").getData();
+        Assert.assertTrue(!apiData.contains("false"), "Error while removing applications");
+
+        apiStore.getAllApplications();
+        apiData = apiStore.getAllSubscriptions().getData();
+        Assert.assertTrue(apiData.contains("test-application"), "Error while getting all the subscriptions");
+
         apiStore.getAllTags();
 
         //Update role permissions
@@ -216,12 +223,15 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         JSONObject jsonObject = new JSONObject(updateTierPermissionResponse.getData());
         Assert.assertTrue(!(Boolean) jsonObject.get("error"), "Error while updating tier permission");
 
+        apiData = apiStore.removeAPISubscription(APIName, APIVersion, providerName, "1").getData();
+        Assert.assertTrue(apiData.contains("{\"error\" : false}"), "Error while unsubscribe from API");
+
         apiPublisher.logout();
 	    apiStore.removeApplication("APILifeCycleTestAPI-application");
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "API Life cycle test invalid scenario")
+    @Test(groups = {"wso2.am"}, description = "API Life cycle test invalid scenario", enabled = false)
     public void testInvalidLoginAsPublisherTestCase()  {
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
@@ -238,12 +248,14 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
+    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login", enabled = false)
     public void testInvalidLoginAsSubscriberTestCase()
             throws Exception {
 
         //Try login to publisher with subscriber user
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        boolean loginFailed = false;
+        String error = "";
 
         if ((userManagementClient != null) &&
                 !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser")) {
@@ -255,19 +267,24 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
             apiPublisherRestClient.login("subscriberUser",
                     "password@123");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().toString().contains("Login failed.Insufficient privileges"),
-                    "Invalid subscriber can login to the API publisher");
+            loginFailed = true;
+            error = e.getMessage().toString();
         }
+
+        Assert.assertTrue(loginFailed && error.contains("Login failed.Insufficient privileges"),
+                "Invalid subscriber can login to the API publisher");
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login")
+    @Test(groups = {"wso2.am"}, description = "API Life cycle test subscriber login", enabled = false)
     public void testInvalidLoginAsTenantSubscriberTestCase()
             throws Exception {
 
         //Try login to publisher with tenant subscriber user
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
+        boolean loginFailed = false;
+        String error = "";
 
         tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "wso2", "Gold");
 
@@ -281,14 +298,17 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
             apiPublisherRestClient.login("subscriberUser@wso2.com",
                     "password@123");
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().toString().contains("Operation not successful: " +
-                    "Login failed.Please recheck the username and password and try again"),
-                    "Invalid tenant subscriber can login to the API publisher");
+            loginFailed = true;
+            error = e.getMessage().toString();
         }
+
+        Assert.assertTrue(error.contains("Operation not successful: " +
+                "Login failed.Please recheck the username and password and try again"),
+                "Invalid tenant subscriber can login to the API publisher");
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "API visibility")
+    @Test(groups = {"wso2.am"}, description = "API visibility", enabled = false)
     public void testAPIVisibilityTestCase()
             throws Exception {
 
@@ -464,7 +484,6 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         apiPublisherRestClient.login(context.getContextTenant().getContextUser().getUserName(),
                 context.getContextTenant().getContextUser().getPassword());
-
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
@@ -705,6 +724,127 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
     }
 
 
+    @Test(groups = {"wso2.am"}, description = "API Life cycle application related tests in store", enabled = false)
+    public void testApplicationsInStoreTestCase()
+            throws Exception {
+
+        //Try login to publisher with tenant subscriber user
+
+        APIStoreRestClient apiStoreRestClient1 = new APIStoreRestClient(storeURLHttp);
+
+        apiStoreRestClient1.login(context.getContextTenant().getContextUser().getUserName(),
+                context.getContextTenant().getContextUser().getPassword());
+
+        tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "wso2", "Gold");
+
+        if ((userManagementClient != null) &&
+                !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
+            userManagementClient.addUser("subscriberUser@wso2.com", "password@123",
+                    new String[]{"Internal/subscriber"}, null);
+        }
+
+        apiStoreRestClient1.addApplication("carbonSuperApp", "Gold", "", "super tenant app");
+        String apiData = apiStoreRestClient1.addApplication("carbonSuperApp","Gold","",
+                "super tenant app").getData();
+        Assert.assertTrue(apiData.contains("A duplicate application already exists"),
+                "application with duplicate name addition allowed");
+
+        APIStoreRestClient apiStoreRestClient2 = new APIStoreRestClient(storeURLHttp);
+
+        apiStoreRestClient2.login("admin@wso2.com",
+                "wso2@123");
+        apiData = apiStoreRestClient2.addApplication(
+                "carbonSuperApp", "Gold", "", "super tenant app").getData();
+        Assert.assertTrue(apiData.contains("{\"error\" : false}"),
+                "application with same name addition not allowed in other tenant");
+
+        apiStoreRestClient1.addApplication("carbonSuperApp", "Gold", "", "super tenant app");
+        apiData = apiStoreRestClient1.removeApplication("carbonSuperApp").getData();
+        Assert.assertTrue(apiData.contains("{\"error\" : false}"),
+                "application deletion failed");
+
+
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "API Life cycle login to store")
+    public void testLoginToStoreTestCase()
+            throws Exception {
+
+        //Try login to publisher with tenant subscriber user
+        String APICreatorRole = "APICreatorRole";
+        String APIPublisherRole = "APIPublisherRole";
+        String APIPublisherUser = "APIPublisherUser";
+        String APICreatorUser = "APICreatorUser";
+        String password = "password@123";
+        boolean loginFailed = false;
+        String errorString = "";
+
+        APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
+
+        String[] createPermissions = {
+                "/permission/admin/login",
+                "/permission/admin/manage/api/create" };
+
+        if (!userManagementClient.roleNameExists(APICreatorRole)) {
+            userManagementClient.addRole(APICreatorRole, null, createPermissions);
+        }
+
+        if ((userManagementClient != null) &&
+                !userManagementClient.userNameExists(APICreatorRole, APICreatorUser)) {
+            userManagementClient.addUser(APICreatorUser, password,
+                    new String[]{APICreatorRole}, null);
+        }
+
+        String[] publishPermissions = {
+                "/permission/admin/login",
+                "/permission/admin/manage/api/publish" };
+
+        if (!userManagementClient.roleNameExists(APIPublisherRole)) {
+            userManagementClient.addRole(APIPublisherRole, null, publishPermissions);
+        }
+
+        if ((userManagementClient != null) &&
+                !userManagementClient.userNameExists(APIPublisherRole, APIPublisherUser)) {
+            userManagementClient.addUser(APIPublisherUser, password,
+                    new String[]{APIPublisherRole}, null);
+        }
+
+        try {
+            apiStoreRestClient.login("invaliduser", "invaliduser@123");
+        } catch (Exception e) {
+            loginFailed = true;
+            errorString = e.getMessage().toString();
+        }
+
+        Assert.assertTrue(loginFailed && errorString.contains("Operation not successful: " +
+                "Login failed.Please recheck the username and password and try again"),
+                "Invalid user can login to the API store");
+        loginFailed = false;
+
+        try {
+            apiStoreRestClient.login(APICreatorUser, password);
+        } catch (Exception e) {
+            loginFailed = true;
+            errorString = e.getMessage().toString();
+        }
+
+        Assert.assertTrue(loginFailed && errorString.contains("Login failed.Insufficient Privileges"),
+                "API creator can login to the API store");
+        loginFailed = false;
+
+        try {
+            apiStoreRestClient.login(APIPublisherUser, password);
+        } catch (Exception e) {
+            loginFailed = true;
+            errorString = e.getMessage().toString();
+        }
+
+        Assert.assertTrue(loginFailed && errorString.contains("Login failed.Insufficient Privileges"),
+                "API publisher can login to the API store");
+
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
@@ -712,9 +852,9 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
         apiPublisherRestClient.login(context.getContextTenant().getContextUser().getUserName(),
                 context.getContextTenant().getContextUser().getPassword());
 
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIPublic", "1.0.0", "admin");
+        /*apiPublisherRestClient.deleteApi("APILifeCycleTestAPIPublic", "1.0.0", "admin");
         apiPublisherRestClient.deleteApi("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIRoles", "1.0.0", "admin");
+        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIRoles", "1.0.0", "admin");*/
 
         Thread.sleep(5000);
         super.cleanup();
