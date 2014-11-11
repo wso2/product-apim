@@ -67,7 +67,6 @@ public class APIApplicationLifeCycleTestCase extends APIManagerIntegrationTest {
 
         tenantManagementServiceClient = new TenantManagementServiceClient(
                 context.getContextUrls().getBackEndUrl(), getSessionCookie());
-
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case", enabled = false)

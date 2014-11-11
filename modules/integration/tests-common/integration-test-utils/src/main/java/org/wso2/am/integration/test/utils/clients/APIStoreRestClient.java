@@ -67,7 +67,7 @@ public class APIStoreRestClient {
 		                                                       "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
 				, subscriptionRequest.generateRequestParameters()
 				, requestHeaders);
-		if (response.getResponseCode() == 200) {
+        if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {

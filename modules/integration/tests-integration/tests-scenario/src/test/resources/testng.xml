@@ -23,7 +23,7 @@
         <!--<class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />                -->
         <!--<class name="org.wso2.carbon.am.tests.publisher.AddAPITestCase"/>
         <class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />-->
-        <class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.JWTTestCase" />
         <!--<class name="org.wso2.carbon.am.tests.sample.RefreshTokenTestCase" />
         <class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />
         <class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />

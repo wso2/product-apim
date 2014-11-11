@@ -18,11 +18,20 @@
 
 package org.wso2.am.integration.test.utils;
 
+import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import javax.xml.xpath.XPathExpressionException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.regex.Pattern;
 
 public class APIMgtTestUtil {
 
@@ -91,4 +100,47 @@ public class APIMgtTestUtil {
 		}
 		return apiBean;
 	}
+
+    public static void sendGetRequest(String url, String accessToken) throws XPathExpressionException, IOException {
+        HttpResponse httpResponse;
+
+        URL urlAPI = new URL(url);
+        HttpURLConnection conn = (HttpURLConnection) urlAPI.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setDoOutput(true);
+        conn.setReadTimeout(10000);
+        //setting headers
+
+        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+        conn.connect();
+        // Get the response
+        StringBuilder sb = new StringBuilder();
+        BufferedReader rd = null;
+        try {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null) {
+                sb.append(line);
+            }
+            httpResponse = new HttpResponse(sb.toString(), conn.getResponseCode());
+            httpResponse.setResponseMessage(conn.getResponseMessage());
+        } catch (IOException ignored) {
+
+        } finally {
+            if (rd != null) {
+                rd.close();
+            }
+        }
+    }
+
+
+    public static String getDecodedJWT(String serverMessage) {
+        String[] headerArray = serverMessage.split("\n");
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+
+        byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes());
+        return new String(jwtByteArray);
+    }
 }

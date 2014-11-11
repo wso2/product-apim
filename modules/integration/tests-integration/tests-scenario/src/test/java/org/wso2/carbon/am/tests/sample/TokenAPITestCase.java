@@ -43,7 +43,6 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
-
 		super.init();
 		  /*
             If test run in external distributed deployment you need to copy following resources accordingly.

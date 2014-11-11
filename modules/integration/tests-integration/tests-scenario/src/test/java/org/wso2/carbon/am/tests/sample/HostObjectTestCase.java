@@ -324,6 +324,7 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
 		                  "Error while validate WF Permission from API store host object (validateWFPermission)");
         Assert.assertTrue(array[38].contains("200"),
                 "Error while validate WF Permission from API store host object (validateWFPermission)");
+        System.out.println("\n\n\n\n\n\n40 : "+array[40]);
         Assert.assertTrue(array[40].contains("HostObjectTestAPI"),
                 "Error while getting all published APIs from API store host object search by context(search)");
         Assert.assertTrue(array[41].contains("HostObjectTestAPI"),
