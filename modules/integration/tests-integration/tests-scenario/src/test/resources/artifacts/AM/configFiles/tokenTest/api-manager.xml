@@ -97,7 +97,7 @@
 	<!-- 
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
-	<RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage>
+	<!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
     </APIConsumerAuthentication>
 
     <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
