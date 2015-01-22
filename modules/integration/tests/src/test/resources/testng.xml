@@ -15,7 +15,7 @@
             <!--class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase"/-->
 
 
-            <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleITestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase"/>
             <class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase"/>

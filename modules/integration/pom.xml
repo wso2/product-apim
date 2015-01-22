@@ -11,16 +11,30 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.am</groupId>
     <artifactId>integration</artifactId>
     <name>WSO2 API Manager - Integration Tests</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.automation</groupId>
+            <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+            <version>4.3.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.5</version>
+        </dependency>
+    </dependencies>
     <packaging>pom</packaging>
 
     <modules>
-        <module>backend-service</module>
-        <module>tests</module>
+        <module>tests-common</module>
+        <module>tests-integration/tests-scenario</module>
+        <!--<module>tests-integration/tests-jmeter</module>-->
+        <!--<module>backend-service</module>-->
+        <!--<module>tests</module>-->
         <!--<module>tests-new</module>-->
-        <module>tests-ui</module>
+        <!--<module>tests-ui</module>-->
     </modules>
 
     <build>
