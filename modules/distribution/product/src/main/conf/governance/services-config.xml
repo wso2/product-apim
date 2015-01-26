@@ -1,0 +1,156 @@
+<!--
+  ~ Copyright 2005-2007 WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<service>
+
+    <table name="Overview">
+        <field type="text" required="true" readonly="true">
+            <name label="Name">Name</name>
+        </field>
+	<field type="text" required="true" readonly="true">
+            <name label="Namespace">Namespace</name>
+        </field>
+        <field type="text">
+            <name label="Version">Version</name>
+        </field>
+        <field type="text">
+            <name label="Scopes">Scopes</name>
+        </field>
+        <field type="text">
+            <name label="Types">Types</name>
+        </field>
+        <field type="text-area">
+            <name label="Description">Description</name>
+        </field>
+    </table>
+
+    <table name="Contacts">
+        <subheading>
+            <heading>Contact Type</heading><heading>Contact Name/Organization Name</heading>
+        </subheading>
+        <field type="option-text" maxoccurs="unbounded">
+            <name label="Contact">Contact</name>
+            <values>
+                <value>None</value><value>Technical Owner</value><value>Business Owner</value>
+            </values>
+        </field>
+    </table>
+
+    <table name="Interface">
+        <field type="text">
+            <name label="WSDL URL">WSDL URL</name>
+        </field>
+        <field type="options">
+            <name label="Transport Protocols">Transport Protocols</name>
+            <values>
+                <value>None</value><value>HTTPS</value><value>HTTP</value><value>SMTP</value><value>TCP</value><value>XMPP</value><value>JMS</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Message Formats">Message Formats</name>
+            <values>
+                <value>None</value><value>SOAP 1.1</value><value>SOAP 1.2</value><value>XML</value><value>JSON</value><value>HTTP-REST</value><value>CSV</value><value>BINARY</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Message Exchange Patterns">Message Exchange Patterns</name>
+            <values>
+                <value>None</value><value>Request Response</value><value>One Way</value>
+            </values>
+        </field>
+    </table>
+
+    <table name="Security">
+        <field type="options">
+            <name label="Authentication Platform">Authentication Platform</name>
+            <values>
+                <value>None</value><value>TAM_WEBSEAL</value><value>XTS-WS TRUST</value><value>BuiltIn</value><value>WSO2 Identity Server</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Authentication Mechanism">Authentication Mechanism</name>
+            <values>
+                <value>None</value><value>OpenID</value><value>InfoCard</value><value>Client Certifcates</value><value>HTTPS Basic Authentication</value><value>IP Address Filtering</value><value>WS-Security/WS-Trust Token</value><value>Others</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Authorization Platform">Authorization Platform</name>
+            <values>
+                <value>None</value><value>TAM_WEBSEAL</value><value>XTS-WS TRUST</value><value>BuiltIn</value><value>WSO2 Identity Server</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Message Integrity">Message Integrity</name>
+            <values>
+                <value>None</value><value>SSL</value><value>WS-Security</value><value>XML Digital Signatures</value><value>Other</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Message Encryption">Message Encryption</name>
+            <values>
+                <value>None</value><value>SSL</value><value>WS-Security</value><value>XML Digital Signatures</value><value>Other</value>
+            </values>
+        </field>
+        <field type="text-area">
+            <name label="Comments">Comments</name>
+        </field>
+    </table>
+
+    <table name="Endpoints">
+        <subheading>
+            <heading>Environments</heading><heading>URL</heading>
+        </subheading>
+        <field type="option-text" maxoccurs="unbounded">
+            <name label="Endpoint">Endpoint</name>
+            <values>
+                <value>None</value><value>Unknown</value><value>Dev</value><value>Test</value><value>Stag</value><value>Prod</value>
+            </values>
+        </field>
+    </table>
+
+    <table name="Doc Links" columns="3">
+        <subheading>
+            <heading>Document Type</heading><heading>URL</heading><heading>Comment</heading>
+        </subheading>
+        <field type="text">
+            <name label="Document Type">Document Type</name>
+        </field>
+        <field type="text" url="true">
+            <name label="URL">URL</name>
+        </field>
+        <field type="text-area">
+            <name label="Document Comment">Document Comment</name>
+        </field>
+        <field type="text">
+            <name label="Document Type1">Document Type1</name>
+        </field>
+        <field type="text" url="true">
+            <name label="URL1">URL1</name>
+        </field>
+        <field type="text-area">
+            <name label="Document Comment1">Document Comment1</name>
+        </field>
+        <field type="text">
+            <name label="Document Type2">Document Type2</name>
+        </field>
+        <field type="text" url="true">
+            <name label="URL2">URL2</name>
+        </field>
+        <field type="text-area">
+            <name label="Document Comment2">Document Comment2</name>
+        </field>
+    </table>
+</service>

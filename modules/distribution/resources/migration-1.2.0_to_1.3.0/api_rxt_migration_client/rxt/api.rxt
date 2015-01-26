@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<artifactType type="application/vnd.wso2-api+xml" shortName="api" singularLabel="API" pluralLabel="APIs" hasNamespace="false" iconSet="7">
+	<storagePath>/apimgt/applicationdata/provider/@{overview_provider}/@{overview_name}/@{overview_version}/api</storagePath>
+	<nameAttribute>overview_name</nameAttribute>
+	<ui>
+        <list>
+            <column name="Provider">
+                <data type="path" value="overview_provider" href="@{storagePath}"/>
+            </column>
+            <column name="Name">
+                <data type="path" value="overview_name" href="@{storagePath}"/>
+            </column>
+            <column name="Version">
+                <data type="path" value="overview_version" href="@{storagePath}"/>
+            </column>
+        </list>
+	</ui>
+	<content>
+    <table name="Overview">
+        <field type="text" required="true">
+            <name>Provider</name>
+        </field>
+        <field type="text" required="true">
+            <name>Name</name>
+        </field>
+        <field type="text" required="true">
+            <name>Context</name>
+        </field>
+        <field type="text" required="true">
+            <name>Version</name>
+        </field>
+        <field type="text-area">
+            <name>Description</name>
+        </field>
+        <field type="text" url="true">
+            <name>Endpoint URL</name>
+        </field>
+        <field type="text" url="true">
+            <name>Sandbox URL</name>
+        </field>
+        <field type="text">
+            <name>WSDL</name>
+        </field>
+        <field type="text">
+            <name>WADL</name>
+        </field>
+        <field type="text">
+            <name>Thumbnail</name>
+        </field>
+        <field type="options">
+            <name label="IsLatest">Is Latest</name>
+            <values>
+                <value>false</value>
+                <value>true</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Tier Availability">Tier</name>
+            <values>
+                <value>Gold</value>
+                <value>Silver</value>
+                <value>Other</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Status">Status</name>
+            <values>
+                <value>CREATED</value>
+                <value>PUBLISHED</value>
+                <value>RETIRED</value>
+                <value>DEPRECATED</value>
+                <value>BLOCKED</value>
+            </values>
+        </field>
+        <field type="text">
+            <name>Technical Owner</name>
+        </field>
+        <field type="text">
+            <name>Technical Owner Email</name>
+        </field>
+        <field type="text">
+            <name>Business Owner</name>
+        </field>
+        <field type="text">
+            <name>Business Owner Email</name>
+        </field>
+    </table>
+    <table name="URITemplate" columns="3">
+            <subheading>
+                <heading>URL Pattern</heading>
+                <heading>HTTP Verb</heading>
+                <heading>Auth Type</heading>
+            </subheading>
+            <field type="text">
+                <name>URL Pattern0</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb0</name>
+            </field>
+            <field type="text">
+                <name>Auth Type0</name>
+            </field>
+            <field type="text">
+                <name>URL Pattern1</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb1</name>
+            </field>
+            <field type="text">
+                <name>Auth Type1</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern2</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb2</name>
+            </field>
+            <field type="text">
+                <name>Auth Type2</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern3</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb3</name>
+            </field>
+            <field type="text">
+                <name>Auth Type3</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern4</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb4</name>
+            </field>
+            <field type="text">
+                <name>Auth Type4</name>
+            </field>
+        </table>
+</content>
+	
+</artifactType>
+

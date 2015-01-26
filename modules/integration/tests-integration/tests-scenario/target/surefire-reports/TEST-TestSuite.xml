@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite failures="2" time="1.267" errors="0" skipped="4" tests="6" name="TestSuite">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/usr/local/java/jdk1.7.0_55/jre/lib/amd64"/>
+    <property name="java.vm.version" value="24.55-b03"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="path.separator" value=":"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/home/roshan/workspace/GIT/product-apim/product-apim"/>
+    <property name="java.runtime.version" value="1.7.0_55-b13"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="java.endorsed.dirs" value="/usr/local/java/jdk1.7.0_55/jre/lib/endorsed"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="os.name" value="Linux"/>
+    <property name="classworlds.conf" value="/usr/local/apache-maven/apache-maven-3.0.5/bin/m2.conf"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="51.0"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="3.13.0-39-generic"/>
+    <property name="user.home" value="/home/roshan"/>
+    <property name="user.timezone" value="Asia/Colombo"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.specification.version" value="1.7"/>
+    <property name="user.name" value="roshan"/>
+    <property name="java.class.path" value="/usr/local/apache-maven/apache-maven-3.0.5/boot/plexus-classworlds-2.4.jar"/>
+    <property name="java.vm.specification.version" value="1.7"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.home" value="/usr/local/java/jdk1.7.0_55/jre"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher clean install"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.7.0_55"/>
+    <property name="java.ext.dirs" value="/usr/local/java/jdk1.7.0_55/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="securerandom.source" value="file:/dev/./urandom"/>
+    <property name="sun.boot.class.path" value="/usr/local/java/jdk1.7.0_55/jre/lib/resources.jar:/usr/local/java/jdk1.7.0_55/jre/lib/rt.jar:/usr/local/java/jdk1.7.0_55/jre/lib/sunrsasign.jar:/usr/local/java/jdk1.7.0_55/jre/lib/jsse.jar:/usr/local/java/jdk1.7.0_55/jre/lib/jce.jar:/usr/local/java/jdk1.7.0_55/jre/lib/charsets.jar:/usr/local/java/jdk1.7.0_55/jre/lib/jfr.jar:/usr/local/java/jdk1.7.0_55/jre/classes"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="maven.home" value="/usr/local/apache-maven/apache-maven-3.0.5"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="sun.desktop" value="gnome"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase time="1.266" classname="org.testlink.HOTestCase" name="init">
+    <failure message="Connection refused" type="org.apache.axis2.AxisFault">org.apache.axis2.AxisFault: Connection refused
+	at org.apache.axis2.AxisFault.makeFault(AxisFault.java:430)
+	at org.apache.axis2.transport.http.HTTPSender.sendViaPost(HTTPSender.java:199)
+	at org.apache.axis2.transport.http.HTTPSender.send(HTTPSender.java:77)
+	at org.apache.axis2.transport.http.CommonsHTTPTransportSender.writeMessageWithCommons(CommonsHTTPTransportSender.java:451)
+	at org.apache.axis2.transport.http.CommonsHTTPTransportSender.invoke(CommonsHTTPTransportSender.java:278)
+	at org.apache.axis2.engine.AxisEngine.send(AxisEngine.java:442)
+	at org.apache.axis2.description.OutInAxisOperationClient.send(OutInAxisOperation.java:430)
+	at org.apache.axis2.description.OutInAxisOperationClient.executeImpl(OutInAxisOperation.java:225)
+	at org.apache.axis2.client.OperationClient.execute(OperationClient.java:149)
+	at org.wso2.carbon.authenticator.stub.AuthenticationAdminStub.login(AuthenticationAdminStub.java:659)
+	at org.wso2.carbon.integration.common.admin.client.AuthenticatorClient.login(AuthenticatorClient.java:59)
+	at org.wso2.carbon.integration.common.utils.LoginLogoutClient.login(LoginLogoutClient.java:68)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.login(APIManagerIntegrationTest.java:231)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.init(APIManagerIntegrationTest.java:85)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.init(APIManagerIntegrationTest.java:79)
+	at org.testlink.HOTestCase.init(HOTestCase.java:59)
+Caused by: java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:579)
+	at sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:618)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.commons.httpclient.protocol.ReflectionSocketFactory.createSocket(ReflectionSocketFactory.java:140)
+	at org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory.createSocket(SSLProtocolSocketFactory.java:130)
+	at org.apache.commons.httpclient.HttpConnection.open(HttpConnection.java:707)
+	at org.apache.commons.httpclient.MultiThreadedHttpConnectionManager$HttpConnectionAdapter.open(MultiThreadedHttpConnectionManager.java:1361)
+	at org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(HttpMethodDirector.java:387)
+	at org.apache.commons.httpclient.HttpMethodDirector.executeMethod(HttpMethodDirector.java:171)
+	at org.apache.commons.httpclient.HttpClient.executeMethod(HttpClient.java:397)
+	at org.apache.axis2.transport.http.AbstractHTTPSender.executeMethod(AbstractHTTPSender.java:630)
+	at org.apache.axis2.transport.http.HTTPSender.sendViaPost(HTTPSender.java:195)
+	... 47 more
+</failure>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestExecutionListener] - Inside Test Execution Listener - On Execution
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Test method Transform manager for testApplication
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Configuration Transform manager  init
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Configuration Transform manager  destroy
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Test method Transform manager for testApplicationOperations
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Test method Transform manager for testAPIProvider
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener] - Started Test method Transform manager for testHostObjectTestCase
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestSuiteListener] - Inside Test Suite Listener - On Start
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: wso2caching-4.3.0-SNAPSHOT - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.caching.core/4.3.0-SNAPSHOT/org.wso2.carbon.caching.core-4.3.0-SNAPSHOT.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: uddiversionmodule-4.2.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.registry.uddi/4.2.0/org.wso2.carbon.registry.uddi-4.2.0.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: pagination-4.2.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.registry.server/4.2.0/org.wso2.carbon.registry.server-4.2.0.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: ComponentMgtModule-4.2.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.feature.mgt.services/4.2.0/org.wso2.carbon.feature.mgt.services-4.2.0.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: rampart - file:/home/roshan/.m2/repository/org/apache/rampart/wso2/rampart-core/1.6.1.wso2v9/rampart-core-1.6.1.wso2v9.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: rahas - file:/home/roshan/.m2/repository/org/apache/rampart/wso2/rampart-trust/1.6.1.wso2v9/rampart-trust-1.6.1.wso2v9.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: POXSecurityModule-4.2.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.security.mgt/4.2.0/org.wso2.carbon.security.mgt-4.2.0.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: wso2throttle-4.2.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.throttle.core/4.2.0/org.wso2.carbon.throttle.core-4.2.0.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: metering-2.1.2 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.usage.agent/2.1.2/org.wso2.carbon.usage.agent-2.1.2.jar
+INFO  [org.apache.axis2.deployment.ModuleDeployer] - Deploying module: wso2statistics-4.1.0 - file:/home/roshan/.m2/repository/org/wso2/carbon/org.wso2.carbon.statistics/4.1.0/org.wso2.carbon.statistics-4.1.0.jar
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - I/O exception (java.net.ConnectException) caught when processing request: Connection refused
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - Retrying request
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - I/O exception (java.net.ConnectException) caught when processing request: Connection refused
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - Retrying request
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - I/O exception (java.net.ConnectException) caught when processing request: Connection refused
+INFO  [org.apache.commons.httpclient.HttpMethodDirector] - Retrying request
+INFO  [org.apache.axis2.transport.http.HTTPSender] - Unable to sendViaPost to url[https://localhost:9443/services/AuthenticationAdmin]
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+	at java.net.Socket.connect(Socket.java:579)
+	at sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:618)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.commons.httpclient.protocol.ReflectionSocketFactory.createSocket(ReflectionSocketFactory.java:140)
+	at org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory.createSocket(SSLProtocolSocketFactory.java:130)
+	at org.apache.commons.httpclient.HttpConnection.open(HttpConnection.java:707)
+	at org.apache.commons.httpclient.MultiThreadedHttpConnectionManager$HttpConnectionAdapter.open(MultiThreadedHttpConnectionManager.java:1361)
+	at org.apache.commons.httpclient.HttpMethodDirector.executeWithRetry(HttpMethodDirector.java:387)
+	at org.apache.commons.httpclient.HttpMethodDirector.executeMethod(HttpMethodDirector.java:171)
+	at org.apache.commons.httpclient.HttpClient.executeMethod(HttpClient.java:397)
+	at org.apache.axis2.transport.http.AbstractHTTPSender.executeMethod(AbstractHTTPSender.java:630)
+	at org.apache.axis2.transport.http.HTTPSender.sendViaPost(HTTPSender.java:195)
+	at org.apache.axis2.transport.http.HTTPSender.send(HTTPSender.java:77)
+	at org.apache.axis2.transport.http.CommonsHTTPTransportSender.writeMessageWithCommons(CommonsHTTPTransportSender.java:451)
+	at org.apache.axis2.transport.http.CommonsHTTPTransportSender.invoke(CommonsHTTPTransportSender.java:278)
+	at org.apache.axis2.engine.AxisEngine.send(AxisEngine.java:442)
+	at org.apache.axis2.description.OutInAxisOperationClient.send(OutInAxisOperation.java:430)
+	at org.apache.axis2.description.OutInAxisOperationClient.executeImpl(OutInAxisOperation.java:225)
+	at org.apache.axis2.client.OperationClient.execute(OperationClient.java:149)
+	at org.wso2.carbon.authenticator.stub.AuthenticationAdminStub.login(AuthenticationAdminStub.java:659)
+	at org.wso2.carbon.integration.common.admin.client.AuthenticatorClient.login(AuthenticatorClient.java:59)
+	at org.wso2.carbon.integration.common.utils.LoginLogoutClient.login(LoginLogoutClient.java:68)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.login(APIManagerIntegrationTest.java:231)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.init(APIManagerIntegrationTest.java:85)
+	at org.wso2.am.integration.test.utils.APIManagerIntegrationTest.init(APIManagerIntegrationTest.java:79)
+	at org.testlink.HOTestCase.init(HOTestCase.java:59)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:84)
+	at org.testng.internal.Invoker.invokeConfigurationMethod(Invoker.java:564)
+	at org.testng.internal.Invoker.invokeConfigurations(Invoker.java:213)
+	at org.testng.internal.Invoker.invokeConfigurations(Invoker.java:138)
+	at org.testng.internal.TestMethodWorker.invokeBeforeClassMethods(TestMethodWorker.java:175)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:107)
+	at org.testng.TestRunner.privateRun(TestRunner.java:767)
+	at org.testng.TestRunner.run(TestRunner.java:617)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:334)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:329)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:291)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:240)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:86)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1224)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1149)
+	at org.testng.TestNG.run(TestNG.java:1057)
+	at org.apache.maven.surefire.testng.TestNGExecutor.run(TestNGExecutor.java:178)
+	at org.apache.maven.surefire.testng.TestNGXmlTestSuite.execute(TestNGXmlTestSuite.java:92)
+	at org.apache.maven.surefire.testng.TestNGProvider.invoke(TestNGProvider.java:96)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:606)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:115)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:75)
+</system-out>
+  </testcase>
+  <testcase time="0" classname="org.testlink.HOTestCase" name="testAPIProvider">
+    <skipped/>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - Running the test method --- org.testlink.HOTestCase.testAPIProvider ----
+</system-out>
+  </testcase>
+  <testcase time="0" classname="org.testlink.HOTestCase" name="testApplication">
+    <skipped/>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - On test skipped...
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - Running the test method --- org.testlink.HOTestCase.testApplication ----
+</system-out>
+  </testcase>
+  <testcase time="0" classname="org.testlink.HOTestCase" name="testApplicationOperations">
+    <skipped/>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - On test skipped...
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - Running the test method --- org.testlink.HOTestCase.testApplicationOperations ----
+</system-out>
+  </testcase>
+  <testcase time="0" classname="org.testlink.HOTestCase" name="testHostObjectTestCase">
+    <skipped/>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - On test skipped...
+INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - Running the test method --- org.testlink.HOTestCase.testHostObjectTestCase ----
+</system-out>
+  </testcase>
+  <testcase time="0.001" classname="org.testlink.HOTestCase" name="destroy">
+    <failure type="java.lang.NullPointerException">java.lang.NullPointerException
+	at org.testlink.HOTestCase.destroy(HOTestCase.java:253)
+</failure>
+    <system-out>INFO  [org.wso2.carbon.automation.engine.testlisteners.TestManagerListener] - On test skipped...
+</system-out>
+  </testcase>
+</testsuite>
