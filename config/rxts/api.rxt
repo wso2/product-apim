@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<artifactType type="application/vnd.wso2-api+xml" shortName="api" singularLabel="API" pluralLabel="APIs" hasNamespace="false" iconSet="7">
+	<storagePath>/apimgt/applicationdata/provider/@{overview_provider}/@{overview_name}/@{overview_version}/api</storagePath>
+	<nameAttribute>overview_name</nameAttribute>
+	<ui>
+        <list>
+            <column name="Provider">
+                <data type="path" value="overview_provider" href="@{storagePath}"/>
+            </column>
+            <column name="Name">
+                <data type="path" value="overview_name" href="@{storagePath}"/>
+            </column>
+            <column name="Version">
+                <data type="path" value="overview_version" href="@{storagePath}"/>
+            </column>
+        </list>
+	</ui>
+	<content>
+    <table name="Overview">
+        <field type="text" required="true">
+            <name>Provider</name>
+        </field>
+        <field type="text" required="true">
+            <name>Name</name>
+        </field>
+        <field type="text" required="true">
+            <name>Context</name>
+        </field>
+        <field type="text" required="true">
+            <name>Version</name>
+        </field>
+        <field type="options">
+            <name label="isDefaultVersion">Is Default Version</name>
+            <values>
+                <value>false</value>
+                <value>true</value>
+            </values>
+        </field>
+        <field type="text">
+            <name>Transports</name>
+        </field>
+        <field type="text">
+            <name>Redirect URL</name>
+        </field>
+	<field type="text">
+            <name>Advertise Only</name>
+        </field>
+        <field type="text">
+            <name>API Owner</name>
+        </field>
+        <field type="text-area">
+            <name>Description</name>
+        </field>
+		<field type="options">
+            <name label="Endpoint Type">Endpoint Type</name>
+            <values>
+                <value>Secured</value>
+                <value>Non Secured</value>             
+            </values>
+        </field>
+        <field type="text" url="true">
+            <name>Endpoint URL</name>
+        </field>
+        <field type="text">
+            <name>Implementation</name>
+        </field>
+ 	<field type="text-area">
+            <name>Endpoint Config</name>
+        </field>
+	<field type="text" url="true">
+            <name>Endpoint Username</name>
+        </field>
+		<field type="text" url="true">
+            <name>Endpoint Password</name>
+        </field>
+        <field type="text" url="true">
+            <name>Sandbox URL</name>
+        </field>
+		 <field type="text">
+            <name>InSequence</name>
+        </field>
+        <field type="text">
+            <name>OutSequence</name>
+        </field>
+	<field type="text">
+            <name>FaultSequence</name>
+        </field>
+        <field type="text">
+            <name>WSDL</name>
+        </field>
+        <field type="text">
+            <name>WADL</name>
+        </field>
+        <field type="text">
+            <name>Thumbnail</name>
+        </field>
+        <field type="text">
+            <name>Visibility</name>
+        </field>
+        <field type="text">
+            <name>Visible Roles</name>
+        </field>
+	<field type="text">
+            <name>Visible Tenants</name>
+        </field>
+        <field type="options">
+            <name label="IsLatest">Is Latest</name>
+            <values>
+                <value>false</value>
+                <value>true</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Tier Availability">Tier</name>
+            <values>
+                <value>Gold</value>
+                <value>Silver</value>
+                <value>Other</value>
+            </values>
+        </field>
+        <field type="options">
+            <name label="Status">Status</name>
+            <values>
+                <value>CREATED</value>
+                <value>PUBLISHED</value>
+		<value>PROTOTYPED</value>
+                <value>RETIRED</value>
+                <value>DEPRECATED</value>
+                <value>BLOCKED</value>
+            </values>
+        </field>
+        <field type="text">
+            <name>Technical Owner</name>
+        </field>
+        <field type="text">
+            <name>Technical Owner Email</name>
+        </field>
+        <field type="text">
+            <name>Business Owner</name>
+        </field>
+        <field type="text">
+            <name>Business Owner Email</name>
+        </field>
+	<field type="text">
+            <name>Subscription Availability</name>
+        </field>
+        <field type="text">
+            <name>Tenants</name>
+        </field>
+        <field type="options">
+            <name label="Response Caching">Response Caching</name>
+            <values>
+                <value>Enabled</value>
+                <value>Disabled</value>             
+            </values>
+        </field>
+        <field type="text">
+            <name>Cache Timeout</name>
+        </field>
+        <field type="options">
+            <name label="Destination Statistics">Destination Stats Enabled</name>
+            <values>
+                <value>Enabled</value>
+                <value>Disabled</value>             
+            </values>
+        </field>
+    </table>
+    <table name="URITemplate" columns="4">
+            <subheading>
+                <heading>URL Pattern</heading>
+                <heading>HTTP Verb</heading>
+                <heading>Auth Type</heading>
+                <heading>Mediation Script</heading>
+            </subheading>
+            <field type="text">
+                <name>URL Pattern0</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb0</name>
+            </field>
+            <field type="text">
+                <name>Auth Type0</name>
+            </field>
+            <field type="text">
+                <name>Mediation Script0</name>
+            </field>
+            <field type="text">
+                <name>URL Pattern1</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb1</name>
+            </field>
+            <field type="text">
+                <name>Auth Type1</name>
+            </field>
+            <field type="text">
+                <name>Mediation Script1</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern2</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb2</name>
+            </field>
+            <field type="text">
+                <name>Auth Type2</name>
+            </field>
+            <field type="text">
+                <name>Mediation Script2</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern3</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb3</name>
+            </field>
+            <field type="text">
+                <name>Auth Type3</name>
+            </field>
+            <field type="text">
+                <name>Mediation Script3</name>
+            </field>
+             <field type="text">
+                <name>URL Pattern4</name>
+            </field>
+            <field type="text">
+                <name>HTTP Verb4</name>
+            </field>
+            <field type="text">
+                <name>Auth Type4</name>
+            </field>
+            <field type="text">
+                <name>Mediation Script4</name>
+            </field>
+        </table>
+</content>
+
+</artifactType>

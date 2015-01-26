@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2005-2010, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!-- Default main sequence shipped with the WSO2 ESB -->
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="main">
+    <description>The default main sequence for API manager - Returns 404 Not Found</description>
+    <in>
+        <log level="custom">
+            <property name="STATUS" value="Message dispatched to the main sequence. Invalid URL."/>
+            <property name="RESOURCE" expression="fn:concat('/', $axis2:REST_URL_POSTFIX)"/>
+        </log>
+        <sequence key="_build_"/>
+        <filter source="$ctx:TRANSPORT_DENIED" regex="true">
+            <payloadFactory>
+                <format>
+                    <am:fault xmlns:am="http://wso2.org/apimanager">
+                        <am:code>403</am:code>
+                        <am:type>Status report</am:type>
+                        <am:message>Forbidden</am:message>
+                        <am:description>Unsupported Transport [ $2 ]. The requested resource (/$1) is not available.</am:description>
+                    </am:fault>
+                </format>
+                <args>
+                    <arg expression="$axis2:REST_URL_POSTFIX"/>
+                    <arg expression="$ctx:IN_TRANSPORT"/>
+                </args>
+            </payloadFactory>
+            <property name="HTTP_SC" value="403" scope="axis2"/>
+            <property name="RESPONSE" value="true"/>
+            <header name="To" action="remove"/>
+            <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+            <property name="ContentType" scope="axis2" action="remove"/>
+            <property name="Authorization" scope="transport" action="remove"/>
+            <property name="Host" scope="transport" action="remove"/>
+            <property name="Accept" scope="transport" action="remove"/>
+            <send/>
+        </filter>
+        <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
+            <then>
+                <property name="SOAP_FAULT_CODE" value="Server"/>
+                <makefault>
+                    <code expression="$ctx:SOAP_FAULT_CODE"/>
+                    <reason value="The requested endpoint is not available."/>
+                </makefault>
+            </then>
+            <else>
+                <payloadFactory>
+                    <format>
+                        <am:fault xmlns:am="http://wso2.org/apimanager">
+                            <am:code>404</am:code>
+                            <am:type>Status report</am:type>
+                            <am:message>Not Found</am:message>
+                            <am:description>The requested resource (/$1) is not available.</am:description>
+                        </am:fault>
+                    </format>
+                    <args>
+                        <arg expression="$axis2:REST_URL_POSTFIX"/>
+                    </args>
+                </payloadFactory>
+            </else>
+        </filter>
+        <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+            <property name="messageType" value="application/xml" scope="axis2"/>
+        </filter>
+        <property name="HTTP_SC" value="404" scope="axis2"/>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <property name="ContentType" scope="axis2" action="remove"/>
+        <property name="Authorization" scope="transport" action="remove"/>
+        <property name="Host" scope="transport" action="remove"/>
+        <property name="Accept" scope="transport" action="remove"/>
+        <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+        <send/>
+        <drop/>
+    </in>
+    <out>
+        <log level="full">
+            <property name="STATUS" value="Unexpected response message in out flow"/>
+        </log>
+        <drop/>
+    </out>
+</sequence>

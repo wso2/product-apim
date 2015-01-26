@@ -1,0 +1,16 @@
+<BillingConfig>
+<parameter name="call">
+<range0><start>0</start><end>5</end><value>0.0</value></range0>
+<range1><start>5</start><end>10</end><value>2.0</value></range1>
+<range2><start>10</start><end>15000</end><value>5.0</value></range2>
+</parameter>
+<parameter name="data">
+<range0><start>0</start><end>10</end><value>0.0</value></range0>
+<range1><start>10</start><end>20</end><value>1.0</value></range1>
+<range2><start>20</start><end>30000</end><value>2.0</value></range2>
+</parameter>
+<parameter name="messages">
+<range0><start>0</start><end>10</end><value>0.5</value></range0>
+<range1><start>10</start><end>20000</end><value>1.0</value></range1>
+</parameter>
+</BillingConfig>

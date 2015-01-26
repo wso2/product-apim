@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+   <xs:element name="artifactType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="storagePath" type="xs:string"/>
+        <xs:element name="nameAttribute" type="xs:string" minOccurs="0"/>
+        <xs:element name="namespaceAttribute" type="xs:string" minOccurs="0"/>
+	 <xs:element name="menu" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="id" type="xs:string"/>
+              <xs:element name="i18n-key" type="xs:string"/>
+              <xs:element name="i18n-bundle" type="xs:string"/>
+              <xs:element name="parent-menu" type="xs:string"/>
+              <xs:element name="link" type="xs:string"/>
+              <xs:element name="url-params" type="xs:string"/>
+              <xs:element name="region" type="xs:string"/>
+              <xs:element name="order" type="xs:string"/>
+              <xs:element name="style-class" type="xs:string"/>
+              <xs:element name="icon" type="xs:string"/>
+              <xs:element name="require-permission" type="xs:string"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ui">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="list">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="column" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="data">
+                            <xs:complexType>
+                              <xs:attribute name="type" type="xs:string" />
+                              <xs:attribute name="value" type="xs:string" />
+                              <xs:attribute name="href" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string" />
+                        <xs:attribute name="required" type="xs:boolean" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="relationships" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="association" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="type" type="xs:string" />
+                  <xs:attribute name="source" type="xs:string" />
+                  <xs:attribute name="target" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="type" type="xs:string" />
+                  <xs:attribute name="target" type="xs:string" />
+                  <xs:attribute name="source" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+	<xs:element name="content" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="shortName" use="required">
+          <xs:simpleType>
+              <xs:restriction base="xs:string">
+                  <xs:pattern value="([a-zA-Z0-9])+"/>
+              </xs:restriction>
+          </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="type" use="required">
+          <xs:simpleType>
+              <xs:restriction base="xs:string">
+                  <xs:pattern value="(application/vnd\.[a-zA-Z0-9.-]+\+xml)"/>
+              </xs:restriction>
+          </xs:simpleType>
+      </xs:attribute>             
+      <xs:attribute name="singularLabel" type="xs:string" use="required"/>
+      <xs:attribute name="pluralLabel" type="xs:string" use="required"/>
+      <xs:attribute name="hasNamespace" type="xs:boolean" use="required"/>
+      <xs:attribute name="iconSet" type="xs:integer" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="content">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" name="table"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="service">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" name="table"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="table">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" name="subheading"/>
+                <xs:element maxOccurs="unbounded" name="field"/>
+            </xs:sequence>
+            <xs:attribute name="columns" type="xs:integer"/>
+            <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="subheading">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" name="heading"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="heading" type="xs:string"/>
+    <xs:element name="field">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name"/>
+                <xs:element minOccurs="0" name="values"/>
+            </xs:sequence>
+            <xs:attribute name="maxoccurs" type="xs:NCName" fixed="unbounded"/>
+            <xs:attribute name="readonly" type="xs:boolean"/>
+            <xs:attribute name="url" type="xs:boolean"/>
+            <xs:attribute name="path" type="xs:boolean"/>
+            <xs:attribute name="required" type="xs:boolean"/>
+            <xs:attribute name="type" use="required" type="xs:NCName"/>
+            <xs:attribute name="default" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+		<xs:element name="name">
+			  <xs:complexType mixed="true">
+				    <xs:simpleContent>
+					      <xs:extension base="restrictedString">
+						        <xs:attribute name="label" use="optional"/>
+					      </xs:extension>
+				    </xs:simpleContent>
+			  </xs:complexType>
+    </xs:element>
+    <xs:element name="values">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="value"/>
+            </xs:sequence>
+            <xs:attribute name="class"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="value" type="xs:string"/>
+		<xs:simpleType name="restrictedString">
+			  <xs:restriction base="xs:string">
+						<xs:pattern value="[^~!@#;%^*+={}()\\|\\\\&gt;,]+"/>
+			  </xs:restriction>
+		</xs:simpleType>
+</xs:schema>

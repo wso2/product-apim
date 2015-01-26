@@ -1,0 +1,27 @@
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+	<display-name>Pizza Shack Client App</display-name>
+
+	<listener>
+		<listener-class>com.pizzashack.client.web.PizzaShackContextListener</listener-class>
+	</listener>
+	
+	<context-param>
+        <param-name>serverURL</param-name>
+        <param-value>http://localhost:8280/pizzashack</param-value>
+    </context-param>
+    <context-param>
+        <param-name>loginURL</param-name>
+        <param-value>http://localhost:8280/token</param-value>
+    </context-param>
+    <context-param>
+        <param-name>consumerKey</param-name>
+        <param-value>p51ZBFaY_GD955qMjqSah76Pa_ca</param-value>
+    </context-param>
+    <context-param>
+        <param-name>consumerSecret</param-name>
+        <param-value>1Y_K6Zr_bQq8MfDBa31odFTa0BEa</param-value>
+    </context-param>
+	
+</web-app>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Browser" id="1" x="133" y="72" width="761" height="593" text="Browser&#xA;http://..." measuredWidth="761" measuredHeight="593"/>
+  <widgets xsi:type="model:Menu" id="2" x="200" y="184" width="641" text="&amp;APIs                            | ,&amp;Applications                | ,&amp;API Providers                  |,    &amp;Help" measuredWidth="641" measuredHeight="23" selection="2">
+    <items x="5" y="0" width="138" height="23" text="&amp;APIs                            | "/>
+    <items x="143" y="0" width="140" height="23" text="&amp;Applications                | "/>
+    <items x="283" y="0" width="147" height="23" text="&amp;API Providers                  |"/>
+    <items x="430" y="0" width="45" height="23" text="   &amp;Help"/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="3" x="686" y="156" text="Search" measuredWidth="66" measuredHeight="24"/>
+  <widgets xsi:type="model:Tree" id="5" x="154" y="252" width="209" height="377" text="&#xA;--API1&#xA;-API2&#xA;-API3&#xA;-API3&#xA;" measuredWidth="209" measuredHeight="377">
+    <items x="0" y="5" width="209" height="20"/>
+    <items x="0" y="25" width="209" height="20" text="--API1"/>
+    <items x="0" y="45" width="209" height="20" text="-API2"/>
+    <items x="0" y="65" width="209" height="20" text="-API3"/>
+    <items x="0" y="85" width="209" height="20" text="-API3"/>
+  </widgets>
+  <widgets xsi:type="model:Tabs" id="6" x="154" y="230" text="My APIs" measuredWidth="64" measuredHeight="23" selection="0">
+    <items x="1" y="0" width="62" height="23" text="My APIs"/>
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="7" x="263" y="157" width="329" measuredWidth="329" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Combo" id="11" x="597" y="157" text="API Providers" measuredWidth="94" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Rectangle" id="14" x="380" y="252" width="499" height="377" measuredWidth="499" measuredHeight="377">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="20" x="150" y="131" text="API Store" measuredWidth="71" measuredHeight="25" foreground="#ff9900">
+    <font size="14" bold="true" italic="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="21" x="398" y="259" text="My APIs -> API45 -> Manage Versions" measuredWidth="226" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Group" id="78" x="686" y="127" width="193" height="29" text="Welcome Jonathan @ APIFactory" measuredWidth="193" measuredHeight="29">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="79" x="718" y="135" width="153" text="Notifications(3)" measuredWidth="153" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="80" x="424" y="634" text="Copyright @ 2012, WSO2" measuredWidth="140" measuredHeight="21" textAlignment="Center">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Tooltip" id="130" x="216" y="357" text="Status: Draft" measuredWidth="77" measuredHeight="38" background="#ffe599" position="topLeft">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Tooltip" id="129" x="223" y="290" width="156" height="54" text="Status: Published&#xA;Latest Version : 3.4.1" measuredWidth="156" measuredHeight="54" background="#ffe599" position="topLeft">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="131" x="183" y="256" width="162" text="Search" measuredWidth="162" measuredHeight="24"/>
+  <widgets xsi:type="model:Group" id="133" x="398" y="292" width="459" height="153" text="Existing Versions" measuredWidth="459" measuredHeight="153">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Table" id="134" x="416" y="308" width="417" height="91" text="Version,Rating,Availability,Status,Actions&#xA;[3.0.1],**,93.3%,Published - Latest,[Stats] [Users/Apps] [More]&#xA;[2.0.0],****,99.0%,Published,[stats] [Users/Apps] [More]&#xA;[1.9.9],****,0%,Draft,[Stats] [Users/Apps] [More]" measuredWidth="417" measuredHeight="91" selection="1" alternative="#eeeeee">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Group" id="135" x="398" y="464" width="459" height="145" text="New" measuredWidth="459" measuredHeight="145">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="136" x="472" y="488" width="81" measuredWidth="81" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="137" x="416" y="488" text="Version" measuredWidth="46" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:List" id="138" x="578" y="480" text="[x] Copy Documentation from previous version&#xA;[ ] Publish automcatically&#xA;[ ] Generate notification&#xA;" measuredWidth="263" measuredHeight="73" border="false" alpha="0">
+    <font/>
+    <items x="0" y="2" width="263" height="23" text="[x] Copy Documentation from previous version"/>
+    <items x="0" y="25" width="263" height="23" text="[ ] Publish automcatically"/>
+    <items x="0" y="48" width="263" height="23" text="[ ] Generate notification"/>
+  </widgets>
+  <widgets xsi:type="model:Button" id="139" x="416" y="568" text="Create Version" measuredWidth="99" measuredHeight="23">
+    <font/>
+  </widgets>
+  <hRuler>
+    <guides position="1042"/>
+  </hRuler>
+  <vRuler/>
+  <font/>
+</model:Screen>

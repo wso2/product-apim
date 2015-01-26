@@ -1,0 +1,14 @@
+<api xmlns="http://ws.apache.org/ns/synapse" name="_WSO2AMAuthorizeAPI_" context="/authorize">
+    <resource methods="GET" url-mapping="/*" faultSequence="_token_fault_">
+        <inSequence>
+            <send>
+                <endpoint>
+                    <address uri="https://localhost:9443/oauth2/authorize"/>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <send/>
+        </outSequence>
+    </resource>
+</api>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+    <title>WSO2 ESB - Callout Mediator </title>
+    <link href="css/esb-docs.css" rel="stylesheet" />
+    <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+    media="all" />
+  </head>
+
+  <body>
+    <h2>Callout Mediator</h2>
+    <p>
+      The &lt;callout&gt; mediator performs a blocking external service invocation
+      during mediation. The serviceURL and the optional action specifies the
+      parameters for this external call. The source element specifies the payload for
+      the request message using an XPath expression; or a registry key that will be
+      used. The target element specifies a node, at which the resulting payload will
+      be attached into the current message, or the name of a key/property using which
+      the response would be attached to the current message context as a property.
+    </p>
+
+    <p>
+      As the callout mediator performs a blocking call, it cannot use the default
+      non-blocking http/s transports based on Java NIO, and thus defaults to using
+      the samples/axis2Client/client_repo/conf/axis2.xml as the Axis2 configuration,
+      and samples/axis2Client/client_repo as the client repository unless these are
+      specified separately
+    </p>
+    <h3>Syntax</h3>
+    <pre xml:space="preserve"> 
+  &lt;callout serviceURL="string" [action="string"]&gt;
+      &lt;configuration [axis2xml="string"] [repository="string"]/&gt;?
+      &lt;source xpath="expression" | key="string"&gt;
+      &lt;target xpath="expression" | key="string"/&gt;
+  &lt;/callout&gt;</pre>
+    <h3>UI Configuration</h3>
+    <p>
+      <img src="../callout-mediator/docs/images/callout-options.png" alt=""/>
+    </p>
+    <p>
+      Figure 1: Callout mediator specific options
+    </p>
+    <p>
+      Callout mediator specific options,
+    </p>
+    <ul>
+      <li>ServiceURL - URL of the service</li>
+      <li>Action - SOAP action</li>
+      <li>Axis2 Repository - Full path to Axis2 Repository Location, This is the place where services and modules are</li>
+      <li>Axis2 XML - Full path to Axis2 XML file location</li>
+      <li>Source - Payload of the message</li>
+      <li>Target - A node to attach the response element</li>
+    </ul>
+
+      <h3>Example</h3>
+<pre xml:space="preserve">
+&lt;callout serviceURL="http://localhost:9000/services/SimpleStockQuoteService"
+         action="urn:getQuote"&gt;
+    &lt;source xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:s12="http://www.w3.org/2003/05/soap-envelope"
+            xpath="s11:Body/child::*[fn:position()=1] | s12:Body/child::*[fn:position()=1]"/&gt;
+    &lt;target xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:s12="http://www.w3.org/2003/05/soap-envelope"
+            xpath="s11:Body/child::*[fn:position()=1] | s12:Body/child::*[fn:position()=1]"/&gt;
+&lt;/callout&gt;
+
+</pre>
+
+<p>In this scenario, Callout mediator does the direct service invocation to the StockQuoteService using the client
+    request, get the response and set it as the first child of the SOAP message body. Then using the send mediator,
+    the message is sent back to the client.</p>
+
+<p></p>
+  </body>
+</html>
