@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - XQuery Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>XQuery Mediator</h2>
+
+<p>The XQuery mediator can be used to perform an XQuery transformation. The
+'<strong>key</strong>' attribute specifies the registry key for looking up
+XQuery script that going to be used for define transformation. The optional
+'<strong>target</strong>' attribute specifies the node of the SOAP message that
+should be transformed. In case where the target value is not specified, then 
+the first child of the SOAP body is selected. The '<strong>variable</strong>' 
+elements define a variable that could be bound to the dynamic context of the 
+XQuery engine in order to access those
+variables during the XQuery script invocation . </p>
+
+<p>In the variable definition , it is possible to specify just a
+<strong>literal value</strong>, or an <strong>XPath expression</strong> over
+the payload, or even specify a <strong>registry key</strong> or a registry key
+combined with an XPath expression that selects the value of the variable.Using
+<strong>key</strong> attribute of the variable, it is possible to bind an XML
+document located in the registry so that in the transformation that too can be
+used.The name of the variable corresponds to the name of variable declaration
+in the XQuery script. The <strong>type</strong> of the variable must be a valid
+type defined by the JSR-000225 (XQJ API). </p>
+
+<p><strong>Supported Types</strong> </p>
+<ul>
+  <li>XQItemType.XQBASETYPE_INT -&gt; INT </li>
+  <li>XQItemType.XQBASETYPE_INTEGER -&gt; INTEGER </li>
+  <li>XQItemType.XQBASETYPE_BOOLEAN -&gt; BOOLEAN </li>
+  <li>XQItemType.XQBASETYPE_BYTE - &gt; BYTE </li>
+  <li>XQItemType.XQBASETYPE_DOUBLE -&gt; DOUBLE </li>
+  <li>XQItemType.XQBASETYPE_SHORT -&gt; SHORT </li>
+  <li>XQItemType.XQBASETYPE_LONG -&gt; LONG </li>
+  <li>XQItemType.XQBASETYPE_FLOAT -&gt; FLOAT </li>
+  <li>XQItemType.XQBASETYPE_STRING -&gt; STRING </li>
+  <li>XQItemType.XQITEMKIND_DOCUMENT -&gt; DOCUMENT </li>
+  <li>XQItemType.XQITEMKIND_DOCUMENT_ELEMENT -&gt; DOCUMENT_ELEMENT </li>
+  <li>XQItemType.XQITEMKIND_ELEMENT -&gt; ELEMENT </li>
+</ul>
+
+<h2>Syntax</h2>
+<pre xml:space="preserve">&lt;xquery key="string" [target="xpath"]&gt;
+    &lt;variable name="string" type="string" [key="string"] [expression="xpath"] [value="string"]/&gt;?
+&lt;/xquery&gt; </pre>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../xquery-mediator/docs/images/xquery_mediator_screenshot.jpg"
+alt="" /> </p>
+
+<p><strong>Figure1: XQuery Mediator</strong> </p>
+<ul>
+  <li>Key: The key that represent the xquery transformation. </li>
+  <li>Target: (optional) Specify the node of the message that should be
+    transformed using an xpath expression. ( default to the first child of the
+    SOAP body ) The namespace prefixes used in the expression can be defined by
+    clicking the namespaces link in front of the 'Target' input field. </li>
+</ul>
+
+<p>Variables for the XQuery Mediator: Defines values/expressions that could be
+bound to the dynamic context of the XQuery engine in order to access those
+variables through the XQuery script. </p>
+
+<p><img src="../xquery-mediator/docs/images/xquery_mediator_variables.jpg"
+alt="" /> </p>
+
+<p><strong>Figure2: XQuery Mediator - Adding Variables</strong> </p>
+You have the following option in a variable. 
+<ul>
+  <li>Variable Type: The 'type' of the variable must be a valid type defined by
+    the JSR-000225 (XQJ API). 
+    <p>The supported types are defined in the <strong>Supported Types</strong>
+    section </p>
+  </li>
+  <li>Variable Name: The name of the variable should correspond to the name of
+    variable declaration in the XQuery script. </li>
+  <li>Value Type: Whether the value of the variable is a static value or an
+    expession. </li>
+  <li>Value/Expression: Static value or the expression. </li>
+  <li>Registry Key: Key, if the value is retrieved from the registry. </li>
+  <li>NSEditor: Defines the namespaces for the prefixes used in the xpath
+    query. </li>
+  <li>Action: Delete the variable. </li>
+</ul>
+
+<h3>Examples </h3>
+<ol>
+  <li><pre>&lt;xquery key="xquery\example.xq"&gt;
+      &lt;variable name="payload" type="ELEMENT"/&gt;
+&lt;/xquery&gt;</pre>
+    <p>In the above configuration, XQuery script is in the registry and that
+    script can be picked by key <strong>xquery\example.xq</strong>. There is a
+    one variable name <strong>payload</strong> and type as
+    <strong>ELEMENT</strong>. As there is no expression in the variable
+    definitions, default value - the first child of SOAP Body is used as the
+    value of variable <strong>payload</strong>. . Within XQuery script, you can
+    access this variable by defining <strong>declare variable $payload as
+    document-node() external;</strong> . Refer sample 390 and 391 for more
+    information.</p>
+  </li>
+  <li><pre>&lt;variable name="commission" type="ELEMENT" key="misc/commission.xml"&gt;&lt;/variable&gt;</pre>
+    <p>A variable definitions that pick a XML resource from the registry using
+    key misc/commission.xml and bind in to XQuery Runtime so that it can be
+    accessed with in XQuery script. Refer sample 391 for more information.</p>
+  </li>
+  <li><pre>&lt;variable name="price" type="DOUBLE" expression="self::node()//m0:return/m0:last/child::text()" xmlns:m0="http://services.samples/xsd"/&gt;</pre>
+    <p>A variable whose value is calculated from current message SOAP Payload
+    using an expression. Here , value is a type of double.</p>
+  </li>
+</ol>
+</body>
+</html>

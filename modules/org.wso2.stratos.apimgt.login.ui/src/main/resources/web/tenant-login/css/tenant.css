@@ -1,0 +1,62 @@
+/*css editor styles */
+.csseditor-top-line{
+    background-color:black;
+    height:5px;
+}
+.csseditor-leftbox{
+    background-color:#9a9a9a;
+    padding-left:5px;
+    padding-right:5px;
+    padding-bottom:5px;
+    padding-top:15px;
+   height:380px;
+}
+.csseditor-leftbox-top{
+    color:#ffffff;
+    font-size:18px;
+    height:30px;
+}
+.csseditor-textbox{
+    background-color:#dfe7ed;
+    border:solid 1px #ffffff;
+    width:100%;
+}
+.csseditor-rightbox{
+    background-color:#c9c9c9;
+    border:solid 1px #ffffff;
+    height:400px;
+}
+.csseditor-rightbox-title{
+    background-color:#9a9a9a;
+    height:25px;
+    color:#ffffff;
+    padding-left:10px;
+    padding-top:5px;
+}
+.csseditor-searchbox{
+    padding-left:10px;
+    padding-top:10px;
+}
+#flickr_results{
+    height:300px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    margin-left:5px;
+    margin-right:5px;
+    border:solid 1px #ffffff;
+}
+.imageList{
+}
+.imageList li {
+    padding-top: 3px !important;
+    padding-left: 5px !important;
+    background-color: #e1e9ec;
+    border: solid 1px #b5bdc1;
+}
+
+.imageList li a {
+    background-image: url(../images/images.gif);
+    background-repeat: no-repeat;
+    padding-left: 20px;
+    text-indent: 50px;
+}

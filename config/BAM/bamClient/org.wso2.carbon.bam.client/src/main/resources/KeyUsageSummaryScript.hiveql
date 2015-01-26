@@ -1,0 +1,30 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS APIVersionKeyUsage (key STRING,
+	api STRING,version 
+	STRING,consumerKey STRING,
+	userId STRING,request STRING) STORED BY 
+	'org.apache.hadoop.hive.cassandra.CassandraStorageHandler' WITH SERDEPROPERTIES ( "cassandra.host" = 
+	"127.0.0.1",
+	"cassandra.port" = "9161","cassandra.ks.name" = "EVENT_KS",
+	"cassandra.ks.username" 
+	= "admin","cassandra.ks.password" = "admin",
+	"cassandra.cf.name" = 
+	"org_wso2_apimgt_statistics_request",
+	"cassandra.columns.mapping" = 
+	":key,payload_api,
+	payload_version,payload_consumerKey,payload_userId,
+	payload_request" );
+CREATE EXTERNAL TABLE IF NOT EXISTS APIVersionKeyUsageSummary (api STRING,
+	version 
+	STRING,consumerKey STRING,userId STRING,
+	request DOUBLE) STORED BY 
+	'org.wso2.carbon.hadoop.hive.jdbc.storage.JDBCStorageHandler' TBLPROPERTIES ( 'wso2.carbon.datasource.name'='WSO2AM_STATS_DB',
+	'hive.jdbc.update.on.duplicate' = 'true',
+	'hive.jdbc.table.create.query' = 'CREATE TABLE APIVersionKeyUsageSummary (api 
+	VARCHAR(100),
+	version VARCHAR(100),consumerKey VARCHAR(100),
+	userId VARCHAR(100),request DOUBLE)' );
+insert overwrite table APIVersionKeyUsageSummary select api,
+	version,consumerKey,userId,sum(cast(request as DOUBLE)) from APIVersionKeyUsage group by api,
+	version,consumerKey,userId;
+
+                                    

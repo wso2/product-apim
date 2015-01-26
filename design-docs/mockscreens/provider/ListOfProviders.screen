@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Browser" id="1" x="133" y="72" width="761" height="593" text="Browser&#xA;http://..." measuredWidth="761" measuredHeight="593"/>
+  <widgets xsi:type="model:Menu" id="2" x="200" y="184" width="641" text="&amp;APIs                            | ,&amp;Applications                | ,&amp;API Providers                  |,    &amp;Help" measuredWidth="641" measuredHeight="23" selection="2">
+    <items x="5" y="0" width="138" height="23" text="&amp;APIs                            | "/>
+    <items x="143" y="0" width="140" height="23" text="&amp;Applications                | "/>
+    <items x="283" y="0" width="147" height="23" text="&amp;API Providers                  |"/>
+    <items x="430" y="0" width="45" height="23" text="   &amp;Help"/>
+  </widgets>
+  <widgets xsi:type="model:SearchField" id="3" x="686" y="156" text="Search" measuredWidth="66" measuredHeight="24"/>
+  <widgets xsi:type="model:Tree" id="5" x="154" y="252" width="209" height="377" text="Most Recent Providers&#xA;--Provider1&#xA;-Provider2&#xA;-Provider3&#xA;-Provider4&#xA;" measuredWidth="209" measuredHeight="377">
+    <items x="0" y="5" width="209" height="20" text="Most Recent Providers"/>
+    <items x="0" y="25" width="209" height="20" text="--Provider1"/>
+    <items x="0" y="45" width="209" height="20" text="-Provider2"/>
+    <items x="0" y="65" width="209" height="20" text="-Provider3"/>
+    <items x="0" y="85" width="209" height="20" text="-Provider4"/>
+  </widgets>
+  <widgets xsi:type="model:Tabs" id="6" x="154" y="230" text="Top Charts, Category" measuredWidth="149" measuredHeight="23" selection="0">
+    <items x="1" y="0" width="79" height="23" text="Top Charts"/>
+    <items x="80" y="0" width="68" height="23" text="Category"/>
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextField" id="7" x="263" y="157" width="329" measuredWidth="329" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Combo" id="11" x="597" y="157" text="API Providers" measuredWidth="94" measuredHeight="21">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Rectangle" id="14" x="380" y="230" width="365" height="399" measuredWidth="365" measuredHeight="399">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TextArea" id="15" x="760" y="231" width="119" height="398" text=" *Tag Cloud*&#xA; &#xA; *API Mgt* ,Event Driven Architecture (EDA),File Processing, FIX, Governance, Identity,Master Data Management (MDM), Mobile Services, SAP Integration, *Service Discovery*, SOA&#xA; " measuredWidth="119" measuredHeight="398">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Icon" id="16" x="403" y="271" width="47" height="38" measuredWidth="47" measuredHeight="38" icon="calendar2 (small)"/>
+  <widgets xsi:type="model:Icon" id="18" x="575" y="277" measuredWidth="32" measuredHeight="32" icon="comments (large)"/>
+  <widgets xsi:type="model:Label" id="20" x="150" y="131" text="API Store" measuredWidth="71" measuredHeight="25" foreground="#ff9900">
+    <font size="14" bold="true" italic="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="21" x="398" y="240" text="All Providers" measuredWidth="78" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Icon" id="22" x="408" y="336" measuredWidth="32" measuredHeight="32" icon="brightness (large)"/>
+  <widgets xsi:type="model:Icon" id="23" x="573" y="345" measuredWidth="32" measuredHeight="32" icon="secure (large)"/>
+  <widgets xsi:type="model:Icon" id="25" x="408" y="414" measuredWidth="32" measuredHeight="32" icon="usergroup (large)"/>
+  <widgets xsi:type="model:Icon" id="26" x="575" y="414" measuredWidth="32" measuredHeight="32" icon="train (large)"/>
+  <widgets xsi:type="model:WidgetGroup" id="62" x="454" y="268" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="82" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="63" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="64" width="103" height="42" text="Zenith&#xA;http://acme.org" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="65" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="66" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:Group" id="78" x="686" y="127" width="193" height="29" text="Welcome Guest" measuredWidth="193" measuredHeight="29">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="79" x="718" y="135" width="153" text="Sign in / Sign up" measuredWidth="153" measuredHeight="21">
+    <font bold="true"/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="80" x="424" y="634" text="Copyright @ 2012, WSO2" measuredWidth="140" measuredHeight="21" textAlignment="Center">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Icon" id="81" x="718" y="601" width="18" height="22" measuredWidth="18" measuredHeight="22" icon="rss (large)"/>
+  <widgets xsi:type="model:WidgetGroup" id="83" x="454" y="340" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="84" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="85" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="86" width="103" height="42" text="PQR&#xA;http://acme3.org" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="87" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="88" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="89" x="454" y="416" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="90" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="91" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="92" width="103" height="42" text="SDR&#xA;http://sdr.com" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="93" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="94" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="95" x="624" y="265" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="96" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="97" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="98" width="103" height="42" text="XYZ&#xA;http://acme2.org" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="99" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="100" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="101" x="624" y="344" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="102" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="103" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="104" width="103" height="42" text="BNM&#xA;http://bnm.org" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="105" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="106" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="107" x="624" y="416" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="108" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="109" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="110" width="103" height="42" text="QA&#xA;http://qaz.org" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="111" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="112" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="113" x="449" y="504" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="114" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="115" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="116" width="103" height="42" text="eW&#xA;http://edw.io" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="117" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="118" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:WidgetGroup" id="119" x="624" y="504" measuredWidth="108" measuredHeight="49">
+    <widgets xsi:type="model:WidgetGroup" id="120" measuredWidth="108" measuredHeight="49">
+      <widgets xsi:type="model:WidgetGroup" id="121" measuredWidth="103" measuredHeight="49">
+        <widgets xsi:type="model:Text" id="122" width="103" height="42" text="DEFio&#xA;http://def.io" measuredWidth="103" measuredHeight="42" dummyText="true">
+          <font/>
+        </widgets>
+        <widgets xsi:type="model:Button" id="123" y="26" text="View APIs" measuredWidth="71" measuredHeight="23">
+          <font/>
+        </widgets>
+      </widgets>
+      <widgets xsi:type="model:HSplitter" id="124" x="75" y="32" width="33" measuredWidth="33" measuredHeight="11"/>
+    </widgets>
+  </widgets>
+  <widgets xsi:type="model:Icon" id="125" x="403" y="513" measuredWidth="32" measuredHeight="32" icon="fire (large)"/>
+  <widgets xsi:type="model:Icon" id="126" x="575" y="513" measuredWidth="32" measuredHeight="32" icon="paste (large)"/>
+  <widgets xsi:type="model:Note" id="127" x="776" y="454" text="Categories entered by &#xA;API providers" measuredWidth="131" measuredHeight="36" annotation="true">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Arrow" id="128" x="822" y="401" width="19" height="56" measuredWidth="19" measuredHeight="56" annotation="true"/>
+  <hRuler/>
+  <vRuler/>
+  <font/>
+</model:Screen>

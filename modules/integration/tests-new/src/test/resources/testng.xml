@@ -1,0 +1,21 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="am-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+    <test name="Test - artifacts.AM" preserve-order="true" parallel="false">
+        <packages>
+            <!--<package name="org.wso2.carbon.registry.search.metadata.test.old"/>-->
+        </packages>
+
+        <classes>
+            <!--
+            This test case will be use to test usage metering with BAM/ Run BAM server as instructed in stats sample
+            with port offset one. Then enable this test. This will take some time as it take time to generate summery
+            -->
+            <class name="org.wso2.carbon.am.tests.rest.JAXRSSampleTestCase"/>
+            <class name="org.wso2.carbon.am.tests.rest.RestPeopleTestCase"/>
+
+        </classes>
+    </test>
+
+</suite>

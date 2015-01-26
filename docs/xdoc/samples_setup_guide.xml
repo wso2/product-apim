@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2009, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>
+      WSO2 ESB - Samples Setup Guide
+  </title>
+</head>
+
+<body>
+    [ <a href="docs_index.html"> Documentation Index </a> ]
+<h1>WSO2 Enterprise Service Bus (ESB) Samples Setup Guide </h1>
+
+<h1>Overview </h1>
+
+<p>The WSO2 ESB ships with a set of working examples that demonstrate some of
+the basic features and capabilities of itself. A set of sample clients and
+services are provided in addition to the sample configurations. Scripts are
+provided to execute the sample scenarios as explained below. </p>
+
+<p>This document provides step-by-step instructions on how to install the
+pre-requisites, and set up the samples - generic instructions on how to start
+the sample server, deploy a service, and run the client. </p>
+
+<h2>Table of Contents </h2>
+
+<div class="toc">
+<ul>
+  <li><a href="#Pre-requis">Prerequisites</a> </li>
+  <li><a href="#Understand">Understanding the Samples</a> </li>
+  <li><a href="#Using">Using the Sample Clients</a> 
+    <ul>
+      <li><a href="#L51">1. Stock Quote Client</a> 
+        <ul>
+          <li><a href="#Smart">Smart Client Mode:</a> </li>
+          <li><a href="#Gateway">Gateway / Dumb Client Mode:</a> </li>
+          <li><a href="#Proxy">Proxy Client Mode:</a> </li>
+          <li><a href="#Specifying">Specifying a Policy</a> </li>
+        </ul>
+      </li>
+      <li><a href="#L115">2. Generic JMS Client</a> </li>
+      <li><a href="#L133">3. MTOM / SwA Client</a> </li>
+    </ul>
+  </li>
+  <li><a href="#Starting">Starting the Sample Services</a> 
+    <ul>
+      <li><a href="#L161">1. SimpleStockQuoteService</a> </li>
+      <li><a href="#L165">2. SecureStockQuoteService</a> </li>
+      <li><a href="#L169">3. MTOMSwASampleService</a> </li>
+    </ul>
+  </li>
+  <li><a href="#config">Starting Sample ESB Configurations</a> </li>
+  <li><a href="#Setting">Setting up the JMS Listener</a> </li>
+  <li><a href="#mailsender">Setting up Mail Transport Sender</a> </li>
+  <li><a href="#mailreceiver">Setting up Mail Transport Receiver</a> </li>
+  <li><a href="#fixtransport">Configuring WSO2 ESB for the FIX Transport</a> </li>
+  <li><a href="#setupamqpjms">Configuring WSO2 ESB for the AMQP Transport</a> </li>
+  <li><a href="#setuptcp">Configuring WSO2 ESB for the TCP Transport</a> </li>
+  <li><a href="#setupudp">Configuring WSO2 ESB for the UDP Transport</a> </li>
+  <li><a href="#setupjson">Configuring WSO2 ESB for supporting JSON</a> </li>
+  <li><a href="#script">Configuring the ESB for Script Mediator Support</a>
+    <ul>
+      <li><a href="#JavaScript">JavaScript Support</a> </li>
+      <li><a href="#Ruby">Ruby Support</a> </li>
+    </ul>
+  </li>
+  <li><a href="#derby">Setting up Derby database server</a> </li>
+  <li><a href="#datasource">Setting up Synapse DataSources</a> </li>
+</ul>
+</div>
+
+<h2 id="Pre-requis">Prerequisites </h2>
+
+<p>You will need a Java development kit / JRE version 1.5.x or later and
+Apache Ant 1.7.0 or later, at a minimum, to try out the samples. Ant can be
+downloaded from <a href="http://ant.apache.org">http://ant.apache.org</a>.
+The JMS examples can be executed against an ActiveMQ installation by default
+(or another JMS provider with configuration) and any HTTPS examples would
+require a JDK version 1.5 or later. </p>
+
+<p>Once you setup ant go to the bin directory of the distribution and run
+the build.xml file which resides in that directory using ant. You could do this
+by typing 'ant' on a console in this directory.</p>
+
+<p>Note*: The samples and the documentation assumes that you are running the
+ESB in DEBUG mode. You can switch from the default INFO log messages to DEBUG
+log messages by changing the line "log4j.category.org.apache.synapse=INFO" as
+"log4j.category.org.apache.synapse=DEBUG" in the
+lib/log4j.properties file. </p>
+
+<h2 id="Understand">Understanding the Samples </h2>
+
+<table border="1" style="width: 100%">
+  <tbody>
+    <tr>
+      <td><b>Client</b> </td>
+      <td><b>WSO2 ESB</b> </td>
+      <td><b>Service</b> </td>
+    </tr>
+    <tr>
+      <td>ant stockquote </td>
+      <td>./wso2esb-samples.sh -sn &lt;n&gt; </td>
+      <td>SimpleStockQuoteService </td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td>SecureStockQuoteService etc. </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The above table depicts the interactions between the clients, the ESB
+and services at a high level. The Clients are able to send SOAP/REST or POX
+messages over transports such as HTTP/HTTPS or JMS with WS-Addressing,
+WS-Security, or WS-Reliable messaging. They could send binary optimized
+content using MTOM or SwA or binary or plain text JMS messages. After
+mediation through the ESB, the requests are passed over to the sample
+services. The sample clients and services are explained below. </p>
+
+<h2 id="Using">Using the Sample Clients </h2>
+
+<p>The sample clients can be executed from the samples/axis2Client directory
+through the provided Ant script. Simply executing 'ant' displays the
+available clients and some of the sample options used to configure them. The
+sample clients available are listed below: </p>
+
+<h3 id="L51">1. Stock Quote Client </h3>
+
+<p>This is a simple SOAP client that could send stock quote requests, and
+receive and display the last sale price for a stock symbol. </p>
+<pre xml:space="preserve">ant stockquote [-Dsymbol=IBM|MSFT|SUN|..]
+  [-Dmode=quote | customquote | fullquote | placeorder | marketactivity]
+  [-Daddurl=http://localhost:9000/services/SimpleStockQuoteService]
+  [-Dtrpurl=http://localhost:8280/] [-Dprxurl=http://localhost:8280/]
+  [-Dpolicy=../../repository/samples/resources/policy/policy_1.xml]</pre>
+
+<p>The client is able to operate in the following modes, and send the
+payloads listed below as SOAP messages: </p>
+
+<ul>
+  <li>quote - sends a quote request for a single stock as follows. The
+    response contains the last sales price for the stock which would be
+    displayed.
+    <pre xml:space="preserve">&lt;m:getQuote xmlns:m="http://services.samples/xsd"&gt;
+  &lt;m:request&gt;
+    &lt;m:symbol&gt;IBM&lt;/m:symbol&gt;
+  &lt;/m:request&gt;
+&lt;/m:getQuote&gt;</pre>
+  </li>
+  <li>customquote - sends a quote request in a custom format. The ESB would
+    transform this custom request into the standard stock quote request
+    format and send it to the service. Upon receipt of the response, it would
+    be transformed again to a custom response format and returned to the
+    client, which will then display the last sales price.
+    <pre xml:space="preserve">&lt;m0:checkPriceRequest xmlns:m0="http://services.samples/xsd"&gt;
+  &lt;m0:Code&gt;symbol&lt;/m0:Code&gt;
+&lt;/m0:checkPriceRequest&gt;</pre>
+  </li>
+  <li>fullquote - gets quote reports for the stock over a number of days
+    (i.e., last 100 days of the year).
+    <pre xml:space="preserve">&lt;m:getFullQuote xmlns:m="http://services.samples/xsd"&gt;
+  &lt;m:request&gt;
+    &lt;m:symbol&gt;IBM&lt;/m:symbol&gt;
+  &lt;/m:request&gt;
+&lt;/m:getFullQuote&gt;</pre>
+  </li>
+  <li>placeorder - places an order for stocks using a one way request 
+    <pre xml:space="preserve">&lt;m:placeOrder xmlns:m="http://services.samples/xsd"&gt;
+  &lt;m:order&gt;
+    &lt;m:price&gt;3.141593E0&lt;/m:price&gt;
+    &lt;m:quantity&gt;4&lt;/m:quantity&gt;
+    &lt;m:symbol&gt;IBM&lt;/m:symbol&gt;
+  &lt;/m:order&gt;
+&lt;/m:placeOrder&gt;</pre>
+  </li>
+  <li>marketactivity - gets a market activity report for the day (i.e.,
+    quotes for multiple symbols)
+    <pre xml:space="preserve">&lt;m:getMarketActivity xmlns:m="http://services.samples/xsd"&gt;
+  &lt;m:request&gt;
+    &lt;m:symbol&gt;IBM&lt;/m:symbol&gt;
+    ...
+    &lt;m:symbol&gt;MSFT&lt;/m:symbol&gt;
+  &lt;/m:request&gt;
+&lt;/m:getMarketActivity&gt;</pre>
+  </li>
+</ul>
+
+<p>Note : See samples/axis2Client/src/samples/common/StockQuoteHandler.java
+for sample responses expected by the clients. </p>
+
+<h3 id="Smart">Smart Client Mode: </h3>
+
+<p>The 'addurl' property sets the WS-Addressing EPR, and the 'trpurl' sets a
+transport URL for a message. Thus by specifying both properties, the client
+can operate in the 'smart client' mode, where the addressing EPR could
+specify the ultimate receiver, while the transport URL set to the ESB ensures
+that any necessary mediation takes place before the message is delivered to
+the ultimate reciver. </p>
+
+<pre xml:space="preserve">e.g: ant stockquote -Daddurl=&lt;addressingEPR&gt; -Dtrpurl=&lt;esb&gt;</pre>
+
+<h3 id="Gateway">Gateway / Dumb Client Mode: </h3>
+
+<p>By specifying only a transport URL, the client operates in the 'dumb
+client' mode, where it sends the message to the ESB and depends on the ESB
+rules for proper mediation and routing of the message to the ultimate
+destination. </p>
+
+<pre xml:space="preserve">e.g: ant stockquote -Dtrpurl=&lt;esb&gt;</pre>
+
+<h3 id="Proxy">Proxy Client Mode: </h3>
+
+<p>In this mode, the client uses the 'prxurl' as an HTTP proxy to send the
+request. Thus by setting the 'prxurl' to the ESB, the client could ensure
+that the message would reach the ESB for mediation. The client could
+optionally set a WS-Addressing EPR if required. </p>
+
+<pre xml:space="preserve">e.g: ant stockquote -Dprxurl=&lt;esb&gt; [-Daddurl=&lt;addressingEPR&gt;]</pre>
+
+<h3 id="Specifying">Specifying a Policy </h3>
+
+<p>By specifying a WS-Policy using the 'policy' property, QoS aspects such as
+WS-Security could be enforced on the request. The policy specifies details
+such as timestamps, signatures, and encryption. See Apache Axis2 and Apache
+Rampart documentation for more information. </p>
+
+<h3 id="L115">2. Generic JMS Client </h3>
+
+<p>The JMS client is able to send plain text, plain binary content, or POX
+content by directly publishing a JMS message to the specified destination.
+The JMS destination name should be specified with the 'jms_dest' property.
+The 'jms_type' property could specify 'text', 'binary' or 'pox' to specify
+the type of message payload. </p>
+
+<p>The plain text payload for a 'text' message can be specified through the
+'payload' property. For binary messages, the 'payload' property would contain
+the path to the binary file. For POX messages, the 'payload' property will
+hold a stock symbol name to be used within the POX request for stock order
+placement request. </p>
+
+<p>e.g., </p>
+
+<pre xml:space="preserve">ant jmsclient -Djms_type=text -Djms_dest=dynamicQueues/JMSTextProxy -Djms_payload="24.34 100 IBM"
+ant jmsclient -Djms_type=pox -Djms_dest=dynamicQueues/JMSPoxProxy -Djms_payload=MSFT
+ant jmsclient -Djms_type=binary -Djms_dest=dynamicQueues/JMSFileUploadProxy
+                     -Djms_payload=./../../repository/samples/resources/mtom/asf-logo.gif</pre>
+
+<p>Note: The JMS client assumes the existence of a default ActiveMQ (5.2.0) installation on the
+    local machine. </p>
+
+<h3 id="L133">3. MTOM / SwA Client </h3>
+
+<p>The MTOM / SwA client can send a binary image file as a MTOM or SwA
+optimized message, and receive the same file again through the response and
+save it as a temporary file. The 'opt_mode' can specify 'mtom' or 'swa'
+respectively for the above mentioned optimizations. Optionally, the path to a
+custom file can be specified through the 'opt_file' property, and the
+destination address can be changed through the 'opt_url' property if
+required. </p>
+
+<pre xml:space="preserve">e.g. ant optimizeclient -Dopt_mode=[mtom | swa]</pre>
+
+<h2 id="Starting">Starting the Sample Services </h2>
+
+<p>The sample services ship with a pre-configured Axis2 server, and
+demonstrates in-only and in-out SOAP/REST or POX messaging over HTTP/HTTPS
+and JMS transports using WS-Addressing, WS-Security, and WS-Reliable
+Messaging. It also handles binary content using MTOM and SwA. </p>
+
+<p>The sample services can be found in the samples/axis2Server/src directory
+and can be built and deployed using Ant from each service directory. </p>
+
+<pre xml:space="preserve">user@host:/tmp/wso2esb-2.0/samples/axis2Server/src/SimpleStockQuoteService$ ant
+Buildfile: build.xml
+ ...
+build-service:
+   ....
+      [jar] Building jar: /tmp/wso2esb-2.0/samples/axis2Server/repository/services/SimpleStockQuoteService.aar
+
+BUILD SUCCESSFUL
+Total time: 3 seconds</pre>
+
+<p>To start the Axis2 server, go to the samples/axis2Server directory and
+execute the axis2server.sh or axis2server.bat script. This starts the Axis2
+server with the HTTP transport listener on port 9000 and HTTPS on 9002
+respectively. To enable JMS transport, you will need to set up and start a
+JMS provider. An ActiveMQ 5.2.0 JMS server on the local machine is
+supported by default, and can be easily enabled by uncommenting the JMS
+transport from the repository/conf/axis2.xml </p>
+
+<p>The Sample services are as follows: </p>
+
+<h3 id="L161">1. SimpleStockQuoteService </h3>
+
+<p>This service has four operations, getQuote (in-out), getFullQuote(in-out),
+getMarketActivity(in-out) and placeOrder (in-only). The getQuote operation
+will generate a sample stock quote for a given symbol. The getFullQuote
+operation will generate a history of stock quotes for the symbol for a number
+of days, and the getMarketActivity operation returns stock quotes for a list
+of given symbols. The placeOrder operation will accept a one way message for
+an order. </p>
+
+<h3 id="L165">2. SecureStockQuoteService </h3>
+
+<p>This service is a clone of the SimpleStockQuoteService, but has
+WS-Security enabled and an attached security policy for signing and
+encrypting messages. </p>
+
+<h3 id="L169">3. MTOMSwASampleService </h3>
+
+<p>This service has three operations: uploadFileUsingMTOM(in-out),
+uploadFileUsingSwA(in-out) and oneWayUploadUsingMTOM(in-only), and also
+demonstrates the use of MTOM and SwA. The uploadFileUsingMTOM and
+uploadFileUsingSwA operations accept a binary image from the SOAP request as
+MTOM and SwA, and returns this image back again as the response, while the
+oneWayUploadUsingMTOM saves the request message to the disk. </p>
+
+<h2 id="config">Starting Sample ESB Configurations </h2>
+
+<p>To start the WSO2 ESB with the sample default configuration, execute the
+wso2server.bat or wso2server.sh script found in the /bin directory. This starts
+up an instance of the ESB using the Synapse and Axis2 configuration files
+located in the conf directory. The repository/samples directory contains
+the sample configurations available as synapse_sample_&lt;n&gt;.xml files. To
+start a specific sample configuration of the ESB, use the wso2esb-samples.sh or
+wso2esb-samples.bat as follows: </p>
+
+<pre xml:space="preserve">wso2esb-samples.bat -sn &lt;n&gt;
+ ./wso2esb-samples.sh -sn &lt;n&gt;</pre>
+
+<h2 id="Setting">Setting up the JMS Listener </h2>
+
+<p>The samples used in this guide assumes the existence of a local <a href="http://activemq.apache.org">
+ActiveMQ</a> (5.1.0 or higher) installation, which is properly installed and started. </p>
+
+<p>To enable the JMS transport, you need to uncomment the JMS transport
+listener configuration. If you are using a JMS provider other than ActiveMQ,
+this configuration should be updated to reflect your environment. Once
+uncommented, the default configuration should be as follows. To enable JMS
+for the ESB, the repository/conf/axis2.xml must be updated. To
+enable JMS support for the sample Axis2 server, the
+samples/axis2Server/repository/conf/axis2.xml file must be updated. </p>
+
+<pre xml:space="preserve">    &lt;!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment (e.g. ActiveMQ)--&gt;
+    &lt;transportReceiver name="jms" class="org.apache.axis2.transport.jms.JMSListener"&gt;
+        &lt;parameter name="myTopicConnectionFactory" locked="false"&gt;
+                &lt;parameter name="java.naming.factory.initial" locked="false"&gt;org.apache.activemq.jndi.ActiveMQInitialContextFactory&lt;/parameter&gt;
+                &lt;parameter name="java.naming.provider.url" locked="false"&gt;tcp://localhost:61616&lt;/parameter&gt;
+                &lt;parameter name="transport.jms.ConnectionFactoryJNDIName" locked="false"&gt;TopicConnectionFactory&lt;/parameter&gt;
+        &lt;/parameter&gt;
+
+        &lt;parameter name="myQueueConnectionFactory" locked="false"&gt;
+                &lt;parameter name="java.naming.factory.initial" locked="false"&gt;org.apache.activemq.jndi.ActiveMQInitialContextFactory&lt;/parameter&gt;
+                &lt;parameter name="java.naming.provider.url" locked="false"&gt;tcp://localhost:61616&lt;/parameter&gt;
+                &lt;parameter name="transport.jms.ConnectionFactoryJNDIName" locked="false"&gt;QueueConnectionFactory&lt;/parameter&gt;
+        &lt;/parameter&gt;
+
+        &lt;parameter name="default" locked="false"&gt;
+                &lt;parameter name="java.naming.factory.initial" locked="false"&gt;org.apache.activemq.jndi.ActiveMQInitialContextFactory&lt;/parameter&gt;
+                &lt;parameter name="java.naming.provider.url" locked="false"&gt;tcp://localhost:61616&lt;/parameter&gt;
+                &lt;parameter name="transport.jms.ConnectionFactoryJNDIName" locked="false"&gt;QueueConnectionFactory&lt;/parameter&gt;
+        &lt;/parameter&gt;
+    &lt;/transportReceiver&gt;</pre>
+
+<h2 id="mailsender">Setting up Mail Transport Sender </h2>
+
+<p>To enable the mail transport sender for samples, you need to uncomment the mail
+transport sender configuration in the repository/conf/axis2.xml.
+Uncomment the mail transport sender sample configuration and make sure it
+points to a valid SMTP configuration for any actual scenarios. </p>
+
+<pre xml:space="preserve">    &lt;transportSender name="mailto" class="org.apache.synapse.transport.mail.MailTransportSender"&gt;
+        &lt;parameter name="mail.smtp.host"&gt;smtp.gmail.com&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.port"&gt;587&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.starttls.enable"&gt;true&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.auth"&gt;true&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.user"&gt;synapse.demo.0&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.password"&gt;mailpassword&lt;/parameter&gt;
+        &lt;parameter name="mail.smtp.from"&gt;synapse.demo.0@gmail.com&lt;/parameter&gt;
+    &lt;/transportSender&gt;</pre>
+
+<h2 id="mailreceiver">Setting up Mail Transport Receiver </h2>
+
+<p>To enable the mail transport receiver for samples, you need to uncomment the mail
+transport receiver configuration in the repository/conf/axis2.xml.
+Uncomment the mail transport receiver sample configuration. Note: you need to provide
+correct parameters for a valid mail account at service level.</p>
+
+<pre xml:space="preserve">    &lt;transportReceiver name="mailto" class="org.apache.axis2.transport.mail.MailTransportListener"&gt;
+    &lt;/transportReceiver&gt;</pre>
+
+<h2 id="fixtransport">
+      Configuring WSO2 ESB for the FIX Transport
+    </h2>
+    <h3 id="fix-transport">
+      Setting up the FIX Transport
+    </h3>
+    <p>
+	To run the FIX samples used in this guide you need a local
+    <a href="http://www.quickfixj.org">Quickfix/J</a> installation.
+    Download Quickfix/J from <a href="http://www.quickfixj.org/downloads">here</a>.
+    </p>
+    <p>
+      Simply uncomment the FIX transport sender and FIX transport receiver configurations
+      in the repository/conf/axis2.xml. Alternatively if the
+      FIX transport management bundle is in use you can enable the FIX transport
+      listener and the sender from the WSO2 ESB management console. Login to the
+      console and navigate to 'Transports' on management menu. Scroll down to
+      locate the sections related to the FIX transport. Simply click on 'Enable'
+      links to enable the FIX listener and the sender.
+    </p>
+    <p/>
+    <h3 id="fixsamples">
+      Configuring the ESB for FIX Samples
+    </h3>
+    <p>
+	In order to configure WSO2 ESB to run the FIX samples given in this
+	guide you will need to create some FIX configuration files as
+	specified below (You can find the config files from
+    $ESB_HOME/repository/conf/sample/resources/fix folder.
+    </p>
+    <p>
+	The FileStorePath property in the following two files should point
+        to two directories in your local file system. Once the samples
+        are executed, Synapse will create FIX message stores in these two
+        directories.
+    </p>
+    <p>
+      Put the following entries in a file called fix-synapse.cfg
+    </p>
+      <pre>
+	[default]
+	FileStorePath=repository/logs/fix/data
+	ConnectionType=acceptor
+	StartTime=00:00:00
+	EndTime=00:00:00
+	HeartBtInt=30
+	ValidOrderTypes=1,2,F
+	SenderCompID=SYNAPSE
+	TargetCompID=BANZAI
+	UseDataDictionary=Y
+	DefaultMarketPrice=12.30
+
+	[session]
+	BeginString=FIX.4.0
+	SocketAcceptPort=9876
+      </pre>
+    <p>
+      Put the following entries in a file called synapse-sender.cfg
+    </p>
+      <pre>
+	[default]
+	FileStorePath=repository/logs/fix/data
+	SocketConnectHost=localhost
+	StartTime=00:00:00
+	EndTime=00:00:00
+	HeartBtInt=30
+	ReconnectInterval=5
+    SenderCompID=SYNAPSE
+    TargetCompID=EXEC
+    ConnectionType=initiator
+
+    [session]
+    BeginString=FIX.4.0
+    SocketConnectPort=19876
+      </pre>
+    <h3 id="fixsamplesconfig">
+      Configuring Sample FIX Applications
+    </h3>
+
+    <p>
+	If you are using a binary distribution of Quickfix/J, the two
+	samples and their configuration files are all packed to a
+	single jar file called quickfixj-examples.jar. You will have to
+	extract the jar file, modify the configuration files and pack
+	them to a jar file again under the same name.
+    </p>
+    <p>
+    You can pass the new configuration file as a command line parameter too, in that case you don't
+    need to modify the quickfixj-examples.jar.
+    You can copy the config files from $ESB_HOME/repository/conf/sample/resources/fix folder to
+    $QFJ_HOME/etc folder. Execute the sample apps from $QFJ_HOME/bin, ./banzai.sh/bat ../etc/banzai.cfg
+    executor.sh/bat ../etc/executor.sh.
+
+    </p>
+    <p>
+      Locate and edit the FIX configuration file of Executor to be as follows.
+      This file is usually named executor.cfg
+    </p>
+      <pre>
+	[default]
+	FileStorePath=examples/target/data/executor
+	ConnectionType=acceptor
+	StartTime=00:00:00
+	EndTime=00:00:00
+	HeartBtInt=30
+	ValidOrderTypes=1,2,F
+	SenderCompID=EXEC
+	TargetCompID=SYNAPSE
+	UseDataDictionary=Y
+	DefaultMarketPrice=12.30
+
+	[session]
+	BeginString=FIX.4.0
+	SocketAcceptPort=19876
+      </pre>
+    <p>
+      Locate and edit the FIX configuration file of Banzai to be as follows.
+      This file is usually named banzai.cfg
+    </p>
+      <pre>
+	[default]
+	FileStorePath=examples/target/data/banzai
+	ConnectionType=initiator
+	SenderCompID=BANZAI
+	TargetCompID=SYNAPSE
+	SocketConnectHost=localhost
+	StartTime=00:00:00
+	EndTime=00:00:00
+	HeartBtInt=30
+	ReconnectInterval=5
+
+	[session]
+	BeginString=FIX.4.0
+	SocketConnectPort=9876
+      </pre>
+    <p>
+	The FileStorePath property in the above two files should point
+    to two directories in your local file system. The launcher scripts for
+    the sample application can be found in the bin directory of Quickfix/J
+    distribution.
+    </p>
+    <p>
+    For more information regarding the FIX sample applications please
+    refer the <a href="http://www.quickfixj.org/quickfixj/usermanual/1.6.0/usage/examples.html">Example Applications</a> section in the Quickfix/J
+    documentation. For more information on configuring Quickfix/J applications
+    refer the <a href="http://www.quickfixj.org/quickfixj/usermanual/1.6.0/usage/configuration.html">Configuring Quickfix/J</a> section of the Quickfix/J
+    documentation.
+    </p>
+    <p/>
+
+    <h2 id="setupamqpjms">
+      Configure WSO2 ESB for AMQP Transport
+    </h2>
+    <p/>
+    <p>
+      The samples used in this guide assumes the existence of a local QPid
+      (1.0-M2 or higher) installation properly installed and started up. You also
+      need to copy the following client JAR files into the 'repository/components/lib' directory
+      to support AMQP. These files are found in the 'lib' directory of the
+      QPid installation.
+    </p>
+    <ul>
+      <li>qpid-client-1.0-incubating-M2.jar</li>
+      <li>qpid-common-1.0-incubating-M2.jar</li>
+      <li>geronimo-jms_1.1_spec-1.0.jar</li>
+      <li>slf4j-api-1.4.0.jar    **</li>
+      <li>slf4j-log4j12-1.4.0.jar  **</li>
+    </ul>
+        <p>
+          Note: To configure FIX (Quickfix/J 1.3) with AMQP (QPid-1.0-M2) copy the sl4j-* libraries comes with QPid and ignore the sl4j-*
+          libraries that come with Quickfix/J.
+        </p>
+    <p>
+      To enable the AMQP over JMS transport, you need to uncomment the JMS transport
+      listener configuration. To enable AMQP over JMS for ESB, the repository/conf/axis2.xml must be updated,
+      while to enable JMS support for the sample Axis2 server the
+      samples/axis2Server/repository/conf/axis2.xml file must be updated.
+    </p>
+    <pre xml:space="preserve">    &lt;!--Uncomment this and configure as appropriate for JMS transport support, after setting up your JMS environment --&gt;
+        &lt;transportReceiver name="jms" class="org.apache.synapse.transport.jms.JMSListener"&gt;
+        &lt;/transportReceiver&gt;
+
+        &lt;transportSender name="jms" class="org.apache.synapse.transport.jms.JMSSender"&gt;
+        &lt;/transportReceiver&gt;</pre>
+
+    <p/>
+    <p>
+        Locate and edit the AMQP connection settings file for the message consumer, this fle is usually named direct.properties
+        and can be found in the repository/samples/resources/fix directory.
+    </p>
+        <pre>
+            java.naming.factory.initial = org.apache.qpid.jndi.PropertiesFileInitialContextFactory
+            # register some connection factories
+            # connectionfactory.[jndiname] = [ConnectionURL]
+            connectionfactory.qpidConnectionfactory = amqp://guest:guest@clientid/test?brokerlist='tcp://localhost:5672'
+            # Register an AMQP destination in JNDI
+            # destination.[jniName] = [BindingURL]
+            destination.directQueue = direct://amq.direct//QpidStockQuoteService?routingkey='QpidStockQuoteService'
+            destination.replyQueue = direct://amq.direct//replyQueue?routingkey='replyQueue'</pre>
+    <p>
+        Locate and edit the AMQP connection settings file for WSO2 ESB, this fle is usually named con.properties
+        and can be found in the repository/samples/resources/fix directory.
+    </p>
+        <pre>
+            #initial context factory
+            #java.naming.factory.initial =org.apache.qpid.jndi.PropertiesFileInitialContextFactory
+            # register some connection factories
+            # connectionfactory.[jndiname] = [ConnectionURL]
+            connectionfactory.qpidConnectionfactory=amqp://guest:guest@clientid/test?brokerlist='tcp://localhost:5672'
+            # Register an AMQP destination in JNDI
+            # destination.[jndiName] = [BindingURL]
+            destination.directQueue=direct://amq.direct//QpidStockQuoteService</pre>
+    <p/>
+
+
+<h2 id="setuptcp">
+  Configure WSO2 ESB for TCP Transport
+</h2>
+<p/>
+<p>
+  To enable the TCP transport for samples first you need to download the Axis2 TCP transport jar
+    and copy it to the lib directory of Synapse. This library can be downloaded from the
+    <a href="http://ws.apache.org/commons/transport">WS-Commons Transports website.</a> Then open up the axis2.xml file and uncomment the TCP transport
+    receiver and sender configurations:
+</p>
+<pre xml:space="preserve">
+&lt;transportReceiver name=&quot;tcp&quot; class=&quot;org.apache.axis2.transport.tcp.TCPServer&quot;&gt;
+    &lt;parameter name=&quot;port&quot;&gt;6060&lt;/parameter&gt;
+&lt;/transportReceiver&gt;
+
+&lt;transportSender name=&quot;tcp&quot; class=&quot;org.apache.axis2.transport.tcp.TCPTransportSender&quot;/&gt;
+</pre>
+<p>
+    If you wish to use the sample Axis2 client to send TCP messages, you have to uncomment the
+    TCP transport sender configuration in the samples/axis2Client/client_repo/conf/axis2.xml file.
+</p>
+
+
+<h2 id="setupudp">
+  Configure WSO2 ESB for UDP Transport
+</h2>
+<p/>
+<p>
+  To enable the UDP transport for samples first you need to download the Axis2 UDP transport jar and
+    copy it to the lib directory of Synapse. This library can be downloaded from the
+    <a href="http://ws.apache.org/commons/transport">WS-Commons Transports website.</a> Then open up
+    the axis2.xml file and uncomment the UDP transport receiver
+    and sender configurations:
+</p>
+<pre xml:space="preserve">
+ &lt;transportReceiver name=&quot;udp&quot; class=&quot;org.apache.axis2.transport.udp.UDPListener&quot;/&gt;
+ &lt;transportSender name=&quot;udp&quot; class=&quot;org.apache.axis2.transport.udp.UDPSender&quot;/&gt;</pre>
+<p>
+   If you wish to use the sample Axis2 client to send UDP messages, you have to uncomment the UDP
+    transport sender configuration in the samples/axis2Client/client_repo/conf/axis2.xml file.
+</p>
+
+
+<h2 id="setupjson">
+    Configuring WSO2 ESB for supporting JSON
+</h2>
+<p/>
+<p>
+  <a href="http://json.org/">JSON</a> Then open up is a lightweight data-interchange format. It can be used as an alternative to XML or SOAP.
+    To enable the JSON support in Synapse, following two jar files should be deployed into the 'lib' directory of Synapse.</p>
+
+ <ul>
+    <li><a href="http://repo1.maven.org/maven2/org/apache/axis2/axis2-json">axis2-json.jar</a></li>
+    <li><a href="http://jettison.codehaus.org/Download">jettison.jar</a></li>
+</ul>
+
+<p>
+    Having deployed the necessary libraries you should now register the JSON message builder and
+    formatter with Synapse. Open up 'repository/conf/axis2.xml' file of Synapse and add the following
+    two entries under the 'messageBuilders' and 'messageFormatters' sections respectively.
+</p>
+
+<pre xml:space="preserve">
+ &lt;messageBuilder contentType=&quot;application/json&quot;
+                         class=&quot;org.apache.axis2.json.JSONOMBuilder&quot;/&gt;
+
+  &lt;messageFormatter contentType=&quot;application/json&quot;
+                         class=&quot;org.apache.axis2.json.JSONMessageFormatter&quot;/&gt;
+</pre>
+<p>
+   If you are planning to run sample 440, you should also add the above two entries to the
+    'samples/axis2Client/client_repo/conf/axis2.xml' file.
+</p>
+
+
+<h2 id="script">Configuring the ESB for Script Mediator Support </h2>
+
+<p>The Script Mediator is a Synapse extension, and thus all pre-requisites
+for all BSF supported scripting languages may not be bundled by default with
+the ESB distribution. Before you use some script mediators, you may need to
+manually add the required .jar files to the lib
+directory('lib/extensions'), and optionally perform other installation
+tasks as may be required by the individual scripting language. This is
+detailed in the following sections. </p>
+
+<h3 id="JavaScript"><a name="JavaScript">JavaScript Support</a></h3>
+
+<p>The JavaScript/E4X support is enabled by default and comes ready-to-use
+with the WSO2 ESB distribution. </p>
+
+<h3><a name="Ruby">Ruby Support</a></h3>
+
+    <p>
+      You can download and install the JRuby engine manually. Download
+      the file named "jruby-complete-1.3.0.wso2v1.jar" from the WSO2 P2 repository and copy
+      it into repository/components/dropins directory.      
+    </p>
+    <p/>
+    <h2 id="derby">
+      Setting up Derby database server
+    </h2>
+    <p>
+      You can download Apache Derby distribution from <a
+      href="http://db.apache.org/derby/">http://db.apache.org/derby/</a>
+    </p>
+    <ol>
+      <li>
+        Set up and start the Derby network server
+      </li>
+      <li>
+        Create and open a connection to the database using the Derby client
+        driver<br/>
+        <pre> CONNECT 'jdbc:derby://localhost:1527/esbdb;user=esb;password=esb;create=true';</pre>
+      </li>
+      <li>
+        Create a table using the following statement
+        <pre> CREATE table company(name varchar(10), id varchar(10), price double);</pre>
+      </li>
+      <li>
+        Inserts some data using following statements
+        <pre> INSERT into company values ('IBM','c1',0.0);
+ INSERT into company values ('SUN','c2',0.0);
+ INSERT into company values ('MSFT','c3',0.0);</pre>
+      </li>
+    </ol>
+
+<p>When using Derby, you need to add derby.jar, derbyclient.jar and
+derbynet.jar to the classpath. This can be done by putting the above three
+jars into the ESB lib/extensions directory. For testing these samples Derby10.3.2.1
+binary distribution was used. </p>
+
+<p>You can use any other database product instead of Derby. Then you have to
+change the database connection details accordingly. Also you have to copy the
+required database driver jars to the ESB classpath. </p>
+
+<h2><a name="datasource">Setting up Synapse DataSources</a></h2>
+
+<div>
+<p>Definition of the reusable database connection pool or datasources can be
+done using <strong>datasources.properties</strong> file. It is possible to
+configure any number of datasources. Currently this only supports two types of
+datasources and those are based on Apache DBCP datasources. Those types are
+BasicDataSource and PerUserPoolDataSource (based on Apache DBCP). Following
+configuration includes both two definition. This configuration is related with
+sample 363.</p>
+
+<p>Configuration is somewhat similar to the log4j appender configuration.</p>
+
+<p>It requires two databases, follow the above specified (Setting up Derby
+Database server) steps to create the two databases
+<strong>'jdbc:derby://localhost:1527/lookupdb'</strong>,
+<strong>'jdbc:derby://localhost:1527/reportdb'</strong> using the user name and
+password as '<strong>esb</strong>'. Fill in the data for those two databases as
+per described in the above section</p>
+
+<div>
+<p><strong>datasources.properties configuration <br />
+</strong></p>
+<pre>###############################################################################
+# DataSources Configuration
+###############################################################################
+synapse.datasources=lookupds,reportds
+synapse.datasources.icFactory=com.sun.jndi.rmi.registry.RegistryContextFactory
+synapse.datasources.providerPort=2199
+# If following property is present , then assumes that there is an external JNDI provider and will not start a RMI registry
+#synapse.datasources.providerUrl=rmi://localhost:2199
+
+synapse.datasources.lookupds.registry=Memory
+synapse.datasources.lookupds.type=BasicDataSource
+synapse.datasources.lookupds.driverClassName=org.apache.derby.jdbc.ClientDriver
+synapse.datasources.lookupds.url=jdbc:derby://localhost:1527/lookupdb;create=false
+# Optionally you can specifiy a specific password provider implementation which overrides any globally configured provider
+synapse.datasources.lookupds.secretProvider=org.apache.synapse.commons.security.secret.handler.SharedSecretCallbackHandler
+synapse.datasources.lookupds.username=esb
+# Depending on the password provider used, you may have to use an encrypted password here!
+synapse.datasources.lookupds.password=esb
+synapse.datasources.lookupds.dsName=lookupdb
+synapse.datasources.lookupds.maxActive=100
+synapse.datasources.lookupds.maxIdle=20
+synapse.datasources.lookupds.maxWait=10000
+
+synapse.datasources.reportds.registry=JNDI
+synapse.datasources.reportds.type=PerUserPoolDataSource
+synapse.datasources.reportds.cpdsadapter.factory=org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS
+synapse.datasources.reportds.cpdsadapter.className=org.apache.commons.dbcp.cpdsadapter.DriverAdapterCPDS
+synapse.datasources.reportds.cpdsadapter.name=cpds
+synapse.datasources.reportds.dsName=reportdb
+synapse.datasources.reportds.driverClassName=org.apache.derby.jdbc.ClientDriver
+synapse.datasources.reportds.url=jdbc:derby://localhost:1527/reportdb;create=false
+# Optionally you can specifiy a specific password provider implementation which overrides any globally configured provider
+synapse.datasources.reportds.secretProvider=org.apache.synapse.commons.security.secret.handler.SharedSecretCallbackHandler
+synapse.datasources.reportds.username=esb
+# Depending on the password provider used, you may have to use an encrypted password here!
+synapse.datasources.reportds.password=esb
+synapse.datasources.reportds.maxActive=100
+synapse.datasources.reportds.maxIdle=20
+synapse.datasources.reportds.maxWait=10000</pre>
+
+<p></p>
+
+<p>To secure data sources password, it is need to use the mechanism for
+<strong>securing secret Information</strong>. Please refer <strong>securing
+secret Information guide</strong>. If that mechanism is used, then passwords
+that have been specified are considered as aliases and those are used for
+picking actual passwords. To get password securely, it is needed to set the
+password provider for each data source. The password provider should be an
+implementation of
+<strong>org.apache.synapse.commons.security.secret.SecretCallbackHandler</strong>.
+There are few options and for more information please refer <strong>securing
+secret Information guide.</strong> </p>
+
+<p>For run this sample, you just need to uncomment
+<strong>secret-conf.properties, cipher-text.properties and
+datasources.properties</strong>. Those files are in conf directory. </p>
+</div>
+</div>
+</body>
+</html>
