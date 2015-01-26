@@ -1,0 +1,35 @@
+<project name="BAMClient" default="clean" basedir=".">
+
+    <property name="client.class.dir" value="target/client/classes"/>
+
+    <target name="clean">
+        <delete dir="target"/>
+    </target>
+
+    <target name="init" depends="clean">
+        <mkdir dir="${client.class.dir}"/>
+	<mkdir dir="org.wso2.carbon.bam.client/lib" />
+        <path id="javac.bam.client.classpath">
+            <pathelement path="${client.class.dir}"/>
+            <fileset dir="./../repository/components/plugins"/>
+            <fileset dir="./../lib"/>
+            <fileset dir="./org.wso2.carbon.bam.client/lib"/>
+        </path>
+    </target>
+
+    <target name="compile_client" depends="init" description="Compile all Java">
+        <javac srcdir="org.wso2.carbon.bam.client/src" destdir="${client.class.dir}">
+            <classpath refid="javac.bam.client.classpath"/>
+        </javac>
+    </target>
+
+    <target name="initialize_column_family_datastore" depends="compile_client">
+        <java classname="org.wso2.carbon.bam.client.Client"
+              classpathref="javac.bam.client.classpath" fork="true">
+            <sysproperty key="bamUrl" value="https://localhost:9444/services/"/>
+            <sysproperty key="carbon.home" value="./.."/>
+            <sysproperty key="configFilePath" value="./org.wso2.carbon.bam.client/src/main/resources/"/>
+        </java>
+    </target>
+
+</project>

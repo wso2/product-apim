@@ -1,0 +1,35 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="AMTestSuite" parallel="false">
+<listeners>
+    <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestManagerListener"/>
+    <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestReportListener"/>
+    <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestExecutionListener"/>
+    <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestSuiteListener"/>
+    <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
+</listeners>
+
+<test name="AM-Sample-Test" preserve-order="true" verbose="2">
+    <classes>
+        <!--<class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase" />-->
+       <!-- <class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.RefreshTokenTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />-->
+        <!--<class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />                -->
+        <!--<class name="org.wso2.carbon.am.tests.publisher.AddAPITestCase"/>
+        <class name="org.wso2.carbon.am.tests.sample.DAOTestCase" />-->
+       <!-- <class name="org.wso2.carbon.am.tests.sample.JWTTestCase" />-->
+        <class name="org.testlink.HOTestCase"/>
+        <!--<class name="org.wso2.carbon.am.tests.sample.RefreshTokenTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase" />
+        <class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase" />-->
+    </classes>
+</test>
+
+</suite>

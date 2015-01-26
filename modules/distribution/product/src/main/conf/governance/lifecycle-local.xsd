@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:scxml="http://www.w3.org/2005/07/scxml">
+  <xs:import namespace="http://www.w3.org/2005/07/scxml" schemaLocation="lifecycle-config.xsd"/>
+  <xs:element name="aspect">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="configuration">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="lifecycle">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="scxml:scxml"/>
+                  </xs:sequence>
+                    <xs:attribute name="audit" use="optional" type="xs:boolean"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="type" use="required" type="xs:NCName"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="class" use="required"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

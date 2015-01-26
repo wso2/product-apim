@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+    <title>WSO2 ESB - Validate Mediator </title>
+    <link href="css/esb-docs.css" rel="stylesheet" />
+    <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+    media="all" />
+  </head>
+  <body>
+    <h2>Sequence Mediator</h2>
+	
+    <p>
+      A sequence mediator refers to a predefined sequence element which is used to<br/>
+      invoke a named sequence of mediators.
+    </p>
+	
+    <h3>Syntax</h3>
+	
+    <pre xml:space="preserve"> &lt;sequence key="name"/&gt;</pre>
+	
+    <h3>UI Configuration</h3>
+	
+    <p>
+    <img src="../sequence-mediator/docs/images/sequence-mediator-screenshot.jpg" alt=""/>
+    </p>
+	
+    <p>
+      <strong>Figure 1: Sequence Mediator</strong>
+    </p>
+	
+	<p>
+		In the Sequence Mediator panel, there are two options available to select a sequence.
+	</p>
+		<ul>
+			<li>Static way 	:- In staic manner, User can provide a registry key which refers a predefined sequence</li>
+			<li>Dynamic way :- Where user can define a 'XPath' expression to point the exact sequence name, which <br/>
+					   is present in the message. So, ESB will look into the system for that particular sequence and will do further processing. </li>
+		</ul>
+		
+  </body>
+</html>

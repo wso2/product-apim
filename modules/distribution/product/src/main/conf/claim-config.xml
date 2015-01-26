@@ -1,0 +1,901 @@
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<ClaimConfig>
+	<Dialects>
+		<Dialect dialectURI="http://wso2.org/claims">
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/givenname</ClaimURI>
+				<DisplayName>First Name</DisplayName>
+				<AttributeID>givenName</AttributeID>
+				<Description>First Name</Description>
+				<Required />
+				<DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/lastname</ClaimURI>
+				<DisplayName>Last Name</DisplayName>
+				<AttributeID>sn</AttributeID>
+				<Description>Last Name</Description>
+				<Required />
+				<DisplayOrder>2</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/organization</ClaimURI>
+				<DisplayName>Organization</DisplayName>
+				<AttributeID>organizationName</AttributeID>
+				<Description>Organization</Description>
+				<DisplayOrder>3</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/streetaddress</ClaimURI>
+				<DisplayName>Address</DisplayName>
+				<AttributeID>streetAddress</AttributeID>
+				<Description>Address</Description>
+				<DisplayOrder>4</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/country</ClaimURI>
+				<DisplayName>Country</DisplayName>
+				<AttributeID>country</AttributeID>
+				<Description>Country</Description>
+				<DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/emailaddress</ClaimURI>
+				<DisplayName>Email</DisplayName>
+				<AttributeID>mail</AttributeID>
+				<Description>Email Address</Description>
+				<Required />
+				<DisplayOrder>6</DisplayOrder>
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/telephone</ClaimURI>
+				<DisplayName>Telephone</DisplayName>
+				<AttributeID>telephoneNumber</AttributeID>
+				<Description>Telephone</Description>
+				<DisplayOrder>7</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/mobile</ClaimURI>
+				<DisplayName>Mobile</DisplayName>
+				<AttributeID>mobile</AttributeID>
+				<Description>Mobile</Description>
+				<DisplayOrder>8</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/im</ClaimURI>
+				<DisplayName>IM</DisplayName>
+				<AttributeID>im</AttributeID>
+				<Description>IM</Description>
+				<DisplayOrder>9</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/url</ClaimURI>
+				<DisplayName>URL</DisplayName>
+				<AttributeID>url</AttributeID>
+				<Description>URL</Description>
+				<DisplayOrder>10</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/gender</ClaimURI>
+				<DisplayName>Gender</DisplayName>
+				<AttributeID>gender</AttributeID>
+				<Description>Gender</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/title</ClaimURI>
+				<DisplayName>Title</DisplayName>
+				<AttributeID>title</AttributeID>
+				<Description>Title</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/role</ClaimURI>
+				<DisplayName>Role</DisplayName>
+				<AttributeID>role</AttributeID>
+				<Description>Role</Description>
+	            		<SupportedByDefault />
+				<ReadOnly />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/postalcode</ClaimURI>
+				<DisplayName>Postal Code</DisplayName>
+				<AttributeID>postalcode</AttributeID>
+				<Description>Postal Code</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/locality</ClaimURI>
+				<DisplayName>Locality</DisplayName>
+				<AttributeID>localityName</AttributeID>
+				<Description>Locality</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/region</ClaimURI>
+				<DisplayName>Region</DisplayName>
+				<AttributeID>http://wso2.org/claims/region</AttributeID>
+				<Description>Region</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/dob</ClaimURI>
+				<DisplayName>Birth Date</DisplayName>
+				<AttributeID>dateOfBirth</AttributeID>
+				<Description>Birth Date</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/nickname</ClaimURI>
+				<DisplayName>Nick Name</DisplayName>
+				<AttributeID>nickName</AttributeID>
+				<Description>Nick Name</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/stateorprovince</ClaimURI>
+				<DisplayName>State</DisplayName>
+				<AttributeID>stateOrProvinceName</AttributeID>
+				<Description>State</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/otherphone</ClaimURI>
+				<DisplayName>Other Phone</DisplayName>
+				<AttributeID>otherPhone</AttributeID>
+				<Description>Other Phone</Description>
+		    </Claim>
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/fullname</ClaimURI>
+				<DisplayName>Full Name</DisplayName>
+				<AttributeID>cn</AttributeID>
+				<Description>Full Name</Description>
+		    </Claim>
+
+
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/primaryChallengeQuestion</ClaimURI>
+				<DisplayName>Primary Challenge Question</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>title</AttributeID>
+				<Description>Primary Challenge Question</Description>
+		    </Claim>
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/challengeQuestionUris</ClaimURI>
+				<DisplayName>Challenge Question</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>stateOrProvinceName</AttributeID>
+				<Description>Challenge Question</Description>
+		    </Claim>
+
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/oneTimePassword</ClaimURI>
+				<DisplayName>One Time Password</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>postalcode</AttributeID>
+				<Description>One Time Password</Description>
+		    </Claim>
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/passwordTimestamp</ClaimURI>
+				<DisplayName>Password Time Stamp</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>nickName</AttributeID>
+				<Description>Password Time Stamp</Description>
+		    </Claim>
+		    <Claim>
+				<ClaimURI>http://wso2.org/claims/accountStatus</ClaimURI>
+				<DisplayName>Account Locked</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>otherPhone</AttributeID>
+				<Description>Account Locked</Description>
+		    </Claim>
+
+		     <Claim>
+				<ClaimURI>http://wso2.org/claims/challengeQuestion1</ClaimURI>
+				<DisplayName>Challenge Question1</DisplayName>
+			<!-- Proper attribute Id in your user store must be configured for this -->
+				<AttributeID>gender</AttributeID>
+				<Description>Challenge Question1</Description>
+
+			</Claim>
+			<Claim>
+				<ClaimURI>http://wso2.org/claims/challengeQuestion2</ClaimURI>
+				<DisplayName>Challenge Question2</DisplayName>
+			<!-- Proper attribute Id in your user store must be used configured for this -->
+				<AttributeID>localityName</AttributeID>
+				<Description>Challenge Question2</Description>
+			</Claim>
+
+		</Dialect>
+
+		<Dialect dialectURI="http://schemas.xmlsoap.org/ws/2005/05/identity">
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname</ClaimURI>
+				<DisplayName>First Name</DisplayName>
+				<AttributeID>givenName</AttributeID>
+				<Description>First Name</Description>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nickname</ClaimURI>
+				<DisplayName>Nick Name</DisplayName>
+				<AttributeID>nickName</AttributeID>
+				<Description>Nick Name</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname</ClaimURI>
+				<DisplayName>Last Name</DisplayName>
+				<AttributeID>sn</AttributeID>
+				<Description>Last Name</Description>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</ClaimURI>
+				<DisplayName>Email</DisplayName>
+				<AttributeID>mail</AttributeID>
+				<Description>Email Address</Description>
+				<Required />
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/dateofbirth</ClaimURI>
+				<DisplayName>DOB</DisplayName>
+				<AttributeID>dateOfBirth</AttributeID>
+				<Description>Date of Birth</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/gender</ClaimURI>
+				<DisplayName>Gender</DisplayName>
+				<AttributeID>gender</AttributeID>
+				<Description>Gender</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/country</ClaimURI>
+				<DisplayName>Country</DisplayName>
+				<AttributeID>country</AttributeID>
+				<Description>Country</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/streetaddress</ClaimURI>
+				<DisplayName>Street Address</DisplayName>
+				<AttributeID>streetAddress</AttributeID>
+				<Description>Street Address</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/homephone</ClaimURI>
+				<DisplayName>Home Phone</DisplayName>
+				<AttributeID>homePhone</AttributeID>
+				<Description>Home Phone</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/otherphone</ClaimURI>
+				<DisplayName>Other Phone</DisplayName>
+				<AttributeID>otherPhone</AttributeID>
+				<Description>Other Phone</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobile</ClaimURI>
+				<DisplayName>Mobile</DisplayName>
+				<AttributeID>mobile</AttributeID>
+				<Description>Mobile</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/locality</ClaimURI>
+				<DisplayName>Locality</DisplayName>
+				<AttributeID>localityName</AttributeID>
+				<Description>Locality</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/stateorprovince</ClaimURI>
+				<DisplayName>State</DisplayName>
+				<AttributeID>stateOrProvinceName</AttributeID>
+				<Description>State</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/postalcode</ClaimURI>
+				<DisplayName>Postalcode</DisplayName>
+				<AttributeID>postalCode</AttributeID>
+				<Description>Postalcode</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/privatepersonalidentifier</ClaimURI>
+				<AttributeID>privatePersonalIdentifier</AttributeID>
+				<Description>PPID</Description>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+		</Dialect>
+
+		<Dialect dialectURI="http://schema.openid.net/2007/05/claims">
+			<Claim>
+				<ClaimURI>nickname</ClaimURI>
+				<DisplayName>First Name</DisplayName>
+				<AttributeID>nickName</AttributeID>
+				<Description>First Name</Description>
+				<Required />
+                                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>fullname</ClaimURI>
+				<DisplayName>Full Name</DisplayName>
+				<AttributeID>cn</AttributeID>
+				<Description>Full Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>email</ClaimURI>
+				<DisplayName>Email</DisplayName>
+				<AttributeID>mail</AttributeID>
+				<Description>Email Address</Description>
+                                <DisplayOrder>3</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>country</ClaimURI>
+				<DisplayName>Country</DisplayName>
+				<AttributeID>country</AttributeID>
+				<Description>Country</Description>
+                                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>timezone</ClaimURI>
+				<DisplayName>Time Zone</DisplayName>
+				<AttributeID>timeZone</AttributeID>
+				<Description>Time Zone</Description>
+                                <DisplayOrder>9</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>dob</ClaimURI>
+				<DisplayName>DOB</DisplayName>
+				<AttributeID>dateOfBirth</AttributeID>
+				<Description>Date of Birth</Description>
+                                <DisplayOrder>6</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>postcode</ClaimURI>
+				<DisplayName>Postalcode</DisplayName>
+				<AttributeID>postalCode</AttributeID>
+				<Description>Postalcode</Description>
+                                <DisplayOrder>4</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>gender</ClaimURI>
+				<DisplayName>Gender</DisplayName>
+				<AttributeID>gender</AttributeID>
+				<Description>Gender</Description>
+                                <DisplayOrder>8</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>language</ClaimURI>
+				<DisplayName>Language</DisplayName>
+				<AttributeID>prefferedLanguage</AttributeID>
+				<Description>Language</Description>
+                <DisplayOrder>7</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+		</Dialect>
+
+		<Dialect dialectURI="http://axschema.org">
+			<Claim>
+				<ClaimURI>http://axschema.org/namePerson/first</ClaimURI>
+				<DisplayName>First Name</DisplayName>
+				<AttributeID>cn</AttributeID>
+				<Description>First Name</Description>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/namePerson/last</ClaimURI>
+				<DisplayName>Last Name</DisplayName>
+				<AttributeID>sn</AttributeID>
+				<Description>Last Name</Description>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/contact/email</ClaimURI>
+				<DisplayName>Email</DisplayName>
+				<AttributeID>mail</AttributeID>
+				<Description>Email Address</Description>
+				<Required />
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/contact/country/home</ClaimURI>
+				<DisplayName>Country</DisplayName>
+				<AttributeID>country</AttributeID>
+				<Description>Country</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/pref/timezone</ClaimURI>
+				<DisplayName>Time Zone</DisplayName>
+				<AttributeID>timeZone</AttributeID>
+				<Description>Time Zone</Description>
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/birthDate</ClaimURI>
+				<DisplayName>DOB</DisplayName>
+				<AttributeID>dateOfBirth</AttributeID>
+				<Description>Date of Birth</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/contact/postalCode/home</ClaimURI>
+				<DisplayName>Postalcode</DisplayName>
+				<AttributeID>postalCode</AttributeID>
+				<Description>Postalcode</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/person/gender</ClaimURI>
+				<DisplayName>Gender</DisplayName>
+				<AttributeID>gender</AttributeID>
+				<Description>Gender</Description>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>http://axschema.org/pref/language</ClaimURI>
+				<DisplayName>Language</DisplayName>
+				<AttributeID>prefferedLanguage</AttributeID>
+				<Description>Language</Description>
+				<SupportedByDefault />
+			</Claim>
+		</Dialect>
+        <Dialect dialectURI="urn:scim:schemas:core:1.0">
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:id</ClaimURI>
+				<DisplayName>Id</DisplayName>
+				<AttributeID>scimId</AttributeID>
+				<Description>Id</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:externalId</ClaimURI>
+				<DisplayName>External Id</DisplayName>
+				<AttributeID>externalId</AttributeID>
+				<Description>External Id</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:meta.created</ClaimURI>
+				<DisplayName>Meta - Created</DisplayName>
+				<AttributeID>createdDate</AttributeID>
+				<Description>Meta - Created</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:meta.lastModified</ClaimURI>
+				<DisplayName>Meta - Last Modified</DisplayName>
+				<AttributeID>lastModifiedDate</AttributeID>
+				<Description>Meta - Last Modified</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:meta.location</ClaimURI>
+				<DisplayName>Meta - Location</DisplayName>
+				<AttributeID>location</AttributeID>
+				<Description>Meta - Location</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:userName</ClaimURI>
+				<DisplayName>User Name</DisplayName>
+				<AttributeID>uid</AttributeID>
+				<Description>User Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.givenName</ClaimURI>
+				<DisplayName>Name - Given Name</DisplayName>
+				<AttributeID>givenName</AttributeID>
+				<Description>Given Name</Description>
+				<Required />
+                <DisplayOrder>1</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.familyName</ClaimURI>
+				<DisplayName>Name - Family Name</DisplayName>
+				<AttributeID>sn</AttributeID>
+				<Description>Family Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.formatted</ClaimURI>
+				<DisplayName>Name - Formatted Name</DisplayName>
+				<AttributeID>formattedName</AttributeID>
+				<Description>Formatted Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.middleName</ClaimURI>
+				<DisplayName>Name - Middle Name</DisplayName>
+				<AttributeID>middleName</AttributeID>
+				<Description>Middle Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.honorificPrefix</ClaimURI>
+				<DisplayName>Name - Honoric Prefix</DisplayName>
+				<AttributeID>honoricPrefix</AttributeID>
+				<Description>Honoric Prefix</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:name.honorificSuffix</ClaimURI>
+				<DisplayName>Name - Honoric Suffix</DisplayName>
+				<AttributeID>honoricSuffix</AttributeID>
+				<Description>Honoric Suffix</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:displayName</ClaimURI>
+				<DisplayName>Display Name</DisplayName>
+				<AttributeID>displayName</AttributeID>
+				<Description>Display Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:nickName</ClaimURI>
+				<DisplayName>Nick Name</DisplayName>
+				<AttributeID>nickName</AttributeID>
+				<Description>Nick Name</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:profileUrl</ClaimURI>
+				<DisplayName>Profile URL</DisplayName>
+				<AttributeID>url</AttributeID>
+				<Description>Profile URL</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:title</ClaimURI>
+				<DisplayName>Title</DisplayName>
+				<AttributeID>title</AttributeID>
+				<Description>Title</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:userType</ClaimURI>
+				<DisplayName>User Type</DisplayName>
+				<AttributeID>userType</AttributeID>
+				<Description>User Type</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:preferredLanguage</ClaimURI>
+				<DisplayName>Preferred Language</DisplayName>
+				<AttributeID>preferredLanguage</AttributeID>
+				<Description>Preferred Language</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:local</ClaimURI>
+				<DisplayName>Local</DisplayName>
+				<AttributeID>local</AttributeID>
+				<Description>Local</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:timeZone</ClaimURI>
+				<DisplayName>Time Zone</DisplayName>
+				<AttributeID>timeZone</AttributeID>
+				<Description>Time Zone</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:active</ClaimURI>
+				<DisplayName>Active</DisplayName>
+				<AttributeID>active</AttributeID>
+				<Description>Active</Description>
+				<DisplayOrder>2</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:emails</ClaimURI>
+				<DisplayName>Emails</DisplayName>
+				<AttributeID>mail</AttributeID>
+				<Description>Email Addresses</Description>
+                <DisplayOrder>3</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:emails.work</ClaimURI>
+				<DisplayName>Emails - Work Email</DisplayName>
+				<AttributeID>workEmail</AttributeID>
+				<Description>Work Email</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:emails.home</ClaimURI>
+				<DisplayName>Emails - Home Email</DisplayName>
+				<AttributeID>homeEmail</AttributeID>
+				<Description>Home Email</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:emails.other</ClaimURI>
+				<DisplayName>Emails - Other Email</DisplayName>
+				<AttributeID>otherEmail</AttributeID>
+				<Description>Other Email</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers</ClaimURI>
+				<DisplayName>Phone Numbers</DisplayName>
+				<AttributeID>phoneNumbers</AttributeID>
+				<Description>Phone Numbers</Description>
+                <DisplayOrder>3</DisplayOrder>
+				<Required />
+				<SupportedByDefault />
+                <RegEx>^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$</RegEx>
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.mobile</ClaimURI>
+				<DisplayName>Phone Numbers - Mobile Number</DisplayName>
+				<AttributeID>mobile</AttributeID>
+				<Description>Mobile Number</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+			<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.home</ClaimURI>
+				<DisplayName>Phone Numbers - Home Phone Number</DisplayName>
+				<AttributeID>homePhone</AttributeID>
+				<Description>Home Phone</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.work</ClaimURI>
+				<DisplayName>Phone Numbers - Work Phone Number</DisplayName>
+				<AttributeID>workPhone</AttributeID>
+				<Description>Work Phone</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.fax</ClaimURI>
+				<DisplayName>Phone Numbers - Fax Number</DisplayName>
+				<AttributeID>fax</AttributeID>
+				<Description>Fax Number</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.pager</ClaimURI>
+				<DisplayName>Phone Numbers - Pager Number</DisplayName>
+				<AttributeID>pager</AttributeID>
+				<Description>Pager Number</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:phoneNumbers.other</ClaimURI>
+				<DisplayName>Phone Numbers - Other</DisplayName>
+				<AttributeID>otherPhoneNumber</AttributeID>
+				<Description>Other Phone Number</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+		<Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:ims</ClaimURI>
+				<DisplayName>IMS</DisplayName>
+				<AttributeID>im</AttributeID>
+				<Description>IM</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:ims.gtalk</ClaimURI>
+				<DisplayName>IM - Gtalk</DisplayName>
+				<AttributeID>imGtalk</AttributeID>
+				<Description>IM - Gtalk</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:ims.skype</ClaimURI>
+				<DisplayName>IM - Skype</DisplayName>
+				<AttributeID>imSkype</AttributeID>
+				<Description>IM - Skype</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+	    <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:photos</ClaimURI>
+				<DisplayName>Photo</DisplayName>
+				<AttributeID>photos</AttributeID>
+				<Description>Photo</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:photos.photo</ClaimURI>
+				<DisplayName>Photo</DisplayName>
+				<AttributeID>photoUrl</AttributeID>
+				<Description>Photo</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:photos.thumbnail</ClaimURI>
+				<DisplayName>Photo - Thumbnail</DisplayName>
+				<AttributeID>thumbnail</AttributeID>
+				<Description>Photo - Thumbnail</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses</ClaimURI>
+				<DisplayName>Address</DisplayName>
+				<AttributeID>addresses</AttributeID>
+				<Description>Address</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.formatted</ClaimURI>
+				<DisplayName>Address - Formatted</DisplayName>
+				<AttributeID>formattedAddress</AttributeID>
+				<Description>Address - Formatted</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.streetAddress</ClaimURI>
+				<DisplayName>Address - Street</DisplayName>
+				<AttributeID>streetAddress</AttributeID>
+				<Description>Address - Street</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.locality</ClaimURI>
+				<DisplayName>Address - Locality</DisplayName>
+				<AttributeID>localityAddress</AttributeID>
+				<Description>Address - Locality</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.region</ClaimURI>
+				<DisplayName>Address - Region</DisplayName>
+				<AttributeID>region</AttributeID>
+				<Description>Address - Region</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.postalCode</ClaimURI>
+				<DisplayName>Address - Postal Code</DisplayName>
+				<AttributeID>postalCode</AttributeID>
+				<Description>Address - Postal Code</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:addresses.country</ClaimURI>
+				<DisplayName>Address - Country</DisplayName>
+				<AttributeID>country</AttributeID>
+				<Description>Address - Country</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:groups</ClaimURI>
+				<DisplayName>Groups</DisplayName>
+				<AttributeID>groups</AttributeID>
+				<Description>Groups</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:entitlements</ClaimURI>
+				<DisplayName>Entitlements</DisplayName>
+				<AttributeID>entitlements</AttributeID>
+				<Description>Entitlements</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:roles</ClaimURI>
+				<DisplayName>Roles</DisplayName>
+				<AttributeID>roles</AttributeID>
+				<Description>Roles</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+            <Claim>
+				<ClaimURI>urn:scim:schemas:core:1.0:x509Certificates</ClaimURI>
+				<DisplayName>X509Certificates</DisplayName>
+				<AttributeID>x509Certificates</AttributeID>
+				<Description>X509Certificates</Description>
+                <DisplayOrder>5</DisplayOrder>
+				<SupportedByDefault />
+			</Claim>
+		</Dialect>
+	</Dialects>
+</ClaimConfig>
