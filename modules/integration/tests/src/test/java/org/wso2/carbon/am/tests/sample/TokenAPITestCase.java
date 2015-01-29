@@ -97,12 +97,17 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
         apiStore.login(userInfo.getUserName(), userInfo.getPassword());
+
+        // Create application
+        apiStore.addApplication("TokenTestAPIApplication", "Gold", "", "this-is-test");
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userInfo.getUserName());
+        subscriptionRequest.setApplicationName("TokenTestAPIApplication");
         subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
 
         //Generate sandbox Token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequestSandBox = new GenerateAppKeyRequest("DefaultApplication");
+        GenerateAppKeyRequest generateAppKeyRequestSandBox = new GenerateAppKeyRequest("TokenTestAPIApplication");
         generateAppKeyRequestSandBox.setKeyType("SANDBOX");
         String responseStringSandBox = apiStore.generateApplicationKey(generateAppKeyRequestSandBox).getData();
         JSONObject responseSandBOX = new JSONObject(responseStringSandBox);
@@ -110,10 +115,10 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
         requestHeadersSandBox.put("Authorization", "Bearer " + SANDbOXAccessToken);
         HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeadersSandBox);
-       // Assert.assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertEquals(youTubeResponseSandBox.getResponseCode(), 202, "Response code mismatched");
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("TokenTestAPIApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
          /*Response would be like -
@@ -156,8 +161,10 @@ public class TokenAPITestCase extends APIManagerIntegrationTest {
         Assert.assertTrue(youTubeResponseWithApplicationToken.getData().contains("<entry>"), "Response data mismatched");
 
         //Invoke Https end point
-        HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil.doGet(getApiInvocationURLHttps("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
-       // Assert.assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
+        String httpsEndpoint = getApiInvocationURLHttps("tokenTestAPI/1.0.0/most_popular");
+
+        HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil.doGet(httpsEndpoint, requestHeaders);
+        //Assert.assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 202, "Response code mismatched");
 
 
         HttpResponse errorResponse = null;

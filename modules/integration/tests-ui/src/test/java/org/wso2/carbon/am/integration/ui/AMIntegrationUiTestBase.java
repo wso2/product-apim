@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.carbom.am.integration.ui;
+package org.wso2.carbon.am.integration.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,6 +59,24 @@ public class AMIntegrationUiTestBase {
             return ProductUrlGeneratorUtil.getServiceHomeURL(productName);
         } else {
             return ProductUrlGeneratorUtil.getProductHomeURL(productName);
+        }
+    }
+    
+    protected String getPublisherURL(String productName) throws Exception{
+        String carbonLoginURL = getLoginURL(productName);        
+        if(carbonLoginURL.contains("/carbon")) {
+            return carbonLoginURL.split("carbon")[0] + "publisher";
+        } else {
+        	throw new Exception("Error while composing Publisher Login URL");
+        }
+    }
+    
+    protected String getStoreURL(String productName) throws Exception{
+        String carbonLoginURL = getLoginURL(productName);        
+        if(carbonLoginURL.contains("/carbon")) {
+            return carbonLoginURL.split("carbon")[0] + "store";
+        } else {
+        	throw new Exception("Error while composing Store Login URL");
         }
     }
 }

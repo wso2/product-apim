@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
     	<artifactId>am-features-parent</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>${apimserver.version}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.styles</artifactId>
-                <version>1.7.0-SNAPSHOT</version>
+                <version>${apimserver.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="2.3">
+<jmeterTestPlan version="1.2" properties="2.6" jmeter="2.11 r1554548">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -140,7 +140,7 @@
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/publisher/site/blocks/user/login/ajax/login.jag</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -288,13 +288,6 @@
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">roles</stringProp>
-              </elementProp>
-              <elementProp name="resourceMethodThrottlingTier-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">Unlimited, Unlimited, Unlimited, Unlimited, Unlimited</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                <stringProp name="Argument.name">resourceMethodThrottlingTier-0</stringProp>
               </elementProp>
             </collectionProp>
           </elementProp>
@@ -470,7 +463,7 @@ Failure=true;
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/store/site/blocks/user/login/ajax/login.jag</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -533,8 +526,7 @@ Failure=true;
             <stringProp name="script">String resp = prev.getResponseDataAsString();
 
 int def = resp.indexOf(&quot;id&quot;);
-//String appid = resp.substring(def+6, resp.indexOf(&quot;,&quot; ));
-String appid = resp.substring(def+6, resp.indexOf(&quot;, \&quot;callbackUrl\&quot;&quot; ));
+String appid = resp.substring(def+6, resp.indexOf(&quot;,&quot; ));
 System.out.println(&quot;AppId: &quot; + appid);
 vars.put(&quot;appid&quot;, appid);</stringProp>
           </BeanShellPostProcessor>

@@ -1,4 +1,3 @@
-<sequence name="_throttle_out_handler_" xmlns="http://ws.apache.org/ns/synapse">
-    <sequence key="_build_"/>
+<sequence name="_throttle_out_handler_" xmlns="http://ws.apache.org/ns/synapse">    
     <property name="X-JWT-Assertion" scope="transport" action="remove"/>
 </sequence>

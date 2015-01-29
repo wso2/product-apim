@@ -202,10 +202,10 @@
 				<Description>Password Time Stamp</Description>
 		    </Claim>
 		    <Claim>
-				<ClaimURI>http://wso2.org/claims/accountStatus</ClaimURI>
+				<ClaimURI>http://wso2.org/claims/identity/accountLocked</ClaimURI>
 				<DisplayName>Account Locked</DisplayName>
 			<!-- Proper attribute Id in your user store must be configured for this -->
-				<AttributeID>otherPhone</AttributeID>
+				<AttributeID>initials</AttributeID>
 				<Description>Account Locked</Description>
 		    </Claim>
 
@@ -413,9 +413,9 @@
 		<Dialect dialectURI="http://axschema.org">
 			<Claim>
 				<ClaimURI>http://axschema.org/namePerson/first</ClaimURI>
-				<DisplayName>First Name</DisplayName>
-				<AttributeID>cn</AttributeID>
-				<Description>First Name</Description>
+				<DisplayName>Nick Name</DisplayName>
+				<AttributeID>nickName</AttributeID>
+				<Description>Nick Name</Description>
 				<Required />
 				<SupportedByDefault />
 			</Claim>

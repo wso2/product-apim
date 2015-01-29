@@ -12,7 +12,7 @@ public class MenuItemManager {
 	
     private HTTPClient httpClient;
     private String serverURL;
-    private final String PIZZA_LIST_URL = "/menu/1.0.0";
+    private final String PIZZA_LIST_URL = "/1.0.0/menu";
 
     public MenuItemManager() {
         httpClient = new HTTPClient();

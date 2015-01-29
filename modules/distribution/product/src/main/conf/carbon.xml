@@ -32,7 +32,7 @@
     <!--
        Product Version
     -->
-    <Version>1.7.0</Version>
+    <Version>1.9.0</Version>
 
     <ServerKey>AM</ServerKey>
 
@@ -152,7 +152,7 @@
              If we use multiple usertsore with tenants, we might need to use following initialContextfactory implementation to do datasource lookup
 		 -->
 		<DefaultInitialContextFactory>org.wso2.carbon.tomcat.jndi.CarbonJavaURLContextFactory</DefaultInitialContextFactory>
-        
+
         <!--
              The fully qualified name of the default initial context factory
         -->
@@ -272,9 +272,9 @@
         <clientAxis2XmlLocation>${carbon.home}/repository/conf/axis2/axis2_client.xml</clientAxis2XmlLocation>
         <!-- If this parameter is set, the ?wsdl on an admin service will not give the admin service wsdl. -->
         <HideAdminServiceWSDLs>true</HideAdminServiceWSDLs>
-	
+
 	<!--WARNING-Use With Care! Uncommenting bellow parameter would expose all AdminServices in HTTP transport.
-	With HTTP transport your credentials and data routed in public channels are vulnerable for sniffing attacks. 
+	With HTTP transport your credentials and data routed in public channels are vulnerable for sniffing attacks.
 	Use bellow parameter ONLY if your communication channels are confirmed to be secured by other means -->
         <!--HttpAdminServices>*</HttpAdminServices-->
 
@@ -295,11 +295,11 @@
         </Role>
     </ServiceUserRoles>
 
-	<!-- 
-      Enable following config to allow Emails as usernames. 	
-    -->	    	
+	<!--
+      Enable following config to allow Emails as usernames.
+    -->
     <!--EnableEmailUserName>true</EnableEmailUserName-->
-	
+
     <!--
       Security configurations
     -->
@@ -320,7 +320,7 @@
             <!-- Private Key password-->
             <KeyPassword>wso2carbon</KeyPassword>
         </KeyStore>
-		
+
 		 <!--
 			Encrypt Decrypt Store will be used for encrypting and decrypting
 		-->
@@ -612,29 +612,29 @@
     -->
     <FeatureRepository>
 	<RepositoryName>default repository</RepositoryName>
-	<RepositoryURL>${p2.repo.url}</RepositoryURL>
+	<RepositoryURL>http://dist.wso2.org/p2/carbon/releases/4.2.0/</RepositoryURL>
     </FeatureRepository>
 
     <!--
 	Configure API Management
    -->
    <APIManagement>
-	
-	<!--Uses the embedded API Manager by default. If you want to use an external 
+
+	<!--Uses the embedded API Manager by default. If you want to use an external
 	API Manager instance to manage APIs, configure below  externalAPIManager-->
-	
+
 	<Enabled>false</Enabled>
-	
-	<!--Uncomment and configure API Gateway and 
+
+	<!--Uncomment and configure API Gateway and
 	Publisher URLs to use external API Manager instance-->
-	
+
 	<!--ExternalAPIManager>
 
 		<APIGatewayURL>http://localhost:8281</APIGatewayURL>
 		<APIPublisherURL>http://localhost:8281/publisher</APIPublisherURL>
 
 	</ExternalAPIManager-->
-	
+
 	<LoadAPIContextsInServerStartup>true</LoadAPIContextsInServerStartup>
    </APIManagement>
 </Server>

@@ -8,7 +8,7 @@
 
     <!-- This parameter is used when adding api management capability to other products like GReg, AS, DSS etc.-->
     <GatewayType>Synapse</GatewayType>
-	
+
   <!-- This parameter is used to enable the securevault support when try to publish endpoint secured APIs. Values should be "true" or "false".
   By default secure vault is disabled.-->
 	<EnableSecureVault>false</EnableSecureVault>
@@ -69,9 +69,10 @@
         -->
         <SecurityContextHeader>X-JWT-Assertion</SecurityContextHeader>
 
-	<!-- 
+	<!--
 		Fully qualified name of the class that will retrieve additional user claims
-		to be appended to the JWT. If not specified no claims will be appended.
+		to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
+		jwt token, he needs to enable this parameter.
 		The DefaultClaimsRetriever class adds user claims from the default carbon user store.
 	-->
 	<!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
@@ -83,8 +84,8 @@
 		JWT.
 	-->
     	<!--ConsumerDialectURI>http://wso2.org/claims</ConsumerDialectURI-->
-    	
-    	<!-- 
+
+    	<!--
 		Signature algorithm. Accepts "SHA256withRSA" or "NONE". To disable signing explicitly specify "NONE".
 	-->
 	<!--SignatureAlgorithm>SHA256withRSA</SignatureAlgorithm-->
@@ -93,8 +94,14 @@
 		Enable/Disable JWT generation. Default is false.
 	-->
 	<!--EnableTokenGeneration>false</EnableTokenGeneration-->
-	
-	<!-- 
+
+        <!--
+            This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
+	    default implementation provided.
+	 -->
+	<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.JWTGenerator</TokenGeneratorImpl>
+
+	<!--
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
 	<!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
@@ -144,7 +151,7 @@
                         <GatewayEndpoint>http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}</GatewayEndpoint>
                 </Environment>
         </Environments>
-        
+
         <!--
             Enable/Disable token caching at gateway node.
         -->
@@ -155,8 +162,8 @@
         -->
         <EnableGatewayResourceCache>true</EnableGatewayResourceCache>
 
-	<!-- Header name can be configurable, as you preferred. When API invocation is restricted to access only for authorized domains, 
-		client request should send his domain, as the value of this header. 
+	<!-- Header name can be configurable, as you preferred. When API invocation is restricted to access only for authorized domains,
+		client request should send his domain, as the value of this header.
 	-->
 	<ClientDomainHeader>referer</ClientDomainHeader>
 
@@ -168,11 +175,11 @@
      <EnableBillingAndUsage>false</EnableBillingAndUsage>
 
     <!--
-        API usage tracker configuration used by the BAM data publisher and 
+        API usage tracker configuration used by the BAM data publisher and
         Google Analytics publisher in API gateway.
     -->
     <APIUsageTracking>
-	
+
         <!--
             Enable/Disable the API usage tracker.
         -->
@@ -196,8 +203,8 @@
             Groups are delimited by curly braces whereas receivers are delimited by commas.
 	    Ex - Multiple Receivers within a single group
 		 tcp://localhost:7612/,tcp://localhost:7613/,tcp://localhost:7614/
-	    Ex - Multiple Receiver Groups with two receivers each		
-                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} 
+	    Ex - Multiple Receiver Groups with two receivers each
+                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/}
         -->
         <BAMServerURL>tcp://localhost:7612/</BAMServerURL>
 
@@ -274,21 +281,22 @@
         <!--
             Remove UserName from JWT Token
         -->
-       <!-- <RemoveUserNameToJWTForApplicationToken>true</RemoveUserNameToJWTForApplicationToken>-->
+       <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
 
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
-	<!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this 
-             API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
-	     In distributed deployment we should configure this property in key manager node by pointing 
-	     gateway https url. Also please note that we should point gateway revoke service to key manager
+	<!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
+         API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
+	     In distributed deployment we should configure this property in key manager node by pointing
+	     gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
+         Also please note that we should point gateway revoke service to key manager
 	-->
 	<RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
-	
+
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
-	org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionProcessor in the identity.xml -->
+	org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
 	<EncryptPersistedTokens>false</EncryptPersistedTokens>
 
     </APIKeyManager>
@@ -304,24 +312,7 @@
         <EnableUnlimitedTier>true</EnableUnlimitedTier>
     </TierManagement>
 
-    <!--
-        Use this configuration to control the self-sign-up capability in API store.
-    -->
-    <SelfSignUp>
-        <!--
-            Enable or disable the self-sign-up feature.
-        -->
-        <Enabled>true</Enabled>
 
-        <!--
-            Self signed up users should be associated with a suitable subscriber
-            role for them to be able to access the API store portal. This required
-            parameter specifies which role should be used for that purpose. The role
-            specified here must have the '/permission/admin/manage/api/subscribe'
-            permission.
-        -->
-        <SubscriberRoleName>subscriber</SubscriberRoleName>
-    </SelfSignUp>
 
     <!--
         Use this configuration to control the number of APIs shown in API store.
@@ -344,28 +335,33 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
-		
+
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
            Default is "true". If user wants to disable, he must set this param as "false"
 
         -->
 		<DisplayComments>true</DisplayComments>
-		
+
 		 <!--
             This parameter specifies whether to display the ratings  or not.
            Default is "true". If user wants to disable, he must set this param as "false"
 
         -->
 		<DisplayRatings>true</DisplayRatings>
-	      
+
               <!--
-                This parameter specifies the expiration time of the TagCache. TagCache will 
+                This parameter specifies the expiration time of the TagCache. TagCache will
                 only be created when this element is uncommented. When the specified
                 time duration gets elapsed ,tag cache will get re-generated.
                -->
          <!--TagCacheDuration>120000</TagCacheDuration-->
 
+    <!--
+    This parameter specifies whether Recently Added APIs will be loaded from the cache or not.
+    If there are multiple API modification during a short time period, better to disable cache.
+    -->
+        <EnableRecentlyAddedAPICache>false</EnableRecentlyAddedAPICache>
 
     </APIStore>
 
@@ -390,8 +386,8 @@
     <!--StatusObservers>
         <Observer>org.wso2.carbon.apimgt.impl.observers.SimpleLoggingObserver</Observer>
     </StatusObservers-->
-    
-    <!-- 
+
+    <!--
 	Use this configuration Create APIs at the Server startup
     -->
     <StartupAPIPublisher>
@@ -399,18 +395,18 @@
 	<!--
             Enable/Disable the API Startup Publisher
         -->
-	
+
 	<Enabled>false</Enabled>
-	
+
 	<!--
-	Configuration to create APIs for local endpoints. 
+	Configuration to create APIs for local endpoints.
 	Endpoint will be computed as http://${carbon.local.ip}:${mgt.transport.http.port}/Context.
 	Define many LocalAPI elements as below to create many APIs
 	for local Endpoints.
 	IconPath should be relative to CARBON_HOME.
 	-->
 	<LocalAPIs>
-		<LocalAPI>	
+		<LocalAPI>
 			<Context>/resource</Context>
 			<Provider>admin</Provider>
 			<Version>1.0.0</Version>
@@ -421,14 +417,14 @@
 	</LocalAPIs>
 	<!--
 	Configuration to create APIs for remote endpoints.
-	When Endpoint need to be defined use this configuration.  
+	When Endpoint need to be defined use this configuration.
 	Define many API elements as below to create many APIs
 	for external Endpoints.
-	If you do not need to add Icon or Documentation set 
+	If you do not need to add Icon or Documentation set
 	'none' as the value for IconPath & DocumentURL.
 	-->
 	<!--APIs>
-		<API>	
+		<API>
 			<Context>/resource</Context>
 			<Endpoint>http://localhost:9764/resource</Endpoint>
 			<Provider>admin</Provider>
@@ -438,34 +434,40 @@
 			<AuthType>Any</AuthType>
 		</API>
 	</APIs-->
-		
+
     </StartupAPIPublisher>
 
-    
+
 
     <!--
 	When an API is invoked, a list of handlers get engaged to its execution flow. This
 	property defines the position of the Extension Handler.
 	Supported values: top, bottom
 	Defaults to: bottom
-    -->	
+    -->
     <!--ExtensionHandlerPosition>top|bottom</ExtensionHandlerPosition-->
 
 
     <!--Configuration to enable/disable sending CORS headers in the Gateway response
         and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
-        
+
 	<!--Configuration to enable/disable sending CORS headers from the Gateway-->
 	<Enabled>true</Enabled>
 
-	<!--The value of the Access-Control-Allow-Origin header. Default values are 
+	<!--The value of the Access-Control-Allow-Origin header. Default values are
 	    API Store addresses, which is needed for swagger to function.-->
-	<Access-Control-Allow-Origin>https://localhost:9443,http://localhost:9763</Access-Control-Allow-Origin>
+	<Access-Control-Allow-Origin>*</Access-Control-Allow-Origin>
+
+	<!--Configure Access-Control-Allow-Methods-->
+	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,OPTIONS</Access-Control-Allow-Methods>
 
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
-	
-    </CORSConfiguration>
-</APIManager>
 
+    </CORSConfiguration>
+   <!-- This property is there to configure velocity log file location. normally it will
+        crete file in carbon home. If you need to use different location you can use this
+   -->
+   <!--VelocityLogger></VelocityLogger-->
+</APIManager>

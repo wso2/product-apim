@@ -76,7 +76,7 @@ public class RestPeopleTestCase extends APIManagerBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        apiStore.removeSubscription("RestBackendTestAPI", "1.0.0", "admin", 1);
+        apiStore.removeSubscription("RestBackendTestAPI", "1.0.0", "admin", 2);
         apiPublisher.deleteApi("RestBackendTestAPI", "1.0.0", "admin");
         tomcatServerManager.stop();
     }
@@ -122,11 +122,15 @@ public class RestPeopleTestCase extends APIManagerBaseTest {
                 providerName, APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
-        // subscribing
+        // create new application and subscribing
         apiStore.login(userName, password);
+        String appName="NewApplication";
+        apiStore.addApplication(appName, "Unlimited", "some_url", "NewApp");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
+        subscriptionRequest.setApplicationName(appName);
         apiStore.subscribe(subscriptionRequest);
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        //generate access token
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(appName);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

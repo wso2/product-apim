@@ -19,44 +19,49 @@
 package org.wso2.am.integration.test.utils.bean;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public abstract class AbstractRequest {
-	public String action;
-	private Map<String, String> parameterMap = new HashMap<String, String>();
-	private static final String ACTION_PARAMETER_VALUE = "action";
+    public String action;
+    private Map parameterMap = new HashMap<String, String>();
+    private static final String ACTION_PARAMETER_VALUE = "action";
 
-	public String generateRequestParameters() {
-		parameterMap.clear();
-		setAction();
-		init();
-		String requestParams = ACTION_PARAMETER_VALUE + "=" + action;
-		for (String key : parameterMap.keySet()) {
-			requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
-		}
-		return requestParams;
-	}
+    public String generateRequestParameters() {
+        parameterMap.clear();
+        setAction();
+        init();
+        String requestParams = ACTION_PARAMETER_VALUE + "=" + action;
+        Iterator<String> irt = parameterMap.keySet().iterator();
+        while (irt.hasNext()) {
+            String key = irt.next();
+            requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
+        }
+        return requestParams;
+    }
 
-	public String generateRequestParameters(String actionName) {
-		parameterMap.clear();
-		setAction();
-		init();
-		String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
-		for (String key : parameterMap.keySet()) {
-			requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
-		}
-		return requestParams;
-	}
+    public String generateRequestParameters(String actionName) {
+        parameterMap.clear();
+        setAction();
+        init();
+        String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
+        Iterator<String> irt = parameterMap.keySet().iterator();
+        while (irt.hasNext()) {
+            String key = irt.next();
+            requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
+        }
+        return requestParams;
+    }
 
-	public void addParameter(String key, String value) {
-		parameterMap.put(key, value);
-	}
+    public void addParameter(String key, String value) {
+        parameterMap.put(key, value);
+    }
 
-	public abstract void setAction();
+    public abstract void setAction();
 
-	public abstract void init();
+    public abstract void init();
 
-	public void setAction(String actionName) {
-		this.action = actionName;
-	}
+    public void setAction(String actionName) {
+        this.action = actionName;
+    }
 }

@@ -15,25 +15,35 @@
             <!--class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase"/-->
 
 
-            <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleITestCase"/>
             <class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.ThrottlingTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.YouTubeAPITestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.TokenAPITestCase"/>
+            <class name="org.wso2.carbon.am.tests.token.APIMANAGER3152RefreshTokenTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.APIResourceModificationTestCase"/>
+            <!--class name="org.wso2.carbon.am.tests.sample.ESBJAVA3380TestCase"/-->
+
+            <!--class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/-->
+			<!--class name="org.wso2.carbon.am.tests.sample.EmailUserNameLoginTestCase"/-->
+			<!--class name="org.wso2.carbon.am.tests.sample.APIResourceModificationTestCase"/-->
+
             <class name="org.wso2.jmeter.tests.JmeterDomainRestrictionTestCase"/>
             <class name="org.wso2.jmeter.tests.JmeterLoginTestCase"/>
-            <class name="org.wso2.jmeter.tests.JmeterSuperTenantTestCase"/>
-            <class name="org.wso2.jmeter.tests.PassthroughTestCase"/>
-            <class name="org.wso2.jmeter.tests.JmeterTransportRestrictionTestCase"/>
+            <!--class name="org.wso2.jmeter.tests.JmeterSuperTenantTestCase"/-->
+            <!--class name="org.wso2.jmeter.tests.PassthroughTestCase"/-->
+            <!--class name="org.wso2.jmeter.tests.JmeterTransportRestrictionTestCase"/-->
 
 
             <class name="org.wso2.carbon.am.tests.sample.HostObjectTestCase"/>
-            <!--
+
+
             <class name="org.wso2.carbon.am.tests.sample.DAOTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.DefaultVersionAPITestCase"/>
 
-
-            -->
            <!--class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase"/-->
         </classes>
     </test>

@@ -23,59 +23,61 @@ package org.wso2.am.integration.test.utils.bean;
  */
 public class GenerateAppKeyRequest extends AbstractRequest {
 
-	private String application = "DefaultApplication";
-	private String keyType = "PRODUCTION";
-	private String callbackUrl = "some-url";
-	private String authorizedDomains = "ALL";
-	private int validityTime = 360000;
+    private String application ="DefaultApplication";
+    private String keyType = "PRODUCTION";
+    private String callbackUrl = "some-url";
+    private String authorizedDomains = "ALL";
+    private int validityTime = 360000;
 
-	public GenerateAppKeyRequest(String application) {
-		this.application = application;
-	}
+    public GenerateAppKeyRequest(String application) {
+        this.application = application;
+    }
 
-	@Override
-	public void setAction() {
-		setAction("generateApplicationKey");
-	}
+    @Override
+    public void setAction() {
+        setAction("generateApplicationKey");
+    }
 
-	@Override
-	public void init() {
-		addParameter("application", application);
-		addParameter("keytype", keyType);
-		addParameter("callbackUrl", callbackUrl);
-		addParameter("authorizedDomains", authorizedDomains);
-		addParameter("validityTime", String.valueOf(validityTime));
-	}
+    @Override
+    public void init() {
+        addParameter("application", application);
+        addParameter("keytype", keyType);
+        addParameter("callbackUrl", callbackUrl);
+        addParameter("authorizedDomains", authorizedDomains);
+        addParameter("validityTime", String.valueOf(validityTime));
+    }
 
-	public String getKeyType() {
-		return keyType;
-	}
+    public String getApplication(){ return application; }
 
-	public void setKeyType(String keyType) {
-		this.keyType = keyType;
-	}
+    public String getKeyType() {
+        return keyType;
+    }
 
-	public String getCallbackUrl() {
-		return callbackUrl;
-	}
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
+    }
 
-	public void setCallbackUrl(String callbackUrl) {
-		this.callbackUrl = callbackUrl;
-	}
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
 
-	public String getAuthorizedDomains() {
-		return authorizedDomains;
-	}
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
 
-	public void setAuthorizedDomains(String authorizedDomains) {
-		this.authorizedDomains = authorizedDomains;
-	}
+    public String getAuthorizedDomains() {
+        return authorizedDomains;
+    }
 
-	public int getValidityTime() {
-		return validityTime;
-	}
+    public void setAuthorizedDomains(String authorizedDomains) {
+        this.authorizedDomains = authorizedDomains;
+    }
 
-	public void setValidityTime(int validityTime) {
-		this.validityTime = validityTime;
-	}
+    public int getValidityTime() {
+        return validityTime;
+    }
+
+    public void setValidityTime(int validityTime) {
+        this.validityTime = validityTime;
+    }
 }

@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.carbom.am.integration.ui;
+package org.wso2.carbon.am.integration.ui;
 
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterClass;

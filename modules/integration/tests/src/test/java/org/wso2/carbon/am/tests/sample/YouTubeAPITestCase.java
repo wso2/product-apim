@@ -69,10 +69,16 @@ public class YouTubeAPITestCase extends APIManagerIntegrationTest {
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
         apiStore.login(userInfo.getUserName(), userInfo.getPassword());
+
+        //create application
+        apiStore.addApplication("YoutubeFeedsApplication", "Gold", "", "this-is-test");
+
+        // Subscribe to application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds", userInfo.getUserName());
+        subscriptionRequest.setApplicationName("YoutubeFeedsApplication");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("YoutubeFeedsApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

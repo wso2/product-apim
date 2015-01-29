@@ -68,8 +68,8 @@ public class Main {
             System.setProperty("carbon.repo.write.mode", "true");
 
             cc = ConfigurationContextFactory.createConfigurationContextFromFileSystem
-                    (System.getProperty("carbon.home") + "repository/deployment/client", System.getProperty("carbon.home") +
-                            "repository/conf/axis2/axis2_client.xml");
+                    (System.getProperty("carbon.home") + File.separator + "repository" + File.separator + "deployment" + File.separator + "client", 
+		     System.getProperty("carbon.home") + File.separator + "repository" + File.separator + "conf" + File.separator + "axis2" + File.separator + "axis2_client.xml");
             registry = new WSRegistryServiceClient(CommandHandler.getServiceURL(), CommandHandler.getUsername(),
                     CommandHandler.getPassword(), cc);
             Main.migrate();
@@ -94,14 +94,16 @@ public class Main {
         	API api = getAPI(artifact, re);
         	APIIdentifier apiIdentfier = api.getId();
         	
+		artifact.setAttribute(APIConstants.PROTOTYPE_OVERVIEW_IMPLEMENTATION, APIConstants.IMPLEMENTATION_TYPE_ENDPOINT);
+		manager.updateGenericArtifact(artifact);
+
         	String apiDefinitionFilePath = getAPIDefinitionFilePath(apiIdentfier.getApiName(), apiIdentfier.getVersion(), apiIdentfier.getProviderName());
             /*apiDefinitionFilePath = RegistryConstants.PATH_SEPARATOR + "registry"
                     + RegistryConstants.PATH_SEPARATOR + "resource"
                     + RegistryConstants.PATH_SEPARATOR + "_system"
                     + RegistryConstants.PATH_SEPARATOR + "governance"
                     + apiDefinitionFilePath;*/
-
-            apiDefinitionFilePath = APIUtil.prependTenantPrefix(apiDefinitionFilePath, apiIdentfier.getProviderName());
+            
             Resource resource = re.get(apiDefinitionFilePath);
             String text = new String ((byte[]) resource.getContent());
             
@@ -177,6 +179,7 @@ public class Main {
             api.setSandboxUrl(artifact.getAttribute(APIConstants.API_OVERVIEW_SANDBOX_URL));
             api.setVisibility(artifact.getAttribute(APIConstants.API_OVERVIEW_VISIBILITY));
             api.setVisibleRoles(artifact.getAttribute(APIConstants.API_OVERVIEW_VISIBLE_ROLES));
+	    
 
         } catch (GovernanceException e) {
             String msg = "Failed to get API fro artifact ";

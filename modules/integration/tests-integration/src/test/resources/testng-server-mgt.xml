@@ -1,0 +1,20 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="apim-server-startup">
+    <parameter name="useDefaultListeners" value="false"/>
+    <listeners>
+        <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestExecutionListener"/>
+        <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestManagerListener"/>
+        <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestReportListener"/>
+        <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestSuiteListener"/>
+        <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
+    </listeners>
+
+    <test name="apim-integration-tests-server-mgt" preserve-order="true" parallel="false">
+        <classes>
+            <!--<class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>-->
+        </classes>
+    </test>
+
+</suite>

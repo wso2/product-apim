@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>integration</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
+        <version>${apimserver.version}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -225,12 +225,12 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
  	    <artifactId>org.wso2.am.backend.service</artifactId>
- 	    <version>1.7.0-SNAPSHOT</version>
- 	</dependency> 
+	    <version>1.9.0</version>
+ 	</dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jettison.wso2</groupId>
@@ -282,7 +282,7 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2</version>
         </dependency>
         <dependency>
  	    <groupId>commons-digester</groupId>
@@ -291,6 +291,6 @@
         </dependency>
     </dependencies>
     <properties>
-        <test-automation-framework-version>4.2.5</test-automation-framework-version>
+        <test-automation-framework-version>4.2.7</test-automation-framework-version>
     </properties>
 </project>

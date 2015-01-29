@@ -52,6 +52,9 @@ public class URLMappingRESTTestCase extends APIManagerIntegrationTest {
         HttpResponse response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/test/", null);
 //        HttpResponse response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/test/", null);
         Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatch");
+        //This will check if mapping to newtest* works properly or not
+        response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/newtest?name=sanjeewa/", null);
+        Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatch");
     }
 
     @AfterClass(alwaysRun = true)

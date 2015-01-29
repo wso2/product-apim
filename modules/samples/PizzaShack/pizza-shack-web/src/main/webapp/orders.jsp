@@ -7,6 +7,7 @@
 		response.sendRedirect("login.jsp");
 		return;
 	}
+	session.setAttribute("cancel.order", "true");
 %>
 <html lang="en">
 <head>

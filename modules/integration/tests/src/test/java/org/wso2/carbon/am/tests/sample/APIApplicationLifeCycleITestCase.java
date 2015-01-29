@@ -155,8 +155,8 @@ public class APIApplicationLifeCycleITestCase extends APIManagerIntegrationTest 
         apiPublisher.updateAPI(apiRequest);
         //TODO need to reformat this code after we finalize new APIs
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", "In-line", "url-no-need", "summary", "");
-        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", "URL", "http://www.businesstoday.lk/article.php?article=3549", "summary", "");
-        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", " File", "url-no-need", "summary", ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
+        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name1", "How To", "URL", "http://www.businesstoday.lk/article.php?article=3549", "summary", "");
+        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name2", "How To", " File", "url-no-need", "summary", ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
                 + File.separator + "configFiles/tokenTest/" + "api-manager.xml");
         apiPublisher.removeDocumentation(APIName, APIVersion, providerName, "Doc Name", "How To");
         //create application

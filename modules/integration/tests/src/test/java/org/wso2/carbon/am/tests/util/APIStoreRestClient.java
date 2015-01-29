@@ -52,7 +52,7 @@ public class APIStoreRestClient {
             setSession(session);
             return response;
         } else {
-            throw new Exception("User Login failed> " + response.getData());
+            throw new Exception("login() failed: " + response.getData());
         }
 
     }
@@ -67,7 +67,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("API Subscription failed> " + response.getData());
+            throw new Exception("subscribe() failed> " + response.getData());
         }
 
     }
@@ -75,14 +75,16 @@ public class APIStoreRestClient {
     public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-                , generateAppKeyRequest.generateRequestParameters()
-                , requestHeaders);
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
+        "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
+        "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000"),
+                "", requestHeaders);  
+        
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("generateApplicationKey() failed: " + response.getData());
         }
 
     }
@@ -97,7 +99,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getAPI()  failed: " + response.getData());
         }
 
     }
@@ -145,7 +147,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("generateUserAccessKey() failed: " + response.getData());
         }
     }
 
@@ -158,7 +160,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("getAllPublishedAPIs() failed: " + response.getData());
         }
     }
 
@@ -171,7 +173,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("getAllApplications() failed: " + response.getData());
         }
     }
 
@@ -183,7 +185,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("getPublishedAPIsByApplication() failed: " + response.getData());
         }
     }
 
@@ -197,7 +199,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("addRatingToAPI failed: " + response.getData());
         }
     }
 
@@ -210,7 +212,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("removeRatingFromAPI() failed: " + response.getData());
         }
     }
 
@@ -224,7 +226,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("isRatingActivated() failed: " + response.getData());
         }
     }
     /*
@@ -241,7 +243,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("getAllDocumentationOfApi() failed: " + response.getData());
         }
     }
     /*
@@ -258,7 +260,7 @@ public class APIStoreRestClient {
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("Generating Application Key failed> " + response.getData());
+            throw new Exception("getAllPaginatedPublishedAPIs() failed: " + response.getData());
         }
     }
 
@@ -272,7 +274,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getAllPublishedAPIs() failed: " + response.getData());
         }
 
     }
@@ -287,7 +289,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("addApplication() failed: " + response.getData());
         }
 
     }
@@ -303,7 +305,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getApplications() failed: " + response.getData());
         }
 
     }
@@ -319,7 +321,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("removeApplication() failed: " + response.getData());
         }
 
     }
@@ -336,7 +338,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("updateApplication() failed: " + response.getData());
         }
 
     }
@@ -351,7 +353,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getAllSubscriptions() failed: " + response.getData());
         }
 
     }
@@ -366,12 +368,12 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getAllTags() failed : " + response.getData());
         }
 
     }
     /*
-            name = request.getParameter("name");
+        name = request.getParameter("name");
         version = request.getParameter("version");
         provider = request.getParameter("provider");
         comment = request.getParameter("comment");
@@ -380,14 +382,15 @@ public class APIStoreRestClient {
     public HttpResponse addComment(String name, String version, String provider, String comment)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                "action=addComment&name=" + name + "&version="+version+"&provider="+provider+"&comment="+comment
-                , requestHeaders);
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +  "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                "action=addComment&name="+name + "&version="+version+"&provider="+provider+"&comment="+comment)
+                        , ""
+                        , requestHeaders);
         if (response.getResponseCode() == 200) {
-            VerificationUtil.checkErrors(response);
+        	VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("addComment() failed: " + response.getData());
         }
 
     }
@@ -402,7 +405,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("isCommentActivated() failed: " + response.getData());
         }
 
     }
@@ -419,7 +422,7 @@ public class APIStoreRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
+            throw new Exception("getRecentlyAddedAPIs() failed: " + response.getData());
         }
 
     }

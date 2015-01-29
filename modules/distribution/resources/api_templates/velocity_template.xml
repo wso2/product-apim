@@ -19,43 +19,61 @@
 #####################  Define the macros ######################
 
 #macro ( print_if_exist $field $default)
-        #if($field && $field !="")
+        #if($field && "$field" !="")
             $field
         #else
             $default
         #end
 #end
 
-#macro ( print_list $list $default)
-        #if($list && $list !="" && $list.size() > 0)
-            #foreach($item in $list)
-                $item #if( $foreach.hasNext ), #end
-            #end
+#macro ( print_string_if_exist $field $default)
+        #if($field && "$field" !="")
+            "$field"
         #else
-            $default
+            "$default"
+        #end
+#end
+
+#macro ( print_if_exist_only $tagname $field)
+        #if($field && "$field" !="")
+            <$tagname>$field</$tagname>
+        #else
+            ## print nothing.
+        #end
+#end
+
+#macro ( print_list $tagname $list)
+        #if($list && "$list" !="" && $list.size() > 0)
+          <$tagname>
+            #foreach($item in $list)
+             $item #if( $foreach.hasNext ), #end
+            #end
+          </$tagname>
+        #else
+            ## print nothing.
         #end
 #end
 
 #macro ( timeout $config)
     #if( $config.get("actionSelect") == "neverTimeout" )
         ## print nothing.
-    #else
+    #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
     <timeout>
-        <duration>#print_if_exist( $config.get("actionDuration") 30000)</duration>
-        <responseAction>#print_if_exist( $config.get("actionSelect") "fault")</responseAction>
+        #print_if_exist_only("duration" $config.get("actionDuration"))
+        #print_if_exist_only("responseAction" $config.get("actionSelect"))
     </timeout>
     #end
     <suspendOnFailure>
-        <errorCodes>#print_list( $config.get("suspendErrorCode") -1)</errorCodes>
-        <initialDuration>#print_if_exist( $config.get("suspendDuration") 0)</initialDuration>
+        #print_list( "errorCodes" $config.get("suspendErrorCode"))
+        #print_if_exist_only("initialDuration" $config.get("suspendDuration"))
+        #print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
         <progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
-        <maximumDuration>#print_if_exist( $config.get("suspendMaxDuration") 0)</maximumDuration>
     </suspendOnFailure>
     <markForSuspension>
-        <errorCodes>#print_list( $config.get("retryErroCode") -1)</errorCodes>
+        #print_list("errorCodes" $config.get("retryErroCode"))
         <retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
         <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
-    </markForSuspension>   
+    </markForSuspension>
 #end
 
 #macro ( http_endpoint $name $ep )
@@ -83,7 +101,7 @@
 		<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
 	#else
 		<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', base64Encode('$username:$password'))" scope="transport" />
-	#end	
+	#end
 #end
 <send>
 #if ($endpointClass == "http")
@@ -91,9 +109,9 @@
 #elseif ($endpointClass == "address")
     <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
         #set( $advance_ep = $endpoints.get("config") )
-        <address uri="$util.escapeXml($endpoints.get("url"))" 
+        <address uri="$util.escapeXml($endpoints.get("url"))"
             #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
-                format="$advance_ep.get("format")" 
+                format="$advance_ep.get("format")"
             #end
             #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
             optimize="$advance_ep.get("optimize")"
@@ -107,9 +125,15 @@
     </endpoint>
 #elseif ($endpointClass == "wsdl")
     <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-        <wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
-            #timeout()
-        </wsdl>
+        #if (${type} == "production")
+		<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
+		    #timeout()
+		</wsdl>
+	#else
+		<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
+		    #timeout()
+		</wsdl>
+	#end
 	#if($destinationBasedStatsEnabled)
 	   <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
 	#end
@@ -135,12 +159,12 @@
         #end
     </session>
     #end
-    <loadbalance algorithm="$!endpoint_config.get("algoClassName")" 
+    <loadbalance algorithm="$!endpoint_config.get("algoClassName")"
 	#if($endpoint_config.get("failOver") && $endpoint_config.get("failOver") != "" && $endpoint_config.get("failOver") == "False")
 	failover="false"
 	#end>
         #set( $i = 0)
-        #foreach($endpoint in $endpoints)            
+        #foreach($endpoint in $endpoints)
             #http_endpoint("${ep_name}_$i" $endpoint)
             #set( $i = $i + 1)
         #end
@@ -159,11 +183,11 @@
 
 ######################## End of Macros ######################################
 
- 
+
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="url">
 #if($apiIsBlocked)
     ## if API is blocked send the API Block message
-    <resource faultSequence="$!faultSequence">
+    <resource faultSequence=#print_string_if_exist($faultSequence "fault")>
         <inSequence>
             <payloadFactory>
                 <format>
@@ -181,19 +205,19 @@
             <send/>
         </inSequence>
     </resource>
-#else    
+#else
     ## api not blocked
     #set ($resourceNo = 0)
     #foreach($resource in $resources)
 
-    <resource xmlns="http://ws.apache.org/ns/synapse" 
-    	#if($resource.getUriTemplate().contains("{") || 
+    <resource xmlns="http://ws.apache.org/ns/synapse"
+    	#if($resource.getUriTemplate().contains("{") ||
 	    ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
 	   uri-template="$resource.getUriTemplate()"
         #else
-           url-mapping="$resource.getUriTemplate()" 
+           url-mapping="$resource.getUriTemplate()"
     	#end
-    	methods="$resource.getMethodsAsString()" faultSequence="$!faultSequence">
+    	methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
         <inSequence>
             ## check and set jwt
             #if($jwtIsEnabled)
@@ -206,10 +230,8 @@
 			</cache>
 		    #end
 
-	        <property name="POST_TO_URI" value="true" scope="axis2"/>
-            
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
-            
+
             #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
                 #set( $filterRegex = "SANDBOX" )
             #else
@@ -248,7 +270,7 @@
                         #else
                             #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
                                 #draw_endpoint( "sandbox" $endpoint_config )
-                            #elseif($endpoint_config.get("production_endpoints")) 
+                            #elseif($endpoint_config.get("production_endpoints"))
                                 <sequence key="_sandbox_key_error_"/>
                             #elseif($endpoint_config.get("sandbox_endpoints"))
                                 <sequence key="_production_key_error_"/>
@@ -282,7 +304,7 @@
         </handler>
         #end
     </handlers>
-    #end 
+    #end
 #end
 #if($apiStatus == 'PROTOTYPED')
 <handlers>
@@ -291,4 +313,3 @@
 #end
 ## end of apiIsBlocked check
 </api>
-

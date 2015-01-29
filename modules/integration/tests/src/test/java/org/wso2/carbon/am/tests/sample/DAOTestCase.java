@@ -119,10 +119,15 @@ public class DAOTestCase extends APIManagerIntegrationTest {
         }
         Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
         apiStore.login(userInfo.getUserName(), userInfo.getPassword());
+
+        // Create application
+        apiStore.addApplication("DAOTestApplication", "Gold", "", "this-is-test");
+
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userInfo.getUserName());
+        subscriptionRequest.setApplicationName("DAOTestApplication");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DAOTestApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

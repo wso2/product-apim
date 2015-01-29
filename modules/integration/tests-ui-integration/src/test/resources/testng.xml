@@ -1,0 +1,5 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="APPServer-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+</suite>

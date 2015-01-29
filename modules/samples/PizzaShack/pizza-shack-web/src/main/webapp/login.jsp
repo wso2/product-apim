@@ -8,10 +8,16 @@
 		TokenManager manager = new TokenManager();
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		Token token = manager.getToken(username, password);
+		Token token = manager.getToken(username, password, "order_pizza");
 		if (token != null) {
 			session.setAttribute("access.token", token.getAccessToken());
+			session.setAttribute("scope", token.getScopes());
 			response.sendRedirect("index.jsp");
+			try{
+			session.removeAttribute("cancel.order");
+
+			}catch(Exception ex){
+			}
 		} else {
 			loginFailed = true;
 		}
@@ -22,8 +28,13 @@
     <jsp:include page="include_head.jsp"/>
 </head>
 
-<body>
+<script>
+  function preventBack(){window.history.forward();}
+  setTimeout("preventBack()", 0);
+  window.onunload=function(){null};
+</script>
 
+<body>
 
 <div class="container">
     <div class="row">
@@ -92,7 +103,6 @@
 
 </div>
 <!-- /container -->
-
 
 </body>
 </html>

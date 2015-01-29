@@ -19,12 +19,16 @@
 		Order order = manager.saveOrder(address, pizzaType, quantity, customer, card, token);
 		response.sendRedirect("index.jsp?orderId=" + order.getOrderId());
 	}
+        session.setAttribute("cancel.order", "true");
+
 %>
 <html lang="en">
 <head>
     <jsp:include page="include_head.jsp"/>
 </head>
+<script>
 
+</script>
 <body>
 
 
@@ -107,7 +111,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Checkout</button>
-                        <button type="button" class="btn" onclick="javascript:location.href='index.jsp'">Cancel</button>
+                        <button type="button" class="btn cancelBtn" onclick="javascript:location.href='index.jsp'">Cancel</button>
                     </div>
                 </fieldset>
             </form>

@@ -66,3 +66,95 @@ h1{
 .thumbnails div.thumbnail{
 	height:230px;
 	}
+
+#popupHeading h2{
+    margin-top:-20px;
+    color:#b70d0e;
+}
+
+#one{
+    font-size:18px;
+    color:#8d0d0d;
+    text-align: left;
+    margin-left: 65px;
+}
+
+#two{
+    font-size:18px;
+    color:#8d0d0d;
+    text-align: left;
+    margin-left: 65px;
+}
+
+#three{
+    font-size:18px;
+    margin-left: 65px;
+    color: #8d0d0d;
+    text-align: left;
+}
+
+ul.options{
+     list-style-type: square;
+}
+
+.blackout {
+    background-color:#000;
+    opacity:.85;
+    filter:alpha(opacity=70);
+    height:100%;
+    width:100%;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:100;
+    display:none;
+    cursor:pointer;
+    min-height:100px;
+}
+
+.msgbox {
+    text-align:left;
+    background-color:#eeeeee;
+    border:2px solid #b70d0e;
+    color:#000;
+    width:30%;
+    height:40%;
+    position:fixed;
+    top:30%;
+    left:15%;
+    border-radius:20px;
+    padding:10px;
+    z-index:101;
+    display:none;
+    margin-left: 20%;
+    min-width:430px;
+}
+
+.closeBox {
+    margin:20px 5px 5px 5px;
+    background-color:#bd2a2a;
+    color:#FFFFFF;
+    float:left;
+    margin-left:70px;
+    padding:8px;
+    width: 120px;
+    border-radius:5px;
+    cursor:pointer;
+    text-transform:uppercase;
+    font-size:15px;
+}
+
+
+.decline {
+    margin:20px 5px 5px 5px;
+    background-color:#bd2a2a;
+    color:#FFFFFF;
+    padding:8px;
+    float:right;
+    margin-right:70px;
+    width: 120px;
+    border-radius:5px;
+    cursor:pointer;
+    text-transform:uppercase;
+    font-size:15px;
+}

@@ -24,8 +24,7 @@
         <log level="custom">
             <property name="STATUS" value="Message dispatched to the main sequence. Invalid URL."/>
             <property name="RESOURCE" expression="fn:concat('/', $axis2:REST_URL_POSTFIX)"/>
-        </log>
-        <sequence key="_build_"/>
+        </log>        
         <filter source="$ctx:TRANSPORT_DENIED" regex="true">
             <payloadFactory>
                 <format>

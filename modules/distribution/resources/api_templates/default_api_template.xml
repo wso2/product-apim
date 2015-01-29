@@ -1,6 +1,14 @@
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext">
-	<resource methods="POST GET DELETE OPTIONS PUT" url-mapping="/*">
-	    <inSequence>
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport">
+        #foreach($resource in $resources)
+	<resource xmlns="http://ws.apache.org/ns/synapse"
+		#if($resource.getUriTemplate().contains("{") ||
+		   ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
+		   	uri-template="$resource.getUriTemplate()"
+		#else
+		   url-mapping="$resource.getUriTemplate()"
+		#end
+		    methods="$resource.getMethodsAsString()" faultSequence="fault">
+	<inSequence>
 		<property name="isDefault" expression="get-property('transport', 'WSO2_AM_API_DEFAULT_VERSION')"/>
 		<filter source="get-property('isDefault')" regex="true">
 		    <then>
@@ -30,22 +38,29 @@
 		    </then>
 		    <else>
 		        <header name="WSO2_AM_API_DEFAULT_VERSION" scope="transport" value="true"/>
-		        <property name="uri.var.portnum" expression="get-property('http.nio.port')"/>
+                #if( $transport == "https" )
+            	<property name="uri.var.portnum" expression="get-property('https.nio.port')"/>
+                #else
+            	<property name="uri.var.portnum" expression="get-property('http.nio.port')"/>
+                #end
+
 			<send>
 			    <endpoint>
+                #if( $transport == "https" )
+				<http uri-template="https://localhost:{uri.var.portnum}/$!{fwdApiContext}/$!{defaultVersion}">
+                #else
 				<http uri-template="http://localhost:{uri.var.portnum}/$!{fwdApiContext}/$!{defaultVersion}">
+                #end
 			            <timeout>
-			                <duration>30000</duration>
+			                <duration>60000</duration>
 			                <responseAction>fault</responseAction>
 			            </timeout>
 			            <suspendOnFailure>
-			                <errorCodes>-1</errorCodes>
-			                <initialDuration>0</initialDuration>
-			                <progressionFactor>1.0</progressionFactor>
-			                <maximumDuration>0</maximumDuration>
+			                 <progressionFactor>1.0</progressionFactor>
 			            </suspendOnFailure>
 			            <markForSuspension>
-			                <errorCodes>-1</errorCodes>
+			                <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                            <retryDelay>0</retryDelay>
 			            </markForSuspension>
 			        </http>
 			    </endpoint>
@@ -57,6 +72,7 @@
 		<send/>
 	    </outSequence>
 	</resource>
+        #end  ## end of resource iterator
         <handlers>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
         </handlers>

@@ -23,7 +23,7 @@
 			      <phase>validate</phase>
 			      <configuration>
 			        <tasks>
-		        	  <get src="https://svn.wso2.org/repos/wso2/carbon/platform/branches/turing/products/apimgt/1.7.0/modules/samples/PizzaShack/PizzaShack.zip" dest="../PizzaShack.zip" />
+		        	  <get src="https://svn.wso2.org/repos/wso2/carbon/platform/branches/turing/products/apimgt/1.8.0/modules/samples/PizzaShack/PizzaShack.zip" dest="../PizzaShack.zip" />
 				<unzip src="../PizzaShack.zip" dest="../"/>
 			       </tasks>
 			      </configuration>

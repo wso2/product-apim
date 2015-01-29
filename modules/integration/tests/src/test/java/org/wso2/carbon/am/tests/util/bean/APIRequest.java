@@ -54,6 +54,8 @@ public class APIRequest extends AbstractRequest {
     private String uriTemplate = "/*";
     private String roles = "";
     private String wsdl = "";
+    private String default_version = "";
+    private String default_version_checked = "";
 
     public String getSandbox() {
         return sandbox;
@@ -128,6 +130,8 @@ public class APIRequest extends AbstractRequest {
         addParameter("resourceMethodAuthType-0", getResourceMethodAuthType());
         addParameter("resourceMethodThrottlingTier-0", getResourceMethodThrottlingTier());
         addParameter("uriTemplate-0", getUriTemplate());
+        addParameter("default_version", getDefault_version());
+        addParameter("default_version_checked", getDefault_version_checked());
         if(roles.length()>1){
         addParameter("roles", getRoles());
         }
@@ -278,6 +282,22 @@ public class APIRequest extends AbstractRequest {
 
     public void setUriTemplate(String uriTemplate) {
         this.uriTemplate = uriTemplate;
+    }
+
+    public String getDefault_version() {
+        return default_version;
+    }
+
+    public void setDefault_version(String default_version) {
+        this.default_version = default_version;
+    }
+
+    public String getDefault_version_checked() {
+        return default_version_checked;
+    }
+
+    public void setDefault_version_checked(String default_version_checked) {
+        this.default_version_checked = default_version_checked;
     }
 
 }

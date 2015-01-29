@@ -1,11 +1,14 @@
 package com.pizzashack.client.dto;
 
 
+import java.util.List;
+
 public class Token {
     private String tokenType;
     private long expiresIn;
     private String refreshToken;
     private String accessToken;
+    private List<String> scopes;
 
     public String getTokenType() {
         return tokenType;
@@ -37,6 +40,14 @@ public class Token {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public List<String> getScopes() {
+        return scopes;
+    }
+
+    public void setScopes(List<String> scopes) {
+        this.scopes = scopes;
     }
 
     @Override

@@ -4,7 +4,7 @@
     <property name="password" value="xxxx"/>
     <property name="host" value="localhost"/>
     <property name="port" value="9443"/>
-    <property name="version" value="1.4.0"/>
+    <property name="version" value="1.7.0"/>
     <property name="class.dir" value="target/classes"/>
     
 
@@ -30,14 +30,27 @@
 	</java>
     </target>
 
+    <path id="jar.classpath" >
+            <pathelement path="${class.dir}"/>               
+            <fileset dir="${registry.home}/repository/components/plugins">
+                <include name="*.jar"/>
+            </fileset>           
+    </path>
+       
     <target name="init">
         <mkdir dir="${class.dir}"/>
+        <manifestclasspath property="tem.classpath" jarfile="pathing.jar">
+            <classpath refid="jar.classpath"/>
+        </manifestclasspath>
+        <jar destfile="pathing.jar" basedir="target\classes">
+            <manifest>             
+                <attribute name="Class-Path" value="${tem.classpath}"/>
+            </manifest>
+        </jar>
         <path id="javac.classpath">
             <pathelement path="${class.dir}"/>
-             <fileset dir="${registry.home}/repository/components/plugins">
-                <include name="*.jar"/>
-            </fileset>
-	</path>        
+            <pathelement path="pathing.jar"/>           
+        </path>     
     </target>
  
     <target name="compile" depends="init" description="Compile all Java">

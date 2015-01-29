@@ -10,7 +10,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class JSONClient {
     public static void main(String args[]) {
@@ -83,7 +85,27 @@ public class JSONClient {
                 pizza.setName((String) pizzaItem.get("name"));
                 pizza.setDescription((String) pizzaItem.get("description"));
                 pizza.setImageUrl((String) pizzaItem.get("icon"));
-                double price = Double.valueOf((String) pizzaItem.get("price")).doubleValue();
+
+                double price;
+
+                try {
+                    price = Double.valueOf((String) pizzaItem.get("price")).doubleValue();
+                }
+                catch (NumberFormatException formatEx) {
+                    String strPrice = (String) pizzaItem.get("price");
+                    strPrice = strPrice.replace(',','.');
+
+                    // If multiple commas existed the above replace would result
+                    // in multiple '.' characters being in the string, so take
+                    // into account only the first decimal place encountered
+                    String[] tokens = strPrice.split("\\.");
+
+                    if (2 < tokens.length) {
+                        strPrice = tokens[0] + "." + tokens[1];
+                    }
+
+                    price = Double.valueOf(strPrice).doubleValue();
+                }
 
                 pizza.setPrice(price);
                 pizzaList.add(pizza);
@@ -198,6 +220,11 @@ public class JSONClient {
             token.setExpiresIn(expiresIn);
             token.setRefreshToken((String)jsonObject.get("refresh_token"));
             token.setTokenType((String)jsonObject.get("token_type"));
+            String scope = (String)jsonObject.get("scope");
+            if(scope != null && !"".equals(scope)){
+                String[] scopes = scope.split(" ");
+                token.setScopes(Arrays.asList(scopes));
+            }
 
         } catch (ParseException e) {
             e.printStackTrace();

@@ -1,3 +1,4 @@
+package org.wso2.am.integration.test.utils.bean;
 /*
 *Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
@@ -16,19 +17,18 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.bean;
-
 public enum APILifeCycleState {
 
-	PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"), RETIRED("RETIRED");
+    PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"),
+    RETIRED("RETIRED");
 
-	private String state;
+    private String state;
 
-	APILifeCycleState(String state) {
-		this.state = state;
-	}
+    APILifeCycleState(String state) {
+        this.state = state;
+    }
 
-	public String getState() {
-		return state;
-	}
+    public String getState() {
+        return state;
+    }
 }

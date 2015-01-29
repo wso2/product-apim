@@ -18,45 +18,63 @@
 
         #####################  Define the macros ######################
 
-        #macro ( print_if_exist $field $default)
-        #if($field && $field !="")
-        $field
+#macro ( print_if_exist $field $default)
+        #if($field && "$field" !="")
+            $field
         #else
-        $default
+            $default
         #end
-        #end
+#end
 
-        #macro ( print_list $list $default)
-        #if($list && $list !="" && $list.size() > 0)
-        #foreach($item in $list)
-        $item #if( $foreach.hasNext ), #end
-        #end
+#macro ( print_string_if_exist $field $default)
+        #if($field && "$field" !="")
+            "$field"
         #else
-        $default
+            "$default"
         #end
-        #end
+#end
 
-        #macro ( timeout $config)
-        #if( $config.get("actionSelect") == "neverTimeout" )
+#macro ( print_if_exist_only $tagname $field)
+        #if($field && "$field" !="")
+            <$tagname>$field</$tagname>
+        #else
+            ## print nothing.
+        #end
+#end
+
+#macro ( print_list $tagname $list)
+        #if($list && "$list" !="" && $list.size() > 0)
+          <$tagname>
+            #foreach($item in $list)
+             $item #if( $foreach.hasNext ), #end
+            #end
+          </$tagname>
+        #else
+            ## print nothing.
+        #end
+#end
+
+#macro ( timeout $config)
+    #if( $config.get("actionSelect") == "neverTimeout" )
         ## print nothing.
-        #else
-<timeout>
-    <duration>#print_if_exist( $config.get("actionDuration") 30000)</duration>
-    <responseAction>#print_if_exist( $config.get("actionSelect") "fault")</responseAction>
-</timeout>
-        #end
-<suspendOnFailure>
-<errorCodes>#print_list( $config.get("suspendErrorCode") -1)</errorCodes>
-<initialDuration>#print_if_exist( $config.get("suspendDuration") 0)</initialDuration>
-<progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
-<maximumDuration>#print_if_exist( $config.get("suspendMaxDuration") 0)</maximumDuration>
-</suspendOnFailure>
-<markForSuspension>
-<errorCodes>#print_list( $config.get("retryErroCode") -1)</errorCodes>
-<retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
-<retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
-</markForSuspension>
-        #end
+    #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
+    <timeout>
+        #print_if_exist_only("duration" $config.get("actionDuration"))
+        #print_if_exist_only("responseAction" $config.get("actionSelect"))
+    </timeout>
+    #end
+    <suspendOnFailure>
+        #print_list( "errorCodes" $config.get("suspendErrorCode"))
+        #print_if_exist_only("initialDuration" $config.get("suspendDuration"))
+        #print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
+        <progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
+    </suspendOnFailure>
+    <markForSuspension>
+        #print_list("errorCodes" $config.get("retryErroCode"))
+        <retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
+        <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
+    </markForSuspension>
+#end
 
         #macro ( http_endpoint $name $ep )
 <endpoint name="$name">
@@ -163,7 +181,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="url">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource faultSequence="$!faultSequence">
+<resource faultSequence=#print_string_if_exist($faultSequence "fault")>
     <inSequence>
         <payloadFactory>
             <format>
@@ -192,7 +210,7 @@ uri-template="$resource.getUriTemplate()"
 #else
 url-mapping="$resource.getUriTemplate()"
 #end
-methods="$resource.getMethodsAsString()" faultSequence="$!faultSequence">
+methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     #if(!$resource.getMediationScript().equalsIgnoreCase("null"))
     <script language="js">
@@ -211,7 +229,7 @@ methods="$resource.getMethodsAsString()" faultSequence="$!faultSequence">
     #else
     <property name="HTTP_SC" value="501" scope="axis2"/>
     #end
-    #if($resource.getMethodsAsString().equalsIgnoreCase("GET"))
+    #if($resource.getMethodsAsString().contains("GET")||$resource.getMethodsAsString().contains("DELETE"))
     <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
     #end
     <respond/>
@@ -245,4 +263,3 @@ methods="$resource.getMethodsAsString()" faultSequence="$!faultSequence">
 #end
 ## end of apiIsBlocked check
 </api>
-

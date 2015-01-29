@@ -9,7 +9,7 @@ import java.io.IOException;
 public class OrderManager {
     private HTTPClient httpClient;
     private String serverURL;
-    private final String PIZZA_ORDER_URL = "/order/1.0.0";
+    private final String PIZZA_ORDER_URL = "/1.0.0/order";
     private final String PIZZA_DELIVERY_URL = "/api/delivery";
 
 

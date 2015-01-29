@@ -18,66 +18,66 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
+
 /**
  * action=updateStatus&name=YoutubeFeeds&version=1.0.0&provider=provider1&status=PUBLISHED&publishToGateway=true
  */
 public class APILifeCycleStateRequest extends AbstractRequest {
-	private String name;
-	private String status;
-	private String provider;
-	private String version = "1.0.0";
-	private String publishToGateway = "true";
+    private String name;
+    private String status;
+    private String provider;
+    private String version = "1.0.0";
+    private String publishToGateway = "true";
 
-	public APILifeCycleStateRequest(String apiName, String provider, APILifeCycleState status) {
-		this.name = apiName;
-		this.status = status.getState();
-		this.provider = provider;
-	}
+    public APILifeCycleStateRequest(String apiName, String provider, APILifeCycleState status) {
+        this.name = apiName;
+        this.status = status.getState();
+        this.provider = provider;
+    }
+    @Override
+    public void setAction() {
+        setAction("updateStatus");
+    }
 
-	@Override
-	public void setAction() {
-		setAction("updateStatus");
-	}
+    @Override
+    public void init() {
+        addParameter("name",name);
+        addParameter("status", status);
+        addParameter("provider", provider);
 
-	@Override
-	public void init() {
-		addParameter("name", name);
-		addParameter("status", status);
-		addParameter("provider", provider);
+        addParameter("version", version);
+        addParameter("publishToGateway", publishToGateway);
+    }
 
-		addParameter("version", version);
-		addParameter("publishToGateway", publishToGateway);
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getState() {
+        return status;
+    }
 
-	public String getState() {
-		return status;
-	}
+    public void setState(APILifeCycleState status) {
+        this.status = status.getState();
+    }
 
-	public void setState(APILifeCycleState status) {
-		this.status = status.getState();
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public String getProvider() {
+        return provider;
+    }
 
-	public String getProvider() {
-		return provider;
-	}
+     public boolean getPublishToGateway() {
+        return Boolean.valueOf(publishToGateway);
+    }
 
-	public boolean getPublishToGateway() {
-		return Boolean.valueOf(publishToGateway);
-	}
-
-	public void setPublishToGateway(boolean publishToGateway) {
-		this.publishToGateway = String.valueOf(publishToGateway);
-	}
+    public void setPublishToGateway(boolean publishToGateway) {
+        this.publishToGateway = String.valueOf(publishToGateway);
+    }
 }

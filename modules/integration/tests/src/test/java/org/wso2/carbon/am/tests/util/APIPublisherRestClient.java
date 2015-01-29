@@ -289,4 +289,19 @@ public class APIPublisherRestClient {
             throw new Exception("API Subscription failed> " + response.getData());
         }
     }
+    
+    public HttpResponse updateResourceOfAPI(String provider, String apiName, String version, String swaggerRes) throws Exception {
+    	checkAuthentication();//publisher/site/blocks/item-design/ajax/add.jag?name=APIResourceModifyTestAPI&version=1.0.0&provider=admin&action=manage
+    	this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+
+    	 HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-design/ajax/add.jag")
+         , "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" + version +"&swagger="+swaggerRes
+         , requestHeaders);
+         if (response.getResponseCode() == 200) {
+             //VerificationUtil.checkErrors(response);
+             return response;
+         } else {
+             throw new Exception("API Resource update failed> " + response.getData());
+         }
+    }
 }

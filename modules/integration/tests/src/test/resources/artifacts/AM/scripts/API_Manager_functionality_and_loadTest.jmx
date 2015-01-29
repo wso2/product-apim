@@ -56,12 +56,12 @@
           </elementProp>
           <elementProp name="apinm" elementType="Argument">
             <stringProp name="Argument.name">apinm</stringProp>
-            <stringProp name="Argument.value">GOOG_Stock_API</stringProp>
+            <stringProp name="Argument.value">Youtube</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="context" elementType="Argument">
             <stringProp name="Argument.name">context</stringProp>
-            <stringProp name="Argument.value">/GStock</stringProp>
+            <stringProp name="Argument.value">/youtube</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="storeIP" elementType="Argument">
@@ -72,6 +72,16 @@
           <elementProp name="storePort" elementType="Argument">
             <stringProp name="Argument.name">storePort</stringProp>
             <stringProp name="Argument.value">9763</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="subsPrefix" elementType="Argument">
+            <stringProp name="Argument.name">subsPrefix</stringProp>
+            <stringProp name="Argument.value">Tester_Acc2</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="publisherName" elementType="Argument">
+            <stringProp name="Argument.name">publisherName</stringProp>
+            <stringProp name="Argument.value">admin</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="publisherPass" elementType="Argument">
@@ -104,35 +114,25 @@
             <stringProp name="Argument.value">1.0.0</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="apiServer" elementType="Argument">
+            <stringProp name="Argument.name">apiServer</stringProp>
+            <stringProp name="Argument.value">where.yahooapis.com</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="apiPath" elementType="Argument">
+            <stringProp name="Argument.name">apiPath</stringProp>
+            <stringProp name="Argument.value">/geocode</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
           <elementProp name="noOfSubscribers" elementType="Argument">
             <stringProp name="Argument.name">noOfSubscribers</stringProp>
             <stringProp name="Argument.value">1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="userPrefix" elementType="Argument">
-            <stringProp name="Argument.name">userPrefix</stringProp>
-            <stringProp name="Argument.value">tenant</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="resourceMethods" elementType="Argument">
-            <stringProp name="Argument.name">resourceMethods</stringProp>
-            <stringProp name="Argument.value">POST</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="authTypes" elementType="Argument">
-            <stringProp name="Argument.name">authTypes</stringProp>
-            <stringProp name="Argument.value">Application &amp; Application User</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="throttlingTiers" elementType="Argument">
-            <stringProp name="Argument.name">throttlingTiers</stringProp>
-            <stringProp name="Argument.value">Unlimited</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Tenant Creation" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Tennant Creation" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -157,7 +157,7 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+          <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
           <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
@@ -186,7 +186,7 @@
             <stringProp name="CounterConfig.start">1</stringProp>
             <stringProp name="CounterConfig.end">${numberOfTenants}</stringProp>
             <stringProp name="CounterConfig.incr">1</stringProp>
-            <stringProp name="CounterConfig.name">tenant_number</stringProp>
+            <stringProp name="CounterConfig.name">tennant_number</stringProp>
             <stringProp name="CounterConfig.format">#</stringProp>
             <boolProp name="CounterConfig.per_user">false</boolProp>
           </CounterConfig>
@@ -195,13 +195,13 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
-            <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
             <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:ser=&quot;http://services.mgt.tenant.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
       &lt;ser:getTenant&gt;
          &lt;!--Optional:--&gt;
-         &lt;ser:tenantDomain&gt;domain${tenant_number}.com&lt;/ser:tenantDomain&gt;
+         &lt;ser:tenantDomain&gt;domain${tennant_number}.com&lt;/ser:tenantDomain&gt;
       &lt;/ser:getTenant&gt;
    &lt;/soapenv:Body&gt;
 &lt;/soapenv:Envelope&gt;</stringProp>
@@ -238,7 +238,7 @@
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
-              <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
               <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:ser=&quot;http://services.mgt.tenant.carbon.wso2.org&quot; xmlns:xsd=&quot;http://beans.common.stratos.carbon.wso2.org/xsd&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
@@ -248,7 +248,7 @@
             &lt;!--Optional:--&gt;
             &lt;xsd:active&gt;1&lt;/xsd:active&gt;
             &lt;!--Optional:--&gt;
-            &lt;xsd:admin&gt;${userPrefix}${tenant_number}&lt;/xsd:admin&gt;
+            &lt;xsd:admin&gt;tennant${tennant_number}&lt;/xsd:admin&gt;
             &lt;!--Optional:--&gt;
             &lt;xsd:adminPassword&gt;1qaz2wsx@&lt;/xsd:adminPassword&gt;
             &lt;!--Optional:--&gt;
@@ -260,7 +260,7 @@
             &lt;!--Optional:--&gt;
             &lt;xsd:lastname&gt;LastName1&lt;/xsd:lastname&gt;
             &lt;!--Optional:--&gt;
-            &lt;xsd:tenantDomain&gt;domain${tenant_number}.com&lt;/xsd:tenantDomain&gt;
+            &lt;xsd:tenantDomain&gt;domain${tennant_number}.com&lt;/xsd:tenantDomain&gt;
             &lt;!--Optional:--&gt;
             &lt;xsd:tenantId&gt;0&lt;/xsd:tenantId&gt;
             &lt;!--Optional:--&gt;
@@ -277,11 +277,11 @@
             <hashTree/>
           </hashTree>
         </hashTree>
-        <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Log Out - Super Tenant" enabled="true">
+        <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Log Out - Super Tennant" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+          <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
           <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
@@ -375,13 +375,13 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
-            <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
             <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
       &lt;aut:login&gt;
          &lt;!--Optional:--&gt;
-         &lt;aut:username&gt;${userPrefix}${tenant_counter}@domain${tenant_counter}.com&lt;/aut:username&gt;
+         &lt;aut:username&gt;tennant${tenant_counter}@domain${tenant_counter}.com&lt;/aut:username&gt;
          &lt;!--Optional:--&gt;
          &lt;aut:password&gt;1qaz2wsx@&lt;/aut:password&gt;
          &lt;!--Optional:--&gt;
@@ -399,16 +399,11 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
-            <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
-            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+            <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://mgt.user.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
-      &lt;xsd:getAllRolesNames&gt;
-         &lt;!--Optional:--&gt;
-         &lt;xsd:filter&gt;*&lt;/xsd:filter&gt;
-         &lt;!--Optional:--&gt;
-         &lt;xsd:limit&gt;100&lt;/xsd:limit&gt;
-      &lt;/xsd:getAllRolesNames&gt;
+      &lt;mgt:getAllRolesNames/&gt;
    &lt;/soapenv:Body&gt;
 &lt;/soapenv:Envelope&gt;</stringProp>
             <stringProp name="SoapSampler.xml_data_file"></stringProp>
@@ -443,16 +438,15 @@
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
-              <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
-              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://org.apache.axis2/xsd&quot;&gt;
+              <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://mgt.user.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
       &lt;mgt:addRole&gt;
          &lt;!--Optional:--&gt;
          &lt;mgt:roleName&gt;subscriber_role&lt;/mgt:roleName&gt;
          &lt;mgt:permissions&gt;/permission/admin/login&lt;/mgt:permissions&gt;
-         &lt;mgt:permissions&gt;/permission/admin/manage/api/subscribe&lt;/mgt:permissions&gt;
-         &lt;mgt:isSharedRole&gt;false&lt;/mgt:isSharedRole&gt;
+          &lt;mgt:permissions&gt;/permission/admin/manage/api/subscribe&lt;/mgt:permissions&gt;
        &lt;/mgt:addRole&gt;
    &lt;/soapenv:Body&gt;
 &lt;/soapenv:Envelope&gt;</stringProp>
@@ -482,14 +476,13 @@
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
-              <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
-              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://org.apache.axis2/xsd&quot;&gt;
+              <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://mgt.user.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
       &lt;mgt:listUsers&gt;
          &lt;!--Optional:--&gt;
-         &lt;mgt:filter&gt;${userPrefix}${tenant_counter}_user${user_ref}&lt;/mgt:filter&gt;
-         &lt;mgt:limit&gt;10&lt;/mgt:limit&gt;
+         &lt;mgt:filter&gt;tennant${tenant_counter}_user${user_ref}&lt;/mgt:filter&gt;
       &lt;/mgt:listUsers&gt;
    &lt;/soapenv:Body&gt;
 &lt;/soapenv:Envelope&gt;</stringProp>
@@ -502,7 +495,7 @@
               <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor" enabled="true">
                 <stringProp name="XPathExtractor.default">false</stringProp>
                 <stringProp name="XPathExtractor.refname">user_exists</stringProp>
-                <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;return&apos;]/text()=&apos;${userPrefix}${tenant_counter}_user${user_ref}&apos;</stringProp>
+                <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;return&apos;]/text()=&apos;tennant${tenant_counter}_user${user_ref}&apos;</stringProp>
                 <boolProp name="XPathExtractor.validate">false</boolProp>
                 <boolProp name="XPathExtractor.tolerant">false</boolProp>
                 <boolProp name="XPathExtractor.namespace">true</boolProp>
@@ -525,13 +518,13 @@
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                   <collectionProp name="Arguments.arguments"/>
                 </elementProp>
-                <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
-                <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://org.apache.axis2/xsd&quot; xmlns:xsd=&quot;http://common.mgt.user.carbon.wso2.org/xsd&quot;&gt;
+                <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+                <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:mgt=&quot;http://mgt.user.carbon.wso2.org&quot; xmlns:xsd=&quot;http://common.mgt.user.carbon.wso2.org/xsd&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
       &lt;mgt:addUser&gt;
          &lt;!--Optional:--&gt;
-         &lt;mgt:userName&gt;${userPrefix}${tenant_counter}_user${user_ref}&lt;/mgt:userName&gt;
+         &lt;mgt:userName&gt;tennant${tenant_counter}_user${user_ref}&lt;/mgt:userName&gt;
          &lt;!--Optional:--&gt;
          &lt;mgt:password&gt;1qaz2wsx@&lt;/mgt:password&gt;
 		&lt;mgt:roles&gt;subscriber_role&lt;/mgt:roles&gt;
@@ -550,7 +543,7 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
-            <stringProp name="SoapSampler.URL_DATA">https://${server}:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="SoapSampler.URL_DATA">https://localhost:9443/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
             <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
    &lt;soapenv:Header/&gt;
    &lt;soapenv:Body&gt;
@@ -657,7 +650,7 @@ FileOutputStream f = new FileOutputStream(currentDir + &quot;/results.csv&quot;)
                   </elementProp>
                   <elementProp name="username" elementType="HTTPArgument">
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                    <stringProp name="Argument.value">${userPrefix}${input_value}@domain${input_value}.com</stringProp>
+                    <stringProp name="Argument.value">tennant${input_value}@domain${input_value}.com</stringProp>
                     <stringProp name="Argument.metadata">=</stringProp>
                     <boolProp name="HTTPArgument.use_equals">true</boolProp>
                     <stringProp name="Argument.name">username</stringProp>
@@ -766,7 +759,7 @@ FileOutputStream f = new FileOutputStream(currentDir + &quot;/results.csv&quot;)
                     </elementProp>
                     <elementProp name="endpoint" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">http://www.google.com/ig</stringProp>
+                      <stringProp name="Argument.value">http://gdata.youtube.com/feeds/api/standardfeeds</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">endpoint</stringProp>
@@ -799,33 +792,19 @@ FileOutputStream f = new FileOutputStream(currentDir + &quot;/results.csv&quot;)
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">resourceCount</stringProp>
                     </elementProp>
+                    <elementProp name="resourceMethod-0" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">GET</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                      <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                      <stringProp name="Argument.name">resourceMethod-0</stringProp>
+                    </elementProp>
                     <elementProp name="uriTemplate-0" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">/*</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">uriTemplate-0</stringProp>
-                    </elementProp>
-                    <elementProp name="resourceMethod-0" elementType="HTTPArgument">
-                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${resourceMethods}</stringProp>
-                      <stringProp name="Argument.metadata">=</stringProp>
-                      <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                      <stringProp name="Argument.name">resourceMethod-0</stringProp>
-                    </elementProp>
-                    <elementProp name="resourceMethodAuthType-0" elementType="HTTPArgument">
-                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${authTypes}</stringProp>
-                      <stringProp name="Argument.metadata">=</stringProp>
-                      <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                      <stringProp name="Argument.name">resourceMethodAuthType-0</stringProp>
-                    </elementProp>
-                    <elementProp name="resourceMethodThrottlingTier-0" elementType="HTTPArgument">
-                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${throttlingTiers}</stringProp>
-                      <stringProp name="Argument.metadata">=</stringProp>
-                      <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                      <stringProp name="Argument.name">resourceMethodThrottlingTier-0</stringProp>
                     </elementProp>
                     <elementProp name="endpointType" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
@@ -841,6 +820,13 @@ FileOutputStream f = new FileOutputStream(currentDir + &quot;/results.csv&quot;)
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">resourceTemplate</stringProp>
                     </elementProp>
+                    <elementProp name="resourceMethodAuthType-0" elementType="HTTPArgument">
+                      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                      <stringProp name="Argument.value">Application &amp; Application User</stringProp>
+                      <stringProp name="Argument.metadata">=</stringProp>
+                      <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                      <stringProp name="Argument.name">resourceMethodAuthType-0</stringProp>
+                    </elementProp>
                     <elementProp name="addNewAPIButton" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
                       <stringProp name="Argument.value">Create</stringProp>
@@ -855,19 +841,19 @@ FileOutputStream f = new FileOutputStream(currentDir + &quot;/results.csv&quot;)
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">roles</stringProp>
                     </elementProp>
-                    <elementProp name="http_checked" elementType="HTTPArgument">
+                    <elementProp name="resourceMethod-1" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">http</stringProp>
+                      <stringProp name="Argument.value">POST</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                      <stringProp name="Argument.name">http_checked</stringProp>
+                      <stringProp name="Argument.name">resourceMethod-1</stringProp>
                     </elementProp>
-                    <elementProp name="https_checked" elementType="HTTPArgument">
+                    <elementProp name="resourceMethodAuthType-1" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">https</stringProp>
+                      <stringProp name="Argument.value">Application &amp; Application User</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                      <stringProp name="Argument.name">https_checked</stringProp>
+                      <stringProp name="Argument.name">resourceMethodAuthType-1</stringProp>
                     </elementProp>
                   </collectionProp>
                 </elementProp>
@@ -951,7 +937,7 @@ Failure=true;
                     </elementProp>
                     <elementProp name="provider" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}-AT-domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}-AT-domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">provider</stringProp>
@@ -1037,7 +1023,7 @@ Failure=true;
                     </elementProp>
                     <elementProp name="username" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">username</stringProp>
@@ -1097,7 +1083,7 @@ Failure=true;
                     </elementProp>
                     <elementProp name="username" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">username</stringProp>
@@ -1128,7 +1114,7 @@ Failure=true;
                   <stringProp name="script">String resp = prev.getResponseDataAsString();
 
 int def = resp.indexOf(&quot;id&quot;);
-String appid = resp.substring(def+6, resp.indexOf(&quot;, \&quot;callbackUrl\&quot;&quot; ));
+String appid = resp.substring(def+6, resp.indexOf(&quot;,&quot; ));
 System.out.println(appid);
 vars.put(&quot;appid&quot;, appid);</stringProp>
                 </BeanShellPostProcessor>
@@ -1181,16 +1167,9 @@ vars.put(&quot;appid&quot;, appid);</stringProp>
                         <boolProp name="HTTPArgument.use_equals">true</boolProp>
                         <stringProp name="Argument.name">name</stringProp>
                       </elementProp>
-                      <elementProp name="version" elementType="HTTPArgument">
-                        <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                        <stringProp name="Argument.value">1.0.0</stringProp>
-                        <stringProp name="Argument.metadata">=</stringProp>
-                        <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                        <stringProp name="Argument.name">version</stringProp>
-                      </elementProp>
                       <elementProp name="provider" elementType="HTTPArgument">
                         <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                        <stringProp name="Argument.value">${userPrefix}${input_value}-AT-domain${input_value}.com</stringProp>
+                        <stringProp name="Argument.value">tennant${input_value}-AT-domain${input_value}.com</stringProp>
                         <stringProp name="Argument.metadata">=</stringProp>
                         <boolProp name="HTTPArgument.use_equals">true</boolProp>
                         <stringProp name="Argument.name">provider</stringProp>
@@ -1201,6 +1180,13 @@ vars.put(&quot;appid&quot;, appid);</stringProp>
                         <stringProp name="Argument.metadata">=</stringProp>
                         <boolProp name="HTTPArgument.use_equals">true</boolProp>
                         <stringProp name="Argument.name">tier</stringProp>
+                      </elementProp>
+                      <elementProp name="version" elementType="HTTPArgument">
+                        <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                        <stringProp name="Argument.value">1.0.0</stringProp>
+                        <stringProp name="Argument.metadata">=</stringProp>
+                        <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                        <stringProp name="Argument.name">version</stringProp>
                       </elementProp>
                     </collectionProp>
                   </elementProp>
@@ -1261,7 +1247,7 @@ vars.put(&quot;appid&quot;, appid);</stringProp>
                       </elementProp>
                       <elementProp name="provider" elementType="HTTPArgument">
                         <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                        <stringProp name="Argument.value">${userPrefix}${input_value}-AT-domain${input_value}.com</stringProp>
+                        <stringProp name="Argument.value">tennant${input_value}-AT-domain${input_value}.com</stringProp>
                         <stringProp name="Argument.metadata">=</stringProp>
                         <boolProp name="HTTPArgument.use_equals">true</boolProp>
                         <stringProp name="Argument.name">provider</stringProp>
@@ -1430,7 +1416,7 @@ vars.put(&quot;encodedKey&quot;,encodedKey);</stringProp>
                     <collectionProp name="Arguments.arguments">
                       <elementProp name="" elementType="HTTPArgument">
                         <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                        <stringProp name="Argument.value">grant_type=password&amp;username=${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com&amp;password=1qaz2wsx@&amp;scope=PRODUCTION</stringProp>
+                        <stringProp name="Argument.value">grant_type=password&amp;username=tennant${input_value}_user${subsCount}@domain${input_value}.com&amp;password=1qaz2wsx@&amp;scope=PRODUCTION</stringProp>
                         <stringProp name="Argument.metadata">=</stringProp>
                         <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       </elementProp>
@@ -1505,7 +1491,7 @@ print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + acce
                   </DebugPostProcessor>
                   <hashTree/>
                 </hashTree>
-                <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Call" enabled="false">
+                <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Call" enabled="true">
                   <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                     <collectionProp name="Arguments.arguments"/>
                   </elementProp>
@@ -1515,8 +1501,8 @@ print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + acce
                   <stringProp name="HTTPSampler.response_timeout"></stringProp>
                   <stringProp name="HTTPSampler.protocol"></stringProp>
                   <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-                  <stringProp name="HTTPSampler.path">/t/domain${input_value}.com${context}${api_id}/${version}/api?stock=AAPL</stringProp>
-                  <stringProp name="HTTPSampler.method">POST</stringProp>
+                  <stringProp name="HTTPSampler.path">/t/domain${input_value}.com${context}${api_id}/${version}/most_popular</stringProp>
+                  <stringProp name="HTTPSampler.method">GET</stringProp>
                   <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                   <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
                   <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -1541,11 +1527,11 @@ print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + acce
                   <hashTree/>
                   <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
                     <collectionProp name="Asserion.test_strings">
-                      <stringProp name="-575879071">&lt;no_data_message data=&quot;No data found&quot;/&gt;</stringProp>
+                      <stringProp name="-1498428454">xmlns=&quot;http://www.w3.org/2005/Atom&quot;</stringProp>
                     </collectionProp>
                     <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
                     <boolProp name="Assertion.assume_success">false</boolProp>
-                    <intProp name="Assertion.test_type">6</intProp>
+                    <intProp name="Assertion.test_type">2</intProp>
                   </ResponseAssertion>
                   <hashTree/>
                 </hashTree>
@@ -1649,7 +1635,7 @@ print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + acce
                     </elementProp>
                     <elementProp name="username" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">username</stringProp>
@@ -1997,7 +1983,7 @@ FileWriter writer = new FileWriter(outPath);
                     </elementProp>
                     <elementProp name="username" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">username</stringProp>
@@ -2064,7 +2050,7 @@ FileWriter writer = new FileWriter(outPath);
                     </elementProp>
                     <elementProp name="tenant" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">domain1.com</stringProp>
+                      <stringProp name="Argument.value">null</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">tenant</stringProp>
@@ -2358,7 +2344,7 @@ FileWriter writer = new FileWriter(outPath);
                     </elementProp>
                     <elementProp name="username" elementType="HTTPArgument">
                       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                      <stringProp name="Argument.value">${userPrefix}${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
+                      <stringProp name="Argument.value">tennant${input_value}_user${subsCount}@domain${input_value}.com</stringProp>
                       <stringProp name="Argument.metadata">=</stringProp>
                       <boolProp name="HTTPArgument.use_equals">true</boolProp>
                       <stringProp name="Argument.name">username</stringProp>
@@ -2642,7 +2628,7 @@ FileWriter writer = new FileWriter(outPath);
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Gateway Call load test" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Gateway Call load test" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -2657,6 +2643,101 @@ FileWriter writer = new FileWriter(outPath);
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Server Parameter variables" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="server" elementType="Argument">
+              <stringProp name="Argument.name">server</stringProp>
+              <stringProp name="Argument.value">localhost</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="port" elementType="Argument">
+              <stringProp name="Argument.name">port</stringProp>
+              <stringProp name="Argument.value">9763</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="sslport" elementType="Argument">
+              <stringProp name="Argument.name">sslport</stringProp>
+              <stringProp name="Argument.value">9443</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="apinm" elementType="Argument">
+              <stringProp name="Argument.name">apinm</stringProp>
+              <stringProp name="Argument.value">Youtube</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="context" elementType="Argument">
+              <stringProp name="Argument.name">context</stringProp>
+              <stringProp name="Argument.value">/youtube</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="storeIP" elementType="Argument">
+              <stringProp name="Argument.name">storeIP</stringProp>
+              <stringProp name="Argument.value">localhost</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="storePort" elementType="Argument">
+              <stringProp name="Argument.name">storePort</stringProp>
+              <stringProp name="Argument.value">9763</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="subsPrefix" elementType="Argument">
+              <stringProp name="Argument.name">subsPrefix</stringProp>
+              <stringProp name="Argument.value">Tester_Acc2</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="publisherName" elementType="Argument">
+              <stringProp name="Argument.name">publisherName</stringProp>
+              <stringProp name="Argument.value">admin</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="publisherPass" elementType="Argument">
+              <stringProp name="Argument.name">publisherPass</stringProp>
+              <stringProp name="Argument.value">1qaz2wsx@</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="csvPath" elementType="Argument">
+              <stringProp name="Argument.name">csvPath</stringProp>
+              <stringProp name="Argument.value">/home/ace/Desktop/test.csv</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="gatewayServer" elementType="Argument">
+              <stringProp name="Argument.name">gatewayServer</stringProp>
+              <stringProp name="Argument.value">localhost</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="gatewayPort" elementType="Argument">
+              <stringProp name="Argument.name">gatewayPort</stringProp>
+              <stringProp name="Argument.value">8280</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="gatewayHttpsPort" elementType="Argument">
+              <stringProp name="Argument.name">gatewayHttpsPort</stringProp>
+              <stringProp name="Argument.value">8243</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="version" elementType="Argument">
+              <stringProp name="Argument.name">version</stringProp>
+              <stringProp name="Argument.value">1.0.0</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="apiServer" elementType="Argument">
+              <stringProp name="Argument.name">apiServer</stringProp>
+              <stringProp name="Argument.value">where.yahooapis.com</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="apiPath" elementType="Argument">
+              <stringProp name="Argument.name">apiPath</stringProp>
+              <stringProp name="Argument.value">/geocode</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="noOfSubscribers" elementType="Argument">
+              <stringProp name="Argument.name">noOfSubscribers</stringProp>
+              <stringProp name="Argument.value">1</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller" enabled="true"/>
         <hashTree>
           <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler" enabled="true">
@@ -2724,8 +2805,8 @@ vars.put(&quot;contextAndAPIId&quot;,contextAndAPIId);</stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/t/${domain}${contextAndAPIId}/${version}/api?stock=AAPL</stringProp>
-          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <stringProp name="HTTPSampler.path">/t/${domain}${contextAndAPIId}/${version}/most_popular</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -2750,11 +2831,11 @@ vars.put(&quot;contextAndAPIId&quot;,contextAndAPIId);</stringProp>
           <hashTree/>
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
             <collectionProp name="Asserion.test_strings">
-              <stringProp name="-575879071">&lt;no_data_message data=&quot;No data found&quot;/&gt;</stringProp>
+              <stringProp name="-1498428454">xmlns=&quot;http://www.w3.org/2005/Atom&quot;</stringProp>
             </collectionProp>
             <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
             <boolProp name="Assertion.assume_success">false</boolProp>
-            <intProp name="Assertion.test_type">6</intProp>
+            <intProp name="Assertion.test_type">2</intProp>
           </ResponseAssertion>
           <hashTree/>
           <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">

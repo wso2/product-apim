@@ -87,10 +87,16 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
         }
         Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
         apiStore.login(userInfo.getUserName(), userInfo.getPassword());
+
+        // Create application
+        apiStore.addApplication("TagsRatingCommentApplication", "Gold", "", "this-is-test");
+
+        // Subscribe to application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userInfo.getUserName());
+        subscriptionRequest.setApplicationName("TagsRatingCommentApplication");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("TagsRatingCommentApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

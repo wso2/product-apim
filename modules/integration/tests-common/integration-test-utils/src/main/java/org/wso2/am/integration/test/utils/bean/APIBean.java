@@ -25,24 +25,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class APIBean extends API {
-	private String tags;
-	private String availableTiers;
+    private String tags;
+    private String availableTiers;
+    public APIBean(APIIdentifier id) {
+        super(id);
+    }
 
-	public APIBean(APIIdentifier id) {
-		super(id);
-	}
+    public void setAvailableTiers(String availableTiers) {
+        this.availableTiers = availableTiers;
+    }
 
-	public void setAvailableTiers(String availableTiers) {
-		this.availableTiers = availableTiers;
-	}
-
-	public void setTags(String tags) {
-		this.tags = tags;
-		Set<String> stringSet = new HashSet<String>();
-		String[] strings = tags.split(",");
-		for (String str : strings) {
-			stringSet.add(str);
-		}
-		super.addTags(stringSet);
-	}
+    public void setTags(String tags) {
+        this.tags = tags;
+        Set<String> stringSet = new HashSet<String>();
+        String[] strings =tags.split(",");
+        for (String str :strings){
+          stringSet.add(str);
+        }
+        super.addTags(stringSet);
+    }
 }

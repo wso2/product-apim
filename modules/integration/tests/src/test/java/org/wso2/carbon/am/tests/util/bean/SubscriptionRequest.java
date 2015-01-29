@@ -34,6 +34,14 @@ public class SubscriptionRequest extends AbstractRequest {
         this.provider = provider;
     }
 
+    public SubscriptionRequest(String apiName, String apiVersion, String provider, String appName, String tier){
+        this.name = apiName;
+        this.version = apiVersion;
+        this.provider = provider;
+        this.applicationName = appName;
+        this.tier = tier;
+    }
+
     @Override
     public void setAction() {
         setAction("addAPISubscription");

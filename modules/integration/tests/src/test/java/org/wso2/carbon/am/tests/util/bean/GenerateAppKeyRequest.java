@@ -47,6 +47,8 @@ public class GenerateAppKeyRequest extends AbstractRequest {
         addParameter("validityTime", String.valueOf(validityTime));
     }
 
+    public String getApplication(){ return application; }
+
     public String getKeyType() {
         return keyType;
     }

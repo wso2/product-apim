@@ -23,60 +23,68 @@ package org.wso2.am.integration.test.utils.bean;
  */
 public class SubscriptionRequest extends AbstractRequest {
 
-	private String name;
-	private String provider;
-	private String version = "1.0.0";
-	private String applicationName = "DefaultApplication";
-	private String tier = "Gold";
+    private String name;
+    private String provider;
+    private String version = "1.0.0";
+    private String applicationName = "DefaultApplication";
+    private String tier = "Gold";
 
-	public SubscriptionRequest(String apiName, String provider) {
-		this.name = apiName;
-		this.provider = provider;
-	}
+    public SubscriptionRequest(String apiName, String provider) {
+        this.name = apiName;
+        this.provider = provider;
+    }
 
-	@Override
-	public void setAction() {
-		setAction("addAPISubscription");
-	}
+    public SubscriptionRequest(String apiName, String apiVersion, String provider, String appName, String tier){
+        this.name = apiName;
+        this.version = apiVersion;
+        this.provider = provider;
+        this.applicationName = appName;
+        this.tier = tier;
+    }
 
-	@Override
-	public void init() {
-		addParameter("name", name);
-		addParameter("provider", provider);
-		addParameter("version", version);
-		addParameter("applicationName", applicationName);
-		addParameter("tier", tier);
-	}
+    @Override
+    public void setAction() {
+        setAction("addAPISubscription");
+    }
 
-	public String getName() {
-		return name;
-	}
+    @Override
+    public void init() {
+        addParameter("name", name);
+        addParameter("provider", provider);
+        addParameter("version", version);
+        addParameter("applicationName", applicationName);
+        addParameter("tier", tier);
+    }
 
-	public String getProvider() {
-		return provider;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public String getProvider() {
+        return provider;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	public String getApplicationName() {
-		return applicationName;
-	}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
-	}
+    public String getApplicationName() {
+        return applicationName;
+    }
 
-	public String getTier() {
-		return tier;
-	}
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
 
-	public void setTier(String tier) {
-		this.tier = tier;
-	}
+    public String getTier() {
+        return tier;
+    }
+
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
 }
