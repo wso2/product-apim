@@ -67,15 +67,6 @@ public abstract class APIManagerIntegrationTest {
 	private List<String> apiList = null;
 	private List<String> priorityExecutorList = null;
 	private List<String[]> scheduledTaskList = null;
-    protected String apiName;
-    protected String apiContext;
-    protected String tags;
-    protected String version;
-    protected String roles;
-    protected String visibility;
-    protected String description;
-    protected String url;
-    protected String providerName;
 
     protected AutomationContext context;
     protected OMElement synapseConfiguration = null;
@@ -813,26 +804,6 @@ public abstract class APIManagerIntegrationTest {
 			scheduledTaskList.clear();
 		}
 	}
-
-    protected void createAPI(String apiName, String apiContext, String tags, String description, String roles,
-                             String version, String visibility, String url, APIPublisherRestClient apiPublisher)
-            throws Exception {
-
-        //login
-        apiPublisher.login(context.getSuperTenant().getContextUser().getUserName(),
-                context.getSuperTenant().getContextUser().getPassword());
-
-        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(url));
-
-        // setting properties for api
-        apiRequest.setTags(tags);
-        apiRequest.setDescription(description);
-        apiRequest.setVersion(version);
-
-        apiRequest.setVisibility(visibility);
-        apiRequest.setRoles(roles);
-        apiPublisher.addAPI(apiRequest);
-    }
 
 	protected OMElement setEndpoints(OMElement synapseConfig)
 			throws XMLStreamException, XPathExpressionException {
