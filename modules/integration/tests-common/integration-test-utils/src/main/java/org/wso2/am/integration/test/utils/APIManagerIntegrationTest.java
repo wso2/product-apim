@@ -24,16 +24,18 @@ import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
+import org.wso2.am.integration.admin.clients.common.SecurityAdminServiceClient;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.esb.ESBTestCaseUtils;
 import org.wso2.am.integration.test.utils.esb.EndpointGenerator;
 import org.wso2.am.integration.test.utils.esb.ServiceDeploymentUtil;
+import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.user.mgt.LoginLogoutClient;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.integration.common.admin.client.SecurityAdminServiceClient;
-import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 import org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceSecurityConfigExceptionException;
 import org.wso2.carbon.sequences.stub.types.SequenceEditorException;
 import org.xml.sax.SAXException;
@@ -44,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,11 +56,6 @@ import java.util.regex.Matcher;
 public abstract class APIManagerIntegrationTest {
 
 	protected Log log = LogFactory.getLog(getClass());
-
-	protected AutomationContext context;
-
-	protected OMElement synapseConfiguration = null;
-	protected ESBTestCaseUtils esbUtils;
 
 	private List<String> proxyServicesList = null;
 	private List<String> sequencesList = null;
@@ -69,10 +67,23 @@ public abstract class APIManagerIntegrationTest {
 	private List<String> apiList = null;
 	private List<String> priorityExecutorList = null;
 	private List<String[]> scheduledTaskList = null;
+    protected String apiName;
+    protected String apiContext;
+    protected String tags;
+    protected String version;
+    protected String roles;
+    protected String visibility;
+    protected String description;
+    protected String url;
+    protected String providerName;
 
+    protected AutomationContext context;
+    protected OMElement synapseConfiguration = null;
+    protected ESBTestCaseUtils esbUtils;
 	protected TestUserMode userMode;
 	protected ContextUrls contextUrls;
 	protected String sessionCookie;
+
 
 	protected void init() throws Exception {
 		userMode = TestUserMode.SUPER_TENANT_ADMIN;
@@ -803,6 +814,26 @@ public abstract class APIManagerIntegrationTest {
 		}
 	}
 
+    protected void createAPI(String apiName, String apiContext, String tags, String description, String roles,
+                             String version, String visibility, String url, APIPublisherRestClient apiPublisher)
+            throws Exception {
+
+        //login
+        apiPublisher.login(context.getSuperTenant().getContextUser().getUserName(),
+                context.getSuperTenant().getContextUser().getPassword());
+
+        APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(url));
+
+        // setting properties for api
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(version);
+
+        apiRequest.setVisibility(visibility);
+        apiRequest.setRoles(roles);
+        apiPublisher.addAPI(apiRequest);
+    }
+
 	protected OMElement setEndpoints(OMElement synapseConfig)
 			throws XMLStreamException, XPathExpressionException {
 		if (isBuilderEnabled()) {
@@ -932,5 +963,4 @@ am.test.application.publisher.http.url=http://localhost:9763/testapp/testPublish
 	protected String getTestApplicationPublisherServerURLHttp() {
 		return "http://localhost:9763/testapp/testPublisher.jag";
 	}
-
 }
