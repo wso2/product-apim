@@ -1,6 +1,6 @@
-                ================================================================================
-                                                WSO2 API Manager
-                ================================================================================
+        ================================================================================
+                                        WSO2 API Manager
+        ================================================================================
 
 WSO2 API Manager is a powerful platform for creating, managing, consuming and
 monitoring web APIs. It combines tried and tested SOA best practices with modern
