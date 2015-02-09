@@ -20,9 +20,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-	<groupId>org.wso2.am</groupId>
+        <groupId>org.wso2.am</groupId>
         <artifactId>wso2stratos-am-features</artifactId>
         <version>${stratos.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -36,46 +37,45 @@
             <groupId>org.apache.derby.wso2</groupId>
             <artifactId>derby</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.hibernate.wso2</groupId>
             <artifactId>hibernate</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.apache.bcel.wso2</groupId>
             <artifactId>bcel</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>asm.wso2</groupId>
             <artifactId>asm</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>cglib.wso2</groupId>
             <artifactId>cglib</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2-jibx</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.jibx.wso2</groupId>
             <artifactId>jibx</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2-jaxbri</artifactId>
         </dependency>
-	<dependency>
+        <dependency>
             <groupId>com.sun.xml.bind.wso2</groupId>
             <artifactId>jaxb</artifactId>
         </dependency>
     </dependencies>
 
     <build>
-       <plugins>
+        <plugins>
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
-                <version>${carbon.p2.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>p2-feature-generation</id>

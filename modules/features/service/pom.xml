@@ -21,7 +21,7 @@
 
     <parent>
         <groupId>org.wso2.am</groupId>
-    	<artifactId>am-features-parent</artifactId>
+        <artifactId>am-features-parent</artifactId>
         <version>${apimserver.version}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -36,7 +36,7 @@
     <modules>
         <module>org.wso2.stratos.apimgt.styles.feature</module>
         <module>org.wso2.stratos.apimgt.utils.feature</module>
-     	<module>org.wso2.stratos.apimgt.dashboard.ui.feature</module>
+        <module>org.wso2.stratos.apimgt.dashboard.ui.feature</module>
         <module>org.wso2.stratos.apimgt.login.ui.feature</module>
     </modules>
 

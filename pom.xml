@@ -57,9 +57,10 @@
     </modules>
 
     <scm>
-        <connection>scm:svn:http://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</connection>
-        <developerConnection>scm:svn:https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</developerConnection>
-        <url>https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</url>
+        <url>https://github.com/wso2/product-apim.git</url>
+        <developerConnection>scm:git:https://github.com/wso2/product-apim.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2/product-apim.git</connection>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
@@ -124,7 +125,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.0-alpha-3</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
