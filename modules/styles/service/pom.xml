@@ -47,7 +47,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -108,7 +107,6 @@
         <dependency>
             <groupId>org.eclipse.equinox</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
-            <version>${javax.servlet.jsp.version}</version>
         </dependency>
     </dependencies>
 </project>
