@@ -26,9 +26,8 @@
 		<artifactId>am-parent</artifactId>
 		<version>${apimserver.version}</version>
         <relativePath>../../pom.xml</relativePath>
-    </parent> 
+    </parent>
 
-    <groupId>org.wso2.am</groupId>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-styles-parent</artifactId>
     <packaging>pom</packaging>
