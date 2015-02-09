@@ -184,7 +184,7 @@
         </fileSet>
 
 	<fileSet>
-             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/</directory>
+             <directory>../../jaggery-apps/api-publisher-web/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
 	     <excludes>
 		<exclude>publisherLogo/**</exclude>
@@ -195,7 +195,7 @@
 	     </excludes>
          </fileSet>
          <fileSet>
-             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/store/</directory>
+             <directory>../../jaggery-apps/api-store-web/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store</outputDirectory>
 	     <excludes>
 		<exclude>storeLogo/**</exclude>
@@ -207,11 +207,11 @@
          </fileSet>
 
         <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/workflow-admin/</directory>
+            <directory>../../jaggery-apps/admin-web/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/workflow-admin</outputDirectory>
         </fileSet>
 	<fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/admin-dashboard/</directory>
+            <directory>../../jaggery-apps/admin-dashboard-web/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-dashboard</outputDirectory>
         </fileSet>
 	<!--  copying modules xml -->
