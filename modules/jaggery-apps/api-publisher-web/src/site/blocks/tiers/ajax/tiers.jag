@@ -1,0 +1,50 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, result, username,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+
+    if(jagg.getUser() == null){
+        print({
+            error:true,
+            message:'timeout'
+        });
+        
+    }else{
+    
+    if (action === "updatePermissions" && request.getMethod() == 'POST') {
+
+        mod = jagg.module("tiers");
+        var tierPermission = {};
+        tierPermission.tierName = request.getParameter("tierName");
+        tierPermission.permissiontype = request.getParameter("permissiontype");
+        tierPermission.roles = request.getParameter("roles");
+        
+        result = mod.updateTierPermissions(tierPermission);
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:result.message
+            };
+        } else {
+            obj = {
+                error:false
+            }
+        }
+        print(obj);
+        
+    } else {
+        print({
+                  error:true,
+                  message:msg.error.invalidAction(action)
+              });
+    }
+    	
+    }
+ }());
+%>   
+%>

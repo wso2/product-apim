@@ -1,0 +1,11 @@
+<%
+jagg.initializer("application/application-add", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("application/application-add", "application-add", "templates/application/application-add/js/application-add.js");
+        jagg.addFooterJS("comment/comment-add", "comment-add", "js/lib/jquery.charCount.js");
+        jagg.addHeaderJS("validate", "app", "templates/ui/validation/custom-validation.js");
+        jagg.addHeaderJS("application/application-list", "application-list", "templates/application/application-list/js/application.js");
+    }
+});
+%>

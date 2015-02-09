@@ -1,0 +1,14 @@
+<%
+jagg.block("user/logout", {
+
+    initializer:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+        return {
+            "user":jagg.getUser()
+        }
+    }
+});
+%>

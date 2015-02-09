@@ -1,0 +1,26 @@
+<%
+var getApplications = function (username) {
+    var applications,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        applications = store.getApplications(username);
+        if (log.isDebugEnabled()) {
+            log.debug("getApplications : " + stringify(applications));
+        }
+        return {
+            error:false,
+            applications:applications
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            applications:null
+        };
+    }
+};
+
+%>
+

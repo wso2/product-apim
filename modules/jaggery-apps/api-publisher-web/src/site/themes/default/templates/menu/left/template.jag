@@ -1,0 +1,122 @@
+<% jagg.template("menu/left", function(inputs, outputs, jagg) { %>
+<%  var tenant= encode.forUriComponent(request.getParameter("tenant"));
+    var urlPrefix;
+    var urlPostfix;
+    if(tenant!='null') {urlPrefix="?tenant="+tenant;}else{urlPrefix='';}
+    if(tenant!='null') {urlPostfix="&tenant="+tenant;}else{urlPostfix='';}
+
+    var site = require("/site/conf/site.json");
+    var ssoEnabled = site.ssoConfiguration.enabled;
+
+    var reqUrl = request.getRequestURI();
+    var listUrl=jagg.getAbsoluteUrl("/site/pages/index.jag");
+    var listMappedUrl=jagg.getMappedUrl("/site/pages/index.jag");
+    var infoUrl=jagg.getAbsoluteUrl("/site/pages/item-info.jag");
+    var infoMappedUrl=jagg.getMappedUrl("/site/pages/item-info.jag");
+    var addUrl=jagg.getAbsoluteUrl("/site/pages/add.jag");
+    var addMappedUrl=jagg.getMappedUrl("/site/pages/add.jag");
+    var addDesignUrl=jagg.getMappedUrl("/site/pages/design.jag");    
+    var subsUrl=jagg.getAbsoluteUrl("/site/pages/subscriptions.jag");
+    var subsMappedUrl=jagg.getMappedUrl("/site/pages/subscriptions.jag");
+    var userUrl=jagg.getAbsoluteUrl("/site/pages/user.jag");
+    var userMappedUrl=jagg.getMappedUrl("/site/pages/user.jag");
+    var statsUrl=jagg.getAbsoluteUrl("/site/pages/statistics.jag");
+    var statsMappedUrl=jagg.getMappedUrl("/site/pages/statistics.jag");
+    var allStatsUrl=jagg.getAbsoluteUrl("/site/pages/all-statistics.jag");
+    var allStatsMappedUrl=jagg.getMappedUrl("/site/pages/all-statistics.jag");
+    var tierPermissionsUrl=jagg.getAbsoluteUrl("/site/pages/tiers.jag");
+    var tierPermissionsMappedUrl=jagg.getMappedUrl("/site/pages/tiers.jag");
+	
+	
+    var  mod,isPermitted, isManageTierPermitted;
+    isPermitted=jagg.getCreatePermitted().permitted;
+    isManageTierPermitted = jagg.getManageTierPermitted().permitted;
+%>
+
+ <script type="text/javascript">
+      $(function() {
+      $('.js_toggler').click(function(){
+            var clicked = this;
+            $(clicked).parent().attr("clicking","yes");
+
+
+            $('.js_toggler').each(function(){
+                if($(this).parent().attr("clicking") != "yes"){
+                    if($(this).parent().next().hasClass("child-nodes")){
+                        $(this).parent().next().hide();
+                    }
+                }
+            });
+
+                            var  $next =$(clicked).parent().next();
+
+            if($next.hasClass("child-nodes")){
+                $next.toggle();
+            }
+
+      });
+
+
+    $('#auctions').click(function(){
+      $('.submenu').slideToggle();
+    });
+});
+
+   </script>
+
+
+<div class="sidebar-nav left-menu-back01">
+    <ul class="nav nav-list">
+       <li class="nav-header"><%=i18n.localize("apis")%></li>
+        <li <%if(reqUrl.equals(jagg.url(""))||reqUrl.equals(jagg.url("/"))||reqUrl.indexOf(listUrl)>=0 || reqUrl.indexOf(listMappedUrl)>=0||reqUrl.indexOf(infoUrl)>=0 || reqUrl.indexOf(infoMappedUrl)>=0|| reqUrl.indexOf(userUrl)>=0||reqUrl.indexOf(userMappedUrl)>=0){%>class="active"<% } %>><a href="<%=listMappedUrl%>?page=1<%=urlPostfix%>"  onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>?page=1<%=urlPostfix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("browse")%></a></li>
+        <%if(isPermitted){%><li <% if(reqUrl.indexOf(addUrl)>=0 || reqUrl.indexOf(addDesignUrl)>=0){%>class="active"<% } %>><a href="<%=addDesignUrl%><%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=addDesignUrl%><%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("add")%></a></li><%}%>                
+        <!-- <%if(isPermitted){%><li <% if(reqUrl.indexOf(addUrl)>=0 || reqUrl.indexOf(addMappedUrl)>=0){%>class="active"<% } %>><a href="<%=addMappedUrl%><%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=addMappedUrl%><%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"></a></li><%}%>-->
+        <li <% if(reqUrl.indexOf(allStatsUrl)>=0 || reqUrl.indexOf(allStatsMappedUrl)>=0){%>class="active"<% } %>><a href="<%=allStatsMappedUrl%>?stat=all-stat&page=api-subscriptions<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?stat=all-stat&page=api-subscriptions<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("allStats")%></a></li>
+         <%       var stat;
+    var  stat = request.getParameter("stat");
+    if(stat == "all-stat" ) {%>
+			<li class="child-nodesw"><ul>
+			<li  <% if(reqUrl.indexOf(allStatsUrl)>=0||reqUrl.indexOf(allStatsMappedUrl)>=0){%>class="active"<% } %>><a class="substats" href="<%=allStatsMappedUrl%>?page=api-subscriptions&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-subscriptions&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiSubscriptons")%></a></li>
+			<li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-usage&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-usage&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsage")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-response-times&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-response-times&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiResponseTimes")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-last-access-times&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-last-access-times&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiLastAccessTimes")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-usage-resource-path&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-usage-resource-path&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageResourcePath")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-usage-destination&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-usage-destination&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageFromDestination")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=api-usage-user&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=api-usage-user&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageByUser")%></a></li>
+		    <li><a class="substats" href="<%=allStatsMappedUrl%>?page=faulty-invocations&stat=all-stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=allStatsMappedUrl%>?page=faulty-invocations&stat=all-stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("faultyInvocations")%></a></li>
+
+			</ul></li>
+    <%}%>
+
+
+        <%if(isPermitted){%>
+        	<li class="nav-header"><%=i18n.localize("myAPIs")%></li>
+        	<li <% if(reqUrl.indexOf(subsUrl)>=0||reqUrl.indexOf(subsMappedUrl)>=0){%>class="active"<% } %>><a class="js_toggler"  href="<%=subsMappedUrl%><%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=subsMappedUrl%><%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("subscriptions")%></a></li>
+			<li  <% if(reqUrl.indexOf(statsUrl)>=0||reqUrl.indexOf(statsMappedUrl)>=0){%>class="active"<% } %>><a class="js_toggler" href="<%=statsMappedUrl%>?stat=stat&page=api-subscriptions<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?stat=stat&page=api-subscriptions<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("statistics")%></a></li>
+
+   <%  var  stat = request.getParameter("stat");
+        if(stat == "stat" ) {%>
+			<li class="child-nodesw"><ul>
+			<li><a class="substats" href="<%=statsMappedUrl%>?page=api-subscriptions&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-subscriptions&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiSubscriptons")%></a></li>
+			<li><a class="substats" href="<%=statsMappedUrl%>?page=api-usage&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-usage&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsage")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=api-response-times&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-response-times&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiResponseTimes")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=api-last-access-times&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-last-access-times&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiLastAccessTimes")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=api-usage-resource-path&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-usage-resource-path&stat=stat',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageResourcePath")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=api-usage-destination&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=api-usage-destination&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageFromDestination")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=api-usage-user&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%><?page=api-usage-user&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("apiUsageByUser")%></a></li>
+		    <li><a class="substats" href="<%=statsMappedUrl%>?page=faulty-invocations&stat=stat<%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=statsMappedUrl%>?page=faulty-invocations&stat=stat<%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("faultyInvocations")%></a></li>
+
+			</ul></li>
+    <%}%>
+
+	<%}%>
+		<%if(isManageTierPermitted){%>
+			<li class="nav-header"><%=i18n.localize("tierPermissions")%></li>
+			<li <% if(reqUrl.indexOf(tierPermissionsUrl)>=0||reqUrl.indexOf(tierPermissionsMappedUrl)>=0){%>class="active"<% } %>><a href="<%=tierPermissionsMappedUrl%><%=urlPrefix%>" onclick="jagg.sessionAwareJS({redirect:'<%=tierPermissionsMappedUrl%><%=urlPrefix%>',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("tierPermissions")%></a></li>
+		<%}%>
+        
+     </ul>
+</div>
+
+<%});%>
+

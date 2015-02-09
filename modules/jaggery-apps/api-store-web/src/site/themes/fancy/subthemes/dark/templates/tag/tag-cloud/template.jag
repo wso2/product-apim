@@ -1,0 +1,59 @@
+<% jagg.template("tag/tag-cloud", function(inputs, outputs, jagg) { %>
+<%
+    var tenant=request_tenant;
+    var urlPrefix;
+    if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}
+%>
+<div id="tag-cloud">
+    <h4><%=i18n.localize("tags")%></h4>
+
+    <div class="tag-content">
+        <div class="clouds">
+            <div class="aCenter box10" id="ajaxTags">
+                <div class="processingWrapper"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('images/processing.gif'))%>" /></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <script type="text/javascript">
+            $(function(){
+                jagg.post("/site/blocks/tag/tag-cloud/ajax/list.jag", {
+                                       action:"getAllTags"
+                                       <% if(tenant != null ) { %> ,tenant:'<%=tenant%>' <% } %>
+                                   }, function (result) {
+                                       if (result.error == false) {
+                                           $('#ajaxTags').html('');
+                                           var i, tag, tags = result.tags, length = tags.length;
+                                           var maxPercent = 150, minPercent = 100;
+                                           var max = -1, min = 99999999999, count = 0, size, path;
+                                           for (i = 0; i < length; i++) {
+                                               tag = tags[i];
+                                               count = parseInt(tags[i].count);
+                                               max = (count > max ? count : max);
+                                               min = (min > count ? count : min);
+                                           }
+
+                                           var total, link, size;
+                                           var multiplier = (maxPercent - minPercent) / (max - min);
+                                           for (i = 0; i < length; i++) {
+                                               tag = tags[i];
+                                               count = parseInt(tag.count);
+                                               size = minPercent + ((max - (max - (count - min))) * multiplier) + "%";
+                                               path = '<%=jagg.getMappedUrl("/site/pages/list-apis.jag")%>' + "?tag=" + tag.name + "&" + '<%=urlPrefix%>';
+
+                                               if (tag.name.split('<%=site.tagGroupKey%>').length == 1) {
+                                                   var tagName = tag.name.split('<%=site.tagGroupKey%>')[0];
+                                                   $('#ajaxTags').append($('<a href="' + path + '" class="cloud-link" style="font-size:' + size + '">' + tag.name + '</a>'));
+                                               }
+                                           }
+
+                                       } else {
+                                           jagg.message({content:result.message,type:"error"});
+                                       }
+                                   }, "json");
+            });
+
+        </script>
+<% }); %>

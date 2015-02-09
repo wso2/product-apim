@@ -1,0 +1,9 @@
+<%
+jagg.initializer("api/throttling", {
+
+    preInitialize:function () {
+        
+    }
+});
+
+%>

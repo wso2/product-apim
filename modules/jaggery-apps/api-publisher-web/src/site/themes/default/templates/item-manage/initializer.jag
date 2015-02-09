@@ -1,0 +1,24 @@
+<%
+jagg.initializer("item-manage", {
+
+    preInitialize:function () {
+        jagg.addHeaderCSS("api-designer.css", "jagg", "templates/item-design/css/api-designer.css");        
+        jagg.addHeaderCSS("bootstrap-editable.css", "jagg", "templates/item-design/css/bootstrap-editable.css");        
+        jagg.addHeaderJS("custom-validate", "jagg", "templates/utils/custom-validation/custom-validation.js");
+
+        jagg.addFooterJS("handlebars", "jagg", "templates/item-design/js/handlebars-v1.3.0.js");
+        jagg.addFooterJS("ace", "jagg", "templates/item-design/js/src-noconflict/ace.js");
+        jagg.addFooterJS("ace-theme", "jagg", "templates/item-design/js/src-noconflict/theme-textmate.js");
+        jagg.addFooterJS("ace-mode", "jagg", "templates/item-design/js/src-noconflict/mode-json.js");
+        jagg.addFooterJS("ace-mode", "jagg", "templates/item-design/js/src-noconflict/mode-javascript.js");
+        jagg.addFooterJS("jquery-ace", "jagg", "templates/item-design/js/jquery-ace.min.js");
+        //jagg.addFooterJS("bootstrap-min", "jagg", "lib/bootstrap/js/bootstrap.min.js");
+        //jagg.addFooterJS("bootstrap-editable.min", "jagg", "templates/item-design/js/bootstrap-editable.js"); 
+        jagg.addFooterJS("multiselect", "jagg", "lib/bootstrap-multiselect.js");               
+        jagg.addFooterJS("jsonpath-0.8.0", "jagg", "templates/item-design/js/jsonpath-0.8.0.js");        
+        jagg.addFooterJS("design-api", "jagg", "templates/item-design/js/api-design.js");
+        jagg.addFooterJS("manage-api", "jagg", "templates/item-manage/js/api-manage.js");    
+    }
+});
+%>
+

@@ -1,0 +1,10 @@
+<% jagg.template("layout/inline-editor", function(inputs, outputs, jagg) { %>
+    <div class="row-fluid">
+        <% if(outputs.top) { %>
+            <% jagg.includeBlocks(outputs.top); %>
+        <% } %>
+            <% jagg.includeBlocks(outputs.middle); %>
+
+    </div>
+
+<% }); %>

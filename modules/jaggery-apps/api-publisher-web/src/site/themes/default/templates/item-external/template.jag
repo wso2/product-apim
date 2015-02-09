@@ -1,0 +1,105 @@
+<% jagg.template("item-external", function(inputs, outputs, jagg) {
+ var mod = jagg.module("api");
+ var result = mod.getTiers().tiers;
+ var isSynapseGateway = mod.isSynapseGateway().isSynapseGateway;
+ var isSuperTenant = jagg.getUser().isSuperTenant;
+ var i,resCount,rowNums = [],api = outputs.api; log = new Log();%>
+
+<script type="text/javascript">
+
+var insequence = "<%=api.inSequence%>";
+var outsequence = "<%=api.outSequence%>";
+var faultsequence = "<%=api.faultSequence%>";
+var inSequencesLoaded = false;
+var outSequencesLoaded = false;
+var faultSequencesLoaded = false;
+
+</script>
+
+<div class="row-fluid">
+    <div class="span12">
+        <form method="POST" class="form-horizontal well" id="externalAPIStoresForm" 
+        action="<%= jagg.url("/site/blocks/item-external/ajax/external.jag")%>"  enctype="multipart/form-data">
+            <input type="hidden" name="action" id="action" value="updateExternal"/>
+            <input type="hidden" name="name" id="name" value="<%=api.name%>"/>
+            <input type="hidden" name="version" id="version" value="<%=api.version%>"/>
+            <input type="hidden" name="provider" id="provider" value="<%=api.provider%>"/>
+            <input type="hidden" name="tiersCollection" id="tiersCollection" value="<%=api.availableTiers%>"/>
+
+            <%if(api.apiStores!=null){%>
+            <input type="hidden" id="externalAPIStores" name="externalAPIStores" value="<%for(var j=0;j<api.apiStores.length;j++){ if(api.apiStores[j].published){%><%=api.apiStores[j].name%>::<%}}%>" />
+            <div class="control-group">
+                <label class="control-label"><%=i18n.localize("publishToExternalAPIStores")%>:</label>
+                <div class="controls">
+                    <div class="checkbox">
+                        <%for(var i=0;i<api.apiStores.length;i++){%>
+                        <label>
+                            <input type="checkbox"  id="store<%=i%>" name="store<%=i%>" class="storeCheck" value="<%=api.apiStores[i].name%>" <%if(api.apiStores[i].published){%>checked<%}%><%if(api.status!='PUBLISHED'){%>disabled<%}%> />
+                            <%=api.apiStores[i].displayName%>
+                        </label>
+                        <%}%>
+                    </div>
+
+                </div>
+            </div>
+            <%}%>
+
+            <div class="form-actions" style="display:none" id="saveMessageExt">
+                    <div class="btn loadingButton">Saving API. Please wait..</div>
+            </div>
+            <div class="form-actions" id="saveButtons">
+                <input type="submit" id="updateButtonExt" class="btn btn-primary" value="<%=i18n.localize("save")%>"/>
+                <input type="reset" id="cancelEditExt" class="btn" value="<%=i18n.localize("cancel")%>">
+            </div>
+
+        </form>
+    </div>
+</div>
+
+ <script type="text/javascript">
+
+$(document).ready(function() {
+ var v = $("#externalAPIStoresForm").validate({
+
+        submitHandler: function(form) {
+            $('#saveMessageExt').show(); $('#updateButtonExt').hide();
+            $(form).ajaxSubmit({
+                success:function(responseText, statusText, xhr, $form)  {
+                  if(!responseText.error){
+                      if (($.cookie("selectedTab") != null)) {
+                            $.cookie("selectedTab", "overview");
+                      }
+                      var current = window.location.pathname;
+                      if (current.indexOf(".jag") >= 0) {
+                      location.href = "item-info.jag?name=<%=api.name%>&version=<%=api.version%>&provider=<%=api.provider%>";
+                      }else{
+                      location.href = "site/pages/item-info.jag?name=<%=api.name%>&version=<%=api.version%>&provider=<%=api.provider%>";
+                      }
+                      $("#editAPIForm")[0].reset();
+                  } else {
+                          jagg.message({content:responseText.message,type:"error",cbk:function(){
+                              $('#saveMessageExt').hide(); $('#updateButtonExt').show();
+                              location.reload(true);
+                          }
+                          });
+                                                                         }
+                }, dataType: 'json'
+            });
+        }
+    });
+    $('#cancelEditExt').click(
+            function(){
+                var current = window.location.pathname;
+                if (current.indexOf(".jag") >= 0) {
+                location.href = 'index.jag';
+                }else{
+                location.href = 'site/pages/index.jag';
+                }
+            }
+            );
+ });
+
+ </script>
+
+
+<% }); %>

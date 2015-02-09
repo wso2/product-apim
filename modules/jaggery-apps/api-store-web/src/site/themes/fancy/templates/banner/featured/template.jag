@@ -1,0 +1,15 @@
+<% jagg.template("banner/featured", function(inputs, outputs, jagg) { %>
+<div class="col_12 add-section" style="display:none">
+    <div class="slideshow-add">
+        <!-- Slideshow -->
+        <ul class="slideshow" width="760" height="150">
+            <li><img class="full-width" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/banner/featured/images/add1.png"))%>"/></li>
+            <li><img class="full-width" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/banner/featured/images/add2.png"))%>"/></li>
+        </ul>
+    </div>
+    <div class="provider-add">
+        <button class="medium green">Add My API</button>
+    </div>
+    <div class="clear"></div>
+</div>
+<% }); %>

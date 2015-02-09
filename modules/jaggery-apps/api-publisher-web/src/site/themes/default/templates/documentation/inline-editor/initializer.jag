@@ -1,0 +1,10 @@
+<%
+jagg.initializer("documentation/inline-editor", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("documentation/inline-editor", "tinymice", "templates/documentation/inline-editor/tinymce/tiny_mce.js");
+        jagg.addHeaderJS("documentation/inline-editor", "jagg", "templates/documentation/inline-editor/js/inline.js");
+    }
+
+});
+%>

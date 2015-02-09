@@ -1,0 +1,23 @@
+<%
+jagg.block("comment/comment-list", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "api":null
+        }
+    },
+
+    getOutputs:function (inputs) {
+
+        var comments, result;
+        result = jagg.module("comment").getAPIComments(inputs.api);
+        comments = result.comments;
+        return {
+            "comments":comments
+        };
+    }
+});
+%>

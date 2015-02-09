@@ -1,0 +1,32 @@
+<% jagg.template("search/api-search", function(inputs, outputs, jagg) {
+var query=request.getParameter("query");
+%>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="input-append pull-left big-search-box">
+                    <form action="<%=jagg.getMappedUrl("/site/pages/list-apis.jag")%>">
+                    <input type="text" class="span5 search-input" name="query"<%if(query!=null){%> value="<%=encode.forHtmlAttribute(query)%>" <%}else{%>
+                     placeholder="<%=i18n.localize("searchAPI")%>"<%}%>/>
+                     <%var tenant=request_tenant;if(tenant!=null){ %>
+                     <input type="hidden" class="span5" name="tenant" value="<%=request_tenant%>" />
+                     <%}%>
+                    <button class="btn btn-primary search-button"><i class="icon-search icon-white"></i></button>
+                     <a class=" icon-info-sign searchHelp" onclick="javascript:$('#searchAPIHelp').toggle('fast')"></a>
+                     <div id="searchAPIHelp" class="help-block" style="display:none;">
+                     <h4><%=i18n.localize("searchAPIHelpMsg1")%></h4>
+                     <ol>
+                     <li><%=i18n.localize("searchAPIHelpMsg2")%></li>
+                     <li><%=i18n.localize("searchAPIHelpMsg3")%></li>
+                     <li><%=i18n.localize("searchAPIHelpMsg4")%></li>
+                     <li><%=i18n.localize("searchAPIHelpMsg5")%></li>
+                     <li><%=i18n.localize("searchAPIHelpMsg6")%></li>
+                     <li><%=i18n.localize("searchAPIHelpMsg7")%></li>
+                     </ol>
+                     </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<% }); %>

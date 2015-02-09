@@ -1,0 +1,25 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+
+	var url = request.getParameter("swagger_url");
+	url = url.trim();
+	//@todo need to validate inputs
+	var data = { };
+	var content = get(url, data ,"json");
+	var swaggerJson = content.data;
+	var xhr = new XMLHttpRequest();
+	for(var i = 0; i < swaggerJson.apis.length; i++){
+		xhr.open("GET", url + swaggerJson.apis[i].path);
+		xhr.setRequestHeader("Content-Type" , "application/json");
+		xhr.send();
+		var responseStr = xhr.responseText;
+		responseStr=responseStr.replace(/\\+t/g,"\\\\t");
+		swaggerJson.apis[i].file=parse(responseStr);
+	}
+	print(swaggerJson);
+    
+}());
+%>

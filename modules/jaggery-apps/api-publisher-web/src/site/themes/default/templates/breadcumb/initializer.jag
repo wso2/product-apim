@@ -1,0 +1,8 @@
+<%
+jagg.initializer("breadcumb", {
+
+    initialize:function () {
+
+    }
+});
+%>

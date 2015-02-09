@@ -1,0 +1,19 @@
+<%
+jagg.module("taskmanager", {
+
+    getTasks:function () {
+        return jagg.require(jagg.getModulesDir() + "taskmanager/get.jag").getTasks.apply(this, arguments);
+    },
+    startTask:function () {
+            return jagg.require(jagg.getModulesDir() + "taskmanager/start.jag").startTask.apply(this, arguments);
+    },
+    assignTask:function () {
+            return jagg.require(jagg.getModulesDir() + "taskmanager/assign.jag").assignTask.apply(this, arguments);
+    },
+    completeTask:function () {
+            return jagg.require(jagg.getModulesDir() + "taskmanager/complete.jag").completeTask.apply(this, arguments);
+    }
+
+
+});
+%>

@@ -1,0 +1,41 @@
+<%
+jagg.module("subscription", {
+
+    addAPISubscription:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/add.jag").addAPISubscription.apply(this, arguments);
+    },
+    addSubscription:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/add.jag").addSubscription.apply(this, arguments);
+    },
+    removeAPISubscription:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/remove.jag").removeAPISubscription.apply(this, arguments);
+    },
+
+    getAllSubscriptions:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/list.jag").getAllSubscriptions.apply(this, arguments);
+    },
+
+    getAPISubscriptions:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/list.jag").getAPISubscriptions.apply(this, arguments);
+    },
+
+    getAPISubscriptionsForApplication:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/list.jag").getAPISubscriptionsForApplication.apply(this, arguments);
+    },
+    generateAPIKey:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/key.jag").generateAPIKey.apply(this, arguments);
+    },
+    generateApplicationKey:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/key.jag").generateApplicationKey.apply(this, arguments);
+    },
+    hasSubscribePermission:function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/check-permissions.jag").hasSubscribePermission.apply(this, arguments);
+    },
+    refreshToken :function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/key.jag").refreshToken .apply(this, arguments);
+    },
+    updateAccessAllowDomains :function () {
+        return jagg.require(jagg.getModulesDir() + "subscription/key.jag").updateAccessAllowDomains .apply(this, arguments);
+    }
+});
+%>

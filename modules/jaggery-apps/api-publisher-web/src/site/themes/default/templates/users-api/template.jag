@@ -1,0 +1,138 @@
+<% jagg.template("users-api", function(inputs, outputs, jagg) { %>
+<% var api=outputs.api;
+   var subs = jagg.module("subscription");
+   var result = subs.getSubscribersOfAPI(api);
+   var subscribers = result.subscribers;
+   var itemsPerPage = 10; //reduce this number to preview the pagination
+   var currentPage = 1;
+   var numberOfPages;
+
+%>
+  <div class="row-fluid" id="usageSummary" style="display:none;">
+    <div class="span6">
+        <h3><%=i18n.localize("usageSummary")%></h3>
+        <table class="table table-bordered">
+          <tbody id="usageTable">
+        </table>
+    </div>
+</div>
+
+    <div class="row-fluid">
+            <div class="span12">
+                <h3><%=i18n.localize("activeSubscriptions")%></h3>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th class="span4"><%=i18n.localize("name")%></th>
+                        <th><%=i18n.localize("dateOfUserRegistration")%></th>
+                        <!--<th>Actions</th> -->
+                    </tr>
+                    </thead>
+                    <tbody id="userList">
+        <%
+        var i, subscriber;
+        if(subscribers!=null){
+        var length = subscribers.length;
+        numberOfPages = parseInt(length / itemsPerPage);
+        if (length % itemsPerPage != 0) {
+        numberOfPages++;
+        }
+        if (request.getParameter('page') != null) {
+        currentPage = parseInt(request.getParameter('page'));
+        if((currentPage-1)*itemsPerPage == length){
+        if(String(currentPage)=='1'){%>
+        <script>
+        window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/item-info.jag")%>";
+        </script>
+        <%}else{
+        currentPage = currentPage - 1;
+        %>
+        <script>
+        window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/item-info.jag")%>" +"?name="+"<%=api.name%>"+"&version="+"<%=api.version%>"+"&provider="+"<%=api.provider%>"+"&page="+"<%=String(currentPage)%>";
+        </script>
+        <%
+        } }  }
+        var from = (currentPage - 1)*itemsPerPage;
+        var to = currentPage*itemsPerPage;
+        if(currentPage == numberOfPages){
+        to = length%(itemsPerPage*currentPage);
+        if(to == 0){
+        to=itemsPerPage*currentPage;
+        }
+        }
+        if(length==0){
+        to=0;
+        %>
+        <tr><td colspan="3"><%=i18n.localize("noActiveSubscribersMsg")%></td></tr> <%}}%>
+        <%for(i = from; i < to; i++) {
+        subscriber = subscribers[i];
+        %>
+        <tr>
+        <td><i class="icon-user"></i><%=subscriber.username%></td>
+        <td class="dateFull"><%=subscriber.subscribedDate%></td>
+        <!--<td><i class="icon-edit"></i> <a href="#">Stats</a>
+        <i class="icon-trash"></i> <a href="#">Revoke Access</a>
+        <i class="icon-ban-circle"></i> <a href="#">Block</a>-->
+        </td>
+        </tr>
+        <%}%>
+
+
+        </tbody>
+                </table>
+
+         <% jagg.includeBlock("paginator", {currentPage:currentPage,numberOfPages:numberOfPages}); %>
+            </div>
+        </div>
+
+        <!-- Row -->
+<h3><%=i18n.localize("usageByCurrentSubscribers")%> (v-<%= encode.forHtml(request.getParameter("version"))%>)</h3>
+<div class="well">
+    <div class="row-fluid">
+        <div class="span6">
+            <div id="userVersionChart">
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 10%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <table class="table" id="userVersionTable" style="display:none">
+                  <tr>
+                    <th><%=i18n.localize("subscriber")%></th>
+                    <th><%=i18n.localize("noOfAPICalls")%></th>
+                  </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<h3><%=i18n.localize("usageByCurrentSubscribersAcrossAll")%></h3>
+<div class="well">
+    <div class="row-fluid">
+        <div class="span6">
+            <div id="userChart">
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 10%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <table class="table" id="userTable" style="display:none">
+              <tr>
+                <th><%=i18n.localize("subscriber")%></th>
+                <th><%=i18n.localize("noOfAPICalls")%></th>
+              </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<% }); %>

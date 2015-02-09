@@ -1,0 +1,70 @@
+<%
+// This is a generic header file that can be included in all the pages.
+var encode = require('encode');
+encode = new encode.Encode();
+var site = require("/site/conf/site.json");
+
+//commented below if condition because anonymous user
+//should be able to view the available apis without
+//seeing IS login page.SSO will work when click the login link.
+/*var ssoEnabled = site.ssoConfiguration.enabled;
+if (ssoEnabled === 'true') {
+    jagg.includeBlock("sso/filter", {});
+}*/
+
+var getRedirectPathForNonAuthenticatedUser = function () {
+   var requestedPage = request.getRequestURI();
+    var tenantParam="";
+    if (request.getQueryString() != null) {
+        requestedPage = requestedPage + '?' + encodeURIComponent(request.getQueryString());
+       var tenantDomain=getTenantDomain();
+       if(tenantDomain!=null){
+       tenantParam="&tenant="+tenantDomain;
+       }
+    }
+    var redirectPath = jagg.getAbsoluteUrl("/?requestedPage=" + requestedPage+tenantParam);
+    return redirectPath;
+};
+
+var getTenantDomain=function(){
+return request.getParameter("tenant");
+};
+
+var isTenantAllowed=function(){
+ var user = jagg.getUser(),username;
+
+	var userInSession = session.get("LOGGED_IN_USER");
+	var hasPublisherAccess= session.get("hasPublisherAccess");
+	var MultitenantUtils = Packages.org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+
+	if(userInSession != null && request.getParameter("tenant") != null){
+		var domainName = MultitenantUtils.getTenantDomain(userInSession);
+
+	    	if(domainName == request.getParameter("tenant")){
+				jagg.setUser({username:userInSession, cookie:null, hasPublisherAccess:hasPublisherAccess});
+	    	}
+
+	}
+
+   /*if(user!=null){
+   	username=user.username;
+   	if(request.getParameter("tenant")!=null){
+   		if(user.username.split("@")[1]!=request.getParameter("tenant")){
+   			jagg.setUser(null);
+   			response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+   			return;
+   		}
+   	}
+   }*/
+   };
+
+// 1  Filter out tenant parameter
+    var request_tenant = request.getParameter("tenant");
+    var illegalChars = /([~!@#;%^*+={}\|\\<>\"\',])/;
+    var illegalCharsInput = /(\<[a-zA-Z0-9\s\/]*>)/;
+    if (illegalChars.test(request_tenant) || illegalCharsInput.test(request_tenant)) {
+        // redirect to 404
+        exit();
+    }
+
+%>

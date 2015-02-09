@@ -1,0 +1,13 @@
+<%
+jagg.block("tokens", {
+    initializer:function (data) {
+
+    },
+     getInputs:function () {
+        return {
+            "subs":null
+        };
+    }
+
+});
+%>

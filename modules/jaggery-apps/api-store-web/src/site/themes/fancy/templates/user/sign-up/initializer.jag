@@ -1,0 +1,11 @@
+<%
+jagg.initializer("user/sign-up", {
+
+    preInitialize:function (data) {
+        jagg.addFooterCSS("user/sign-up", "sign-up", "js/lib/jquery.validate.password.css");
+        jagg.addFooterJS("api/api-info", "api-info", "templates/user/sign-up/js/sign-up.js");
+        jagg.addHeaderJS("validate", "sign-up", "templates/ui/validation/custom-validation.js");
+    }
+    
+});
+%>

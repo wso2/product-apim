@@ -1,0 +1,109 @@
+<% jagg.template("api/recently-added", function(inputs, outputs, jagg) { %>
+<% var stars = require(jagg.getThemeFile("utils/ratings/star-generator.js")); %>
+                 <h4>  <%=i18n.localize("recentlyAdded")%></h4>
+                     <%
+        var urlPrefix;
+        var tenant=request_tenant;
+        if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+        var i, api, path, thumbURL, thumbURL1 , apis = outputs.apis, length = 0;
+        if(length>8){length=8;}
+        for(i = 0; i < length; i++) {
+            api = apis[i];
+            thumbURL = api.thumbnailurl;
+            if(thumbURL && thumbURL.indexOf("images/") == 0) {
+                thumbURL = jagg.getAbsoluteUrl(jagg.getThemeFile(thumbURL));
+            }else{
+                thumbURL = jagg.getRegistryPath(thumbURL);
+            }
+            var apiProvider = api.provider;
+            if(api.isAdvertiseOnly != null && api.isAdvertiseOnly){
+            	apiProvider = api.owner;
+            }
+            path = jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + api.name + "&version=" + api.version + "&provider=" + api.provider+ urlPrefix;
+
+        %>
+        <div class="container-fluid left-menu-back<% if (i%2 ==0){%>01<% }else{ %>02<% } %>">
+
+                       <div class="row-fluid list-item-content">
+                           <div class="span4">
+                               <img src="<%=thumbURL%>" width="70px"/>
+                           </div>
+                           <div class="span7">
+                               <a data-content="#tooltipcontentID1" href="<%=path%>" class="title" title="<%=api.name%>">
+                                   <%=api.name%>-<%=api.version%></a>
+                               <div><a class="item-provider"><%=apiProvider%></a></div>
+                               <div class="star-ratings"><%=stars.getStaticStars(jagg.getSiteContext(), api.rates, jagg.getUserTheme().base)%></div>
+                           </div>
+                       </div>
+            </div>
+
+        <% } %>
+ <div class="aCenter box10" id="recentlyAdded">
+                        <div class="processingWrapper"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile('images/processing.gif'))%>" /></div>
+           </div>
+         <script type="text/javascript">
+                    $(function(){
+                        jagg.post("/site/blocks/api/recently-added/ajax/list.jag", {
+                                               action:"getRecentlyAddedAPIs"
+                                               <% if(tenant != null ) { %> ,tenant:'<%=tenant%>',limit:5 <% } %>
+                                           }, function (result) {
+                                               if (result.error == false) {
+                                                   var i, api, apis = result.apis, length = apis.length;
+                                                   $('#recentlyAdded').html('');
+                                                   for (i = 0; i < length; i++) {
+                                                       api = apis[i];
+                                                       rating = api.rates;
+                                                       themeBaseURL = '<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/css/bootstrap.css"))%>';
+                                                       theme = '<%=jagg.getUserTheme().base%>';
+                                                       context = '<%= jagg.getSiteContext() %>';
+                                                       prefix = context + '/site/themes/'+theme;
+                                                       thumbURL1 = api.thumbnailurl;
+                                                       if(thumbURL1 && thumbURL1.indexOf("images/") == 0) {
+                                                           thumbURL1 = prefix + '/' + thumbURL1;
+                                                       }
+                                                       else{
+                                                           thumbURL1 = jagg.site.registry + thumbURL1
+                                                       }                                                       
+                                                       starsText = getStaticStars( context, rating ,theme );
+                                                       path = '<%=jagg.getMappedUrl("/site/pages/item-info.jag")%>' + "?name=" + api.name + "&version=" + api.version + "&provider=" + api.provider+ "&" + '<%=urlPrefix%>';
+                                                       backImageId = '02';
+                                                       if (i%2 ==0){
+                                                       backImageId = '01';
+                                                       }
+                                                  if(api.isAdvertiseOnly != null && api.isAdvertiseOnly){
+                                                   $('#recentlyAdded').append('<div class="container-fluid left-menu-back' + backImageId  + '">' +
+                                                   '<div class="row-fluid list-item-content">' +
+                                                                                                         '<div class="span4">' +
+                                                                                                             '<img src="'+ thumbURL1 + '" width="70px"/>'+
+                                                                                                         '</div>' +
+                                                                                                         '<div class="span7">' +
+                                                                                                             '<a data-content="#tooltipcontentID1" href="' + path + '" class="title" title="' + api.name +'">' + api.name + '-' + api.version +
+                                                                                                                 '</a>' +
+                                                                                                             '<div><a class="item-provider">' + api.owner + '</a></div>' +
+                                                                                                             '<div class="star-ratings">' + starsText + '</div>' +
+                                                                                                         '</div>' +
+                                                                                                     '</div></div>');
+
+                                                    }else{
+                                                     $('#recentlyAdded').append('<div class="container-fluid left-menu-back' + backImageId  + '">' +
+                                                   '<div class="row-fluid list-item-content">' +
+                                                                                                         '<div class="span4">' +
+                                                                                                             '<img src="' + thumbURL1 + '" width="70px"/>'+
+                                                                                                         '</div>' +
+                                                                                                         '<div class="span7">' +
+                                                                                                             '<a data-content="#tooltipcontentID1" href="' + path + '" class="title" title="' + api.name +'">' + api.name + '-' + api.version +
+                                                                                                                 '</a>' +
+                                                                                                             '<div><a class="item-provider">' + api.provider + '</a></div>' +
+                                                                                                             '<div class="star-ratings">' + starsText + '</div>' +
+                                                                                                         '</div>' +
+                                                                                                     '</div></div>');
+
+                                                   }
+                                                   }
+                                               } else {
+                                                   jagg.message({content:result.message,type:"error"});
+                                               }
+                                           }, "json");
+                    });
+         </script>
+<% }); %>

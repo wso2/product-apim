@@ -1,0 +1,13 @@
+<%
+jagg.initializer("api/api-info", {
+
+    preInitialize:function () {
+        jagg.addFooterJS("api/api-info", "api-info", "templates/api/api-info/js/api-info.js");
+        jagg.addHeaderCSS("api/api-info", "api-info", "templates/api/api-info/css/divStyle.css");
+    },
+
+    postInitialize:function(inputs, outputs) {
+        jagg.addFooterJSCode("api/api-info", "api", "jagg.api = " + stringify(inputs.api) + ";");
+    }
+});
+%>

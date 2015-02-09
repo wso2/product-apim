@@ -1,0 +1,67 @@
+<% jagg.template("search/api-search", function(inputs, outputs, jagg) {
+var query=request.getParameter("query");
+%>
+    <script>
+        function submitSearchForm(obj){
+            $(obj).parent().submit();
+        }
+    </script>
+    <div class="container-fluid search-section-custom">
+        <div class="row-fluid">
+            <div class="span6">
+                <%
+                var urlPrefix;
+                var tenant=request_tenant;
+                if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+
+
+                var tag = null;
+                if(inputs.tag != null){
+                  tag = inputs.tag;
+                }else if (request.getParameter('tag') != null){
+                  tag = request.getParameter('tag');
+                }
+                if (tag != null) {
+                    tagDisplayName = tag;
+                    if( tag.split(site.tagGroupKey).length == 2 ){
+                        tagDisplayName = tag.split(site.tagGroupKey)[0];
+
+                        %>
+                            <ul class="breadcrumb">
+                               <li><a href="<%=jagg.getAbsoluteUrl("/site/pages/list-apis.jag")%><%=urlPrefix%>">APIs groups</a> <span class="divider">/</span></li>
+                               <li class="active" id="tagBreadcrumbUrl"><%= encode.forHtml(tagDisplayName)%></li>
+                           </ul>
+                        <%
+                    }
+                }
+                %>
+            </div>
+            <div class="span6">
+                <form class="form-inline pull-right" style="margin-top:10px;" action="<%=jagg.getMappedUrl("/site/pages/list-apis.jag")%>">
+                <input type="text" class="input-large" name="query"<%if(query!=null){%> value="<%= encode.forHtml(query)%>" <%}else{%>
+                                     placeholder="<%=i18n.localize("searchAPI")%>"<%}%>/>
+                                     <%var tenant=request_tenant;if(tenant!=null){ %>
+                                     <input type="hidden" name="tenant" value="<%=request_tenant%>" />
+                                     <%}%>
+
+                  <button onclick="submitSearchForm(this)" class="btn">Search</button>
+                </form>
+                <div style="clear:both"></div>
+                <div class="pull-right">
+                    <a class=" icon-info-sign searchHelp" onclick="javascript:$('#searchAPIHelp').toggle()"></a>
+                </div>
+                <div id="searchAPIHelp" class="help-block pull-right" style="display:none;">
+                    <h4 style="text-align: left"><%=i18n.localize("searchAPIHelpMsg1")%></h4>
+                    <ol>
+                    <li><%=i18n.localize("searchAPIHelpMsg2")%></li>
+                    <li><%=i18n.localize("searchAPIHelpMsg3")%></li>
+                    <li><%=i18n.localize("searchAPIHelpMsg4")%></li>
+                    <li><%=i18n.localize("searchAPIHelpMsg5")%></li>
+                    <li><%=i18n.localize("searchAPIHelpMsg6")%></li>
+                    <li><%=i18n.localize("searchAPIHelpMsg7")%></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+<% }); %>

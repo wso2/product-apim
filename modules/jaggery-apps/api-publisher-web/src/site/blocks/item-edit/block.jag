@@ -1,0 +1,15 @@
+<%
+jagg.block("item-edit", {
+
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "api":null
+        }
+    },
+
+});
+%>

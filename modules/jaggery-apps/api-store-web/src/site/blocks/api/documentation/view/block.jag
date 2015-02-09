@@ -1,0 +1,29 @@
+<%
+include("/jagg/jagg.jag");
+jagg.block("api/documentation/view", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "doc":null
+        }
+    },
+    getOutputs:function () {
+        var result, api, title,
+                apiName = request.getParameter("name"),
+                version = request.getParameter("version"),
+                provider = request.getParameter("provider"),
+                docName = request.getParameter("docName");
+
+        result = jagg.module("documentation").getInlineContent(provider, apiName, version, docName);
+        var doc = result.doc;
+        return {
+            "doc":doc
+        }
+    }
+
+
+});
+%>

@@ -1,0 +1,97 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, result, username,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+    if (jagg.getUser() == null) {
+        print({
+                  error:true,
+                  message:'AuthenticateError'
+              });
+    } else {
+    if (action === "getProviderAPIVersionUsage") {
+        mod = jagg.module("statistics");
+        var provider =request.getParameter("provider");
+        var apiName = request.getParameter("apiName");
+
+        result = mod.getProviderAPIVersionUsage(provider, apiName);
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+    } else if (action === "getSubscriberCountByAPIVersions") {
+        mod = jagg.module("statistics");
+        var provider =request.getParameter("provider");
+        var apiName = request.getParameter("apiName");
+        result = mod.getSubscriberCountByAPIVersions(provider, apiName);
+        if (result.error == "true") {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+
+    } else if (action === "getProviderAPIUserUsage") {
+        mod = jagg.module("statistics");
+        var provider =request.getParameter("provider");
+        var apiName = request.getParameter("apiName");
+        result = mod.getProviderAPIUserUsage(provider, apiName);
+        if (result.error == "true") {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+
+    } else if (action === "getProviderAPIVersionUserUsage") {
+        mod = jagg.module("statistics");
+        var provider =request.getParameter("provider");
+        var apiName = request.getParameter("apiName");
+        var version = request.getParameter("version");
+        result = mod.getProviderAPIVersionUserUsage(provider, apiName,version);
+        if (result.error == "true") {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+
+    }else {
+        print({
+                  error:true,
+                  message:msg.error.invalidAction(action)
+              });
+    }
+    }
+}());
+%>

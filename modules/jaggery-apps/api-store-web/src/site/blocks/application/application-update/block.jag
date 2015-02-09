@@ -1,0 +1,7 @@
+<%
+jagg.block("application/application-update", {
+    initializer:function (data) {
+
+    }
+});
+%>

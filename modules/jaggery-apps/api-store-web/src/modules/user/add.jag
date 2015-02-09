@@ -1,0 +1,59 @@
+<%
+var addUser = function (username, password, fields) {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        store.addUser(username, password, fields);
+        if (log.isDebugEnabled()) {
+            log.debug("addUser");
+        }
+
+        return {
+            error:false
+        };
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            message:e.message.split("Exception:")[1]
+        };
+    }
+};
+
+var getUserFields = function () {
+	var list, i, length, fields, field,
+    log = new Log(),
+    store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        fields = store.getUserFields();
+        if (log.isDebugEnabled()) {
+            log.debug("getUserFields");
+        }
+		list = [];
+        length = fields.length;
+        for (i = 0; i < length; i++) {
+            field = fields[i];
+            list.push({
+                name:field.fieldName,
+                claimUri:field.claimUri,
+                required:field.required,
+            });
+        }
+        
+        return {
+            error:false,
+            fields:list
+        };
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            fields:null
+        };
+    }
+};
+%>

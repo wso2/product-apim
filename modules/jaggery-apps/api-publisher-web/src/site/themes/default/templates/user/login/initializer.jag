@@ -1,0 +1,9 @@
+<%
+jagg.initializer("user/login", {
+
+    preInitialize:function () {
+     jagg.addHeaderJS("user/login", "login", "templates/user/login/js/login.js");
+    }
+});
+%>
+

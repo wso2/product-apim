@@ -1,0 +1,9 @@
+<%
+jagg.initializer("search/token-search", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("search", "jagg", "templates/search/token-search/js/token-search.js");
+    }
+});
+%>
+

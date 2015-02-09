@@ -1,0 +1,89 @@
+<% jagg.template("user-apis", function(inputs, outputs, jagg) {
+var uname=request.getParameter("uname");
+%>
+<div id="user">
+    <div class="title-section"><h2><%=i18n.localize("apisByProviderTitle")%> <%= encode.forHtml(uname)%></h2></div>
+    <%
+       if ((outputs.apis != null && outputs.apis.length > 0) || request.getParameter('query') != null) {
+           jagg.includeBlock("search/apis-by-provider-search", null);
+       }
+       %>
+
+    <div class="content-section shadow-up">
+    <div class="content-data">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th><%=i18n.localize("api")%></th>
+                <th><%=i18n.localize("lastModified")%></th>
+                <!--<th>Actions</th>-->
+            </tr>
+            </thead>
+            <tbody id="userSubscribedAPIs">
+            <%
+            var i, api,apiPath, apis = outputs.apis;
+            var itemsPerPage = 10; //reduce this number to preview the pagination
+            var currentPage = 1;
+            if(apis!=null){
+            var length = apis.length;
+            var numberOfPages = parseInt(length / itemsPerPage);
+
+            if (length % itemsPerPage != 0) {
+            numberOfPages++;
+            if (request.getParameter('page') != null) {
+            currentPage = parseInt(request.getParameter('page'));
+            if((currentPage-1)*itemsPerPage == length){
+                if(String(currentPage)=='1'){%>
+                 <script>
+                    window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/index.jag")%>+ "?uname=" + "<%= encode.forUriComponent(uname)%>";
+                </script>
+                <%}else{
+                currentPage = currentPage - 1;
+                %>
+                <script>
+                    window.location.href = "<%=jagg.getMappedUrl("/site/pages/user.jag")%> + "?uname=" + "<%=encode.forUriComponent(uname)%>" +"&page="+"<%=String(currentPage)%>";
+                </script><%
+            } }}
+           var from = (currentPage - 1)*itemsPerPage;
+           var to = currentPage*itemsPerPage;
+           if(currentPage == numberOfPages){
+            to = length%(itemsPerPage*currentPage);
+            if(to == 0){
+                to=itemsPerPage*currentPage;
+            }
+            }
+           if(length==0){
+            to=0;
+            } }
+
+            for(i = from; i < to; i++) {
+            api = apis[i];
+            apiPath=jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + api.name + "&version=" + api.version +"&provider=" + api.provider;
+            %>
+            <tr>
+            <td><i class="icon-file"></i><a href="<%=apiPath%>"><%=api.name%>-<%=api.version%></a></td>
+            <td class="dateFull"><%=api.lastUpdatedDate%></td>
+            <!--<td><i class="icon-edit"></i><a href="#">Stats</a>
+                <i class="icon-trash"></i><a href="#">Revoke Access</a>
+                <i class="icon-ban-circle"></i><a href="#">Block</a> -->
+            </td>
+            </tr>
+            <%}}%>
+            <%
+            if (length == 0) {
+            %>
+            <tr><td colspan="6"><%=i18n.localize("noApisByProviderMsg")%> -<%= encode.forHtml(uname)%></td></tr>
+            <%
+            }
+            %>
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+  <% jagg.includeBlock("paginator", {currentPage:currentPage,numberOfPages:numberOfPages}); %>
+</div>
+
+
+<% }); %>

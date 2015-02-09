@@ -1,0 +1,73 @@
+<% jagg.template("subscription/subscription-list", function(inputs, outputs, jagg) { %>
+
+<div class="content-section shadow-up">
+    <div class="content-data">
+        <h2>Subscriptions</h2>
+        Keys are generated per Application which allows to use a single key for multiple APIs and subscribe multiple times to a single API, with different SLA levels.
+        <h3>Applications With Subscriptions</h3>
+        <link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/select2-3.4.2/select2.css"))%>" />
+        <script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/select2-3.4.2/select2.js"))%>"></script>
+        <script>
+            $(document).ready(function() {
+                $("#appListSelected").select2();
+                $('#appListSelected').change(function() {
+                    location.href = '?selectedApp='+$(this).val();
+                });
+            }
+            );
+        </script>
+        <select id="appListSelected" class="input-large">
+            <%
+                var i, j, app, selectedApp, api, apis, key, lenI = 0, clazz, lenJ, path, apps = outputs.applications; selectedApp = '';
+                if(apps!=null){lenI = apps.length;}
+                if(lenI.length > 0)
+                { selectedApp = apps[0]; }
+            %>
+            <%
+            if(request.getParameter('removeSession')!=null){session.remove('selectedApp')}
+            for(i = 0; i < lenI; i++) {
+                app = apps[i];
+                %>
+                <option value="<%=app.name%>" <%
+                    if(request.getParameter('selectedApp') == null ){
+                        if(session.get('selectedApp') == null){
+                            if(i==0){ selectedApp = app; %> selected="selected" <% }
+                        }else{
+                            if(session.get('selectedApp') == app.name){
+                                selectedApp = app;
+                                %> selected="selected" <%
+                            }
+                        }
+                    }else{
+                        if(request.getParameter('selectedApp') == app.name){
+                            selectedApp = app;
+                            session.put('selectedApp',app.name);
+                            %> selected="selected" <%
+                        }
+                    }
+                %>><%=app.name%></option>
+            <% } %>
+        </select>
+        <%
+            if(lenI != 0 ){
+        %>
+            <div class="container-fluid" style="margin-top:20px;">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <label class="checkbox"><input type="checkbox" id="showHideKeys" /> Show Keys</label>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <% jagg.includeBlock("subscription/subscription-list-element", {app:selectedApp,i:900}); %>
+                    </div>
+                </div>
+            </div>
+        <%
+            }
+        %>
+
+    </div>
+</div>
+
+<% }); %>

@@ -1,0 +1,75 @@
+.resource_container{
+	padding: 0px !important;
+}
+
+.resource-method{
+	width: 60px;
+	display: inline-block;
+	font-size: 14px;
+	padding: 5px;
+	text-align: center;
+	cursor: pointer;
+	margin-right: 5px;
+	color:white;
+	font-weight: bolder;
+}
+
+.resource-method-GET{
+	background-color: #0F6AB4;
+}
+
+.resource-method-POST{
+	background-color: #10A54A;
+}
+
+.resource-method-PUT{
+	background-color: #C5862B;
+}
+
+.resource-method-PATCH{
+	background-color: #D38042;
+}
+
+.resource-method-DELETE{
+	background-color: #A41E22;
+}
+
+.resource-method-OPTIONS{
+	background-color: #777;
+}
+
+
+.resource-path{
+	padding: 5px;
+	font-size: 14px;
+	font-weight: bolder;
+	cursor: pointer;
+}
+
+.resource_body_padding{
+	padding: 10px;
+}
+
+.operation-summary{
+	padding: 5px 10px;
+	display: inline-block;
+}
+
+.resource_create{
+	background-color: #F5F5F5;
+	padding-top: 10px;
+	margin-bottom: 0px;
+	margin-left: 10px;
+}
+
+.resource_title{
+	padding: 20px 10px 5px 5px;
+	margin-left: 10px;
+}
+
+.prototype_service{
+	font-weight: bolder !important;
+	padding: 10px 0px 10px 30px !important;
+	width: 200px;
+	display: inline-block;
+}

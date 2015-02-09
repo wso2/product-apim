@@ -1,0 +1,8 @@
+<%
+jagg.block("stats/api-response-times", {
+    initializer:function (data) {
+
+    }
+
+});
+%>

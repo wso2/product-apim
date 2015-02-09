@@ -1,0 +1,245 @@
+<% jagg.template("api/api-info", function(inputs, outputs, jagg) { %>
+<%
+        var mod = jagg.module("tag");
+        result = mod.getAllTags();
+        var tags = result.tags;
+        var i, tag,  length = tags.length;
+        var urlPrefix;
+        var tenant=request_tenant;
+        if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+   %>
+<% jagg.includeBlock("search/api-search", {tag:'Databases-group'}); %>
+
+<div class="content-section shadow-up">
+<div class="content-data">
+    <h2>Available APIs, Web Services and SaaS interfaces</h2>
+     <div class="thumbnail-custom">
+         <ul class="nav nav-tabs main-tabs" id="topTab">
+             <%
+             for(i = 0; i < length; i++) {
+                 tag = tags[i];
+                 path = jagg.getMappedUrl("/site/pages/list-apis.jag") + "?tag=" + tag.name+"&"+urlPrefix;
+                 if(tag.name.split(site.tagGroupKey).length == 2){
+
+
+                 var tagName = tag.name.split(site.tagGroupKey)[0];
+                 %>
+                 <li><a href="#<%=tag.name%>" id="<%=tag.name%>_tab" data-tab="<%=tag.name%>"><%=tagName%></a></li>
+                 <%
+                 }
+             }
+             %>
+         </ul>
+
+         <div id="topTabContent" class="tab-content api-info-section">
+
+                                    <!--The source to show the current api-->
+                                    <!-------------------------------------->
+                                    <!-------------------------------------->
+                                    <% var stars = require(jagg.getThemeFile("utils/ratings/star-generator.js"));  %>
+
+                                    <%
+                                    var i, length, app, thumbURL, api = outputs.api, apps = outputs.applications, deniedTiers = outputs.deniedTiers, user = outputs.user,isRatingActivated = outputs.isRatingActivated;
+                                    var urlPrefix;
+                                    var tenant=request_tenant;
+                                    if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+                                    %>
+                                    <%if(api!=null){
+
+                                       thumbURL = api.thumbnailurl;
+                                       if(thumbURL && thumbURL.indexOf("images/") == 0) {
+                                            thumbURL = jagg.getAbsoluteUrl(jagg.getThemeFile(thumbURL));
+                                       }
+                                       var subsPermitted = jagg.module("subscription").hasSubscribePermission().permitted;
+                                       session.put("apiPath",request.getQueryString());
+
+                                       var environments = api.serverURL.split("|");
+                                       for(i=0; i<environments.length; i++){
+                                            var environment = environments[i];
+                                            var epParams = environment.split(",");
+                                            var endpointUrl = epParams[1] + api.context + '/' + api.version;
+                                            session.put("endpointUrl",endpointUrl);
+                                            break;
+                                       }
+                                    %>
+
+                                        <script>var isRatingActivated = <%=isRatingActivated%>, context = '<%=site.context%>',theme = '<%=jagg.getUserTheme().base%>', user = <%=(user != null)%>
+                                        var existingRating = <%=api.rating%>
+                                        </script>
+                                        <h2 style="margin-left:10px"><%=api.name%> - <%=api.version%></h2>
+                                        <%
+                                                var tagDisplayName = "";
+                                                var tag = "";
+                                                if (request.getParameter('tag') != null) {
+                                                    tag = request.getParameter('tag');
+                                                    tagDisplayName = tag;
+                                                    if( tag.split(site.tagGroupKey).length == 2 ){
+                                                        tagDisplayName = tag.split(site.tagGroupKey)[0];
+                                                    }
+                                                    var groupPath = "/site/pages/list-apis.jag?tag="+tag;
+                                                    if( tag.split(site.tagGroupKey).length == 2 ){
+                                                    %>
+
+                                        <!--ul class="breadcrumb">
+                                            <li><a href="<%=jagg.getAbsoluteUrl("/site/pages/list-apis.jag?")%><%=urlPrefix%>">APIs groups</a> <span class="divider">/</span></li>
+                                            <li><a href="<%=jagg.getAbsoluteUrl(groupPath+"&")%><%=urlPrefix%>"><%= encode.forHtml(tagDisplayName)%></a> <span class="divider">/</span></li>
+                                            <li class="active"><%=api.name%> - <%=api.version%></li>
+                                        </ul -->
+                                        <%
+                                                    }
+                                                }
+                                            %>
+
+                                        <div class="content-section shadow-up">
+                                            <div class="content-data">
+                                                <h6><i class="icon-user"></i> <%=api.provider%></h6>
+                                                <div class="api-info">
+                                                    <div class="row-fluid">
+                                                        <div class="span12">
+                                                            <div class="thumbnail span2">
+                                                                <img src="<%=thumbURL%>" width="100" />
+                                                            </div>
+                                                            <div class="span6">
+                                                                <table cellspacing="0" cellpadding="0" class="table">
+                                                                    <tbody>
+                                                                    <% if(user&&isRatingActivated){%>
+                                                                    <tr>
+                                                                        <th><%=i18n.localize("rating")%>:</th>
+                                                                        <%
+                                                                colspan=2;
+                                                            %>
+                                                                        <% if(api.rates!=0) {
+                                                                var colspan=1;
+                                                            %>
+                                                                        <td>
+                                                                            <div class="average-rating"><%=api.rates%></div>
+                                                                        </td>
+                                                                        <%}%>
+                                                                        <td colspan="<%=colspan%>">
+                                                                            <div class="star-ratings">
+                                                                                <% if(user) { %><%=stars.getDynamicStars(api.userRate)%>
+                                                                                <% } else { %><%=stars.getStaticStars(site.context, api.userRate,jagg.getUserTheme().base)%><% } %>
+                                                                            </div>
+                                                                        </td>
+
+                                                                    </tr>
+                                                                    <%}%>
+                                                                    <tr>
+                                                                        <th><%=i18n.localize("version")%>:</th>
+                                                                        <td colspan="2"><%=api.version%></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th><%=i18n.localize("status")%>:</th>
+                                                                        <td colspan="2"><%=api.status%></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th><%=i18n.localize("updated")%>:</th>
+                                                                        <td colspan="2"><%=api.updatedDate%></td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <%if(subsPermitted){%>
+                                                            <div class="span4 appStyleFix">
+                                                                <% if(api.status =="PUBLISHED") { %>
+                                                                <%
+                                                             if(user && apps) {
+                                                                 length = apps.length;
+                                                             %>
+                                                                <Label><b><%=i18n.localize("applications")%></b></Label>
+                                                                <select id="application-list">
+                                                                    <option value="-"><%=i18n.localize("selectApp")%></option>
+                                                                    <option value="createNewApp"><%=i18n.localize("newApp")%></option>
+                                                                    <optgroup label="<%=i18n.localize("myApps")%>">
+                                                                        <%
+                                                                        for(i = 0; i < length; i++) {
+                                                                        app = apps[i];
+                                                                        %>
+                                                                        <option value="<%=app.id%>"><%=app.name%></option>
+                                                                        <% } %>
+                                                                    </optgroup>
+
+                                                                </select>
+                                                                <% }if(user && api) { %>
+                                                                <Label><b><%=i18n.localize("tiers")%></b></Label>
+                                                                <select id="tiers-list" name="tiers-list">
+                                                                    <%var tiersList = api.tiers, denied;
+
+                                                                    for(var j=0;j<tiersList.length;j++){
+                                                                        for (var k=0;k<deniedTiers.length;k++) {
+                                                                            if (tiersList[j] == deniedTiers[k].tierName) {
+                                                                                denied = true;
+                                                                            }
+                                                                        }
+                                                                        if (!denied) {
+                                                                            var tier=tiersList[j].tierName;
+                                                                            var tierDisplayName=tiersList[j].tierDisplayName;
+
+
+                                                                    %>
+                                                                    <option value="<%=tier%>"><%=tierDisplayName%></option>
+                                                                    <%}
+                                                                    denied = false;
+                                                                     } %>
+                                                                </select>
+                                                                <%var firstTierDesc=api.tiers[0].tierDescription;
+                                                                if(firstTierDesc=="null"){firstTierDesc='';}
+                                                                %>
+                                                                <span class="help-block" id="tierDesc"><%=firstTierDesc%>
+                                                                <%if(api.tiers[0].tierAttributes!=null){
+                                                                var tierAttrs=api.tiers[0].tierAttributes.split(',');
+                                                                for(var k=0;k<tierAttrs.length;k++){
+                                                                var tierKey=tierAttrs[k].split("::")[0];
+                                                                var tierVal=tierAttrs[k].split("::")[1];
+                                                                %>
+                                                                    <%if(tierKey!=''){%><br/><%=tierKey%> : <%=tierVal%>
+                                                                <%}}}%>
+                                                                </span>
+
+                                                                <div class="simple-space-maker"><button onclick="triggerSubscribe()" id="subscribe-button" class="btn btn-primary <% if(!user) { %>need-login<% } %>"><%=i18n.localize("subscribe")%></button></div>
+                                                                <% } }%>
+
+                                                            </div>
+                                                            <%}%>
+                                                            <div class="span12 tabs-section">
+                                                                <% jagg.includeBlock("ui/tab", outputs.tabs); %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <%}else{%><div style="padding-bottom:10px"> <div class="alert alert-info">
+                                                <strong><%=i18n.localize("noAPIMsg1")%><%= encode.forHtml(request.getParameter("name"))%> <%=i18n.localize("noAPIMsg2")%></strong>
+                                            </div></div>  <% } %>
+                                            </div>
+                                        </div>
+
+
+                                        <!--END code to show the api information-->
+                                        <!------------------------------->
+                                        <!------------------------------->
+                                        <!------------------------------->
+
+
+
+                    </div>
+                </div>
+        </div>
+    </div>
+        <script>
+             /* The following code handle the click for the tabs. */
+      $('#topTab li a').click(function(){
+         location.href='<%=jagg.getAbsoluteUrl("/site/pages/index.jag")%>'+'?selected-tab='+$(this).attr('data-tab');
+      });
+
+      $(document).ready(function(){
+            <% if(request.getParameter("tag") != null) { %>
+                var activeTab = '#'+'<%= encode.forJavaScript(request.getParameter("tag"))%>';
+                var realName =  '<%= encode.forJavaScript( request.getParameter("tag").split(site.tagGroupKey)[0])%>';
+              console.info(realName);
+                $('li',$(activeTab+'_tab').parent()).removeClass('active');
+                $(activeTab+'_tab').parent().addClass('active');
+                $('#tagBreadcrumbUrl').html(realName);
+            <% } %>
+      });
+        </script>
+        <% }); %>

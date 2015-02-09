@@ -1,0 +1,14 @@
+<%
+jagg.block("life-cycles", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "api":null
+        }
+    },
+
+});
+%>

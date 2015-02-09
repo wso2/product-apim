@@ -1,0 +1,18 @@
+<%
+jagg.block("application/application-add", {
+    initializer:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+
+        var tiers, result;
+        result = jagg.module("tiers").getTiers();
+        tiers = result.tiers;
+
+        return {
+            "tiers":tiers
+        };
+    }
+});
+%>

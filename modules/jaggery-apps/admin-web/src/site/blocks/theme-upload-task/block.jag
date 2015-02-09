@@ -1,0 +1,50 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("theme-upload-task", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            
+        }
+    },
+
+    getOutputs:function (inputs) {
+        var user = jagg.getUser();
+        var log = new Log();
+        var error = false;
+        var success = false;
+        var file = request.getFile("theme");
+        var apimanager = require("tenantmanager");
+        if(user.userDomain != null && user.userDomain !=''){
+            if(file != null){
+                var file_name = file.getName();
+                var file_ext = file_name.substr(file_name.length - 4);
+                if(file_ext != ".zip"){
+                    error = "Please upload a valid zip file.";
+                }
+                else{
+                    var managerHostObj = new apimanager.APIManager();
+                    try{
+                    var status = managerHostObj.addTenantTheme(file, user.userDomain);
+                    success = true;
+                    }catch(err){
+                        error = "Error while deploying theme.";
+                    }
+                }
+            }
+        }
+        else{
+            error = "Tenant is not specified, unable to deploy the theme.";        
+        }
+        return {
+            "error": error,
+            "success":success
+        }
+    }
+
+});
+%>

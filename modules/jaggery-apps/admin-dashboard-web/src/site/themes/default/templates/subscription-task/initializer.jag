@@ -1,0 +1,10 @@
+<%
+jagg.initializer("subscription-task", {
+
+    preInitialize:function () {
+        jagg.addFooterJS("underscore", "jagg", "templates/subscription-task/js/subscription.js");
+
+    }
+});
+%>
+

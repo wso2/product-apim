@@ -1,0 +1,8 @@
+<%
+jagg.initializer("subscription/subscription-list", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("subscription/subscription-list", "subscription-list", "templates/subscription/subscription-list/js/subscription-list.js");
+    }
+});
+%>

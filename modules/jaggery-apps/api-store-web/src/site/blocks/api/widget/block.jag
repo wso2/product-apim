@@ -1,0 +1,21 @@
+<%
+jagg.block("api/widget", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "api":null,
+            "discoveryUrl":null,
+            "user":null
+        }
+    },
+
+    getStaticBlocks:function() {
+        return [
+
+        ];
+    }
+});
+%>

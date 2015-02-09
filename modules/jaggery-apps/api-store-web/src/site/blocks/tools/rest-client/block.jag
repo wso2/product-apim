@@ -1,0 +1,7 @@
+<%
+jagg.block("tools/rest-client", {
+    initializer:function (data) {
+
+    }
+});
+%>

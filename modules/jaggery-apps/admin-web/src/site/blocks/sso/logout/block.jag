@@ -1,0 +1,9 @@
+<%
+jagg.block("sso/logout", {
+    initialize:function (data) {
+
+    }
+
+
+});
+%>

@@ -1,0 +1,64 @@
+<% jagg.template("tokens", function(inputs, outputs, jagg) {
+
+%>
+ <div id="tokens">
+     <div class="title-section"> <h2><%=i18n.localize("revokeTitle")%></h2> </div>
+     <div class="content-section shadow-up">
+     <div class="content-data">
+ <%jagg.includeBlock("search/token-search", null); %>
+ <br/>
+
+ <%
+  var accessTokens=outputs.accessTokens;
+
+  if(accessTokens!=null){%>
+       <div id="tokenData">
+        <table class="table table-bordered" id="subscribersTable">
+        <thead>
+        <th style="width:200px">Access Token</th>
+        <th style="width:200px">Details</th>
+        <th style="width:200px">Action</th>
+        </thead>
+        <tbody>
+        <%for(var i=0;i<accessTokens.length;i++){%>
+        <tr>
+        <td><%=accessTokens[i].token%></td>
+        <td><span><b><%=i18n.localize("authorizedUser")%>:</b>
+                     <%=accessTokens[i].user%><br/>
+                  <b><%=i18n.localize("tokenScope")%>:</b>
+                     <%=accessTokens[i].scope%> <br/>
+                  <b><%=i18n.localize("createdTime")%>:</b>
+                     <%=accessTokens[i].createTime%> UTC<br/>
+                  <b><%=i18n.localize("validPeriod")%>:</b>
+                     <%if(accessTokens[i].validTime=="Won't Expire"){%>
+                     <%=accessTokens[i].validTime%>
+                     <%}else{%>
+                     <%=accessTokens[i].validTime%> ms
+                     <%}%>
+
+           </span></td>
+        <td>
+            <i class="icon-trash"></i><a href="#" onclick="revokeAccessToken(<%=String(i)%>)"><%=i18n.localize("revoke")%></a>
+        </td>
+       </tr>
+       <input type="hidden" id="consumerKey-<%=String(i)%>" value="<%=accessTokens[i].consumerKey%>"/>
+       <input type="hidden" id="authorizedUser-<%=String(i)%>" value="<%=accessTokens[i].user%>"/>
+       <input type="hidden" id="accessToken-<%=String(i)%>" value="<%=accessTokens[i].token%>"/>
+       <%}%>
+       </tbody>
+       </table>
+
+
+        <%}else{%><label><b><%if(outputs.message!=null){%><%=outputs.message%><%}%></b></label>
+        <%}%>
+         </div>
+
+
+        </form>
+        </div>
+        </div>
+        </div>
+ </div>
+ </div>
+
+<% });%>

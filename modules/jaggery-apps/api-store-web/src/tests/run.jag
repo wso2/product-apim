@@ -1,0 +1,12 @@
+<%
+    include("/jagg/jagg.jag");
+    var comments, result;
+    var api = { "name" : "API1", "version" : "1.0.0", "provider" : "admin" };
+
+
+    //result = jagg.module("comment").addComment(api, "This is a comment");
+
+    result = jagg.module("comment").getAPIComments(api);
+    comments = result.comments;
+    log(result);
+%>

@@ -1,0 +1,62 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var tenantDomain=getTenantDomain();
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+(function () {
+    var usage, site,  result, mod, user = jagg.getUser();
+    isTenantAllowed();
+
+    if (!user) {
+        response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+        return;
+    }
+    mod = jagg.module("billing");
+    result = mod.getProviderAPIUsage(user.username);
+    usage = result.usage;
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"My Billing Information",
+            "pagePath":"/site/pages/billing.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"My Billing Information",
+                        "top":[
+                            {
+                                "name":"banner/featured",
+                                "inputs":null
+                            },
+                            {
+                                "name":"search/api-search",
+                                "inputs":null
+                            }
+                        ],
+                        "left":[
+                            {
+                                "name":"api/recently-added",
+                                "inputs":{"tenant":tenantDomain}
+                            }
+                        ],
+                        "middle":[{
+                                "name":"billing",
+                                "inputs":{
+                                    "user":user,
+                                    "usage":usage
+                                }
+                            }
+                        ],
+                        "right":null
+                    }
+                }
+            ]
+        }
+    });
+}());
+%>

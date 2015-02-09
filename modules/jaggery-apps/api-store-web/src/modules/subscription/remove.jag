@@ -1,0 +1,31 @@
+<%
+var removeAPISubscription = function (username, applicationId, api) {
+    var status,log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        status = store.removeSubscription(username, applicationId, api);
+        if (log.isDebugEnabled()) {
+            log.debug("removeAPISubscription");
+        }
+        if (status) {
+            return {
+                error:false
+
+            };
+        } else {
+            return {
+                error:true
+
+            };
+        }
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e
+
+        };
+    }
+};
+%>

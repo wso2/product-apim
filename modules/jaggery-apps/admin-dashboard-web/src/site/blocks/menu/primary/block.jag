@@ -1,0 +1,17 @@
+<%
+jagg.block("menu/primary", {
+    initializer:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+
+        var user =jagg.getUser();
+        return {
+            "user": user
+        };
+    }
+
+
+});
+%>

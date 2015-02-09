@@ -1,0 +1,37 @@
+<% jagg.template("layout/base", function(inputs, outputs, jagg) { %>
+<%
+    var mw = 7;
+    var mww = 12;
+    if(!outputs.left && !outputs.right) {
+        mw = 12;
+        mww = 7;
+    } else if(!outputs.left || !outputs.right) {
+        mw = 9;
+        mww = 8;
+    }
+%>
+
+
+    <% // jagg.includeBlocks(outputs.top); %>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <!-- div class="span3">
+                <div class="left-side-col">
+                <% jagg.includeBlocks(outputs.left); %>
+                </div>
+            </div -->
+            <div class="span12">
+
+
+
+                        <% if(outputs.title && outputs.title=="APIs") { %><h2><%=outputs.title%></h2><% } %>
+                        <% jagg.includeBlocks(outputs.middle); %>
+
+            </div>
+            <!-- div class="span2">
+                <% jagg.includeBlocks(outputs.right); %>
+            </div -->
+        </div>
+    </div>
+
+<% }); %>

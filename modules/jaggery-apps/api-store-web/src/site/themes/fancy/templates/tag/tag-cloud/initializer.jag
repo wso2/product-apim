@@ -1,0 +1,8 @@
+<%
+jagg.initializer("tag/tag-cloud", {
+
+    preInitialize:function () {
+
+    }
+});
+%>

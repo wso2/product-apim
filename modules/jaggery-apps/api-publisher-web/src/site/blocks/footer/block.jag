@@ -1,0 +1,11 @@
+<%
+jagg.block("footer", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {};
+    }
+});
+%>

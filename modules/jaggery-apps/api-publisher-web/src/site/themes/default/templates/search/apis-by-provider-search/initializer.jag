@@ -1,0 +1,9 @@
+<%
+jagg.initializer("search/apis-by-provider-search", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("search", "jagg", "templates/search/apis-by-provider-search/js/apis-by-provider-search.js");
+    }
+});
+%>
+

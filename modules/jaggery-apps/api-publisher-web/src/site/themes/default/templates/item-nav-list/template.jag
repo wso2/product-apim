@@ -1,0 +1,29 @@
+<% jagg.template("item-nav-list", function(inputs, outputs, jagg) { %>
+<script type="text/javascript">
+    var showTab = function (tabLink) {
+    $('#' + tabLink).tab('show');
+};
+</script>
+<ul class="nav nav-list">
+  <% var api = outputs.api; %>
+  <% if(api.thumb==null){%>
+  <li><img id="apiThumb" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png"))%>" alt="" /></li>
+  <%}else{%> <li><img id="apiThumb" src="<%=jagg.getRegistryPath(api.thumb)%>" alt="" /></li>
+  <%}%>
+  <li><a href="#" onclick="showTab('usersLink')"><i class="icon-user"></i>
+      <span class="userCount">
+          <% if (api.subs == "1"){%>
+          <%=api.subs%> <%=i18n.localize("user")%>
+          <%}else{%>
+          <%=api.subs%> <%=i18n.localize("users")%>
+          <%}%>
+          </span></a></li>
+
+
+
+  <!--li><span><i class="icon-heart"></i> Up time: 90%</span></li-->
+  <li><a href="#" onclick="showTab('lifecyclesLink')"><span id="status"><i class="icon-pencil"></i>&nbsp;<%=api.status%></span></a></li>
+  <li><span id="version"><i class="icon-th"></i>&nbsp;<%=api.version%></span></li>
+  <li><a href="#"  onclick="showTab('docsLink')"><i class="icon-file"></i> <%=i18n.localize("docs")%></a></li>
+</ul>
+<% }); %>

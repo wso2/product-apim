@@ -1,0 +1,113 @@
+<%
+include("/jagg/jagg.jag");
+var log = new Log();
+
+(function () {
+    var mod, obj, application, result, username,
+        action = request.getParameter("action"),
+        req_url = request.getParameter("req_url"),
+        req_verb = request.getParameter("req_verb"),
+        req_headers = request.getParameter("req_headers"),
+        req_body = request.getParameter("req_body"),
+        content_type = request.getParameter("content_type"),
+        msg = require("/site/conf/ui-messages.jag");
+    if (action == "makeCall") {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open(req_verb, req_url);
+
+
+        var contentTypeHeader = false;
+        var contentTypeValue = "";
+        var headers = req_headers.split('\n');
+
+        for(var i=0;i<headers.length;i++){
+            if(headers[i]!=""){
+                var headerKey = headers[i].split(':')[0];
+                var headerValue = headers[i].split(':')[1];
+                xhr.setRequestHeader(headerKey, headerValue);
+                if(headerKey.toLowerCase() == "content-type"){
+                    contentTypeHeader = headerKey;
+                    contentTypeValue  = headerValue;
+                }
+            }
+        }
+        if(req_verb == "GET"){
+            if(contentTypeHeader){
+                xhr.setRequestHeader(contentTypeHeader, contentTypeValue);
+            }else{
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            }
+            try {
+                xhr.send();
+            } catch (e) {
+                 print(xhr.statusText);
+                 return;
+            }
+        }else{
+            if(contentTypeHeader){
+                xhr.setRequestHeader(contentTypeHeader, contentTypeValue);
+            }else{
+                xhr.setRequestHeader('Content-Type', content_type);
+            }
+            try {
+                xhr.send(req_body);
+            } catch (e) {
+                 print(xhr.statusText);
+                 return;
+            }
+
+        }
+
+        result = {};
+        result.error = false;
+        result.rh_st = xhr.status;
+        result.rh_stt = xhr.statusText;
+        result.rh_rs = xhr.readyState;
+        result.rh_ct = xhr.getResponseHeader('Content-Type');
+        result.rh_ag = xhr.getResponseHeader('Age');
+        result.rh_cc = xhr.getResponseHeader('Cache-Control');
+        result.rh_ce = xhr.getResponseHeader('Content-Encoding');
+        result.rh_ex = xhr.getResponseHeader('Expires');
+        result.rh_se = xhr.getResponseHeader('Server');
+        result.rh_va = xhr.getResponseHeader('Vary');
+        result.rh_vi = xhr.getResponseHeader('Via');
+        result.rh_xf = xhr.getResponseHeader('X-Frame-Options');
+        result.rh_xt = xhr.getResponseHeader('X-Transaction');
+        result.rh_xv = xhr.getResponseHeader('X-Varnish');
+        result.rh_da = xhr.getResponseHeader('Date');
+        result.rh_te = xhr.getResponseHeader('Transfer-Encoding');
+        result.rh_co = xhr.getResponseHeader('Connection');
+
+
+
+        result.req_or = request.getHeader("Origin");
+        result.req_ua = request.getHeader("User-Agent");
+        result.req_ct = "application/x-www-form-urlencoded";
+        result.req_ac = "*/*";
+        result.req_ae = "gzip,deflate,sdch";
+        result.req_al = request.getHeader("Accept-Language");;
+        result.req_acc = request.getHeader("Accept-Charset");;
+
+
+        for(var i=0;i<headers.length;i++){
+            var headerKey = headers[i].split(':')[0];
+            var headerValue = headers[i].split(':')[1];
+            if(headerKey == "Origin"){result.req_or = headerValue;}
+            if(headerKey == "User-Agent"){result.req_ua = headerValue;}
+            if(headerKey == "Content-Type"){result.req_ct = headerValue;}
+            if(headerKey == "Accept"){result.req_ac = headerValue;}
+            if(headerKey == "Accept-Encoding"){result.req_ae = headerValue;}
+            if(headerKey == "Accept-Language"){result.req_al = headerValue;}
+            if(headerKey == "Accept-Charset"){result.req_acc = headerValue;}
+        }
+        print(stringify(result)+"**#*#**#*#"+xhr.responseText);
+    } else {
+        response.contentType = "application/json; charset=UTF-8";
+        print({
+            error:true,
+            message:msg.error.invalidAction(action)
+        });
+    }
+}());
+%>

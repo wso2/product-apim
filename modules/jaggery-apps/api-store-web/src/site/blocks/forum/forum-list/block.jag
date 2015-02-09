@@ -1,0 +1,32 @@
+<%
+jagg.block("forum/forum-list", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "user":jagg.getUser()
+        }
+    },
+
+    getOutputs:function (inputs) {
+        /*
+        var applications, result, user = inputs.user;
+        result = jagg.module("subscription").getAllSubscriptions(user.username);
+        applications = result.applications;
+        */
+        return {
+            //"applications":applications
+        };
+    },
+
+    getStaticBlocks:function() {
+        return [
+           // "subscription/subscription-list-element"
+        ];
+    }
+
+
+});
+%>

@@ -1,0 +1,58 @@
+<% jagg.template("api/tenant-stores-listing", function(inputs, outputs, jagg) {
+var tenantDomains=outputs.tenantDomains;
+ %>
+
+<div class="container-fluid" id="layout-base">
+    <div class="row">
+        <div class="span12" id="middle">
+            <div class="container" id="tenent_list">
+                <div class="row">
+                    <div class="span12">
+                        <div class="left-side-col">
+                        </div>
+                    </div>
+                    <div class="span12" style="margin-left:14px">
+                        <div class="title-section">
+                            <h2><%=i18n.localize("multipleAPIStoresHeading")%></h2>
+                        </div>
+                        <div class="clear"></div>
+                        <div class="content-section shadow-up">
+                            <div class="content-data">
+                                <center><div class="pagination" id="tenant_pages"><ul id="holder"></ul></div></center>
+                                <ul id="tenant_container">
+                                <%for(var i=0;i< tenantDomains.length;i++){
+                                    var site = require("/site/conf/site.json");
+                                %>
+                                    <li class="thumbnail span3 tenent-thumb">
+                                    <a href="<%= encode.forHtmlAttribute(encode.forUri(jagg.getSiteContext() + "?tenant="+tenantDomains[i])) %>">
+                                    <center>
+                                    <img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/tenant-store.png"))%>" alt="">
+                                    <h3><%=tenantDomains[i]%></h3>
+                                    <span>Visit Store</span>
+                                    </center>
+                                    </a>
+                                    </li>
+                                <%}%>
+                                </ul>
+                                <div class="clearfix" ></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script language="javascript">
+$(document).ready(function(){
+    $("#holder").jPages({
+      containerID : "tenant_container",
+      previous : "←",
+      next : "→",
+      perPage : 12,
+      delay : 20
+    });
+});
+</script>
+
+<% }); %>

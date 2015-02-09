@@ -1,0 +1,441 @@
+<% jagg.template("subscription/subscription-list-element", function(inputs, outputs, jagg) { %>
+<% var i=outputs.i, app = outputs.app, thumbURL = '';
+   var str_i = String(i).replace('.','_');
+   var gatewayurlendpoint = outputs.gatewayurl;
+   if(app!=null){
+%>
+
+        <input type="hidden"  class="prodAccessTokenHidden" value="<%=app.prodKey%>" >
+        <input type="hidden"  class="sandAccessTokenHidden" value="<%=app.sandboxKey%>" >
+        <h3 data-section="key-prod" class="js_toggle"><%=i18n.localize("keysPro")%> <i class="icon-chevron-down icon-keys"></i></h3>
+        <div class="keyBoxOut">
+            <div class="container-fluid">
+	   			<div class="span6">
+                        <%
+                         var log = new Log();
+                         var prodVadidataionTime = app.prodValidityTime;
+                         var sandVadidataionTime = app.sandValidityTime;
+
+                         <!-- If token is not set to never expire, then take the expiration in seconds -->
+                         if (prodVadidataionTime > 0) {
+                            prodVadidataionTime = prodVadidataionTime / 1000;
+                         }
+                         if (sandVadidataionTime > 0) {
+                            sandVadidataionTime = sandVadidataionTime / 1000;
+                         }
+
+                         <!-- This is required to remove the decimal points getting added by jaggery to validation time-->
+                         if (prodVadidataionTime != null) {
+                            var prod_tmp = String(prodVadidataionTime).split();
+                            var prodValidityTime = prod_tmp[0];
+                         }
+
+                         if (sandVadidataionTime != null) {
+                            var sand_tmp = String(sandVadidataionTime).split();
+                            var sandValidityTime = sand_tmp[0];
+                         }
+
+                        %>
+
+                        <% if(app.prodKey != null ) { %>
+                        <!-- START Show key info -->
+
+                        <div class="row-fluid keys">
+							<div class="span3">
+		                        <b><%=i18n.localize("consumerKey")%> :</b> 
+	                        </div>
+	                        <div class="span9">
+	                        	<div class="consumerKey token">
+		                        	<% if(app.prodConsumerKey != null && app.prodConsumerKey.length > 60){ %>
+		                          		<textarea class="tokenTextarea keyValues" data-value="<%=app.prodConsumerKey%>"><%=app.prodConsumerKey%></textarea>
+		                        	<% } else { %>
+		                          		<span class="keyValues" data-value="<%=app.prodConsumerKey%>"><%=app.prodConsumerKey%></span>
+		                        	<% } %>
+		                        	<div class="copybtn-wrapper">
+                    					<span class="curl-copyinfo">Copied!</span>
+                						<button id="prodConsumerCopy" data-clipboard-text="<%=app.prodConsumerKey%>" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                					</div>
+		                        </div>
+	                        </div>
+                        </div>
+						
+						<div class="row-fluid keys">
+							<div class="span3">
+		                        <b><%=i18n.localize("consumerSecret")%> :</b> 
+	                        </div>
+	                        <div class="span9">
+	                        	<div class="consumerSecret token">
+		                        	<% if(app.prodConsumerSecret != null && app.prodConsumerSecret.length > 60){ %>
+		                           		<textarea class="tokenTextarea keyValues" data-value="<%=app.prodConsumerSecret%>"><%=app.prodConsumerSecret%></textarea>
+		                        	<% } else { %>
+		                            	<span class="keyValues" data-value="<%=app.prodConsumerSecret%>"><%=app.prodConsumerSecret%></span>
+		                        	<% } %>
+		                        	<div class="copybtn-wrapper">
+                    					<span class="curl-copyinfo">Copied!</span>
+                						<button id="prodSecretCopy" data-clipboard-text="<%=app.prodConsumerSecret%>" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                					</div>
+		                        </div>
+	                        </div>
+                        </div>
+
+                        <div class="row-fluid keys">
+							<div class="span12">
+								<h5 class="special-colored"><b><%=i18n.localize("accessToken")%>: </b></h5>
+								<div class="show-hide-key processing-msg" style="display:none;"><%=i18n.localize("generating")%></div>
+								<div>
+									<div class="span12">
+										<div class="token access">
+											<% if(app.prodKey != null && app.prodKey.length > 60){ %>
+											   <textarea class="tokenTextarea accessTokenDisplayPro keyValues" data-value="<%=app.prodKey%>"><%=app.prodKey%></textarea>
+											<% } else { %>
+											   <span class="accessTokenDisplayPro keyValues" id="prodAccess" data-value="<%=app.prodKey%>"><%=app.prodKey%></span>
+											<% } %>
+			  								<div class="copybtn-wrapper">
+                    							<span class="curl-copyinfo">Copied!</span>
+                								<button id="prodAccessCopy" data-clipboard-target="prodAccess" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                							</div>
+										</div>
+										<div class="regenerate-wrapper">
+											<div class="span2">
+												<div class="dropdown">
+													<button class="btn btn-default dropdown-toggle curlurl-genbtn" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true"
+													    title="View cURL command to generate a token as an end user">
+														cURL <span class="caret"></span>
+													</button>
+													<ul class="dropdown-menu" role="menu" aria-labelledby="gencurl-menu">
+														<li role="gencurl"><a role="menuitem" tabindex="-1" href="javascript:generateCurl('<%=app.prodConsumerKey%>:<%=app.prodConsumerSecret%>', '<%=gatewayurlendpoint%>', 'password', 'prodCurl');">GrantType: Password</a></li>
+														<li role="gencurl"><a role="menuitem" tabindex="-1" href="javascript:generateCurl('<%=app.prodConsumerKey%>:<%=app.prodConsumerSecret%>', '<%=gatewayurlendpoint%>', 'client_credentials', 'prodCurl');">GrantType: Client Credentials</a></li>
+													</ul>
+												</div>
+											</div>
+											<div class="span10">
+												<div class="form-inline proRegenerateForm">
+													Validity Time: <input type="text" class="input-mini token-validity-input" id="refreshProdValidityTime" value='<%=prodValidityTime%>' maxlength="70"  autofocus="autofocus" /> Seconds
+													<span class="label label-warning" id = "timeWarn" style="display:none;"><%=i18n.localize("timeWarn")%></span>
+													<button class="show-hide-key btn btn-primary" onclick="regenerate('<%=app.name%>','PRODUCTION',200,this,'pull-right','<%=app.prodConsumerKey%>','<%=app.prodConsumerSecret%>')" ><i class="fa fa-repeat"></i> <%=i18n.localize("regenerate")%></button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+                        <!-- END Show key info -->
+                        <% } else if(app.prodKeyState != null){ %>
+							<% if(app.prodKeyState == "CREATED") {%>
+                        		<%=i18n.localize("prodKeyCreatedMsg")%>
+							<%} else if(app.prodKeyState == "REJECTED") {%>
+                        		<%=i18n.localize("prodKeyRejectedMsg")%>
+							<%} if(app.prodKeyState == "APPROVED") { %>
+                        		<%=i18n.localize("prodKeyApprovedMsg")%>
+                        		<div class="gen-btn-wrapper">
+                                   <button  class="app-create-key-button btn btn-primary"
+                                   		data-application="<%=app.name%>"
+                                   		data-callbackUrl="<%=app.callbackUrl%>"
+                                   		data-keytype="PRODUCTION"
+                                   		iteration="200"><%=i18n.localize("generateKey")%></button>
+                        		</div>
+							<%}%>
+                        <% } else{ %>
+                        <%=i18n.localize("prodKeyMsg")%>
+                        <div class="gen-btn-wrapper">
+                        	<button  class="app-key-generate-button btn btn-primary" onclick="jagg.sessionAwareJS({redirect:'/site/pages/subscriptions.jag'})"
+                                   data-application="<%=app.name%>"
+                                   data-callbackUrl="<%=app.callbackUrl%>"
+                                   data-keytype="PRODUCTION"
+                                   iteration="200"><%=i18n.localize("generate")%></button>
+                        </div>
+                        <% } %>
+                    </div>
+
+		    		<div class="span6" <%if(app.prodKeyState == "CREATED" || app.prodKeyState == "APPROVED" || app.prodKeyState == "REJECTED"){%> style="display:none" <%}%> >
+						<div class="keyBoxOut-config">
+                        	<!-- START Config section -->
+                            <h5>Allowed Domains</h5>
+                            <div>
+                               <textarea id="allowedDomainsPro"><% if(app.prodKey != null ) { %><%=app.prodAuthorizedDomains%><% } else { %>ALL<% } %></textarea>
+                               <div>The domains from which requests are allowed to the APIs. Leave empty or enter "ALL" to allow all domains.</div>
+                               <% if(app.prodKey != null ) { %>
+                               <button class="btn"
+                                       onclick="updateAccessAllowDomains('<%=app.name%>','PRODUCTION',200,this)" style="font-size:11px;">Update Domains</button>
+                               <div style="display:none" class="success-update-msg">Successfully updated.</div>
+                               <% } else { %>
+                                    Token Validity: <input type="text" class="input-mini token-validity-input" id="refreshProdValidityTime" value="<%=prodValidityTime%>" maxlength="70"  autofocus="autofocus" style="margin-top:5px;"  />  Seconds
+                                    <span class="label label-warning" id = "timeWarn" style="display:none;"><%=i18n.localize("timeWarn")%></span>
+                               <% } %>
+                               <a class="icon-question-sign help_popup_prod"></a>
+                               <div id="prodtoken_help"></div>
+                            </div>
+                        	<!-- END config section -->
+                        </div>
+			   		</div>
+
+                </div>
+                
+                <div class="row-fluid curl-testurlp-wrapper">
+                	<div class="span12">
+                		<div class="editable-div-wrapper">
+                    		<div class="editable-div curl-testurl" id="prodCurl" data-value="<%=app.prodConsumerKey%>:<%=app.prodConsumerSecret%>" contenteditable="true"></div>
+                    		<div class="copybtn-wrapper">
+                    			<span class="curl-copyinfo">Copied!</span>
+                				<button id="prodCurlCopy" data-clipboard-target="prodCurl" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                			</div>
+                		</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <h3 data-section="key-sand" class="js_toggle"><%=i18n.localize("keysSand")%> <i class="icon-chevron-down icon-keys"></i></h3>
+		<div class="keyBoxOut">
+            <div class="container-fluid">
+	   			<div class="span6">
+
+                        <!-- START Show key info -->
+                    	<% if(app.sandboxKey!=null){%>
+
+                        <div class="row-fluid keys">
+							<div class="span3">
+		                        <b><%=i18n.localize("consumerKey")%> :</b>
+	                        </div>
+	                        <div class="span9">
+	                        	<div class="consumerKey token">
+		                        	<% if(app.sandboxConsumerKey != null && app.sandboxConsumerKey.length > 28){ %>
+                          				<textarea class="tokenTextarea keyValues" data-value="<%=app.sandboxConsumerKey%>"><%=app.sandboxConsumerKey%></textarea>
+                      				<% } else { %>
+                          				<span class="keyValues" data-value="<%=app.sandboxConsumerKey%>"><%=app.sandboxConsumerKey%></span>
+                      				<% } %>
+		                        	<div class="copybtn-wrapper">
+                    					<span class="curl-copyinfo">Copied!</span>
+                						<button id="sandConsumerCopy" data-clipboard-text="<%=app.sandboxConsumerKey%>" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                					</div>
+		                        </div>
+	                        </div>
+                        </div>
+
+						<div class="row-fluid keys">
+							<div class="span3">
+		                        <b><%=i18n.localize("consumerSecret")%> :</b>
+	                        </div>
+	                        <div class="span9">
+	                        	<div class="consumerSecret token">
+		                        	<% if(app.sandboxConsumerSecret != null && app.sandboxConsumerSecret.length > 28){ %>
+                          				<textarea class="tokenTextarea keyValues" data-value="<%=app.sandboxConsumerSecret%>"><%=app.sandboxConsumerSecret%></textarea>
+                       				<% } else { %>
+                          				<span class="keyValues" data-value="<%=app.sandboxConsumerSecret%>"><%=app.sandboxConsumerSecret%></span>
+                       				<% } %>
+		                        	<div class="copybtn-wrapper">
+                    					<span class="curl-copyinfo">Copied!</span>
+                						<button id="sandSecretCopy" data-clipboard-text="<%=app.sandboxConsumerSecret%>" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                					</div>
+		                        </div>
+	                        </div>
+                        </div>
+
+                        <div class="row-fluid keys">
+							<div class="span12">
+								<h5 class="special-colored"><b><%=i18n.localize("accessToken")%>: </b></h5>
+								<div class="show-hide-key processing-msg" style="display:none;"><%=i18n.localize("generating")%></div>
+								<div>
+									<div class="span12">
+										<div class="token access">
+											<% if(app.sandboxKey != null && app.sandboxKey.length > 60){ %>
+												  <textarea class="tokenTextarea accessTokenDisplaySand keyValues" data-value="<%=app.sandboxKey%>"><%=app.sandboxKey%></textarea>
+											<% } else { %>
+												  <span class="accessTokenDisplaySand keyValues" id="sandAccess" data-value="<%=app.sandboxKey%>"><%=app.sandboxKey%></span>
+											<% } %>
+			  								<div class="copybtn-wrapper">
+                    							<span class="curl-copyinfo">Copied!</span>
+                								<button id="sandAccessCopy" data-clipboard-target="sandAccess" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                							</div>
+										</div>
+										<div class="regenerate-wrapper">
+											<div class="span2">
+												<div class="dropdown">
+													<button class="btn btn-default dropdown-toggle curlurl-genbtn" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true"
+													    title="View cURL command to generate a token as an end user">
+															cURL <span class="caret"></span>
+			   										</button>
+													<ul class="dropdown-menu" role="menu" aria-labelledby="gencurl-menu">
+														<li role="gencurl"><a role="menuitem" tabindex="-1" href="javascript:generateCurl('<%=app.sandboxConsumerKey%>:<%=app.sandboxConsumerSecret%>', '<%=gatewayurlendpoint%>', 'password', 'sandboxCurl');">GrantType: Password</a></li>
+														<li role="gencurl"><a role="menuitem" tabindex="-1" href="javascript:generateCurl('<%=app.sandboxConsumerKey%>:<%=app.sandboxConsumerSecret%>', '<%=gatewayurlendpoint%>', 'client_credentials', 'sandboxCurl');">GrantType: Client Credentials</a></li>
+													</ul>
+												</div>
+											</div>
+											<div class="span10">
+												<div class="form-inline proRegenerateForm">
+													Validity: <input type="text" class="input-mini token-validity-input" id="refreshSandValidityTime" value="<%=sandValidityTime%>" maxlength="70"  autofocus="autofocus" /> Seconds
+		                            				<span class="label label-warning" id = "timeWarn" style="display:none;"><%=i18n.localize("timeWarn")%></span>
+		                            				<button class="show-hide-key btn btn-primary" onclick="regenerate('<%=app.name%>','SANDBOX',200,this,'pull-right','<%=app.sandboxConsumerKey%>','<%=app.sandboxConsumerSecret%>')" ><i class="fa fa-repeat"></i> <%=i18n.localize("regenerate")%></button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+                        <% }else if(app.sandboxKeyState != null){%>
+                       		<% if(app.sandboxKeyState == "CREATED") {%>
+                        		<%=i18n.localize("sandboxKeyCreatedMsg")%>
+							<%} else if(app.sandboxKeyState == "REJECTED") {%>
+                        		<%=i18n.localize("sandboxKeyRejectedMsg")%>
+								<%} if(app.sandboxKeyState == "APPROVED") {%>
+                        		<%=i18n.localize("sandboxKeyApprovedMsg")%>
+                        		<div class="gen-btn-wrapper">
+                                    <button  class="app-create-key-button btn btn-primary"
+                                   		data-application="<%=app.name%>"
+                                   		data-callbackUrl="<%=app.callbackUrl%>"
+                                   		data-keytype="SANDBOX"
+                                   		iteration="200"><%=i18n.localize("generateKey")%></button>
+                        		</div>
+					   		<%}%>
+                       <% } else {%>
+                       <%=i18n.localize("sandboxKeyMsg")%>
+                       <div class="gen-btn-wrapper" <% if(app.sandboxKey!=null){%>style="display:none"<% } %> >
+                           <button class="app-key-generate-button btn btn-primary" onclick="jagg.sessionAwareJS({redirect:'/site/pages/subscriptions.jag'})"
+                          		data-application="<%=app.name%>"
+                          		data-callbackUrl="<%=app.callbackUrl%>"
+                          		data-keytype="SANDBOX"
+                          		iteration="200"><%=i18n.localize("generate")%></button>
+                       </div>
+                       <% } %>
+                       <!-- END Show key info -->
+
+                    </div>
+
+			   		<div class="span6" <% if(app.sandboxKeyState == "CREATED" || app.sandboxKeyState == "APPROVED" || app.sandboxKeyState == "REJECTED") { %> style="display:none"<%}%>>
+						<div class="keyBoxOut-config">
+                        	<!-- START Config section -->
+                            <h5>Allowed Domains</h5>
+                            <div>
+                               	<textarea id="allowedDomainsSand"><% if(app.sandboxKey!=null){ %><%=app.sandboxAuthorizedDomains%><% }else{ %>ALL<% } %></textarea>
+                               	<div>The domains from which requests are allowed to the APIs. Leave empty or enter "ALL" to allow all domains.</div>
+		                        <% if(app.sandboxKey!=null){ %>
+		                        <button  class="btn"
+		                              onclick="updateAccessAllowDomains('<%=app.name%>','SANDBOX',200,this,'allowDomainsSandRegenBtn')" style="font-size:11px;">Update Domains</button>
+		                        <div style="display:none" class="success-update-msg">Successfully updated.</div>
+		                        <% } else { %>
+		                        Token Validity: <input type="text" class="input-mini token-validity-input" id="refreshSandValidityTime" value="<%=sandValidityTime%>" maxlength="70"  autofocus="autofocus" style="margin-top:5px;"  />  Seconds
+		                            <span class="label label-warning" id = "timeWarn" style="display:none;"><%=i18n.localize("timeWarn")%></span>
+		                        <% } %>
+		                        <a class="icon-question-sign help_popup_sand"></a>
+		                        <div id="sandtoken_help"></div>
+                            </div>
+                        	<!-- END config section -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row-fluid curl-testurlp-wrapper">
+                	<div class="span12">
+                		<div class="editable-div-wrapper">
+                    		<div class="editable-div curl-testurl" id="sandboxCurl" data-value="<%=app.sandboxConsumerKey%>:<%=app.sandboxConsumerSecret%>" contenteditable="true"></div>
+                    		<div class="copybtn-wrapper">
+                    			<span class="curl-copyinfo">Copied!</span>
+                				<button id="sandCurlCopy" data-clipboard-target="sandboxCurl" title="Copy to clipboard" class="curl-copybtn"><i class="fa fa-clipboard"></i></button>
+                			</div>
+                		</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <h3 data-section="api-listing" class="js_toggle">Subscribed APIs <i class="icon-chevron-down icon-keys"></i></h3>
+        <div class="container-fluid subsApiListing api-section">
+            <div class="row-fluid">
+
+            <%
+            var tenant=request_tenant;
+            var urlPrefix;
+            if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}
+            var apis = app.subscriptions;
+            lenJ = apis.length;
+            for(j = 0; j < lenJ; j++) {
+                api = apis[j];
+                thumbURL = api.thumburl;
+				if(!thumbURL) {
+					thumbURL = jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png")) ;
+				}else{
+					thumbURL = jagg.getRegistryPath(thumbURL);
+				}
+                prodKey = api.prodKey;
+                clazz = (j%2) == 0 ? "even" : "odd";
+                path = jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + api.name + "&version=" + api.version + "&provider=" + api.provider+ "&"+urlPrefix;
+                var apiName = api.name;
+                if(api.name.length > 12){
+                    apiName = api.name.substring(0,10)+ "..";
+                }
+            %>
+                <div class="span4 keyListPadding">
+                    <div class="thumbnail <% if(api.status == "DEPRECATED" || api.status == "RETIRED" || api.status == "BLOCKED") { %>deprecated<% } %>">
+                        <div class="deprecatedLabel">
+                            <% if(api.status == "DEPRECATED") { %>
+                            <span class="label label-warning"><%=i18n.localize("deprecated")%></span>
+                            <% } else if(api.status == "RETIRED") { %>
+                            <span class="label label-important"><%=i18n.localize("retired")%></span>
+                            <% }else if(api.status == "BLOCKED" || api.subStatus == "BLOCKED") { %>
+                            <span class="label label-important"><%=i18n.localize("blocked")%></span>
+                            <% } else if(api.subStatus == "PROD_ONLY_BLOCKED") {%>
+                            <span class="label label-important"><%=i18n.localize("prodBlocked")%></span>
+                            <% } else if(api.subStatus == "REJECTED") {%>
+                            <span class="label label-important"><%=i18n.localize("rejected")%></span>
+                            <%}%>
+                        </div>
+                        <div class="container-fluid">
+                            <div class="row-fluid">
+                                <div class="span4">
+                                    <a href="<%=path%>" class="thumbnailInsideLink"><img width="70" alt="" src="<%=thumbURL%>"  <%if(api.subStatus != "UNBLOCKED") {%>class="desaturate"  title="Subscription not active."<%}%>/></a>
+                                </div>
+                                <div class="span8">
+                                    <% if(api.subStatus != "BLOCKED" || api.subStatus != "PROD_ONLY_BLOCKED" || api.status != "REJECTED"){ %>
+                                    <img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/close.png"))%>" onClick="removeSubscription('<%=api.name%>','<%=api.version%>','<%=api.provider%>','<%=app.id%>',this)" align="right"  class="closeBtn" />
+                                    <%}%>
+                                    <a href="<%=path%>" class="service-name" title="<%=api.name%>-<%=api.version%>"><%=apiName%> - <%=api.version%></a>
+                                    <div class="provider-info"><%=api.provider%></div>
+                                    <div class="tier-info"><%=api.tier%> Subscription</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+            </div><!-- End row -->
+        </div><!-- End container-fluid -->
+		
+		<script>
+
+			var client = new ZeroClipboard($('.curl-copybtn'));
+
+			client.on("aftercopy", function(event) {
+				$(event.target).siblings('.curl-copyinfo').css('display', 'inline-block').delay(500).queue(function(callback){
+          			$('.curl-copyinfo').fadeOut();
+	   				callback();
+	   			});
+	   		});
+
+			function generateCurl(keys, gatewayurlendpoint, granttype, id){
+				var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
+        		var encodedString = Base64.encode(keys);
+				var grantTypeVal = '';
+
+				if (granttype == 'password'){
+					grantTypeVal = 'password&username=<span>&lt;USER&gt;</span>&password=<span>&lt;PASSWORD&gt;</span>';
+				}
+				else if (granttype == 'client_credentials'){
+					grantTypeVal = 'client_credentials';
+				}
+
+				$('#'+id).attr('data-granttype', granttype);
+        		$('#'+id).html('curl -k -d "grant_type='+grantTypeVal+'" -H "Authorization: Basic '+encodedString+', Content-Type: application/x-www-form-urlencoded" '+gatewayurlendpoint+'/token');
+        		$('#'+id).closest('.row-fluid').show();
+        		$('#'+id+ 'Copy').show();
+            }
+
+        </script>
+                        
+<% }}); %>

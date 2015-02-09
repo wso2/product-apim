@@ -1,0 +1,65 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+(function () {
+    var user = jagg.getUser(),permit=jagg.getCreatePermitted();
+    if(permit){
+    isPermitted= permit.permitted;
+    }
+    if (!user) {
+        response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+        return;
+    }else if (!isPermitted) {
+        response.sendRedirect(jagg.getAbsoluteUrl("/site/pages/index.jag"));
+        return;
+    }
+    var query = request.getParameter("query");
+        var accessTokens, result, mod,message;
+        if (query) {
+            mod = jagg.module("search");
+            result = mod.searchAccessTokens(query);
+            accessTokens= result.accessTokens ;
+            message= result.message ;
+
+        } else{accessTokens=null;}
+
+
+
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"API Publisher - Revoke Tokens",
+             "header":{
+                "name":"menu/primary"
+            },
+            "body":[
+                {
+                    "name":"layout/extended",
+                    "inputs":{
+                        "middle":{
+                            "name":"tokens",
+                             "inputs":{
+                                    "accessTokens":accessTokens ,
+                                    "message":message
+                                }
+
+                        }
+                    }
+                }
+            ]
+        }
+    });
+}());
+
+%>
+
+
+
+
+

@@ -1,0 +1,12 @@
+<%
+jagg.module("workflow", {
+
+    resumeWorkflow:function () {
+        return jagg.require(jagg.getModulesDir() + "workflow/listener.jag").resumeWorkflow.apply(this, arguments);
+    },
+
+    validatePermission:function () {
+        return jagg.require(jagg.getModulesDir() + "workflow/validate.jag").validatePermission.apply(this, arguments);
+    }
+});
+%>

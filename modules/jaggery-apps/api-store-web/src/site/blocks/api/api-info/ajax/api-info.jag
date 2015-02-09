@@ -1,0 +1,105 @@
+<%
+include("/jagg/jagg.jag");
+(function () {
+    var site = require("/site/conf/site.json");
+    var ssoEnabled = site.ssoConfiguration.enabled;
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, name, version, provider,rating, result, username,
+            user = jagg.getUser(),
+            msg = require("/site/conf/ui-messages.jag"),
+            action = request.getParameter("action");
+    if (action == "addRating" && request.getMethod() == 'POST') {
+        if (!user) {
+            if(!ssoEnabled){
+		print({
+		    error:true,
+                    message:msg.error.loginRequired(action)
+            	});
+	    }
+	    return;
+        }
+
+        name = request.getParameter("name");
+        version = request.getParameter("version");
+        provider = request.getParameter("provider");
+        rating = parseInt(request.getParameter("rating"), 10);
+        username = user.username;
+
+        mod = jagg.module("rating");
+        result = mod.addRating({
+            name:name,
+            version:version,
+            provider:provider
+        }, rating);
+
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:msg.error.authError(action, username)
+            };
+        } else {
+            obj = {
+                error:false,
+                rating:result.rating
+            }
+        }
+        print(obj);
+    } else if (action == "removeRating" && request.getMethod() == 'POST') {
+        if (!user) {
+           if(!ssoEnabled){
+		print({
+		    error:true,
+                    message:msg.error.loginRequired(action)
+            	});
+	    }
+	    return;
+        }
+
+        name = request.getParameter("name");
+        version = request.getParameter("version");
+        provider = request.getParameter("provider");
+        username = user.username;
+
+        mod = jagg.module("rating");
+        result = mod.removeRating({
+            name:name,
+            version:version,
+            provider:provider
+        });
+
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:msg.error.authError(action, username)
+            };
+        } else {
+            obj = {
+                error:false,
+                rating:result.rating
+            }
+        }
+        print(obj);
+    }  else  if (action == "isRatingActivated") {
+        
+        mod = jagg.module("rating");
+        result = mod.isRatingActivated();
+
+        if (result.error) {
+            obj = {
+                error:result.error               
+            };
+        } else {
+            obj = {
+                error:false,
+                allow:result.allow
+            }
+        }
+        print(obj);
+      } else {
+        print({
+            error:true,
+            message:msg.error.invalidAction(action)
+        });
+    }
+}());
+%>

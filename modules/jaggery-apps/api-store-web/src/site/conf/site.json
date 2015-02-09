@@ -1,0 +1,31 @@
+{
+    "theme" : {
+        "base" : "fancy"
+    },
+    "context" : "/store",
+    "showPublicStoreURL":true,
+    "tagWiseMode" :"false",
+    "tagGroupKey" :"-group",
+    "ssoConfiguration" : {
+        "enabled" : "false",
+        "issuer" : "API_STORE",
+        "identityProviderURL" : "https://localhost:9443/samlsso",
+        "keyStorePassword" : "",
+        "identityAlias" : "",
+        "responseSigningEnabled":"true",
+        "keyStoreName" :""
+    },
+    "forum" : {
+        "topicsPerPage" : "5",
+        "repliesPerPage" : "5",
+        "resourceIdentifier" : "common"
+    },
+
+
+    "reverseProxy" : {
+        "enabled" : false,    // values true , false , "auto" - will look for  X-Forwarded-* headers
+        "host" : "sample.proxydomain.com", // If reverse proxy do not have a domain name use IP
+        "context":"",
+    },
+
+}

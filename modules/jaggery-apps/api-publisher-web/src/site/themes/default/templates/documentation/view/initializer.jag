@@ -1,0 +1,7 @@
+<%
+jagg.initializer("documentation/view", {
+
+    preInitialize:function () {
+    }
+});
+%>

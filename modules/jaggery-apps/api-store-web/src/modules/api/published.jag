@@ -1,0 +1,48 @@
+<%
+var getAllPublishedAPIs = function (tenantDomain) {
+    var list, i, length, api, apis,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        apis = store.getAllPublishedAPIs(tenantDomain);
+        if (log.isDebugEnabled()) {
+            log.debug("getAllPublishedAPIs : " + stringify(apis));
+        }
+
+        return {
+            error:false,
+            apis:apis
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            apis:null
+        };
+    }
+};
+var getAllPaginatedPublishedAPIs = function (tenantDomain,start,end) {
+    var list, i, length, api, result,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        result = store.getAllPaginatedPublishedAPIs(tenantDomain,String(start),String(end));
+        if (log.isDebugEnabled()) {
+            log.debug("getAllPublishedAPIs : " + stringify(result.apis));
+        }
+
+        return {
+            error:false,
+            result:result
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            result:null
+        };
+    }
+};
+%>

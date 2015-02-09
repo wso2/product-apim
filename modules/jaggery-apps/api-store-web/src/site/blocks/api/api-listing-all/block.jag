@@ -1,0 +1,69 @@
+<%
+include("/jagg/jagg.jag");
+jagg.block("api/api-listing-all", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "result":null
+        };
+    },
+     getOutputs:function (inputs) {
+        var apis, result, mod,error, response,message, list=[],tenantDomain,
+                tag = request.getParameter("tag"), page = request.getParameter("page"),
+                query = request.getParameter("query")
+                apiStatus = request.getParameter("apiStatus");
+
+        var log = new Log();
+                
+        if(tag == null) { tag = inputs.tag;}
+        tenantDomain=request.getParameter("tenant");
+
+        if(page==null){
+        page=1;
+        }
+        var start = (page - 1)*10;
+        var end = 10;
+
+        if (tag) {
+            mod = jagg.module("api");
+            response = mod.getPaginatedAPIsByTag(tag,start,end);
+            apis = response.result.apis;
+        } else if (query) {
+            mod = jagg.module("search");
+            response = mod.searchPaginatedAPIs(query,tenantDomain,start,end);
+            if(response.error){
+                error = true;
+                message = response.message;
+                return {
+                    "error":error,
+                    "message":message
+                };
+            }
+            else{
+                apis = response.result.apis;
+                error = response.result.error;
+                message = response.result.message;
+            }
+
+        } else if (apiStatus == "PROTOTYPED" || apiStatus == "prototyped") {
+        	mod = jagg.module("api");
+            response = mod.getAllPaginatedPrototypedAPIs(tenantDomain,start,end);
+            apis = response.result.apis;
+        } else {
+            mod = jagg.module("api");
+            response = mod.getAllPaginatedPublishedAPIs(tenantDomain,start,end);
+            apis = response.result.apis;
+        }
+
+        return {
+            "apis":apis,
+            "totalLength":response.result.totalLength,
+            "error":error,
+            "message":message
+        };
+    }
+});
+%>

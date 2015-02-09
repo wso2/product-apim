@@ -1,0 +1,42 @@
+{
+
+    "all":"All",
+    "tasks":"Tasks",
+
+    "user":"User",
+    "subscriptions":"Subscriptions ",
+    "myTasks":"Approval Tasks",
+    "subscriptionCreation": "Subscriptions Creation",
+    "userCreation": "User Creation",
+    "appCreation": "Application Creation",
+
+    "username": "Username",
+    "password": "Password",
+    "login": "Login",
+    "logged": "Logged in as",
+    "logout": "Logout",
+    "cancel":"Cancel",
+    "reset":"Reset",
+
+
+    "noTasksMsg":"No tasks assigned to the login user or no connectivity with BPS engine.",
+
+
+    "copyright": "&copy; Copyright 2011 &ndash; 2014 All Rights Reserved.",
+    "gettingStarted":"Getting Started",
+    "gettingStartedGuide":"Getting Started Guide (PDF)",
+    "installationGuide":"Installation Guide",
+    "quickStartGuide":"Quick Start Guide",
+    "samplesLink":"Samples",
+    "share":"Share",
+    "documentationSupport":"Documentation/Support",
+    "productDocumentation":"Product Documentation",
+    "getSupport":"Get Support",
+    "productHome":"Product Home",
+    "resourcesLink":"Resources",
+    "apiMgrGuide":"WSO2 Practical Guide to API Management",
+    "useCase1":"WSO2 Use Case: API Facade Pattern",
+    "more":"More >>",
+    "themeUpload": "Upload Tenant Theme",
+    "settings":"Settings"
+}

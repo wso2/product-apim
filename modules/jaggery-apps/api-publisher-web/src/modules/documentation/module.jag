@@ -1,0 +1,28 @@
+<%
+jagg.module("documentation", {
+
+    addDocumentation:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/add.jag").addDocumentation.apply(this, arguments);
+    },
+    updateDocumentation:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/update.jag").updateDocumentation.apply(this, arguments);
+    },
+    addInlineContent:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/add.jag").addInlineContent.apply(this, arguments);
+    },
+
+    getAllDocumentation:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/list.jag").getAllDocumentation.apply(this, arguments);
+    },
+
+    getInlineContent:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/list.jag").getInlineContent.apply(this, arguments);
+    },
+
+    removeDocumentation:function () {
+        return jagg.require(jagg.getModulesDir() + "documentation/remove.jag").removeDocumentation.apply(this, arguments);
+    }
+
+
+});
+%>

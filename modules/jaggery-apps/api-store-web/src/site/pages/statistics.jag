@@ -1,0 +1,64 @@
+<%
+
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+var tenantDomain=getTenantDomain();
+var stat;
+ stat = request.getParameter("stat");
+
+
+(function () {
+    var user = jagg.getUser(),isCreatePermitted;
+    isTenantAllowed();
+    if (!user) {
+    response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+    return;
+    }
+
+if(!stat){
+    stat = "appAPICount";
+}
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"API Store- Statistics",
+             "header":{
+                "name":"menu/primary"
+            },
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                            "top":[             {
+                                                        "name":"search/api-search",
+                                                        "inputs":null
+                                                }
+                                   ],
+                            "left":[
+                                                {
+                                                       "name":"api/recently-added",
+                                                       "inputs":{"tenant":tenantDomain}
+                                                }
+                                                ],
+                            "middle":{
+                            
+                                          "name":"stats/"+stat
+                               
+                             }
+                    }
+                }
+            ],"footer":[
+                {
+                    "name":"footer"
+                }
+            ]
+        }
+    });
+}());
+
+
+%>
