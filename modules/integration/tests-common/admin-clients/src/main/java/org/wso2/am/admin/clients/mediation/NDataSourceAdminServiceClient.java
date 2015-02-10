@@ -20,7 +20,7 @@ package org.wso2.am.admin.clients.mediation;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.integration.common.admin.client.utils.AuthenticateStubUtil;
+import org.wso2.am.integration.admin.clients.utils.AuthenticateStubUtil;
 import org.wso2.carbon.ndatasource.ui.stub.NDataSourceAdminDataSourceException;
 import org.wso2.carbon.ndatasource.ui.stub.NDataSourceAdminStub;
 import org.wso2.carbon.ndatasource.ui.stub.core.services.xsd.WSDataSourceInfo;
@@ -28,7 +28,7 @@ import org.wso2.carbon.ndatasource.ui.stub.core.services.xsd.WSDataSourceMetaInf
 
 public class NDataSourceAdminServiceClient {
 	private static final Log log = LogFactory
-			.getLog(org.wso2.carbon.integration.common.admin.client.NDataSourceAdminServiceClient.class);
+			.getLog(NDataSourceAdminServiceClient.class);
 	private final String serviceName = "NDataSourceAdmin";
 	private NDataSourceAdminStub nDataSourceAdminStub;
 	private String endPoint;
