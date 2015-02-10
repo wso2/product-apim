@@ -313,35 +313,35 @@
     <properties>
 
         <!-- APIM Component Version -->
-        <apimgt.api.version>1.2.3</apimgt.api.version>
-        <apimgt.impl.version>1.2.4</apimgt.impl.version>
-        <apimgt.core.version>1.2.2</apimgt.core.version>
-        <apimgt.gateway.version>1.2.4</apimgt.gateway.version>
-        <apimgt.hostobjects.version>1.2.4</apimgt.hostobjects.version>
-        <apimgt.interceptor.version>1.2.1</apimgt.interceptor.version> <!--check-->
-        <apimgt.keymgt.version>1.2.3</apimgt.keymgt.version>
-        <apimgt.keymgt.client.version>1.2.1</apimgt.keymgt.client.version>
-        <apimgt.startup.publisher.version>1.2.2</apimgt.startup.publisher.version>
-        <apimgt.usage.client>1.2.4</apimgt.usage.client>
-        <apimgt.usage.publisher>1.2.2</apimgt.usage.publisher>
-        <apimgt.keymgt.stub.version>4.2.4</apimgt.keymgt.stub.version>
-        <apimgt.handlers.security.stub>4.2.0</apimgt.handlers.security.stub>
-        <carbon.forum.version>1.2.0</carbon.forum.version>
-        <carbon.forum.feature.version>1.2.0</carbon.forum.feature.version>
-        <carbon.forum.server.feature.version>1.0.1</carbon.forum.server.feature.version>
+        <apimgt.api.version>1.2.3-SNAPSHOT</apimgt.api.version>
+        <apimgt.impl.version>1.2.4-SNAPSHOT</apimgt.impl.version>
+        <apimgt.core.version>1.2.2-SNAPSHOT</apimgt.core.version>
+        <apimgt.gateway.version>1.2.4-SNAPSHOT</apimgt.gateway.version>
+        <apimgt.hostobjects.version>1.2.4-SNAPSHOT</apimgt.hostobjects.version>
+        <apimgt.interceptor.version>1.2.1-SNAPSHOT</apimgt.interceptor.version> <!--check-->
+        <apimgt.keymgt.version>1.2.3-SNAPSHOT</apimgt.keymgt.version>
+        <apimgt.keymgt.client.version>1.2.1-SNAPSHOT</apimgt.keymgt.client.version>
+        <apimgt.startup.publisher.version>1.2.2-SNAPSHOT</apimgt.startup.publisher.version>
+        <apimgt.usage.client>1.2.4-SNAPSHOT</apimgt.usage.client>
+        <apimgt.usage.publisher>1.2.2-SNAPSHOT</apimgt.usage.publisher>
+        <apimgt.keymgt.stub.version>4.2.4-SNAPSHOT</apimgt.keymgt.stub.version>
+        <apimgt.handlers.security.stub>4.2.0-SNAPSHOT</apimgt.handlers.security.stub>
+        <carbon.forum.version>1.2.0-SNAPSHOT</carbon.forum.version>
+        <carbon.forum.feature.version>1.2.0-SNAPSHOT</carbon.forum.feature.version>
+        <carbon.forum.server.feature.version>1.0.1-SNAPSHOT</carbon.forum.server.feature.version>
 
-        <apimgt.core.feature.version>1.2.4</apimgt.core.feature.version>
-        <apimgt.feature.version>1.2.4</apimgt.feature.version>
-        <apimgt.gateway.feature>1.2.4</apimgt.gateway.feature>
-        <apimgt.interceptor.feature>1.2.1</apimgt.interceptor.feature>
-        <apimgt.publisher.feature.version>1.2.4</apimgt.publisher.feature.version>
-        <apimgt.startup.publisher.feature.version>1.2.4</apimgt.startup.publisher.feature.version>
-        <apimgt.store.feature.version>1.2.4</apimgt.store.feature.version>
+        <apimgt.core.feature.version>1.2.4-SNAPSHOT</apimgt.core.feature.version>
+        <apimgt.feature.version>1.2.4-SNAPSHOT</apimgt.feature.version>
+        <apimgt.gateway.feature>1.2.4-SNAPSHOT</apimgt.gateway.feature>
+        <apimgt.interceptor.feature>1.2.1-SNAPSHOT</apimgt.interceptor.feature>
+        <apimgt.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.publisher.feature.version>
+        <apimgt.startup.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.startup.publisher.feature.version>
+        <apimgt.store.feature.version>1.2.4-SNAPSHOT</apimgt.store.feature.version>
 
 
         <carbon.kernel.version>4.2.0</carbon.kernel.version>
         <apimserver.version>1.9.0</apimserver.version>
-        <apim.version>1.2.4</apim.version>
+        <apim.version>1.2.4-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
