@@ -80,6 +80,27 @@
                 <include>**/saxon9he.jar</include>
             </includes>
         </fileSet>
+	<fileSet>
+            <directory>./src/main/resources</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
+            <includes>
+                <include>**/httpmime-4.2.5.jar</include>
+            </includes>
+        </fileSet>
+	<fileSet>
+            <directory>./src/main/resources</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
+            <includes>
+                <include>**/encoder-1.1.jar</include>
+            </includes>
+        </fileSet>
+	<fileSet>
+            <directory>../../distribution/product/target/repository/database</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
+            <includes>
+                <include>**/WSO2AM_DB.h2.db</include>
+            </includes>
+        </fileSet>
         <fileSet>
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security</directory>
           <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
@@ -185,7 +206,7 @@
         </fileSet>
 
 	<fileSet>
-             <directory>../../jaggery-apps/api-publisher-web/</directory>
+             <directory>../../jaggery-apps/api-publisher-web/src/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
 	     <excludes>
 		<exclude>publisherLogo/**</exclude>
@@ -196,7 +217,7 @@
 	     </excludes>
          </fileSet>
          <fileSet>
-             <directory>../../jaggery-apps/api-store-web/</directory>
+             <directory>../../jaggery-apps/api-store-web/src/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store</outputDirectory>
 	     <excludes>
 		<exclude>storeLogo/**</exclude>
@@ -208,11 +229,11 @@
          </fileSet>
 
         <fileSet>
-            <directory>../../jaggery-apps/admin-web/</directory>
+            <directory>../../jaggery-apps/admin-web/src/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/workflow-admin</outputDirectory>
         </fileSet>
 	<fileSet>
-            <directory>../../jaggery-apps/admin-dashboard-web/</directory>
+            <directory>../../jaggery-apps/admin-dashboard-web/src/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-dashboard</outputDirectory>
         </fileSet>
 	<!--  copying modules xml -->
@@ -690,12 +711,6 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../distribution/product/target/repository/database/WSO2AM_DB.h2.db</source>
-            <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>666</fileMode>
-        </file>
-        <file>
             <source>../../../docs/xdoc/release-notes.xml</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <destName>release-notes.html</destName>
@@ -741,17 +756,6 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <filtered>true</filtered>
         </file>
-        <file>
-            <source>src/main/resources/httpmime-4.2.5.jar</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-	<file>
-            <source>src/main/resources/encoder-1.1.jar</source>
-            <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
