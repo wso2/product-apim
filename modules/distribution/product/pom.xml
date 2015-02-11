@@ -100,10 +100,10 @@
                                         <include name="wso2am-${project.version}.zip"/>
                                     </fileset>
                                 </unzip>
-                                <!--<copy todir="target/wso2carbon-core-${carbon.platform.version}/repository/components/" overwrite="false">
+                                <copy todir="target/wso2carbon-core-${carbon.platform.version}/repository/components/" overwrite="false">
                                     <fileset dir="${tempdir}/wso2am-${project.version}/repository/components/">
                                     </fileset>
-                                </copy>-->
+                                </copy>
                                 <delete file="target/wso2am-${project.version}.zip"/>
                                 <delete dir="${tempdir}"/>
                                 <mkdir dir="${tempdir}"/>
@@ -222,6 +222,7 @@
                             <goal>attached</goal>
                         </goals>
                         <configuration>
+			    <appendAssemblyId>false</appendAssemblyId>
                             <filters>
                                 <filter>${basedir}/src/main/assembly/filter.properties</filter>
                             </filters>
@@ -237,12 +238,26 @@
                             <goal>attached</goal>
                         </goals>
                         <configuration>
+			    <appendAssemblyId>false</appendAssemblyId>
                             <filters>
                                 <filter>${basedir}/src/main/assembly/filter.properties</filter>
                             </filters>
                             <descriptors>
                                 <descriptor>src/main/assembly/bin.xml</descriptor>
-                                <!--<descriptor>src/main/assembly/src.xml</descriptor>-->
+                            </descriptors>
+                        </configuration>
+                    </execution>
+		    <execution>
+                        <id>docs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>${basedir}/src/main/assembly/filter.properties</filter>
+                            </filters>
+                            <descriptors>
                                 <descriptor>src/main/assembly/docs.xml</descriptor>
                             </descriptors>
                         </configuration>
