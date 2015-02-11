@@ -1,0 +1,15 @@
+.page-header-back{
+    width:970px;margin:-15px auto;
+}
+.navbar-inner div.menu-content{
+    width:970px; margin:0 auto;
+}
+#application-name{
+    padding:0;
+    margin:0;
+    line-height:30px;
+}
+
+.thumbnail-custom div.thumbnail {
+    width: 130px;
+}

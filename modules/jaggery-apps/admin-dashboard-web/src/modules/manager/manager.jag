@@ -1,0 +1,57 @@
+<%
+var getAuthServerURL = function() {
+    return getAPIStoreObj().getAuthServerURL();
+};
+var getHTTPsURL = function() {
+    return getAPIStoreObj().getHTTPsURL(request.getRequestURL());
+};
+
+var getHTTPURL = function() {
+   return getAPIStoreObj().getHTTPURL();
+};
+
+
+var getServer = function() {
+    return {
+        server : "localhost",
+        port : "9443"
+    };
+};
+
+var getAdminCookie = function() {
+    //TODO : this should be set in the Context during the deployment
+
+};
+
+var getAPIStoreObj = function() {
+    var user = jagg.getUser();
+    var store;
+    if (user == null) {
+        store = require('apistore');
+        return new store.APIStore();
+    } else {
+        store = require('apistore');
+        return new store.APIStore(user.username);
+    }
+};
+
+var loadTenantRegistry = function (tenantDomain) {
+    try {
+        if (tenantDomain != null && tenantDomain != "") {
+            getAPIStoreObj().loadRegistryOfTenant(tenantDomain);
+            return
+            {
+                error:false
+            }
+            ;
+        }
+    } catch (e) {
+        return {
+            error:true,
+            message:e.message
+        };
+    }    
+};
+
+
+%>

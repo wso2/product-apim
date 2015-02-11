@@ -1,0 +1,61 @@
+<%
+var error = {
+    loginRequired:function (action) {
+        if (action == "addApplication") {
+            return "You need to login before adding an application";
+        } else {
+            return "Please login with a valid username/password";
+        }
+    },
+
+    backendError:function (action) {
+        return "Error occurred while executing the action " + action;
+    },
+
+    authError:function (action) {
+        return "Error occurred while executing the action " + action;
+    },
+
+    contentMissing:function(action) {
+        return "Please provide all needed content in order to " + action;
+    },
+
+    invalidAction:function(action) {
+        return action + " is not supported";
+    },
+   pageNotFoundAction:function() {
+        return {title:"The page cannot be found.",
+                h1:"Error 404",
+                msg:"The page you are looking for might have been removed,had its name changed or is temporarily unavailable."
+        };
+    },
+    internalServerErrorAction:function() {
+        return {title:"The page cannot be displayed.",
+                h1:"Error 500",
+                msg:"The server encountered an internal error or misconfiguration and was unable to complete your request."
+        };
+    },
+    authErrorAction:function() {
+        return {title:"Authorization Required.",
+                h1:"Error 401",
+                msg:"The server couldn't verify that you are authorized to access the requested resource."
+        };
+    },
+   forbidAction:function() {
+        return {title:"Forbidden.",
+                h1:"Error 403",
+                msg:"You don't have permission to access anything with that kind of request."
+        };
+    },
+    workflowRequired:function (action) {
+
+        return "Missing Parameters. Please provide the workflowReference and status";
+
+    },
+    workflowCredentialsRequired:function (action) {
+
+        return "Please provide valid credentials.";
+
+    }
+};
+%>

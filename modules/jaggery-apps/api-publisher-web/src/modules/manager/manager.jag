@@ -1,0 +1,96 @@
+<%
+var getAuthServerURL = function() {
+    return getAPIProviderObj().getAuthServerURL();
+};
+var getHTTPsURL = function() {
+    return getAPIProviderObj().getHTTPsURL();
+};
+
+var getServer = function() {
+    return {
+        server : "localhost",
+        port : "9443"
+    };
+};
+
+var getAPIStoreURL = function() {
+    var result,log=new Log();
+    var provider = getAPIProviderObj();
+    try {
+    result = provider.getAPIStoreURL();
+    if (log.isDebugEnabled()) {
+    log.debug("getAPIStoreURL : ");
+    }
+    return {
+    error:false,
+    url:result
+    };
+    } catch (e) {
+    return {
+    error:true,
+    message:e.message.split(":")[1]
+    };
+    }
+
+};
+
+var getAdminCookie = function() {
+    //TODO : this should be set in the Context during the deployment
+
+};
+
+var getAPIProviderObj = function() {
+    var user = jagg.getUser();
+    var store;
+    if (user == null) {
+        store = require('apipublisher');
+        return new store.APIProvider();
+    } else {
+        store = require('apipublisher');
+        return new store.APIProvider(user.username);
+    }
+};
+
+var loadTenantRegistry = function (tenantDomain) {
+    try {
+        if (tenantDomain != null && tenantDomain != "") {
+            getAPIProviderObj().loadRegistryOfTenant(tenantDomain);
+            return
+            {
+                error:false
+            }
+            ;
+        }
+    } catch (e) {
+        return {
+            error:true,
+            message:e.message
+        };
+    }    
+};
+
+var loadTenantAxisConfiguration = function (tenantDomain) { 
+   
+    try {
+        if (tenantDomain != null && tenantDomain != "") {  
+             
+           getAPIProviderObj().loadAxisConfigOfTenant(String(tenantDomain));
+            return
+            {
+                error:false
+            }
+            ;
+        }
+    } catch (e) {
+        return {
+            error:true,
+            message:e.message
+        };
+    }    
+};
+
+var getAPIStoreObj = function() {
+    var store = require('apistore');
+    return new store.APIStore();
+};
+%>

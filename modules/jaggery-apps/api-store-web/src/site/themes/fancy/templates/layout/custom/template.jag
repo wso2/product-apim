@@ -1,0 +1,25 @@
+<% jagg.template("layout/custom", function(inputs, outputs, jagg) { %>
+<%
+    var mw = 7;
+    var mww = 12;
+    if(!outputs.left && !outputs.right) {
+        mw = 12;
+        mww = 12;
+    } else if(!outputs.left || !outputs.right) {
+        mw = 9;
+        mww = 8;
+    }
+%>
+
+
+<div class="container-fluid">
+    <div class="row-fluid">
+
+        <div class="span<%=String(mw)%> <% if(mw==9){%>padding-from-right<%}%>">
+            <% jagg.includeBlocks(outputs.middle); %>
+        </div>
+
+    </div>
+</div>
+
+        <% }); %>

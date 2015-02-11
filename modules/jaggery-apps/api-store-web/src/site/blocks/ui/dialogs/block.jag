@@ -1,0 +1,22 @@
+<%
+jagg.block("ui/dialogs", {
+
+    initialize:function (data) {
+
+    },
+
+     getOutputs:function (inputs) {
+        return {
+            "isSecure":request.isSecure()
+        }
+    },
+
+    getInputs:function () {
+        return {};
+    },
+
+    getInputBlocks:function () {
+        return [];
+    }
+});
+%>

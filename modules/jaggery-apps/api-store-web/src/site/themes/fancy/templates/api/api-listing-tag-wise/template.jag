@@ -1,0 +1,62 @@
+<% jagg.template("api/api-listing-tag-wise", function(inputs, outputs, jagg) { %>
+
+    <%
+        var i, tag, tags = outputs.tags, length = tags.length;
+        var urlPrefix;
+        var tenant=request_tenant;
+        if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+
+        function getThumbnailUrl(tag){
+            
+			if(tag.isThumbnailExists){
+                return "/registry/resource/_system/governance/apimgt/applicationdata/tags/" + 
+                            tag.name + "/thumbnail.png";
+            }else{
+                return jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-group-default.png"));
+            }
+
+        }
+
+    %>
+<div class="title-section">
+     <h2>APIs groups</h2>
+</div>
+<div class="content-section shadow-up">
+<div class="content-data">
+     <div class="thumbnail-custom">
+
+                    <ul class="thumbnails">
+                        <%
+                        for(i = 0; i < length; i++) {
+                            tag = tags[i];
+                            path = jagg.getMappedUrl("/site/pages/list-apis.jag") + "?tag=" + tag.name+"&"+urlPrefix;
+                            if(tag.name.split(site.tagGroupKey).length == 2){
+
+
+                            var tagName = tag.name.split(site.tagGroupKey)[0];
+                            %>
+                            <li>
+                                <div class="thumbnail cat-thumb">
+                                    <a href="<%=path%>" >
+                                        <img width="100" height="100" src="<%=getThumbnailUrl(tag)%>">
+                                    </a>
+                                        
+                                    <div><a title="<%=tag.name%>" class="link-to-api" href="<%=path%>" ><%=tagName%></a></div>
+                                    <p><%=tag.description%></p>
+                                </div>
+                            </li>
+                            <%
+                            }
+                        }
+                        %>
+
+
+                    </ul>
+
+
+
+
+                </div>
+    </div>
+    </div>
+<% }); %>

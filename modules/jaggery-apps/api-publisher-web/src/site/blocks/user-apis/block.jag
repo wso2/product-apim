@@ -1,0 +1,38 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("user-apis", {
+    initializer:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "apis":null
+        }
+    },
+    getOutputs:function () {
+        var userId = request.getParameter("uname");
+        var query = request.getParameter("query");
+        var apis, result, mod;
+
+        if (query) {
+            mod = jagg.module("search");
+            result = mod.searchAPIs(userId, query);
+            apis = result.apis;
+        } else {
+            mod = jagg.module("api");
+            result = mod.getAPIsByProvider(userId);
+            apis = result.apis;
+        }
+        return {
+            "apis":apis
+        }
+    },
+
+    getStaticBlocks:function() {
+        return [
+            "search/api-search"
+        ];
+    }
+});
+%>

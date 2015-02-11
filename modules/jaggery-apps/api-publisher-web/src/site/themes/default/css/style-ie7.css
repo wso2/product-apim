@@ -1,0 +1,36 @@
+body{
+    background: #fff url(../images/back-normal.png) repeat-y left top;
+}
+#left{
+    width:251px;
+    background: transparent;
+}
+.footer-main{
+    margin-left:277px;
+}
+div.row-fluid div.login-content{
+    margin-left:250px;
+}
+.login-header{
+    margin-top:-25px;
+}
+div.content-data{
+    padding:10px 0;
+    border:solid 1px #ccc;
+}
+div.login-content div.content-data{
+    padding:10px 30px;
+}
+div.title-section{
+    background: #efefef;
+}
+div.form-search{
+    border:none;
+}
+.new-sub-menu-wizard div.wizard-number{
+    display: inline !important;
+    margin-right: 10px;
+}
+.new-sub-menu-wizard{
+    margin-top: 20px !important;
+}

@@ -1,0 +1,14 @@
+<%
+jagg.initializer("documentation/json-editor", {
+
+    preInitialize:function () {
+    	jagg.addFooterJS("documentation/json-editor", "jsonmate1", "templates/documentation/json-editor/json-mate/json2.js");
+    	jagg.addFooterJS("documentation/json-editor", "jsonmate2", "templates/documentation/json-editor/json-mate/jquery.min.js");
+        jagg.addFooterJS("documentation/json-editor", "jsonmate3", "templates/documentation/json-editor/json-mate/jquery.jsoneditor.js");
+        jagg.addHeaderCSS("documentation/json-editor", "jsonmate5", "templates/documentation/json-editor/json-mate/css/jsoneditor.css");
+        jagg.addHeaderCSS("documentation/json-editor", "css", "templates/documentation/json-editor/css/json-editor.css");
+        jagg.addFooterJS("documentation/json-editor", "jagg", "templates/documentation/json-editor/js/jsoneditor.js");
+    }
+
+});
+%>

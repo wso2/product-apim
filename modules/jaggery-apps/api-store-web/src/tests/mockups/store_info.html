@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Store</title>
+    <meta charset="UTF-8">
+    <meta name="description" content=""/>
+    <script type="text/javascript" src="lib/jquery/jquery-1.7.1.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script type="text/javascript" src="lib/kickStart/prettify.js"></script>
+    <!-- PRETTIFY -->
+    <script type="text/javascript" src="lib/kickStart/kickstart.js"></script>
+    <!-- KICKSTART -->
+    <link rel="stylesheet" type="text/css" href="lib/kickStart/css/kickstart.css" media="all"/>
+    <!-- KICKSTART -->
+
+
+    <!--JQUERY Styles-->
+    <link rel="stylesheet" href="lib/jquery/css/start/jquery-ui-1.8.19.custom.css">
+	<script src="lib/jquery/external/jquery.bgiframe-2.1.2.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.core.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.widget.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.mouse.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.button.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.draggable.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.position.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.resizable.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.dialog.min.js"></script>
+	<script src="lib/jquery/ui/jquery.effects.core.min.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+		// a workaround for a flaw in the demo system (http://dev.jqueryui.com/ticket/4375), ignore!
+		$( "#dialog:ui-dialog" ).dialog( "destroy" );
+
+
+
+		$( "#dialog-form" ).dialog({
+			autoOpen: false,
+			height: 270,
+			width: 350,
+			modal: true,
+			buttons: {
+                "Login": function() {
+
+                },
+				Cancel: function() {
+					$( this ).dialog( "close" );
+				}
+			},
+
+			close: function() {
+				allFields.val( "" ).removeClass( "ui-state-error" );
+			}
+		});
+
+		$( "#create-user" ).click(function() {
+				$( "#dialog-form" ).dialog( "open" );
+			});
+	});
+
+    </script>
+
+     <link rel="stylesheet" type="text/css" href="css/style.css" media="all"/>
+    <!-- CUSTOM STYLES -->
+</head>
+<body>
+<div id="dialog-form" title="Login">
+	 <div class="col_4">
+
+        <form id="mainLoginForm">
+            <label for="text1">Username:</label>
+            <input  id="name" name="name" class="loginInputs" placeholder="username" type="text" />
+
+            <label for="text1">Password:</label>
+            <input  type="password" class="loginInputs" id="pass" name="pass" placeholder="password" />
+        </form>
+    </div>
+</div>
+
+<a id="top-of-page"></a>
+<!-- Menu Horizontal -->
+<div class="header-wrapper">
+    <div class="wrap">
+        <div class="col_8">
+            <ul class="menu">
+                <li class="current"><a href="">APIs</a></li>
+                <li><a href="">Applications</a></li>
+                <li><a href="">My Subscriptions</a></li>
+            </ul>
+        </div>
+        <div class="col_4 login-links">
+            <ul style="display:none;">
+                <li><a id="create-user">Login</a></li>
+            </ul>
+            <ul>
+                 <li><a id="logout-user">Logout</a></li>
+                <li><a class="link-to-user">foo@bar.com</a></li>
+            </ul>
+        </div>
+        <a class="logo"></a>
+    </div>
+</div>
+
+<div class="clearfix wrap">
+<!-- ===================================== END HEADER ===================================== -->
+
+
+<!--
+
+        ADD YOU HTML ELEMENTS HERE
+
+        Example: 2 Columns
+     -->
+
+<div class="search-wrapper col_12">
+<div class="col_3">
+
+</div>
+
+<div class="col_9">
+    <h1>APIs</h1>
+
+    <form>
+        <input type="text" class="col_6" name="text21" placeholder="Search APIs"/>
+        <button class="medium"><span class="icon" data-icon="s"></span>Search</button>
+    </form>
+</div>
+</div>
+
+    <div class="col_3 cat_and_charts">
+
+
+        <!-- Ordered List -->
+        <h4>More from provider</h4>
+        <hr/>
+        <!--Item 1-->
+        <div class="col_12 no-padding">
+            <div class="col_5">
+                <a href=""><img src="http://placehold.it/58x58/000000/ffffff.png&text58x58" /></a>
+            </div>
+            <div class="col_7">
+                <a class="item-title">Phone API</a>
+                <a href="#" class="item-provider">www.ondango.com</a>
+                <div class="star-ratings">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                        </div>
+            </div>
+        </div>
+
+        <!--Item 2-->
+        <div class="col_12 no-padding">
+            <div class="col_5">
+                <a href=""><img src="http://placehold.it/58x58/000000/ffffff.png&text=58x58" /></a>
+            </div>
+            <div class="col_7">
+                <a class="item-title">Phone API</a>
+                <a href="#" class="item-provider">www.ondango.com</a>
+                <div class="star-ratings">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                        </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col_9">
+    <h2>Flight Eagle API</h2>
+    <h5>Flight Eagle</h5>
+    <div class="col_12 no-padding">
+        <div class="col_3">
+            <img src="images/bigThumbnail.png">
+        </div>
+        <div class="col_6">
+            <table cellspacing="0" cellpadding="0">
+                <tbody><tr>
+                    <th>Rating:</th>
+                    <td>
+                        <div class="star-ratings">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                            <img src="images/star-1.0.png">
+                        </div>
+                        <div>(250)</div>
+                    </td>
+                </tr><tr>
+                    <th>Version:</th>
+                    <td>2.0</td>
+                </tr><tr>
+                    <th>Updated:</th>
+                    <td>April 6, 2012</td>
+                </tr></tbody>
+            </table>
+        </div>
+        <div class="col_3">
+            <select id="select1" class="fancy">
+            <option value="0">-- Select an Application --</option>
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+            </select>
+            <div class="simple-space-maker"><button class="medium green">Subscribe</button></div>
+        </div>
+        <div class="col_12 tabs-section">
+            <ul class="tabs left">
+                <li><a href="#overviewTab">Overview</a></li>
+                <li><a href="#tryItTab">TryIt</a></li>
+                <li><a href="#documentation">Documentation</a></li>
+                <li><a href="#samples">Samples</a></li>
+                <li><a href="#statistics">Statistics</a></li>
+            </ul>
+
+            <div id="overviewTab" class="tab-content">
+                <h6>Description:</h6>
+                <p>
+                    Flight Eagle is the leading provider of IT solutions and transaction processor to the travel and tourism industry. Flight Eagle provides processing services including search, pricing, booking and ticketing in real-time to travel providers and travel agencies.
+                 </p>
+                <p>
+                    Flight Eagle Cruise Direct Connect is a worldwide distribution channel and provides a way to book cruises. It enables cruise providers to focus on customer service and reduce call center costs by increasing the automation rate; converting telephone bookings into online bookings.
+                </p>
+                <p>
+                    The API is a connection between the Flight Eagle system and a user's own reservation system, enabling agencies to view their live, real-time inventory and availability when accessing Flight Eagle' sales and e-commerce solutions. The API offers the following functionality: distribution via online travel agencies and private-labeled cruise B2B and B2C applications. Full documentation is not publicly available.
+                </p>
+                <h6>Comments:</h6>
+                <textarea id="textarea1" class="col_12 comment-box"></textarea>
+                <button class="medium"><span class="icon gray small" data-icon="+"></span>Add</button>
+                <hr />
+                <div>
+                    <strong>Carman</strong> on April 7, 2012
+                </div>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eget feugiat ipsum. Ut imperdiet sapien et urna tincidunt mollis. In hac habitasse platea dictumst. Nam elementum lacus metus.
+                </p>
+
+            </div>
+            <div id="tryItTab" class="tab-content">Tab2</div>
+            <div id="documentation" class="tab-content">Tab3</div>
+            <div id="samples" class="tab-content">Tab3</div>
+            <div id="statistics" class="tab-content">Tab3</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===================================== START FOOTER ===================================== -->
+<div class="clear"></div>
+<div id="footer">
+    &copy; Copyright 2011–2012 All Rights Reserved.
+    <a id="link-top" href="#top-of-page">Top</a>
+</div>
+
+</div>
+<!-- END WRAP -->
+</body>
+</html>

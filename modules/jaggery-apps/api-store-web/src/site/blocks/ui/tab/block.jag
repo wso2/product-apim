@@ -1,0 +1,25 @@
+<%
+jagg.block("ui/tab", {
+
+    initialize:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+        return inputs;
+    },
+
+    getInputs:function () {
+        return {
+            tabs:null,
+            classes:null
+        };
+    },
+
+    getInputBlocks:function () {
+        return [
+            ["tabs", "body"]
+        ];
+    }
+});
+%>

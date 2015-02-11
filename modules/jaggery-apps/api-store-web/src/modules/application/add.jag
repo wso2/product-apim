@@ -1,0 +1,23 @@
+<%
+var addApplication = function (username, application, tier, callbackUrl,descriptionNew) {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        var status=store.addApplication(application, username, tier, callbackUrl,descriptionNew);
+        if (log.isDebugEnabled()) {
+            log.debug("addApplication");
+        }
+        return {
+            error:false,
+            status:status
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e.message.split(":")[1],
+        	status:false
+        };
+    }
+};
+%>

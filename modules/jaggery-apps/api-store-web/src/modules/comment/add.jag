@@ -1,0 +1,48 @@
+<%
+var addComment = function (api, comment) {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        //TODO : how to idenftify the comment added user
+        store.addComments(api.provider, api.name, api.version, comment);
+        if (log.isDebugEnabled()) {
+            log.debug("addComment");
+        }
+        return {
+            error:false
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e
+        };
+    }
+};
+var isCommentActivated = function () {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+	var result;
+    try {
+        result= store.isCommentActivated();
+        if (log.isDebugEnabled()) {
+            log.debug("isCommentActivated :" +result);
+        }
+        if (result) {
+            return {
+                allow:true
+            };
+        } else {
+            return {
+                allow:false
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e
+        };
+    }
+};
+
+%>

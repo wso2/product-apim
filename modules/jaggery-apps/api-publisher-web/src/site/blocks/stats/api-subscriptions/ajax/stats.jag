@@ -1,0 +1,91 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, result,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag")
+    allProviders = "__all_providers__";
+    if (jagg.getUser() == null) {
+        print({
+            error: true,
+            message: 'timeout'
+        });
+    } else {
+
+
+        if (action === "getSubscriberCountByAPIs") {
+            mod = jagg.module("statistics");
+            var provider = jagg.getUser().username;
+            var currentLocation = request.getParameter("currentLocation");
+            if (currentLocation.indexOf("all-statistics") >= 0) {
+                result = mod.getSubscriberCountByAPIs(allProviders);
+            } else {
+                result = mod.getSubscriberCountByAPIs(provider);
+            }
+            if (result.error == "true") {
+                obj = {
+                    error: result.error,
+                    message: msg.error.backendError(action)
+                };
+            } else {
+                obj = {
+                    error: false,
+                    usage: result.usage
+                }
+            }
+            print(obj);
+
+
+        } else if (action === "getFirstAccessTime") {
+            mod = jagg.module("statistics");
+            var provider = jagg.getUser().username;
+            var currentLocation = request.getParameter("currentLocation");
+            if (currentLocation.indexOf("all-statistics") >= 0) {
+                result = mod.getFirstAccessTime(allProviders);
+            } else {
+                result = mod.getFirstAccessTime(provider);
+            }
+            if (result.error == "true") {
+                obj = {
+                    error: result.error,
+                    message: msg.error.backendError(action)
+                };
+            } else {
+                obj = {
+                    error: false,
+                    usage: result.usage
+                }
+            }
+            print(obj);
+
+        } else if (action === "isDataPublishingEnabled") {
+            mod = jagg.module("statistics");
+            result = mod.isDataPublishingEnabled();
+            
+            if (result.error == "true") {
+                obj = {
+                    error: result.error,
+                    message: msg.error.backendError(action)
+                };
+            } else {
+                obj = {
+                    error: false,
+                    usage: result.usage
+                }
+            }
+            print(obj);
+
+        }
+
+        else {
+            print({
+                error: true,
+                message: msg.error.invalidAction(action)
+            });
+        }
+    }
+}());
+%>

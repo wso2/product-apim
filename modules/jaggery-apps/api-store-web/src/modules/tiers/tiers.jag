@@ -1,0 +1,49 @@
+<%
+var getTiers = function () {
+    var tiers,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        tiers = store.getTiers();
+        if (log.isDebugEnabled()) {
+            log.debug("getTiers : " + stringify(tiers));
+        }
+        return {
+            error:false,
+            tiers:tiers
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            tiers:null
+        };
+    }
+};
+
+var getDeniedTiers = function () {
+    var tiers,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        tiers = store.getDeniedTiers();
+        if (log.isDebugEnabled()) {
+            log.debug("getDeniedTiers : " + stringify(tiers));
+        }
+        return {
+            error:false,
+            tiers:tiers
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            tiers:null
+        };
+    }
+};
+
+%>
+

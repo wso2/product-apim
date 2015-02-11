@@ -1,0 +1,30 @@
+<%
+jagg.block("application/application-list", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "user":null
+        }
+    },
+
+    getOutputs:function (inputs) {
+
+        var applications, result, user = inputs.user;
+        result = jagg.module("application").getApplications(user.username);
+        applications = result.applications;
+
+        var tiers, tierResults;
+        tierResults = jagg.module("tiers").getTiers();
+        tiers = tierResults.tiers;
+
+        return {
+            "applications":applications,
+            "tiers":tiers
+        };
+    }
+
+});
+%>

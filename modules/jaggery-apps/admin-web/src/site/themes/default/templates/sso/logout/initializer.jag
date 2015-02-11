@@ -1,0 +1,8 @@
+<%
+jagg.initializer("sso/logout", {
+
+    preInitialize:function () {
+
+    }
+});
+%>

@@ -1,0 +1,32 @@
+<%
+// This is a generic header file that can be included in all the pages.
+
+var site = require("/site/conf/site.json");
+var ssoEnabled = site.ssoConfiguration.enabled;
+if (ssoEnabled === 'true') {
+    jagg.includeBlock("sso/filter", {});
+}
+
+var getRedirectPathForNonAuthenticatedUser = function () {
+    var requestedPage = request.getRequestURI();
+    if (request.getQueryString() != null) {
+        requestedPage = requestedPage + '?' + encodeURIComponent(request.getQueryString());
+    }
+    var redirectPath = jagg.getAbsoluteUrl("/site/pages/login.jag?requestedPage=" + requestedPage);
+    return redirectPath;
+};
+
+var isTenantAllowed=function(){
+ var user = jagg.getUser(),username;
+   if(user!=null){
+   username=user.username;
+   if(request.getParameter("tenant")!=null){
+   if(user.username.split("@")[1]!=request.getParameter("tenant")){
+   jagg.setUser(null);
+   response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+   return;
+   }
+   }
+   }
+   };
+%>

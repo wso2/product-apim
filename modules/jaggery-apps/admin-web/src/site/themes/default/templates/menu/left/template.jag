@@ -1,0 +1,32 @@
+<% jagg.template("menu/left", function(inputs, outputs, jagg) { %>
+<%  var site = require("/site/conf/site.json");
+    var ssoEnabled = site.ssoConfiguration.enabled;
+
+    var reqUrl = request.getRequestURI();
+    var listUrl=jagg.getAbsoluteUrl("/site/pages/index.jag");
+    var listMappedUrl=jagg.getMappedUrl("/site/pages/index.jag");
+    var subsUrl=jagg.getAbsoluteUrl("/site/pages/index.jag");
+    var subsMappedUrl=jagg.getMappedUrl("/site/pages/index.jag");
+
+    
+    var partWithContext = request.getRequestURL().split(
+                                request.getRequestURI()
+                              )[0]+request.getContextPath();
+
+    
+    
+%>
+
+<div class="sidebar-nav left-menu-back01">
+    <ul class="nav nav-list">
+    <li class="nav-header"><%=i18n.localize("tasks")%></li>
+     <li <% if(request.getParameter("task")==null|| request.getParameter("task")=="signup"){%>class="active"<% } %>><a href="<%=subsMappedUrl%>?task=signup" onclick="jagg.sessionAwareJS({redirect:'<%=subsMappedUrl%>?task=signup',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("userCreation")%></a></li>
+             <li <% if(request.getParameter("task")=="application"){%>class="active"<% } %>><a href="<%=subsMappedUrl%>?task=application" onclick="jagg.sessionAwareJS({redirect:'<%=subsMappedUrl%>?task=application',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("appCreation")%></a></li>
+        <li <%if(request.getParameter("task")=="subscription"){%>class="active"<% } %>><a href="<%=listMappedUrl%>?task=subscription"  onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>?task=subscription',e:event,ssoEnabled:<%=ssoEnabled%>})"><%=i18n.localize("subscriptionCreation")%></a></li>
+        <li <%if(request.getParameter("task")=="appRegistration"){%>class="active"<% } %>><a href="<%=listMappedUrl%>?task=appRegistration"  onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>?task=appRegistration',e:event,ssoEnabled:<%=ssoEnabled%>})"><%="Application Registration"%></a></li>
+    <li class="nav-header"><%=i18n.localize("settings")%></li>        
+        <li <%if(request.getParameter("task")=="themeUpload"){%>class="active"<% } %>><a href="<%= partWithContext %>/themeupload"  onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>?task=themeUpload',e:event,ssoEnabled:<%=ssoEnabled%>})"><%= i18n.localize("themeUpload") %></a></li>
+     </ul>
+</div>
+
+<%});%>

@@ -1,0 +1,39 @@
+<%
+jagg.block("item-manage", {
+    initializer:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+    var name, version, api, result, mod,isPermitted,isCreatePermitted,tenant;
+
+    name = request.getParameter("name");
+    version = request.getParameter("version");
+    provider = request.getParameter("provider");
+    tenant=inputs.tenant;
+
+    mod = jagg.module("api");
+    isPermitted = jagg.getPublishPermitted().permitted;
+    isCreatePermitted = jagg.getCreatePermitted().permitted;
+    result = mod.getAPI({name:name, version:version, provider:provider});
+    api = result.api;
+
+    result = mod.isSynapseGateway();
+    isSynapseGateway = result.isSynapseGateway;
+    
+    result = mod.isDataPublishingEnabled();
+    isDataPublishingEnabled = result.isDataPublishingEnabled;
+
+
+        return {
+            "api":api,
+            "isPermitted":isPermitted,
+            "isCreatePermitted":isCreatePermitted,
+            "tenant":tenant,
+            "isSynapseGateway":isSynapseGateway,
+            "isDataPublishingEnabled":isDataPublishingEnabled            
+        }
+    }
+
+});
+%>

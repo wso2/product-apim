@@ -1,0 +1,37 @@
+<% jagg.template("layout/base", function(inputs, outputs, jagg) { %>
+<%
+    var mw = 8;
+    if(!outputs.left && !outputs.right) {
+        mw = 12;
+    } else if(!outputs.left || !outputs.right) {
+        mw = 10;
+    }
+%>
+<div id="layout-base" class="container-fluid">
+    <div class="row-fluid">
+        <% if(outputs.top) { %>
+        <div id="top">
+            <% jagg.includeBlocks(outputs.top); %>
+        </div>
+        <% } %>
+        <% if(outputs.left) { %>
+        <div id="left">
+            <% jagg.includeBlocks(outputs.left); %>
+        </div>
+        <% } %>
+        <div id="middle">
+            <% jagg.includeBlocks(outputs.middle); %>
+        </div>
+        <% if(outputs.right) { %>
+        <div id="right" class="span2">
+            <% jagg.includeBlocks(outputs.right); %>
+        </div>
+        <% } %>
+        <% if(outputs.bottom) { %>
+        <div id="bottom">
+            <% jagg.includeBlocks(outputs.bottom); %>
+        </div>
+        <% } %>
+    </div>
+</div>
+<% }); %>

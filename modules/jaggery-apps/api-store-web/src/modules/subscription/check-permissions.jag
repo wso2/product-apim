@@ -1,0 +1,30 @@
+<%
+var hasSubscribePermission= function () {
+    var success,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        success = store.hasSubscribePermission();
+        if (log.isDebugEnabled()) {
+            log.debug("hasSubscribePermission method " );
+        }
+        if(success){
+        return {
+            error:false,
+            permitted:success
+        };
+        }else{
+        return {
+            error:true,
+            permitted:success
+        }; }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            permitted:false
+        };
+    }
+};
+%>

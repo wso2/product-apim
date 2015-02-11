@@ -1,0 +1,41 @@
+<%
+var getTopRatedAPIs = function (limit) {
+    var list, i, length, api, apis,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        apis = store.getTopRatedAPIs(limit);
+        if (log.isDebugEnabled()) {
+            log.debug("getTopRatedAPIs : " + stringify(apis));
+        }
+        list = [];
+        length = apis.length;
+        for (i = 0; i < length; i++) {
+            api = apis[i];
+            list.push({
+                name:api.name,
+                provider:api.provider,
+                version:api.version,
+                updatedTime:api.updatedDate,
+                description:api.description,
+                rating:api.rates,
+                subscribed:api.subscribed,
+                thumbURL:api.thumbnailurl,
+                tier:api.tier,
+                context:api.context
+            });
+        }
+        return {
+            error:false,
+            apis:list
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            apis:null
+        };
+    }
+};
+%>

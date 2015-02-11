@@ -1,0 +1,77 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+var tenantDomain=getTenantDomain();
+
+
+var log = new Log();
+
+// routing logic
+var uri = request.getRequestURI();
+var callPath=uri.replace("/store/forum","");
+
+var action = "list"; // default action list the topics
+if(uri != null) {
+    var uriMatcher = new URIMatcher(callPath);
+    if(uriMatcher.match("/new")) {
+        action = "new"; // create topic
+    }
+    if(uriMatcher.match("/new/{id}")) {
+        action = "new"; // create topic
+    }
+    if(uriMatcher.match("/topic/{id}")) {
+        var topic = uriMatcher.elements().id;
+        action = "topic";
+    }
+}
+
+(function () {
+    var apis, site, tag, query, result, mod, user = jagg.getUser();
+
+    isTenantAllowed();
+
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"API Forum",
+            "pagePath":"/site/pages/forum.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"My Subscriptions",
+                        "top":[
+                            {
+                                "name":"banner/featured",
+                                "inputs":null
+                            },
+                            {
+                                "name":"search/api-search",
+                                "inputs":null
+                            }
+                        ],
+                        "left":[
+                            {
+                                "name":"api/recently-added",
+                                "inputs":{"tenant":tenantDomain}
+                            }
+                        ],
+                        "middle":[{
+                                "name":"forum/forum-" + action,
+                                "inputs":{
+                                    "user":user
+                                }
+                            }
+                        ],
+                        "right":null
+                    }
+                }
+            ]
+        }
+    });
+}());
+%>

@@ -1,0 +1,13 @@
+<%
+jagg.block("errors", {
+    initializer:function (data) {
+
+    } ,getInputs:function () {
+        return {
+            "error":null,
+
+        };
+    },
+
+});
+%>

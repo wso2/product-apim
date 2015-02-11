@@ -1,0 +1,15 @@
+<%
+jagg.block("api/swagger", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "api":null,
+            "swaggerString":null,
+            "user":null
+        }
+    }
+});
+%>

@@ -1,0 +1,7 @@
+<%
+jagg.initializer("users-api", {
+
+    preInitialize:function () {
+    }
+});
+%>

@@ -1,0 +1,9 @@
+<%
+jagg.initializer("overview", {
+
+    preInitialize:function () {
+    jagg.addHeaderJS("overview", "jagg", "templates/overview/js/copy.js");
+    }
+});
+%>
+

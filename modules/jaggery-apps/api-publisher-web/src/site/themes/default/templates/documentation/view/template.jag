@@ -1,0 +1,25 @@
+<% jagg.template("documentation/view", function(inputs, outputs, jagg) { %>
+<% var i, length, doc = outputs.doc;
+
+%>
+
+<div class="container-fluid login-container">
+    <div class="row-fluid">
+        <div class="span2 login-left">
+            <div class="left-side-col">
+            </div>
+        </div>
+        <div class="span6 login-content">
+        	<p class="doc-content"><%=doc.provider.docName%></p>
+			
+		    <%if(!doc.provider.content && doc.provider.content==""){%>
+		    	<p>No document content have been added yet.</p>
+		    <%}else{%>
+		    	<p><%=doc.provider.content%></p>
+		    <%}%>
+
+
+</div>
+    </div>
+
+<%});%>

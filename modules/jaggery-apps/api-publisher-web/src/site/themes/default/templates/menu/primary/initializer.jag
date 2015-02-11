@@ -1,0 +1,8 @@
+<%
+jagg.initializer("menu/primary", {
+
+    preInitialize:function () {
+    jagg.addHeaderJS("menu/primary", "jagg", "templates/menu/primary/js/logout.js");
+    }
+});
+%>

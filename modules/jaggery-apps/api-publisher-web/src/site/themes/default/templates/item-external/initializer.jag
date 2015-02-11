@@ -1,0 +1,15 @@
+<%
+jagg.initializer("item-external", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("custom-validate", "jagg", "templates/utils/custom-validation/custom-validation.js");
+        jagg.addHeaderJS("url-validate", "jagg", "templates/utils/url-validation/url-validation.js");
+    }
+});
+%>
+
+
+
+
+
+

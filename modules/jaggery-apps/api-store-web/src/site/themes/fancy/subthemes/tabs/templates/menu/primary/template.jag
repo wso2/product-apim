@@ -1,0 +1,56 @@
+<% jagg.template("menu/primary", function(inputs, outputs, jagg) { %>
+
+      <!--START Header menu-->
+      <div class="container-fluid header">
+          <div class="row-fluid">
+              <div class="span3 logo-section">
+                  <%var tenant=request_tenant;
+                                 var urlPrefix;
+                                 if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}%>
+                               <a onclick="jagg.sessionAwareJS({redirect:'<%=jagg.getMappedUrl("/site/pages/index.jag")%>?<%=urlPrefix%>',e:event})" href="<%=jagg.getMappedUrl("/site/pages/index.jag")%>?<%=urlPrefix%>" class="brand"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/logo.png"))%>" alt="API Store"></a>
+              </div>
+              <div class="span9 menu-back">
+                  <!--<div class="menu-content">-->
+                      <!--<div class="navbar">-->
+                          <!--<div class="navbar-inner">-->
+                              <%
+                              var tenantStore=request.getQueryString();
+                              if(outputs.tenantDomains==null ||  (tenantStore!=null && tenantStore.indexOf("tenant")>=0 )){%>
+                              <ul class="nav orderFix">
+                                  <%
+                                  var i, link, links = outputs.links, length = links.length;
+
+                                  for(i = 0; i < length; i++) {
+                                      link = links[i];
+                                  %>
+                                  <li <%=(link.active ? 'class="active"' : '')%>>
+
+                                      <a title="<%=link.tooltip%>" href="<%=link.url%>"<%=(link.classes ? ' class="' + link.classes + '"' : "")%>>
+                                          <i class="<%=link.classIcon%>"></i>
+                                          <br>
+                                          <%=link.title%>
+                                      </a>
+                                  </li>
+                                  <% }  %>
+                                  <li class="dropdown tryit-menu-item">
+                                      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                          <i class="icon-tools-top"></i>
+                                                                                <br>
+                                          Tools <b class="caret"></b></a>
+                                      <ul class="dropdown-menu">
+                                          <li>
+                                              <a href="<%=jagg.getAbsoluteUrl("/site/pages/rest-client.jag")%>?<%=urlPrefix%>">RESTClient</a></li>
+                                      </ul>
+                                  </li>
+                              </ul>
+                              <% jagg.includeBlock("user/login", null); %>
+                              <%}%>
+                          <!--</div>-->
+                      <!--</div>-->
+                  <!--</div>-->
+              </div>
+          </div>
+      </div>
+
+      <!--END Header menu-->
+<% }); %>

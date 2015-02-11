@@ -1,0 +1,74 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("listing", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "apis":null,
+            "currentPage":null,
+            "numberOfPages":null
+        };
+    },
+
+    getOutputs:function () {
+        var apis, result,query,error,message, mod,mode,user = jagg.getUser();
+
+        query = request.getParameter("query");
+        var page = request.getParameter("page");
+        if (page == null) {
+            page = 1;
+        }
+        var itemsPerPage = 10;
+        var currentPage = page;
+
+        if (query) {
+            mod = jagg.module("search");
+            result = mod.searchAPIs(null,query);
+            apis = result.apis;
+            error=result.error,
+            message=result.message,
+            mode="search"
+        } else {
+            mod = jagg.module("api");
+            result = mod.getAllAPIs();
+            apis = result.apis;
+            error=result.error,
+            message=result.message
+            mode="listing"
+        }
+        var itemCount;
+        if (apis != null) {
+            itemCount = apis.length;
+            var numberOfPages = itemCount / itemsPerPage;
+            if (itemCount % itemsPerPage != 0) {
+                numberOfPages++;
+            }
+            if (numberOfPages < currentPage || currentPage <= 0) {
+                currentPage = 1;
+            }
+        }
+        var isCreatePermitted = jagg.getCreatePermitted().permitted;
+        return {
+            "apis":apis,
+            "error":error,
+            "message":message,
+            "currentPage":currentPage,
+            "numberOfPages":numberOfPages,
+            "isCreatePermitted":isCreatePermitted,
+            "mode":mode
+        }
+    },
+
+
+    getStaticBlocks:function() {
+        return [
+            "search/api-search"
+        ];
+    }
+
+});
+%>

@@ -1,0 +1,136 @@
+<% jagg.template("api/tryit", function(inputs, outputs, jagg) {%>
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <div class="title-section">
+                       <h2>RESTClient</h2>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <div class="content-section shadow-up">
+                <div class="content-data">
+                    <h3>Request</h3>
+                    <div class="tryit-header-section">
+                        <div class="container-fluid">
+                            <div class="row-fluid request-form">
+                                <div class="span2">
+                                    <select name="req_verb" id="req_verb">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                        <option value="OPTIONS">OPTIONS</option>
+                                    </select>
+                                </div>
+                                <div class="span9">
+                                    <input id="req_url" data-value="" value="" placeholder="http://www.example.com" />
+                                    <input id="apiName" type="hidden" value="" />
+                                    <div class="help-block">
+
+                                    </div>
+                                </div>
+                                <div class="span1"><input type="button" id="sendBtn" class="btn btn-danger sendBtn" value="SEND" /></div>
+                            </div>
+                            <div class="row-fluid" id="progressBar" style="display:none">
+                                <div class="span12">
+                                    <div class="messages">Sending request please wait...</div>
+                                    <div class="progress progress-striped active">
+                                        <div class="bar" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="tryit-tab-section">
+                        <div class="container-fluid">
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <h4>Headers</h4>
+                                    <ul class="nav nav-tabs">
+                                        <li class="active"><a href="#tryit-headers-row" data-toggle="tab">Raw</a></li>
+                                        <li class=""><a href="#tryit-headers-form" data-toggle="tab">Form</a></li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade active in" id="tryit-headers-row">
+                                            <textarea style="width:98%" id="req_headers" placeholder="Headers"></textarea>
+                                        </div>
+                                        <div class="tab-pane fade" id="tryit-headers-form">
+                                            <a onclick="addNewHeaderRow()"><i class="icon-plus-sign"></i> Add new header </a>
+                                            <div class="form-inline row-by-row" style="margin-top:5px;" id="tryit-headers-form-content"></div>
+                                        </div>
+                                    </div>
+                                    <div id="bodySection">
+                                        <h4>Payload</h4>
+                                        <ul class="nav nav-tabs">
+                                            <li class="active"><a href="#tryit-body-row" data-toggle="tab">Raw</a></li>
+                                            <li class=""><a href="#tryit-body-form" data-toggle="tab">Form</a></li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div class="tab-pane fade active in" id="tryit-body-row">
+                                                <textarea style="width:98%" id="req_body" placeholder="Headers"></textarea>
+                                            </div>
+                                            <div class="tab-pane fade" id="tryit-body-form">
+                                                <a onclick="addNewPayloadRow()"><i class="icon-plus-sign"></i> Add new value </a>
+                                                <div class="form-inline row-by-row" style="margin-top:5px;" id="tryit-body-form-content"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="content-type-section" style="display:none;">
+                                <h4>Content Type</h4>
+                                <div class="tab-content">
+                                <div class="row-fluid">
+                                        <div class="span5">
+                                            <select name="content_type" id="content_type" class="span12" title="Select form encoding" >
+                                                <option value="application/atom+xml">application/atom+xml</option>
+                                                <option value="application/json">application/json</option>
+                                                <option value="application/x-www-form-urlencoded" selected="selected">application/x-www-form-urlencoded</option>
+                                                <option value="application/xml">application/xml</option>
+                                                <option value="multipart/form-data">multipart/form-data</option>
+                                                <option value="text/html">text/html</option>
+                                                <option value="text/plain">text/plain</option>
+                                            </select>
+                                        </div>
+                                        <div class="span7">
+                                            Set "Content-Type" header to overwrite this value.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="tryit-req-res" style="display:none;" id="responseSection">
+                       <h3>Response</h3>
+                       <ul class="nav nav-tabs">
+                           <li class="active"><a href="#tryit-response-body" data-toggle="tab">Response Body</a></li>
+                           <li><a href="#tryit-response-headers" data-toggle="tab">Response Headers</a></li>
+                       </ul>
+                       <div class="tab-content">
+                           <div class="tab-pane fade  active in" id="tryit-response-body">
+                               <pre class="response-content codeStyle" id="responseDivContent"></pre>
+                           </div>
+                           <div class="tab-pane fade" id="tryit-response-headers">
+                               <div class="container-fluid" id="responseDivHeaders"></div>
+                           </div>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+
+
+
+
+
+        <% }); %>

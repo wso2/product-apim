@@ -1,0 +1,38 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+        
+(function () {
+
+    var title = "API Store-Document Viewer";
+    var user=jagg.getUser();
+    isTenantAllowed();
+
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":title,
+            "pagePath":"/site/pages/doc-viewer.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"Document Viewer",
+                        "top":null,
+                        "left":null,
+                        "middle":{
+                            "name":"api/documentation/view"
+
+                        },
+                        "right":null
+                    }
+                }
+            ]
+        }
+    });
+}());
+//%>

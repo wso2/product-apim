@@ -1,0 +1,59 @@
+<%
+jagg.block("layout/extended", {
+
+    getParent:function () {
+        return "layout/base";
+    },
+
+    getOutputs:function (inputs) {
+    var tenantDomain=request.getParameter("tenant");
+        return {
+            "title":inputs.title,
+            "top":[
+                {
+                    "name":"banner/featured",
+                    "inputs":null
+                },
+                {
+                    "name":"search/api-search",
+                    "inputs":null
+                }
+            ],
+            "left":[
+                {
+                    "name":"api/recently-added",
+                    "inputs":{"tenant":tenantDomain}
+                }
+            ],
+            "middle":inputs.middle,
+            "right":[
+                {
+                    "name":"tag/tag-cloud",
+                    "inputs":{"tenant":tenantDomain}
+                }
+            ]
+        };
+    },
+
+    getInputs:function () {
+        return {
+            "title":null,
+            "middle":null
+        };
+    },
+
+    getOutputBlocks:function () {
+        return [
+            "header",
+            "top",
+            "left",
+            "right"
+        ];
+    },
+    getInputBlocks:function () {
+        return [
+            "middle"
+        ];
+    }
+});
+%>

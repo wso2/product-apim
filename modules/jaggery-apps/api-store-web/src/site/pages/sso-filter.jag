@@ -1,0 +1,9 @@
+<%
+include("/jagg/jagg.jag");
+var site = require("/site/conf/site.json");
+var ssoEnabled = site.ssoConfiguration.enabled;
+if (ssoEnabled === 'true') {
+    jagg.includeBlock("sso/filter", {});
+}
+
+%>

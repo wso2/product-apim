@@ -1,0 +1,9 @@
+<%
+jagg.block("documentation/inline-editor", {
+    initializer:function (data) {
+
+    }
+
+
+});
+%>

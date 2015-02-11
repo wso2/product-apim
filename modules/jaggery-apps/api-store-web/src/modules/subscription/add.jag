@@ -1,0 +1,49 @@
+<%
+var addSubscription = function (api, tier, applicationId, username) {
+    var status,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        status = store.addSubscription(api.provider, api.name, api.version, tier, applicationId, username);
+        if (log.isDebugEnabled()) {
+            log.debug("addAPISubscription");
+        }
+        return {
+            error:false,
+            status:status
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            status:false,
+            message:e.message
+        };
+    }
+};
+
+var addAPISubscription = function (api, tier, applicationName, username) {
+    var status,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        status = store.addAPISubscription(api.provider, api.name, api.version, tier, applicationName, username);
+        if (log.isDebugEnabled()) {
+            log.debug("addAPISubscription");
+        }
+        return {
+            error:false,
+            status:status
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            status:false,
+            message:e.message
+        };
+    }
+};
+%>

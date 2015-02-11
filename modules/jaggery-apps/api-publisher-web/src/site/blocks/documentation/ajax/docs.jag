@@ -1,0 +1,133 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "text/plain; charset=UTF-8";
+    var mod, obj, result, username,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+    if (jagg.getUser() == null) {
+        print({
+                  error:true,
+                  message:'AuthenticateError'
+              });
+    } else {
+        if (action === "addDocumentation" && request.getMethod() == 'POST') {
+            mod = jagg.module("documentation");
+            var apiData = {};
+            var docData = {};
+            var mode = request.getParameter("mode");
+            apiData.provider = request.getParameter("provider","UTF-8");
+            apiData.name = request.getParameter("apiName","UTF-8");
+            apiData.version = request.getParameter("version");
+            docData.name = request.getParameter("docName","UTF-8");
+            docData.type = request.getParameter("docType");
+            docData.sourceType = request.getParameter("sourceType");
+            docData.sourceUrl = request.getParameter("docUrl");
+            docData.summary = request.getParameter("summary","UTF-8");
+            docData.fileContent = request.getFile("docLocation");
+            docData.content = "";
+	    	docData.otherTypeName = request.getParameter("newType");
+	    	docData.mimeType = request.getParameter("mimeType");
+	    	docData.visibility = request.getParameter("docVisibility");
+
+            if (mode == "Update") {
+                result = mod.updateDocumentation(apiData, docData);
+            } else if (mode == null || mode== ""|| mode== "add") {
+                result = mod.addDocumentation(apiData, docData);
+            } else{
+               obj = {
+                                  error:true,
+                                  message:"Invalid request parameters"
+                      };
+               response.status = 500;
+               print(obj);
+               return;
+            }
+
+            if (result.error === true) {
+                obj = {
+                    error:result.error,
+                    message:result.message
+                };
+                response.status = 500;
+            } else {
+                obj = {
+                    error:false
+                }
+            }
+            print(obj);
+        } else if (action === "addInlineContent" && request.getMethod() == 'POST') {
+            mod = jagg.module("documentation");
+            var apiDetails = {};
+            var docDetails = {};
+            apiDetails.provider = request.getParameter("provider");
+            apiDetails.name = request.getParameter("apiName");
+            apiDetails.version = request.getParameter("version");
+            docDetails.name = request.getParameter("docName");
+            docDetails.content = request.getParameter("content");
+            result = mod.addInlineContent(apiDetails, docDetails);
+            if (result.error) {
+                obj = {
+                    error:result.error,
+                    message:result.message
+                };
+            } else {
+                obj = {
+                    error:false
+                }
+            }
+            print(obj);
+        } else if (action === "getInlineContent") {
+            mod = jagg.module("documentation");
+            var api = {};
+            api.provider = request.getParameter("provider");
+            api.name = request.getParameter("apiName");
+            api.version = request.getParameter("version");
+            docName = request.getParameter("docName");
+            result = mod.getInlineContent(api, docName);
+            if (result.error) {
+                obj = {
+                    error:result.error,
+                    message:result.message
+                };
+            } else {
+                obj = {
+                    doc:result.doc,
+                    error:false
+                }
+            }
+            print(obj);
+
+        } else if (action === "removeDocumentation" && request.getMethod() == 'POST') {
+            mod = jagg.module("documentation");
+            var apiInfo = {};
+            var docInfo = {};
+            apiInfo.provider = request.getParameter("provider");
+            apiInfo.name = request.getParameter("apiName");
+            apiInfo.version = request.getParameter("version");
+            docInfo.name = request.getParameter("docName");
+            docInfo.type = request.getParameter("docType");
+            result = mod.removeDocumentation(apiInfo, docInfo);
+            if (result.error) {
+                obj = {
+                    error:result.error,
+                    message:result.message
+                };
+            } else {
+                obj = {
+                    error:false
+                }
+            }
+            print(obj);
+
+        } else {
+            print({
+                      error:true,
+                      message:msg.error.invalidAction(action)
+                  });
+        }
+    }
+}());
+%>

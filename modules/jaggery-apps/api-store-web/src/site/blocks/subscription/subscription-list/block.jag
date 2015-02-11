@@ -1,0 +1,40 @@
+<%
+jagg.block("subscription/subscription-list", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "user":null
+        }
+    },
+
+    getOutputs:function (inputs) {
+
+        var applications, result, selectedApp, user = inputs.user;
+        if(request.getParameter('selectedApp')!=null){
+            selectedApp = request.getParameter('selectedApp');
+        }else if(session.get('selectedApp')!=null){
+            selectedApp = session.get('selectedApp');
+        }else{
+            selectedApp= "";
+        }
+        
+        result = jagg.module("subscription").getAllSubscriptions(user.username, selectedApp);
+        applications = result.applications;
+
+        return {
+            "applications":applications
+        };
+    },
+
+    getStaticBlocks:function() {
+        return [
+            "subscription/subscription-list-element"
+        ];
+    }
+
+
+});
+%>

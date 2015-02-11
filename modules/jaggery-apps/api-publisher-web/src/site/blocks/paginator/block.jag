@@ -1,0 +1,15 @@
+<%
+jagg.block("paginator", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "currentPage":null,
+            "numberOfPages":null
+        }
+    },
+
+});
+%>

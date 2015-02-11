@@ -1,0 +1,114 @@
+<% jagg.template("page/base", function(inputs, outputs, jagg) {%>
+<!DOCTYPE html>
+<html>
+<%
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+%>
+<head>
+
+    <!-- Le styles -->
+    <%
+
+    var tenant=request_tenant;
+    var urlPrefix;
+    if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}
+    var currentURL = jagg.getAbsoluteUrl('/'); 
+
+    %>
+    <script>
+        var requestURL = '<%= currentURL%>';
+        var ssoEnabled = '<%=site.ssoConfiguration.enabled%>';
+        var tenant = '<%=tenant%>';
+        var urlPrefix = '<%=urlPrefix%>';
+    </script>
+
+    <title><%=outputs.title%></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="">
+    <meta charset="UTF-8">
+    <meta name="description" content=""/>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/favicon-store.png"))%>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="bootstrap/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="bootstrap/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="bootstrap/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="bootstrap/ico/apple-touch-icon-57-precomposed.png">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]><script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/html5/html5.js"))%>"></script><![endif]-->
+    <script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/jquery/jquery-1.7.1.min.js"))%>"></script>
+    <script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/i18n/i18next-1.5.9.js"))%>"></script>
+
+    <link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/css/bootstrap.css"))%>" />
+    <link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/css/bootstrap-responsive.css"))%>" />
+    <link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("css/styles-layout.css"))%>" media="all"/>
+    <link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("css/styles-application.css"))%>" media="all"/>
+    <!--[if IE 7]><link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("css/style-ie7.css"))%>" media="all"/><![endif]-->
+	<!--[if lt IE 9]><link rel="stylesheet" type="text/css" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("css/style-ie7-8.css"))%>" media="all"/><![endif]-->
+    <%
+    var data = jagg.data();
+    if(data.header) {
+        jagg.printData(data.header.js);
+        jagg.printData(data.header.css);
+        jagg.printData(data.header.code);
+    }
+    %>
+    <script>
+        var siteRoot = '<%=jagg.getAbsoluteUrl("/site/themes/"+jagg.getUserTheme().base)%>';
+    </script>
+</head>
+<body>
+<% jagg.includeBlock("ui/dialogs", {}); %>
+
+<div id="wrap">
+
+    <% jagg.includeBlock("menu/primary", {"pagePath":outputs.pagePath,"tenant":tenant}); %>
+
+
+    <% jagg.includeBlocks(outputs.body); %>
+
+</div> <!-- End wrapper -->
+   <div class="container-fluid footer-main">
+       <div class="row-fluid">
+           <div class="span12">
+
+           </div>
+       </div>
+   </div>
+
+<%
+if(data.footer) {
+    jagg.printData(data.footer.js);
+    jagg.printData(data.footer.css);
+    jagg.printData(data.footer.code);
+}
+%>
+
+<!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/jquery.validate.min.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/jquery.validate.password.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-transition.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-transition.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-alert.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-modal.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-dropdown.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-scrollspy.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-tab.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-tooltip.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-popover.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-button.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-collapse.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-carousel.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/bootstrap/js/bootstrap-typeahead.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/jquery.cookie.js"))%>"></script>
+<script src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("js/lib/jquery.corner.js"))%>"></script>
+</body>
+</html>
+<% }); %>

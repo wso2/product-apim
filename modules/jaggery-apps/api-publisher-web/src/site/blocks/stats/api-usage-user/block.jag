@@ -1,0 +1,8 @@
+<%
+jagg.block("stats/api-usage-user", {
+    initializer:function (data) {
+
+    }
+
+});
+%>

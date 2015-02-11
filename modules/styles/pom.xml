@@ -22,13 +22,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-    	<groupId>org.wso2.am</groupId>
-		<artifactId>am-parent</artifactId>
-		<version>${apimserver.version}</version>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>am-parent</artifactId>
+        <version>${apimserver.version}</version>
         <relativePath>../../pom.xml</relativePath>
-    </parent> 
+    </parent>
 
-    <groupId>org.wso2.am</groupId>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>am-styles-parent</artifactId>
     <packaging>pom</packaging>
@@ -45,6 +44,6 @@
 
     <modules>
         <module>product</module>
-	<module>service</module>
+        <module>service</module>
     </modules>
 </project>

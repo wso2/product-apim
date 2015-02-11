@@ -1,0 +1,17 @@
+<% jagg.template("api/documentation/view", function(inputs, outputs, jagg) { %>
+<% var i, length, doc = outputs.doc;
+
+%>
+<h2><%=encode.forHtml(doc.docName)%></h2>
+<br/>
+<div class="documentation">
+    <div class="span11">
+    <%if(!doc.content && doc.content==""){%>
+    No document content have been added yet.
+    <%}else{%>
+    <%=doc.content%>
+    <%}%>
+    </div>
+    </div>
+</div>
+<% }); %>

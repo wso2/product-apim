@@ -1,0 +1,695 @@
+<% jagg.template("item-edit", function(inputs, outputs, jagg) {
+ var mod = jagg.module("api");
+ var result = mod.getTiers().tiers;
+ var isSynapseGateway = mod.isSynapseGateway().isSynapseGateway;
+ var isDataPublishingEnabled = mod.isDataPublishingEnabled().isDataPublishingEnabled;
+ var isSuperTenant = jagg.getUser().isSuperTenant;
+ var i,resCount,rowNums = [],api = outputs.api; log = new Log();
+ var last_tier = result[result.length -1];
+%>
+<script type="text/javascript">
+var TIERS = <%= result %>;
+
+var AUTH_TYPES = [
+  { "value": "<%=i18n.localize("none")%>", "key":"<%=i18n.localize("none")%>"} ,
+  { "value": "<%=i18n.localize("application")%>", "key":"<%=i18n.localize("application")%>"},
+  { "value": "<%=i18n.localize("applicationUser")%>", "key":"Application_User"},
+  { "value": "<%=i18n.localize("application&applicationUser")%>", "key":"Any"},
+];
+
+var RESOURCES = <%= api.resources %>;
+
+
+var addSelectedTiers;
+$(document).ready(function() {
+    addSelectedTiers = function(target) {
+        var tierDescs,tiersList,tiersDescList,tiers = [];
+        tiersList = "<%=api.availableTiers%>";
+        tiersDescList = "<%=api.tierDescs%>";
+        tiers = tiersList.split(",");
+        tierDescs = tiersDescList.split(",");
+        for (var i = 0; i < tiers.length; i++) {
+            var tier = tiers[i];
+            var tierDesc = tierDescs[i];
+            for (var j = 0; j < target.options.length; j++) {
+                if (tier == target.options[j].value) {
+                    target.options[j].selected = "selected";
+                    if (tierDesc != "null") {
+                        $("#editTiersHelp").html(tierDesc);
+                    }
+                }
+            }
+        }
+    }
+});
+var insequence = "<%=api.inSequence%>";
+var outsequence = "<%=api.outSequence%>";
+var faultsequence = "<%=api.faultSequence%>";
+var inSequencesLoaded = false;
+var outSequencesLoaded = false;
+var faultSequencesLoaded = false;
+
+</script>
+<div class="alert alert-error" id="editAPIError" style="display:none">
+<span id="editErrorSpan"></span>
+</div>
+<div class="alert alert-block" id="editAPIWarn" style="display:none">
+<span id="editWarnSpan"><b>Warning!</b><br/>
+You are editing an API with active subscribers. Tier Availability changes will not be reflected on
+active subscriptions.<br/>
+API Definition for Swagger will not be overriden with the changes you will do to the API. 
+</span>
+</div>
+<script type="text/javascript">
+    var subs = "<%=api.subs%>";
+    if(subs > 0){
+        document.getElementById('editAPIWarn').style.display="block";
+    }
+</script>
+<div class="row-fluid">
+    <div class="span12">
+        <form method="POST" class="form-horizontal well" id="editAPIForm" action="<%= jagg.url("/site/blocks/item-add/ajax/add.jag")%>"  enctype="multipart/form-data">
+            <fieldset>
+            <legend><%=i18n.localize("generalDetailsTitle")%></legend>
+            <input type="hidden" name="action" id="action" value="updateAPI"/>
+            <input type="hidden" name="name" id="name" value="<%=api.name%>"/>
+            <input type="hidden" name="version" id="version" value="<%=api.version%>"/>
+            <input type="hidden" name="provider" id="provider" value="<%=api.provider%>"/>
+            <input type="hidden" name="tiersCollection" id="tiersCollection" value="<%=api.availableTiers%>"/>
+            <span id="spanContext" style="display:none;"><%=api.context%></span>
+
+
+            <div class="control-group">
+                <label class="control-label" for="context"><%=i18n.localize("context")%>:<span class="requiredAstrix">*</span></label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge required validRegistryName validInput contextExists noSpace" id="context" name="context" value="<%=api.context%>" onChange="setContextValue('<%=api.version%>')"/>
+                    <a class="icon-question-sign help_popup" help_data="context_help"></a>
+                    <p id="context_help" class="hide"><%=i18n.localize("contextHelpMsg")%></p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                    <label  class="control-label" >Default Version</label>
+                     <div class="controls">
+                        <input type="checkbox" class="default_version_check" id="default_version" name="default_version" value="default_version" <%if(api.isDefaultVersion=="true"){%>checked<%}%>/>
+
+                        <a class="icon-question-sign help_popup" help_data="default_api_help"></a>
+                        <p id="default_api_help" class="hide">Making an API version default will allow the subscribers to invoke it without the version attribute in the URI.</p>
+
+                        <%if(api.isDefaultVersion=="false"){if(api.hasDefaultVersion){%>
+                            <p class="help-block">Currently set to version : <%=api.currentDefaultVersion%></p>
+                        <%}else{%>
+                            <p class="help-block">No default version defined for the current API</p>
+                        <%}}%>
+
+                        <input type="hidden" id="default_version_checked" name="default_version_checked" value=<%if(api.isDefaultVersion=="true"){%>"default_version"<%}else{%>""<%}%>/>
+                    </div>
+                    
+            </div>
+
+            <div class="control-group">
+                    <label class="control-label" for="editTier"><%=i18n.localize("tier")%>:<span class="requiredAstrix">*</span></label>
+                    <div class="controls">
+                        <select id="editTier" class="selected" name="editTier"  multiple="multiple">
+                       </select>
+                       <a class="icon-question-sign help_popup" help_data="tier_help"></a>
+                       <p id="tier_help" class="hide"><%=i18n.localize("tierHelpMsg")%></p>
+                    </div>
+            </div>
+
+            <div class="control-group transport-styles">
+               <label class="control-label" for="transports"><%=i18n.localize("transports")%>:<span class="requiredAstrix">*</span></label>
+               <div class="controls">
+                   <div class="checkbox">
+                       <label  class="checkbox inline" >
+                           <input type="checkbox" class="required transports_check_http" id="transport_http" name="transports" value="http" <%=api.transport_http%>/>
+                           <input type="hidden" id="http_checked" name="http_checked" <%if(api.transport_http == "checked"){%>value="http"<%}else{%>value=""<%}%>/>
+                           <%=i18n.localize("httpTransport")%>
+                       </label>
+                       <label  class="checkbox inline" >
+                           <input type="checkbox" class="required transports_check_https" id="transport_https" name="transports" value="https" <%=api.transport_https%>/>
+                           <input type="hidden" id="https_checked" name="https_checked" <%if(api.transport_https == "checked"){%>value="https"<%}else{%>value=""<%}%>/>
+                           <%=i18n.localize("httpsTransport")%>
+                       </label>
+                   </div>
+               </div>
+            </div>
+
+            <div class="control-group">
+                <div class="controls">
+                   <a href="#" class="more-options" ref="more-options-general"><%=i18n.localize("moreOptions")%></a>
+                </div>
+            </div>
+            <div id="more-options-general" style="display:none">
+
+         		<!--Response Caching -->
+                <div class="control-group">
+                    <label class="control-label" for="responseCache"><%=i18n.localize("responseCache")%>:</label>
+                      <div class="controls"> 
+                       <select class="select required" id="responseCache" name="responseCache" onchange="showCacheTimeout()">
+			                <option value="disabled" <%if(api.responseCache != "Enabled"){%> selected="selected" <%}%>><%=i18n.localize("disabled")%></option>
+			                <option value="enabled" <%if(api.responseCache=="Enabled"){%> selected="selected" <%}%>><%=i18n.localize("enabled")%></option>
+		                </select>                                
+                        <a class="icon-question-sign help_popup" help_data="cache_help"></a>
+                        <p id="cache_help" class="hide"><%=i18n.localize("cacheHelpMsg")%></p>           
+                     </div>
+                </div>
+                <div class="control-group" id="cacheTimeout"  <%if(api.responseCache != "Enabled"){%> style="display:none;" <%}%>>
+                    <label class="control-label" for="cacheTimeout"><%=i18n.localize("cacheTimeout")%>:<span class="requiredAstrix">*</span></label>
+                    <div class="controls">
+                        <input type="text" style="text-align:right;" class="input-small required validInput number" id="cacheTimeout" name="cacheTimeout" value=<%=api.cacheTimeout%>>
+                    </div>
+                </div>
+            <!--Response Caching End -->
+
+            <div class="control-group">
+               <label class="control-label" for="visibility"><%=i18n.localize("visibility")%>:<span class="requiredAstrix">*</span></label>
+               <div class="controls">
+                   <select class="select required" id="visibility" name="visibility" onchange="showHideRoles()">
+                       <option value="public" <%if(api.visibility=="public"){%> selected="selected" <%}%>><%=i18n.localize("public")%></option>
+                       <option value="private" <%if(api.visibility=="private"){%> selected="selected" <%}%>><%=i18n.localize("private")%></option>
+                       <option value="restricted" <%if(api.visibility=="restricted"){%> selected="selected" <%}%>><%=i18n.localize("restricted")%></option>
+                   </select>
+                   <a class="icon-question-sign help_popup" help_data="role_help"></a>
+                   <p id="role_help" class="hide"><%=i18n.localize("roleHelpMsg")%></p>
+               </div>
+           </div>
+           
+           <div class="control-group" id="rolesDiv" <%if(api.visibility!="restricted"){%>style="display: none;"<%}%>>
+                <label class="control-label" for="roles" id="rolesLabel" name="rolesLabel">
+                    <%=i18n.localize("roles")%>:<% if (isSuperTenant) { %><span class="requiredAstrix">*</span><%}%>
+                </label>
+                <div class="controls">
+                    <input type="text" class="input required validInput validateRoles"
+                    id="roles" name="roles"  value="<%=api.roles%>"/>
+                    <p class="help-block" id="rolesHelp"><%=i18n.localize("rolesHelpMsg")%></p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="imageUrl"><%=i18n.localize("thumbnail")%></label>
+                <div class="controls">
+                    <div class="pull-left">
+                         <% if(api.thumb==null){%> <div><img id="apiEditThumb" alt="" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png"))%>"/></div><%}else{%>
+                        <div><img id="apiEditThumb" alt="" src="<%=jagg.getRegistryPath(api.thumb)%>"/></div> <%}%>
+                        <a onclick="javascript:$('#imageUrl').toggle('slow')" style="cursor: pointer">
+                            <i class="icon-picture"></i> <%=i18n.localize("changeIcon")%>
+                        </a>
+                    </div>
+                    <div class="pull-left" id="imageUrl" style="display:none;">
+                        <div id="apiThumb-container" class="pull-left"> <input type="file" class="input-xlarge validateImageFile" name="apiThumb" /></div>
+                        <input class="pull-left btn" type="button" id="clearThumb" value="<%=i18n.localize("clear")%>"/>
+                        <div class="help-block pull-left inline-help">
+                            <ul>
+                                <li><%=i18n.localize("imgHelpMsg")%></li>
+                                <li><%=i18n.localize("imgHelpMsg2")%></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label" for="editDescription"><%=i18n.localize("description")%>:</label>
+                <div class="controls">
+                    <textarea class="input-xlarge" id="editDescription" rows="3"
+                              style="margin-left: 0px; margin-right: 0px; width: 501px; " name="description"><%=api.description%></textarea>
+                </div>
+            </div>
+
+            <div class="control-group">
+                   <label class="control-label" for="editTags"><%=i18n.localize("tags")%>:</label>
+                   <div class="controls">
+                       <input type="text" class="input-xlarge validInput" id="editTags" name="tags" value="<%=api.tags%>"/>
+                       <p class="help-block"><%=i18n.localize("tagsHelpMsg")%></p>
+                   </div>
+               </div>
+
+            <% if (isSynapseGateway) { %>
+            <div class="control-group">
+                <label class="control-label" for="sequence"><%=i18n.localize("sequence")%>:</label>
+
+
+                <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" onclick="toggleSequence(this)" name="sequence_check" id="sequence_check"
+                        <% if(api.inSequence != null || api.outSequence != null || api.faultSequence != null){ %>
+                            checked="checked"><%}%><%=i18n.localize("sequenceMsg")%>
+                </label>
+                <table class="table table-bordered table-striped" id="seqTable"
+                        <% if(api.inSequence == null && api.outSequence == null && api.faultSequence == null){ %>style="display:none"<%}%>>
+                    <thead>
+                        <tr>
+                            <th><%=i18n.localize("inFlow")%></th>
+                            <th><%=i18n.localize("outFlow")%></th>
+                            <th><%=i18n.localize("faultFlow")%></th>
+                        </tr>
+                    </thead>
+                        <tr>
+                            <td>
+                                <select id="inSequence"  name="inSequence" >
+                                    <option value="none" selected="selected"><%=i18n.localize("none")%></option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id="outSequence"  name="outSequence">
+                                    <option value="none" selected="selected"><%=i18n.localize("none")%></option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id="faultSequence"  name="faultSequence">
+                                    <option value="none" selected="selected"><%=i18n.localize("none")%></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <%}%>
+            
+            </div><!-- end of more options div -->                            
+            </fieldset>
+            <fieldset>
+               <legend><%=i18n.localize("endpointTitle")%></legend>
+
+               <div class="control-group">
+                   <label class="control-label" for="endpoint_type">Endpoint Type:<span class="requiredAstrix">*</span></label>
+                       <div class="controls">
+                           <select class="select required" id="endpoint_type" name="endpoint_type">
+                               <option value="http">HTTP Endpoint</option>
+                               <option value="address">Address Endpoint</option>
+                               <option value="wsdl">WSDL Endpoint</option>
+                               <option value="failover">Failover Endpoint</option>
+                               <option value="load_balance">Load balanced Endpoint</option>
+                           </select>
+                           <a class="icon-question-sign help_popup" help_data="endpoint_help"></a>
+                       </div>
+               </div>
+
+               <input type="hidden" id="endpoint_config" name="endpoint_config" value="<%= encode.forHtmlAttribute(api.endpointConfig) %>"/>
+
+               <div id="endpoint_help" class="hide">
+                <strong>HTTP Endpoint </strong><p>Defines a URI Template based REST Service endpoint</p>
+                <strong>Address Endpoint</strong><p>Defines the direct URL of the service</p>
+                <strong>WSDL Endpoint</strong><p>Defines the WSDL, Service and Port</p>
+                <strong>Failover Group </strong><p>Defines the endpoints that the service will try to connect to in case
+                        of a failure. This will take place in a round robin manner</p>
+                <strong>Load Balance</strong><p> Endpoint 	Defines groups of endpoints for replicated services.The
+                        incoming requests will be directed to these endpoints in a round robin manner. These endpoints
+                        automatically handle the fail-over cases as well</p>
+               </div>
+
+               <div id="endpoint_form" class="endpoint_dives" >
+               </div>
+
+               <div class="control-group">
+                 <div class="controls">
+                        <a href="#" class="more-options" ref="more-options-endpoints"><%=i18n.localize("moreOptions")%></a>
+                     </div>
+                 </div>
+               <div id="more-options-endpoints" style="display:none">
+
+
+                <div class="control-group">
+                    <label class="control-label" for="endpointType"><%=i18n.localize("endpointType")%>:<span class="requiredAstrix">*</span></label>
+                    <div class="controls">
+                    <select class="select required" id="endpointType" name="endpointType" onchange="showUTProductionURL()">
+                        <option value="nonsecured" <%if(api.endpointTypeSecured=="false"){%> selected="selected" <%}%>><%=i18n.localize("nonsecured")%></option>
+                        <option value="secured" <%if(api.endpointTypeSecured=="true"){%> selected="selected" <%}%>><%=i18n.localize("secured")%></option>
+                    </select>
+
+                    </div>
+                </div>
+
+                <div class="control-group" id="credentials" <%if(api.endpointTypeSecured=="false"){%>style="display: none;"<%}%>>
+                    <label class="control-label" for="credentials"><%=i18n.localize("credentials")%>:<span class="requiredAstrix">*</span></label>
+                    <div class="controls">
+                        <input type="text" class="input-small required validInput" id="epUsername" name="epUsername"  value="<%=api.epUsername%>">
+                        <input type="password" class="input-small required" id="epPassword" name="epPassword" value="<%=api.epPassword%>">
+                    </div>
+                </div>
+
+                <div class="control-group api_wsdl">
+                    <label class="control-label" for="wsdl"><%=i18n.localize("wsdl")%>:</label>
+                    <div class="controls">
+                        <div class="input-append">
+                        <input type="text" class="input-xlarge validInput" id="wsdl" name="wsdl"  value="<%=api.wsdl%>" />
+                        <button class="btn check_url_valid" url-type="wsdl" type="button" ><%=i18n.localize("testURI")%></button>
+                        </div>
+                        <p class="help-block"><%=i18n.localize("wsdlHelpMsg")%></p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="wadl"><%=i18n.localize("wadl")%>:</label>
+                    <div class="controls">
+                        <div class="input-append">
+                        <input type="text" class="input-xlarge validInput" id="wadl" name="wadl" value="<%=api.wadl%>" />
+                        <button class="btn check_url_valid"  type="button"  ><%=i18n.localize("testURI")%></button>
+                        </div>
+                        <p class="help-block"><%=i18n.localize("wadlHelpMsg")%></p>
+                    </div>
+                </div>
+
+                <% if(isDataPublishingEnabled) { %>
+                <!--Southboud statistics -->
+                <div class="control-group">
+                    <label class="control-label" for="destinationStats"><%=i18n.localize("destinationStats")%>:</label>
+                      <div class="controls">
+                       <select class="select required" id="destinationStats" name="destinationStats">
+			                <option value="disabled" <%if(api.destinationStats != "Enabled"){%> selected="selected" <%}%>><%=i18n.localize("disabled")%></option>
+			                <option value="enabled" <%if(api.destinationStats == "Enabled"){%> selected="selected" <%}%>><%=i18n.localize("enabled")%></option>
+		                </select>
+                        <a class="icon-question-sign help_popup" help_data="stats_help"></a>
+                        <p id="stats_help" class="hide"><%=i18n.localize("statsHelpMsg")%></p>
+                     </div>
+                </div>
+                <!--Southboud statistics End -->
+                <% }%>
+
+                </div> <!-- end of more options -->
+            </fieldset>
+
+            <fieldset>
+                <legend class="legend-with-hidden-info js_hidden_section_title"><%=i18n.localize("businessInformationTitle")%> <i class="icon-chevron-right icon-keys"></i></legend>
+                <div style="display: none">
+                    <div class="control-group">
+                        <label class="control-label" for="bizOwner"><%=i18n.localize("busiOwner")%>:</label>
+                        <div class="controls">
+                             <input type="text" class="input-xlarge validInput" id="bizOwner" name="bizOwner" value="<%=api.bizOwner%>"/>
+                        </div>
+                    </div>
+                     <div class="control-group">
+                        <label class="control-label" for="bizOwnerMail"><%=i18n.localize("busiOwnerMail")%>:</label>
+                        <div class="controls">
+                             <input type="text" class="input-xlarge email" id="bizOwnerMail" name="bizOwnerMail" value="<%=api.bizOwnerMail%>"/>
+                        </div>
+                    </div>
+                     <div class="control-group">
+                        <label class="control-label" for="techOwner"><%=i18n.localize("techOwner")%>:</label>
+                        <div class="controls">
+                             <input type="text" class="input-xlarge validInput" id="techOwner" name="techOwner" value="<%=api.techOwner%>"/>
+                        </div>
+                    </div>
+                     <div class="control-group">
+                        <label class="control-label" for="techOwnerMail"><%=i18n.localize("techOwnerMail")%>:</label>
+                        <div class="controls">
+                             <input type="text" class="input-xlarge email" id="techOwnerMail" name="techOwnerMail" value="<%=api.techOwnerMail%>"/>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+			<fieldset>
+                    <legend class="legend-with-hidden-info js_hidden_section_title"><%=i18n.localize("subscriptionsTitle")%><i class="icon-chevron-right icon-keys"></i></legend>
+                    <div class="control-group" style="display: none">
+	                	<label class="control-label" for="subscriptions"><%=i18n.localize("subscriptionsTitle")%>:</label>
+	                			
+						<div class="controls">
+		                	<select class="select required" id="subscriptions" name="subscriptions" onchange="showHideTennats()">
+			                	<option value="current_tenant" <%if(api.subscriptionAvailability=="current_tenant"){%> selected="selected" <%}%> ><%=i18n.localize("availableToCurrentTenant")%></option>
+			                	<option value="all_tenants" <%if(api.subscriptionAvailability=="all_tenants"){%> selected="selected" <%}%> ><%=i18n.localize("availableToAllTenants")%></option>
+			                	<option value="specific_tennats" <%if(api.subscriptionAvailability=="specific_tennats"){%> selected="selected" <%}%> ><%=i18n.localize("availableToSpecificTenants")%></option>
+		                	</select>
+                            <a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
+                            <div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
+	                	</div>
+					                
+                <br/>
+                	<div class="control-group" id="tennatsDiv" <%if(api.subscriptionAvailability!="specific_tennats"){%>style="display: none;"<%}%>>
+		                <label class="control-label" for="tenants" id="tennatLabel" name="tennatLabel">
+		                	<%=i18n.localize("tenants")%>:<span class="requiredAstrix">*</span>
+		                </label>
+		                <div class="controls">
+		                    <input type="text" class="input required"
+		                    id="tenants" name="tenants" value="<%=api.subscriptionTenants%>"/>
+	                        <p class="help-block" id="tennatsHelp"><%=i18n.localize("tenantsHelpMsg")%></p>
+		                </div>
+	                
+	            	</div>
+	            </div>
+				</fieldset>
+            <fieldset>
+            <legend class="legend-with-hidden-info"><%=i18n.localize("resources")%></legend>
+
+                <div id="scopes_view"></div>
+                <div class="resource_container" data-index="idx">
+                        <span style="color:#999">URL Pattern&nbsp;</span>
+                        <div class="input-prepend">
+                            <span class="add-on">/{context}/{version}/</span>
+                            <input style="width:500px" id="resource_url_pattern" type="text" placeholder="Url Pattern Ex: path/to/resource" class="resource_url_pattern"/>
+                        </div>
+                        <div  style="margin-top:5px;">
+                            <ul class="inline" style="margin-left:80px">
+                                <li>
+                                    <label class="checkbox">
+                                    <input type="checkbox" value="GET" class="http_verb_select" > &nbsp; GET
+                                    </label>
+                                </li>
+
+                                <li>
+                                    <label class="checkbox">
+                                    <input type="checkbox" value="POST" class="http_verb_select" > &nbsp; POST
+                                    </label>
+                                </li>
+
+                                <li>
+                                    <label class="checkbox">
+                                    <input type="checkbox" value="PUT" class="http_verb_select" > &nbsp; PUT
+                                    </label>
+                                </li>
+
+                                <li>
+                                    <label class="checkbox">
+                                    <input type="checkbox" value="DELETE" class="http_verb_select" > &nbsp; DELETE
+                                    </label>
+                                </li>
+
+                                <li>
+                                    <label class="checkbox">
+                                    <input type="checkbox" value="OPTIONS" class="http_verb_select" > &nbsp; OPTIONS
+                                    </label>
+                                </li>
+
+                            </ul>
+                        </div>
+                            <button class="btn" type="button" id="add_resource" style="margin:0 0 10px 10px;"><i class="icon-plus-sign"></i>&nbsp;<%=i18n.localize("addNewResource")%></button>
+                        </div>
+
+                <div id="resource_view"></div>
+
+                <input type="hidden" name="resource_config" id="resource_config" value="<%= encode.forHtmlAttribute(api.resources) %>" >
+                <input type="hidden" name="scopes_config" id="scopes_config" value="<%= encode.forHtmlAttribute(api.scopes) %>" >
+
+            <div>
+
+
+                    <div class="alert alert-error" id="resourceTableError" style="display:none">
+                        <div id="stateActions" class="controls"></div>
+                    </div>
+
+
+            </div>
+        </fieldset>
+
+
+<input type="hidden" name="apiVersion" id="apiVersion" value="<%=<%=api.version%>%>">
+
+
+
+             <div class="form-actions" style="display:none" id="saveMessage">
+                    <div class="btn loadingButton">Saving API. Please wait..</div>
+             </div>
+            <div class="form-actions" id="saveButtons">
+                <input type="submit" id="updateButton" class="btn btn-primary" value="<%=i18n.localize("save")%>"/>
+                <input type="reset" id="cancelEdit" class="btn" value="<%=i18n.localize("cancel")%>">
+            </div>
+
+        </form>
+
+                    <div  id="advance_endpoint_config" class="modal hide fade">
+                         <div class="modal-header">
+                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                         <h3>Advanced Endpoint Configuration</h3>
+                         </div>
+                         <div class="modal-body form-horizontal">
+                         <form id="advance_form"></form>
+                         </div>
+                         <div class="modal-footer">
+                         <div id="res" class="hide" style="color:red;float:left"></div>
+                         <a href="#" class="btn" data-dismiss="modal">Close</a>
+                         <a href="#" class="btn btn-primary" id="advance_ep_submit">Save changes</a>
+                         </div>
+                    </div>
+
+            <div  id="define_scope_modal" class="modal hide fade form-horizontal">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>Define Scope</h3>
+                </div>
+                <div class="modal-body">
+                <form id="scope_form">
+                    <div class="control-group">
+                        <label class="control-label" for="scopeKey">Scope Key</label>
+                        <div class="controls">
+                        <input type="text" id="scopeKey" placeholder="Eg: api_name_read">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="scopeName">Scope Name</label>
+                        <div class="controls">
+                        <input type="text" id="scopeName" placeholder="Eg: Read My Data">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="scopeRoles">Roles</label>
+                        <div class="controls">
+                        <input type="text" id="scopeRoles" placeholder="Eg: role1,role2,role3">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="inputEmail">Description</label>
+                        <div class="controls">
+                        <textarea id="scopeDescription" placeholder="Eg: Allows the Application to read your data"></textarea>
+                        </div>
+                    </div>
+                </form>
+                </div>
+                <div class="modal-footer">
+                <div id="res" class="hide" style="color:red;float:left"></div>
+                <a class="btn" data-dismiss="modal">Close</a>
+                <a class="btn btn-primary" id="scope_submit">Add Scope</a>
+                </div>
+           </div>
+    </div>
+</div>
+
+
+
+ <script type="text/javascript">
+
+$(document).ready(function() {
+ var v = $("#editAPIForm").validate({
+
+        submitHandler: function(form) {
+            $('#saveMessage').show(); $('#saveButtons').hide();
+            $(form).ajaxSubmit({
+                success:function(responseText, statusText, xhr, $form)  {
+                  if(!responseText.error){
+                      if (($.cookie("selectedTab") != null)) {
+                            $.cookie("selectedTab", "overview");
+                      }
+                      var current = window.location.pathname;
+                      if (current.indexOf(".jag") >= 0) {
+                      location.href = "item-info.jag?name=<%=api.name%>&version=<%=api.version%>&provider=<%=api.provider%>";
+                      }else{
+                      location.href = "site/pages/item-info.jag?name=<%=api.name%>&version=<%=api.version%>&provider=<%=api.provider%>";
+                      }
+                      $("#editAPIForm")[0].reset();
+                  } else {
+                          jagg.message({content:responseText.message,type:"error",cbk:function(){
+                              $('#saveMessage').hide(); $('#saveButtons').show();
+                          }
+                          });
+
+                                                                         }
+                }, dataType: 'json'
+            });
+        }
+    });
+    $('#cancelEdit').click(
+            function(){
+                var current = window.location.pathname;
+                if (current.indexOf(".jag") >= 0) {
+                location.href = 'index.jag';
+                }else{
+                location.href = 'site/pages/index.jag';
+                }
+            }
+            );
+ });
+
+ </script>
+
+<script id="scopes-template" type="text/x-handlebars-template">
+    <div class="resource_container scope_container">
+    {{#if scopes}}
+        <h4>Scopes</h4>
+        <ul>
+            {{#each scopes}}
+            <li>
+                <h6><a data-index='{{idx}}' class='delete_scope'><i class='icon-trash'></i></a> &nbsp;&nbsp; {{ key }} : {{ name }}  </h6>
+                <p>{{ description }}</p>
+            </li>
+            {{/each}}
+        </ul>
+    {{/if}}
+        <a id="define_scopes" class="pointer btn"><i class="icon-plus-sign"></i>&nbsp;Add Scopes</a>
+    </div>
+</script>
+
+<script id="resource-template" type="text/x-handlebars-template">
+    {{#each resources}}
+        <div class="resource_container" data-index="idx">
+                        <span style="color:#999">URL Pattern&nbsp;</span>
+                        <span style="font-size:18px;font-weight:bold">/{{../context}}/{{../version}}/{{ url_pattern }}</span>
+                            <blockquote class="pull-right">
+                            <a data-index='{{idx}}' class='delete_resource'><i class='icon-trash'></i></a>&nbsp;
+                            <a data-index='{{idx}}' class='moveup_resource'><i class='icon-arrow-up '></i></a>&nbsp;
+                            <a data-index='{{idx}}' class='movedown_resource'><i class='icon-arrow-down '></i></a>&nbsp;
+                            </blockquote>
+                        <table style="margin-left:80px;" class="table-hover">
+                            <tr>
+                                <td style="color:#999; text-align:center">HTTP Verb</td>
+                                <td style="color:#999; text-align:center">Auth Type</td>
+                                <td style="color:#999; text-align:center">Throttling Tier</td>
+                                {{#if ../scopes}}
+                                <td style="color:#999; text-align:center">Scope</td>
+                                {{/if}}
+                            </tr>
+                        {{#each ../verbs }}
+                        {{#property_exist ../http_verbs .}}
+                            <tr>
+                                <td><input class="http_verb_deselect" data-index="{{ ../../idx }}" data-verb="{{ verb }}" type="checkbox" class="http_verb_select"  checked="checked" > {{ verb }}</td>
+                                <td>
+                                <select data-index="{{ ../../idx }}"  data-verb="{{ verb }}" class="resource_auth_select" style="height:25px;">
+                                    {{#each ../../../auth_types}}
+                                        <option title="{{ key }}" value="{{ key }}" {{selected ../object.auth_type key}}>{{  value }}</option>
+                                    {{/each}}
+                                </select>
+                            </td>
+                            <td>
+                                <select data-index="{{ ../../idx }}"  data-verb="{{ verb }}" class="resource_tier_select" style="height:25px;">
+                                    {{#each ../../../tiers}}
+                                        <option title="{{ tierDescription }}" value="{{ tierName }}" {{selected ../object.throttling_tier tierName}}>{{  tierDisplayName }}</option>
+                                    {{/each}}
+                                </select>
+                            </td>
+                            {{#if ../../../scopes}}
+                            <td>
+                                <select data-index="{{ ../../../idx }}"  data-verb="{{ ../verb }}" class="resource_scope_select" style="height:25px;">
+                                    <option title="" value="undefined"> </option>
+                                    {{#each ../../../../scopes}}
+                                        <option title="{{ description }}" value="{{ key }}" {{selected key ../object.scope}}>{{ name }}</option>
+                                    {{/each}}
+                                </select>
+                            </td>
+                            {{/if}}
+                            </tr>
+                        {{/property_exist}}
+                        {{/each}}
+                        </table>
+            <ul  style="margin-left:80px;margin-top:5px;" class="inline">
+            {{#each missing}}
+                <li>
+                    <label class="checkbox">
+                    <input  data-index='{{../idx}}' type="checkbox" class="http_verb_add" value="{{ . }}"> &nbsp; {{ . }}
+                    </label>
+                </li>
+            {{/each}}
+            </ul>
+        </div>
+    {{/each}}
+</script>
+
+<% }); %>

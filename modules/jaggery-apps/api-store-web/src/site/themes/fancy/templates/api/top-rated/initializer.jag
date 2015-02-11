@@ -1,0 +1,8 @@
+<%
+jagg.initializer("api/top-rated", {
+
+    preInitialize:function () {
+
+    }
+});
+%>

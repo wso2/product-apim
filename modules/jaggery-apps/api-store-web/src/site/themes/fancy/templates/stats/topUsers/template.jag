@@ -1,0 +1,83 @@
+<% jagg.template("stats/topUsers", function(inputs, outputs, jagg) { %>
+
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/dojo-release-1.8.3/dijit/themes/claro/claro.css"))%>"  media="screen"/>
+
+<!-- easy-pie-chart plugin -->
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/easy-pie-chart/jquery.easy-pie-chart.js"))%>"></script>
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/easy-pie-chart/jquery.easy-pie-chart.css"))%>"/>
+
+<!-- jqRangeSlider plugin -->
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jQRangeSlider/lib/jquery-ui-1.8.16.custom.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jQRangeSlider/jQDateRangeSlider-min.js"))%>"></script>
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jQRangeSlider/css/iThing.css"))%>"/>
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jQRangeSlider/css/iThing.css"))%>"/>
+
+  <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/excanvas.min.js"))%>" ></script><![endif]-->
+ <script type="text/javascript">
+
+
+ </script>
+
+ <style>
+
+ .span2 {
+
+ }
+
+ </style>
+
+<div>
+    <h2>Store Statistics</h2>
+
+   
+</div>
+
+<div id="content"  class="content-section shadow-up">
+<div class="content-data">
+    <div id="rangeSliderWrapper" class="well">
+        <div class="row-fluid">
+        <div class="span12">
+            <div id="rangeSlider">
+
+            </div>
+        </div>
+        </div>
+    </div>
+
+   <h2><%=i18n.localize("registeredUseres")%></h2>
+<div class="well">
+    <div class="row-fluid">
+    <div class="span12">
+        <div id="subsChart">
+            <div class="progress progress-striped active">
+                <div class="bar" style="width: 10%;"></div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+
+
+
+ <h2><%=i18n.localize("topUsersTitle")%></h2>
+
+
+
+
+
+<div id="topUsersView">
+</div>
+
+   
+    
+
+
+   
+
+</div>
+</div>
+
+
+<% }); %>

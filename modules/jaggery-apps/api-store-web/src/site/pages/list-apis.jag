@@ -1,0 +1,68 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+var tenantDomain=getTenantDomain();
+
+(function () {
+    isTenantAllowed();
+
+var mod = jagg.module("manager");
+
+     var result = mod.getActiveTenantDomains();
+     var tenantStore=request.getQueryString();
+     var tenantDomainsArr=result.tenantDomains;
+     if(tenantDomainsArr==null||  (tenantStore!=null && tenantStore.indexOf("tenant")>=0 )){
+     jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"API Store Listing",
+            "pagePath":"/site/pages/list-apis.jag",
+            "body":[
+                {
+                    "name":"layout/extended",
+                    "inputs":{
+                        "title":null,
+                        "middle":{
+                            "name":"api/listing",
+                            "inputs":{
+                                    "tenantDomain":tenantDomain
+                                   }
+
+
+                        }
+                    }
+                }
+            ]
+        }
+    });
+
+    }else{
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"API Store URLs Listing",
+            "pagePath":"/site/pages/index.jag",
+            "body":[
+                {
+                    "name":"layout/custom",
+                    "inputs":{
+                        "title":null,
+                        "middle":{
+                            "name":"api/tenant-stores-listing"
+
+
+                        }
+                    }
+                }
+            ]
+        }
+
+});}
+
+
+}());
+%>

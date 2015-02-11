@@ -1,0 +1,23 @@
+<% jagg.template("search/token-search", function(inputs, outputs, jagg) {
+var query=request.getParameter("query");
+%>
+<form class="well form-search" action="<%=jagg.getMappedUrl("/site/pages/tokens.jag")%>">
+    <input type="text" name="query" class="input-xlarge search-query required" <%if(query!=null){%> value="<%= encode.forHtml(query)%>" <%}else{%>
+           placeholder="<%=i18n.localize("filterTokens")%>"<%}%> />
+    <button class="btn btn-primary" id="tokenSearch"><%=i18n.localize("search")%></button>
+    <a class="icon-plus tierHelp" onclick="javascript:$('#searchAPIHelp').toggle()"></a>
+    <div id="searchAPIHelp" class="help-block" style="display:none;">
+        <div><%=i18n.localize("revokeHelpMsg1")%></div>
+        <ol>
+            <li><%=i18n.localize("revokeHelpMsg2")%></li>
+            <li><%=i18n.localize("revokeHelpMsg3")%></li>
+            <li><%=i18n.localize("revokeHelpMsg4")%></li>
+        </ol>
+    </div>
+
+</form>
+<div class="alert alert-success" id="searchMessageContainer" style="display:none">
+    <a class="close" data-dismiss="alert">x</a>
+    <div id="searchMessage"></div>
+</div>
+<% }); %>

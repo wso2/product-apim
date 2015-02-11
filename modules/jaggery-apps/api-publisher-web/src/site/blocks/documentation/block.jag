@@ -1,0 +1,14 @@
+<%
+jagg.block("documentation", {
+    initializer:function (data) {
+
+    },
+   getInputs:function () {
+        return {
+            "api":null,
+            "isCreatePermitted":null
+        }
+    }
+
+});
+%>

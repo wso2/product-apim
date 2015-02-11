@@ -1,0 +1,94 @@
+<%
+var updateAPIStatus = function (api) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var success = provider.updateAPIStatus(api);
+        if (log.isDebugEnabled()) {
+            log.debug("updateAPIStatus : " + api.name + "-" + api.version);
+        }
+        
+        if (!success) {
+            return {
+                error:true
+            };
+        } else {
+            return {
+                error:false
+            };
+        }
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            message:e.message.split(":")[1]
+
+        };
+    }
+};
+var isAPIOlderVersionExist = function (api) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var exist = provider.isAPIOlderVersionExist(api);
+        if (log.isDebugEnabled()) {
+            log.debug("isAPIOlderVersionExist : " + api.name + "-" + api.version);
+        }
+        if (!exist) {
+            return {
+                error:true,
+                exist:false
+            };
+        } else {
+            return {
+                error:false,
+                exist:true
+            };
+        }
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            exist:false,
+            message:e.message.split(":")[1]
+
+        };
+    }
+};
+
+var getLifeCyclesEvents = function(api) {
+    var log = new Log(),lc,lcs,length,list = [],
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        lcs = provider.getLifeCycleEvents(api);
+        if (log.isDebugEnabled()) {
+            log.debug("updateAPIStatus : " + api.name + "-" + api.version);
+        }
+        length = lcs.length;
+        for (var i = 0; i < length; i++) {
+            lc = lcs[i];
+            list.push({
+                          username:lc.username,
+                          newStatus:lc.newStatus,
+                          oldStatus:lc.oldStatus,
+                          date:lc.date
+                      });
+        }
+        return {
+            error:false,
+            lcs:list
+        };
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            lcs:null
+        };
+    }
+}
+
+
+%>

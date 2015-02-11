@@ -1,0 +1,14 @@
+<%
+jagg.block("users-api", {
+    initializer:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "api":null
+        }
+    }
+
+
+});
+%>

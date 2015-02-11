@@ -1,0 +1,42 @@
+<% jagg.template("theme-upload-task", function(inputs, outputs, jagg) {
+%>
+<div id="listing">
+    <div class="title-section">
+        <h2><%=i18n.localize("themeUpload")%></h2>
+    </div>
+    <div class="content-section shadow-up">
+
+        <div class="content-data">
+        <% if(outputs.error != false){ %>
+          <div class="alert alert-error">
+              <%= outputs.error %>              
+          </div>
+        <% } %>
+        <% if(outputs.success != false){ %>
+          <div class="alert alert-success">
+              Theme was uploaded successfully.              
+          </div>
+        <% }else{ %>
+          <div class="alert alert-info">
+              The theme should be a zip file containing css and images which is complient to API Manager theme format
+          </div>
+        <% } %>
+        
+
+          <form action="#" enctype="multipart/form-data" method="post" class="form-horizontal">          
+            <div class="control-group">
+              <label class="control-label" for="inputPassword">Please select the theme</label>
+              <div class="controls">
+                <input type="file" name="theme" size="40">
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="controls">              
+                <button type="submit" class="btn btn-primary">Upload</button>
+              </div>
+            </div>
+          </form>
+        </div>
+    </div>
+</div>
+<% }); %>

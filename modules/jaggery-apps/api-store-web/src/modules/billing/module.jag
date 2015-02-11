@@ -1,0 +1,12 @@
+<%
+jagg.module("billing", {
+
+    getProviderAPIUsage:function () {
+        return jagg.require(jagg.getModulesDir() + "billing/usage.jag").getProviderAPIUsage.apply(this, arguments);
+    },
+    isBillingEnabled:function () {
+            return jagg.require(jagg.getModulesDir() + "billing/usage.jag").isBillingEnabled.apply(this, arguments);
+        }
+});
+%>
+

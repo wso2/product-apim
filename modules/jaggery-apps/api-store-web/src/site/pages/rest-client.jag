@@ -1,0 +1,36 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+(function () {
+
+   isTenantAllowed();
+   jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"RESTClient",
+            "pagePath":"/site/pages/rest-client.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"RESTClient",
+                        "middle":[
+                            {
+                                "name":"tools/rest-client",
+                                "inputs":{
+
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    });
+}());
+%>

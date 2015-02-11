@@ -22,10 +22,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.wso2.carbon</groupId>
-        <artifactId>carbon-products</artifactId>
-        <version>4.2.0</version>
-        <relativePath>../../pom.xml</relativePath>
+        <groupId>org.wso2</groupId>
+        <artifactId>wso2</artifactId>
+        <version>1</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -58,9 +57,10 @@
     </modules>
 
     <scm>
-        <connection>scm:svn:http://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</connection>
-        <developerConnection>scm:svn:https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</developerConnection>
-        <url>https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/apimgt</url>
+        <url>https://github.com/wso2/product-apim.git</url>
+        <developerConnection>scm:git:https://github.com/wso2/product-apim.git</developerConnection>
+        <connection>scm:git:https://github.com/wso2/product-apim.git</connection>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
@@ -74,18 +74,6 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
-        <!--moved to nexus
-
-        <repository>
-            <id>wso2-maven2-repository-snapshot</id>
-            <url>http://dist.wso2.org/snapshots/maven2</url>
-        </repository>
-        <repository>
-            <id>wso2-maven2-repository</id>
-            <url>http://dist.wso2.org/maven2</url>
-        </repository>
-
-        -->
     </repositories>
 
     <pluginRepositories>
@@ -94,21 +82,6 @@
             <url>http://dist.wso2.org/maven2</url>
         </pluginRepository>
     </pluginRepositories>
-
-
-
-    <distributionManagement>
-        <repository>
-            <id>wso2-maven2-repository</id>
-            <name>WSO2 Maven2 Repository</name>
-            <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>wso2-maven2-snapshot-repository</id>
-            <name>WSO2 Maven2 Snapshot Repository</name>
-            <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/snapshots/maven2/</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <profiles>
         <profile>
@@ -152,7 +125,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.0-alpha-3</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -167,6 +139,18 @@
             </build>
         </profile>
     </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wso2.maven</groupId>
+                    <artifactId>carbon-p2-plugin</artifactId>
+                    <version>${carbon.p2.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <organization>
         <name>WSO2 Inc</name>
@@ -317,17 +301,53 @@
                 <artifactId>javax.servlet.jsp</artifactId>
                 <version>${version.javax.servlet.jsp}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.core</artifactId>
+                <version>${carbon.kernel.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <properties>
+
+        <!-- APIM Component Version -->
+        <carbon.apimgt.version>1.2.0-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.imp.pkg.version>[1.2.0, 1.3.0)</carbon.apimgt.imp.pkg.version>
+
+        <apimgt.api.version>1.2.4-SNAPSHOT</apimgt.api.version>
+        <apimgt.impl.version>1.2.4-SNAPSHOT</apimgt.impl.version>
+        <apimgt.core.version>1.2.3-SNAPSHOT</apimgt.core.version>
+        <apimgt.gateway.version>1.2.4-SNAPSHOT</apimgt.gateway.version>
+        <apimgt.hostobjects.version>1.2.4-SNAPSHOT</apimgt.hostobjects.version>
+        <apimgt.interceptor.version>1.2.1-SNAPSHOT</apimgt.interceptor.version>
+        <apimgt.keymgt.version>1.2.4-SNAPSHOT</apimgt.keymgt.version>
+        <apimgt.keymgt.client.version>1.2.2-SNAPSHOT</apimgt.keymgt.client.version>
+        <apimgt.startup.publisher.version>1.2.2-SNAPSHOT</apimgt.startup.publisher.version>
+        <apimgt.usage.client>1.2.4-SNAPSHOT</apimgt.usage.client>
+        <apimgt.usage.publisher>1.2.3-SNAPSHOT</apimgt.usage.publisher>
+        <apimgt.keymgt.stub.version>4.2.4-SNAPSHOT</apimgt.keymgt.stub.version>
+        <apimgt.handlers.security.stub>4.2.0</apimgt.handlers.security.stub>
+        <carbon.forum.version>1.2.0-SNAPSHOT</carbon.forum.version>
+        <carbon.forum.feature.version>1.2.0-SNAPSHOT</carbon.forum.feature.version>
+        <carbon.forum.server.feature.version>1.0.1-SNAPSHOT</carbon.forum.server.feature.version>
+
+        <apimgt.core.feature.version>1.2.4-SNAPSHOT</apimgt.core.feature.version>
+        <apimgt.feature.version>1.2.4-SNAPSHOT</apimgt.feature.version>
+        <apimgt.gateway.feature>1.2.4-SNAPSHOT</apimgt.gateway.feature>
+        <apimgt.interceptor.feature>1.2.1-SNAPSHOT</apimgt.interceptor.feature>
+        <apimgt.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.publisher.feature.version>
+        <apimgt.startup.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.startup.publisher.feature.version>
+        <apimgt.store.feature.version>1.2.4-SNAPSHOT</apimgt.store.feature.version>
+
+
         <carbon.kernel.version>4.2.0</carbon.kernel.version>
-        <apimserver.version>1.9.0</apimserver.version>
-        <apim.version>1.2.4</apim.version>
+        <apimserver.version>1.9.0-SNAPSHOT</apimserver.version>
+        <apim.version>1.2.4-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
-        <commons.logging.version>1.1</commons.logging.version>
+        <commons.logging.version>1.1.1</commons.logging.version>
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
@@ -342,20 +362,31 @@
         <servlet-api.version>2.4</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1</commons.logging.version>
-        <javax.servlet.version>${version.javax.servlet}</javax.servlet.version>
+        <javax.servlet.version>3.0.0.v201112011016</javax.servlet.version>
         <javax.servlet.jsp.version>${version.javax.servlet.jsp}</javax.servlet.jsp.version>
-        <apache.derby.version>${version.wso2.derby}</apache.derby.version>
-        <hibernate.version>${hibernate.orbit.version}</hibernate.version>
+        <apache.derby.version>10.3.2.1wso2v1</apache.derby.version>
+        <hibernate.version>3.2.5.ga-wso2v1</hibernate.version>
         <bcel.version>5.2.0.wso2v1</bcel.version>
         <asm.version>1.5.3.wso2v1</asm.version>
         <cglib.version>2.2.wso2v1</cglib.version>
-        <axis2.jibx.version>${version.axis2.jibx}</axis2.jibx.version>
+        <axis2.jibx.version>1.6.1.wso2v10</axis2.jibx.version>
         <jibx.version>1.2.1.wso2v1</jibx.version>
-        <axis2.jaxb.version>${version.axis2.jaxbri}</axis2.jaxb.version>
+        <axis2.jaxb.version>1.6.1.wso2v10</axis2.jaxb.version>
         <jaxb.version>2.2.5.wso2v1</jaxb.version>
         <stratos.version>2.2.0</stratos.version>
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
+        <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
+        <version.equinox.osgi>3.8.1.v20120830-144521</version.equinox.osgi>
+        <version.equinox.jsp.jasper>1.0.400.v20120522-2049</version.equinox.jsp.jasper>
+        <version.equinox.http.helper>1.1.0.wso2v1</version.equinox.http.helper>
+        <version.equinox.osgi.services>3.3.100.v20120522-1822</version.equinox.osgi.services>
+        <version.equinox.http.servlet>1.1.300.v20120522-1841</version.equinox.http.servlet>
+        <carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
+
+        <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
+
+        <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
     </properties>
 
 </project>

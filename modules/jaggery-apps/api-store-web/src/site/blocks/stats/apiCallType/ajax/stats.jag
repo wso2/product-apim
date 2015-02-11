@@ -1,0 +1,83 @@
+<%
+include("/jagg/jagg.jag");
+log = new Log();
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, result,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag")
+
+    if (jagg.getUser() == null) {
+        print({
+                  error:true,
+                  message:'timeout'
+              });
+    } else {
+     if (action === "getAppApiCallType") {
+        mod = jagg.module("statistics");
+        var subscriber = jagg.getUser().username;
+        from = request.getParameter("fromDate");
+        var to = request.getParameter("toDate");
+        result = mod.getAppApiCallType(subscriber,from,to);
+
+        if (result.error == "true") {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+        
+  
+
+    }else if (action === "getFirstAccessTime") {
+        mod = jagg.module("statistics");
+        var subscriber = jagg.getUser().username;
+        result = mod.getFirstAccessTime(subscriber);
+        if (result.error == "true") {
+            obj = {
+                error:result.error,
+                message:msg.error.backendError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                usage:result.usage
+            }
+        }
+        print(obj);
+
+    } else if (action === "isDataPublishingEnabled") {
+            mod = jagg.module("statistics");
+            result = mod.isDataPublishingEnabled();
+            
+            if (result.error == "true") {
+                obj = {
+                    error: result.error,
+                    message: msg.error.backendError(action)
+                };
+            } else {
+                obj = {
+                    error: false,
+                    usage: result.usage
+                }
+            }
+            print(obj);
+
+        }
+    else {
+        print({
+                  error:true,
+                  message:msg.error.invalidAction(action)
+              });
+    }
+    }
+}());
+%>

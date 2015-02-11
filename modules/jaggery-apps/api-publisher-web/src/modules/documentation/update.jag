@@ -1,0 +1,56 @@
+<%
+var updateDocumentation = function (api, doc) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var success = provider.updateDocumentation(api.provider, api.name, api.version,
+                                                doc.name, doc.type, doc.summary, doc.sourceType, doc.sourceUrl, doc.fileContent, doc.otherTypeName,doc.visibility);
+        if (log.isDebugEnabled()) {
+            log.debug("updateNewDocumentation : " + doc.sourceType);
+        }
+        if (success) {
+            if (doc.sourceType == "inline") {
+                doc.content = "no_content_update";
+                return addInlineContent(api, doc);
+            }
+            else {
+                return {
+                    error:false
+                };
+            }
+
+        } else {
+            return {
+                error:success
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            docs:null,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+
+var addInlineContent = function (api, doc) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        provider.addInlineContent(api.provider, api.name, api.version, doc.name, doc.content);
+        if (log.isDebugEnabled()) {
+            log.debug("addInlineContent for : " + doc.name + "with the content : " + doc.content);
+        }
+        return {
+            error:false
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+%>

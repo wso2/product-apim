@@ -1,0 +1,58 @@
+<% jagg.template("usage", function(inputs, outputs, jagg) { %>
+
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/jquery.jqplot.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.pieRenderer.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.donutRenderer.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.pointLabels.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.highlighter.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.cursor.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"))%>"></script>
+<script type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/plugins/jqplot.barRenderer.min.js"))%>"></script>
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/jquery.jqplot.min.css"))%>"/>
+
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/jqplot/excanvas.min.js"))%>" ></script><![endif]-->
+
+<h3><%=i18n.localize("apiUsageByVersionTitle")%></h3>
+<div class="well">
+    <div class="row-fluid">
+        <div class="span6">
+            <div id="versionChart">
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 10%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <table class="table" id="versionTable" style="display:none;">
+                  <tr>
+                    <th><%=i18n.localize("version")%></th>
+                    <th><%=i18n.localize("noOfAPICalls")%></th>
+                  </tr>
+              </table>
+        </div>
+    </div>
+</div>
+
+
+<h3><%=i18n.localize("apiSubscriptionsByVersionTitle")%></h3>
+<div class="well">
+    <div class="row-fluid">
+        <div class="span6">
+            <div id="versionUserChart">
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 10%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <table class="table" id="versionUserTable" style="display:none">
+                  <tr>
+                    <th><%=i18n.localize("version")%></th>
+                    <th><%=i18n.localize("noOfSubs")%></th>
+                  </tr>
+              </table>
+        </div>
+    </div>
+</div>
+
+<% }); %>

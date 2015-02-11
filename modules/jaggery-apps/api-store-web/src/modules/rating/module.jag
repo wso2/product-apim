@@ -1,0 +1,14 @@
+<%
+jagg.module("rating", {
+
+    addRating:function () {
+        return jagg.require(jagg.getModulesDir() + "rating/add.jag").addRating.apply(this, arguments);
+    },
+    isRatingActivated:function () {
+        return jagg.require(jagg.getModulesDir() + "rating/add.jag").isRatingActivated.apply(this, arguments);
+    },
+    removeRating:function () {
+        return jagg.require(jagg.getModulesDir() + "rating/remove.jag").removeRating.apply(this, arguments);
+    }
+});
+%>

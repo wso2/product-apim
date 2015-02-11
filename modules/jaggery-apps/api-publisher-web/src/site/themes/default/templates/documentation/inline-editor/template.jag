@@ -1,0 +1,64 @@
+<% jagg.template("documentation/inline-editor", function(inputs, outputs, jagg) {
+var mode = request.getParameter("mode");
+%>
+<script type="text/javascript">
+var apiName = "<%= encode.forJavaScript(request.getParameter("apiName"))%>";
+var apiVersion = "<%= encode.forJavaScript(request.getParameter("version"))%>";
+var provider = "<%= encode.forJavaScript(request.getParameter("provider"))%>";
+var docName = "<%= encode.forJavaScript(request.getParameter("docName"))%>";
+</script>
+        <div class="alert alert-error" id="inlineError" style="display:none">
+            <span id="inlineErrorSpan"></span>
+        </div>
+
+
+        <div id="layout-base" class="container-fluid content-section" style="padding:20px">
+            <div class="row-fluid">
+                <div class="span12"></div>
+                <div class="span12">
+                    <div id="apiDeatils">
+                        <h2><%= encode.forHtml(request.getParameter("docName"))%></h2>
+                    </div>
+                <div class="alert alert-success" id="docAddMessage" style="display:none;width:62%">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong>Successfully added the Document Content.</strong>
+                </div>
+                </div>
+
+                <div class="span8">
+                    <textarea id="inlineEditor" style="width:100%;height:500px;"></textarea>
+                </div>
+                <div class="span3">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th><%=i18n.localize("version")%></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <code>
+                                    <%= encode.forHtml(request.getParameter("version"))%></code>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <% if(mode=="edit"){%>
+                <div class="span12">
+                    <div style="padding:10px 0;">
+                        <button type="button" title="Save the changes to the document and stay in this tab" class="btn btn-primary" id="inline-apply-button" onclick="saveContent(provider,apiName,apiVersion,docName,'apply')">Save</button>
+                        <button type="button" title="Save the document and close this tab" class="btn btn-primary" id="inline-save-button" onclick="saveContent(provider,apiName,apiVersion,docName,'save')">Save and Close</button>
+                        <button type="button" title="Cancel all the unsaved changes and close this tab"  class="btn" id="inline-cancel-button" onclick="window.close()">Cancel</button>
+
+                    </div>
+                </div>
+                <%}%>
+    </div>
+</div>
+
+
+
+
+<%});%>

@@ -1,0 +1,13 @@
+<%
+jagg.block("billing", {
+    initializer:function (data) {
+
+    } ,
+ getInputs:function () {
+        return {
+            "usage":null
+        }
+    }
+
+});
+%>

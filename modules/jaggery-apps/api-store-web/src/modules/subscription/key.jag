@@ -1,0 +1,103 @@
+<%
+var generateAPIKey = function (api, context, application, username, keyType, callbackUrl) {
+    var key,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        key = store.getKey(api.provider, api.name, api.version, context, application, username, keyType, callbackUrl);
+        if (log.isDebugEnabled()) {
+            log.debug("generateAPIKey");
+        }
+        return {
+            error:false,
+            key:key
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            key:null
+        };
+    }
+};
+var generateApplicationKey = function (application, username, keyType, callbackUrl, accessAllowDomains, validityTime,afterFailure) {
+    afterFailure = typeof afterFailure !== 'undefined' ? afterFailure : false;
+    var key,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+	if(afterFailure){
+        key = store.createApplicationKeys( username,application, keyType, callbackUrl, accessAllowDomains, validityTime);
+	}else{
+	key = store.getApplicationKey( username,application, keyType, callbackUrl, accessAllowDomains, validityTime);
+        
+	}
+        if (log.isDebugEnabled()) {
+            log.debug("generateAPIKey");
+        }
+        return {
+            error:false,
+            key:key
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            key:null
+        };
+    }
+};
+
+
+var refreshToken = function (username,application, keyType ,oldAccessToken, accessAllowDomains ,
+		clientId, clientSecret, validityTime) {
+    var key,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        key = store.refreshToken(username,application, keyType,oldAccessToken, accessAllowDomains, 
+        		clientId, clientSecret,validityTime);
+        if (log.isDebugEnabled()) {
+            log.debug("generateAPIKey");
+        }
+        return {
+            error:false,
+            key:key
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            key:null,
+            message:e.message.split("Exception:")[1]
+        };
+    }
+};
+
+var updateAccessAllowDomains = function (oldAccessToken, accessAllowDomains) {
+var accessAllowDomains,
+        log = new Log(),
+        store = jagg.module("manager").getAPIStoreObj();
+
+try {
+    accessAllowDomains = store.updateAccessAllowDomains(oldAccessToken, accessAllowDomains);
+    if (log.isDebugEnabled()) {
+        log.debug("generateAPIKey");
+    }
+    return {
+        error:false
+    };
+} catch (e) {
+    log.error(e.message);
+    return {
+        error:true,
+        message:e.message.split(":")[1]
+    };
+}
+};
+
+
+%>

@@ -1,0 +1,11 @@
+<%
+jagg.module("tag", {
+
+    getAllTags:function () {
+        return jagg.require(jagg.getModulesDir() + "tag/cloud.jag").getAllTags.apply(this, arguments);
+    },
+    getTagsWithAttributes:function () {
+        return jagg.require(jagg.getModulesDir() + "tag/cloud.jag").getTagsWithAttributes.apply(this, arguments);
+    }
+});
+%>

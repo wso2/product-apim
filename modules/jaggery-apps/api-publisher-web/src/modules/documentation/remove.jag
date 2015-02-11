@@ -1,0 +1,27 @@
+<%
+var removeDocumentation = function (api, doc) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var success = provider.removeDocumentation(api.provider, api.name, api.version, doc.name, doc.type);
+        if (log.isDebugEnabled()) {
+            log.debug("removeDocumentation : " + doc.name);
+        }
+        if(success){
+            return {
+                error:false
+            };
+        } else {
+            return {
+                error:true
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+%>

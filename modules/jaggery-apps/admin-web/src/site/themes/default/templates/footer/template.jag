@@ -1,0 +1,71 @@
+<% jagg.template("footer", function(inputs, outputs, jagg) { %>
+            <div class="container-fluid footer-main">
+                   <div class="row-fluid">
+                       <div class="span12">
+                           <div class="container">
+                               <div class="row">
+                                   <div class="span2">
+                                       <h5><%=i18n.localize("gettingStarted")%></h5>
+
+                                          <ul class="help-links">
+                                          <li><a href="http://dist.wso2.org/products/api-manager/1.7.0/APIManager-GettingStarted-v1.7.0.pdf"><%=i18n.localize("gettingStartedGuide")%></a></li>
+                                          <li><a href="http://docs.wso2.org/wiki/display/AM170/Installing+the+Product" target="_blank"><%=i18n.localize("installationGuide")%></a></li>
+                                          <li><a href="http://docs.wso2.org/display/AM170/Quick+Start" target="_blank"><%=i18n.localize("quickStartGuide")%></a></li>
+                                          <li> <a href="http://docs.wso2.org/display/AM170/Samples" target="_blank"><%=i18n.localize("samplesLink")%></a></li>
+                                          </ul>
+                                   </div>
+                                   <div class="span10 help-and-links">
+                                       <div class="pull-left">
+                                           <h5><%=i18n.localize("share")%></h5>
+                                           <table class="share-pane">
+                                              <tr>
+                                                  <td><a class="facebook" target="_blank" rel="external nofollow" href="http://www.facebook.com/share.php?u=http://wso2.com/products/api-manager/" title="Share with your friends on Facebook"><img src="http://b.content.wso2.com/wp-content/themes/wso2ng-v3/images/spacer.png" alt="spacer"></a></td>
+                                                  <td><a class="twitter" target="_blank" rel="external nofollow" href="http://twitter.com/?status=http://wso2.com/products/api-manager/" title="Twitter"><img src="http://b.content.wso2.com/wp-content/themes/wso2ng-v3/images/spacer.png" alt="spacer"></a></td>
+                                                  <td><a class="linkedin" target="_blank" rel="external nofollow" href="http://www.linkedin.com/shareArticle?mini=true&amp;url=http://wso2.com/products/api-manager/&amp;title=WSO2 API Manager&amp;summary=&amp;source=WSO2" title="Share this post on linkedin"><img src="http://b.content.wso2.com/wp-content/themes/wso2ng-v3/images/spacer.png" alt="spacer"></a></td>
+                                                  <!--<td><script type="text/javascript" src="https://apis.google.com/js/plusone.js" gapi_processed="true"></script><div style="text-indent: 0px; margin: 0px; padding: 0px; background-color: transparent; border-style: none; float: none; line-height: normal; font-size: 1px; vertical-align: baseline; display: inline-block; width: 24px; height: 15px; background-position: initial initial; background-repeat: initial initial;" id="___plusone_0"><iframe frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" style="position: static; top: 0px; width: 24px; margin: 0px; border-style: none; left: 0px; visibility: visible; height: 15px;" tabindex="0" vspace="0" width="100%" id="I0_1367993874919" name="I0_1367993874919" src="https://plusone.google.com/_/+1/fastbutton?bsv&amp;size=small&amp;expr%3Ahref=data%3Apost.url&amp;count=false&amp;hl=en-US&amp;origin=http%3A%2F%2Fwso2.com&amp;url=http%3A%2F%2Fwso2.com%2Fproducts%2Fapi-manager%2F&amp;ic=1&amp;jsh=m%3B%2F_%2Fscs%2Fapps-static%2F_%2Fjs%2Fk%3Doz.gapi.en.02N985CHyyc.O%2Fm%3D__features__%2Fam%3DIQ%2Frt%3Dj%2Fd%3D1%2Frs%3DAItRSTPZZ0JVQCv9Qljsu0NQlsb1ZzD2zQ#_methods=onPlusOne%2C_ready%2C_close%2C_open%2C_resizeMe%2C_renderstart%2Concircled&amp;id=I0_1367993874919&amp;parent=http%3A%2F%2Fwso2.com&amp;rpctoken=24617986" allowtransparency="true" data-gapiattached="true" title="+1"></iframe></div></td>-->
+                                              </tr>
+                                           </table>
+                                       </div>
+                                       <div class="pull-left">
+                                           <h5><%=i18n.localize("documentationSupport")%></h5>
+                                           <ul class="help-links">
+                                            <li><a target="_blank" href="http://docs.wso2.org/wiki/display/AM170/WSO2+API+Manager+Documentation"><%=i18n.localize("productDocumentation")%></a></li>
+                                            <li><a target="_blank" href="http://wso2.com/support"><%=i18n.localize("getSupport")%></a></li>
+                                            <li><a target="_blank" href="http://wso2.com/products/api-manager/"><%=i18n.localize("productHome")%></a></li>
+                                           </ul>
+                                       </div>
+
+                                       <div class="pull-left">
+                                          <h5><%=i18n.localize("resourcesLink")%></h5>
+                                          <ul class="help-links">
+                                           <li><a target="_blank" href="http://wso2.com/landing/practical-guide-to-api-management-webinar-series/"><%=i18n.localize("apiMgrGuide")%></a></li>
+                                           <li><a target="_blank" href="http://wso2.org/library/webinars/2012/09/wso2-use-case-api-facade-pattern"><%=i18n.localize("useCase1")%></a></li>
+                                           <li><a target="_blank" href="http://wso2.com/products/api-manager/" class="more-link"><%=i18n.localize("more")%></a></li>
+                                          </ul>
+                                       </div>
+
+                                       <div style="clear:both"></div>
+
+
+
+                                        <hr />
+                                        <%=i18n.localize("copyright", "&copy; Copyright 2011 &ndash; 2013 All Rights Reserved.")%>
+                                        <a class="powered-by-logo pull-right" href="http://wso2.com/products/api-manager" target="_blank"></a>
+
+
+                                   </div>
+
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+
+         <!--<div class="container-fluid">
+            <div class="row">
+                <div class="span6"><%=i18n.localize("copyright")%></div>
+                <div class="pull-right"><a class="powered-by-logo" href="http://wso2.com/products/api-manager" target="_blank"></a></div>
+            </div>
+         </div>-->
+<% }); %>

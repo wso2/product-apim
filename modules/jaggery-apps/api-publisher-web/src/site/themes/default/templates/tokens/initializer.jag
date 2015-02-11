@@ -1,0 +1,9 @@
+<%
+jagg.initializer("tokens", {
+
+    preInitialize:function () {
+      jagg.addHeaderJS("tokens", "tokens", "templates/tokens/js/tokens.js");
+      jagg.addHeaderJS("custom-validate", "jagg", "templates/utils/custom-validation/custom-validation.js");
+    }
+});
+%>

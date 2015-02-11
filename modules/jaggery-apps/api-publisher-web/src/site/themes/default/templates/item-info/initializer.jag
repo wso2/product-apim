@@ -1,0 +1,10 @@
+<%
+jagg.initializer("item-info", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("item-info", "dojo", "templates/utils/dojo-release-1.8.3/dojo/dojo.js");
+        jagg.addHeaderJS("item-info", "item-info", "templates/item-info/js/load-tabs.js");
+    }
+});
+%>
+

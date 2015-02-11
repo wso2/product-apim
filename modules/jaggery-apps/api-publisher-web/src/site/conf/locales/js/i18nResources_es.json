@@ -1,0 +1,104 @@
+{
+          "confirm": {
+            "delete": "Confirmar e",
+            "deleteMsg": "Est� seguro que desea eliminar el archivo" ,
+            "revoke": "Revocar Access Token" ,
+            "revokeMsg": "El Access Token ha sido eliminado con �xito : ",
+            "ok": "OK"
+
+
+        },
+        "titles":{
+          "responseTimeGraph":"Tiempo de respuesta (En todas versiones)",
+          "lastAccessTimeGraph":"�ltimo tiempo de acceso (En todas versiones)"
+        },
+        "resultMsgs":{
+            "noDocs":"No hay documentaci�n asociada con la API"
+
+        },
+        "errorMsgs":{
+            "invalidDocUrl":"URL no v�lida para el documento.",
+            "inlineContent":"Disculpe. No se puede cargar el contenido de este documento.",
+            "apiResource":"Disculpe. No se puede eliminar esta fila. Por lo menos una entrada de recursos tiene que estar disponible." ,
+            "uniqueUrlPattern":"El patr�n de URL tiene que ser �nico. ",
+            "emptyUrlPattern":"Patr�n de URL no puede estar vacio. ",
+            "emptyVerb":"Por lo menos un verbo HTTP debe ser controlado por cada recurso. ",
+            "duplicateUrlPattern":"Tiene entradas duplicadas. ",
+            "noData":"No se encuentra ning�n dato ... ",
+            "checkBAMConnectivity":"No se encuentra ning�n dato. Compruebe la conectividad del servidor BAM... ",
+            "unavailableData":"Datos no disponibles",
+            "login":"�No se puede conectar!"
+        },
+        "validationMsgs":{
+            "context": "Duplicar valor de contexto.",
+            "tier": "Seleccione un valor para el nivel de servicio.",
+            "name": "El nombre contiene uno o m�s caracteres no v�lidos ",
+            "noSpace": "El nombre contiene espacios en blanco.",
+            "invalid": " No v�lido",
+            "valid": "V�lido",
+            "testUri": "Probar URI",
+            "validating": "Validaci�n en proceso.."
+        },
+		"failOver":{
+			"title":"Failover State"
+		},
+        "endpointUi":{
+            "Format":"Format",
+            "Optimize":"Optimize",
+            "Error_Codes":"Error Codes",
+            "Intial Duration (Millis)":"Intial Duration (ms)",
+            "Max Duration (Millis)":"Max Duration (ms)",
+            "Factor":"Factor",
+            "Error Codes":"Error Codes",
+            "Retries Before Suspension":"Retries Before Suspension",
+            "Retry Delay(Millis)":"Retry Delay(ms)",
+            "Action":"Action",
+            "Duration (Millis)":"Duration (ms)",
+            "WS-Addressing":"WS-Addressing",
+            "WS-Security":"WS-Security",
+            "Message Content":"Message Content",
+            "pox":"Plain Old XML (POX)",
+            "rest":"REpresentational State Transer (REST)",
+            "Leave As-Is":"Leave As-Is",
+            "Endpoint Suspend State":"Endpoint Suspend State",
+            "101507":"101507 : Connect cancel",
+            "101508":"101508 : Connect timeout",
+            "101505":"101505 : Connection closed",
+            "101506":"101506 : HTTP protocol violation",
+            "101509":"101509 : Send abort",
+            "101500":"101500 : Sender IO error sending",
+            "101510":"101510 : Response processing failure",
+            "101001":"101001 : Receiver IO error receiving",
+            "101000":"101000 : Receiver IO error sending",
+            "101503":"101503 : Connection failed",
+            "101504":"101504 : Connection timed out",
+            "101501":"101501 : Sender IO error receiving",
+            "Endpoint Timeout State":"Endpoint Timeout State",
+            "Connection Timeout":"Connection Timeout",
+            "QoS":"QoS",
+            "Production Endpoint":"Production Endpoint:",
+            "Sandbox Endpoint":"Sandbox Endpoint:",
+            "Production WSDL":"Production WSDL:",
+            "Service":"Service:",
+            "Port":"Port:",
+            "Sandbox WSDL":"Sandbox WSDL:",
+            "Production Fail-over Endpoints":"Production Fail-over Endpoints:",
+            "Endpoint":"Endpoint",
+            "Sandbox Fail-over Endpoints":"Sandbox Fail-over Endpoints:",
+            "Algorithm":"Algorithm",
+            "Session Management":"Session Management",
+            "Session Timeout (Mills) ":"Session Timeout (Mills) ",
+            "Production Endpoints":"Production Endpoints:",
+            "Sandbox Endpoints":"Sandbox Endpoints:",
+            "Round-robin":"Round-robin",
+            "None":"None",
+            "Transport":"Transport",
+            "SOAP":"SOAP",
+	    	"none":"None", 
+            "Client ID":"Client ID",
+            "AlgorithmOther":"Class Name for Algorithm",
+            "Never timeout":"Never timeout",
+            "Discard message":"Discard message",
+            "Execute fault sequence": "Execute fault sequence"
+        }
+}

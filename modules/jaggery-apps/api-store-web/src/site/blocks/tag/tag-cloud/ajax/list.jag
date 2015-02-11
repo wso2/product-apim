@@ -1,0 +1,38 @@
+<%
+include("/jagg/jagg.jag");
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, tenant, result,
+        user = jagg.getUser(),
+        msg = require("/site/conf/ui-messages.jag"),
+        action = request.getParameter("action");
+    var tenant = request.getParameter("tenant");
+
+    if (action == "getAllTags") {
+
+        mod = jagg.module("tag");
+        if (tenant != null) {
+            result = mod.getAllTags(tenant);
+        } else {
+            result = mod.getAllTags(null);
+        }
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:msg.error.authError(action)
+            };
+        } else {
+            obj = {
+                error:false,
+                "tags":result.tags
+            }
+        }
+        print(obj);
+    } else {
+        print({
+            error:true,
+            message:msg.error.invalidAction(action)
+        });
+    }
+}());
+%>

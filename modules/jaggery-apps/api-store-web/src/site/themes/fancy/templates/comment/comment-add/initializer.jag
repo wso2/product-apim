@@ -1,0 +1,9 @@
+<%
+jagg.initializer("comment/comment-add", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("comment/comment-add", "comment-add", "templates/comment/comment-add/js/comment-add.js");
+        jagg.addFooterJS("comment/comment-add", "comment-add", "js/lib/jquery.charCount.js");
+    }
+});
+%>

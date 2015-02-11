@@ -1,0 +1,24 @@
+<% jagg.template("user/logout", function(inputs, outputs, jagg) { %>
+<script type = "text/javascript" >
+var logout = function () {
+    jagg.post("/site/blocks/user/login/ajax/login.jag", {action:"logout"}, function (result) {
+        if (!result.error) {
+            var current = window.location.pathname;
+            var currentHref=window.location.search;
+            var queryParam;
+            if(currentHref.indexOf("tenant")>-1){queryParam=currentHref;}
+            else{queryParam='';}
+            if (current.indexOf(".jag") >= 0) {
+                location.href = "login.jag"+queryParam;
+            } else {
+                location.href = 'site/pages/login.jag'+queryParam;
+            }
+        } else {
+            jagg.message({content:result.message,type:"error"});
+        }
+    }, "json");
+};
+       $(document).ready(logout());
+
+</script>
+<%});%>

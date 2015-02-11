@@ -1,0 +1,192 @@
+<% jagg.template("users-keys", function(inputs, outputs, jagg) { %>
+		<script>
+			function toggleKey(btn){
+				if($(btn).next().is(":visible")){
+					$(btn).next().hide('fast');
+					$(btn).html('<i class=" icon-chevron-down"></i> Show Key');
+				}else{
+					$(btn).next().show('fast');
+					$(btn).html('<i class=" icon-chevron-up"></i> Hide Key');
+				}
+
+			}
+		</script>
+        <div id="userKey">
+            <div class="title-section">
+                <h2><%=i18n.localize("subscriptions")%></h2>
+            </div>
+        <div class="content-section shadow-up">
+        <div class="content-data">
+        <table class="table table-bordered">
+        <thead>
+        <tr>
+        <th class="userSpecialCell"><%=i18n.localize("user")%></th>
+        <th class="appSpecialCell"><%=i18n.localize("application")%></th>
+
+        <th class="appSpecialCell">Subscribed APIs</th>
+        <th class="userSpecialCell">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="users">
+
+        <%
+        var tenant= encode.forUriComponent(request.getParameter("tenant"));
+        var urlPrefix;
+        var urlPostfix;
+        if(tenant!='null') {urlPrefix="?tenant="+tenant;}else{urlPrefix='';}
+        if(tenant!='null') {urlPostfix="&tenant="+tenant;}else{urlPostfix='';}
+
+        var i, apiPath,subscriber, numberOfPages, subscribers = outputs.subscribers;
+		
+		var listCount = 0;
+        var itemsPerPage = 10; //reduce this number to preview the pagination
+        var currentPage = 1;
+
+        if(subscribers!=null){
+
+        var length = subscribers.length;
+        numberOfPages = parseInt(length / itemsPerPage);
+
+        if (length % itemsPerPage != 0) {
+            numberOfPages++;
+        }
+        if (request.getParameter('page') != null) {
+        currentPage = parseInt(request.getParameter('page'));
+        if((currentPage-1)*itemsPerPage == length){
+        if(String(currentPage)=='1'){%>
+
+        <script>
+        window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/subscriptions.jag")%><%=urlPrefix%>";
+        </script>
+
+        <%}else{
+        currentPage = currentPage - 1;
+        %>
+        <script>
+        window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/subscriptions.jag")%>" +"?page="+"<%=String(currentPage)%><%=urlPostfix%>";
+        </script><%
+        }
+        }
+        }
+        var from = (currentPage - 1)*itemsPerPage;
+        var to = currentPage*itemsPerPage;
+        if(currentPage == numberOfPages){
+            to = length%(itemsPerPage*currentPage);
+            if(to == 0){
+                to=itemsPerPage*currentPage;
+            }
+        }
+        if(length==0){
+            to=0;
+        %>
+
+        <tr><td colspan="5"><%=i18n.localize("noSubsMsg")%></td></tr>
+        <%
+        }
+        for(i = from; i < to; i++) {
+        subscriber = subscribers[i];
+        %>
+        <tr>
+        <td><i class="icon-user"></i><%=subscriber.username%></td>
+        <td><%=subscriber.application%></td>
+        <td rowspan="1">
+        <% var apiList =subscriber.apis;
+        var apiName;
+        var version;
+        var api;
+        var subscriberName=subscriber.username;
+        if(apiList.indexOf(",")>=0){
+        var apis=apiList.split(",");
+        for(var n=0;n<apis.length;n++){
+        api=apis[n].split("::");
+        apiName=api[1];
+        version=api[2];
+        apiPath=jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + apiName + "&version=" + version + "&provider=" + jagg.getUser().username+urlPostfix;
+        %>
+        <div><a href="<%= apiPath%>" onclick="jagg.sessionAwareJS({redirect:'<%= apiPath%>',e:event})"><%=apiName%>-<%=version%></a></div>
+        <br/>
+
+        <%}}else{
+        api= apiList.split("::");
+        apiName = api[1];
+        version = api[2];
+        apiPath=jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + apiName + "&version=" + version + "&provider=" + jagg.getUser().username+urlPostfix;
+        %>
+        <div><a href="<%= apiPath%>" onclick="jagg.sessionAwareJS({redirect:'<%= apiPath%>',e:event})"><%=apiName%>-<%=version%></a></div>
+        <%}%>
+    </td>
+    <td style="width:300px">
+      <%
+        var apis=apiList.split(",");
+       if(apis != null){
+        for(var n=0;n<apis.length;n++){
+	        var api=apis[n].split("::");
+	        var existingStatus=api[0];
+	        var apiName=api[1];
+	        var version=api[2];
+	        var status;
+	        var newStatus;
+	        var className;
+
+        
+	        if(existingStatus=='BLOCKED' || existingStatus=='PROD_ONLY_BLOCKED'){
+		        status='Unblock';
+		        newStatus='UNBLOCKED';
+		        className='icon-ok-circle';
+	        }else{
+		        status='Block';
+		        newStatus='BLOCKED';
+		        className='icon-ban-circle';
+	        }
+
+            listCount ++;
+        	var radioInputName = "blockType" + listCount;
+       %>
+       <div>
+
+       <%if (existingStatus=='PROD_ONLY_BLOCKED') { %>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockProduction"  checked="true" disabled/>
+       		<label class="radio-label-class"><%=i18n.localize("blockProduction")%></label>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockAll"  disabled/>
+       <%} else if (existingStatus=='BLOCKED'){%>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockProduction"  disabled/>
+       		<label class="radio-label-class"><%=i18n.localize("blockProduction")%></label>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockAll" checked="true" disabled/>
+       <%} else {%>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockProduction" />
+       		<label class="radio-label-class"><%=i18n.localize("blockProduction")%></label>
+       		<input type="radio" class="radio-class" name="<%=radioInputName%>" value="blockAll"  />
+       <% }%>
+       <label  class="radio-label-class"><%=i18n.localize("blockAll")%></label>
+       <%if(existingStatus == 'ON_HOLD'){
+           var tip = i18n.localize("subsPendingApproval");
+           %>
+           <span id="<%=apiName%><%=jagg.getUser().username%><%=subscriber.appId%>"
+             onclick="updateSubscription('<%=apiName%>','<%=version%>','<%=jagg.getUser().username%>','<%=subscriber.appId%>', '<%=newStatus%>', '<%=listCount%>', this)"
+             title="<%=tip%>">
+               <i class="<%=className%>"></i> <%=status%>
+           </span>
+       <%}
+       else{%>
+            <a id="<%=apiName%><%=jagg.getUser().username%><%=subscriber.appId%>"
+              onclick="updateSubscription('<%=apiName%>','<%=version%>','<%=jagg.getUser().username%>','<%=subscriber.appId%>', '<%=newStatus%>', '<%=listCount%>', this)">
+                <i class="<%=className%>"></i> <%=status%>
+            </a>
+       <%}%>
+       </div> <br/>
+      <%}
+        }%>
+    </td>
+    </tr>
+
+    <%}}%>
+
+        </tbody>
+        </table>
+       <% jagg.includeBlock("paginator", {currentPage:currentPage,numberOfPages:numberOfPages}); %>
+        </div>
+    </div>
+</div>
+
+
+<%});%>

@@ -1,0 +1,58 @@
+<%
+var searchAPIs = function (username,apiName) {
+        var i,api,apis,length, log = new Log(),
+        provider = jagg.module("manager").getAPIProviderObj();
+        try {
+        apis = provider.searchAPIs(username,apiName);
+        if (log.isDebugEnabled()) {
+        log.debug("searchAPI : " + stringify(apis));
+        }
+
+    return {
+            error:false,
+            apis:apis
+            };
+    } catch (e) {
+            log.error(e.message);
+            return {
+            error:true,
+            apis:null,
+            message:e.message.split(":")[1]
+            };
+    }
+    };
+
+var searchAccessTokens = function (query) {
+    var i,accessToken,result,length, log = new Log(), list = [],
+    provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        result = provider.searchAccessTokens(query);
+        if (log.isDebugEnabled()) {
+            log.debug("searchAccessToken : " + stringify(apis));
+        }
+        length = result.length;
+        for (i = 0; i < length; i++) {
+            accessToken = result[i];
+            list.push({
+                token:accessToken.token,
+                user:accessToken.user,
+                scope:accessToken.scope,
+                createTime:accessToken.createTime,
+                validTime:accessToken.validTime,
+                consumerKey:accessToken.consumerKey
+            });
+        }
+        return {
+            error:false,
+            accessTokens:list
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            accessTokens:null,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+%>

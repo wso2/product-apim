@@ -1,0 +1,51 @@
+<%
+include("/jagg/jagg.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+include("header.jag");
+var tenantDomain=getTenantDomain();
+        
+(function () {
+   jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"Create New Account",
+            "pagePath":"/site/pages/sign-up.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"Applications",
+                        "top":[
+                            {
+                                "name":"banner/featured",
+                                "inputs":null
+                            },
+                            {
+                                "name":"search/api-search",
+                                "inputs":null
+                            }
+                        ],
+                        "left":[
+                            {
+                                "name":"api/recently-added",
+                                "inputs":{"tenant":tenantDomain}
+                            }
+                        ],
+                        "middle":[
+                            {
+                                "name":"user/sign-up",
+                                "inputs":{
+
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    });
+}());
+%>

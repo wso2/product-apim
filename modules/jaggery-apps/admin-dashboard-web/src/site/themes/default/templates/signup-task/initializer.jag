@@ -1,0 +1,10 @@
+<%
+jagg.initializer("signup-task", {
+
+    preInitialize:function () {
+        jagg.addFooterJS("signup", "jagg", "templates/signup-task/js/signup.js");
+
+    }
+});
+%>
+

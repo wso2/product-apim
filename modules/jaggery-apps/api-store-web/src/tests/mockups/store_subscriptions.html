@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Store</title>
+    <meta charset="UTF-8">
+    <meta name="description" content=""/>
+    <script type="text/javascript" src="lib/jquery/jquery-1.7.1.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+    <script type="text/javascript" src="lib/kickStart/prettify.js"></script>
+    <!-- PRETTIFY -->
+    <script type="text/javascript" src="lib/kickStart/kickstart.js"></script>
+    <!-- KICKSTART -->
+    <link rel="stylesheet" type="text/css" href="lib/kickStart/css/kickstart.css" media="all"/>
+    <!-- KICKSTART -->
+
+
+    <!--JQUERY Styles-->
+    <link rel="stylesheet" href="lib/jquery/css/start/jquery-ui-1.8.19.custom.css">
+	<script src="lib/jquery/external/jquery.bgiframe-2.1.2.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.core.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.widget.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.mouse.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.button.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.draggable.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.position.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.resizable.min.js"></script>
+	<script src="lib/jquery/ui/jquery.ui.dialog.min.js"></script>
+	<script src="lib/jquery/ui/jquery.effects.core.min.js"></script>
+	<script src="lib/jquery/external/jquery.corner.js"></script>
+
+        <script type="text/javascript">
+$(document).ready(
+        function(){
+                $('#subscriptionList div.accordion-body').each(
+                    function(index){
+                        if(index == 0){
+                            $(this).show();
+                        }else{
+                            $(this).hide();
+                        }
+                    }
+                    );
+                $('#subscriptionList a.accordion-toggle').click(
+                    function(){
+                        $(this).parent().next().toggle('blind');
+                    }
+                );
+            }
+        );
+
+
+</script>
+
+
+
+     <link rel="stylesheet" type="text/css" href="css/style.css" media="all"/>
+    <!-- CUSTOM STYLES -->
+</head>
+<body>
+<a id="top-of-page"></a>
+<!-- Menu Horizontal -->
+<div class="header-wrapper">
+    <div class="wrap">
+        <div class="col_8">
+            <ul class="menu">
+                <li class="current"><a href="">APIs</a></li>
+                <li><a href="">Applications</a></li>
+                <li><a href="">My Subscriptions</a></li>
+            </ul>
+        </div>
+        <div class="col_4 login-links">
+            <ul style="display:none;">
+                <li><a id="create-user">Login</a></li>
+            </ul>
+            <ul>
+                 <li><a id="logout-user">Logout</a></li>
+                <li><a class="link-to-user">foo@bar.com</a></li>
+            </ul>
+        </div>
+        <a class="logo"></a>
+    </div>
+</div>
+
+<div class="clearfix wrap">
+<!-- ===================================== END HEADER ===================================== -->
+
+
+<!--
+
+        ADD YOU HTML ELEMENTS HERE
+
+        Example: 2 Columns
+     -->
+<div class="search-wrapper col_12">
+<div class="col_3">
+
+</div>
+
+<div class="col_9">
+    <h1>APIs</h1>
+
+    <form>
+        <input type="text" class="col_6" name="text21" placeholder="Search APIs"/>
+        <button class="medium"><span class="icon" data-icon="s"></span>Search</button>
+    </form>
+</div>
+</div>
+
+<div class="col_3 cat_and_charts">
+    <ul class="tabs left">
+        <li><a href="#tab1">Top Charts</a></li>
+        <li><a href="#tab2">Categories</a></li>
+    </ul>
+
+    <div id="tab1" class="tab-content">
+        <!-- Ordered List -->
+        <h4>Top Paid</h4>
+        <hr/>
+        <ol>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID1">Ondango API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID2">Tastebuds.fm API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID3">Anveo Phone API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID4">Musicplayr API</a>
+            </li>
+        </ol>
+
+        <!-- Ordered List -->
+        <h4>Recently Added</h4>
+        <hr/>
+        <ol>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID21">Ondango API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID22">Tastebuds.fm API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID23">Anveo Phone API</a>
+            </li>
+            <li><a class="tooltip-right medium orange pill" data-content="#tooltipcontentID24">Musicplayr API</a>
+            </li>
+        </ol>
+
+    </div>
+    <div id="tab2" class="tab-content">
+        <ol>
+            <li><a>Books & Reference</a></li>
+            <li><a>Business</a></li>
+            <li><a>Comics</a></li>
+            <li><a>Communication</a></li>
+            <li><a>Education</a></li>
+            <li><a>Entertainment</a></li>
+            <li><a>Finance</a></li>
+            <li><a>Health & Fitness</a></li>
+            <li><a>Photography</a></li>
+            <li><a>Shopping</a></li>
+            <li><a>Social</a></li>
+            <li><a>Weather</a></li>
+        </ol>
+    </div>
+
+</div>
+
+<div class="col_6">
+    <h2>My Subscriptions</h2>
+
+    <div class="subscription-list" id="subscriptionList">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <a class="accordion-toggle">
+                    Collapsible Group Item #1
+                </a>
+            </div>
+            <div class="accordion-body">
+                <div class="accordion-inner">
+                    <div class="application-api-listing">
+                        <a><img src="https://lh3.ggpht.com/ELVpGKkk6h_7nIluYDwkkaPo7pbx4MdwtT8EmMkPJ4ZSnvbVnTNcA_l3FxwzN5jjZGOy=w78"
+                                alt=""/></a>
+
+                        <div><a class="service-name">Reckless</a></div>
+                        <div class="company-name">admin</div>
+                    </div>
+                    <div class="application-api-listing">
+                        <a><img src="https://lh4.ggpht.com/cNCQoffuXZ-uqgArEo1a43fZxu45bsSKoQehQ8FMKRRjefj2x9W-_dfXJg0=w78"
+                                alt=""/></a>
+
+                        <div><a class="service-name">Racing 2</a></div>
+                        <div class="company-name">admin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <a class="accordion-toggle">
+                    Collapsible Group Item #2
+                </a>
+            </div>
+            <div class="accordion-body">
+                <div class="accordion-inner">
+                    <div class="application-api-listing">
+                        <a><img src="https://lh3.ggpht.com/ELVpGKkk6h_7nIluYDwkkaPo7pbx4MdwtT8EmMkPJ4ZSnvbVnTNcA_l3FxwzN5jjZGOy=w78"
+                                alt=""/></a>
+
+                        <div><a class="service-name">Reckless</a></div>
+                        <div class="company-name">admin</div>
+                    </div>
+                    <div class="application-api-listing">
+                        <a><img src="https://lh4.ggpht.com/cNCQoffuXZ-uqgArEo1a43fZxu45bsSKoQehQ8FMKRRjefj2x9W-_dfXJg0=w78"
+                                alt=""/></a>
+
+                        <div><a class="service-name">Racing 2</a></div>
+                        <div class="company-name">admin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col_3 clouds">
+    <div class="aCenter box10">
+        <a href="/tag/2008" class="tsxl3" title="2008 (1)">2008</a> <a href="/tag/37signals" class="tsxl3"
+                                                                       title="37signals (1)">37signals</a> <a
+            href="/tag/3d" class="tsxl9" title="3d (36)">3d</a> <a href="/tag/3voor12" class="tsxl3"
+                                                                   title="3voor12 (1)">3voor12</a> <a href="/tag/4d"
+                                                                                                      class="tsxl3"
+                                                                                                      title="4D (1)">4D</a>
+        <a href="/tag/aboriginal" class="tsxl3" title="aboriginal (1)">aboriginal</a> <a href="/tag/accidents"
+                                                                                         class="tsxl3"
+                                                                                         title="accidents (1)">accidents</a>
+        <a href="/tag/accommodation" class="tsxl3" title="accommodation (1)">accommodation</a> <a
+            href="/tag/accounting" class="tsxl5" title="accounting (4)">accounting</a> <a href="/tag/actionscript"
+                                                                                          class="tsxl3"
+                                                                                          title="actionscript (1)">actionscript</a>
+        <a href="/tag/actives" class="tsxl3" title="actives (1)">actives</a> <a href="/tag/activism" class="tsxl5"
+                                                                                title="activism (3)">activism</a> <a
+            href="/tag/activities" class="tsxl3" title="activities (1)">activities</a> <a href="/tag/ad"
+                                                                                          class="tsxl3"
+                                                                                          title="ad (1)">ad</a> <a
+            href="/tag/add-on" class="tsxl3" title="add on (1)">add on</a> <a href="/tag/addon" class="tsxl4"
+                                                                              title="addon (2)">addon</a> <a
+            href="/tag/address" class="tsxl5" title="address (3)">address</a> <a href="/tag/administrative"
+                                                                                 class="tsxl3"
+                                                                                 title="administrative (1)">administrative</a>
+        <a href="/tag/adobe" class="tsxl3" title="adobe (1)">adobe</a> <a href="/tag/ads" class="tsxl8"
+                                                                          title="ads (26)">ads</a> <a
+            href="/tag/adult" class="tsxl5" title="adult (4)">adult</a> <a href="/tag/adventure" class="tsxl3"
+                                                                           title="adventure (1)">adventure</a> <a
+            href="/tag/advertisement" class="tsxl3" title="Advertisement (1)">Advertisement</a> <a
+            href="/tag/advertising" class="tsxl8" title="advertising (12)">advertising</a> <a href="/tag/advocacy"
+                                                                                              class="tsxl8"
+                                                                                              title="advocacy (32)">advocacy</a>
+        <a href="/tag/adwords" class="tsxl3" title="adwords (1)">adwords</a> <a href="/tag/aes" class="tsxl3"
+                                                                                title="aes (1)">aes</a> <a
+            href="/tag/affiliate" class="tsxl5" title="affiliate (5)">affiliate</a> <a href="/tag/africa"
+                                                                                       class="tsxl7"
+                                                                                       title="africa (11)">africa</a>
+        <a href="/tag/aggregation" class="tsxl3" title="aggregation (1)">aggregation</a> <a href="/tag/aggregator"
+                                                                                            class="tsxl8"
+                                                                                            title="aggregator (31)">aggregator</a>
+        <a href="/tag/ai" class="tsxl6" title="ai (6)">ai</a> <a href="/tag/aids" class="tsxl3"
+                                                                 title="aids (1)">aids</a>
+        <a href="/tag/air" class="tsxl6" title="air (8)">air</a> <a href="/tag/aircraft" class="tsxl4"
+                                                                    title="aircraft (2)">aircraft</a> <a
+            href="/tag/airfare" class="tsxl3" title="airfare (1)">airfare</a> <a href="/tag/airline" class="tsxl3"
+                                                                                 title="airline (1)">airline</a> <a
+            href="/tag/airlines" class="tsxl5" title="airlines (3)">airlines</a> <a href="/tag/airplane"
+                                                                                    class="tsxl5"
+                                                                                    title="airplane (3)">airplane</a>
+        <a href="/tag/airplanes" class="tsxl4" title="airplanes (2)">airplanes</a> <a href="/tag/airport"
+                                                                                      class="tsxl4"
+                                                                                      title="airport (2)">airport</a>
+        <a href="/tag/airports" class="tsxl6" title="airports (8)">airports</a> <a href="/tag/ajax" class="tsxl9"
+                                                                                   title="ajax (50)">ajax</a> <a
+            href="/tag/alabama" class="tsxl3" title="alabama (1)">alabama</a> <a href="/tag/alarm" class="tsxl3"
+                                                                                 title="alarm (1)">alarm</a> <a
+            href="/tag/alaska" class="tsxl3" title="alaska (1)">alaska</a> <a href="/tag/album" class="tsxl4"
+                                                                              title="album (2)">album</a> <a
+            href="/tag/albumart" class="tsxl3" title="albumart (1)">albumart</a> <a href="/tag/alert" class="tsxl3"
+                                                                                    title="alert (1)">alert</a> <a
+            href="/tag/alerts" class="tsxl8" title="alerts (18)">alerts</a> <a href="/tag/allergy" class="tsxl3"
+                                                                               title="allergy (1)">allergy</a> <a
+            href="/tag/alps" class="tsxl3" title="alps (1)">alps</a> <a href="/tag/amateur" class="tsxl3"
+                                                                        title="amateur (1)">amateur</a> <a
+            href="/tag/amazon" class="tsxl8" title="amazon (20)">amazon</a> <a href="/tag/amsterdam" class="tsxl5"
+                                                                               title="amsterdam (5)">amsterdam</a>
+        <a href="/tag/amtrak" class="tsxl3" title="amtrak (1)">amtrak</a> <a href="/tag/amusement" class="tsxl3"
+                                                                             title="amusement (1)">amusement</a> <a
+            href="/tag/analysis" class="tsxl7" title="analysis (10)">analysis</a> <a href="/tag/analytics"
+                                                                                     class="tsxl9"
+                                                                                     title="analytics (37)">analytics</a>
+        <a href="/tag/andorra" class="tsxl3" title="andorra (1)">andorra</a> <a href="/tag/android" class="tsxl8"
+                                                                                title="android (21)">android</a> <a
+            href="/tag/animals" class="tsxl8" title="animals (20)">animals</a> <a href="/tag/animation"
+                                                                                  class="tsxl5"
+                                                                                  title="animation (3)">animation</a>
+        <a href="/tag/anime" class="tsxl4" title="anime (2)">anime</a> <a href="/tag/anonymous" class="tsxl3"
+                                                                          title="anonymous (1)">anonymous</a> <a
+            href="/tag/answers" class="tsxl8" title="answers (20)">answers</a> <a href="/tag/anthems" class="tsxl3"
+                                                                                  title="anthems (1)">anthems</a> <a
+            href="/tag/apartment" class="tsxl3" title="apartment (1)">apartment</a> <a href="/tag/apartments"
+                                                                                       class="tsxl7"
+                                                                                       title="apartments (11)">apartments</a>
+        <a href="/tag/api" class="tsxl6" title="api (7)">api</a> <a href="/tag/apihackdaypdx" class="tsxl6"
+                                                                    title="apihackdaypdx (8)">apihackdaypdx</a> <a
+            href="/tag/apis" class="tsxl3" title="Apis (1)">Apis</a> <a href="/tag/app" class="tsxl3"
+                                                                        title="app (1)">app</a> <a
+            href="/tag/appengine" class="tsxl7" title="appengine (10)">appengine</a> <a href="/tag/apple"
+                                                                                        class="tsxl5"
+                                                                                        title="apple (3)">apple</a>
+        <a href="/tag/application" class="tsxl3" title="application (1)">application</a> <a href="/tag/appmystate"
+                                                                                            class="tsxl3"
+                                                                                            title="appmystate (1)">appmystate</a>
+        <a href="/tag/appointments" class="tsxl3" title="appointments (1)">appointments</a> <a href="/tag/apps"
+                                                                                               class="tsxl3"
+                                                                                               title="apps (1)">apps</a>
+        <a href="/tag/appsforcalifornians" class="tsxl8" title="appsforcalifornians (14)">appsforcalifornians</a> <a
+            href="/tag/appsscript" class="tsxl3" title="AppsScript (1)">AppsScript</a> <a href="/tag/arabic"
+                                                                                          class="tsxl5"
+                                                                                          title="Arabic (3)">Arabic</a>
+        <a href="/tag/archiveorg" class="tsxl3" title="archiveorg (1)">archiveorg</a> <a href="/tag/arenas"
+                                                                                         class="tsxl3"
+                                                                                         title="arenas (1)">arenas</a>
+        <a href="/tag/argentina" class="tsxl5" title="argentina (4)">argentina</a> <a href="/tag/art" class="tsxl9"
+                                                                                      title="art (45)">art</a> <a
+            href="/tag/article" class="tsxl3" title="article (1)">article</a> <a href="/tag/articles" class="tsxl4"
+                                                                                 title="articles (2)">articles</a>
+        <a href="/tag/artist" class="tsxl6" title="artist (7)">artist</a> <a href="/tag/artistic" class="tsxl3"
+                                                                             title="Artistic (1)">Artistic</a> <a
+            href="/tag/artists" class="tsxl6" title="artists (8)">artists</a> <a href="/tag/arts" class="tsxl3"
+                                                                                 title="arts (1)">arts</a> <a
+            href="/tag/as3" class="tsxl3" title="as3 (1)">as3</a> <a href="/tag/asia" class="tsxl4"
+                                                                     title="asia (2)">asia</a> <a href="/tag/ask"
+                                                                                                  class="tsxl3"
+                                                                                                  title="ask (1)">ask</a>
+        <a href="/tag/asp" class="tsxl3" title="asp (1)">asp</a> <a href="/tag/astrology" class="tsxl4"
+                                                                    title="astrology (2)">astrology</a> <a
+            href="/tag/astronomy" class="tsxl6" title="astronomy (8)">astronomy</a> <a href="/tag/athens"
+                                                                                       class="tsxl3"
+                                                                                       title="athens (1)">athens</a>
+        <a href="/tag/athletes" class="tsxl3" title="athletes (1)">athletes</a> <a href="/tag/atom" class="tsxl4"
+                                                                                   title="atom (2)">atom</a> <a
+            href="/tag/attachments" class="tsxl3" title="attachments (1)">attachments</a> <a href="/tag/attractions"
+                                                                                             class="tsxl4"
+                                                                                             title="attractions (2)">attractions</a>
+
+        <a href="/tag/zune" class="tsxl3" title="zune (1)">zune</a>
+    </div>
+</div>
+
+
+<!-- ===================================== START FOOTER ===================================== -->
+<div class="clear"></div>
+<div id="footer">
+    &copy; Copyright 2011–2012 All Rights Reserved.
+    <a id="link-top" href="#top-of-page">Top</a>
+</div>
+
+</div>
+<!-- END WRAP -->
+</body>
+</html>

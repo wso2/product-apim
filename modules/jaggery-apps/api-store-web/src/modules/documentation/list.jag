@@ -1,0 +1,46 @@
+<%
+var getAllDocumentations = function (api,user) {
+    var documentations,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        documentations = store.getAllDocumentation(api.provider, api.name, api.version,user);
+        if (log.isDebugEnabled()) {
+            log.debug("getAllDocumentation : " + stringify(documentations));
+        }
+        return {
+            error:false,
+            documentations:documentations
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            documentations:null
+        };
+    }
+};
+var getInlineContent = function (provider,name, version, docName) {
+    var doc,result, log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+    try {
+        result = store.getInlineContent(provider,name, version, docName);
+        result=result[0];
+        if (log.isDebugEnabled()) {
+            log.debug("getInlineContent for : " + docName);
+        }
+
+        return {
+            error:false,
+            doc:result
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            doc:null
+        };
+    }
+};
+%>

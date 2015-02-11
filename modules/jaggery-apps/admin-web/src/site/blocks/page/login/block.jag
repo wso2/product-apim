@@ -1,0 +1,31 @@
+<%
+jagg.block("page/login", {
+
+    initialize:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            title:null,
+            body:null
+        };
+    },
+
+    getOutputs:function (inputs) {
+        return inputs;
+    },
+
+    getStaticBlocks:function () {
+        return [
+            "header/login"
+        ];
+    },
+
+    getInputBlocks:function () {
+        return [
+            "body"
+        ];
+    }
+});
+%>

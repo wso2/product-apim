@@ -1,0 +1,24 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("tiers", {
+    initializer:function (data) {
+
+    },
+    
+    getOutputs:function () {
+        var result, tiers, tierPermissions, mod = jagg.module("tiers");
+        result = mod.getTiers();
+        tiers = result.tiers;
+        
+        result = mod.getTierPermissions();
+        tierPermissions =  result.tierPermissions;
+        
+        return {
+            "tiers":tiers,
+            "tierPermissions":tierPermissions
+        };
+    }
+    
+    });
+%>

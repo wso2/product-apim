@@ -1,0 +1,29 @@
+{
+    "theme" : {
+        "base" : "default",
+        "subtheme" : "modern"
+    },
+    "context" : "/admin-dashboard",
+    "request_url":"READ_FROM_REQUEST",
+    "tasksPerPage": 10,
+    "allowedRole":"admin",
+    "allowedRoles":"admin,subscriber",
+    "workflows":{
+     "applicationWorkFlowServerURL": "https://localhost:9445/services/",
+     "subscriptionWorkFlowServerURL": "https://localhost:9445/services/",
+     "signupWorkFlowServerURL": "https://localhost:9445/services/",
+     "appRegistrationWorkFlowServerURL": "https://localhost:9445/services/"
+
+    },
+    "ssoConfiguration" : {
+        "enabled" : "false",
+        "issuer" : "API_WORKFLOW_ADMIN",
+        "identityProviderURL" : "https://localhost:9443/samlsso",
+        "keyStorePassword" : "",
+        "identityAlias" : "",
+        "responseSigningEnabled":"true",
+        "keyStoreName" :""
+    }
+
+
+}

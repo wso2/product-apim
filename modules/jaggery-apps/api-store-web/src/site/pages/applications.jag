@@ -1,0 +1,60 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+var tenantDomain=getTenantDomain();
+
+        
+(function () {
+    var apis, site, tag, query, result, mod, user = jagg.getUser();
+    isTenantAllowed();
+    if (!user) {
+        response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+        return;
+    }
+
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"Applications",
+            "pagePath":"/site/pages/applications.jag",
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "title":"Applications",
+                        "top":[
+                            {
+                                "name":"banner/featured",
+                                "inputs":null
+                            },
+                            {
+                                "name":"search/api-search",
+                                "inputs":null
+                            }
+                        ],
+                        "left":[
+                            {
+                                "name":"api/recently-added",
+                                "inputs":{"tenant":tenantDomain}
+                            }
+                        ],
+                        "middle":[
+                            {
+                                "name":"application/application-add",
+                                "inputs":{
+                                    "apis":apis,
+                                    "user":user
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    });
+}());
+%>

@@ -1,0 +1,6 @@
+[
+    "core/user.js",
+    "core/recent.js",
+    "core/ratings.js",
+    "core/tags.js"
+]

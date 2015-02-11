@@ -1,0 +1,28 @@
+<%
+var removeRating = function (api) {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+
+        var result = store.removeAPIRating(api.provider, api.name, api.version);
+        if (log.isDebugEnabled()) {
+            log.debug("removeRating");
+        }
+	var rating;
+	if(result){	
+	rating = result[0].newRating;
+	}
+
+        return {
+            error:false,
+	    	rating:rating	
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e
+        };
+    }
+};
+%>

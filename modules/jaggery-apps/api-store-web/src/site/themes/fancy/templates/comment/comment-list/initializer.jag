@@ -1,0 +1,8 @@
+<%
+jagg.initializer("comment/comment-list", {
+
+    preInitialize:function () {
+
+    }
+});
+%>

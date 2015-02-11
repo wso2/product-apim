@@ -1,0 +1,145 @@
+<%
+var ws = require("ws");
+var log=new Log();
+
+var getTasks = function (filterCategory,taskType) {
+
+var version = new ws.WSRequest();
+var options = new Array();
+options.useSOAP = 1.2;
+options.action = "http://docs.oasis-open.org/ns/bpel4people/ws-humantask/api/200803/simpleQuery";
+var cookie=session.get("workflowCookie");
+options["HTTPHeaders"] = [
+                              { name : "Cookie", value :cookie },
+                        ];
+
+var searchBy='';
+if(filterCategory==null||filterCategory=='ALL'){
+searchBy='ALL_TASKS';
+} else if(filterCategory=='userOnly'){
+searchBy='ASSIGNED_TO_ME';
+}else if(filterCategory=='claimable'){
+searchBy='CLAIMABLE';
+}
+
+var prefixEndpoint;
+if(taskType=="ApproveSubscription"){
+prefixEndpoint= site.workflows.subscriptionWorkFlowServerURL;
+} else if(taskType=="ApproveUser"){
+prefixEndpoint=site.workflows.signupWorkFlowServerURL;
+} else if(taskType=="ApproveApplication"){
+prefixEndpoint=site.workflows.applicationWorkFlowServerURL;
+} else if(taskType=="ApplicationRegistration"){
+prefixEndpoint=site.workflows.appRegistrationWorkFlowServerURL;
+}
+
+var payload = '<ns:simpleQuery xmlns:ns="http://docs.oasis-open.org/ns/bpel4people/ws-humantask/api/200803" xmlns:ns1="http://docs.oasis-open.org/ns/bpel4people/ws-humantask/types/200803">'+
+'<ns:simpleQueryInput><ns1:pageSize>'+100000+'</ns1:pageSize><ns1:pageNumber>'+0+'</ns1:pageNumber><ns1:simpleQueryCategory>'+'ALL_TASKS'+'</ns1:simpleQueryCategory></ns:simpleQueryInput></ns:simpleQuery>';
+var result;
+var endpoint=prefixEndpoint+"HumanTaskClientAPIAdmin/";
+
+try {
+
+version.open(options,endpoint, false);
+version.send(payload);
+result = version.responseE4X;
+
+return parseResponse(result,taskType,endpoint);
+
+} catch (e) {
+log.error(e.toString());
+session.put("showLogin", "true");
+return null;
+}
+};
+
+
+var parseResponse=function parseResponse(response,taskType,endpoint){
+var tasks=response.*::taskSimpleQueryResultSet.*::row
+var tasksObject=[];
+
+for(var i=0; i<tasks.length(); i++){
+var task={};
+ var entry=tasks[i];
+
+ var taskName= entry.*::name.text();
+ var status = entry.*::status.text();
+ var id = entry.*::id.text();
+
+ if(taskName.indexOf(taskType)>=0 && status!='COMPLETED'){
+ var taskOwnedByLoggedUser= isTaskOwnedByLoggedUser(endpoint,id);
+ if(((status!='IN_PROGRESS')&& (status!='RESERVED'))||((status=='IN_PROGRESS')&& taskOwnedByLoggedUser)||((status=='RESERVED')&& taskOwnedByLoggedUser)) {
+ var presentationSubject = entry.*::presentationSubject.text();
+ var createdTime = entry.*::createdTime.text();
+ createdTime=createdTime.substring(0,10) +'  -  ' +createdTime.substring(11,29);
+
+ task.id=id;
+ task.status=status;
+ task.presentationSubject=presentationSubject;
+ task.createdTime=createdTime;
+ tasksObject.push(task);
+ }
+ }
+ }
+
+return tasksObject;
+
+};
+
+var isTaskOwnedByLoggedUser=function(endpoint,taskId){
+var username=session.get("logged.user").username;
+var version = new ws.WSRequest();
+var options = new Array();
+options.useSOAP = 1.2;
+options.action = "http://docs.oasis-open.org/ns/bpel4people/ws-humantask/api/200803/loadTask";
+var cookie=session.get("workflowCookie");
+
+if (cookie==null) {
+            print({
+                error:true,
+                message:msg.error.loginRequired(action)
+            });
+            return;
+}else{
+options["HTTPHeaders"] = [
+                              { name : "Cookie", value :cookie },
+                        ];
+
+var payload = '<ns:loadTask xmlns:ns="http://docs.oasis-open.org/ns/bpel4people/ws-humantask/api/200803" xmlns:ns1="http://docs.oasis-open.org/ns/bpel4people/ws-humantask/types/200803">'+
+'<ns:identifier>'+parseInt(taskId)+'</ns:identifier></ns:loadTask>';
+var response;
+
+
+try {
+
+version.open(options,endpoint, false);
+version.send(payload);
+response = version.responseE4X;
+var actualOwner=response.*::taskAbstract.*::actualOwner;
+var store = jagg.module("manager").getAPIStoreObj();
+var isEmailLoginEnabled=store.isEnableEmailUsername();
+if(!isEmailLoginEnabled && (username.indexOf("@") != -1)){
+username=username.split("@")[0];
+}
+if(username==actualOwner){
+
+return true;
+}
+else{
+return false;
+}
+
+} catch (e) {
+log.error(e.toString());
+session.put("showLogin", "true");
+return false;
+}
+}
+};
+
+
+
+
+
+
+%>
