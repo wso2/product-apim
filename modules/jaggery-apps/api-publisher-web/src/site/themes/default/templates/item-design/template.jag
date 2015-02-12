@@ -168,16 +168,24 @@
         <label class="control-label" for="visibility"><%=i18n.localize("visibility")%>:</label>
         <div class="controls">
             <select class="select required" id="visibility" name="visibility">
+		<% mod = jagg.module("api");
+		 result = mod.displayPrivateVisibility();
+	         var displayPrivateVisibility = result.status;
+		%>
             	<% if (api) {%>
                     <option value="public" <%if(api.visibility=="public"){%> selected="selected" <%}%>><%=i18n.localize("public")%></option>
+		    <% if(displayPrivateVisibility == true) {%>
                     <option value="private" <%if(api.visibility=="private"){%> selected="selected" <%}%>><%=i18n.localize("private")%></option>
+		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
                              <option value="restricted" <%if(api.visibility=="restricted"){%> selected="selected" <%}%>><%=i18n.localize("restricted")%></option>
                     <% } %>
                     
                 <%} else {%>
                     <option value="public"><%=i18n.localize("public")%></option>
+		    <% if(displayPrivateVisibility == true) {%>
                     <option value="private"><%=i18n.localize("private")%></option>
+		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
                              <option value="restricted"><%=i18n.localize("restricted")%></option>
                     <% } %> 

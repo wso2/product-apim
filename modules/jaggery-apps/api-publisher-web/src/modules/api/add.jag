@@ -371,4 +371,28 @@ var isDataPublishingEnabled = function () {
         };
     }
 };
+
+
+var displayPrivateVisibility = function(){
+	var result, status ,log = new Log(),
+	provider = jagg.module("manager").getAPIProviderObj();
+	
+    try {
+        result = provider.displayPrivateVisibility();
+	log.info(""+result);        
+	if (log.isDebugEnabled()) {
+            log.debug("Invoke displayPrivateVisibility()" );
+        }
+        return {
+            error:false,
+            status:result
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+	    message:e
+        };
+    }
+};
 %>
