@@ -52,11 +52,11 @@
         <!--
             Admin username for the Authentication manager.
         -->
-        <Username>admin</Username>
+        <Username>${admin.username}</Username>
         <!--
             Admin password for the Authentication manager.
         -->
-        <Password>admin</Password>
+        <Password>${admin.password}</Password>
     </AuthManager>
 
     <!--
@@ -140,11 +140,11 @@
 			<!--
             			Admin username for the API gateway.
         		-->
-                        <Username>admin</Username>
+                        <Username>${admin.username}</Username>
 			<!--
             			Admin password for the API gateway.
         		-->
-                        <Password>admin</Password>
+                        <Password>${admin.password}</Password>
 			<!--
             			Endpoint URLs for the APIs hosted in this API gateway.
         		-->
@@ -211,12 +211,12 @@
         <!--
             Administrator username to login to the remote BAM server.
         -->
-        <BAMUsername>admin</BAMUsername>
+        <BAMUsername>${admin.username}</BAMUsername>
 
         <!--
             Administrator password to login to the remote BAM server.
         -->
-        <BAMPassword>admin</BAMPassword>
+        <BAMPassword>${admin.password}</BAMPassword>
 
         <!--
             JNDI name of the data source to be used for getting BAM statistics.This data source should
@@ -240,12 +240,12 @@
         <!--
             Admin username for API key manager.
         -->
-        <Username>admin</Username>
+        <Username>${admin.username}</Username>
 
         <!--
             Admin password for API key manager.
         -->
-        <Password>admin</Password>
+        <Password>${admin.password}</Password>
         <!--
             Enable/Disable JWT caching.
         -->
