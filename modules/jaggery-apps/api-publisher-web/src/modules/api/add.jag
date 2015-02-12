@@ -374,12 +374,10 @@ var isDataPublishingEnabled = function () {
 
 
 var displayPrivateVisibility = function(){
-	var result, status ,log = new Log(),
-	provider = jagg.module("manager").getAPIProviderObj();
-	
+    var result, status ,log = new Log(),
+    provider = jagg.module("manager").getAPIProviderObj();
     try {
-        result = provider.displayPrivateVisibility();
-	log.info(""+result);        
+        result = provider.displayPrivateVisibility();       
 	if (log.isDebugEnabled()) {
             log.debug("Invoke displayPrivateVisibility()" );
         }
