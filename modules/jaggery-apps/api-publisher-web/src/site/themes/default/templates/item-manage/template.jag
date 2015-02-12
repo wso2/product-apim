@@ -202,6 +202,10 @@
             <!--Response Caching End -->
 
                 <div class="control-group">
+		        <% mod = jagg.module("api");
+		 	result = mod.displayPrivateVisibility();
+	         	var displayPrivateVisibility = result.status;
+			if(api.visibility == "public" && displayPrivateVisibility == true){%>
                         <label class="control-label" for="subscriptions"><%=i18n.localize("subscriptionsTitle")%>:</label>
                                 
                         <div class="controls">
@@ -221,7 +225,7 @@
                             <a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
                             <div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
                         </div>
-                                    
+                        <% } %>            
                 <br/>
                     <div class="control-group" id="tennatsDiv" <%if(api.subscriptionAvailability!="specific_tennats"){%>style="display: none;"<%}%>>
                         <label class="control-label" for="tenants" id="tennatLabel" name="tennatLabel">
