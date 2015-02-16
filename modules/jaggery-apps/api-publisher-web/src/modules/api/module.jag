@@ -111,6 +111,9 @@ jagg.module("api", {
     } ,
     checkIfResourceExists:function () {
         return jagg.require(jagg.getModulesDir() + "api/add.jag").checkIfResourceExists.apply(this, arguments);
+    } ,
+    isMultipleTenantsAvailable:function(){
+	return jagg.require(jagg.getModulesDir() + "api/add.jag").isMultipleTenantsAvailable.apply(this, arguments);
     }
 });
 %>
