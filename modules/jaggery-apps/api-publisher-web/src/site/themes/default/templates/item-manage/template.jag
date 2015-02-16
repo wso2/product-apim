@@ -203,9 +203,9 @@
 
                 <div class="control-group">
 		        <% mod = jagg.module("api");
-		 	result = mod.displayPrivateVisibility();
-	         	var displayPrivateVisibility = result.status;
-			if(api.visibility == "public" && displayPrivateVisibility == true){%>
+		 	result = mod.isMultipleTenantsAvailable();
+	         	var isMultipleTenantsAvailable = result.status;
+			if(api.visibility == "public" && isMultipleTenantsAvailable == true){%>
                         <label class="control-label" for="subscriptions"><%=i18n.localize("subscriptionsTitle")%>:</label>
                         <div class="controls">
                         	<% if(api.visibility!="public") {%>

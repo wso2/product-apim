@@ -373,13 +373,13 @@ var isDataPublishingEnabled = function () {
 };
 
 
-var displayPrivateVisibility = function(){
+var isMultipleTenantsAvailable = function(){
     var result, status ,log = new Log(),
     provider = jagg.module("manager").getAPIProviderObj();
     try {
-        result = provider.displayPrivateVisibility();       
+        result = provider.isMultipleTenantsAvailable();       
 	if (log.isDebugEnabled()) {
-            log.debug("Invoke displayPrivateVisibility()" );
+            log.debug("Invoke isMultipleTenantsAvailable()" );
         }
         return {
             error:false,

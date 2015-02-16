@@ -169,12 +169,12 @@
         <div class="controls">
             <select class="select required" id="visibility" name="visibility">
 		<% mod = jagg.module("api");
-		 result = mod.displayPrivateVisibility();
-	         var displayPrivateVisibility = result.status;
+		 result = mod.isMultipleTenantsAvailable();
+	         var isMultipleTenantsAvailable = result.status;
 		%>
             	<% if (api) {%>
                     <option value="public" <%if(api.visibility=="public"){%> selected="selected" <%}%>><%=i18n.localize("public")%></option>
-		    <% if(displayPrivateVisibility == true) {%>
+		    <% if(isMultipleTenantsAvailable == true) {%>
                     <option value="private" <%if(api.visibility=="private"){%> selected="selected" <%}%>><%=i18n.localize("private")%></option>
 		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
@@ -183,7 +183,7 @@
                     
                 <%} else {%>
                     <option value="public"><%=i18n.localize("public")%></option>
-		    <% if(displayPrivateVisibility == true) {%>
+		    <% if(isMultipleTenantsAvailable == true) {%>
                     <option value="private"><%=i18n.localize("private")%></option>
 		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
