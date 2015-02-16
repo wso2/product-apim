@@ -207,25 +207,24 @@
 	         	var displayPrivateVisibility = result.status;
 			if(api.visibility == "public" && displayPrivateVisibility == true){%>
                         <label class="control-label" for="subscriptions"><%=i18n.localize("subscriptionsTitle")%>:</label>
-                                
                         <div class="controls">
-                        <% if(api.visibility!="public") {%>
-                            <select class="select required" id="subscriptions" name="subscriptions" >
-                                <option value="current_tenant"  selected="selected"><%=i18n.localize("availableToCurrentTenant")%></option>
-                            </select> 
-                        <%} else {%>
-                            <select class="select required" id="subscriptions" name="subscriptions" >
-                                <option value="current_tenant" <%if(api.subscriptionAvailability=="current_tenant"){%> selected="selected" <%}%> ><%=i18n.localize("availableToCurrentTenant")%></option>
+                        	<% if(api.visibility!="public") {%>
+                           	<select class="select required" id="subscriptions" name="subscriptions" >
+                               	<option value="current_tenant"  selected="selected"><%=i18n.localize("availableToCurrentTenant")%></option>
+                           	</select> 
+                        	<%} else {%>
+                            	<select class="select required" id="subscriptions" name="subscriptions" >
+                               	<option value="current_tenant" <%if(api.subscriptionAvailability=="current_tenant"){%> selected="selected" <%}%> ><%=i18n.localize("availableToCurrentTenant")%></option>
                                 <option value="all_tenants" <%if(api.subscriptionAvailability=="all_tenants"){%> selected="selected" <%}%> ><%=i18n.localize("availableToAllTenants")%></option>
-                                <% if(!(enableSelectedTenantSubscription == 'false')) {%>
-                                    <option value="specific_tennats" <%if(api.subscriptionAvailability=="specific_tennats"){%> selected="selected" <%}%> ><%=i18n.localize("availableToSpecificTenants")%></option>
-                                <% } %>
-                            </select> 
-                        <%}%>     
-                            <a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
-                            <div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
-                        </div>
-                        <% } %>            
+                                	<% if(!(enableSelectedTenantSubscription == 'false')) {%>
+                                	<option value="specific_tennats" <%if(api.subscriptionAvailability=="specific_tennats"){%> selected="selected" <%}%> ><%=i18n.localize("availableToSpecificTenants")%></option>
+                                	<% } %>
+                            	</select> 
+                        	<%}%>     
+                            	<a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
+                           	<div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
+                       </div>
+                       <% } %>            
                 <br/>
                     <div class="control-group" id="tennatsDiv" <%if(api.subscriptionAvailability!="specific_tennats"){%>style="display: none;"<%}%>>
                         <label class="control-label" for="tenants" id="tennatLabel" name="tennatLabel">
