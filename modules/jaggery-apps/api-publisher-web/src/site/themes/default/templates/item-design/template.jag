@@ -89,36 +89,36 @@
 
     <div class="row-fluid">
         <div class="span12">
-            <div id="swaggerUpload" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-header">
+            <div id="swaggerUpload" class="new-model hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="new-model-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="swaggerUploadLabel">Import Swagger Definition</h3>                    
+                <h3 id="swaggerUploadLabel">Import Swagger Definition</h3>
                 </div>
-                <div class="modal-body">
+                <div class="new-model-body">
                     <!-- <label>Upload a zip file containing swagger definitions :</label>
-                    <input type="file" name="somename" size="chars"> 
+                    <input type="file" name="somename" size="chars">
                     <br />
-                    <br />                        
+                    <br />
                     <h6>OR</h6>
                     <br /> -->
                     <label>Definition URL :</label>
                     <input type="text" placeholder="" class="span12" id="swagger_import_url" name="swagger_import_url">
-                    <span class="help-block">Example : http://petstore.swagger.wordnik.com/api/api-docs </span>                                                              
-                </div>                    
-                <div class="modal-footer">
-                <button class="btn btn-primary" id="import_swagger">Import</button>                    
+                    <span class="help-block">Example : http://petstore.swagger.wordnik.com/api/api-docs </span>
+                </div>
+                <div class="new-model-footer">
+                <button class="btn btn-primary" id="import_swagger">Import</button>
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                 </div>
             </div>
-            <div id="swaggerEditer" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-header">
+            <div id="swaggerEditer" class="new-model hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="new-model-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="swaggerUploadLabel">Edit Swagger Definition</h3>                    
+                <h3 id="swaggerUploadLabel">Edit Swagger Definition</h3>
                 </div>
-                <div class="modal-body">
-                    <div id="swagger_editor" class="clearfix" style="height:400px;"></div>
-                </div>                    
-                <div class="modal-footer">
+                <div class="new-model-body">
+                    <div id="swagger_editor" class="clearfix" style="height:100%;"></div>
+                </div>
+                <div class="new-model-footer">
                 <button class="btn btn-primary" id="update_swagger">Save</button>                    
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                 </div>
