@@ -73,7 +73,22 @@
 	    </excludes>
             <fileMode>755</fileMode>
         </fileSet>
-        <fileSet>
+	<fileSet>
+          <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/components/lib</directory>
+          <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
+	    <includes>
+                <include>**/httpmime-4.2.5.jar</include>
+		<include>**/encoder-1.1.jar</include>
+            </includes>
+        </fileSet>
+	<fileSet>
+          <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/lib/endorsed</directory>
+          <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>
+	    <includes>
+                <include>**/Saxon-HE-9.4.jar</include>
+            </includes>
+        </fileSet>
+        <!--fileSet>
             <directory>./src/main/resources</directory>
             <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>
             <includes>
@@ -93,7 +108,7 @@
             <includes>
                 <include>**/encoder-1.1.jar</include>
             </includes>
-        </fileSet>
+        </fileSet-->
 	<fileSet>
             <directory>../../distribution/product/target/repository/database</directory>
             <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
