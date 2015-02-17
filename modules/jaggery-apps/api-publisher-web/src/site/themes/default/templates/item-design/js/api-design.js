@@ -306,6 +306,28 @@ APIDesigner.prototype.init_controllers = function(){
         API_DESIGNER.render_resource(resource_body);
     });
 
+    this.container.delegate(".remove_parameter", "click", function (event) {
+        var parameter = $(this).parent().attr("id");
+        if (parameter == "") return false;
+        var resource_body = $(this).parents("td.resource_body.hide");
+        resource_body.find('tr#' + parameter).remove();
+        console.log(resource_body);
+        if (resource_body != null) {
+            var resource = API_DESIGNER.query(resource_body.attr('data-path'));
+            var resource = resource[0]
+            if (resource.parameters == undefined) {
+                resource.parameters = [];
+            }
+            $.each(resource.parameters, function (i) {
+                if (resource.parameters[i].name === parameter) {
+                    resource.parameters.splice(i, 1);
+                    return false;
+                }
+            });
+            API_DESIGNER.render_resource(resource_body);
+        }
+    });
+
     this.container.delegate(".delete_scope","click", function(){
         var i = $(this).attr("data-index");
         API_DESIGNER.api_doc.authorizations.oauth2.scopes.splice(i, 1);

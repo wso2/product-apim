@@ -316,15 +316,17 @@
         <th>Description</th>
         <th width="100px">Parameter Type</th>
         <th width="100px">Data Type</th>
-        <th width="100px">Required</th>            
+        <th width="100px">Required</th>
+        <th width="50px">Delete</th>
         </tr>    
     {{#each parameters}}
-        <tr>
-        <td>{{ name }}</td>
+        <tr id="{{ name }}">
+        <td class="remove_parameter_name">{{ name }}</td>
         <td><a class="param_desc" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="description">{{ description }}</a></td>
         <td><a class="param_paramType" data-type="select" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="paramType">{{ paramType }}</a></td>
         <td><a class="param_type" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="type">{{ type }}</a></td>
         <td><a class="param_required" data-type="select" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="required">{{ required }}</a></td>
+        <td text-align="center" id="{{name}}"><a class="icon-trash remove_parameter" style="margin-left:18px"></a></td>
         </tr> 
     {{/each}}
     {{/if}}
