@@ -265,7 +265,7 @@
     {{#each parameters}}var {{ name }} = mc.getProperty('uri.var.{{ name }}');
 {{/each}}
 mc.setPayloadJSON('{ "data" : "sample JSON"}');*/
-//Un-comment the above to send a sample responce.{{/if}}
+/*Uncomment the above comment block to send a sample response.*/{{/if}}
 </textarea>
 </div>  
 </script>
