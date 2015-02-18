@@ -34,6 +34,10 @@ Handlebars.registerHelper('console_log', function(value){
     console.log(value);
 });
 
+Handlebars.registerHelper( 'toString', function returnToString( x ){
+    return ( x === void 0 ) ? 'undefined' : x.toString();
+} );
+
 var content_types = [
        { value : "application/json", text :  "application/json"},
        { value : "application/xml", text :  "application/xml"},
@@ -122,7 +126,7 @@ function APIDesigner(){
             name : "body",
             "description": "Request Body",
             "allowMultiple": false,
-            "required": true,
+            "required": false,
             "paramType": "body",
             "type":"string"
         });
@@ -146,6 +150,7 @@ function APIDesigner(){
         $(".http_verb_select").each(function(){
             if($(this).is(':checked')){
                 if(!designer.check_if_resource_exist( path , $(this).val() ) ){
+                parameters = $.extend(true, [], parameters);
                 resource.operations.push({ 
                     method : $(this).val(),
                     parameters : parameters,
@@ -188,10 +193,12 @@ APIDesigner.prototype.set_default_management_values = function(){
     var operations = this.query("$.apis[*].file.apis[*].operations[*]");
     for(var i=0;i < operations.length;i++){
         if(!operations[i].auth_type){
-            operations[i].auth_type = DEFAULT_AUTH;
-        }
-        if(operations[i].method == "OPTIONS"){
-            operations[i].auth_type = OPTION_DEFAULT_AUTH;
+            if(operations[i].method == "OPTIONS"){
+                operations[i].auth_type = OPTION_DEFAULT_AUTH;
+            }
+            else{
+                operations[i].auth_type = DEFAULT_AUTH;                
+            }
         }
         if(!operations[i].throttling_tier){
             operations[i].throttling_tier = DEFAULT_TIER;
@@ -221,7 +228,27 @@ APIDesigner.prototype.has_resources = function(){
     if(this.api_doc.apis.length == 0) return false;
 }
 
+APIDesigner.prototype.display_elements = function(value,source){
+    for(var i =0; i < source.length; i++ ){
+        if(value == source[i].value){
+            $(this).text(source[i].text);
+        }
+    }
+};
+
 APIDesigner.prototype.update_elements = function(resource, newValue){
+    var API_DESIGNER = APIDesigner();
+    var obj = API_DESIGNER.query($(this).attr('data-path'));
+    var obj = obj[0]
+    var i = $(this).attr('data-attr');
+    obj[i] = newValue;
+};
+
+APIDesigner.prototype.update_elements_boolean = function(resource, newValue){
+    if(newValue == "true") 
+        newValue = true;
+    else
+        newValue = false;
     var API_DESIGNER = APIDesigner();
     var obj = API_DESIGNER.query($(this).attr('data-path'));
     var obj = obj[0]
@@ -257,7 +284,6 @@ APIDesigner.prototype.init_controllers = function(){
         var operations = operations[0]
         var i = $(this).attr('data-index');
         var pn = $(this).attr('data-path-name');
-        console.log(operations[i]);
         jagg.message({content:'Do you want to remove "'+operations[i].method+' : '+pn+'" resource from list.',type:'confirm',title:"Remove Resource",
         okCallback:function(){
             API_DESIGNER = APIDesigner();
@@ -301,7 +327,7 @@ APIDesigner.prototype.init_controllers = function(){
         if(resource.parameters ==undefined){
             resource.parameters = [];
         }
-        resource.parameters.push({ name : parameter , paramType : "query" });
+        resource.parameters.push({ name : parameter , paramType : "query", required : false , type: "string"});
         //@todo need to checge parent.parent to stop code brak when template change.
         API_DESIGNER.render_resource(resource_body);
     });
@@ -406,6 +432,8 @@ APIDesigner.prototype.render_resources = function(){
         $('#resource_details').find('.auth_type_select').editable({
             emptytext: '+ Auth Type',        
             source: AUTH_TYPES,
+            autotext: "always",
+            display: this.display_element,
             success : this.update_elements
         });
     }
@@ -459,8 +487,15 @@ APIDesigner.prototype.render_resource = function(container){
     });
     container.find('.param_required').editable({
         emptytext: '+ Empty',
-        source: [ { value:"True", text:"True" },{ value:"False", text:"False"} ],
-        success : this.update_elements
+        autotext: "always",
+        display: function(value, sourceData){
+            if(value == true || value == "true")
+                $(this).text("True");
+            if(value == false || value == "false")
+                $(this).text("False");
+        },
+        source: [ { value:true, text:"True" },{ value:false, text:"False"} ],
+        success : this.update_elements_boolean
     });    
 };
 

@@ -12,10 +12,10 @@
 <script language="javascript">
     var VERBS = [ 'GET' , 'POST' , 'PUT' , 'DELETE', 'OPTIONS'];
     var AUTH_TYPES = [
-      { "value": "<%=i18n.localize("none")%>", "text":"<%=i18n.localize("none")%>"} ,
-      { "value": "<%=i18n.localize("application")%>", "text":"<%=i18n.localize("application")%>"},
-      { "value": "<%=i18n.localize("applicationUser")%>", "text":"<%=i18n.localize("applicationUser")%>"},
-      { "value": "<%=i18n.localize("application&applicationUser")%>", "text":"<%=i18n.localize("application&applicationUser")%>"}
+      { "value": "None", "text":"<%=i18n.localize("none")%>"} ,
+      { "value": "Application", "text":"<%=i18n.localize("application")%>"},
+      { "value": "Application User", "text":"<%=i18n.localize("applicationUser")%>"},
+      { "value": "Application & Application User", "text":"<%=i18n.localize("application&applicationUser")%>"}
     ];
     var TIERS =[
         <% for (var i = 0; i < tiers.length; i++) { 
@@ -24,8 +24,8 @@
     ];
 
     var DEFAULT_TIER = "<%= tiers[tiers.length -1].tierName%>";
-    var DEFAULT_AUTH = "<%=i18n.localize("application&applicationUser")%>";
-    var OPTION_DEFAULT_AUTH = "<%=i18n.localize("none")%>";
+    var DEFAULT_AUTH = "Application & Application User";
+    var OPTION_DEFAULT_AUTH = "None";
 
     var insequence = "<%=api.inSequence%>";
     var outsequence = "<%=api.outSequence%>";
@@ -348,7 +348,7 @@
             </td>
             <td class="resource_expand"><a class="resource-path">{{ ../path }}</a></td>   
             <td width="99%"><span class="operation-summary change_summary" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="summary" >{{ summary }}</span></td>
-            <td><a class="operation-summary auth_type_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="auth_type">{{ auth_type }}</a></td>        
+            <td><a class="operation-summary auth_type_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="auth_type" data-value="{{ auth_type }}"></a></td>        
             <td><a class='operation-summary throttling_select'  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="throttling_tier">{{ throttling_tier }}</a></td>
             <td><a class="operation-summary scope_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="scope">{{ scope }}</a></td>
         </tr>
