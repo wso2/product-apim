@@ -87,39 +87,30 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
 		apiPublisher.login(userInfo.getUserName(), userInfo.getPassword());
-		APIRequest apiRequest = new APIRequest("test", "test",
-		                                       new URL("http://localhost:6789"));
+		APIRequest apiRequest = new APIRequest("test", "test", new URL("http://localhost:6789"));
 		apiRequest.setVisibility("public");
 		apiPublisher.addAPI(apiRequest);
-		APILifeCycleStateRequest
-				updateRequest = new APILifeCycleStateRequest("test", userInfo.getUserName(),
+		APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest("test", userInfo.getUserName(),
 				                                             APILifeCycleState.PUBLISHED);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 		apiStore.login(userInfo.getUserName(), userInfo.getPassword());
-		SubscriptionRequest subscriptionRequest =
-				new SubscriptionRequest("test", userInfo.getUserName());
+		SubscriptionRequest subscriptionRequest = new SubscriptionRequest("test", userInfo.getUserName());
 		apiStore.subscribe(subscriptionRequest);
-		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("DefaultApplication");
+		GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
 		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
 		JSONObject response = new JSONObject(responseString);
-		consumerKey =
-				response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
-		consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret")
-		                         .toString();
+		consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
+		consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret").toString();
 	}
 
-	@Test(groups = {
-			"wso2.am" }, description = "username JWT-Token Generation test for super tenant")
+	@Test(groups = {"wso2.am" }, description = "username JWT-Token Generation test for super tenant")
 	public void userNameInSuperTenantJWTTokenTestCase() throws Exception {
 		String requestBody =
-				"grant_type=password&username=" + userInfo.getUserName() + "&password=" +
-				userInfo.getPassword();
+                "grant_type=password&username=" + userInfo.getUserName() + "&password=" + userInfo.getPassword();
 		URL tokenEndpointURL = new URL("http://localhost:8280/token");
 		JSONObject accessTokenGenerationResponse =
-				new JSONObject(apiStore.generateUserAccessKey(consumerKey,
-				                                              consumerSecret, requestBody,
-				                                              tokenEndpointURL).getData());
+				new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                                                              tokenEndpointURL).getData());
 		String accessToken = accessTokenGenerationResponse.getString("access_token");
 		Map<String, String> requestHeaders = new HashMap<String, String>();
 		requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -138,18 +129,14 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 			Assert.assertEquals(jsonObject.get("iss"), "wso2.org/products/am");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/subscriber"), "admin");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationid"), "1");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"),
-			                    "DefaultApplication");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"),
-			                    "Unlimited");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"), "DefaultApplication");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"), "Unlimited");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/apicontext"), "/test");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/version"), "1.0.0");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/tier"), "Gold");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/keytype"), "PRODUCTION");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"),
-			                    "APPLICATION_USER");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"),
-			                    "admin@carbon.super");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"), "APPLICATION_USER");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"), "admin@carbon.super");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduserTenantId"), "-1234");
 		}
 	}
@@ -159,18 +146,14 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 	public void emailUserNameInSuperTenantJWTTokenTestCase() throws Exception {
 		String userName = "admin@wso2.com";
 		String password = "admin123";
-		UserManagementClient userManagementClient =
-				new UserManagementClient(amServer.getBackEndUrl(), "admin", "admin");
-		userManagementClient
-				.addUser(userName, password, new String[] { "Internal/subscriber" }, "admin2");
+		UserManagementClient userManagementClient = new UserManagementClient(amServer.getBackEndUrl(), "admin", "admin");
+		userManagementClient.addUser(userName, password, new String[] { "Internal/subscriber" }, "admin2");
 		String requestBody = "grant_type=password&username=" + userName + "@" +
 		                     MultitenantConstants.SUPER_TENANT_DOMAIN_NAME + "&password=" +
 		                     password;
 		URL tokenEndpointURL = new URL("http://localhost:8280/token");
-		JSONObject accessTokenGenerationResponse =
-				new JSONObject(apiStore.generateUserAccessKey(consumerKey,
-				                                              consumerSecret, requestBody,
-				                                              tokenEndpointURL).getData());
+		JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
+				                                              consumerSecret, requestBody, tokenEndpointURL).getData());
 		String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 		Map<String, String> requestHeaders = new HashMap<String, String>();
 		requestHeaders.put("Authorization", "Bearer " + userAccessToken);
@@ -189,21 +172,16 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 			Assert.assertEquals(jsonObject.get("iss"), "wso2.org/products/am");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/subscriber"), "admin");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationid"), "1");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"),
-			                    "DefaultApplication");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"),
-			                    "Unlimited");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"), "DefaultApplication");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"), "Unlimited");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/apicontext"), "/test");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/version"), "1.0.0");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/tier"), "Gold");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/keytype"), "PRODUCTION");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"),
-			                    "APPLICATION_USER");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"),
-			                    "admin@wso2.com@carbon.super");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"), "APPLICATION_USER");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"),"admin@wso2.com@carbon.super");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduserTenantId"), "-1234");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/role"),
-			                    "Internal/subscriber,Internal/everyone");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/role"), "Internal/subscriber,Internal/everyone");
 
 		}
 	}
@@ -215,21 +193,15 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 		String password = "admin123";
 		String domainName = "adc.com";
 		String fullUserName = userName + "@" + domainName;
-		boolean isSuccessful =
-				createTenantWithEmailUserName(userName, password,
-				                              domainName, amServer.getBackEndUrl());
+		boolean isSuccessful = createTenantWithEmailUserName(userName, password, domainName, amServer.getBackEndUrl());
 		Assert.assertEquals(isSuccessful, true);
-		UserManagementClient userManagementClient =
-				new UserManagementClient(amServer.getBackEndUrl(), fullUserName, password);
-		userManagementClient
-				.addRemoveRolesOfUser(fullUserName, new String[] { "Internal/subscriber" }, null);
-		String requestBody =
-				"grant_type=password&username=" + fullUserName + "&password=" + password;
+		UserManagementClient userManagementClient = new UserManagementClient(amServer.getBackEndUrl(), fullUserName,
+                                                                             password);
+		userManagementClient.addRemoveRolesOfUser(fullUserName, new String[] { "Internal/subscriber" }, null);
+		String requestBody ="grant_type=password&username=" + fullUserName + "&password=" + password;
 		URL tokenEndpointURL = new URL("http://localhost:8280/token");
-		JSONObject accessTokenGenerationResponse =
-				new JSONObject(apiStore.generateUserAccessKey(consumerKey,
-				                                              consumerSecret, requestBody,
-				                                              tokenEndpointURL).getData());
+		JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
+				                                              consumerSecret, requestBody, tokenEndpointURL).getData());
 		String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 		Map<String, String> requestHeaders = new HashMap<String, String>();
 		requestHeaders.put("Authorization", "Bearer " + userAccessToken);
@@ -249,20 +221,16 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 			Assert.assertEquals(jsonObject.get("iss"), "wso2.org/products/am");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/subscriber"), "admin");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationid"), "1");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"),
-			                    "DefaultApplication");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"),
-			                    "Unlimited");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"), "DefaultApplication");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"), "Unlimited");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/apicontext"), "/test");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/version"), "1.0.0");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/tier"), "Gold");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/keytype"), "PRODUCTION");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"),
-			                    "APPLICATION_USER");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"), "APPLICATION_USER");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"), "tenant@adc.com");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/givenname"), "admin");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/lastname"),
-			                    "adminwso2automation");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/lastname"), "adminwso2automation");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/role"),
 			                    "admin,Internal/subscriber,Internal/everyone");
 		}
@@ -278,16 +246,12 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 		String fullUserName = userNameWithEmail + "@" + domainName;
 		UserManagementClient userManagementClient =
 				new UserManagementClient(amServer.getBackEndUrl(), "tenant@adc.com", "admin123");
-		userManagementClient
-				.addUser(userNameWithEmail, password, new String[] { "Internal/subscriber" },
-				         "abc");
-		String requestBody =
-				"grant_type=password&username=" + fullUserName + "&password=" + password;
+		userManagementClient.addUser(userNameWithEmail, password, new String[] { "Internal/subscriber" }, "abc");
+		String requestBody = "grant_type=password&username=" + fullUserName + "&password=" + password;
 		URL tokenEndpointURL = new URL("http://localhost:8280/token");
 
 		JSONObject accessTokenGenerationResponse = new JSONObject(
-				apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-				                               tokenEndpointURL).getData());
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
 		String userAccessToken = accessTokenGenerationResponse.getString("access_token");
 		Map<String, String> requestHeaders = new HashMap<String, String>();
 		requestHeaders.put("Authorization", "Bearer " + userAccessToken);
@@ -306,32 +270,25 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 			Assert.assertEquals(jsonObject.get("iss"), "wso2.org/products/am");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/subscriber"), "admin");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationid"), "1");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"),
-			                    "DefaultApplication");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"),
-			                    "Unlimited");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationname"), "DefaultApplication");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/applicationtier"), "Unlimited");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/apicontext"), "/test");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/version"), "1.0.0");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/tier"), "Gold");
 			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/keytype"), "PRODUCTION");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"),
-			                    "APPLICATION_USER");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"),
-			                    "tenant@wso2.com@adc.com");
-			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/role"),
-			                    "Internal/subscriber,Internal/everyone");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/usertype"), "APPLICATION_USER");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/enduser"), "tenant@wso2.com@adc.com");
+			Assert.assertEquals(jsonObject.get("http://wso2.org/claims/role"), "Internal/subscriber,Internal/everyone");
 
 		}
 	}
 
-	private boolean createTenantWithEmailUserName(String userNameWithEmail, String pwd,
-	                                              String domainName, String backendUrl) {
+	private boolean createTenantWithEmailUserName(String userNameWithEmail, String pwd, String domainName,
+                                                  String backendUrl) {
 		boolean isSuccess = false;
 		try {
 			String endPoint = backendUrl + "TenantMgtAdminService";
-			TenantMgtAdminServiceStub tenantMgtAdminServiceStub =
-					new TenantMgtAdminServiceStub(
-							endPoint);
+			TenantMgtAdminServiceStub tenantMgtAdminServiceStub = new TenantMgtAdminServiceStub(endPoint);
 			AuthenticateStub.authenticateStub("admin", "admin", tenantMgtAdminServiceStub);
 
 			Date date = new Date();
@@ -360,8 +317,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIManagerIntegrationTest
 			} else if (!tenantInfoBeanGet.getActive()) {
 				tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
 				tenantMgtAdminServiceStub.activateTenant(domainName);
-				System.out.println("Tenant domain " + domainName +
-				                   " created and activated successfully");
+				System.out.println("Tenant domain " + domainName + " created and activated successfully");
 				log.info("Tenant domain " + domainName + " created and activated successfully");
 				isSuccess = true;
 			} else {

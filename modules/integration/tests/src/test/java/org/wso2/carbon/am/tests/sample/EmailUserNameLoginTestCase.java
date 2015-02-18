@@ -199,6 +199,7 @@ public class EmailUserNameLoginTestCase extends APIManagerIntegrationTest {
 
 	@AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
+        serverConfigurationManager.restoreToLastConfiguration();
 		super.cleanup();
 	}
 
