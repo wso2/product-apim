@@ -284,7 +284,7 @@ public class HostObjectTestCase extends APIManagerIntegrationTest {
         //32 getTopRatedAPIs
         Assert.assertTrue(array[33].contains("true"), "Error while getting billing status from API store host object (isBillingEnabled)");
         Assert.assertTrue(array[34].contains("true"), "Error while checking Subscribe Permission from API store host object (hasSubscribePermission)");
-        //Assert.assertTrue(array[35].contains("false"), "Error while getting state of Email Username from API store host object (isEnableEmailUsername)");
+        Assert.assertTrue(array[35].contains("false"), "Error while getting state of Email Username from API store host object (isEnableEmailUsername)");
         Assert.assertTrue(array[36].contains("true"), "Error while update Application Tier from API store host object (updateApplicationTier)");
         Assert.assertTrue(array[37].contains("true"), "Error while update Application from API store host object (updateApplication)");
         Assert.assertTrue(array[38].contains("200"), "Error while validate WF Permission from API store host object (validateWFPermission)");
