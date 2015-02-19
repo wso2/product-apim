@@ -664,11 +664,7 @@ var jagg = jagg || (function () {
                 return request.getHeader(site.reverseProxy.tenantHeader);
             }
         }
-        var tenantDomain = request.getParameter("tenant");
-        if(tenantDomain == null) {
-            tenantDomain = 'carbon.super';
-        }
-        return tenantDomain;
+        return request.getParameter("tenant");
     }
 
     return {
