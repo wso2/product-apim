@@ -223,6 +223,29 @@
             be defined in the master-datasources.xml file in conf/datasources directory.
         -->
         <!--DataSourceName>jdbc/WSO2AM_STATS_DB</DataSourceName-->
+        <!--
+                Data publishing stream names and versions of API requests, responses and faults. If the default values
+                are changed, the toolbox also needs to be changed accordingly.
+        -->
+        <Streams>
+            <Request>
+                <Name>org.wso2.apimgt.statistics.request</Name>
+                <Version>1.0.0</Version>
+            </Request>
+            <Response>
+                <Name>org.wso2.apimgt.statistics.response</Name>
+                <Version>1.0.0</Version>
+            </Response>
+            <Fault>
+                <Name>org.wso2.apimgt.statistics.fault</Name>
+                <Version>1.0.0</Version>
+            </Fault>
+            <Destination>
+                <Name>org_wso2_apimgt_statistics_destination</Name>
+                <Version>1.0.0</Version>
+                <BAMProfileName>bam-profile</BAMProfileName>
+            </Destination>
+        </Streams>
 
     </APIUsageTracking>
 
