@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><api xmlns="http://ws.apache.org/ns/synapse" name="_WSO2AMRevokeAPI_" context="/revoke">
     <resource methods="POST" url-mapping="/*" faultSequence="_token_fault_">
         <inSequence>
-
             <property name="uri.var.portnum" expression="get-property('mgtHttpsPort')"/>
             <send>
                 <endpoint>
