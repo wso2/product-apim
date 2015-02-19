@@ -21,7 +21,7 @@ include("/jagg/jagg.jag");
         }
 
         query = request.getParameter("query");
-        tenantDomain=request.getParameter("tenant");
+        tenantDomain= jagg.getTenantDomain();
         start = request.getParameter("start");
         end = request.getParameter("end");
 

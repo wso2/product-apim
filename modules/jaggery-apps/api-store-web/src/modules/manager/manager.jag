@@ -71,7 +71,7 @@ var getAdminCookie = function() {
 
 var getAPIStoreObj = function() {
 
-    var tenantDomain = request.getParameter("tenant");
+    var tenantDomain = jagg.getTenantDomain();
     var user = jagg.getUser();
     var store;
     if (user == null) {
@@ -132,7 +132,7 @@ var getActiveTenantDomains=function(){
 
 	try {
 		tenantDomains = store.getActiveTenantDomains();
-
+        tenantDomains = parse(stringify(tenantDomains));
         if (log.isDebugEnabled()) {
             log.debug("isTenantMode : " + stringify(api));
         }
@@ -151,4 +151,6 @@ var getActiveTenantDomains=function(){
     }
 
 };
+
+
 %>
