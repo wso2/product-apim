@@ -14,8 +14,6 @@ var mod = jagg.module("manager");
 
      var result = mod.getActiveTenantDomains();
      var tenantDomainsArr= result.tenantDomains;
-     var l = new Log();
-     l.info(tenantDomain);
      if(tenantDomainsArr == null || tenantDomainsArr.indexOf(tenantDomain) > -1 ){
      jagg.render({
         "name":"page/base",

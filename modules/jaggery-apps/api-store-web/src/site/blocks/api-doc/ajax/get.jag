@@ -40,7 +40,6 @@ function generate_swagger_object(swagger){
         var uriMatcher = new URIMatcher(callPath);
         var providerVal,apiNameVal,apiVersionVal,subContext;
         providerVal = apiNameVal = apiVersionVal = subContext = "";
-
         if (uriMatcher.match("/{providerVal}/{apiNameVal}/{apiVersionVal}")) {
             providerVal = uriMatcher.elements().providerVal;
             apiNameVal = uriMatcher.elements().apiNameVal;
