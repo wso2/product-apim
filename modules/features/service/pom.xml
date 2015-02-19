@@ -21,14 +21,14 @@
 
     <parent>
         <groupId>org.wso2.am</groupId>
-    	<artifactId>am-features-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <artifactId>am-features-parent</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wso2stratos-am-features</artifactId>
-    <version>${stratos.version}</version>
+    <version>2.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Stratos  API Manager - Features Aggregator Module</name>
     <url>http://wso2.org</url>
@@ -36,7 +36,7 @@
     <modules>
         <module>org.wso2.stratos.apimgt.styles.feature</module>
         <module>org.wso2.stratos.apimgt.utils.feature</module>
-     	<module>org.wso2.stratos.apimgt.dashboard.ui.feature</module>
+        <module>org.wso2.stratos.apimgt.dashboard.ui.feature</module>
         <module>org.wso2.stratos.apimgt.login.ui.feature</module>
     </modules>
 
@@ -45,7 +45,7 @@
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.stratos.apimgt.styles</artifactId>
-                <version>${project.version}</version>
+                <version>${apimserver.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.derby.wso2</groupId>

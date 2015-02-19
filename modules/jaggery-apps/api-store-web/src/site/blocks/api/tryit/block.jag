@@ -1,0 +1,16 @@
+<%
+include("/jagg/jagg.jag");
+jagg.block("api/tryit", {
+    initializer:function (data) {
+    },
+
+    getInputs:function () {
+        return {
+            "apis":null
+        };
+    },
+     getOutputs:function (inputs) {
+        return inputs;
+    }
+});
+%>

@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-features</artifactId>
-        <version>${apimserver.version}</version>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,11 +42,10 @@
     </dependencies>
 
     <build>
-       <plugins>
+        <plugins>
             <plugin>
                 <groupId>org.wso2.maven</groupId>
                 <artifactId>carbon-p2-plugin</artifactId>
-                <version>${carbon.p2.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>4-p2-feature-generation</id>
@@ -57,11 +56,11 @@
                         <configuration>
                             <id>org.wso2.am.styles</id>
                             <propertiesFile>../etc/feature.properties</propertiesFile>
-			<adviceFile>
-				<properties>
-				    <propertyDef>org.wso2.carbon.p2.category.type:console</propertyDef>
-				</properties>
-		    	</adviceFile>
+                            <adviceFile>
+                                <properties>
+                                    <propertyDef>org.wso2.carbon.p2.category.type:console</propertyDef>
+                                </properties>
+                            </adviceFile>
                             <bundles>
                                 <bundleDef>org.wso2.am:org.wso2.am.styles</bundleDef>
                             </bundles>

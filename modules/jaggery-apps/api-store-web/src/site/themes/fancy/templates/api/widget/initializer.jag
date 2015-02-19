@@ -1,0 +1,9 @@
+<%
+jagg.initializer("api/widget", {
+
+    preInitialize:function () {
+
+    },
+
+});
+%>

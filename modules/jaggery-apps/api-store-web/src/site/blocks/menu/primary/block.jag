@@ -1,0 +1,96 @@
+<%
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+jagg.block("menu/primary", {
+
+    initialize:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "pagePath":null
+        };
+    },
+
+    getOutputs:function (inputs) {
+        var links = [], urlPrefix,user = jagg.getUser(),
+                path = inputs.pagePath;
+        var tenant=inputs.tenant;
+        if(tenant!=null) {urlPrefix="?tenant="+tenant;}else{urlPrefix='';}
+
+        var mod = jagg.module("manager");
+        var tenantDomains = mod.getActiveTenantDomains().tenantDomains;
+
+        links.push({
+            "title":i18n.localize("apis"),
+            "url":jagg.getMappedUrl("/"+urlPrefix),
+            "classes":"link-home",
+            "classIcon":"fa fa-cogs",
+            "tooltip":i18n.localize("apisTooltip"),
+            "active":(path == "/site/pages/list-apis.jag")
+        });
+        
+        links.push({
+            "title":i18n.localize("viewprototypedapis"),
+            "url":jagg.getMappedUrl("/site/pages/list-prototyped-apis.jag"+urlPrefix),
+            "classes":"link-ss",
+            "classIcon":"fa fa-cog",
+            "tooltip":i18n.localize("prototypedApisTooltip"),
+            "active":(path == "/site/pages/list-prototyped-apis.jag")
+        });
+
+        links.push({
+            "title":i18n.localize("myApps"),
+            "url":jagg.getMappedUrl("/site/pages/applications.jag"+urlPrefix),
+            "classes":"link-myapplications" + (user ? "" : " need-login"),
+            "classIcon":"fa fa-suitcase",
+            "tooltip":i18n.localize("myAppsTooltip"),
+            "active":(path == "/site/pages/applications.jag")
+        });
+
+        links.push({
+            "title":i18n.localize("mySubs"),
+            "url":jagg.getMappedUrl("/site/pages/subscriptions.jag"+urlPrefix),
+            "classes":"link-mysubscriptions" + (user ? "" : " need-login"),
+            "classIcon":"fa fa-tags",
+            "tooltip":i18n.localize("mySubsTooltip"),
+            "active":(path == "/site/pages/subscriptions.jag")
+        });
+
+        var result = jagg.module("billing").isBillingEnabled();
+        if(result!=null && result.isBillingEnabled==true){
+            links.push({
+                "title":i18n.localize("billing"),
+                "url":jagg.getMappedUrl("/site/pages/billing.jag"+urlPrefix),
+                "classes":"link-mysubscriptions" + (user ? "" : " need-login"),
+                "classIcon":"fa fa-usd",
+                "tooltip":i18n.localize("billingTooltip"),
+                "active":(path == "/site/pages/billing.jag")
+            });
+        }
+
+        links.push({
+            "title":i18n.localize("forum"),
+            "url":jagg.getMappedUrl("/site/pages/forum.jag"+urlPrefix),
+            "classes":"link-forum",
+            "classIcon":"fa fa-comment-o",
+            "tooltip":i18n.localize("forum"),
+            "active":(path == "/site/pages/forum.jag")
+        });
+
+        return {
+            "links":links,
+            "tenantDomains":tenantDomains
+        };
+    },
+
+    getStaticBlocks:function () {
+        return [
+            "user/login"
+        ];
+    }
+});
+%>

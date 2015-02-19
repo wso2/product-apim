@@ -1,0 +1,76 @@
+<% jagg.template("api/widget", function(inputs, outputs, jagg) { %>
+<% var api = outputs.api, user = outputs.user, log = new Log(); %>
+<% var stars = require(jagg.getThemeFile("utils/ratings/star-generator.js")); %>
+<%
+    var thumbURL = "";
+    var link = jagg.getAbsoluteUrl("/apis/info?name=" + api.name + "&version=" + api.version + "&provider=" + api.provider)
+    if(api!=null){
+        thumbURL = api.thumbnailurl;
+        if(thumbURL && thumbURL.indexOf("images/") == 0) {
+            thumbURL = jagg.getAbsoluteUrl(jagg.getThemeFile(thumbURL));
+        }else{
+            thumbURL = jagg.getRegistryPath(thumbURL);
+        }    
+    }
+%>
+<html>
+<head>
+<style type="text/css">
+    * {
+        margin:0px;
+        paddding:0px;
+        font-family:Sans-serif;
+    }
+
+    body{
+        padding:10px;
+        font:Sans-serif;
+        background-color:#EEE;
+    }
+
+    a.nostyle{
+        text-decoration:none;
+        color:#000;
+    }
+
+    .desc {
+        font-size:10px;
+    }
+
+    .star-ratings{
+        margin-top:3px;
+    }
+</style>
+</head>
+
+    <body>
+    <a href="<%= link %>" target="_blank" class="nostyle">
+    <img width="100" src="<%= thumbURL %>" style="float:left; margin-right:20px;">
+    </a>
+    <a href="<%= link %>" target="_blank"  class="nostyle">
+    <h2><%=api.name%> - <%=api.version%></h2>
+    </a>
+    <p id="provider">Provider : <%=api.provider%></p>
+    <p class="desc">
+    <%
+    	if(api.description != null){
+            if(api.description.length < 100){
+                print(api.description);
+            }
+            else{
+                print(api.description.substring(1,100).replace(/\b[a-z]$/,''));
+                print(' ...');
+                %>
+                    <a href="<%= link %>" target="_blank">
+                    more.
+                    </a>
+                <%
+            }
+        }
+
+    %>
+    </p>
+    <div class="star-ratings"><%=stars.getStaticStars(jagg.getSiteContext(), api.rates, jagg.getUserTheme().base)%></div>
+    </body>
+    </html>
+<% }); %>

@@ -1,0 +1,26 @@
+<%
+var revokeAccessToken = function (accessToken,consumerKey,authUser) {
+    var revokes,
+            log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        revokes = provider.revokeAccessToken(accessToken,consumerKey,authUser);
+        if (log.isDebugEnabled()) {
+            log.debug("revokeAccessToken : " + stringify(accessToken));
+        }
+        return {
+            error:false
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+
+
+
+
+%>

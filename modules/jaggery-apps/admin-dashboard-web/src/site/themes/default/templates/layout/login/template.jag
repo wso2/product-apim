@@ -1,0 +1,3 @@
+<% jagg.template("layout/login", function(inputs, outputs, jagg) { %>
+<% jagg.includeBlocks(outputs.rBottom); %>
+<% }); %>

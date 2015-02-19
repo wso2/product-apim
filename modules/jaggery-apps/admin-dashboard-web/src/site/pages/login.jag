@@ -1,0 +1,65 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+(function () {
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"APIManager Workflow Admin- Login",
+            "header":{
+                "name":"menu/login"
+            },
+            "body":[
+                {
+                    "name":"layout/base",
+                    "inputs":{
+                        "top":null,
+                        "left":null,
+                        "middle":{
+                            "name":"user/login"
+                        },
+                        "right":null,
+                        "bottom":null
+                    }
+                }
+            ],"footer":[
+                {
+                    "name":"footer"
+                }
+            ]
+        }
+    });
+}());
+
+
+%>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

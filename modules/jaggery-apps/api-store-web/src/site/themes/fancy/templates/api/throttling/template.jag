@@ -1,0 +1,129 @@
+<% jagg.template("api/throttling", function(inputs, outputs, jagg) {
+
+var i, length, app, thumbURL, api = outputs.api, templatesList = outputs.uriTemplates;
+                             var mod = jagg.module("api");
+                             var result = mod.getTiers().tiers;
+                              var tiersList = mod.getTiers().tiers;
+
+%>
+
+<div id="swagger-ui-container"></div>
+<body>
+ <table class="table table-bordered table-striped" id="resourceTable">
+                                <thead>
+                                <tr>
+                                    <th><%=i18n.localize("urlPrefix")%></th>
+                                    <th><%=i18n.localize("urlPattern")%></th>
+                                    <!--Throttling fix-->
+                                    <th  style="width:290px;"><%=i18n.localize("throttlingLimit")%></th>
+                                    <!--Throttling fix-->
+                                </tr>
+
+                                </thead>
+                                <tbody>
+
+                                <tr id="resourceRow" style="display:none;">
+
+                                    <td><span class="contextForUrl">/{context}/{version}</span></td>
+                                    <td>
+                                        <input type="text" class="input resourceTemplate" style="width:95%" name="resourceTemplate"/>
+                                    </td>
+                            <%
+
+                            if (templatesList!=null && templatesList.length > 0) {
+                            for (i = 0; i < templatesList.length; i++) {
+
+                            %>
+                            <tr id="item-<%=String(i)%>" class="resourceRow">
+                                <td><span id="contextForUrlDefault"><%=api.context%>/<%=api.version%></span></td>
+                                 <td><span id="contextForUrlDefault1"><%=templatesList[i][0]%></span></td>
+
+                                                  <%
+                                                  var methods = templatesList[i][1].split(",");
+                                                  var authTypes = templatesList[i][2].split(",");
+                                                  var throttlingTiers = templatesList[i][3].split(",");
+                                                  var getVal,putVal,postVal,deleteVal,optionVal,method;
+                                                  var getThrottlingTier,postThrottlingTier,deleteThrottlingTier,optionsThrottlingTier,putThrottlingTier;
+                                                  var getAuthVal,putAuthVal,postAuthVal,deleteAuthVal,optionAuthVal,method;
+
+                                                for(var n=0;n <methods.length ;n++) {
+                                                  method=methods[n];
+                                                  if(authTypes[n]=='Application_User'){authTypes[n]='Application User';}
+
+                                                  if(method=="GET"){getVal=true;getAuthVal=authTypes[n];
+                                                  getThrottlingTier=throttlingTiers[n];
+                                                  }
+
+                                                  if(method=="POST"){postVal=true;postAuthVal=authTypes[n];
+                                                  postThrottlingTier=throttlingTiers[n];
+                                                  }
+
+                                                  if(method=="PUT"){putVal=true;putAuthVal=authTypes[n];
+                                                  putThrottlingTier=throttlingTiers[n];
+                                                  }
+
+                                                  if(method=="DELETE"){deleteVal=true;deleteAuthVal=authTypes[n];
+                                                  deleteThrottlingTier=throttlingTiers[n];
+                                                   }
+
+                                                  if(method=="OPTIONS"){optionVal=true;optionAuthVal=authTypes[n];
+                                                  optionsThrottlingTier=throttlingTiers[n];
+                                                                                      }
+
+                                                  }
+                                                  %>
+                            </td>
+                                    <td id = "throttlingTierList">
+
+                                        <%
+                                        for(var k = 0 ; k < tiersList.length ; k++){
+                                        var l =  tiersList.length - k -1;
+                                        %>
+                                        <%if(tiersList[l].tierName==getThrottlingTier){%><br><%="GET " + tiersList[l].tierDescription%></br>
+                                        <% }}
+                                        %>
+
+                                        <%
+                                        for(var k = 0 ; k < tiersList.length ; k++){
+                                        var l =  tiersList.length - k -1;
+                                        %>
+                                        <%if(tiersList[l].tierName==postThrottlingTier){%><br><%="POST " + tiersList[l].tierDescription%></br>
+                                        <% }}
+                                        %>
+
+                                        <%
+                                        for(var k = 0 ; k < tiersList.length ; k++){
+                                        var l =  tiersList.length - k -1;
+                                        %>
+                                        <%if(tiersList[l].tierName==putThrottlingTier){%><br><%="PUT " + tiersList[l].tierDescription%></br>
+                                        <% }}
+                                        %>
+
+                                        <%
+                                        for(var k = 0 ; k < tiersList.length ; k++){
+                                        var l =  tiersList.length - k -1;
+                                        %>
+                                        <%if(tiersList[l].tierName==deleteThrottlingTier){%><br><%="DELETE " + tiersList[l].tierDescription%></br>
+                                        <% }}
+                                        %>
+
+                                        <%
+                                        for(var k = 0 ; k < tiersList.length ; k++){
+                                        var l =  tiersList.length - k -1;
+                                        %>
+                                        <%if(tiersList[l].tierName==optionsThrottlingTier){%><br><%="OPTIONS " + tiersList[l].tierDescription%></br>
+                                        <% }}
+                                        %>
+                                    </td>
+
+                                    <% getVal=putVal=postVal=deleteVal=optionVal=""; %>
+
+
+                                <% getAuthVal=putAuthVal=postAuthVal=deleteAuthVal=optionAuthVal=""; %>
+                            </tr>
+                            <%
+                            }}%>
+                            </table>
+</body>
+
+<%  }); %>

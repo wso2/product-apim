@@ -1,0 +1,111 @@
+<% jagg.template("user/login", function(inputs, outputs, jagg) {
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+%>
+<% var user = outputs.user; %>
+<%
+        var isSuperTenant, tenantDomain;
+        var mod = jagg.module("manager");
+        var httpsUrl= mod.getHTTPsURL();
+		var isSelfSignupEnabled = mod.isSelfSignupEnabled();
+        var currentURL = request.getRequestURI();
+        if(request.getQueryString()){
+            currentURL += "?" + request.getQueryString();
+        }
+        var tenant=request_tenant;
+        var urlPrefix;
+        if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}
+        
+        if (jagg.getUser() != null) {
+        	isSuperTenant = jagg.getUser().isSuperTenant;
+			tenantDomain = jagg.getUser().username.split('@')[1];
+        }
+
+%>
+<% if(user) { %>
+<ul class="nav actions login-sign-up pull-right">
+            <!-- li class="dropdown settingsSection">
+                <i class="icon-theme"></i>
+                                <br>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Themes <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li  class="themeSelection"><h3><%=i18n.localize("selectTheme")%></h3>
+                    <form id="themeSelectForm" action="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/user/theme/template.jag?theme=modern"))%>">
+                        <input type="hidden" id="themeToApply" name="themeToApply" />
+                        <input type="hidden" id="subthemeToApply" name="subthemeToApply" />
+                        <input type="hidden" id="pathToSend" name="pathToSend" value="<%=currentURL%>" />
+                        <table class="table">
+                            <tr>
+                                <td>
+                                    <div class="thumbnail <% if(jagg.getUserTheme().base == "fancy" && jagg.getUserTheme().subtheme == null) { %>currentTheme<% } %>">
+                                        <a data-theme="fancy" data-subtheme="" class="badge themeLabel" onclick="applyTheme(this)">
+                                            <img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/thumb-fancy.png"))%>" />
+                                            <br /><div class="themeName"><%=i18n.localize("fancy")%></div>
+                                        </a>
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <div class="thumbnail <% if(jagg.getUserTheme().base == "dark" && jagg.getUserTheme().subtheme == null) { %>currentTheme<% } %>">
+                                        <a data-theme="fancy" data-subtheme="dark" class="badge themeLabel" onclick="applyTheme(this)">
+                                            <img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/thumb-dark.png"))%>" />
+                                            <br /><div class="themeName"><%=i18n.localize("dark")%></div>
+                                        </a>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </li>
+              </ul>
+            </li -->
+           <li class="divider-vertical"></li>
+           <li class="dropdown">
+               <a class="link-to-user dropdown-toggle" data-toggle="dropdown"><%=user.username%> <b class="caret"></b></a>
+             <ul class="dropdown-menu" id="userInfoMenu">
+               <li class="userInfoSection">
+                   <%=i18n.localize("logged")%> <h4><%=user.username%></h4>
+               </li>
+               <li class="logout-link-special"><button id="logout-link" class="btn btn-danger"><%=i18n.localize("logout")%></button></li>
+             </ul>
+           </li>
+</ul>
+<% } else { %>
+<ul class="nav actions login-sign-up pull-right">
+<%
+var tenant=request_tenant;
+if(isSelfSignupEnabled && tenant==null){%>
+    <li>
+        <a id="register-link" href="<%=httpsUrl%><%=site.context%>/site/pages/sign-up.jag?<%=urlPrefix%>"><%=i18n.localize("signup")%></a>
+    </li>
+	<%}%>
+    <li>
+        <a id="login-link"><%=i18n.localize("login")%></a>
+    </li>
+</ul>
+<% } %>
+<div style="clear:both"></div>
+
+<!--Links to Access Tenant Store and Public Store-->
+<div class="tenant-position-setter">
+    <%if (tenant == null && isSuperTenant != null && !isSuperTenant) {%>
+        Go to <a href="<%=jagg.getAbsoluteUrl("/")%><%="?tenant=" + tenantDomain%>"><%=tenantDomain%>'s API Store</a>
+
+        <a onclick="javascript:$('#APIStoreHelp').toggle('fast')" class="icon-chevron-right searchHelp"></a>
+
+        <div id="APIStoreHelp" class="help-block" style="display:none;">
+        You are accessing Public API Store. Go to <a href="<%=jagg.getAbsoluteUrl("/")%><%="?tenant=" + tenantDomain%>"><%=tenantDomain%>'s API Store</a>
+        </div>
+    <%} else if (tenant != null) {%>
+        Go to <a href="<%=jagg.getAbsoluteUrl("/")%>">Public API Store</a>
+
+        <a onclick="javascript:$('#APIStoreHelp').toggle('fast')" class="icon-chevron-right searchHelp"></a>
+
+        <div id="APIStoreHelp" class="help-block" style="display:none;">
+        You are accessing <%=tenantDomain%>'s API Store. Go to <a href="<%=jagg.getAbsoluteUrl("/")%>">Public API Store</a>
+        </div>
+    <%}%>
+</div>
+<% }); %>

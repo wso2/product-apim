@@ -1,0 +1,32 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("users-keys", {
+    initializer:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "subscribers":null
+        };
+    },
+    getOutputs:function () {
+        var subs, result, mod;
+        var user = jagg.getUser();
+
+        mod = jagg.module("subscription");
+        result = mod.getSubscribersOfProvider(user.username);
+        subs = result.subscribers;
+
+        return {
+            "subscribers":subs
+        };
+    },
+    getStaticBlocks:function() {
+        return [
+            "search/api-search"
+        ];
+    }
+
+});
+%>

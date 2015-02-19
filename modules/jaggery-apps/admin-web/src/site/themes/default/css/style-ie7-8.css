@@ -1,0 +1,68 @@
+#layout-base{
+    /* width:970px;margin:-15px auto !important; */
+	width:98%;
+	margin-top:-35px !important;
+}
+#header{
+	width:98%;
+}
+.login-header{
+	width:98%;
+}
+.menu-content{
+    /*width:970px;margin:0 auto !important;*/
+}
+#header div.login-header{
+	
+}
+#wrap{ margin-left:0}
+#header {}
+#header div.container{
+	width:80%;
+	background:red;
+}
+#footer div.container{
+    /* width:990px;margin:20px auto 5px !important; */
+	width:90%;
+	padding:0 40px;
+	margin:0;
+}
+
+div#newDoc div.name-column{
+    padding-right:20px;
+}
+div#newDoc div.ieFix{
+    width:10px;
+}
+div#header  div.container-fluid{
+    /*width:970px;margin:0 auto !important;*/
+	width:98%;
+}
+ul.breadcrumb {
+    margin-top: -50px;
+	position:absolute;
+/*
+    height:20px;
+    margin-left: -490px;
+    left:50%;
+	*/
+}
+.menu-back{
+    margin-top: 0;
+}
+.logo-section{
+    margin-top:-10px;
+}
+#left{
+    margin-top: 40px;
+}
+#middle{
+    margin-top: 40px;
+}
+#middle div.title-section{
+    background: #ccc;
+    padding:5px;
+}
+div.menu-back div.menu-content{
+    margin-top: 7px !important;
+}

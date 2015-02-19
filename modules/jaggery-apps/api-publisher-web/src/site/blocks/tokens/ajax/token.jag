@@ -1,0 +1,50 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    response.contentType = "application/json; charset=UTF-8";
+    var mod, obj, result, username,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+
+        if(jagg.getUser() == null){
+        print({
+            error:true,
+            message:'timeout'
+        });
+        }
+        else{
+            if (action === "getAccessTokenData") {
+            mod = jagg.module("subscription");
+            var accessToken,authUser,consumerKey;
+            accessToken = request.getParameter("accessToken");
+
+            result = mod.getAccessTokenData(accessToken);
+            if (result.error==true) {
+                obj = {
+                    error:true,
+                    tokenData:null,
+                    message:result.message
+                };
+            } else {
+                obj = {
+                    error:false,
+                    tokenData:result.tokenData
+
+                }
+            }
+            print(obj);
+
+        }
+
+        else {
+            print({
+                      error:true,
+                      message:msg.error.invalidAction(action)
+                  });
+        }
+       }
+
+}());
+%>

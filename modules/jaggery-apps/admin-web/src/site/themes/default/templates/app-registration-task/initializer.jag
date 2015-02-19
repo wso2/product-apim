@@ -1,0 +1,10 @@
+<%
+jagg.initializer("app-registration-task", {
+
+    preInitialize:function () {
+        jagg.addFooterJS("appRegistration", "jagg", "templates/app-registration-task/js/application.js");
+
+    }
+});
+%>
+

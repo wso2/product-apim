@@ -1,0 +1,58 @@
+<%
+include("/jagg/jagg.jag");
+include("header.jag");
+var site = require("/site/conf/site.json");
+
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+var middlePage="signup-task";
+
+var pageName=request.getParameter("task");
+if(pageName=="subscription"){
+middlePage="subscription-task";
+}else if(pageName=="signup"){
+middlePage="signup-task";
+}else if(pageName=="application"){
+middlePage="application-task";
+}else if(pageName=="appRegistration"){
+middlePage="app-registration-task";
+}else if(pageName=="themeUpload"){
+middlePage="theme-upload-task";
+}
+
+(function () {
+    var user = jagg.getUser();
+    if (!user) {
+        response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
+        return;
+    }
+
+    jagg.render({
+        "name":"page/base",
+        "inputs":{
+            "title":"Tasks Listing",
+            "header":{
+                "name":"menu/primary"
+            },
+            "body":[
+                {
+                    "name":"layout/extended",
+                    "inputs":{
+                        "middle":{
+                            "name":middlePage
+                        }
+                    }
+                }
+            ],"footer":[
+                {
+                    "name":"footer"
+                }
+            ]
+        }
+    });
+}());
+
+
+%>

@@ -1,0 +1,67 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    var mod, obj, result, username,
+            action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+    if (action === "login") {
+        mod = jagg.module("user");
+        username = request.getParameter("username");
+
+	if (username.indexOf("@") != -1) {
+            var s=username.split("@");
+            username=s[0] + "@" + s[1].toLowerCase();
+        }
+	
+        var tenant = request.getParameter("tenant");
+        result = mod.login(username, request.getParameter("password"),tenant);
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:result.message
+            };
+        } else {
+            obj = {
+                error:false
+            }
+        }
+        print(obj);
+    } else if (action === "logout") {
+        jagg.setUser(null);
+        print({
+            error:false
+        });
+
+    } else if (action === "loginWithSAMLToken") {
+        var log = new Log();
+
+        mod = jagg.module("user");
+        var samlToken = request.getParameter("samlToken");
+        result = mod.loginWithSAMLToken(samlToken);
+
+        if (result.error) {
+            obj = {
+                error:result.error,
+                message:result.message
+            };
+        } else {
+            obj = {
+                error:false
+            }
+        }
+
+        jagg.setUser({username:result.username, cookie:result.cookie});
+        session.put("showLogin", "false");
+
+        print(obj);
+
+    } else {
+        print({
+            error:true,
+            message:msg.error.invalidAction(action)
+        });
+    }
+}());
+%>

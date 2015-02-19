@@ -1,0 +1,60 @@
+<%
+var updateAPI = function (api) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var success = provider.updateAPI(api);
+        if (log.isDebugEnabled()) {
+            log.debug("updateAPI : " + api.name + "-" + api.version);
+        }
+        if(!success)
+        {
+        return {
+            error:true
+        };
+        }else
+        {
+        return {
+            error:false
+        };
+        }
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+
+var updateExternalAPIStores = function (api) {
+    var log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        var success = provider.updateExternalAPIStores(api);
+        if (log.isDebugEnabled()) {
+            log.debug("updateAPI : " + api.name + "-" + api.version);
+        }
+        if(!success)
+        {
+        return {
+            error:true
+        };
+        }else
+        {
+        return {
+            error:false
+        };
+        }
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+
+%>

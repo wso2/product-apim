@@ -1,0 +1,106 @@
+<% jagg.template("app-registration-task", function(inputs, outputs, jagg) {
+var tasks=outputs.tasks;
+%>
+<div id="listing">
+    <div class="title-section">
+        <h2><%=i18n.localize("myTasks")%></h2>
+    </div>
+
+    <div class="content-section shadow-up">
+
+        <div class="content-data">
+        <%
+if(tasks!=null){
+    var length = tasks.length;
+    var itemsPerPage = site.tasksPerPage; //reduce this number to preview the pagination
+
+    var currentPage = 1;
+    var numberOfPages = parseInt(length / itemsPerPage);
+
+    if (length % itemsPerPage != 0) {
+    numberOfPages++;
+    }
+
+    if (request.getParameter('page') != null) {
+    currentPage = parseInt(request.getParameter('page'));
+    }
+    var from = (currentPage - 1)*itemsPerPage;
+    var to = currentPage*itemsPerPage;
+    if(currentPage == numberOfPages){
+    to = length%(itemsPerPage*currentPage);
+    if(to == 0){
+    to=itemsPerPage*currentPage;
+    }
+    }
+    if(length==0){
+    to=0;
+    }
+if(tasks.length==0){%>
+<div class="alert alert-info">
+<div style="padding-bottom:10px"><b><%=i18n.localize("noTasksMsg")%></b></div>
+</div>
+<%}
+else{
+%>
+            <table class="table table-bordered table-striped">
+                <thead>
+                 <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th class="date-time-col">Created On</th>
+                    <th class="manage-col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <%for(var i=from;i<to;i++){%>
+                <tr>
+                    <td><%=tasks[i].id%></td>
+
+                        <div>
+<td id="desc<%=String(i)%>"><%=tasks[i].presentationSubject%></td>
+<td id="status<%=String(i)%>"><%=tasks[i].status%></td>
+<td><%=tasks[i].createdTime%></td>
+ <td>  <%if((tasks[i].status=="RESERVED")){%>
+                              <button class="btn js_startBtn" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Start</button>
+                              <select style="display: none" class="js_stateDropDown pull-left" style="margin-right: 6px;">
+                                    <option value="APPROVED">Approve</option>
+                                    <option value="REJECTED">Reject</option>
+                              </select>
+                              <button class="btn js_completeBtn pull-left" id="js_completeBtn<%=String(i)%>" style="display: none" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Complete</button>
+                              </td>
+                              <%}else if (tasks[i].status=='COMPLETED'){%>
+                              <label>Completed</label>
+                              <%}else if(tasks[i].status=='IN_PROGRESS'){%>
+                               <select class="js_stateDropDown pull-left" style="margin-right: 6px;">
+                                <option value="APPROVED">Approve</option>
+                                <option value="REJECTED">Reject</option>
+                               </select>
+                               <button class="btn js_completeBtn pull-left" id="js_completeBtn<%=String(i)%>" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Complete</button>
+                               <%}else if (tasks[i].status=='READY'){%>
+                               <button class="btn js_assignBtn pull-left" id="js_assignBtn<%=String(i)%>" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Assign To Me</button>
+                               <button class="btn js_startBtn pull-left" id="js_startBtn<%=String(i)%>" style="display: none" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Start</button>
+                               <select style="display: none" class="js_stateDropDown pull-left" style="margin-right: 6px;">
+                               <option value="APPROVED">Approve</option>
+                               <option value="REJECTED">Reject</option>
+                               </select>
+                                <button class="btn js_completeBtn pull-left" id="js_completeBtn<%=String(i)%>" style="display: none" data="<%=tasks[i].id%>" iteration="<%=String(i)%>">Complete</button>
+                               <%}%>
+
+
+</div>
+                    </td>
+                </tr>  <%}%>
+                </tbody>
+            </table>
+            <%}}else{%>
+            <div class="alert alert-info">
+                <div style="padding-bottom:10px"><b><%=i18n.localize("noTasksMsg")%></b></div> </div>
+            <%}%>
+              <!--START Pagination links-->
+              <% jagg.includeBlock("paginator", {currentPage:currentPage,numberOfPages:numberOfPages,taskType:"appRegistration"}); %>
+              <!--END Pagination links-->
+        </div>
+    </div>
+</div>
+<% }); %>

@@ -1,0 +1,10 @@
+<%
+jagg.initializer("billing", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("billing", "billing", "templates/billing/js/billing.js");
+
+    }
+
+});
+%>

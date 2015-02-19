@@ -1,0 +1,31 @@
+<%
+var copyAPI = function (api, newVersion) {
+    var success, log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+
+    try {
+        
+        success = provider.createNewAPIVersion(api.provider, api.name, api.version, newVersion,api.isDefaultVersion);
+        if (log.isDebugEnabled()) {
+            log.debug("copyAPI for : " + api.name + "-" + api.version + " as " + api.name + "-" + newVersion);
+        }
+        if (!success) {
+            return {
+                error:true
+            };
+        }
+        else {
+            return {
+                error:false
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true ,
+            message:e.message.split(":")[1]
+        };
+    }
+};
+
+%>

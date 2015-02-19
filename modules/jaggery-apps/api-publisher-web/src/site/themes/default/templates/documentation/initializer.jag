@@ -1,0 +1,9 @@
+<%
+jagg.initializer("documentation", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("documentation", "jagg", "templates/documentation/js/docs.js");
+    }
+
+});
+%>

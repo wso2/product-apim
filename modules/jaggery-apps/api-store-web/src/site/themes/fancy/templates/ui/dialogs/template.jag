@@ -1,0 +1,77 @@
+<% jagg.template("ui/dialogs", function(inputs, outputs, jagg){
+var i18n = require("i18n");
+var localeResourcesBasePath="/site/conf/locales/jaggery/";
+i18n.init(request,localeResourcesBasePath);
+
+%>
+<script type="text/javascript">
+        var isSecure = <%=outputs.isSecure%>;
+        var showLogin = <%=session.get("showLogin")%>;
+        var redirectToHTTPS = '<%=session.get("redirectToHTTPS")%>';
+
+    </script>
+ <%     var mod,httpUrl,httpsUrl;
+        mod = jagg.module("manager");
+
+        httpsUrl= mod.getHTTPsURL();
+        var httpsURL =  httpsUrl + request.getRequestURI();
+
+        if(request.getQueryString()){
+            httpsURL += "?" + request.getQueryString();
+        }
+
+        session.put("showLogin","false");
+        session.put("redirectToHTTPS","");
+ %>
+<div class="modal fade" id="messageModal"></div>
+<div id="login-data" style="display:none;">
+    <% if(outputs.isSecure == true){%>
+    <form id="mainLoginForm" autocomplete="off">
+        <div class="modal-header">
+            <button class="close" data-dismiss="modal">x</button>
+            <h3><%=i18n.localize("login")%></h3>
+        </div>
+
+        <!--Error message viewer-->
+        <div class="alert alert-error" id="loginErrorMsg" style="display:none">
+            <div class="theMsg"></div>
+        </div>
+
+        <div class="modal-body">
+            <label><%=i18n.localize("username")%>:</label>
+            <input type="text" id="username" name="name" class="span3" placeholder="<%=i18n.localize("usernamePlcHolder")%>"/>
+            <label><%=i18n.localize("password")%>:</label>
+            <input type="password" id="password" name="pass" class="span3"/>
+            <input type="hidden" id="tenant" name="tenant" value="<%=request_tenant%>">
+
+
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn btn-primary" id="loginBtn"><%=i18n.localize("login")%></a>
+            <a href="#" class="btn" data-dismiss="modal"><%=i18n.localize("cancel")%></a>
+        </div>
+    </form>
+    <% } else { %>
+    <form id="loginRedirectForm" method="post" action="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/user/login/redirector.jag"))%>" autocomplete="off">
+    	<input type="hidden" name="redirectToHTTPS" id="redirectToHTTPS" value="<%=httpsURL%>" />
+    	<input type="hidden" name="tenant" id="tenant" value="<%=jagg.getTenantDomain()%>" />
+    </form>
+    <% } %>
+</div>
+
+
+<div id="confirmation-data" style="display:none;">
+    <div class="modal-header">
+        <button class="close" data-dismiss="modal">x</button>
+        <h3 class="modal-title">Modal header</h3>
+    </div>
+    <div class="modal-body">
+        <p>One fine body…</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn btn-primary">Save changes</a>
+        <a href="#" class="btn btn-other" data-dismiss="modal">Close</a>
+    </div>
+</div>
+<% }); %>
+

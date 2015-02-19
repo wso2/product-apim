@@ -1,0 +1,26 @@
+.padding-from-right{
+    padding:0;
+}
+.search-button{
+    height:30px;
+    margin-right:10px;
+}
+div.menu-back{
+    margin-top: -20px;
+}
+div.title-section{
+    background: #ccc;
+}
+input.search-input{
+    padding: 0;
+    margin:-2px 0 0 0;
+    font-size: 8px;
+    height: 1px !important;
+    line-height: 10px;
+}
+.search-section-custom{
+    padding-bottom:20px;
+}
+.logo-section{
+    margin-top:-20px;
+}

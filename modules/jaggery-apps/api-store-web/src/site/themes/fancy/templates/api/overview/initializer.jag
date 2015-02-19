@@ -1,0 +1,9 @@
+<%
+jagg.initializer("api/overview", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("api/overview", "api-info", "templates/api/overview/js/jquery.sharrre.js");
+    },
+
+});
+%>

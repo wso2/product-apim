@@ -1,0 +1,31 @@
+<%
+jagg.block("subscription/subscription-list-element", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "app":null
+        }
+    },
+
+    getOutputs:function (inputs) {
+
+        var comments, result, store, gatewayURL;
+        
+        //result = jagg.module("comment").getAPIComments(inputs.api);
+        //comments = result.comments;
+        var app = inputs.app;
+        
+        store = jagg.module("manager").getAPIStoreObj();
+        gatewayURL = store.getHTTPsGatewayEndpointURLs();
+        
+        return {
+            "app":app,
+            "i":inputs.i,
+        	"gatewayurl":gatewayURL[0]
+        };
+    }
+});
+%>

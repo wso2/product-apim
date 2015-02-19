@@ -1,0 +1,12 @@
+<%
+jagg.block("search/token-search", {
+
+    initialize:function (data) {
+    },
+     getInputs:function () {
+        return {
+            "accessTokens":null
+        }
+    }
+});
+%>

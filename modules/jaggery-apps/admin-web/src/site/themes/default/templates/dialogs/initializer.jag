@@ -1,0 +1,8 @@
+<%
+jagg.initializer("dialogs", {
+
+    preInitialize:function () {
+    }
+});
+%>
+

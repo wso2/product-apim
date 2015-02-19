@@ -1,0 +1,203 @@
+<% jagg.template("listing", function(inputs, outputs, jagg) { %>
+<div id="listing">
+    <div class="title-section">
+        <h2><%=i18n.localize("allAPIs")%></h2>
+    </div>
+    <div class="content-section shadow-up">
+    <div class="content-data">
+    <%
+    var tenant= encode.forUriComponent(request.getParameter("tenant"));
+    var urlPrefix;
+    var urlPostfix;
+    var query = request.getParameter('query');
+    if(tenant!='null') {urlPrefix="?tenant="+tenant;}else{urlPrefix='';}
+    if(tenant!='null') {urlPostfix="&tenant="+tenant;}else{urlPostfix='';}
+    if ((outputs.apis != null && outputs.apis.length > 0) || query != null) {
+        jagg.includeBlock("search/api-search", null);
+    }
+    %>
+    <%
+    if (outputs.error) { %>
+        <label><b> <%=outputs.message%></b></label>
+    <% }else{
+    %>
+   <script type="text/javascript">
+   function hideMsg() {
+       $('#apiInfo').hide("fast");
+   }
+       $(document).ready(function () {
+        if($.cookie('showAPIInfo')=="yes"){
+        $('#apiInfo').show();
+        var date = new Date();
+        date.setTime(date.getTime() + (40* 1000));
+        $.cookie('showAPIInfo', 'false',{ path: '/',expires: date });
+         var t = setTimeout("hideMsg()", 3000);
+
+       }
+
+       });
+
+   </script>
+        <div class="alert alert-info" id="apiInfo" style="display:none;">
+           <div style="padding-bottom:10px"><b><%=i18n.localize("aboutAPIs")%></b></div>
+       </div>
+
+    <ul class="thumbnails">
+        <span class="loading"></span>
+        <%
+        var i, api,path,mode=outputs.mode,apis = outputs.apis,length;
+        var reqUrl = request.getRequestURI();
+        if(apis!=null){length = apis.length;}
+        var itemsPerPage = 10; //reduce this number to preview the pagination
+        var currentPage = 1;
+        var numberOfPages = parseInt(length / itemsPerPage);
+
+        if (length % itemsPerPage != 0) {
+            numberOfPages++;
+        }
+
+         if (request.getParameter('page') != null) {
+           currentPage = parseInt(request.getParameter('page'));
+           if((currentPage-1)*itemsPerPage == length){
+                if(String(currentPage)=='1'){%>
+                 <script>
+                    window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/index.jag")%><%=urlPrefix%>";
+                </script>
+                <%}else{
+                currentPage = currentPage - 1;
+                %>
+                <script>
+                    window.location.href = "<%=jagg.getAbsoluteUrl("/site/pages/index.jag")%>" +"?page="+"<%=String(currentPage)%><%=urlPostfix%>";
+                </script><%
+        } }  }
+        var from = (currentPage - 1)*itemsPerPage;
+        var to = currentPage*itemsPerPage;
+        if(currentPage == numberOfPages){
+            to = length%(itemsPerPage*currentPage);
+            if(to == 0){
+                to=itemsPerPage*currentPage;
+            }
+        }
+        if(length==0){
+            to=0;
+        }  %>
+
+       <% if(apis){
+        for(i = from; i < to; i++) {
+                    api = apis[i];
+                    path = jagg.getMappedUrl("/site/pages/item-info.jag") + "?name=" + api.name + "&version=" + api.version + "&provider=" + api.provider+urlPostfix;
+
+                    var nameSubstring = api.name;
+                    if (api.name.length > 15) {
+                        nameSubstring = api.name.substring(0, 15)+"..";
+                    }
+
+        %>
+        <%if(query != null && (query.indexOf("Doc:") == 0 || query.indexOf("doc:") == 0)) {%>         
+                <div id="doc-search" style="padding-top:30px">       
+	                <li style="height:150px">
+	                	
+	                	<div class="left-menu-back01 doc-search-result">
+		                	<p class="doc-search-result-content"><%= encode.forHtml(api.docName)%></p>
+		                                       
+		                    <% if(api.docSummary && api.docSummary != ""){ %>
+		                    	<h6><%=i18n.localize("docSum")%>:</h6><p><%=  encode.forHtml(api.docSummary)%></p>
+		                    <% } %>
+		                    <%if(api.docSourceURL&& api.docSourceURL!="") { %>
+		                    	<p><a href="<%=api.docSourceURL%>" target="_blank" class="doc-search-result-text"><%=i18n.localize("viewDoc")%></a></p>
+		                    <%}else if(api.docFilePath && api.docFilePath!=""){%>
+		                    	<p><a href="<%=api.docFilePath%>" target="_blank" class="doc-search-result-text"><%=i18n.localize("download")%></a></p>
+		                    <%} else{%>
+			                    <div>
+				                     <%if(reqUrl.indexOf(".jag")>=0){%>
+				                     	<a href="doc-viewer.jag?docName=<%= encode.forUriComponent(api.docName)%>&name=<%= encode.forUriComponent(api.name) %>&version=<%= encode.forUriComponent(api.version)%>&provider=<%= encode.forUriComponent(api.provider)%>&<%=urlPrefix%>"  target="_blank" class="doc-search-result-text"><%=i18n.localize("viewDoc")%></a>
+				                     <%}else{%>
+				                     	<a href="site/pages/doc-viewer.jag?docName=<%= encode.forUriComponent(api.docName)%>&name=<%= encode.forUriComponent(api.name) %>&version=<%= encode.forUriComponent(api.version)%>&provider=<%= encode.forUriComponent(api.provider)%>&<%=urlPrefix%>"  target="_blank" class="doc-search-result-text"><%=i18n.localize("viewDoc")%></a>
+				                     <%}%>
+			                    </div>
+		                     <%}%>
+	                    </div>
+	                    <div class="doc-search-api-result">
+			                <a href="<%=path%>">
+			                    <% if(api.thumb == null) { %>
+			                    <img class="thumb" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png"))%>" alt=""/>
+			                    <% } else{ %>
+			                    <img class="thumb" src="<%=jagg.getRegistryPath(api.thumb)%>" alt=""/>
+			                    <% } %>
+			                </a>
+			                <h5>
+			                    <a href="<%=path%>" onclick="jagg.sessionAwareJS({redirect:'<%=path%>'})" class="label label-info" title="<%=api.name%>-<%=api.version%>">
+			                        <%=nameSubstring%> - <span class="versionTxt"><%=api.version%></span>
+			                    </a>
+			                    <div>(<%=api.provider%>)</div>
+			                </h5>
+	                		<p class="status"><%=api.status%></p>
+            			</div>
+	                 </li>
+                </div>
+                <%} else {%>
+        <li>
+            <div class="thumbnail">
+                    <a href="<%=path%>">
+                        <% if(api.thumb == null) { %>
+                        <img class="thumb responsive" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png"))%>" alt=""/>
+                        <% } else{ %>
+                        <img class="thumb responsive" src="<%=jagg.getRegistryPath(api.thumb)%>" alt=""/>
+                        <% } %>
+                    </a>
+                    <div class="caption">
+                        <a href="<%=path%>" onclick="jagg.sessionAwareJS({redirect:'<%=path%>'})" class="link-h1" title="<%=api.name%>">
+                            <%=api.name%>
+                        </a>
+                        <div class="version-provider-wrapper"><%=api.version%> <a class="link-h2"><%=api.provider%></a></div>
+
+                       <div>
+                            <a href="<%=path%>" onclick="jagg.sessionAwareJS({callback:selectUserTab('<%=path%>')})" >
+                                <span id="noOfUsers">
+                                    <% if (api.subs == "1") { %><%=api.subs%> <%=i18n.localize("user")%> <% } else { %><%=api.subs%> <%=i18n.localize("users")%><% } %>
+                                </span>
+                            </a>
+                        </div>
+                        <p><%=api.status%></p>
+                        <%if(outputs.isCreatePermitted){%>
+                            <button title="Delete API" type="button" class="close btn-api-del" onClick="removeAPI('<%=api.name%>','<%=api.version%>','<%=api.provider%>',this);return false;"><%=i18n.localize("times")%></button>
+                        <%}%>
+                    </div>
+                </div>
+        </li>
+        <% }} }%>
+    </ul>
+
+
+   <!--START Pagination links-->
+   <% jagg.includeBlock("paginator", {currentPage:currentPage,numberOfPages:numberOfPages}); %>
+   <!--END Pagination links-->
+
+    <!--START display the links when there are no apis-->
+    <%
+    if (apis!=null&& apis.length == 0) {
+    if(mode=="search"){
+    %>
+    <div class="alert alert-info">
+    <div style="padding-bottom:10px"><b><%=i18n.localize("searchMsg")%></b></div> </div>
+    <%}else{%>
+    <div class="alert alert-info">
+        <%if(outputs.isCreatePermitted){ %>
+        <div style="padding-bottom:10px"><%=i18n.localize("noAPIsMsg1")%></div>
+        <div><a class="btn btn-primary" href="<%=jagg.getMappedUrl("/design")%>" onclick="jagg.sessionAwareJS({redirect:'<%=jagg.getMappedUrl("/design")%><%=urlPrefix%>',e:event})" ><%=i18n.localize("newAPI")%></a></div>
+        <%}else{%>
+        <div style="padding-bottom:10px"><%=i18n.localize("noAPIsMsg")%></div>
+        <%}%>
+    </div>
+    <%
+    }}}
+    %>
+    <!--END display the links when there are no apis-->
+
+
+
+</div>
+</div>
+</div>
+
+<% }); %>

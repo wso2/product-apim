@@ -1,0 +1,7 @@
+<%
+jagg.initializer("layout/extended", {
+
+    initialize:function () {
+    }
+});
+%>

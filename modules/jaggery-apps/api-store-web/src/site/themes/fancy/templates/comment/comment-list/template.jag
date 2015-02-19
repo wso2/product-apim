@@ -1,0 +1,23 @@
+<% jagg.template("comment/comment-list", function(inputs, outputs, jagg) { %>
+<% var i, comment, comments = outputs.comments, length = comments.length; %>
+<div id="comment-list">
+    <%
+    if(length > 0) {
+        for(i = 0; i < length; i++) {
+            comment = comments[i];
+    %>
+    <div class="comment">
+        <hr />
+        <div><%=i18n.localize("postComment")%> <strong><%=comment.username%></strong> <%=i18n.localize("onText")%> <span class="dateFull"><%=comment.createdTime%></span></div>
+        <div class="comment-text"><%=comment.comment%></div>
+    </div>
+    <% }
+    } else {
+    %>
+    <p><%=i18n.localize("noCommentMsg")%></p>
+    <% } %>
+</div>
+<script type="text/javascript">
+jagg.printDate();
+</script>
+<% }); %>

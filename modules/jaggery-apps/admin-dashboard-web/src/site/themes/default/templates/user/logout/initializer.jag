@@ -1,0 +1,6 @@
+<%
+jagg.initializer("user/logout", {
+
+});
+%>
+

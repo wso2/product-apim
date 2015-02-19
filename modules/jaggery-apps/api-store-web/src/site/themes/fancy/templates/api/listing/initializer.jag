@@ -1,0 +1,8 @@
+<%
+jagg.initializer("api/listing", {
+
+    preInitialize:function () {
+
+    }
+});
+%>

@@ -1,0 +1,7 @@
+<%
+jagg.initializer("application/application-list", {
+
+    preInitialize:function () {
+    }
+});
+%>

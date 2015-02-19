@@ -1,0 +1,68 @@
+<%
+jagg.block("forum/forum-topic", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+
+		var tenantDomain = "carbon.super";
+
+		var log = new Log();
+		var uri = request.getRequestURI();
+		
+		var callPath = uri.replace("/store/forum/topic", "");
+		var topicId;
+		if (uri != null) {
+    		var uriMatcher = new URIMatcher(callPath);
+
+    		if (uriMatcher.match("/{topicId}")) {
+        		topicId = uriMatcher.elements().topicId;
+    		}
+    	}
+
+		var ForumManager = Packages.org.wso2.carbon.forum.registry.RegistryForumManager;
+		var forumManager = new ForumManager();
+
+		var username = null;
+
+		if(jagg.getUser()){
+			username = jagg.getUser().username;
+		}
+
+		var ratings = forumManager.getRating(topicId, username, tenantDomain);
+		
+		var userRating = null;
+
+		if(ratings.get("userRating")){
+			userRating = ratings.get("userRating").toString();
+		}
+	
+        return {
+            "user":null,
+			"topicId" : topicId,
+			"userRating" : userRating,
+			"averageRating" : ratings.get("averageRating").toString()
+        }
+    },
+
+    getOutputs:function (inputs) {
+        /*
+        var applications, result, user = inputs.user;
+        result = jagg.module("subscription").getAllSubscriptions(user.username);
+        applications = result.applications;
+        */
+        return {
+            //"applications":applications
+        };
+    },
+
+    getStaticBlocks:function() {
+        return [
+           // "subscription/subscription-list-element"
+        ];
+    }
+
+
+});
+%>

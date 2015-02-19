@@ -1,0 +1,13 @@
+[
+    "core/users/login.js",
+    "core/users/users.js",
+    "core/apis/add.js",
+    "core/apis/update.js",
+    "core/apis/copy.js",
+    "core/apis/list.js",
+    "core/docs/add.js",
+    "core/docs/list.js",
+    "core/docs/remove.js",
+    "core/subscriptions/subscriptions.js"
+
+]

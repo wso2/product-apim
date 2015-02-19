@@ -1,0 +1,38 @@
+<%
+include("/jagg/jagg.jag");
+jagg.block("api/api-listing-prototyped", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "result":null
+        };
+    },
+     getOutputs:function (inputs) {
+        var apis, result, mod,error, response,message, tenantDomain,
+                page = request.getParameter("page"),
+                apiStatus = request.getParameter("apiStatus");
+        
+        tenantDomain = jagg.getTenantDomain();
+        if(page == null){
+        	page = 1;
+        }
+        var start = (page - 1)*10;
+        var end = 10;
+
+        mod = jagg.module("api");
+        response = mod.getAllPaginatedPrototypedAPIs(tenantDomain,start,end);
+        apis = response.result.apis;
+        
+
+        return {
+            "apis":apis,
+            "totalLength":response.result.totalLength,
+            "error":error,
+            "message":message
+        };
+    }
+});
+%>

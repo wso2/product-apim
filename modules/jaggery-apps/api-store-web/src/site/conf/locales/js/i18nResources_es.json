@@ -1,0 +1,50 @@
+{
+    "info": {
+        "appSelect": "Selecciona por favor una aplicaci�n antes de suscribirse",
+        "wait": "Espera por favor..." ,
+        "subscription": "Suscripci�n realizada con exito" ,
+        "subscriptionSuccess": "�Felicitaciones! Te has suscrito con exito a la API. Vaya por favor a la p�gina 'Mis suscripciones' para revisar su suscripci�n y generar los Access Key.",
+        "subscriptionPending": "Congratulations! Your subscription request has been submitted and is now awaiting approval.",
+        "gotoSubsPage": "Ir a Mis Suscripciones",
+        "stayPage": "Permanecer en esta p�gina",
+        "returntoAPIPage": "�Volver a la p�gina de la API?",
+        "yes": "S�",
+        "no": "No",
+        "charsLeft": "Caracteres restantes",
+
+
+    },
+    "confirm": {
+        "delete": "Confirme borrado",
+        "deleteMsg": "�Est�s seguro que deseas eliminar la aplicaci�n?",
+        "deleteMsgPostfix": "Esto cancelar� todas las suscripciones y las claves existentes asociados con la aplicaci�n.",
+        "unsubscribeMsg": "�Est�s seguro que deseas cancelar la suscripci�n a "
+
+
+    },
+    "titles":{
+        "save":"Guardar",
+        "cancel":"Cancelar",
+        "production":"Producci�n",
+        "sandbox":"Sandbox",
+        "hideKeys":" Ocultar Keys",
+        "showKeys":" Mostrar Keys",
+        "regenerate":"Volver a generar"
+    },
+    "resultMsgs":{
+        "showKey":"Las claves est�n disponibles. Haga clic en el bot�n 'Mostrar Keys' para visualizarlas."
+
+    },
+    "validationMsgs":{
+        "invalidEmail": "Direcci�n de correo electr�nico no v�lida",
+        "fieldRequired": "Este campo es obligatorio.",
+        "exceedChars": "El nombre excede l�mite de caracteres (70)",
+        "illegalChars": "El nombre contiene uno o m�s caracteres no v�lidos",
+        "illegalName": "El nombre contiene uno o m�s caracteres no v�lidos",
+        "invalid": "No v�lido",
+        "valid": "V�lido",
+        "testUri": "Probar URI",
+        "validating": "Validando.."
+    }
+
+}

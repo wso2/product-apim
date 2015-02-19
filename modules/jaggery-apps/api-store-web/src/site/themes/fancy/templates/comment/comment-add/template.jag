@@ -1,0 +1,10 @@
+<% jagg.template("comment/comment-add", function(inputs, outputs, jagg) { %>
+<div id="comment-add">
+    <div class="alert alert-error" id="commentAdd-error" style="display:none">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <strong><%=i18n.localize("commentMsg")%></strong>
+      </div>
+    <textarea id="comment-text" class="span12 comment-box"></textarea>
+    <button id="comment-add-button" class="btn"><i class=" icon-plus-sign"></i><%=i18n.localize("add")%></button>
+</div>
+<% }); %>

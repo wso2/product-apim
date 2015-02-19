@@ -1,0 +1,36 @@
+<%
+jagg.block("layout/custom", {
+
+   initialize:function (data) {
+
+    },
+    getOutputs:function (inputs) {
+    var tenantDomain = jagg.getTenantDomain();
+        return {
+            "title":inputs.title,
+            "middle":inputs.middle
+
+        };
+    },
+
+    getInputs:function () {
+        return {
+            "title":null,
+            "middle":null
+        };
+    },
+
+    getOutputBlocks:function () {
+        return [
+            "header",
+            "top"
+
+        ];
+    },
+    getInputBlocks:function () {
+        return [
+            "middle"
+        ];
+    }
+});
+%>

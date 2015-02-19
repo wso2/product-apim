@@ -1,0 +1,8 @@
+<%
+jagg.initializer("api/tryit", {
+
+      preInitialize:function () {
+        jagg.addFooterJS("api/tryit", "tryit", "templates/api/tryit/js/tryit.js");
+    }
+});
+%>

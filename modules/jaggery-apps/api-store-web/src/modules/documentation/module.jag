@@ -1,0 +1,10 @@
+<%
+jagg.module("documentation", {
+
+    getAllDocumentations:function () {
+            return jagg.require(jagg.getModulesDir() + "documentation/list.jag").getAllDocumentations.apply(this, arguments);
+        }, getInlineContent:function () {
+            return jagg.require(jagg.getModulesDir() + "documentation/list.jag").getInlineContent.apply(this, arguments);
+        }
+    });
+%>

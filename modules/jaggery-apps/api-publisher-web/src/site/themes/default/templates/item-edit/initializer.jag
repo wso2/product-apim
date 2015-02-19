@@ -1,0 +1,24 @@
+<%
+jagg.initializer("item-edit", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("item-edit", "item-edit", "templates/item-edit/js/edit.js");
+        jagg.addHeaderJS("custom-validate", "jagg", "templates/utils/custom-validation/custom-validation.js");
+        //jagg.addHeaderJS("url-validate", "jagg", "templates/utils/url-validation/url-validation.js");
+        jagg.addFooterJS("handlebars", "jagg", "templates/item-add/js/handlebars-v1.3.0.js");
+        jagg.addHeaderJS("add-resource", "jagg", "templates/item-add/js/resource-template.js");
+
+        jagg.addFooterJS("underscore", "jagg", "templates/item-add/js/underscore.js");
+        jagg.addFooterJS("jsv", "jagg", "templates/item-add/js/jsv.js");
+        jagg.addFooterJS("jsonform", "jagg", "templates/item-add/js/jsonform.js");
+        jagg.addFooterJS("multiselect", "jagg", "lib/bootstrap-multiselect.js");
+        jagg.addFooterJS("endpoint-ui", "jagg", "templates/item-add/js/endpoint-ui.js");
+    }
+});
+%>
+
+
+
+
+
+

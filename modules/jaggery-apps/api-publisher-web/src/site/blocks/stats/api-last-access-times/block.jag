@@ -1,0 +1,8 @@
+<%
+jagg.block("stats/api-last-access-times", {
+    initializer:function (data) {
+
+    }
+
+});
+%>

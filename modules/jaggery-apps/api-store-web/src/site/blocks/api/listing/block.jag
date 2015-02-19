@@ -1,0 +1,15 @@
+<%
+include("/jagg/jagg.jag");
+jagg.block("api/listing", {
+    initializer:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            "apis":null,
+            "tenantDomain":null
+        };
+    }
+});
+%>

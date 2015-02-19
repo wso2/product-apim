@@ -1,0 +1,140 @@
+<% jagg.template("api/overview", function(inputs, outputs, jagg) { %>
+<% var api = outputs.api, user = outputs.user, log = new Log(); %>
+<% var domains = jagg.module("domains").getDomainMappings(jagg.getTenantDomain()).domains;%>
+<div id="overview">
+	<%if (!api.isAdvertiseOnly) {%>
+
+	    <%
+        if(domains != null){
+            for (var key in domains) {
+                %>
+                <div  class="well well-small api_urls"><%=domains[key]%><%=api.context%>/<%=api.version%>
+                    <%if (api.isDefaultVersion){%>
+                        <br><%=domains[key]%><%=api.context%>
+                    <%}%>
+                </div>
+                <%
+            }
+        }
+        else{
+    	    var environments = api.serverURL.split("|");
+    	    for (j=0; j<environments.length; j++){
+    	        var environment = environments[j];
+    	        var epParams =  environment.split(",");
+    	        %>
+    	            <h5><%=epParams[0]%> <%=i18n.localize("urls")%>:</h5>
+
+    	        <%
+    	        for (i = 1; i < epParams.length; i++) {
+    	            %>
+    	            <div  class="well well-small api_urls"><%=epParams[i]%><%=api.context%>/<%=api.version%>
+                        <%if (api.isDefaultVersion){%>
+                            <br><%=epParams[i]%><%=api.context%>
+                        <%}%>
+                    </div>
+
+    	            <%
+    	        }
+    	        %>
+
+    	        <%
+    	    }
+        }
+	    %>
+    <%}%>
+    <% if(api.wsdl && api.wsdl != ""){ %>        
+    <p>
+        <a href="<%=api.wsdl%>" target="_blank"><h6><%=i18n.localize("wsdl")%></h6></a>
+    </p>
+    <% } %>
+    <% if(api.wadl && api.wadl != ""){ %>
+        <h6><%=i18n.localize("wadl")%>:</h6>
+    <p>
+        <a href="<%=api.wadl%>" target="_blank"><%=api.wadl%></a>
+    </p>
+        <% } %>
+    <% if(api.description && api.description != ""){ %>
+        <h6><%=i18n.localize("desc")%>:</h6>
+    <p>
+        <%=api.description%>
+    </p>
+        <% } %>
+
+    <% if(api.bizOwner&& api.bizOwner != ""){ %>
+        <h6><%=i18n.localize("busiOwner")%>:</h6>
+    <p>
+        <%=api.bizOwner%> <% if(api.bizOwnerMail && api.bizOwnerMail!=""){%>
+           [<a href="mailto:<%=api.bizOwnerMail%>"><%=api.bizOwnerMail%></a>]
+        <%}%>
+    </p>
+    <% } %>
+    <% if(api.techOwner && api.techOwner != ""){ %>
+        <h6><%=i18n.localize("techOwner")%>:</h6>
+    <p>
+        <%=api.techOwner%>
+        <% if(api.techOwnerMail && api.techOwnerMail!=""){%>
+           [<a href="mailto:<%=api.techOwnerMail%>"><%=api.techOwnerMail%></a>]
+        <%}%>
+    </p>
+    <% } %>
+    <h5><%=i18n.localize("share")%>:</h5>
+    <div class="pagination">
+    <ul class="" style="margin:0px;">
+        <li class="active"><a class="share_links active" href="#" ref="social"><%=i18n.localize("SocialSites")%></a></li>
+        <li><a class="share_links" href="#" ref="embed"><%=i18n.localize("embed")%></a></li>
+        <li><a href="" id="api_mailto" ><i class="icon-envelope "></i> <%=i18n.localize("email")%></a></li>
+    </ul>
+    </div>
+    <div id="share_div_embed" class="hide share_dives">
+        <textarea id="embed_iframe"></textarea>
+    </div>
+
+    <div id="share_div_social" class="share_dives">
+    <!-- Facebook -->
+    <a class="social_links" id="facebook" href="#" target="_blank"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/facebook.png"))%>" alt="Facebook" /></a>
+
+    <!-- Twitter -->
+    <a class="social_links" id="twitter" href="#" target="_blank"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/twitter.png"))%>" alt="Twitter" /></a>
+
+    <!-- Google+ -->
+    <a class="social_links" id="googleplus" href="#" target="_blank"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/google.png"))%>" alt="Google" /></a>
+
+    <!-- Digg -->
+    <a class="social_links" id="digg" href="#" target="_blank"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/diggit.png"))%>" alt="Digg" /></a>
+
+    <div class="clearfix">
+    </div>
+    </div>
+
+    <h5><%=i18n.localize("comments")%>:</h5>
+    <% if(user) jagg.includeBlock("comment/comment-add", null); %>
+    <% jagg.includeBlock("comment/comment-list", {api:api}); %>
+</div>
+<script language="javascript">
+    $(document).ready(function(){
+        var link = window.location+'';
+        $('#api_mailto').attr('href',"mailto:?Subject="+encodeURIComponent(document.title)+"&body=Link : "+ encodeURIComponent(window.location));
+        $('#embed_iframe').text('<iframe width="450" height="120" src="'+link.replace('info','widget')+'" frameborder="0" allowfullscreen></iframe>');
+
+        $('.share_links').click(function(){
+            $('.share_links').removeClass('active');
+            $('.share_links').parent().removeClass('active');
+            $(this).addClass('active');
+            $(this).parent().addClass('active');
+            $('.share_dives').hide();
+            $('#share_div_' + $(this).attr('ref')).show('fast');
+            return false;
+        });
+
+        var api_url = encodeURIComponent(window.location+'');
+        var description = document.title + " : try this API at "+window.location;
+
+        $("#facebook").attr("href","http://www.facebook.com/sharer.php?u="+api_url);
+        $("#twitter").attr("href","http://twitter.com/share?url="+api_url+"&text="+encodeURIComponent(description));
+        $("#googleplus").attr("href","https://plus.google.com/share?url="+api_url);
+        $("#digg").attr("href","http://www.digg.com/submit?url="+api_url);
+
+    });
+</script>
+
+<% }); %>

@@ -1,0 +1,14 @@
+<%
+jagg.block("workflow/workflow-listener", {
+    initializer:function (data) {
+
+    },
+
+    getOutputs:function (inputs) {
+
+        return {
+
+        };
+    }
+});
+%>

@@ -1,0 +1,430 @@
+<% jagg.template("item-design", function(inputs, outputs, jagg) { 
+    var api = outputs.api;
+    var site = require("/site/conf/site.json");
+    var enableRestrictByRoles = site.enableRestrictByRoles;
+    
+    if(api){
+        var apiUrlId = "name="+encode.forHtml(api.name)+"&version="+encode.forHtml(api.version)+"&provider="+encode.forHtml(api.provider);
+        var _description = encode.forHtml(api.description);
+        var _tags = encode.forHtml(api.tags);
+    }
+    else{
+        var apiUrlId = "";
+        var _description = "";
+        var _tags = "";        
+    }
+%> 
+<script language="javascript">
+    var VERBS = [ 'GET' , 'POST' , 'PUT' , 'DELETE', 'OPTIONS'];
+    var AUTH_TYPES = [
+      { "value": "<%=i18n.localize("none")%>", "text":"<%=i18n.localize("none")%>"} ,
+      { "value": "<%=i18n.localize("application")%>", "text":"<%=i18n.localize("application")%>"},
+      { "value": "<%=i18n.localize("applicationUser")%>", "text":"<%=i18n.localize("applicationUser")%>"},
+      { "value": "<%=i18n.localize("application&applicationUser")%>", "text":"<%=i18n.localize("application&applicationUser")%>"}
+    ];    
+</script>  
+<div id="item-add">
+<%
+    var design_w_link = jagg.url('/design?'+apiUrlId);
+    var implement_w_link = jagg.url('/implement?'+apiUrlId);
+    var manage_w_link = jagg.url('/manage?'+apiUrlId);
+
+    var implement_wlabel = "";
+    var manage_wlabel = "";
+    if(!api){ 
+        var design_w_link = '#'; 
+        var implement_w_link = '#'; 
+        var manage_w_link = '#'; 
+    }
+
+    var implement_wlabel = "";    
+    if(api && api.implementation != null){
+        implement_wlabel = "wizard-done"
+    }
+    else{
+        implement_w_link = '#';
+    }
+
+    var manage_wlabel = "";
+    if(api && api.availableTiers !=""){
+        manage_wlabel = "wizard-done";      
+    }else{
+        var manage_w_link = '#';        
+    }         
+%>
+<center>
+<ul class="new-sub-menu-wizard" style="margin:0 auto">
+    <li>
+        <a href="<%= design_w_link %>" class="wizard-active">
+            <div class="wizard-number">1</div>
+            <span>Design</span>
+        </a>
+    </li>
+    <li>
+        <a href="<%= implement_w_link %>" class="<%= implement_wlabel%>">
+            <div class="wizard-number">2</div>
+            <span>Implement</span>
+        </a>
+    </li>
+    <li>
+        <a href="<%= manage_w_link %>" class="<%= manage_wlabel%>">
+            <div class="wizard-number" >3</div>
+            <span>Manage</span>
+        </a>
+    </li>
+</ul>
+</center> 
+    <div class="title-section">
+        <% if(api){ %> 
+            <h2><%= encode.forHtml(api.name) %> : <%= encode.forHtml(api.context) %>/<%= encode.forHtml(api.version) %></h2>
+        <% }else{ %>
+            <h2>Design API</h2>
+        <% } %>
+    </div>     
+    <div class="content-section shadow-up">
+    <div class="content-data">   
+    <div class="alert alert-error" id="addAPIError" style="display:none">
+        <span id="addErrorSpan"></span>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span12">
+            <div id="swaggerUpload" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="swaggerUploadLabel">Import Swagger Definition</h3>                    
+                </div>
+                <div class="modal-body">
+                    <!-- <label>Upload a zip file containing swagger definitions :</label>
+                    <input type="file" name="somename" size="chars"> 
+                    <br />
+                    <br />                        
+                    <h6>OR</h6>
+                    <br /> -->
+                    <label>Definition URL :</label>
+                    <input type="text" placeholder="" class="span12" id="swagger_import_url" name="swagger_import_url">
+                    <span class="help-block">Example : http://petstore.swagger.wordnik.com/api/api-docs </span>                                                              
+                </div>                    
+                <div class="modal-footer">
+                <button class="btn btn-primary" id="import_swagger">Import</button>                    
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>
+            <div id="swaggerEditer" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="swaggerUploadLabel">Edit Swagger Definition</h3>                    
+                </div>
+                <div class="modal-body">
+                    <div id="swagger_editor" class="clearfix" style="height:400px;"></div>
+                </div>                    
+                <div class="modal-footer">
+                <button class="btn btn-primary" id="update_swagger">Save</button>                    
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>            
+            <form class="form-horizontal" method="POST"
+              id="design_form"
+              enctype="multipart/form-data" action="<%= jagg.url("/site/blocks/item-design/ajax/add.jag?" + apiUrlId ) %>">
+<fieldset>
+    <legend><%=i18n.localize("generalDetailsTitle")%>
+            <a  href="#swaggerUpload" role="button" class="btn pull-right" data-toggle="modal" ><i class="icon-download-alt" ></i> Import Swagger Definition</a>
+            <a  href="#swaggerEditer" id="swaggerEditor" role="button" class="btn pull-right"  data-toggle="modal"  style="margin:0 10px" ><i class="icon-edit" ></i> Edit Swagger Definition</a>
+    </legend>
+    <% if(!api){ %>    
+    <div class="control-group">
+        <label class="control-label" for="name"><%=i18n.localize("name")%>:<span class="requiredAstrix">*</span></label>
+        <div class="controls">
+            <input type="text" class="input-xlarge required validRegistryName validInput apiNameExists noSpace" id="name" name="name" autofocus="autofocus" value=""/>
+            <a class="icon-question-sign help_popup" help_data="name_help"></a>
+            <p id="name_help" class="hide"><%=i18n.localize("nameHelpMsg")%></p>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="context"><%=i18n.localize("context")%>:<span class="requiredAstrix">*</span></label>
+        <div class="controls">
+            <input type="text" class="input-xlarge required validRegistryName validInput contextExists noSpace" id="context" name="context" onchange="getContextValue()" />
+            <a class="icon-question-sign help_popup" help_data="context_help"></a>
+            <p id="context_help" class="hide"><%=i18n.localize("contextHelpMsg")%></p>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="version"><%=i18n.localize("version")%>:<span class="requiredAstrix">*</span></label>
+        <div class="controls">
+            <input type="text" class="input required validInput noSpace" id="version" name="version" onchange="getContextValue()" value=""/>
+            <p class="help-block"><%=i18n.localize("versionsHelpMsg")%></p>
+        </div>
+    </div>
+    <% }else{ %>
+                <input type="hidden" name="name" value="<%= encode.forHtml(api.name) %>" />
+                <input type="hidden" name="version" value="<%= encode.forHtml(api.version) %>" />
+                <input type="hidden" name="provider" value="<%= encode.forHtml(api.provider) %>" />
+                <input type="hidden" name="context" value="<%= encode.forHtml(api.context) %>" />
+    <% } %>
+
+    <div class="control-group">
+        <label class="control-label" for="visibility"><%=i18n.localize("visibility")%>:</label>
+        <div class="controls">
+            <select class="select required" id="visibility" name="visibility">
+            	<% if (api) {%>
+                    <option value="public" <%if(api.visibility=="public"){%> selected="selected" <%}%>><%=i18n.localize("public")%></option>
+                    <option value="private" <%if(api.visibility=="private"){%> selected="selected" <%}%>><%=i18n.localize("private")%></option>
+                    <% if(!(enableRestrictByRoles == 'false')) {%>
+                             <option value="restricted" <%if(api.visibility=="restricted"){%> selected="selected" <%}%>><%=i18n.localize("restricted")%></option>
+                    <% } %>
+                    
+                <%} else {%>
+                    <option value="public"><%=i18n.localize("public")%></option>
+                    <option value="private"><%=i18n.localize("private")%></option>
+                    <% if(!(enableRestrictByRoles == 'false')) {%>
+                             <option value="restricted"><%=i18n.localize("restricted")%></option>
+                    <% } %> 
+                <%}%>
+            </select>
+                <a class="icon-question-sign help_popup" help_data="role_help"></a>
+                <p id="role_help" class="hide"><%=i18n.localize("roleHelpMsg")%></p>
+        </div>
+    </div>
+
+	<%if(api) { %>
+		<div class="control-group" id="rolesDiv" <%if(api.visibility!="restricted"){%>style="display: none;"<%}%>>
+                <label class="control-label" for="roles" id="rolesLabel" name="rolesLabel">
+                    <%=i18n.localize("roles")%>:<span class="requiredAstrix">*</span>
+                </label>
+                <div class="controls">
+                    <input type="text" class="input required validInput validateRoles"
+                    id="roles" name="roles"  value="<%=api.roles%>"/>
+                    <p class="help-block" id="rolesHelp"><%=i18n.localize("rolesHelpMsg")%></p>
+                </div>
+            </div>
+	<%} else {%>
+	    <div class="control-group" id="rolesDiv" style="display: none;">
+	        <label class="control-label" for="roles" id="rolesLabel" name="rolesLabel">
+	            <%=i18n.localize("roles")%>:<span class="requiredAstrix">*</span>
+	        </label>
+	        <div class="controls">
+	            <input type="text" class="input required validInput validateRoles"
+	            id="roles" name="roles"/>
+	            <p class="help-block" id="rolesHelp"><%=i18n.localize("rolesHelpMsg")%></p>
+	        </div>
+	    </div>
+	 <%}%>
+
+<% if(api){ %>
+            <div class="control-group">
+                <label class="control-label" for="imageUrl"><%=i18n.localize("thumbnail")%></label>
+                <div class="controls">
+                    <div class="pull-left">
+                         <% if(api.thumb==null){%> <div><img id="apiEditThumb" alt="" src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/api-default.png"))%>"/></div><%}else{%>
+                        <div><img id="apiEditThumb" alt="" src="<%=jagg.getRegistryPath(api.thumb)%>"/></div> <%}%>
+                        <a onclick="javascript:$('#imageUrl').toggle('slow')" style="cursor: pointer">
+                            <i class="icon-picture"></i> <%=i18n.localize("changeIcon")%>
+                        </a>
+                    </div>
+                    <div class="pull-left" id="imageUrl" style="display:none;">
+                        <div id="apiThumb-container" class="pull-left"> <input type="file" class="input-xlarge validateImageFile" name="apiThumb" /></div>
+                        <input class="pull-left btn" type="button" id="clearThumb" value="<%=i18n.localize("clear")%>"/>
+                        <div class="help-block pull-left inline-help">
+                            <ul>
+                                <li><%=i18n.localize("imgHelpMsg1")%></li>
+                                <li><%=i18n.localize("imgHelpMsg2")%></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<% }else{ %>                
+
+                <div class="control-group">
+                    <label class="control-label" for="apiThumb"><%=i18n.localize("thumbnail")%>:</label>
+                    <div class="controls">
+                        <div id="inpFile" class="pull-left">
+                            <div id="apiThumb-container"  style="display: inline;">
+                                <input type="file" class="input-xlarge" id="apiThumb" name="apiThumb"/></div>
+                            </div>
+                        <input type="button" class="btn pull-left" id="clearThumb" value="<%=i18n.localize("clear")%>"/>
+                        <div class="help-block pull-left inline-help">
+                            <ul>
+                            	<li><%=i18n.localize("imgHelpMsg1")%></li>
+                            	<li><%=i18n.localize("imgHelpMsg2")%></li>
+                              
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+<%}%>
+                <div class="control-group">
+                   <label class="control-label" for="description"><%=i18n.localize("description")%>:</label>
+                   <div class="controls">
+                       <textarea class="input-xlarge" id="description" name="description" rows="3"
+                                 style="margin-left: 0px; margin-right: 0px; width: 501px; "><%= _description %></textarea>
+                   </div>
+               </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="tags"><%=i18n.localize("tags")%>:</label>
+                    <div class="controls">
+                        <input type="text" placeholder="Add tags" class="input-xlarge validInput validRegistryName" id="tags" name="tags" value="<%= _tags %>" data-role="tagsinput"
+                        onkeyup="$(this).validate()/>
+                        <a class="icon-question-sign help_popup" help_data="tag_help"></a>
+                        <p id="tag_help" class="hide"><%=i18n.localize("tagsHelpMsg")%></p>
+                    </div>
+                </div>
+    </fieldset>
+                <div id="api_designer">
+                    <div id ="resource_details"></div>
+                </div>            
+
+
+                <input type="hidden" name="action" value="design" />
+                <input type="hidden" id="swagger" name="swagger" value="" />
+                <div class="form-actions" style="display:none" id="saveMessage">
+                    <div class="btn loadingButton">Saving API. Please wait..</div>
+                </div>
+                <div class="form-actions" id="saveButtons">
+                    <input type="submit" class="btn btn-primary" value="Save" action="design"/>
+                    <a class="btn btn-primary" id="go_to_implement">Implement</a>                     
+                    <input type="reset"  class="btn" value="<%=i18n.localize("cancel")%>" onclick="javascript:window.location.href='./'" />                    
+                </div>
+            </form>
+
+        </div>
+    </div>
+    </div>
+    </div>
+</div>
+
+<script id="designer-apidoc-template" type="text/x-handlebars-template">
+
+</script>
+
+<script id="designer-resource-template" type="text/x-handlebars-template">
+<div class="resource_body_padding">
+    <h5>Implementation Notes :</h5>
+    <a class="notes" data-path="{{resource_path}}" data-attr="notes">{{ notes }}</a>
+    <br />
+    <br />        
+    <h5>Response Content Type : <a href="#" data-path="{{resource_path}}" data-attr="content_type" class="content_type" data-type="typeahead" data-pk="1" data-title="Responce Content Type">{{ content_type }}</a></h5>
+    <br />
+    <h5>Parameters :</h5>
+    {{#if parameters}}
+    <table class="table table-condensed table-hover table-bordered">
+        <tr>
+        <th width="200px">Parameter Name</th>
+        <th>Description</th>
+        <th width="100px">Parameter Type</th>
+        <th width="100px">Data Type</th>
+        <th width="100px">Required</th>            
+        </tr>    
+    {{#each parameters}}
+        <tr>
+        <td>{{ name }}</td>
+        <td><a class="param_desc" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="description">{{ description }}</a></td>
+        <td><a class="param_paramType" data-type="select" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="paramType">{{ paramType }}</a></td>
+        <td><a class="param_type" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="type">{{ type }}</a></td>
+        <td><a class="param_required" data-type="select" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="required" data-value="{{toString required }}"></a></td>
+        </tr> 
+    {{/each}}
+    {{/if}}
+    </table>
+    <input type="text" class="parameter_name" name="parameter_name" placeholder="Parameter Name" style="padding:2px 4px"/>
+    <a class="btn btn-small add_parameter" type="button" ><i class="icon-plus-sign"></i>&nbsp;Add Parameter</a>
+</div>  
+</script>
+
+
+<script id="designer-resources-template" type="text/x-handlebars-template">
+<legend>Resources</legend>
+    <div class="resource_create">
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">URL Pattern</label>
+            <div class="controls">
+                <div class="input-prepend">
+                    <span class="add-on">/{context}/{version}/</span>
+                    <input style="width:500px" id="resource_url_pattern" type="text" placeholder="Url Pattern Ex: path/to/resource" class="resource_url_pattern"/>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for=""></label>
+            <div class="controls">
+                {{#each verbs}}
+                    <label class="checkbox inline">
+                    <input type="checkbox" value="{{ . }}" class="http_verb_select" >  {{ . }}
+                    </label>
+                {{/each}}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputResource">Resource Name</label>
+            <div class="controls">
+                <input type="text" id="inputResource" placeholder="Resource">
+            </div>
+        </div>
+        <button class="btn" type="button" id="add_resource" style="margin:0 0 10px 10px;"><i class="icon-plus-sign"></i>&nbsp;<%=i18n.localize("addNewResource")%></button>
+    </div>
+<table style="width:100%">                       
+{{#each api_doc.apis}}
+{{ setIndex @index}}
+    <tr>
+    <td colspan="4"><h4 class="resource_group_title">{{ path }}</h4></td>
+    </tr>
+    {{# each file.apis}}
+        {{ setIndex @index}}
+        {{# each operations}}
+        <tr class="resource_container" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]">
+            <td class="resource-method-td resource_expand" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]">
+                <span class=" resource-method resource-method-{{ method }}">{{ method }}</span>
+            </td>
+            <td class="resource_expand"><a class="resource-path">{{ ../path }}</a></td>    
+            <td  width="99%"><span class="operation-summary change_summary" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="summary" >{{ summary }}</span></td>
+            <td class="delete_resource_td "><a class='operation-summary delete_resource' data-path-name="{{ ../path }}" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations" data-index="{{ @index }}"><i class='icon-trash'></i></a></td>
+        </tr>
+        <tr><td colspan="4" class="resource_body hide" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]"></td></tr>
+        {{/each}}
+    {{/each}}
+
+{{/each}}
+</table>                                         
+</script>
+
+<script>
+    $(document).ready(function(){
+<% if(api){ %>
+
+        $.get( "<%= jagg.url( "/site/blocks/item-design/ajax/add.jag?" + apiUrlId ) %>&action=swagger" , function( data ) {
+            var data = jQuery.parseJSON(data);
+            var designer = APIDesigner();
+            designer.load_api_document(data);
+            $("#swaggerUpload").modal('hide');
+        });
+<% }else{%>
+        $("body").on("api_saved" , function(e){
+            var designer = APIDesigner();
+            location.href = "<%= jagg.url("/design") %>?name="+designer.saved_api.name+"&version="+designer.saved_api.version+"&provider="+designer.saved_api.provider;                
+        });    
+<% } %>    
+        $('#visibility').change(function(){
+            var visibility = $('#visibility').find(":selected").val();
+            if (visibility == "public" || visibility == "private" || visibility == "controlled"){
+                $('#rolesDiv').hide();
+            } else{
+                $('#rolesDiv').show();
+            }
+        });
+
+        $('#visibility').trigger('change');
+
+        $('#go_to_implement').click(function(e){
+            $("body").unbind("api_saved");            
+            $("body").on("api_saved" , function(e){
+                var designer = APIDesigner();
+                location.href = "<%= jagg.url("/implement")%>?name="+designer.saved_api.name+"&version="+designer.saved_api.version+"&provider="+designer.saved_api.provider;                
+            });
+            $("#design_form").submit();
+        });
+    });
+</script>    
+<% }); %>

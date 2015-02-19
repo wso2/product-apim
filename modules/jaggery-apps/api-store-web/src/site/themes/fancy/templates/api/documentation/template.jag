@@ -1,0 +1,68 @@
+<% jagg.template("api/documentation", function(inputs, outputs, jagg) {
+var provider= encode.forUriComponent(request.getParameter("provider"));
+var name= encode.forUriComponent(request.getParameter("name"));
+var version= encode.forUriComponent(request.getParameter("version"));
+var reqUrl = request.getRequestURI();
+var docUrl=jagg.getAbsoluteUrl("/site/pages/doc-viewer.jag");
+var docMappedUrl=jagg.getMappedUrl("/site/pages/doc-viewer.jag");
+var urlPrefix;
+var tenant=request_tenant;
+if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+%>
+<div class="api-documentation">
+    <%
+    var i, type, length, doc, docs, empty = true, documentations = outputs.documentations;
+    for(type in documentations) {
+        if(documentations.hasOwnProperty(type)) {
+            empty = false;
+            docs = documentations[type];
+    %>
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle"><%=type%></a>
+        </div>
+        <div class="accordion-body">
+            <div class="accordion-inner">
+                <%
+                length = docs.length;
+                for(i = 0; i < length; i++) {
+                    doc = docs[i];
+                %>
+                <div class="doc-type-shift">
+				<%if(type.toUpperCase() =="OTHER"){%>
+					<h5><%= encode.forHtml(doc.otherTypeName)%></h5>
+				<%}%>
+				</div>
+                <div class="documentation <%if(type.toUpperCase() =="OTHER"){%>doc-shift <% }%>">
+                    <h6><%=i18n.localize("name")%>:</h6>
+                    <p><%=  encode.forHtml(doc.name)%></p>
+                    <div class="documentaion-body">
+                    <% if(doc.summary && doc.summary != ""){ %>
+                    <h6><%=i18n.localize("docSum")%>:</h6><p><%=  encode.forHtml(doc.summary)%></p>
+                    <%}%>
+                    <%if(doc.sourceUrl&& doc.sourceUrl!=""){%>
+                    <p><a href="<%=doc.sourceUrl%>" target="_blank"><%=i18n.localize("viewDoc")%></a></p>
+                    <%}else if(doc.filePath && doc.filePath!=""){%>
+                    <p><a href="<%= jagg.getRegistryPath(doc.filePath)%>" target="_blank" ><%=i18n.localize("download")%></a></p>
+                    <%}else{
+                    %>
+                    <div>
+                     <%if(reqUrl.indexOf(".jag")>=0){%>
+                     <a href="doc-viewer.jag?docName=<%= encode.forUriComponent(doc.name)%>&name=<%= encode.forUriComponent(name) %>&version=<%= encode.forUriComponent(version)%>&provider=<%= encode.forUriComponent(provider)%>&<%=urlPrefix%>"  target="_blank"><%=i18n.localize("viewDoc")%></a>
+                     <%}else{%>
+                     <a href="../site/pages/doc-viewer.jag?docName=<%= encode.forUriComponent(doc.name) %>&name=<%= encode.forUriComponent(name)%>&version=<%= encode.forUriComponent(version) %>&provider=<%=encode.forUriComponent(provider)%>&<%=urlPrefix%>"  target="_blank"><%=i18n.localize("viewDoc")%></a>
+                     <%}%>
+                    </div>
+                     <%}%>
+                    </div>
+                    <hr/>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <%  } %>
+    <% } %>
+    <% if(empty) { %><p>No documents have been associated with this API so far.</p><% } %>
+</div>
+<% }); %>

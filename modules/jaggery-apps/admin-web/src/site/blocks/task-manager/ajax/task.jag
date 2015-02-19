@@ -1,0 +1,143 @@
+<%
+include("/jagg/jagg.jag");
+
+(function () {
+    var mod, obj, result, username,
+    		action = request.getParameter("action"),
+            site = require("/site/conf/site.json"),
+            msg = require("/site/conf/ui-messages.jag");
+
+    if(jagg.getUser() == null){
+        print({
+            error:true,
+            message:'timeout'
+        });
+    }else{
+
+        if (action === "getAllTasks") {
+        mod = jagg.module("taskmanager");
+        var numberOfTasks= request.getParameter("numberOfTasks");
+        var pageNumber= request.getParameter("pageNumber");
+        var filterCategory = request.getParameter("filterCategory");
+        var taskType = request.getParameter("taskType");
+        result = mod.getTasks(numberOfTasks,pageNumber,filterCategory,taskType);
+        if (result.error==true) {
+        obj = {
+                      error:true,
+                      message:result.message
+              };
+              } else {
+                    obj = {
+                        error:false,
+                        tasks:result
+                    }
+              }
+              print(obj);
+
+
+        }else if (action === "startTask") {
+         var mod = jagg.module("taskmanager");
+         var taskId = request.getParameter("taskId");
+         var taskType = request.getParameter("taskType");
+
+         var prefixEndpoint;
+         if(taskType=="subscription"){
+         prefixEndpoint= site.workflows.subscriptionWorkFlowServerURL;
+         } else if(taskType=="signup"){
+         prefixEndpoint=site.workflows.signupWorkFlowServerURL;
+         } else if(taskType=="application"){
+         prefixEndpoint=site.workflows.applicationWorkFlowServerURL;
+         } else if(taskType=="appRegistration"){
+         prefixEndpoint=site.workflows.appRegistrationWorkFlowServerURL;
+         }
+         var endpoint= prefixEndpoint+ "HumanTaskClientAPIAdmin/"
+
+         result = mod.startTask(taskId,endpoint);
+         if (result.error==true) {
+                 obj = {
+                               error:true,
+                               message:result.message
+                       };
+                       } else {
+                             obj = {
+                                 error:false
+
+                             }
+                       }
+         print(obj);
+
+        }else if (action === "completeTask") {
+         var mod = jagg.module("taskmanager");
+         var taskId = request.getParameter("taskId");
+         var taskType= request.getParameter("taskType");
+         var status= request.getParameter("status");
+         var description= request.getParameter("description");
+
+         var prefixEndpoint;
+         if(taskType=="subscription"){
+         prefixEndpoint= site.workflows.subscriptionWorkFlowServerURL;
+         } else if(taskType=="user-signup"){
+         prefixEndpoint=site.workflows.signupWorkFlowServerURL;
+         } else if(taskType=="application"){
+         prefixEndpoint=site.workflows.applicationWorkFlowServerURL;
+         } else if(taskType=="appRegistration"){
+         prefixEndpoint=site.workflows.appRegistrationWorkFlowServerURL;
+         }
+         var endpoint= prefixEndpoint+ "HumanTaskClientAPIAdmin/"
+
+         result = mod.completeTask(taskId,taskType,status,description,endpoint);
+         if (result.error==true) {
+         obj = {
+               error:true,
+               message:result.message
+               };
+               } else {
+                                     obj = {
+                                         error:false
+
+                                     }
+                               }
+                 print(obj);
+
+
+
+        }else if (action === "assignTask") {
+                 var mod = jagg.module("taskmanager");
+                 var taskId = request.getParameter("taskId");
+                 var taskType = request.getParameter("taskType");
+
+                 var prefixEndpoint;
+                 if(taskType=="subscription"){
+                 prefixEndpoint= site.workflows.subscriptionWorkFlowServerURL;
+                 } else if(taskType=="signup"){
+                 prefixEndpoint=site.workflows.signupWorkFlowServerURL;
+                 } else if(taskType=="application"){
+                 prefixEndpoint=site.workflows.applicationWorkFlowServerURL;
+                 } else if(taskType=="appRegistration"){
+                 prefixEndpoint=site.workflows.appRegistrationWorkFlowServerURL;
+                 }
+                 var endpoint= prefixEndpoint+ "HumanTaskClientAPIAdmin/"
+                 result = mod.assignTask(taskId,endpoint);
+                 if (result.error==true) {
+                         obj = {
+                                       error:true,
+                                       message:result.message
+                               };
+                               } else {
+                                     obj = {
+                                         error:false
+
+                                     }
+                               }
+                 print(obj);
+
+        }
+        else {
+            print({
+                      error:true,
+                      message:msg.error.invalidAction(action)
+                  });
+        }
+    }
+}());
+%>

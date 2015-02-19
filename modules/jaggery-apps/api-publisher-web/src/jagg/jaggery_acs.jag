@@ -1,0 +1,103 @@
+<html>
+    <body>
+    Waiting for responses from identity server and validate response and forward to requested URI.
+        <%
+(function () {
+    include("jagg.jag");
+    var site = require("/site/conf/site.json");
+    var log = new Log();
+    var samlResponse = request.getParameter("SAMLResponse");
+    var sessionId = session.getId();
+    var samlRequest = request.getParameter("SAMLRequest");
+    // create a sso relying party js object
+    var security = require("sso");
+    var ssoRelyingParty = new security.SSORelyingParty(site.ssoConfiguration.issuer);
+    var isLogoutResponse = false;
+    var isLogoutRequest = false;
+
+    // if saml response is not a log out response
+    if (samlResponse != null) {
+        isLogoutResponse = ssoRelyingParty.isLogoutResponse(samlResponse);
+        if (!Boolean(isLogoutResponse)) {
+            // relay state value should be a valid value, this value is mapped with request uri.
+            var relayState = request.getParameter("RelayState");
+            var requestedURI = ssoRelyingParty.getRelayStateProperty(relayState);
+            if (requestedURI == null) {
+                log.error("Relaystate value is invalid.");
+                response.sendRedirect("../error.jag");
+                return;
+            }
+
+            // validating the signature
+            if(site.ssoConfiguration.responseSigningEnabled === 'true'){
+                var fullUserName = ssoRelyingParty.getSAMLResponseNameId(samlResponse);
+                var MultitenantConstants = Packages.org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+                var MultitenantUtils = Packages.org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+                if(fullUserName != null){
+                    var domainName = MultitenantUtils.getTenantDomain(fullUserName);
+                    if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME !== domainName) {
+                        jagg.module("manager").loadTenantRegistry(domainName);
+                        jagg.module("manager").loadTenantAxisConfiguration(domainName);
+                    }
+                }
+                var isSignatureValid = ssoRelyingParty.validateSignature(samlResponse);
+                if (!Boolean(isSignatureValid)) {
+                    log.error("SAML response signature is verification failed.");
+                    response.sendRedirect("../error.jag");
+                    return;
+                }
+            }
+
+            ssoRelyingParty.setSessionAuthenticated(sessionId, samlResponse);
+            ssoRelyingParty.addSession(session);
+            session.put("showLogin", "false");
+            var api = jagg.module("api");
+
+            //update permission cache before validate user
+            api.updatePermissionCache(ssoRelyingParty.getLoggedInUser(sessionId));
+
+            var isUserCreatePermitted = api.hasUserPermissions(ssoRelyingParty.getLoggedInUser(sessionId));
+            //First check whether user is having sufficent permissions [create/publish]
+            if (isUserCreatePermitted.permitted) {
+                jagg.setUser({username: ssoRelyingParty.getLoggedInUser(sessionId), cookie: null});
+                session.put("LOGGED_IN_USER", ssoRelyingParty.getLoggedInUser(sessionId));
+            }  else {
+                response.sendRedirect("../site/pages/error-pages/401.html");
+                return;
+            }
+            var isCreatePermitted = api.hasCreatePermission();
+            var isPublishPermitted = api.hasPublishPermission();
+            var showStoreURL=api.showStoreURL();
+	        var hasTierPermission = api.hasManageTierPermission();
+            jagg.setCreatePermitted(isCreatePermitted);
+            jagg.setPublishPermitted(isPublishPermitted);
+            jagg.setManageTierPermitted(hasTierPermission);
+            var showURL=false;
+            if(showStoreURL){
+            showURL=showStoreURL.permitted;
+            }
+            jagg.setShowStoreURL(showURL);
+            response.sendRedirect(requestedURI);
+            return;
+        } else {
+            // if the saml response is log out request from IDP, we log out from web app.
+            ssoRelyingParty.invalidateSessionBySessionId(sessionId);
+            response.sendRedirect("../");
+            return;
+        }
+
+    }
+
+    // if saml request is a log out request, then invalidate session.
+    if (samlRequest != null) {
+        isLogoutRequest = ssoRelyingParty.isLogoutRequest(samlRequest);
+        if (Boolean(isLogoutRequest)) {
+            ssoRelyingParty.invalidateSessionBySAMLResponse(samlRequest);
+
+        }
+    }
+
+}());
+%>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<% jagg.template("api/api-listing-tag-wise", function(inputs, outputs, jagg) { %>
+
+    <%
+        var i, tag, tags = outputs.tags, length = tags.length;
+        var urlPrefix;
+        var tenant=request_tenant;
+        if(tenant!=null) {urlPrefix="&tenant="+tenant;}else{urlPrefix='';}
+    %>
+<%
+var tabToSelect = "";
+if(tags.length != 0){
+    tabToSelect = tags[0].name;
+}
+if(request.getParameter("selected-tab") != null){
+    tabToSelect = request.getParameter("selected-tab");
+}
+jagg.includeBlock("search/api-search", {tag:tabToSelect});
+
+%>
+
+<div class="content-section shadow-up">
+<div class="content-data">
+    <h2>APIs</h2>
+     <div class="thumbnail-custom">
+                    <ul class="nav nav-tabs main-tabs" id="topTab">
+                        <%
+                        for(i = 0; i < length; i++) {
+                            tag = tags[i];
+                            path = jagg.getMappedUrl("/site/pages/list-apis.jag") + "?tag=" + tag.name+"&"+urlPrefix;
+                            if(tag.name.split(site.tagGroupKey).length == 2){
+
+
+                            var tagName = tag.name.split(site.tagGroupKey)[0];
+                            %>
+                            <li <% if(request.getParameter("selected-tab") == null && i==0){%>class="active"<% } %>><a href="#<%=tag.name%>" id="<%=tag.name%>_tab" data-realname="<%=tagName%>" ><%=tagName%></a></li>
+                            <%
+                            }
+                        }
+                        %>
+                    </ul>
+
+                    <div id="topTabContent" class="tab-content tab-pane">
+                     <%
+                     for(i = 0; i < length; i++) {
+                         tag = tags[i];
+                         path = jagg.getMappedUrl("/site/pages/list-apis.jag") + "?tag=" + tag.name+"&"+urlPrefix;
+                         if(tag.name.split(site.tagGroupKey).length == 2){
+                         %>
+                         <div class="tabs" id="<%=tag.name%>" <% if(i!=0){ %>style="display:none;"<% } %> > <% jagg.includeBlock("api/api-listing-all",{tag:tag.name}); %></div>
+                         <%
+                         }
+                     }
+                     %>
+
+                    </div>
+                </div>
+    </div>
+</div>
+
+  <script>
+      /* The following code handle the click for the tabs. */
+      $('#topTab li a').click(function(){
+          $('#topTabContent div.tabs').hide();
+          $($(this).attr('href')).show();
+          $('li',$(this).parent().parent()).removeClass('active');
+          $(this).parent().addClass('active');
+          $.cookie('active-tab',$(this).attr('href'),{ path: '/foo' });
+          $('#tagBreadcrumbUrl').html($(this).attr('data-realname'));
+      });
+
+      $(document).ready(function(){
+        <% if(request.getParameter("selected-tab") != null){%>
+            var activeTab = '#'+'<%= encode.forJavaScript(request.getParameter("selected-tab"))%>';
+            $('#topTabContent div.tabs').hide();
+            $(activeTab).show();
+            $('li',$(activeTab+'_tab').parent()).removeClass('active');
+            $(activeTab+'_tab').parent().addClass('active');
+        <% } %>
+      });
+  </script>
+
+<% }); %>

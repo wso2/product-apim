@@ -1,0 +1,23 @@
+<%
+var removeAPI = function (api) {
+    var success, log = new Log(),
+            provider = jagg.module("manager").getAPIProviderObj();
+    try {
+        provider.removeAPI(api);
+        if (log.isDebugEnabled()) {
+            log.debug("addAPI : " + api.name + "-" + api.version);
+        }
+        return {
+            error:false
+        };
+
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:true,
+            message:e.message.split("Exception:")[1]
+        };
+
+    }
+};
+%>

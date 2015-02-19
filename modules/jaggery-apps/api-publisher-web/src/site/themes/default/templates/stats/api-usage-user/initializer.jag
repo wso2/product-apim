@@ -1,0 +1,16 @@
+<%
+jagg.initializer("stats/api-usage-user", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("stats", "dojo", "templates/utils/dojo-release-1.8.3/dojo/dojo.js");
+        jagg.addHeaderJS("stats", "jplot", "templates/stats/api-usage-user/js/stats.js");
+    }
+});
+%>
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+<%
+jagg.initializer("forum/forum-list", {
+
+    preInitialize:function () {
+    	jagg.addHeaderCSS("forum/forum-list", "fontawsome", "templates/forum/css/font-awesome.min.css");
+    	jagg.addHeaderCSS("forum/forum-list", "summernote-css", "templates/forum/css/summernote.css");
+    	
+    	//jagg.addHeaderJS("forum/forum-list", "handlebars", "templates/forum/js/handlebars-v1.3.0.js"); 
+    	jagg.addHeaderJS("forum/forum-list", "summernote", "templates/forum/js/summernote.min.js");
+    	jagg.addFooterJS("forum/forum-list", "form-list", "templates/forum/js/forum-list.js");
+    	jagg.addFooterJS("forum/forum-list", "paginator", "templates/forum/js/bootstrap-paginator.min.js");
+
+    }
+});
+%>

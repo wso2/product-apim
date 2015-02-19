@@ -1,0 +1,25 @@
+<%
+var validatePermission = function (encryptedHeader) {
+    var log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        var result = store.validateWFPermission(encryptedHeader);
+        if (log.isDebugEnabled()) {
+            log.debug("Workflow : User Authorized");
+        }
+        return {
+            error:result.error,
+            statusCode:result.statusCode,
+            message:result.message
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:result.error,
+            statusCode:result.statusCode,
+            message:result.message
+        };
+    }
+};
+%>

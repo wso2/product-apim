@@ -1,0 +1,56 @@
+<%
+function getProviderAPIUsage(subscriberName,period) {
+        var usage = [];
+        var usageout = [];
+        var log = new Log();
+        var store = jagg.module("manager").getAPIStoreObj();
+        try {
+            if(period != null && subscriberName != null) {
+                 usage = store.getAPIUsageforSubscriber(subscriberName,period);
+            }
+       
+        if (log.isDebugEnabled()) {
+        log.debug("getProviderAPIUsage for : " + server);
+        }
+if (usage == null) {
+        return {
+        error:true
+        };
+
+} else {
+        for (var k = 0; k < usage.length; k++) {
+        var elem = {
+        apiName:usage[k].api,
+        version:usage[k].version,
+        count:usage[k].count,
+        costPerAPI:usage[k].costPerAPI,
+        cost:usage[k].cost
+        };
+usageout.push(elem);
+
+
+}
+return {
+        error:false,
+        usage:usageout
+        };
+}
+} catch (e) {
+        log.error(e.message);
+        return {
+        error:e,
+        usage:null
+
+        };
+}
+}
+
+function isBillingEnabled() {
+  var store = jagg.module("manager").getAPIStoreObj();
+  var config = store.isBillingEnabled();
+  return {
+  error:false,
+  isBillingEnabled:config
+  }
+}
+%>

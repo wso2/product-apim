@@ -1,0 +1,51 @@
+<% jagg.template("item-info", function(inputs, outputs, jagg) { %>
+<% var api = outputs.api;
+   var permitted=outputs.isPermitted;
+   var isCreatePermitted=outputs.isCreatePermitted;
+if(api != null) { 
+    var apiUrlId = "name="+encode.forHtml(api.name)+"&version="+encode.forHtml(api.version)+"&provider="+encode.forHtml(api.provider);   
+%>
+<link type="text/css" rel="stylesheet" href="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/utils/dojo-release-1.8.3/dijit/themes/claro/claro.css"))%>"  media="screen"/>
+<div id="item-info">
+    <div class="title-section">
+     <h2><%= encode.forHtml(api.name)%> - <%= encode.forHtml(api.version)%>&nbsp;<a class="api_design_edit" <%if(!isCreatePermitted){%> style="display:none;"<%}%> href="<%= jagg.url("/design")%>?<%= apiUrlId %>"><i class="icon-edit"></i> Edit</a></h2>
+    </div>
+    <div class="content-section shadow-up">
+        <div class="content-data">
+            <input type="hidden" id="infoAPIVersion" value="<%=api.version%>"/>
+            <input type="hidden" id="infoAPIName" value="<%=api.name%>"/>
+            <span id="spanProvider" style="display:none;"><%=api.provider%></span>
+            <ul id="tab" class="nav nav-tabs tabs">
+                <li class="active"><a href="#view" data-toggle="tab" id="viewLink"><i class=" icon-list-alt"></i> <%=i18n.localize("overview")%></a></li>
+                <% //<li><a href="#edit" data-toggle="tab" id="editLink" <%if(!isCreatePermitted){%> style="display:none;"<%}%>><i class="icon-edit"></i> <%=i18n.localize("edit")%></a></li>*/%>
+                <li><a href="#lifecycles" data-toggle="tab" id="lifecyclesLink"  <%if(!permitted){%> style="display:none;"<%}%>><i class="icon-lifecycle"></i> <%=i18n.localize("lifeCycle")%></a></li>
+                <li><a href="#versions" data-toggle="tab" id="versionsLink"><i class="icon-th-list"></i> <%=i18n.localize("versions")%></a></li>
+                <li><a href="#docs" data-toggle="tab" id="docsLink"><i class="icon-file"></i> <%=i18n.localize("docs")%></a></li>
+                <li><a href="#users" data-toggle="tab" id="usersLink"><i class="icon-user"></i><%=i18n.localize("users")%> </a></li>
+                <% if (api.status != "PROTOTYPED") {%>
+                <%if(api.apiStores!=null){%>
+                <li><a href="#external" data-toggle="tab" id="usersLink"><i class="icon-share-alt"></i><%=i18n.localize("externalAPIStores")%> </a></li>                
+                <%}%>
+                <%}%>
+            </ul>
+            <div id="myTabContent" class="tab-content">
+                <div class="tab-pane fade active in" id="view"><% jagg.includeBlock("overview", {api:api,isCreatePermitted:isCreatePermitted}); %></div>
+                <% //<div class="tab-pane fade" id="edit"><% jagg.includeBlock("item-edit", {api:api}); %></div> %>
+                <div class="tab-pane fade" id="lifecycles"><% jagg.includeBlock("life-cycles", {api:api,isPublishPermitted:permitted}); %></div>
+                <div class="tab-pane fade" id="versions"><%jagg.includeBlock("usage",{api:api}); %></div>
+                <div class="tab-pane fade" id="docs"><%jagg.includeBlock("documentation", {api:api,isCreatePermitted:isCreatePermitted}); %></div>
+                <div class="tab-pane fade" id="users"><%jagg.includeBlock("users-api", {api:api}); %></div>
+                <%if(api.apiStores!=null){%>
+                <div class="tab-pane fade" id="external"><%jagg.includeBlock("item-external", {api:api}); %></div>
+                <%}%>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% } else { %>
+    <div class="alert alert-info">
+        <div style="padding-bottom:10px"><%=i18n.localize("apiUnavailable")%></div>
+    </div>    
+<% } %> 
+<% }); %>

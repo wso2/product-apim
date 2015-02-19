@@ -1,0 +1,23 @@
+<%
+jagg.block("breadcumb", {
+    initializer:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "tenant":null
+        }
+    },
+    getOutputs:function (inputs) {
+
+    var tenant=request.getParameter("tenant");
+
+
+        return {
+            "tenant":tenant
+        }
+    }
+
+
+});
+%>

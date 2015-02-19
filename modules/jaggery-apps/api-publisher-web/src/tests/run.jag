@@ -1,0 +1,12 @@
+<%
+    var cases = require("tests.json");
+    var i, length = cases.length;
+    for(i = 0; i < length; i++) {
+        var tests = require(cases[i]);
+        for(var test in tests) {
+            if(tests.hasOwnProperty(test)) {
+                tests[test]();
+            }
+        }
+    }
+%>

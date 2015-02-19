@@ -1,0 +1,156 @@
+<%
+var getAuthServerURL = function() {
+    return getAPIStoreObj().getAuthServerURL();
+};
+
+var getHTTPsURL = function() {
+    return getAPIStoreObj().getHTTPsURL(request.getRequestURL());
+};
+
+var getHTTPURL = function() {
+    return getAPIStoreObj().getHTTPURL();
+};
+
+var getHostname = function() {
+    return getAPIStoreObj().getHostName();
+};
+
+var getAPIPublisherURL = function() {
+    var result,log=new Log();
+    var store = getAPIStoreObj();
+    try {
+    result = store.getAPIPublisherURL();
+    if (log.isDebugEnabled()) {
+    log.debug("getAPIPublisherURL : ");
+    }
+    return {
+    error:false,
+    url:result
+    };
+    } catch (e) {
+    return {
+    error:true,
+    message:e.message.split(":")[1]
+    };
+    }
+
+};
+
+var getServer = function() {
+    return {
+        server : "localhost",
+        port : "9443"
+    };
+};
+
+var isSelfSignupEnabled = function(){
+	return 	getAPIStoreObj().isSelfSignupEnabled();
+};
+
+var isSelfSignupEnabledForTenantUser = function(tenantDomain){
+    var log = new Log();
+    try {
+
+        if (tenantDomain == null) {
+             return  getAPIStoreObj().isSelfSignupEnabledForTenant("carbon.super");
+        } else {
+             return  getAPIStoreObj().isSelfSignupEnabledForTenant(tenantDomain);
+        }
+    } catch (e) {
+        log.error(e.message);
+        return false;
+    }
+    
+    
+};
+
+var getAdminCookie = function() {
+    //TODO : this should be set in the Context during the deployment
+
+};
+
+var getAPIStoreObj = function() {
+
+    var tenantDomain = jagg.getTenantDomain();
+    var user = jagg.getUser();
+    var store;
+    if (user == null) {
+        store = require('apistore');
+        var storeHostObj = new store.APIStore();
+        if(tenantDomain != null && tenantDomain != ""){
+            storeHostObj.loadRegistryOfTenant(tenantDomain);
+        }
+        return storeHostObj;
+    } else {
+        store = require('apistore');
+        return new store.APIStore(user.username);
+    }
+};
+
+var loadTenantRegistry = function (tenantDomain) {
+    try {
+        if (tenantDomain != null && tenantDomain != "") {
+            getAPIStoreObj().loadRegistryOfTenant(tenantDomain);
+            return
+            {
+                error:false
+            }
+            ;
+        }
+    } catch (e) {
+        return {
+            error:true,
+            message:e.message
+        };
+    }    
+};
+
+var loadTenantAxisConfiguration = function (tenantDomain) {
+ 
+    try {
+        if (tenantDomain != null && tenantDomain != "") {  
+             
+           getAPIStoreObj().loadAxisConfigOfTenant(String(tenantDomain));
+            return
+            {
+                error:false
+            }
+            ;
+        }
+    } catch (e) {
+        return {
+            error:true,
+            message:e.message
+        };
+    }    
+};
+
+var getActiveTenantDomains=function(){
+    var tenantDomains,
+    		log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+	try {
+		tenantDomains = store.getActiveTenantDomains();
+        tenantDomains = parse(stringify(tenantDomains));
+        if (log.isDebugEnabled()) {
+            log.debug("isTenantMode : " + stringify(api));
+        }
+
+        return {
+            error:false,
+            tenantDomains:tenantDomains
+        };
+    } catch (e) {
+        //log.error(e.message);
+        return {
+            error:true,
+            tenantDomains:null,
+            message:e.message
+        };
+    }
+
+};
+
+
+%>

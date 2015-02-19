@@ -1,0 +1,8 @@
+<%
+jagg.block("menu/login", {
+    initializer:function (data) {
+
+    }
+
+});
+%>

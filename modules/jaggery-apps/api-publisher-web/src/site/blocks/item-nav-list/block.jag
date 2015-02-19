@@ -1,0 +1,13 @@
+<%
+jagg.block("item-nav-list", {
+    initializer:function (data) {
+
+    },
+    getInputs:function () {
+        return {
+            "api":null
+        }
+    }
+
+});
+%>

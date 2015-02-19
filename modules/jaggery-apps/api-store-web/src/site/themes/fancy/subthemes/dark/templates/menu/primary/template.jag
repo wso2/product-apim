@@ -1,0 +1,46 @@
+<% jagg.template("menu/primary", function(inputs, outputs, jagg) { %>
+      <div class="container-fluid">
+          <div class="row-fluid">
+              <div class="span12 logo-section">
+                                <%var tenant=request_tenant;
+                                               var urlPrefix;
+                                               if(tenant!=null) {urlPrefix="tenant="+tenant;}else{urlPrefix='';}%>
+                                             <a onclick="jagg.sessionAwareJS({redirect:'<%=jagg.getMappedUrl("/site/pages/index.jag")%>?<%=urlPrefix%>',e:event})" href="<%=jagg.getMappedUrl("/site/pages/index.jag")%>?<%=urlPrefix%>" class="brand"><img src="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("images/logo.png"))%>" alt="API Store"></a>
+                            </div>
+          </div>
+      </div>
+      <!--START Header menu-->
+
+  <div class="navbar main-menu">
+      <div class="navbar-inner main-menu-navbar">
+
+          <ul class="nav orderFix">
+              <%
+              var i, link, links = outputs.links, length = links.length;
+              for(i = 0; i < length; i++) {
+                  link = links[i];
+              %>
+              <li <%=(link.active ? 'class="active"' : '')%>>
+
+                  <a title="<%=link.tooltip%>" href="<%=link.url%>"<%=(link.classes ? ' class="' + link.classes + '"' : "")%>>
+                      <%=link.title%>
+                  </a>
+              </li>
+              <% } %>
+              <li class="dropdown tryit-menu-item">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                      Tools <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <a href="<%=jagg.getAbsoluteUrl("/site/pages/rest-client.jag")%>?<%=urlPrefix%>">RESTClient</a></li>
+                  </ul>
+              </li>
+
+                <% jagg.includeBlock("user/login", null); %>
+
+
+      </div>
+  </div>
+
+      <!--END Header menu-->
+<% }); %>

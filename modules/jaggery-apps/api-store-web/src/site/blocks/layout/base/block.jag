@@ -1,0 +1,37 @@
+<%
+jagg.block("layout/base", {
+
+    initialize:function (data) {
+
+    },
+
+    getInputs:function () {
+        return {
+            title:null,
+            header:null,
+            top:null,
+            left:null,
+            middle:null,
+            right:null,
+            bottom:null,
+            footer:null
+        };
+    },
+
+    getOutputs:function (inputs) {
+        return inputs;
+    },
+
+    getInputBlocks:function () {
+        return [
+            "header",
+            "top",
+            "left",
+            "middle",
+            "right",
+            "bottom",
+            "footer"
+        ];
+    }
+});
+%>

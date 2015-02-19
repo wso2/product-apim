@@ -21,14 +21,13 @@
 
     <parent>
         <groupId>org.wso2.am</groupId>
-    	<artifactId>am-styles-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <artifactId>am-styles-parent</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.stratos.apimgt.styles</artifactId>
-    <version>${stratos.version}</version>
     <packaging>bundle</packaging>
     <name>WSO2 Stratos  API Manager - UI styles</name>
     <url>http://wso2.org</url>
@@ -47,7 +46,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -69,7 +67,7 @@
     </build>
 
     <dependencies>
-        
+
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.ui</artifactId>
@@ -108,7 +106,6 @@
         <dependency>
             <groupId>org.eclipse.equinox</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
-            <version>${javax.servlet.jsp.version}</version>
         </dependency>
     </dependencies>
 </project>

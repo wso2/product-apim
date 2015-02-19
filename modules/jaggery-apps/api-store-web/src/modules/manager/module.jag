@@ -1,0 +1,44 @@
+<%
+jagg.module("manager", {
+
+    getServer:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getServer.apply(this, arguments);
+     },
+
+    getAuthServerURL:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getAuthServerURL.apply(this, arguments);
+     },
+    getHTTPsURL:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getHTTPsURL.apply(this, arguments);
+    },
+    getHTTPURL:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getHTTPURL.apply(this, arguments);
+    },
+    getAPIPublisherURL:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getAPIPublisherURL.apply(this, arguments);
+    },
+    isSelfSignupEnabled:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").isSelfSignupEnabled.apply(this, arguments);
+    },
+    isSelfSignupEnabledForTenantUser:function (tenantDomain) {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").isSelfSignupEnabledForTenantUser.apply(this, arguments);
+    },
+    getAPIStoreObj:function () {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getAPIStoreObj.apply(this, arguments);
+     },
+
+    loadTenantRegistry:function (tenantDomain) {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").loadTenantRegistry.apply(this, arguments);
+     },
+     loadTenantAxisConfiguration:function (tenantDomain) {
+        return jagg.require(jagg.getModulesDir() + "manager/manager.jag").loadTenantAxisConfiguration.apply(this, arguments);
+     },
+     invokeService:function () {
+       return jagg.require(jagg.getModulesDir() + "manager/client.jag").invokeService.apply(this, arguments);
+     },
+     getActiveTenantDomains:function () {
+       return jagg.require(jagg.getModulesDir() + "manager/manager.jag").getActiveTenantDomains.apply(this, arguments);
+     }
+
+ });
+ %>

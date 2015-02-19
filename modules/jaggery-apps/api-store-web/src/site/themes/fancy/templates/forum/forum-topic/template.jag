@@ -1,0 +1,159 @@
+<% jagg.template("forum/forum-topic", function(inputs, outputs, jagg) {
+
+  var stars = require(jagg.getThemeFile("utils/ratings/star-generator.js"));
+
+%>
+
+<div id="forum_topic_details_page" class="forum-page">
+
+  <div id="forum_topic_title_bar" class="title-section">
+  </div>
+
+  <div class="content-section shadow-up">
+    <div id="forum_topic_content" class="content-data"></div>
+  </div>
+  
+
+</div>
+
+<!-- STRAT : Handlebars templates -->
+
+<script id="fourm_topic_title_template" type="text/x-handlebars-template">
+  
+  <%if(jagg.getUser()){%>
+    <i id="forum_edit_topic_icon" class="icon-edit pull-right" data-id="{{ topicId }}"></i>
+  <%}%>
+
+  <h2 id="forum_topic_subject_lable">{{ replies.topic.0.subject}}</h2>
+
+  <div>
+    <input id="forum_topic_subject_edit_input" type="text" class="form-control x-large span12" style="display: none" value="{{ replies.topic.0.subject}}">
+    </input>
+  </div>
+
+</script>
+
+
+<script id="forum_topic_details_template" type="text/x-handlebars-template">
+        
+  <div id="forum_topic_view_block">
+    <div id="forum_topic_description" class="forum-description">
+      {{# html_sanitize replies.topic.0.description }}{{/html_sanitize}}
+    </div>
+  </div>
+
+  <div id="forum_topic_edit_block" style="display: none">
+
+    <div id="forum_topic_description_edit_block" class="topic_description_edit">
+      <div id="forum_topic_description_edit_editor" data-id="{{ replies.topic.0.topicId}}"></div>
+      <div class="edit-topic-form-actions">
+        <a id="forum_save_updated_topic_button" class="btn btn-primary">
+          <%=i18n.localize( 'save')%>
+        </a>
+        <a id="forum_cancel_topic_edit_button" class="btn">
+          <%=i18n.localize( 'cancel')%>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="forum_topic_rating_block">
+    <table cellspacing="0" cellpadding="0" class="table">
+      <tbody>
+        <tr>
+          <td class="rating-star">
+            <div class="average-rating">
+              <%=inputs.averageRating%>
+            </div>
+          </td>
+          <td colspan="1">
+            <div class="star-ratings">
+              <%if(jagg.getUser()){ print(stars.getDynamicStars(parseInt(inputs.userRating))); }else{ print(stars.getStaticStars(parseInt(jagg.getSiteContext(), inputs.userRating, jagg.getUserTheme().base))); }%>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="forum_replies_block">
+  </div>
+
+</script>
+
+<script id="forum_replies_list_template" type="text/x-handlebars-template">
+        
+  <div id="forum_replies_list" style="display: none;">
+    <div class="pull-left replies-list-title" style="vertical-align:middle;"><label><h4><%=i18n.localize('forum.replies')%></h4></label></div>
+    <div id="forum_replies_paginator" class="span6 pull-right"></div>
+    <div class="clearfix">
+    <table class="table table-striped table-bordered forum-replies">
+      <tbody id="reply_list_tbody">
+        <tr id="forum_reply_added_block" style="display: none;">
+          <td id="forum_reply_info_temp" class="span3"></td>
+          <td id="forum_reply_content_temp"></td>
+        </tr>
+
+        {{#each replies.replies}}
+
+        <tr>
+          <td class="span3">
+            {{ date }}
+            <br/>{{ timeStamp }}
+            <br/>
+            <%=i18n.localize( 'forum.by')%> {{ createdBy }}
+            <br/>
+
+            <%if(jagg.getUser()){%>
+              <i class="icon-trash forum_delete_reply_icon" data-id="{{ replyId }}" />
+              <i class="icon-edit forum_edit_reply_icon" data-id="{{ replyId }}" />
+            <%}%>
+          </td>
+          <td id="forum_reply_content_cell_{{ replyId }}" data-id="{{ replyId }}">
+            {{# html_sanitize  reply }}{{/ html_sanitize }}
+          </td>
+          <td id="forum_reply_edit_cell_{{ replyId }}" class="forum-reply-edit-block" style="display: none;" data-id="{{ replyId }}">
+            <div id="forum_reply_edit_editor_{{ replyId }}" data-id="{{ replyId }}"></div>
+            <div class="forum-reply-actions">
+              <a class="btn btn-primary forum_save_updated_reply_button" data-id="{{ replyId }}">
+                <%=i18n.localize( 'save')%>
+              </a>
+              <a class="btn forum_cancel_reply_edit_button" data-id="{{ replyId }}">
+                <%=i18n.localize( 'cancel')%>
+              </a>
+            </div>
+          </td>
+
+        </tr>
+        {{/each}}
+
+      </tbody>
+    </table>  
+    <br />
+    <div><!-- clearfix -->
+  </div>
+
+  <%if(jagg.getUser()){%>
+  
+  <form class="form-horizontal forum_form add-reply" >
+    <div>
+      <label><strong><h4><%=i18n.localize('forum.addReply.title')%></h4></strong></label>
+    </div>
+    <div id="forum_reply_editor"></div>
+    <a id="forum_add_reply_button" class="btn btn-primary"  ><%=i18n.localize('forum.addReply.replyToThread')%></a>
+  </form>
+
+  <%}%>
+
+</script>
+
+<!-- END : Handlebars templates -->
+
+<!-- TODO : Revice this temp code -->
+<script>
+	var context = '<%=jagg.getSiteContext()%>',theme = '<%=jagg.getUserTheme().base%>', topicId = '<%=inputs.topicId%>';
+  var existingRating = 3;
+</script>
+
+<% }); %>

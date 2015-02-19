@@ -1,0 +1,39 @@
+<% jagg.template("breadcumb", function(inputs, outputs, jagg) { %>
+            <%
+                var reqUrl = request.getRequestURI();
+                var listUrl=jagg.getAbsoluteUrl("/site/pages/index.jag");
+                var listMappedUrl=jagg.getMappedUrl("/site/pages/index.jag");
+
+            %>
+            <ul class="breadcrumb">
+                <% if(request.getParameter("task")==null|| request.getParameter("task")=="signup"){%>
+                    <li>
+                    <%=i18n.localize("tasks")%> <span class="divider">/</span>
+                    </li>
+                    <li>
+                        <a href="<%=listMappedUrl%>" onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event})"><%=i18n.localize("userCreation")%></a>
+                    </li>
+                <% } %>
+                <% if(request.getParameter("task")=="subscription"){%>
+                <li>
+                    <%=i18n.localize("tasks")%> <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="<%=listMappedUrl%>?tasks=subscription" onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event})"><%=i18n.localize("subscriptionCreation")%></a>
+                </li>
+                <% } %>
+                <% if(request.getParameter("task")=="application"){%>
+                <li>
+                <%=i18n.localize("tasks")%> <span class="divider">/</span>
+                </li>
+                <li>
+                <a href="<%=listMappedUrl%>?tasks=application" onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event})"><%=i18n.localize("subscriptionCreation")%></a>
+                </li>
+                <% } %>
+
+
+            </ul>
+
+
+
+<% }); %>

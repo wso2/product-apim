@@ -1,0 +1,227 @@
+<%
+log = new Log(),
+apiStore = jagg.module("manager").getAPIStoreObj(),
+user = jagg.getUser();
+
+
+function getFirstAccessTime(providerName, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getFirstAccessTime(providerName, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getProviderAPIFirstAccessTime for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+
+function getAppApiCallType(subscriberName,from,to, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getAppApiCallType(subscriberName,from,to, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getAppApiCallType for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+
+
+
+
+function getPerAppAPIFaultCount(subscriberName,from,to, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getPerAppAPIFaultCount(subscriberName,from,to, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getPerAppAPIFaultCount for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+
+
+function getProviderAPIUsage(subscriberName,from,to, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getProviderAPIUsage(subscriberName,from,to, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getProviderAPIUsage for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+function getTopAppUsers(subscriberName,from,to, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getTopAppUsers(subscriberName,from,to, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getTopAppUsers for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+function getPerAppSubscribers(subscriberName,from,to, server) {
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.getPerAppSubscribers(subscriberName,from,to, server);
+        if (log.isDebugEnabled()) {
+            log.debug("getPerAppSubscribers for : " + server);
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+function isDataPublishingEnabled(providerName, server) {
+    
+    var usage = [];
+    var usageout = [];
+    try {
+        usage = apiStore.isDataPublishingEnabled();
+        if (log.isDebugEnabled()) {
+            log.debug("isDataPublishingEnabled check");
+        }
+        if (usage == null) {
+            return {
+                error:true
+            };
+
+        } else {
+
+            return {
+                error:false,
+                usage:usage
+            };
+        }
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            usage:null
+
+        };
+    }
+}
+
+
+
+%>

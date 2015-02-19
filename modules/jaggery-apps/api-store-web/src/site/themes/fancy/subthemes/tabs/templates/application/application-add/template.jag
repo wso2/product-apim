@@ -1,0 +1,95 @@
+<% jagg.template("application/application-add", function(inputs, outputs, jagg) {
+ var apiPath = "";
+ var goBack = "";
+ if(session.get('apiPath') != null){
+        apiPath = session.get('apiPath');
+ }
+ if(request.getParameter('goBack') != null){
+        goBack = request.getParameter('goBack');
+ }
+ var mod = jagg.module("manager");
+ var httpsUrl= mod.getHTTPsURL();
+ var i=0, tiers = outputs.tiers;
+ %>
+ <script>
+ var apiViewUrl = '<%= jagg.url('/apis/info')%>';
+ </script>
+<div class="content-section shadow-up">
+<div class="content-data">
+    <h2><%=i18n.localize("applications")%></h2>
+
+    <form id="appAddForm">
+        <h3><%=i18n.localize("addApp")%></h3>
+    <div class="application-add well form-horizontal">
+
+        <div class="control-group">
+            <label class="control-label" for="application-name"><%=i18n.localize("name")%></label>
+            <div class="controls">
+
+                <div>
+                    <input type="text" class="required validateSpecialChars validName" maxlength="70" id="application-name" autofocus="autofocus"/></div>
+                <input type="hidden" id="apiPath" value="<%=apiPath%>"/>
+                <input type="hidden" id="goBack" value="<%= goBack%>"/>
+
+
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="appTier" style="padding-top: 5px;"><%=i18n.localize("throttleByTier")%></label>
+            <div class="controls">
+                <div>
+                    <select id="appTier" name="appTier" onChange="tierChanged(this)">
+                      <%
+                      var tierDescriptions = "";
+                      var unlimitedTierDesc = "";
+                      for(i=0; i<tiers.length; i++){
+                        if(tierDescriptions == ""){
+                            tierDescriptions = tierDescriptions + tiers[i].tierDescription;
+                        }
+                        else{
+                            tierDescriptions = tierDescriptions + "," + tiers[i].tierDescription;
+                        }
+
+                        if(tiers[i].tierName == "Unlimited"){
+                            unlimitedTierDesc = tiers[i].tierDescription;
+                        }
+                      %>
+                          <option value="<%=tiers[i].tierName%>" <%if(tiers[i].tierName == "Unlimited"){print("selected=\"selected\"")}%>>
+                            <%=tiers[i].tierName%>
+                          </option>
+                      <%}%>
+                    </select>
+                    <div id="tierHelpStr" class="help-block" style="padding-left: 10px; display: inline;">
+                        <%=unlimitedTierDesc%>
+                    </div>
+                    <input type="hidden" id="tierDescriptions" name="tierDescriptions" value="<%=tierDescriptions%>"/>
+                </div>
+                <div class="help-block"><%=i18n.localize("appHelpMsg")%>
+                            </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="callback-url" style="padding-top: 5px;"><%=i18n.localize("callbackUrl")%></label>
+            <div class="controls">
+                <input type="text" style="width:400px;" maxlength="70" id="callback-url"/>
+            </div>
+        </div>
+        <div class="control-group">
+             <label style="padding-top: 5px;" for="description" class="control-label">Description</label>
+             <div class="controls">
+                 <textarea id="description" maxlength="70" style="width:400px;" type="text"></textarea>
+        </div>
+        <div class="form-actions">
+                    <input type="submit" id="application-add-button" class="btn btn-primary" value="<%=i18n.localize("add")%>"/>
+        </div>
+
+    </div>
+    <div class="alert alert-success" id="appAddMessage" style="display:none">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong><%=i18n.localize("app")%> "<span id="applicationShowName"></span>" <%=i18n.localize("addMsg")%></strong>
+    </div>
+    </form>
+    <% jagg.includeBlock("application/application-list", {user:inputs.user}); %>
+</div>
+</div>
+<% }); %>

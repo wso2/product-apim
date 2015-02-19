@@ -1,0 +1,12 @@
+<%
+include("/jagg/jagg.jag");
+var site = require("/site/conf/site.json");
+
+// Since the header.jag is not installed
+var encode = require('encode');
+encode = new encode.Encode();
+
+jagg.includeBlock("sso/logout", {});
+
+%>
+
