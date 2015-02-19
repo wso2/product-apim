@@ -17,17 +17,13 @@ var getRedirectPathForNonAuthenticatedUser = function () {
     var tenantParam="";
     if (request.getQueryString() != null) {
         requestedPage = requestedPage + '?' + encodeURIComponent(request.getQueryString());
-       var tenantDomain=getTenantDomain();
+       var tenantDomain=jagg.getTenantDomain();
        if(tenantDomain!=null){
        tenantParam="&tenant="+tenantDomain;
        }
     }
     var redirectPath = jagg.getAbsoluteUrl("/?requestedPage=" + requestedPage+tenantParam);
     return redirectPath;
-};
-
-var getTenantDomain=function(){
-return request.getParameter("tenant");
 };
 
 var isTenantAllowed=function(){
@@ -37,10 +33,10 @@ var isTenantAllowed=function(){
 	var hasPublisherAccess= session.get("hasPublisherAccess");
 	var MultitenantUtils = Packages.org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-	if(userInSession != null && request.getParameter("tenant") != null){
+	if(userInSession != null && jagg.getTenantDomain() != null){
 		var domainName = MultitenantUtils.getTenantDomain(userInSession);
 
-	    	if(domainName == request.getParameter("tenant")){
+	    	if(domainName == jagg.getTenantDomain()){
 				jagg.setUser({username:userInSession, cookie:null, hasPublisherAccess:hasPublisherAccess});
 	    	}
 
@@ -48,8 +44,8 @@ var isTenantAllowed=function(){
 
    /*if(user!=null){
    	username=user.username;
-   	if(request.getParameter("tenant")!=null){
-   		if(user.username.split("@")[1]!=request.getParameter("tenant")){
+   	if(jagg.getTenantDomain()!=null){
+   		if(user.username.split("@")[1]!=jagg.getTenantDomain()){
    			jagg.setUser(null);
    			response.sendRedirect(getRedirectPathForNonAuthenticatedUser());
    			return;
@@ -58,8 +54,8 @@ var isTenantAllowed=function(){
    }*/
    };
 
-// 1  Filter out tenant parameter
-    var request_tenant = request.getParameter("tenant");
+    // 1  Filter out tenant parameter
+    var request_tenant = jagg.getTenantDomain();
     var illegalChars = /([~!@#;%^*+={}\|\\<>\"\',])/;
     var illegalCharsInput = /(\<[a-zA-Z0-9\s\/]*>)/;
     if (illegalChars.test(request_tenant) || illegalCharsInput.test(request_tenant)) {

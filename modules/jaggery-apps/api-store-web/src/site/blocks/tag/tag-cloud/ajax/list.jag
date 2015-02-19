@@ -6,7 +6,7 @@ include("/jagg/jagg.jag");
         user = jagg.getUser(),
         msg = require("/site/conf/ui-messages.jag"),
         action = request.getParameter("action");
-    var tenant = request.getParameter("tenant");
+    var tenant = jagg.getTenantDomain();
 
     if (action == "getAllTags") {
 

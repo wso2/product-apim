@@ -5,7 +5,7 @@ jagg.block("layout/custom", {
 
     },
     getOutputs:function (inputs) {
-    var tenantDomain=request.getParameter("tenant");
+    var tenantDomain = jagg.getTenantDomain();
         return {
             "title":inputs.title,
             "middle":inputs.middle

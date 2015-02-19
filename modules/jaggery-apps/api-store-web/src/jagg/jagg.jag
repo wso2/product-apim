@@ -1,5 +1,5 @@
 <%
-
+var site = require("/site/conf/site.json");
 //TODO : remove this when log configs are implemented
 //Log.prototype.isDebugEnabled = function () {
 //    return false;
@@ -135,10 +135,10 @@ var jagg = jagg || (function () {
             subtheme : subtheme ? subtheme : site.theme.subtheme,
         };
         //load the tenant theme if exists
-        var tenant = request.getParameter('tenant');
+        var tenant = getTenantDomain();
         if(tenant){
             tenant = tenant.replace("/",".");
-            r.tenant_theme = request.getParameter('tenant');
+            r.tenant_theme = getTenantDomain();
         }        
         return r;
     };
@@ -345,22 +345,6 @@ var jagg = jagg || (function () {
         return url ? url : path;
     };
 
-    var getMappedUrl = function (path) {
-        return getAbsoluteUrl(getUrlMapping(path));
-    };
-
-    var getAbsoluteUrl = function (path) {
-        var host = "" 
-        if(isReverseProxyEnabled()){
-            host = "https://" + site.reverseProxy.host ;
-        }
-        return host + url(path);
-    };
-
-    var getSiteDomainFromRequest = function(){
-        var match = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)(\/[^?#]*)(\?[^#]*|)(#.*|)$/);
-    }
-
     var getRequestSegments = function(){
         var href = request.getRequestURL()
         var match = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)(\/[^?#]*)(\?[^#]*|)(#.*|)$/);
@@ -374,6 +358,25 @@ var jagg = jagg || (function () {
             hash: match[7]
         }
 
+    };    
+
+    var getMappedUrl = function (path) {
+        return getAbsoluteUrl(getUrlMapping(path));
+    };
+
+    var getAbsoluteUrl = function (path) {
+        var host = "" 
+        if(isReverseProxyEnabled()){
+            host = "https://" + site.reverseProxy.host ;
+        }else{
+            var match = getRequestSegments();
+            var host = match.protocol + "//" + match.host;
+        }
+        return host + url(path);
+    };
+
+    var getSiteDomainFromRequest = function(){
+        var match = href.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)(\/[^?#]*)(\?[^#]*|)(#.*|)$/);
     }
 
     var getHttpsUrl = function(path){
@@ -424,10 +427,11 @@ var jagg = jagg || (function () {
             if(site.reverseProxy.enabled == "auto"){
                 var xfwd = request.getHeader("X-Forwarded-Host");
                 if(xfwd != null){
-                    var xfwd = xfwd.split(",")[0];   
-                    if(xfwd.trim() == site.reverseProxy.host){
-                        reverse_proxy = true;                
-                    }                                 
+                    var xfwd = xfwd.split(",")[0]; 
+                    //if(xfwd.trim() == site.reverseProxy.host){
+                        reverse_proxy = true;      
+                        site.reverseProxy.host = xfwd.trim();       
+                    //}                                 
                 }else{
                     reverse_proxy = false;                
                 }                    
@@ -653,6 +657,16 @@ var jagg = jagg || (function () {
         include(getThemeFile(path));
     };
 
+    var getTenantDomain = function(){
+        if(isReverseProxyEnabled()){
+            // check if tenant header exists
+            if(site.reverseProxy.tenantHeader != undefined && site.reverseProxy.tenantHeader != null){
+                return request.getHeader(site.reverseProxy.tenantHeader);
+            }
+        }
+        return request.getParameter("tenant");
+    }
+
     return {
         setUser:setUser,
         getUser:getUser,
@@ -685,7 +699,8 @@ var jagg = jagg || (function () {
         url:url,
         getRegistryPath:getRegistryPath,
         getSiteContext:getSiteContext,
-        getHttpsUrl:getHttpsUrl
+        getHttpsUrl:getHttpsUrl,
+        getTenantDomain:getTenantDomain
     };
 
 }());

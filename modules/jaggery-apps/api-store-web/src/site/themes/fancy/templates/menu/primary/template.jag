@@ -26,14 +26,13 @@
                       <div class="navbar">
                           <div class="navbar-inner">
                               <%
-                             var tenantStore=request.getQueryString();
-                             if(outputs.tenantDomains==null ||(tenantStore!=null && tenantStore.indexOf("tenant")>=0) ){%>
+                             if(outputs.tenantDomains==null || outputs.tenantDomains.indexOf(tenant) > -1 ){%>
                              <ul class="nav orderFix">
                              <%
                              var i, link, links = outputs.links, length = links.length;
                              for(i = 0; i < length; i++) {
                              link = links[i];
-                             if(link.title=='Forum' && ((tenantStore!=null) && (tenantStore.indexOf("tenant")>=0&& tenantStore.indexOf("carbon.super")<0) ) ){ }else{
+                             if(link.title=='Forum' && (outputs.tenantDomains && outputs.tenantDomains.indexOf(tenant) > -1 && tenant !="carbon.super" ) ){ }else{
                              %>
                              <li <%=(link.active ? 'class="active"' : '')%>>
                              <a title="<%=link.tooltip%>" href="<%=link.url%>"<%=(link.classes ? ' class="' + link.classes + '"' : "")%>>
