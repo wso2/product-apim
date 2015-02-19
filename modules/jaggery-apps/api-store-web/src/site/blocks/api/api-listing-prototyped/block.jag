@@ -15,7 +15,7 @@ jagg.block("api/api-listing-prototyped", {
                 page = request.getParameter("page"),
                 apiStatus = request.getParameter("apiStatus");
         
-        tenantDomain = request.getParameter("tenant");
+        tenantDomain = jagg.getTenantDomain();
         if(page == null){
         	page = 1;
         }

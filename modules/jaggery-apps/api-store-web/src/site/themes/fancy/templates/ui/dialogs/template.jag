@@ -54,7 +54,7 @@ i18n.init(request,localeResourcesBasePath);
     <% } else { %>
     <form id="loginRedirectForm" method="post" action="<%=jagg.getAbsoluteUrl(jagg.getThemeFile("templates/user/login/redirector.jag"))%>" autocomplete="off">
     	<input type="hidden" name="redirectToHTTPS" id="redirectToHTTPS" value="<%=httpsURL%>" />
-    	<input type="hidden" name="tenant" id="tenant" value="<%=request.getParameter("tenant")%>" />
+    	<input type="hidden" name="tenant" id="tenant" value="<%=jagg.getTenantDomain()%>" />
     </form>
     <% } %>
 </div>

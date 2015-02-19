@@ -19,7 +19,7 @@ include("/jagg/jagg.jag");
 	    return;
         }
 	username = user.username;
-        tenant = request.getParameter("tenant");
+        tenant = jagg.getTenantDomain();
 
         mod = jagg.module("api");
         result = mod.getAllPublishedAPIs(tenant);
@@ -72,7 +72,7 @@ include("/jagg/jagg.jag");
 		  return;
               }
       	      username = user.username;
-              tenant = request.getParameter("tenant");
+              tenant = jagg.getTenantDomain();
               var start=request.getParameter("start");
               var end=request.getParameter("end");
               mod = jagg.module("api");

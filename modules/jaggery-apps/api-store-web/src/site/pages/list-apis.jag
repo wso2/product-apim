@@ -5,7 +5,7 @@ var site = require("/site/conf/site.json");
 var i18n = require("i18n");
 var localeResourcesBasePath="/site/conf/locales/jaggery/";
 i18n.init(request,localeResourcesBasePath);
-var tenantDomain=getTenantDomain();
+var tenantDomain = jagg.getTenantDomain();
 
 (function () {
     isTenantAllowed();
@@ -13,9 +13,8 @@ var tenantDomain=getTenantDomain();
 var mod = jagg.module("manager");
 
      var result = mod.getActiveTenantDomains();
-     var tenantStore=request.getQueryString();
-     var tenantDomainsArr=result.tenantDomains;
-     if(tenantDomainsArr==null||  (tenantStore!=null && tenantStore.indexOf("tenant")>=0 )){
+     var tenantDomainsArr= result.tenantDomains;
+     if(tenantDomainsArr == null || tenantDomainsArr.indexOf(tenantDomain) > -1 ){
      jagg.render({
         "name":"page/base",
         "inputs":{
