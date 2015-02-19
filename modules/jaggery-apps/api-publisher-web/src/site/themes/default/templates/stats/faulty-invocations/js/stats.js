@@ -184,7 +184,7 @@ var drawAPIResponseFaultCountChart = function(from,to){
                             return {value: index + 1, text: value[0]};
                         })
                         });
-                        faultyCountChart.addAxis("y",{vertical:true,fixLower: "major", fixUpper: "major"});
+                        faultyCountChart.addAxis("y",{vertical:true,fixLower: "major", fixUpper: "major", includeZero: true});
 
                         // Define the data
                         var chartData; var color = -1;
