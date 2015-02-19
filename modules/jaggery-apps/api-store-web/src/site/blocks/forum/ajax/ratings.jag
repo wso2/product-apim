@@ -17,7 +17,7 @@ var time = date.getTime();
 
 var message = {error:false};
 
-var tenantDomain = request.getParameter("tenant");
+var tenantDomain = jagg.getTenantDomain();
 if (tenantDomain == null) {
     tenantDomain = "carbon.super";
 }

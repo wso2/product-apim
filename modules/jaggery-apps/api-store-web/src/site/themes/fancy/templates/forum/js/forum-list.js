@@ -98,9 +98,7 @@ function forum_load_replies(page) {
             });
             $('#forum_replies_block').html(template);
 
-            if (result.data.replies.length > 0) {
-                $('#forum_replies_list').show();
-            }
+            $('#forum_replies_list').show();
 
             // If there are more than one pages show the paginator.
             if (result.total_pages > 1) {

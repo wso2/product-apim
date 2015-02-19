@@ -19,7 +19,7 @@ jagg.block("api/api-listing-all", {
         var log = new Log();
                 
         if(tag == null) { tag = inputs.tag;}
-        tenantDomain=request.getParameter("tenant");
+        tenantDomain = jagg.getTenantDomain();
 
         if(page==null){
         page=1;
