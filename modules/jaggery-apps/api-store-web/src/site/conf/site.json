@@ -23,10 +23,9 @@
 
 
     "reverseProxy" : {
-        "enabled" : true,    // values true , false , "auto" - will look for  X-Forwarded-* headers
-        "host" : "localhost", // If reverse proxy do not have a domain name use IP
-        "context":"/store",
-        "tenantHeader":"X-WSO2-Tenant"
+        "enabled" : false,    // values true , false , "auto" - will look for  X-Forwarded-* headers
+        "host" : "sample.proxydomain.com", // If reverse proxy do not have a domain name use IP
+        "context":"",
     },
 
 }
