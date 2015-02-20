@@ -152,7 +152,7 @@ var drawProviderAPIServiceTime = function (from, to) {
                         });
 
                         // Add axes
-                        serviceTimeChart.addAxis("x", {  fixLower: "major", fixUpper: "major" });
+                        serviceTimeChart.addAxis("x", {  fixLower: "major", fixUpper: "major" , includeZero: true});
                         serviceTimeChart.addAxis("y", {vertical: true,
                             labels: dojo.map(data, function (value, index) {
                                 return {value: index + 1, text: value[0]};

@@ -148,6 +148,10 @@
                     <artifactId>carbon-p2-plugin</artifactId>
                     <version>${carbon.p2.plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -305,6 +309,26 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.core</artifactId>
                 <version>${carbon.kernel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.logging</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.statistics.ui</artifactId>
+                <version>${carbon.platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.styles</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database.wso2</groupId>
+                <artifactId>h2-database-engine</artifactId>
+                <version>${orbit.version.h2.engine}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
