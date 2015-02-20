@@ -168,16 +168,24 @@
         <label class="control-label" for="visibility"><%=i18n.localize("visibility")%>:</label>
         <div class="controls">
             <select class="select required" id="visibility" name="visibility">
+		<% mod = jagg.module("api");
+		 result = mod.isMultipleTenantsAvailable();
+	         var isMultipleTenantsAvailable = result.status;
+		%>
             	<% if (api) {%>
                     <option value="public" <%if(api.visibility=="public"){%> selected="selected" <%}%>><%=i18n.localize("public")%></option>
+		    <% if(isMultipleTenantsAvailable == true) {%>
                     <option value="private" <%if(api.visibility=="private"){%> selected="selected" <%}%>><%=i18n.localize("private")%></option>
+		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
                              <option value="restricted" <%if(api.visibility=="restricted"){%> selected="selected" <%}%>><%=i18n.localize("restricted")%></option>
                     <% } %>
                     
                 <%} else {%>
                     <option value="public"><%=i18n.localize("public")%></option>
+		    <% if(isMultipleTenantsAvailable == true) {%>
                     <option value="private"><%=i18n.localize("private")%></option>
+		    <% } %>
                     <% if(!(enableRestrictByRoles == 'false')) {%>
                              <option value="restricted"><%=i18n.localize("restricted")%></option>
                     <% } %> 
@@ -324,7 +332,7 @@
         <td><a class="param_desc" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="description">{{ description }}</a></td>
         <td><a class="param_paramType" data-type="select" data-path="{{ ../resource_path}}.parameters[{{@index}}]" data-attr="paramType">{{ paramType }}</a></td>
         <td><a class="param_type" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="type">{{ type }}</a></td>
-        <td><a class="param_required" data-type="select" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="required">{{ required }}</a></td>
+        <td><a class="param_required" data-type="select" data-path="{{../resource_path}}.parameters[{{@index}}]" data-attr="required" data-value="{{toString required }}"></a></td>
         </tr> 
     {{/each}}
     {{/if}}

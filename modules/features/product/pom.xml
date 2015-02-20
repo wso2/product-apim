@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
     	<artifactId>am-features-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -34,15 +34,6 @@
     <name>WSO2 API Manager - Features Aggregator Module</name>
     <description>Features specific to the WSO2 API Manager</description>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.styles</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>org.wso2.am.styles.feature</module>

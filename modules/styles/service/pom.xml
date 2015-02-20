@@ -22,13 +22,12 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-styles-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.stratos.apimgt.styles</artifactId>
-    <version>${apimserver.version}</version>
     <packaging>bundle</packaging>
     <name>WSO2 Stratos  API Manager - UI styles</name>
     <url>http://wso2.org</url>

@@ -1,0 +1,26 @@
+<%
+var getDomainMappings = function (tenant) {
+    var domains,
+            log = new Log(),
+            store = jagg.module("manager").getAPIStoreObj();
+
+    try {
+        domains = store.getDomainMappings(tenant);
+        if (log.isDebugEnabled()) {
+            log.debug("getDomainMappings : " + stringify(tiers));
+        }
+        return {
+            error:false,
+            domains:domains
+        };
+    } catch (e) {
+        log.error(e.message);
+        return {
+            error:e,
+            domains:null
+        };
+    }
+};
+
+%>
+

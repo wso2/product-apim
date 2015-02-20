@@ -12,10 +12,10 @@
 <script language="javascript">
     var VERBS = [ 'GET' , 'POST' , 'PUT' , 'DELETE', 'OPTIONS'];
     var AUTH_TYPES = [
-      { "value": "<%=i18n.localize("none")%>", "text":"<%=i18n.localize("none")%>"} ,
-      { "value": "<%=i18n.localize("application")%>", "text":"<%=i18n.localize("application")%>"},
-      { "value": "<%=i18n.localize("applicationUser")%>", "text":"<%=i18n.localize("applicationUser")%>"},
-      { "value": "<%=i18n.localize("application&applicationUser")%>", "text":"<%=i18n.localize("application&applicationUser")%>"}
+      { "value": "None", "text":"<%=i18n.localize("none")%>"} ,
+      { "value": "Application", "text":"<%=i18n.localize("application")%>"},
+      { "value": "Application User", "text":"<%=i18n.localize("applicationUser")%>"},
+      { "value": "Application & Application User", "text":"<%=i18n.localize("application&applicationUser")%>"}
     ];
     var TIERS =[
         <% for (var i = 0; i < tiers.length; i++) { 
@@ -24,8 +24,8 @@
     ];
 
     var DEFAULT_TIER = "<%= tiers[tiers.length -1].tierName%>";
-    var DEFAULT_AUTH = "<%=i18n.localize("application&applicationUser")%>";
-    var OPTION_DEFAULT_AUTH = "<%=i18n.localize("none")%>";
+    var DEFAULT_AUTH = "Application & Application User";
+    var OPTION_DEFAULT_AUTH = "None";
 
     var insequence = "<%=api.inSequence%>";
     var outsequence = "<%=api.outSequence%>";
@@ -202,26 +202,29 @@
             <!--Response Caching End -->
 
                 <div class="control-group">
+		        <% mod = jagg.module("api");
+		 	result = mod.isMultipleTenantsAvailable();
+	         	var isMultipleTenantsAvailable = result.status;
+			if(api.visibility == "public" && isMultipleTenantsAvailable == true){%>
                         <label class="control-label" for="subscriptions"><%=i18n.localize("subscriptionsTitle")%>:</label>
-                                
                         <div class="controls">
-                        <% if(api.visibility!="public") {%>
-                            <select class="select required" id="subscriptions" name="subscriptions" >
-                                <option value="current_tenant"  selected="selected"><%=i18n.localize("availableToCurrentTenant")%></option>
-                            </select> 
-                        <%} else {%>
-                            <select class="select required" id="subscriptions" name="subscriptions" >
-                                <option value="current_tenant" <%if(api.subscriptionAvailability=="current_tenant"){%> selected="selected" <%}%> ><%=i18n.localize("availableToCurrentTenant")%></option>
+                        	<% if(api.visibility!="public") {%>
+                           	<select class="select required" id="subscriptions" name="subscriptions" >
+                               	<option value="current_tenant"  selected="selected"><%=i18n.localize("availableToCurrentTenant")%></option>
+                           	</select> 
+                        	<%} else {%>
+                            	<select class="select required" id="subscriptions" name="subscriptions" >
+                               	<option value="current_tenant" <%if(api.subscriptionAvailability=="current_tenant"){%> selected="selected" <%}%> ><%=i18n.localize("availableToCurrentTenant")%></option>
                                 <option value="all_tenants" <%if(api.subscriptionAvailability=="all_tenants"){%> selected="selected" <%}%> ><%=i18n.localize("availableToAllTenants")%></option>
-                                <% if(!(enableSelectedTenantSubscription == 'false')) {%>
-                                    <option value="specific_tennats" <%if(api.subscriptionAvailability=="specific_tennats"){%> selected="selected" <%}%> ><%=i18n.localize("availableToSpecificTenants")%></option>
-                                <% } %>
-                            </select> 
-                        <%}%>     
-                            <a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
-                            <div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
-                        </div>
-                                    
+                                	<% if(!(enableSelectedTenantSubscription == 'false')) {%>
+                                	<option value="specific_tennats" <%if(api.subscriptionAvailability=="specific_tennats"){%> selected="selected" <%}%> ><%=i18n.localize("availableToSpecificTenants")%></option>
+                                	<% } %>
+                            	</select> 
+                        	<%}%>     
+                            	<a class="icon-question-sign help_popup" help_data="subscriptions_help"></a>
+                           	<div id="subscriptions_help" class="hide"><%=i18n.localize("subscriptionHelpMsg")%></div>
+                       </div>
+                       <% } %>            
                 <br/>
                     <div class="control-group" id="tennatsDiv" <%if(api.subscriptionAvailability!="specific_tennats"){%>style="display: none;"<%}%>>
                         <label class="control-label" for="tenants" id="tennatLabel" name="tennatLabel">
@@ -348,7 +351,7 @@
             </td>
             <td class="resource_expand"><a class="resource-path">{{ ../path }}</a></td>   
             <td width="99%"><span class="operation-summary change_summary" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="summary" >{{ summary }}</span></td>
-            <td><a class="operation-summary auth_type_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="auth_type">{{ auth_type }}</a></td>        
+            <td><a class="operation-summary auth_type_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="auth_type" data-value="{{ auth_type }}"></a></td>        
             <td><a class='operation-summary throttling_select'  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="throttling_tier">{{ throttling_tier }}</a></td>
             <td><a class="operation-summary scope_select"  data-type="select" data-path="$.apis[{{ ../../index}}].file.apis[{{ ../index }}].operations[{{ @index }}]" data-attr="scope">{{ scope }}</a></td>
         </tr>

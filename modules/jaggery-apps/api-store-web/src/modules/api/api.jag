@@ -35,7 +35,7 @@ var getAPIDescription = function (api, username) {
 var getTiers = function () {
     var tier,tiers,list=[],log = new Log(),
             provider = jagg.module("manager").getAPIStoreObj();
-        var tenant = request.getParameter("tenant");
+        var tenant = jagg.getTenantDomain();
         var log = new Log();
     try {
         tiers = provider.getTiers(tenant);

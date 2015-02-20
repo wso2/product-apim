@@ -24,8 +24,8 @@
 
     <parent>
         <groupId>org.wso2.am</groupId>
-    	<artifactId>am-styles-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <artifactId>am-styles-parent</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -39,7 +39,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.6</version>
             </plugin>
 
             <plugin>
@@ -95,12 +94,10 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
-            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging</artifactId>
-            <version>4.0.0</version>
         </dependency>
     </dependencies>
 

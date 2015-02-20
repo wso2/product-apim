@@ -25,9 +25,10 @@ include("/jagg/jagg.jag");
             selectedApp = request.getParameter('selectedApp');
         }
         //else if we have selected app in session we will use it.
-        else if(session.get('selectedApp')!=null){
+        // ** Should not use session to get selected value
+        /*else if(session.get('selectedApp')!=null){
             selectedApp = session.get('selectedApp');
-        }
+        }*/ 
         //if not pass blank string because host object is waiting for string args..
         else{
             selectedApp= "";

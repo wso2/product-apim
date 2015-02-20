@@ -23,7 +23,7 @@ include("/jagg/jagg.jag");
 			username = user + "@" + domain;
 		}
         username = String(username);
-        var tenant = request.getParameter("tenant");
+        var tenant = jagg.getTenantDomain();
         result = mod.login(username, request.getParameter("password"),tenant);
         if (result.error) {
             obj = {

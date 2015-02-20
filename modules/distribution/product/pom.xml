@@ -23,8 +23,8 @@
 
     <parent>
         <groupId>org.wso2.am</groupId>
-    	<artifactId>am-distribution-parent</artifactId>
-        <version>${apimserver.version}</version>
+        <artifactId>am-distribution-parent</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -39,7 +39,6 @@
         <dependency>
             <groupId>com.h2database.wso2</groupId>
             <artifactId>h2-database-engine</artifactId>
-            <version>${orbit.version.h2.engine}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.osgi</groupId>
@@ -116,7 +115,7 @@
                                     <fileset dir="${tempdir}/web/">
                                         <exclude name="**/yui/**"/>
                                         <exclude name="**/ajax/**"/>
-					                    <exclude name="**/editarea/**"/>
+                                        <exclude name="**/editarea/**"/>
                                         <exclude name="**/codepress/**"/>
                                         <exclude name="**/WEB-INF/**"/>
                                         <include name="**/*.html"/>
@@ -222,7 +221,7 @@
                             <goal>attached</goal>
                         </goals>
                         <configuration>
-			    <appendAssemblyId>false</appendAssemblyId>
+                            <appendAssemblyId>false</appendAssemblyId>
                             <filters>
                                 <filter>${basedir}/src/main/assembly/filter.properties</filter>
                             </filters>
@@ -238,7 +237,7 @@
                             <goal>attached</goal>
                         </goals>
                         <configuration>
-			    <appendAssemblyId>false</appendAssemblyId>
+                            <appendAssemblyId>false</appendAssemblyId>
                             <filters>
                                 <filter>${basedir}/src/main/assembly/filter.properties</filter>
                             </filters>
@@ -247,7 +246,7 @@
                             </descriptors>
                         </configuration>
                     </execution>
-		    <execution>
+                    <execution>
                         <id>docs</id>
                         <phase>package</phase>
                         <goals>
@@ -265,30 +264,30 @@
                 </executions>
             </plugin>
 
-         <!-- Replace datasource used in application-authentication.xml -->
-	 <plugin>
-           <groupId>com.google.code.maven-replacer-plugin</groupId>
-           <artifactId>replacer</artifactId>
-           <version>1.5.2</version>
-           <executions>
-               <execution>
-                   <phase>prepare-package</phase>
-                   <goals>
-                       <goal>replace</goal>
-                   </goals>
-               </execution>
-           </executions>
-           <configuration>
-               <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security/application-authentication.xml</file>
-               <replacements>
-                   <replacement>
-			<xpath>/ApplicationAuthentication/JDBCPersistenceManager/DataSource/Name</xpath>
-                       <token>(jdbc/WSO2CarbonDB)</token>
-                       <value>jdbc/WSO2AM_DB</value>
-                   </replacement>
-                </replacements>
-           </configuration>
-	</plugin>
+            <!-- Replace datasource used in application-authentication.xml -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security/application-authentication.xml</file>
+                    <replacements>
+                        <replacement>
+                            <xpath>/ApplicationAuthentication/JDBCPersistenceManager/DataSource/Name</xpath>
+                            <token>(jdbc/WSO2CarbonDB)</token>
+                            <value>jdbc/WSO2AM_DB</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
 
         </plugins>
     </build>

@@ -1,32 +1,45 @@
 <% jagg.template("api/overview", function(inputs, outputs, jagg) { %>
 <% var api = outputs.api, user = outputs.user, log = new Log(); %>
-
+<% var domains = jagg.module("domains").getDomainMappings(jagg.getTenantDomain()).domains;%>
 <div id="overview">
 	<%if (!api.isAdvertiseOnly) {%>
 
 	    <%
-	    var environments = api.serverURL.split("|");
-	    for (j=0; j<environments.length; j++){
-	        var environment = environments[j];
-	        var epParams =  environment.split(",");
-	        %>
-	            <h5><%=epParams[0]%> <%=i18n.localize("urls")%>:</h5>
-
-	        <%
-	        for (i = 1; i < epParams.length; i++) {
-	            %>
-	            <div  class="well well-small api_urls"><%=epParams[i]%><%=api.context%>/<%=api.version%>
+        if(domains != null){
+            for (var key in domains) {
+                %>
+                <div  class="well well-small api_urls"><%=domains[key]%><%=api.context%>/<%=api.version%>
                     <%if (api.isDefaultVersion){%>
-                        <br><%=epParams[i]%><%=api.context%>
+                        <br><%=domains[key]%><%=api.context%>
                     <%}%>
                 </div>
+                <%
+            }
+        }
+        else{
+    	    var environments = api.serverURL.split("|");
+    	    for (j=0; j<environments.length; j++){
+    	        var environment = environments[j];
+    	        var epParams =  environment.split(",");
+    	        %>
+    	            <h5><%=epParams[0]%> <%=i18n.localize("urls")%>:</h5>
 
-	            <%
-	        }
-	        %>
+    	        <%
+    	        for (i = 1; i < epParams.length; i++) {
+    	            %>
+    	            <div  class="well well-small api_urls"><%=epParams[i]%><%=api.context%>/<%=api.version%>
+                        <%if (api.isDefaultVersion){%>
+                            <br><%=epParams[i]%><%=api.context%>
+                        <%}%>
+                    </div>
 
-	        <%
-	    }
+    	            <%
+    	        }
+    	        %>
+
+    	        <%
+    	    }
+        }
 	    %>
     <%}%>
     <% if(api.wsdl && api.wsdl != ""){ %>        
