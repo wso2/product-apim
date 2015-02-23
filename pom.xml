@@ -376,7 +376,7 @@
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <carbon.platform.version>4.2.0</carbon.platform.version>
-        <synapse.version>2.1.2-wso2v6</synapse.version>
+        <synapse.version>2.1.2-wso2v7-SNAPSHOT</synapse.version>
         <axis2.transport.version>1.1.0-wso2v6</axis2.transport.version>
         <esb.version>4.0.0</esb.version>
         <passthru.transport.version>1.0.0</passthru.transport.version>
