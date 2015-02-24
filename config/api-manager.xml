@@ -245,6 +245,14 @@
                 <Version>1.0.0</Version>
                 <BAMProfileName>bam-profile</BAMProfileName>
             </Destination>
+            <Throttle>
+                <Name>org.wso2.apimgt.statistics.throttle</Name>
+                <Version>1.0.0</Version>
+            </Throttle>
+            <Workflow>
+                <Name>org.wso2.apimgt.statistics.workflow</Name>
+                <Version>1.0.0</Version>
+            </Workflow>
         </Streams>
 
     </APIUsageTracking>
