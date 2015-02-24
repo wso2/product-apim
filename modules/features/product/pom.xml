@@ -37,7 +37,6 @@
 
     <modules>
         <module>org.wso2.am.styles.feature</module>
-        <module>org.wso2.am.jaggeryapps.feature</module>
     </modules>
 
 </project>
