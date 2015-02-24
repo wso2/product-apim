@@ -420,6 +420,73 @@
                 <artifactId>cxf-rt-rs-security-cors</artifactId>
                 <version>${org.apache.cxf.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.backend.service</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
+                <version>1.2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jettison.wso2</groupId>
+                <artifactId>jettison</artifactId>
+                <version>${orbit.version.jettison}</version>
+            </dependency>
+            <dependency>
+                <groupId>emma</groupId>
+                <artifactId>emma</artifactId>
+                <version>${emma.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>SecVerifier</artifactId>
+                <type>aar</type>
+                <version>${carbon.platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.api</artifactId>
+                <version>${test-automation-framework-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.core</artifactId>
+                <version>${test-automation-framework-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.utils</artifactId>
+                <version>${test-automation-framework-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
+                <version>${test-automation-framework-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>6.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.integration.framework</artifactId>
+                <version>4.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
+                <version>1.2.2</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-digester</groupId>
+                <artifactId>commons-digester</artifactId>
+                <version>2.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -507,6 +574,8 @@
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
+
+        <test-automation-framework-version>4.2.7</test-automation-framework-version>
     </properties>
 
 </project>
