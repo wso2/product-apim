@@ -13,16 +13,20 @@
                                                  {'name':'api','type':'STRING'}, 
                                                  {'name':'resourcePath','type':'STRING'}, 
                                                  {'name':'method','type':'STRING'}, 
-                                                 {'name':'version','type':'STRING'}, 
-                                                 {'name':'response','type':'INT'}, 
+                                                 {'name':'version','type':'STRING'},                                                 
                                                  {'name':'responseTime','type':'LONG'}, 
                                                  {'name':'serviceTime','type':'LONG'}, 
-                                                 {'name':'userId','type':'STRING'}, 
+                                                 {'name':'backendTime','type':'LONG'}, 
+                                                 {'name':'username','type':'STRING'},
+                                                 {'name':'eventTime','type':'LONG'},  
 					         {'name':'tenantDomain','type':'STRING'},
                     		                 {'name':'hostName','type':'STRING'},
    		                                 {'name':'apiPublisher','type':'STRING'},
 				                 {'name':'applicationName','type':'STRING'},
-                    		                 {'name':'applicationId','type':'STRING'}
+                    		                 {'name':'applicationId','type':'STRING'},
+                                                 {'name':'cacheHit','type':'BOOL'},
+                                                 {'name':'responseSize','type':'LONG'}
+                                                 
                                          ] 
 
                                        }
