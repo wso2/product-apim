@@ -1,4 +1,4 @@
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport">
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport" version-type="context">
         #foreach($resource in $resources)
 	<resource xmlns="http://ws.apache.org/ns/synapse"
 		#if($resource.getUriTemplate().contains("{") ||
