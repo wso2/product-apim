@@ -16,12 +16,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <!--<module>backend-service</module>-->
+        <module>backend-service</module>
         <!--<module>tests</module>-->
         <!--<module>tests-ui</module>-->
         <module>tests-common</module>
         <module>tests-integration</module>
-        <module>tests-ui-integration</module>
+        <!--<module>tests-ui-integration</module>-->
         <!--<module>tests-platform</module>-->
     </modules>
 
