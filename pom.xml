@@ -330,6 +330,39 @@
                 <artifactId>h2-database-engine</artifactId>
                 <version>${orbit.version.h2.engine}</version>
             </dependency>
+
+            <!-- Automation Dependencies-->
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.test.utils</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.engine</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.extensions</artifactId>
+                <version>${carbon.automationutils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+                <version>${carbon.automationutils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.admin.client</artifactId>
+                <version>${carbon.automationutils.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -413,6 +446,9 @@
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
+
+        <carbon.automation.version>4.3.1</carbon.automation.version>
+        <carbon.automationutils.version>4.3.0</carbon.automationutils.version>
     </properties>
 
 </project>
