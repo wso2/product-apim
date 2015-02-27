@@ -331,7 +331,122 @@
                 <version>${orbit.version.h2.engine}</version>
             </dependency>
 
-            <!-- Automation Dependencies-->
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-jaxrs</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib-nodep</artifactId>
+                <version>2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${org.springframework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${org.springframework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${org.springframework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${org.apache.tomcat}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-logging-juli</artifactId>
+                <version>${org.apache.tomcat}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.ws.wso2</groupId>
+                <artifactId>spring.framework</artifactId>
+                <version>3.1.0.wso2v1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${org.apache.cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-lgpl</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-lgpl</artifactId>
+                <version>${org.codehaus.jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-security-cors</artifactId>
+                <version>${org.apache.cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.backend.service</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
+                <version>1.2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jettison.wso2</groupId>
+                <artifactId>jettison</artifactId>
+                <version>${orbit.version.jettison}</version>
+            </dependency>
+            <dependency>
+                <groupId>emma</groupId>
+                <artifactId>emma</artifactId>
+                <version>${emma.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>SecVerifier</artifactId>
+                <type>aar</type>
+                <version>${carbon.platform.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.automation</groupId>
                 <artifactId>org.wso2.carbon.automation.test.utils</artifactId>
@@ -409,7 +524,7 @@
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <carbon.platform.version>4.2.0</carbon.platform.version>
-        <synapse.version>2.1.2-wso2v6</synapse.version>
+        <synapse.version>2.1.2-wso2v7-SNAPSHOT</synapse.version>
         <axis2.transport.version>1.1.0-wso2v6</axis2.transport.version>
         <esb.version>4.0.0</esb.version>
         <passthru.transport.version>1.0.0</passthru.transport.version>
