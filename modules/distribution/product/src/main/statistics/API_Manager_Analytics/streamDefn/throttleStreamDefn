@@ -1,0 +1,23 @@
+{
+                                         'name':'org.wso2.apimgt.statistics.throttle',
+                                         'version':'1.0.0',
+                                         'nickName': 'API Manager Throttle Data',
+                                         'description': 'Throttle Data',
+                                         'metaData':[
+                                                 {'name':'clientType','type':'STRING'}
+                                         ],
+                                         'payloadData':[
+                                                 {'name':'accessToken','type':'STRING'},
+                                                 {'name':'userId','type':'STRING'},
+					         {'name':'tenantDomain','type':'STRING'},
+                                                 {'name':'api','type':'STRING'},
+                                                 {'name':'api_version','type':'STRING'},
+                                                 {'name':'context','type':'STRING'},
+                                                 {'name':'apiPublisher','type':'STRING'},
+                                                 {'name':'throttledTime','type':'LONG'},
+                                                 {'name':'applicationName','type':'STRING'},
+                                                 {'name':'applicationId','type':'STRING'}
+
+                                         ]
+
+                                       }
