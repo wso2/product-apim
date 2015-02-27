@@ -16,12 +16,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>backend-service</module>
-        <module>tests</module>
-        <module>tests-ui</module>
+        <!--<module>backend-service</module>-->
+        <!--<module>tests</module>-->
+        <!--<module>tests-ui</module>-->
         <module>tests-common</module>
-        <!--<module>tests-integration</module>-->
-        <!--<module>tests-ui-integration</module>-->
+        <module>tests-integration</module>
+        <module>tests-ui-integration</module>
         <!--<module>tests-platform</module>-->
     </modules>
 
@@ -83,23 +83,27 @@
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.test.utils</artifactId>
-            <version>${test.framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.engine</artifactId>
-            <version>${test.framework.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.extensions</artifactId>
-            <version>${test.framework.version}</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automationutils</groupId>
+            <artifactId>org.wso2.carbon.integration.common.extensions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automationutils</groupId>
+            <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automationutils</groupId>
+            <artifactId>org.wso2.carbon.integration.common.admin.client</artifactId>
         </dependency>
     </dependencies>
-    <properties>
-        <test.framework.version>4.3.1</test.framework.version>
-    </properties>
 
 </project>

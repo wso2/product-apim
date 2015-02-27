@@ -17,11 +17,14 @@
 */
 package org.wso2.carbon.am.jmeter;
 
+
+
+
 import org.apache.axis2.AxisFault;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
@@ -32,15 +35,15 @@ import org.wso2.carbon.utils.ServerConstants;
 import java.io.File;
 import java.io.IOException;
 
-public class JmeterTestCases extends APIManagerIntegrationTest {
+public class JmeterTestCases extends AMIntegrationBaseTest {
 
-	private ServerConfigurationManager serverConfigurationManager;
+	protected ServerConfigurationManager serverConfigurationManager;
 
 	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 	@BeforeClass(alwaysRun = true)
 	public void testChangeTransportMechanism() throws Exception, AxisFault {
 		super.init();
-		serverConfigurationManager = new ServerConfigurationManager(context);
+		serverConfigurationManager = new ServerConfigurationManager(apimContext);
 		String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
 
 		File axis2xmlFile =

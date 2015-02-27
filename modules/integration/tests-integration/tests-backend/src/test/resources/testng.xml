@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="ApiManager-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+        <classes>
+            <!--<class name="org.wso2.am.integration.tests.sample.APIApplicationLifeCycleTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIApplicationLifeCycleTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
+        </classes>
+    </test>
+
+</suite>
