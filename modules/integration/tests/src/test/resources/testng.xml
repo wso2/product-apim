@@ -45,6 +45,7 @@
             <class name="org.wso2.carbon.am.tests.sample.DefaultVersionAPITestCase"/>
             <!--<class name="org.wso2.carbon.am.tests.sample.EmailUserNameJWTAssertionTestCase"/>-->
            <!--class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase"/-->
+           <class name="org.wso2.carbon.am.tests.sample.APIInvocationFailureTestCase"/>
         </classes>
     </test>
     <!--test name="Rest Test" preserve-order="true" verbose="2">
