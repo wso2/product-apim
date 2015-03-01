@@ -19,6 +19,7 @@
             <!--<class name="org.wso2.carbon.am.integration.ui.SubscriptionAvailabilityTestCase"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIVersoinStatTestCase"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.OAuthConsumerAppsTestCase"/>-->
+            <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3087UnableToPublishSecondAttemptWithTiers"/>
         </classes>
     </test>
 </suite>
