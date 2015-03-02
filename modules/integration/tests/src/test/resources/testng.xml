@@ -25,6 +25,7 @@
             <class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.APIResourceModificationTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.DefaultVersionWithScopesTestCase"/>
             <!--class name="org.wso2.carbon.am.tests.sample.ESBJAVA3380TestCase"/-->
 
             <!--class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/-->

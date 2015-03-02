@@ -304,4 +304,30 @@ public class APIPublisherRestClient {
              throw new Exception("API Resource update failed> " + response.getData());
          }
     }
+
+    /**
+     * Method to update API Resources.
+     * @param provider - API creator name.
+     * @param apiName - Name of the API.
+     * @param version - Version of the API.
+     * @param swaggerRes - Swagger definition of the API Resource(s).
+     * @param defaultVersion - If API is a default version api, value should be 'default_version'. Empty string otherwise
+     * @return - HttpResponse of the API update operation.
+     * @throws Exception - In case of an unexpected exception
+     */
+    public HttpResponse updateResourceOfAPI(String provider, String apiName, String version, String swaggerRes,
+                                            String defaultVersion) throws Exception {
+        checkAuthentication();
+        this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-design/ajax/add.jag")
+                , "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" + version +
+                "&swagger="+swaggerRes + "&default_version=" + defaultVersion + "&default_version_checked=" +
+                defaultVersion, requestHeaders);
+        if (response.getResponseCode() == 200) {
+            return response;
+        } else {
+            throw new Exception("API Resource update failed. " + response.getData());
+        }
+    }
 }
