@@ -84,7 +84,6 @@ public class APIMANAGER3087UnableToPublishSecondAttemptWithTiers extends AMInteg
 		}
 
 		if (lastLine != null && (lastLine.contains("INFO {org.apache.synapse.rest.API}"))) {
-			System.out.println("Last Line :" + lastLine);
 			Assert.assertTrue(true, "API is Successfully Initialized  With second attempt");
 		} else {
 			Assert.assertTrue(false, "API is not Successfully Initialized  With second attempt");
@@ -128,7 +127,6 @@ public class APIMANAGER3087UnableToPublishSecondAttemptWithTiers extends AMInteg
 		}
 
 		if (lastLine != null && (lastLine.contains("INFO {org.apache.synapse.rest.API}"))) {
-			System.out.println("Last Line :" + lastLine);
 			Assert.assertTrue(true, "API is Successfully Initialized  With first attempt");
 		} else {
 			Assert.assertTrue(false, "API is not Successfully Initialized  With first attempt");
