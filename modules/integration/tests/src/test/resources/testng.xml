@@ -45,6 +45,7 @@
             <class name="org.wso2.carbon.am.tests.sample.DAOTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.DefaultVersionAPITestCase"/>
             <!--<class name="org.wso2.carbon.am.tests.sample.EmailUserNameJWTAssertionTestCase"/>-->
+            <class name="org.wso2.carbon.am.tests.sample.APIScopeTestCase"/>
            <!--class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase"/-->
            <!--<class name="org.wso2.carbon.am.tests.sample.APIInvocationFailureTestCase"/> -->
             <class name="org.wso2.jmeter.tests.APIMANAGER2964MySubscriptionsPerformanceTestCase"/>
