@@ -135,9 +135,11 @@ public class APIMANAGER3087UnableToPublishSecondAttemptWithTiers extends AMInteg
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
-		driver.quit();
-		super.cleanup();
-	}
+        if (driver != null) {
+            driver.quit();
+        }
+        super.cleanup();
+    }
 
 }
 
