@@ -106,7 +106,9 @@ public class APIMANAGER2957EpochTimeTestCase extends AMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        driver.quit();
+        if (driver != null) {
+            driver.quit();
+        }
         String verificationErrorString = verificationErrors.toString();
         if (!"".equals(verificationErrorString)) {
             Assert.fail(verificationErrorString);
