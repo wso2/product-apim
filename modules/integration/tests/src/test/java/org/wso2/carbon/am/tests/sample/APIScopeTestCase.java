@@ -46,14 +46,32 @@ import java.util.Map;
 public class APIScopeTestCase extends APIManagerIntegrationTest {
 
     private APIPublisherRestClient apiPublisher;
+
     private APIStoreRestClient apiStore;
-    private String publisherURLHttp;
-    private String storeURLHttp;
+
+    private UserManagementClient userManagementClient = null;
+
+    private static final String API_NAME = "APIScopeTestAPI";
+
+    private static final String API_VERSION = "1.0.0";
+
+    private static final String API_PROVIDER = "admin";
+
+    private static final String APP_NAME = "NewApplication";
+
+    private static final String USER_JOHN = "john";
+
+    private static final String SUBSCRIBER_ROLE = "subscriber";
 
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init(0);
+
+        String publisherURLHttp;
+
+        String storeURLHttp;
+
         if (isBuilderEnabled()) {
             publisherURLHttp = getServerURLHttp();
             storeURLHttp = getServerURLHttp();
@@ -62,44 +80,42 @@ public class APIScopeTestCase extends APIManagerIntegrationTest {
             publisherURLHttp = getPublisherServerURLHttp();
             storeURLHttp = getStoreServerURLHttp();
         }
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
 
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
+        apiStore = new APIStoreRestClient(storeURLHttp);
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        UserManagementClient userManagementClient = new UserManagementClient(amServer.getBackEndUrl(), "admin",
-                                                                             "admin");
+        userManagementClient = new UserManagementClient(amServer.getBackEndUrl(), "admin",
+                                                        "admin");
 
         // adding new role subscriber
-        userManagementClient.addRole("subscriber", new String[]{}, new String[]{"/permission/admin/login",
-                                                                                "/permission/admin/manage/api/subscribe"});
+        userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
+                                                                                   "/permission/admin/manage/api/subscribe"});
 
         // crating user john
-        userManagementClient.addUser("john", "john123", new String[]{"subscriber"}, "user_role");
+        userManagementClient.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
 
 
         // Adding API
-        String APIName = "APIScopeTestAPI";
-        String APIContext = "testScopeAPI";
+        String apiContext = "testScopeAPI";
         String tags = "thomas-bayer, testing, rest-Apis";
         String url = "http://www.thomas-bayer.com/sqlrest/";
         String description = "This is a test API created by API manager integration test";
-        String providerName = "admin";
-        String APIVersion = "1.0.0";
 
         apiPublisher.login(userInfo.getUserName(), userInfo.getPassword());
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
-        apiRequest.setVersion(APIVersion);
+        apiRequest.setVersion(API_VERSION);
         apiPublisher.addAPI(apiRequest);
 
         //publishing API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, API_PROVIDER,
                                                                               APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
@@ -126,24 +142,22 @@ public class APIScopeTestCase extends APIManagerIntegrationTest {
                                   "\"method\":\"DELETE\"," +
                                   "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
                                   "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
-                                  "\"/default\"}],\"info\":{\"title\":\"" + APIName + "\",\"termsOfServiceUrl\":\"" +
+                                  "\"/default\"}],\"info\":{\"title\":\"" + API_NAME + "\",\"termsOfServiceUrl\":\"" +
                                   "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
 
 
-        apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
-
-        String appName = "NewApplication";
+        apiPublisher.updateResourceOfAPI(API_PROVIDER, API_NAME, API_VERSION, modifiedResource);
 
         // For Admin user
         // create new application and subscribing
         apiStore.login("admin", "admin");
-        apiStore.addApplication(appName, "Unlimited", "some_url", "NewApp");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
-        subscriptionRequest.setApplicationName(appName);
+        apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, API_PROVIDER);
+        subscriptionRequest.setApplicationName(APP_NAME);
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(appName);
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(APP_NAME);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject jsonResponse = new JSONObject(responseString);
 
@@ -180,7 +194,7 @@ public class APIScopeTestCase extends APIManagerIntegrationTest {
 
 
         //Obtaining user access token for john
-        requestBody = "grant_type=password&username=john&password=john123&scope=admin_scope user_scope";
+        requestBody = "grant_type=password&username=" + USER_JOHN + "&password=john123&scope=admin_scope user_scope";
         accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                                                       requestBody, tokenEndpointURL)
                                                                .getData());
@@ -191,7 +205,7 @@ public class APIScopeTestCase extends APIManagerIntegrationTest {
 
         // Accessing GET method
         response = HttpRequestUtil.doGet(getApiInvocationURLHttp("testScopeAPI/1.0.0/ITEM"), requestHeaders);
-        Assert.assertEquals(response.getResponseCode(), 200, "testRole John cannot access the GET Method");
+        Assert.assertEquals(response.getResponseCode(), 200, "User John cannot access the GET Method");
 
         try {
             // Accessing POST method
@@ -203,11 +217,23 @@ public class APIScopeTestCase extends APIManagerIntegrationTest {
             log.error("user john cannot access the resources (expected behaviour)");
             Assert.assertTrue(true);
         }
-
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
+        if (apiStore != null) {
+            apiStore.removeApplication(APP_NAME);
+        }
+
+        if (apiPublisher != null) {
+            apiPublisher.deleteApi(API_NAME, API_VERSION, API_PROVIDER);
+        }
+
+        if (userManagementClient != null) {
+            userManagementClient.deleteUser(USER_JOHN);
+            userManagementClient.deleteRole(SUBSCRIBER_ROLE);
+        }
         super.cleanup();
     }
 }
