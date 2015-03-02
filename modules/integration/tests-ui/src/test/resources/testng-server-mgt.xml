@@ -21,6 +21,9 @@
             <!--<class name="org.wso2.carbon.am.integration.ui.OAuthConsumerAppsTestCase"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIMANAGER3087UnableToPublishSecondAttemptWithTiers"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIDocsDownloadTestCase"/>-->
+            <class name="org.wso2.carbon.am.integration.ui.APIMANAGER2957EpochTimeTestCase"/>
+            <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3017ExternalStoreLifeCycleTestCase"/>
+            <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3149SSOLogin"/>
         </classes>
     </test>
 </suite>
