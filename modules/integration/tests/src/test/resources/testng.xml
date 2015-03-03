@@ -14,6 +14,7 @@
             -->
             <!--class name="org.wso2.carbon.am.tests.sample.APIUsageBAMIntegrationTestCase"/-->
 
+            <!--<class name="org.wso2.carbon.am.tests.sample.PublishToExternalStoreTestCase" />-->
 
             <class name="org.wso2.carbon.am.tests.sample.APIApplicationLifeCycleITestCase"/>
             <class name="org.wso2.carbon.am.tests.rest.URLMappingRESTTestCase"/>
