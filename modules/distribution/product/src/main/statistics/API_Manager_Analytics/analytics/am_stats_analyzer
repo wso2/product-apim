@@ -42,10 +42,10 @@ CREATE EXTERNAL TABLE IF NOT EXISTS APIResourcePathUsageSummaryData ( api STRING
 
 CREATE EXTERNAL TABLE IF NOT EXISTS APIResponseData (key STRING,
 	api_version STRING,apiPublisher STRING,context STRING,serviceTime BIGINT,
-	response INT,hostName STRING,responseTime BIGINT) STORED BY 
+	response INT,hostName STRING,eventTime BIGINT) STORED BY 
 	'org.apache.hadoop.hive.cassandra.CassandraStorageHandler' WITH SERDEPROPERTIES ('wso2.carbon.datasource.name'='WSO2BAM_CASSANDRA_DATASOURCE',
 	"cassandra.cf.name" = "org_wso2_apimgt_statistics_response",
-	"cassandra.columns.mapping" = ":key,payload_api_version,payload_apiPublisher,payload_context,payload_serviceTime,payload_response,payload_hostName,payload_responseTime" );  
+	"cassandra.columns.mapping" = ":key,payload_api_version,payload_apiPublisher,payload_context,payload_serviceTime,payload_response,payload_hostName,payload_eventTime" );  
 	
 	
 CREATE EXTERNAL TABLE IF NOT EXISTS APIResponseSummaryData (api_version STRING,apiPublisher STRING,context STRING,serviceTime INT,total_response_count INT,hostName STRING,year SMALLINT,month SMALLINT,day SMALLINT, time STRING) STORED BY 
@@ -56,7 +56,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS APIResponseSummaryData (api_version STRING,a
 	context VARCHAR(100),serviceTime INT,total_response_count INT,hostName VARCHAR(100), year SMALLINT, month SMALLINT, day SMALLINT, time VARCHAR(30), PRIMARY KEY(api_version,apiPublisher,context,hostName,time))' );
 	
 	
-insert overwrite table APIResponseSummaryData select api_version,apiPublisher,context, avg(serviceTime) as avg_service_time,sum(response) as total_response_count, hostName, year(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as year, month(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as month,day(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as day,concat(substring(from_unixtime(cast(responseTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16),':00') as time from APIResponseData where context is not NULL group by api_version,apiPublisher,context,hostName,year(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )), month(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),day(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),hour(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),minute(from_unixtime(cast(responseTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),substring(from_unixtime(cast(responseTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16);
+insert overwrite table APIResponseSummaryData select api_version,apiPublisher,context, avg(serviceTime) as avg_service_time,sum(response) as total_response_count, hostName, year(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as year, month(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as month,day(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as day,concat(substring(from_unixtime(cast(eventTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16),':00') as time from APIResponseData where context is not NULL group by api_version,apiPublisher,context,hostName,year(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )), month(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),day(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),hour(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),minute(from_unixtime(cast(eventTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),substring(from_unixtime(cast(eventTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16);
 
 
 CREATE EXTERNAL TABLE IF NOT EXISTS APIFaultData (key STRING,

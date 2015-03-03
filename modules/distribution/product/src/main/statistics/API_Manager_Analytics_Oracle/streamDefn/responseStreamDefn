@@ -13,7 +13,8 @@
                                                  {'name':'api','type':'STRING'}, 
                                                  {'name':'resourcePath','type':'STRING'}, 
                                                  {'name':'method','type':'STRING'}, 
-                                                 {'name':'version','type':'STRING'},                                                 
+                                                 {'name':'version','type':'STRING'}, 
+                                                 {'name':'response','type':'INT'},                                                 
                                                  {'name':'responseTime','type':'LONG'}, 
                                                  {'name':'serviceTime','type':'LONG'}, 
                                                  {'name':'backendTime','type':'LONG'}, 
@@ -25,7 +26,8 @@
 				                 {'name':'applicationName','type':'STRING'},
                     		                 {'name':'applicationId','type':'STRING'},
                                                  {'name':'cacheHit','type':'BOOL'},
-                                                 {'name':'responseSize','type':'LONG'}
+                                                 {'name':'responseSize','type':'LONG'},
+                                                 {'name':'protocol','type':'STRING'}
                                                  
                                          ] 
 
