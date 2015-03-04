@@ -245,6 +245,14 @@
                 <Version>1.0.0</Version>
                 <BAMProfileName>bam-profile</BAMProfileName>
             </Destination>
+            <Throttle>
+                <Name>org.wso2.apimgt.statistics.throttle</Name>
+                <Version>1.0.0</Version>
+            </Throttle>
+            <Workflow>
+                <Name>org.wso2.apimgt.statistics.workflow</Name>
+                <Version>1.0.0</Version>
+            </Workflow>
         </Streams>
 
     </APIUsageTracking>
@@ -489,8 +497,8 @@
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
 
     </CORSConfiguration>
-   <!-- This property is there to configure velocity log file location. normally it will
-        crete file in carbon home. If you need to use different location you can use this
+   <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
+ 	You can enable this and set preferable Logger name. 
    -->
-   <!--VelocityLogger></VelocityLogger-->
+   <!--VelocityLogger>VELOCITY</VelocityLogger-->
 </APIManager>

@@ -63,6 +63,8 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
                     + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
                     + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+            serverConfigurationManager.applyConfiguration(new File(ProductConstant.getResourceLocations(ProductConstant.AM_SERVER_NAME)
+                    + File.separator + "configFiles/tokenTest/" + "identity.xml"));
             super.init(0);
         } else {
             publisherURLHttp = getPublisherServerURLHttp();
@@ -147,6 +149,64 @@ public class RefreshTokenTestCase extends APIManagerIntegrationTest {
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Validate Refresh Token Length Test Case")
+    public void testRefreshTokenLength() throws Exception {
+        String APIName = "RefreshTokenTestAPI";
+        String APIContext = "refreshTokenTestAPI";
+        String tags = "youtube, token, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String providerName = "admin";
+        String APIVersion = "1.0.0";
+        apiPublisher.login(userInfo.getUserName(), userInfo.getPassword());
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersion);
+        apiRequest.setSandbox(url);
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+
+        apiStore.login(userInfo.getUserName(), userInfo.getPassword());
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userInfo.getUserName());
+        subscriptionRequest.setTier("Gold");
+        apiStore.subscribe(subscriptionRequest);
+
+        //Generate production token and invoke with that
+        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+
+        // get Consumer Key and Consumer Secret
+        String consumerKey = response.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        String consumerSecret = response.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+
+        //Obtain user access token
+        Thread.sleep(2000);
+        String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
+        URL tokenEndpointURL = new URL("https://localhost:8243/token");
+        JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
+        /*
+        Response would be like -
+        {"token_type":"bearer","expires_in":10,"refresh_token":"736b6b5354e4cf24f217718b2f3f72b",
+        "access_token":"e06f12e3d6b1367d8471b093162f6729"}
+        */
+
+        // get Access Token and Refresh Token
+        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
+
+        //Obtain user access token for the second time
+        Thread.sleep(2000);
+
+        JSONObject accessTokenGenerationResponse2 = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
+        // get Access Token and Refresh Token for the second time
+        String refreshToken2 = accessTokenGenerationResponse2.getString("refresh_token");
+
+        //check the refresh token lenght
+        Assert.assertEquals(refreshToken.length(), refreshToken2.length(), "Refresh token length matched");
     }
 
     @AfterClass(alwaysRun = true)

@@ -19,7 +19,6 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <inherited>false</inherited>
-                <version>2.12.4</version>
                 <configuration>
                     <!--<argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006</argLine>-->
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
@@ -56,6 +55,12 @@
                             <name>usedefaultlisteners</name>
                             <value>false</value>
                         </property>
+                        <property>
+                            <name>download.location</name>
+                            <value>
+                                ${basedir}/target
+                            </value>
+                        </property>
                         <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
                         <emma.home>${basedir}/target/emma</emma.home>
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
@@ -68,7 +73,6 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-
                     <execution>
                         <id>copy-emma-dependencies</id>
                         <phase>compile</phase>
@@ -122,7 +126,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -151,7 +154,6 @@
 
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
                 <executions>
                     <execution>
                         <id>copy-resources-jks</id>
@@ -225,42 +227,32 @@
         <dependency>
             <groupId>emma</groupId>
             <artifactId>emma</artifactId>
-            <version>${emma.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>SecVerifier</artifactId>
-            <version>${carbon.platform.version}</version>
             <type>aar</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.api</artifactId>
-            <version>${test-automation-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.core</artifactId>
-            <version>${test-automation-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.utils</artifactId>
-            <version>${test-automation-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
             <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
-            <version>${test-automation-framework-version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.1.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <properties>
-        <test-automation-framework-version>${carbon.platform.version}</test-automation-framework-version>
-    </properties>
 </project>

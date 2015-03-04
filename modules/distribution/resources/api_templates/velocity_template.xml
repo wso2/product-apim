@@ -16,300 +16,309 @@
  ~ under the License.
  -->
 
-#####################  Define the macros ######################
+        #####################  Define the macros ######################
 
-#macro ( print_if_exist $field $default)
+        #macro ( print_if_exist $field $default)
         #if($field && "$field" !="")
-            $field
+        $field
         #else
-            $default
+        $default
         #end
-#end
+        #end
 
-#macro ( print_string_if_exist $field $default)
+        #macro ( print_string_if_exist $field $default)
         #if($field && "$field" !="")
-            "$field"
+        "$field"
         #else
-            "$default"
+        "$default"
         #end
-#end
+        #end
 
-#macro ( print_if_exist_only $tagname $field)
+        #macro ( print_if_exist_only $tagname $field)
         #if($field && "$field" !="")
-            <$tagname>$field</$tagname>
+<$tagname>$field</$tagname>
         #else
-            ## print nothing.
-        #end
-#end
-
-#macro ( print_list $tagname $list)
-        #if($list && "$list" !="" && $list.size() > 0)
-          <$tagname>
-            #foreach($item in $list)
-             $item #if( $foreach.hasNext ), #end
-            #end
-          </$tagname>
-        #else
-            ## print nothing.
-        #end
-#end
-
-#macro ( timeout $config)
-    #if( $config.get("actionSelect") == "neverTimeout" )
         ## print nothing.
-    #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
-    <timeout>
-        #print_if_exist_only("duration" $config.get("actionDuration"))
-        #print_if_exist_only("responseAction" $config.get("actionSelect"))
-    </timeout>
-    #end
-    <suspendOnFailure>
-        #print_list( "errorCodes" $config.get("suspendErrorCode"))
-        #print_if_exist_only("initialDuration" $config.get("suspendDuration"))
-        #print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
-        <progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
-    </suspendOnFailure>
-    <markForSuspension>
-        #print_list("errorCodes" $config.get("retryErroCode"))
-        <retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
-        <retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
-    </markForSuspension>
-#end
+        #end
+        #end
 
-#macro ( http_endpoint $name $ep )
+        #macro ( print_list $tagname $list)
+        #if($list && "$list" !="" && $list.size() > 0)
+<$tagname>
+        #foreach($item in $list)
+        $item #if( $foreach.hasNext ), #end
+        #end
+        </$tagname>
+        #else
+        ## print nothing.
+        #end
+        #end
+
+        #macro ( timeout $config)
+        #if( $config.get("actionSelect") == "neverTimeout" )
+        ## print nothing.
+        #elseif($config.get("actionDuration")|| $config.get("actionSelect"))
+<timeout>
+#print_if_exist_only("duration" $config.get("actionDuration"))
+#print_if_exist_only("responseAction" $config.get("actionSelect"))
+</timeout>
+        #end
+<suspendOnFailure>
+#print_list( "errorCodes" $config.get("suspendErrorCode"))
+#print_if_exist_only("initialDuration" $config.get("suspendDuration"))
+#print_if_exist_only("maximumDuration" $config.get("suspendMaxDuration"))
+<progressionFactor>#print_if_exist( $config.get("factor") 1.0)</progressionFactor>
+</suspendOnFailure>
+<markForSuspension>
+#print_list("errorCodes" $config.get("retryErroCode"))
+<retriesBeforeSuspension>#print_if_exist( $config.get("retryTimeOut") 0)</retriesBeforeSuspension>
+<retryDelay>#print_if_exist( $config.get("retryDelay") 0)</retryDelay>
+</markForSuspension>
+        #end
+
+        #macro ( http_endpoint $name $ep )
 <endpoint name="$name">
-    <http uri-template="$util.escapeXml($ep.get("url"))">
-    #timeout( $ep.get('config') )
-    </http>
-    #if($destinationBasedStatsEnabled)
-	<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
-    #end
-</endpoint>
-#end
+<http uri-template="$util.escapeXml($ep.get("url"))">
+#timeout( $ep.get('config') )
+</http>
+        #if($destinationBasedStatsEnabled)
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+        #end
+        </endpoint>
+        #end
 
-#macro ( draw_endpoint $type $endpoint_config )
+        #macro ( draw_endpoint $type $endpoint_config )
 
-#set( $endpointClass = $endpoint_config.get("endpoint_type") )
-#set( $endpoints = $endpoint_config.get("${type}_endpoints"))
-#set( $ep_name = "${apiName}_API${type}Endpoint_${resourceNo}")
+        #set( $endpointClass = $endpoint_config.get("endpoint_type") )
+        #set( $endpoints = $endpoint_config.get("${type}_endpoints"))
+        #set( $ep_name = "${apiName}_API${type}Endpoint_${resourceNo}")
 
-## IF endpoint secured
-#if($isEndpointSecured)
-	#if($isSecureVaultEnabled)
-		<property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$securevault_alias')"/>
-		<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
-		<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
-	#else
-		<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', base64Encode('$username:$password'))" scope="transport" />
-	#end
-#end
+        ## IF endpoint secured
+        #if($isEndpointSecured)
+        #if($isSecureVaultEnabled)
+<property xmlns="http://ws.apache.org/ns/synapse" name="password" expression="wso2:vault-lookup('$securevault_alias')"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
+        #else
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', base64Encode('$username:$password'))" scope="transport" />
+        #end
+        #end
 <send>
+
+## If endpoint is http
 #if ($endpointClass == "http")
-    #http_endpoint($ep_name $endpoints)
+#http_endpoint($ep_name $endpoints)
 #elseif ($endpointClass == "address")
-    <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-        #set( $advance_ep = $endpoints.get("config") )
-        <address uri="$util.escapeXml($endpoints.get("url"))"
-            #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
-                format="$advance_ep.get("format")"
-            #end
-            #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
-            optimize="$advance_ep.get("optimize")"
-            #end
-        >
-          #timeout( $endpoints.get('config') )
-        </address>
-	#if($destinationBasedStatsEnabled)
-	   <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-	#end
-    </endpoint>
-#elseif ($endpointClass == "wsdl")
-    <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-        #if (${type} == "production")
-		<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
-		    #timeout()
-		</wsdl>
-	#else
-		<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
-		    #timeout()
-		</wsdl>
-	#end
-	#if($destinationBasedStatsEnabled)
-	   <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-	#end
-    </endpoint>
-#elseif ($endpointClass == "failover")
-    #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
-    <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-    <failover>
-        #http_endpoint("${ep_name}_0" $endpoints)
-        #set( $i = 1)
-        #foreach($endpoint in $failover_endpoints)
-            #http_endpoint("${ep_name}_$i" $endpoint)
-            #set( $i = $i + 1)
-        #end
-    </failover>
-    </endpoint>
-#elseif ($endpointClass == "load_balance")
-    <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
-    #if($endpoint_config.get("sessionManagement") && $endpoint_config.get("sessionManagement") != "" && $endpoint_config.get("sessionManagement") != "none")
-    <session type="$endpoint_config.get("sessionManagement")">
-        #if($endpoint_config.get("sessionTimeOut") && $endpoint_config.get("sessionTimeOut") != "")
-        <sessionTimeout>$endpoint_config.get("sessionTimeOut")</sessionTimeout>
-        #end
-    </session>
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+    #set( $advance_ep = $endpoints.get("config") )
+    <address uri="$util.escapeXml($endpoints.get("url"))"
+    #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
+    format="$advance_ep.get("format")"
     #end
-    <loadbalance algorithm="$!endpoint_config.get("algoClassName")"
-	#if($endpoint_config.get("failOver") && $endpoint_config.get("failOver") != "" && $endpoint_config.get("failOver") == "False")
-	failover="false"
-	#end>
+    #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
+    optimize="$advance_ep.get("optimize")"
+    #end
+    >
+    #timeout( $endpoints.get('config') )
+</address>
+#if($destinationBasedStatsEnabled)
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
+#end
+</endpoint>
+        #elseif ($endpointClass == "wsdl")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+#if (${type} == "production")
+<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="$!endpoint_config.get("wsdlendpointPort")">
+#timeout()
+</wsdl>
+        #else
+<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
+        #timeout()
+        </wsdl>
+        #end
+        #if($destinationBasedStatsEnabled)
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
+        #end
+        </endpoint>
+        #elseif ($endpointClass == "failover")
+        #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+<failover>
+    #http_endpoint("${ep_name}_0" $endpoints)
+    #set( $i = 1)
+    #foreach($endpoint in $failover_endpoints)
+    #http_endpoint("${ep_name}_$i" $endpoint)
+    #set( $i = $i + 1)
+    #end
+</failover>
+</endpoint>
+        #elseif ($endpointClass == "load_balance")
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
+#if($endpoint_config.get("sessionManagement") && $endpoint_config.get("sessionManagement") != "" && $endpoint_config.get("sessionManagement") != "none")
+<session type="$endpoint_config.get("sessionManagement")">
+#if($endpoint_config.get("sessionTimeOut") && $endpoint_config.get("sessionTimeOut") != "")
+<sessionTimeout>$endpoint_config.get("sessionTimeOut")</sessionTimeout>
+#end
+</session>
+        #end
+<loadbalance algorithm="$!endpoint_config.get("algoClassName")"
+        #if($endpoint_config.get("failOver") && $endpoint_config.get("failOver") != "" && $endpoint_config.get("failOver") == "False")
+        failover="false"
+        #end>
         #set( $i = 0)
         #foreach($endpoint in $endpoints)
-            #http_endpoint("${ep_name}_$i" $endpoint)
-            #set( $i = $i + 1)
+        #http_endpoint("${ep_name}_$i" $endpoint)
+        #set( $i = $i + 1)
         #end
-    </loadbalance>
-    </endpoint>
-#end
-</send>
-#if($destinationBasedStatsEnabled)
+        </loadbalance>
+        </endpoint>
+        #end
+        </send>
+        #if($destinationBasedStatsEnabled)
 <bam>
-    <serverProfile name="$!profileName">
-	<streamConfig name="$!streamName" version="$!streamVersion"/>
-    </serverProfile>
+<serverProfile name="$!profileName">
+    <streamConfig name="$!streamName" version="$!streamVersion"/>
+</serverProfile>
 </bam>
-#end
-#end
+        #end
+        #end
 
-######################## End of Macros ######################################
+        ######################## End of Macros ######################################
 
 
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="url">
 #if($apiIsBlocked)
-    ## if API is blocked send the API Block message
-    <resource faultSequence=#print_string_if_exist($faultSequence "fault")>
-        <inSequence>
-            <payloadFactory>
-                <format>
-                    <am:fault xmlns:am="http://wso2.org/apimanager">
-                        <am:code>700700</am:code>
-                        <am:message>API blocked</am:message>
-                        <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
-                    </am:fault>
-                </format>
-            </payloadFactory>
-            <property name="HTTP_SC" value="503" scope="axis2"/>
-            <property name="RESPONSE" value="true"/>
-            <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
-            <header name="To" action="remove"/>
-            <send/>
-        </inSequence>
-    </resource>
-#else
-    ## api not blocked
-    #set ($resourceNo = 0)
-    #foreach($resource in $resources)
-
-    <resource xmlns="http://ws.apache.org/ns/synapse"
-    	#if($resource.getUriTemplate().contains("{") ||
-	    ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-	   uri-template="$resource.getUriTemplate()"
+## if API is blocked send the API Block message
+<resource faultSequence=#print_string_if_exist($faultSequence "fault")>
+<inSequence>
+    <payloadFactory>
+        <format>
+            <am:fault xmlns:am="http://wso2.org/apimanager">
+                <am:code>700700</am:code>
+                <am:message>API blocked</am:message>
+                <am:description>This API has been blocked temporarily. Please try again later or contact the system administrators.</am:description>
+            </am:fault>
+        </format>
+    </payloadFactory>
+    <property name="HTTP_SC" value="503" scope="axis2"/>
+    <property name="RESPONSE" value="true"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <header name="To" action="remove"/>
+    <send/>
+</inSequence>
+</resource>
         #else
-           url-mapping="$resource.getUriTemplate()"
-    	#end
-    	methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
-        <inSequence>
-            ## check and set jwt
-            #if($jwtIsEnabled)
-            <class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
-            #end
-		    ## check and set response caching
-		    #if($responseCacheEnabled)
-			<cache scope="per-host" collector="false" hashGenerator="org.wso2.caching.digest.REQUESTHASHGenerator" timeout="$!responseCacheTimeOut">
-				<implementation type="memory" maxSize="500"/>
-			</cache>
-		    #end
+        ## api not blocked
+        #set ($resourceNo = 0)
+        #foreach($resource in $resources)
+
+<resource xmlns="http://ws.apache.org/ns/synapse"
+        #if($resource.getUriTemplate().contains("{") ||
+        ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
+        uri-template="$resource.getUriTemplate()"
+        #else
+        url-mapping="$resource.getUriTemplate()"
+        #end
+        methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
+<inSequence>
+## check and set jwt
+#if($jwtIsEnabled)
+<class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
+#end
+## check and set response caching
+#if($responseCacheEnabled)
+<cache scope="per-host" collector="false" hashGenerator="org.wso2.caching.digest.REQUESTHASHGenerator" timeout="$!responseCacheTimeOut">
+    <implementation type="memory" maxSize="500"/>
+</cache>
+#end
 
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
-            #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
-                #set( $filterRegex = "SANDBOX" )
-            #else
-                #set( $filterRegex = "PRODUCTION" )
-            #end
-            #if($apiStatus != 'PROTOTYPED')
-            <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
-                <then>
-            #end
-                        #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
-                            #draw_endpoint( "sandbox" $endpoint_config )
-                        #else
-                            #draw_endpoint( "production" $endpoint_config )
-                        #end
-            #if($apiStatus != 'PROTOTYPED')
-                </then>
-                <else>
-                        #if($environmentType !='hybrid')
-                            <payloadFactory>
-                                 <format>
-                                   <error xmlns="">
-                                      #if($environmentType == 'production')
-                                      <message>Sandbox Key Provided for Production Gateway</message>
-                                      #elseif($environmentType == 'sandbox')
-                                      <message>Production Key Provided for Sandbox Gateway</message>
-                                      #end
-                                   </error>
-                                </format>
-                            </payloadFactory>
-                           <property name="ContentType" value="application/xml" scope="axis2"/>
-                           <property name="RESPONSE" value="true"/>
-                           <header name="To" action="remove"/>
-                           <property name="HTTP_SC" value="401" scope="axis2"/>
-                           <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
-                           <send/>
-                        #else
-                            #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
-                                #draw_endpoint( "sandbox" $endpoint_config )
-                            #elseif($endpoint_config.get("production_endpoints"))
-                                <sequence key="_sandbox_key_error_"/>
-                            #elseif($endpoint_config.get("sandbox_endpoints"))
-                                <sequence key="_production_key_error_"/>
-                            #end
-                        #end
-                </else>
-            </filter>
-            #end
-        </inSequence>
-        <outSequence>
-	    ## check and set response caching
-	    #if($responseCacheEnabled)
-               <cache scope="per-host" collector="true"/>
-	    #end
-            <send/>
-        </outSequence>
-    </resource>
-    #set ($resourceNo = $resourceNo + 1)
-    #end  ## end of resource iterator
-    ## print the handlers
-    #if($handlers.size() > 0)
-    <handlers xmlns="http://ws.apache.org/ns/synapse">
-        #foreach($handler in $handlers)
-        <handler xmlns="http://ws.apache.org/ns/synapse" class="$handler.className">
-            #if($handler.hasProperties())
-                #set ($map = $handler.getProperties() )
-                #foreach($property in $map.entrySet())
-                    <property name="$!property.key" value="$!property.value"/>
-                #end
-            #end
-        </handler>
+#if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
+#set( $filterRegex = "SANDBOX" )
+#else
+#set( $filterRegex = "PRODUCTION" )
+#end
+#if($apiStatus != 'PROTOTYPED')
+<filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
+    <then>
         #end
-    </handlers>
+        #if($statsEnabled)
+        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+        #end
+        #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
+        #draw_endpoint( "sandbox" $endpoint_config )
+        #else
+        #draw_endpoint( "production" $endpoint_config )
+        #end
+        #if($apiStatus != 'PROTOTYPED')
+    </then>
+    <else>
+        #if($environmentType !='hybrid')
+        <payloadFactory>
+            <format>
+                <error xmlns="">
+                    #if($environmentType == 'production')
+                    <message>Sandbox Key Provided for Production Gateway</message>
+                    #elseif($environmentType == 'sandbox')
+                    <message>Production Key Provided for Sandbox Gateway</message>
+                    #end
+                </error>
+            </format>
+        </payloadFactory>
+        <property name="ContentType" value="application/xml" scope="axis2"/>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="HTTP_SC" value="401" scope="axis2"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <send/>
+        #else
+        #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
+        #draw_endpoint( "sandbox" $endpoint_config )
+        #elseif($endpoint_config.get("production_endpoints"))
+        <sequence key="_sandbox_key_error_"/>
+        #elseif($endpoint_config.get("sandbox_endpoints"))
+        <sequence key="_production_key_error_"/>
+        #end
+        #end
+    </else>
+</filter>
+#end
+</inSequence>
+<outSequence>
+#if($statsEnabled)
+<property name="api.ut.requestEndTime" expression="get-property('SYSTEM_TIME')"/>
+<class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"/>
+#end
+## check and set response caching
+#if($responseCacheEnabled)
+<cache scope="per-host" collector="true"/>
+#end
+<send/>
+</outSequence>
+        </resource>
+        #set ($resourceNo = $resourceNo + 1)
+        #end  ## end of resource iterator
+        ## print the handlers
+        #if($handlers.size() > 0)
+<handlers xmlns="http://ws.apache.org/ns/synapse">
+#foreach($handler in $handlers)
+<handler xmlns="http://ws.apache.org/ns/synapse" class="$handler.className">
+    #if($handler.hasProperties())
+    #set ($map = $handler.getProperties() )
+    #foreach($property in $map.entrySet())
+    <property name="$!property.key" value="$!property.value"/>
     #end
+    #end
+</handler>
 #end
-#if($apiStatus == 'PROTOTYPED')
-<handlers>
-    <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"/>
 </handlers>
-#end
-## end of apiIsBlocked check
-</api>
+        #end
+        #end
+        #if($apiStatus == 'PROTOTYPED')
+<handlers>
+<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"/>
+</handlers>
+        #end
+        ## end of apiIsBlocked check
+        </api>

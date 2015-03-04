@@ -21,6 +21,8 @@
                     		                 {'name':'hostName','type':'STRING'},
    		                                 {'name':'apiPublisher','type':'STRING'},
 				                 {'name':'applicationName','type':'STRING'},
-                    		                 {'name':'applicationId','type':'STRING'}
+                    		                 {'name':'applicationId','type':'STRING'},
+                                                 {'name':'userAgent','type':'STRING'},
+                                                 {'name':'tier','type':'STRING'}
                                          ] 
                                        }
