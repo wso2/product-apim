@@ -26,6 +26,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +42,6 @@ public class APIPublisherRestClient {
             this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         }
     }
-
     public HttpResponse login(String userName, String password)
             throws Exception {
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/user/login/ajax/login.jag")

@@ -1,0 +1,25 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="ApiManager-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+        <classes>
+
+            <!--<class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>-->
+
+
+
+            <!--<class name="org.wso2.am.integration.tests.sample.APIApplicationLifeCycleTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>-->
+        </classes>
+   <!--     <packages>
+            <package name="org.wso2.am.integration.tests.*"/>
+        </packages>-->
+    </test>
+
+</suite>
