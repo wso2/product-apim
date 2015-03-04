@@ -5,6 +5,7 @@ We can engage business process execution for API management releated operations.
 01. User creation process.
 02. Application creation process.
 03. Subscription process.
+04. Application Registration process. 
 
 If we performed any of above operations with properly configured API Manager to integrate web service based workflow executor[which is default ship with AM 1.6.0],then API manager will execute business process workflow for each of above operations. Each business process has 4 main operations.
 01. Accept workflow request coming from API manager to BPS.
@@ -38,7 +39,7 @@ Edit API manager configuration stored in registry to enable web service based wo
 Edit WorkFlowExtensions as follows. Please note that all workflow process services
 are running on port 9765 of Business Process Server(as it is running with port offset2). 
 
-	  <ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationWSWorkflowExecutor">
+      <ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationWSWorkflowExecutor">
            <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationApprovalWorkFlowProcess</Property>
            <Property name="username">admin</Property>
            <Property name="password">admin</Property>
@@ -58,6 +59,20 @@ are running on port 9765 of Business Process Server(as it is running with port o
            <Property name="password">admin</Property>
            <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
       </UserSignUp>
+
+      <ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationWSWorkflowExecutor">
+        <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationRegistrationWorkFlowProcess/</Property>
+        <Property name="username">admin</Property>
+        <Property name="password">admin</Property>
+        <Property name="callbackURL">https://localhost:8248/services/WorkflowCallbackService</Property>
+      </ProductionApplicationRegistration>
+
+      <SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationWSWorkflowExecutor">
+        <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationRegistrationWorkFlowProcess/</Property>
+        <Property name="username">admin</Property>
+        <Property name="password">admin</Property>
+        <Property name="callbackURL">https://localhost:8248/services/WorkflowCallbackService</Property>
+      </SandboxApplicationRegistration>
     </WorkFlowExtensions>
 
 

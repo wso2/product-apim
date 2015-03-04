@@ -497,8 +497,8 @@
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
 
     </CORSConfiguration>
-   <!-- This property is there to configure velocity log file location. normally it will
-        crete file in carbon home. If you need to use different location you can use this
+   <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
+ 	You can enable this and set preferable Logger name. 
    -->
-   <!--VelocityLogger></VelocityLogger-->
+   <!--VelocityLogger>VELOCITY</VelocityLogger-->
 </APIManager>

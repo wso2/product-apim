@@ -277,6 +277,15 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
+<<<<<<< HEAD
+=======
+            <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
+            <version>${carbon.platform.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+>>>>>>> 4ec36d735772540dc843df80121ca6df826e1dfc
             <artifactId>org.wso2.carbon.application.mgt.stub</artifactId>
             <version>${carbon.platform.version}</version>
             <scope>compile</scope>

@@ -25,6 +25,7 @@
             <class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.APIResourceModificationTestCase"/>
+            <class name="org.wso2.carbon.am.tests.sample.DefaultVersionWithScopesTestCase"/>
             <!--class name="org.wso2.carbon.am.tests.sample.ESBJAVA3380TestCase"/-->
 
             <!--class name="org.wso2.carbon.am.tests.sample.ErrorMessageTypeTestCase"/-->
@@ -44,8 +45,11 @@
             <class name="org.wso2.carbon.am.tests.sample.DAOTestCase"/>
             <class name="org.wso2.carbon.am.tests.sample.DefaultVersionAPITestCase"/>
             <!--<class name="org.wso2.carbon.am.tests.sample.EmailUserNameJWTAssertionTestCase"/>-->
+            <class name="org.wso2.carbon.am.tests.sample.APIScopeTestCase"/>
            <!--class name="org.wso2.carbon.am.tests.header.ContentLengthHeaderTestCase"/-->
            <!--<class name="org.wso2.carbon.am.tests.sample.APIInvocationFailureTestCase"/> -->
+            <class name="org.wso2.jmeter.tests.APIMANAGER2964MySubscriptionsPerformanceTestCase"/>
+            <class name="org.wso2.jmeter.tests.APIMANAGER3195JWTWithWSClientTestCase"/>
         </classes>
     </test>
     <!--test name="Rest Test" preserve-order="true" verbose="2">
