@@ -5,16 +5,19 @@
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
 
-            <!--<class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
 
 
 
-            <!--<class name="org.wso2.am.integration.tests.sample.APIApplicationLifeCycleTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.in/m.integration.tests.sample.APIApplicationLifeCycleTestCase"/>&ndash;&gt;-->
             <!--<class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>-->
         </classes>
    <!--     <packages>

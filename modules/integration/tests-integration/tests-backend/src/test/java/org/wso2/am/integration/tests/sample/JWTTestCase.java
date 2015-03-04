@@ -137,7 +137,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = "https://localhost:8280/tokenTest/1.0.0/";
+        String url = "https://localhost:8280/tokenTest/1.0.0";
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 

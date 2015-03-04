@@ -182,7 +182,7 @@
                     <then>
                         <send>
                             <endpoint name="abc-AT-abc.com--stockapi_APIEndpoint_0">
-                                <http uri-template="http://localhost:9005/services/SimpleStockQuoteService">
+                                <http uri-template="http://localhost:9000/services/SimpleStockQuoteService">
                                     <timeout>
                                         <duration>30000</duration>
                                         <responseAction>fault</responseAction>

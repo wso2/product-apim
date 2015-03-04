@@ -51,7 +51,7 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest("http:///localhost:8280/stockquote" + "/test/", null);
+				.sendGetRequest("http://localhost:8280/stockquote" + "/test/", null);
 		//        HttpResponse response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/test/", null);
 		assertEquals(response.getResponseCode(), 200, "Response code mismatch");
 	}
