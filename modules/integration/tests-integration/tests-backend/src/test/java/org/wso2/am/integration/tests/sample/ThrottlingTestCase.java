@@ -80,7 +80,7 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
                 , "Adding Resource failed");
 		Thread.sleep(2000);
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest("http://localhost:8280/stockquote" + "/test/", null);
+				.sendGetRequest(getGatewayServerURLHttp()+"stockquote" + "/test/", null);
 		assertEquals(response.getResponseCode(), 200, "Response code mismatch");
 
 	}

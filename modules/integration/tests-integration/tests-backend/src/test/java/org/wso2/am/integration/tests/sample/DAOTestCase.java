@@ -161,7 +161,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL("http://localhost:9763/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -187,7 +187,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL("http://localhost:9763/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));

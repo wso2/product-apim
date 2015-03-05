@@ -124,7 +124,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + name + "&password=" + password + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL("https://localhost:8243/token");
+        URL tokenEndpointURL = new URL(getGatewayServerURLHttps()+"token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                         tokenEndpointURL).getData());
@@ -143,7 +143,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet("http://localhost:8280/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp()+"refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
@@ -166,7 +166,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         youTubeResponse = HttpRequestUtil
-                .doGet("http://localhost:8280/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp()+"refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");

@@ -124,7 +124,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		for (int i = 0; i < 19; i++) {
 
 			HttpResponse youTubeResponse = HttpRequestUtil
-					.doGet("http://localhost:8280/commentRating/1.0.0/most_popular",
+					.doGet(getGatewayServerURLHttp()+"commentRating/1.0.0/most_popular",
 					       requestHeaders);
             System.out.println(
                     "==================================================================================" +
@@ -143,7 +143,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		//Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
 		Thread.sleep(60000);
 		HttpResponse youTubeResponse1 = HttpRequestUtil
-				.doGet("http://localhost:8280/commentRating/1.0.0/most_popular", null);
+				.doGet(getGatewayServerURLHttp()+"commentRating/1.0.0/most_popular", null);
 		Assert.assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
 		// URL url1 = new URL(url);
 		// HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");

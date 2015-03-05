@@ -133,7 +133,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         Thread.sleep(60000);
         //  for (int i = 0; i < 19; i++) {
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet("http://localhost:8280/testAPI/1.0.0/most_popular", requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -144,11 +144,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
         //Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
         //Thread.sleep(60000);
-        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet("http://localhost:8280/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "-wrong-tokent-text-");
-        HttpResponse youTubeResponseError = HttpRequestUtil.doGet("http://localhost:8280/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponseError.getResponseCode(), 401, "Response code mismatched");
 
         apiStore.getAllPublishedAPIs();
@@ -196,9 +196,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String accessToken1 = response1.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeaders1 = new HashMap<String, String>();
         requestHeaders1.put("Authorization", "Bearer " + accessToken1);
-        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet("http://localhost:8280/testAPI/1.0.0/most_popular", requestHeaders1);
+        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         for (int i = 0; i < 40; i++) {
-            youTubeResponseTestApp = HttpRequestUtil.doGet("http://localhost:8280/testAPI/1.0.0/most_popular", requestHeaders1);
+            youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         }
         assertEquals(youTubeResponseTestApp.getResponseCode(), 503, "Response code mismatched");
 
