@@ -40,22 +40,18 @@ under the License.
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.5.6</version>
         </dependency>
 
     </dependencies>
