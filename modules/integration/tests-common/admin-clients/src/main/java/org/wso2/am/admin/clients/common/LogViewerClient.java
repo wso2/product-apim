@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2015​, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -15,12 +15,12 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.admin.clients;
+package org.wso2.am.admin.clients.common;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.admin.clients.utils.AuthenticateStubUtil;
+import org.wso2.am.admin.clients.client.utils.AuthenticateStubUtil;
 import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 import org.wso2.carbon.logging.view.stub.LogViewerStub;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
@@ -34,13 +34,12 @@ public class LogViewerClient {
     private static final Log log = LogFactory.getLog(LogViewerClient.class);
     String serviceName = "LogViewer";
     private LogViewerStub logViewerStub;
-    private static final Integer TIMEOUT_VALUE = 3 * 100 * 1000;
 
     public LogViewerClient(String backEndUrl, String sessionCookie)
             throws AxisFault {
         String endpoint = backEndUrl + serviceName;
         logViewerStub = new LogViewerStub(endpoint);
-        logViewerStub._getServiceClient().getOptions().setTimeOutInMilliSeconds(TIMEOUT_VALUE);
+        logViewerStub._getServiceClient().getOptions().setTimeOutInMilliSeconds(300000);
         AuthenticateStubUtil.authenticateStub(sessionCookie, logViewerStub);
     }
 
@@ -48,7 +47,7 @@ public class LogViewerClient {
             throws AxisFault {
         String endpoint = backEndURL + serviceName;
         logViewerStub = new LogViewerStub(endpoint);
-        logViewerStub._getServiceClient().getOptions().setTimeOutInMilliSeconds(TIMEOUT_VALUE);
+        logViewerStub._getServiceClient().getOptions().setTimeOutInMilliSeconds(300000);
         AuthenticateStubUtil.authenticateStub(userName, password, logViewerStub);
     }
 
@@ -62,8 +61,7 @@ public class LogViewerClient {
      * @return logMessage array
      * @throws java.rmi.RemoteException Exception
      */
-    public LogEvent[] getRemoteLogs(String logType, String searchKey, String domain,
-                                    String serverKey)
+    public LogEvent[] getRemoteLogs(String logType, String searchKey, String domain, String serverKey)
             throws RemoteException, LogViewerLogViewerException {
         return logViewerStub.getLogs(logType, searchKey, domain, serverKey);
     }
@@ -80,13 +78,19 @@ public class LogViewerClient {
 
     /**
      * Provide all remote system logs
-     *
-     * @return - returns all system logs
-     * @throws RemoteException - Throws remote exception if getting remote logs fails
+     * @return
+     * @throws java.rmi.RemoteException
+     * @throws org.wso2.carbon.logging.view.stub.LogViewerLogViewerException
      */
-    public LogEvent[] getAllRemoteSystemLogs() throws RemoteException {
-        return logViewerStub.getAllSystemLogs();
+    public LogEvent[] getAllRemoteSystemLogs() throws RemoteException, LogViewerLogViewerException {
+        try {
+            return logViewerStub.getAllSystemLogs();
+        } catch (RemoteException e) {
+            log.error("Fail to get all logs ", e);
+            throw new RemoteException("Fail to get all system logs ", e);
+        }
     }
+
 
     /**
      * Getting system logs
@@ -103,10 +107,30 @@ public class LogViewerClient {
      */
     @Deprecated
     public LogEvent[] getLogs(String logType, String searchKey, String domain, String serverKey)
-            throws RemoteException {
-        return logViewerStub.getLogs(logType, searchKey, domain, serverKey);
+            throws RemoteException, LogViewerLogViewerException {
+        LogEvent[] logEvents = new LogEvent[0];
+        logEvents = logViewerStub.getLogs(logType, searchKey, domain, serverKey);
+        return logEvents;
     }
 
+
+    /**
+     * Deprecated
+     *
+     * @return
+     * @throws java.rmi.RemoteException
+     */
+    @Deprecated
+    public LogEvent[] getAllSystemLogs() throws RemoteException, LogViewerLogViewerException {
+        LogEvent[] logEvents = new LogEvent[0];
+        try {
+            logEvents = logViewerStub.getAllSystemLogs();
+        } catch (RemoteException e) {
+            log.error("Fail to get all logs ", e);
+            throw new RemoteException("Fail to get all system logs ", e);
+        }
+        return logEvents;
+    }
 
     public boolean clearLogs() throws RemoteException {
         return logViewerStub.clearLogs();

@@ -15,13 +15,13 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.admin.clients.common;
+package org.wso2.am.admin.clients.common;
 
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.client.ServiceClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.admin.clients.utils.AuthenticateStubUtil;
+import org.wso2.am.admin.clients.client.utils.AuthenticateStubUtil;
 import org.wso2.carbon.application.mgt.stub.ApplicationAdminExceptionException;
 import org.wso2.carbon.application.mgt.stub.ApplicationAdminStub;
 import org.wso2.carbon.application.mgt.stub.types.carbon.ApplicationMetadata;

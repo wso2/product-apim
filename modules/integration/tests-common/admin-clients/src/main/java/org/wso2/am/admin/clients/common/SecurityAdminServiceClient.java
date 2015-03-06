@@ -15,17 +15,13 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.admin.clients.common;
+package org.wso2.am.admin.clients.common;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.admin.clients.utils.AuthenticateStubUtil;
-import org.wso2.carbon.security.mgt.stub.config.ApplyKerberosSecurityPolicy;
-import org.wso2.carbon.security.mgt.stub.config.ApplySecurity;
-import org.wso2.carbon.security.mgt.stub.config.DisableSecurityOnService;
-import org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceSecurityConfigExceptionException;
-import org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceStub;
+import org.wso2.am.admin.clients.client.utils.AuthenticateStubUtil;
+import org.wso2.carbon.security.mgt.stub.config.*;
 
 import java.rmi.RemoteException;
 
@@ -56,7 +52,7 @@ public class SecurityAdminServiceClient {
      * @param userGroups           user groups
      * @param trustedKeyStoreArray trusted key store Array
      * @param privateStore         private store
-     * @throws SecurityAdminServiceSecurityConfigExceptionException
+     * @throws org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceSecurityConfigExceptionException
      * @throws java.rmi.RemoteException
      */
     public void applySecurity(String serviceName, String policyId,
@@ -84,7 +80,7 @@ public class SecurityAdminServiceClient {
      * @param trustedKeyStoreArray trusted key store Array
      * @param privateStore         private store
      * @param userGroups           user groups
-     * @throws SecurityAdminServiceSecurityConfigExceptionException
+     * @throws org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceSecurityConfigExceptionException
      * @throws java.rmi.RemoteException
      */
     public void applySecurity(String serviceName, String policyPath,

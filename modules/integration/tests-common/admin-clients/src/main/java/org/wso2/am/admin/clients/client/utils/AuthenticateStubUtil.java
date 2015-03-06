@@ -15,7 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.admin.clients.utils;
+package org.wso2.am.admin.clients.client.utils;
 
 import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;

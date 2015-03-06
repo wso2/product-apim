@@ -20,8 +20,8 @@ package org.wso2.am.integration.test.utils.esb;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
-import org.wso2.am.integration.admin.clients.mgt.ServiceAdminClient;
-import org.wso2.am.integration.admin.clients.services.AARServiceUploaderClient;
+import org.wso2.am.admin.clients.aar.services.AARServiceUploaderClient;
+import org.wso2.am.admin.clients.service.mgt.ServiceAdminClient;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 
 import java.io.BufferedReader;

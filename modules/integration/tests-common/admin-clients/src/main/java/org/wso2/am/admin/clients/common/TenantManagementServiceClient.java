@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2015​, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -15,12 +15,12 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.admin.clients;
+package org.wso2.am.admin.clients.common;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.admin.clients.utils.AuthenticateStubUtil;
+import org.wso2.am.admin.clients.client.utils.AuthenticateStubUtil;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceStub;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
@@ -46,8 +46,8 @@ public class TenantManagementServiceClient {
      * @param password   password of the tenant admin user
      * @param firstName  first name of the tenant admin user
      * @param usagePlan  Usage plan of the tenant
-     * @throws RemoteException
-     * @throws TenantMgtAdminServiceExceptionException
+     * @throws java.rmi.RemoteException
+     * @throws org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException
      *
      */
     public void addTenant(String domainName, String password, String firstName, String usagePlan)
@@ -103,8 +103,8 @@ public class TenantManagementServiceClient {
     /**
      * deactivate tenant
      * @param domainName
-     * @throws RemoteException
-     * @throws TenantMgtAdminServiceExceptionException
+     * @throws java.rmi.RemoteException
+     * @throws org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException
      */
     public void deactivateTenant(String domainName) throws RemoteException, TenantMgtAdminServiceExceptionException {
         try {
@@ -115,7 +115,7 @@ public class TenantManagementServiceClient {
         } catch (TenantMgtAdminServiceExceptionException e) {
             log.error("No such tenant found");
             throw new TenantMgtAdminServiceExceptionException("RemoteException thrown while" +
-                                                              " deactivating tenant : ", e);
+                    " deactivating tenant : ", e);
         }
     }
 
@@ -142,3 +142,4 @@ public class TenantManagementServiceClient {
         }
     }
 }
+
