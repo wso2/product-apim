@@ -29,7 +29,7 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
     <name>WSO2 API Manager - Integration Common Test Module</name>
     <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
