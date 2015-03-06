@@ -34,7 +34,7 @@ under the License.
   <modules>
       <module>tests-backend</module>
       <!--<module>tests-jmeter</module>-->
-      <module>tests-jmeter</module>
+      <!--module>tests-jmeter</module-->
   </modules>
     <dependencies>
         <dependency>
