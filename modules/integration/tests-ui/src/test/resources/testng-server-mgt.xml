@@ -11,8 +11,8 @@
     </listeners>
     <test name="InitializedAndSetupServer" preserve-order="true" parallel="false">
         <classes>
-            <!--<class name="org.wso2.carbon.am.integration.ui.samples.YouTubeUIPagesTestCase"/>-->
-            <!--<class name="org.wso2.carbon.am.integration.ui.samples.YouTubeUIRecordedTestCase"/>-->
+            <!--<class name="YouTubeUIPagesTestCase"/>-->
+            <!--<class name="YouTubeUIRecordedTestCase"/>-->
 
             <!-- Need to fix all the below test cases -->
             <!--<class name="org.wso2.carbon.am.integration.ui.LoginTestCase"/>-->
@@ -21,9 +21,16 @@
             <!--<class name="org.wso2.carbon.am.integration.ui.OAuthConsumerAppsTestCase"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIMANAGER3087UnableToPublishSecondAttemptWithTiers"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIDocsDownloadTestCase"/>-->
+<<<<<<< HEAD
+            <!--<class name="LoginTestCase"/>-->
+            <!--<class name="SubscriptionAvailabilityTestCase"/>-->
+            <!--<class name="APIVersoinStatTestCase"/>-->
+            <!--<class name="OAuthConsumerAppsTestCase"/>-->
+=======
             <!--<class name="org.wso2.carbon.am.integration.ui.APIMANAGER2957EpochTimeTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3017ExternalStoreLifeCycleTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3149SSOLogin"/>-->
+>>>>>>> 4ec36d735772540dc843df80121ca6df826e1dfc
         </classes>
     </test>
 </suite>
