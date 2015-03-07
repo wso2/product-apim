@@ -24,6 +24,7 @@
             <!--<class name="org.wso2.carbon.am.integration.ui.APIMANAGER2957EpochTimeTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3017ExternalStoreLifeCycleTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3149SSOLogin"/>-->
+            <!--<class name="org.wso2.carbon.am.integration.ui.APIResourceBodyParameterRemovalTestCase"/>-->
         </classes>
     </test>
 </suite>
