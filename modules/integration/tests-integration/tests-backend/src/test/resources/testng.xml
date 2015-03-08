@@ -12,7 +12,7 @@
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
 
 
             <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
