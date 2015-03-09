@@ -43,7 +43,7 @@ under the License.
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-
+                    <skipTests>${skipUiTests}</skipTests>
                     <systemProperties>
                         <property>
                             <name>maven.test.haltafterfailure</name>
@@ -249,11 +249,6 @@ under the License.
     <dependencies>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-            <version>${apimserver.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.ui.pages</artifactId>
             <version>${apimserver.version}</version>
         </dependency>
@@ -278,5 +273,9 @@ under the License.
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <properties>
+        <skipUiTests>true</skipUiTests>
+    </properties>
 
 </project>
