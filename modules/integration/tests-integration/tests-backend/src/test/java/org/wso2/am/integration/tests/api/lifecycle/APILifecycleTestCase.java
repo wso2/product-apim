@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
@@ -588,6 +589,16 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
                         ("<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>"),
                 "Response data mismatched");
     }
+
+
+    @AfterClass(alwaysRun = true)
+    /**
+     * Restore the backup api-manager.xml file.
+     */
+    public void cleanup() throws Exception {
+        serverManager.restoreToLastConfiguration();
+    }
+
 
 
     /**
