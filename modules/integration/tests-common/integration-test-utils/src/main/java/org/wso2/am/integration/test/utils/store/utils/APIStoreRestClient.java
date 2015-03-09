@@ -42,7 +42,7 @@ public class APIStoreRestClient {
 
     public HttpResponse login(String userName, String password)
             throws Exception {
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/user/login/ajax/login.jag")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/user/login/ajax/login.jag")
                 , "action=login&username=" + userName + "&password=" + password + "", requestHeaders);
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
@@ -61,7 +61,7 @@ public class APIStoreRestClient {
     public HttpResponse subscribe(SubscriptionRequest subscriptionRequest)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
                 , subscriptionRequest.generateRequestParameters()
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -76,11 +76,11 @@ public class APIStoreRestClient {
     public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
-        "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
-        "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000"),
-                "", requestHeaders);  
-        
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
+                                                               "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
+                                                               "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000"),
+                                                       "", requestHeaders);
+
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
             return response;
@@ -93,7 +93,7 @@ public class APIStoreRestClient {
     public HttpResponse getAPI(String apiName)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs")
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -156,7 +156,7 @@ public class APIStoreRestClient {
     public HttpResponse getAllPublishedAPIs()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -169,7 +169,7 @@ public class APIStoreRestClient {
     public HttpResponse getAllApplications()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications"
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -181,7 +181,7 @@ public class APIStoreRestClient {
     public HttpResponse getPublishedAPIsByApplication(String applicationName)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?action=getSubscriptionByApplication&app="+applicationName
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?action=getSubscriptionByApplication&app="+applicationName
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -194,8 +194,8 @@ public class APIStoreRestClient {
     public HttpResponse addRatingToAPI(String apiName, String version, String provider, String rating)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                "action=addRating&name=" + apiName + "&version=" + version + "&provider=" + provider + "&rating=" + rating
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                                                      "action=addRating&name=" + apiName + "&version=" + version + "&provider=" + provider + "&rating=" + rating
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -207,8 +207,8 @@ public class APIStoreRestClient {
     public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                "action=removeRating&name=" + apiName + "&version=" + version + "&provider=" + provider
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                                                      "action=removeRating&name=" + apiName + "&version=" + version + "&provider=" + provider
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -221,8 +221,8 @@ public class APIStoreRestClient {
     public HttpResponse isRatingActivated()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                "action=isRatingActivated"
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                                                      "action=isRatingActivated"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -238,8 +238,8 @@ public class APIStoreRestClient {
     public HttpResponse getAllDocumentationOfApi(String apiName, String version, String provider)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/listing/ajax/list.jag?" +
-                "action=getAllDocumentationOfApi&name=" + apiName + "&version=" + version + "&provider=" + provider
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?" +
+                                                      "action=getAllDocumentationOfApi&name=" + apiName + "&version=" + version + "&provider=" + provider
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -255,8 +255,8 @@ public class APIStoreRestClient {
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/org.wso2.am.integration.test.utils.store/site/blocks/api/listing/ajax/list.jag?" +
-                "action=getAllPaginatedPublishedAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?" +
+                                                      "action=getAllPaginatedPublishedAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -268,7 +268,7 @@ public class APIStoreRestClient {
     public HttpResponse getAllPublishedAPIs(String tenant)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" + tenant)
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" + tenant)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -283,7 +283,7 @@ public class APIStoreRestClient {
     public HttpResponse addApplication(String application, String tier, String callbackUrl, String description)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/application/application-add/ajax/application-add.jag?action=addApplication&tier=" + tier + "&callbackUrl="+callbackUrl+"&description="+description+"&application="+application)
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/application-add/ajax/application-add.jag?action=addApplication&tier=" + tier + "&callbackUrl="+callbackUrl+"&description="+description+"&application="+application)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -299,7 +299,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications")
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -315,7 +315,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/application/application-remove/ajax/application-remove.jag?action=removeApplication&application=" + application)
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/application-remove/ajax/application-remove.jag?action=removeApplication&application=" + application)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -330,9 +330,9 @@ public class APIStoreRestClient {
     public HttpResponse updateApplication(String applicationOld, String applicationNew, String callbackUrlNew, String descriptionNew, String tier)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/application/application-update/ajax/application-update.jag?" +
-                "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew="+applicationNew+"&callbackUrlNew="+callbackUrlNew+
-                "&descriptionNew="+descriptionNew+"&tier="+tier)
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/application-update/ajax/application-update.jag?" +
+                                                               "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew="+applicationNew+"&callbackUrlNew="+callbackUrlNew+
+                                                               "&descriptionNew="+descriptionNew+"&tier="+tier)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -346,8 +346,8 @@ public class APIStoreRestClient {
     public HttpResponse getAllSubscriptions()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-                "action=getAllSubscriptions")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                                                               "action=getAllSubscriptions")
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -362,7 +362,7 @@ public class APIStoreRestClient {
     public HttpResponse getAllTags()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags")
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags")
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -378,17 +378,17 @@ public class APIStoreRestClient {
         version = request.getParameter("version");
         provider = request.getParameter("provider");
         comment = request.getParameter("comment");
-        /home/sanjeewa/carbon/turing/components/apimgt/api-org.wso2.am.integration.test.utils.store-web/1.2.0/src/site/blocks/comment/comment-add/ajax/comment-add.jag
+        /home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/comment/comment-add/ajax/comment-add.jag
      */
     public HttpResponse addComment(String name, String version, String provider, String comment)
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +  "/org.wso2.am.integration.test.utils.store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                "action=addComment&name="+name + "&version="+version+"&provider="+provider+"&comment="+comment)
-                        , ""
-                        , requestHeaders);
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +  "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                                                               "action=addComment&name="+name + "&version="+version+"&provider="+provider+"&comment="+comment)
+                , ""
+                , requestHeaders);
         if (response.getResponseCode() == 200) {
-        	VerificationUtil.checkErrors(response);
+            VerificationUtil.checkErrors(response);
             return response;
         } else {
             throw new Exception("addComment() failed: " + response.getData());
@@ -399,8 +399,8 @@ public class APIStoreRestClient {
     public HttpResponse isCommentActivated()
             throws Exception {
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                "action=isCommentActivated"
+        HttpResponse response = HttpRequestUtil.doGet(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                                                      "action=isCommentActivated"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
@@ -413,10 +413,10 @@ public class APIStoreRestClient {
 
     public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
             throws Exception {
-        ///home/sanjeewa/carbon/turing/components/apimgt/api-org.wso2.am.integration.test.utils.store-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
+        ///home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
         checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/org.wso2.am.integration.test.utils.store/site/blocks/api/recently-added/ajax/list.jag?action=getRecentlyAddedAPIs"+
-        "&tenant="+tenant+"&limit="+limit)
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/api/recently-added/ajax/list.jag?action=getRecentlyAddedAPIs"+
+                                                               "&tenant="+tenant+"&limit="+limit)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -433,7 +433,7 @@ public class APIStoreRestClient {
         checkAuthentication();
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                                                               "/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
+                                                               "/store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
                                                                API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId)
                 , ""
                 , requestHeaders);

@@ -20,7 +20,7 @@ package org.wso2.am.integration.test.utils.user.mgt;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.admin.clients.AuthenticatorClient;
+import org.wso2.am.admin.clients.common.AuthenticatorClient;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
