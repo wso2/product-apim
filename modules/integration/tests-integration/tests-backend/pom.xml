@@ -27,7 +27,7 @@ under the License.
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Integration Backend Test Module</name>
+    <name>WSO2 API Manager - Based on product backend Test Module</name>
     <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
     <packaging>jar</packaging>
 
@@ -267,10 +267,6 @@ under the License.
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
@@ -292,7 +288,5 @@ under the License.
                 </exclusion>
             </exclusions>
         </dependency>
-
-
     </dependencies>
 </project>
