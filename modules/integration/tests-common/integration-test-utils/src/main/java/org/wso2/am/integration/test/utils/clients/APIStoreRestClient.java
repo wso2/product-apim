@@ -397,7 +397,7 @@ public class APIStoreRestClient {
         checkAuthentication();
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
+                "/store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
                 API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId)
                 , ""
                 , requestHeaders);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
 WSO2 Inc. licenses this file to you under the Apache License,
 Version 2.0 (the "License"); you may not use this file except
@@ -36,74 +36,50 @@ under the License.
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.tenant.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.event.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.aarservices.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.endpoint.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.localentry.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.mediation.configadmin.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.priority.executors.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api</artifactId>
-            <version>4.2.2</version>
-            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>net.sf.saxon</groupId>
@@ -122,178 +98,114 @@ under the License.
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.sequences.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.task.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.mediation.templates.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.transport.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.message.store.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.message.processor.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.mediation.artifactuploader.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.proxyadmin.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.service.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.relations.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.activities.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.indexing.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.handler.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.info.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.profiles.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.properties.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.reporting.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.extensions.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.search.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.registry.resource.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging.admin.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.ndatasource.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.throttle.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.application.mgt.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
-            <version>${carbon.platform.version}</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
-
-
 </project>
