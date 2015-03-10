@@ -20,6 +20,7 @@ package org.wso2.carbon.am.jmeter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
@@ -29,7 +30,13 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import java.io.File;
 
 public class APIMANAGER2937CacheEvictionTestCase extends AMIntegrationBaseTest {
+
     protected Log log = LogFactory.getLog(getClass());
+
+    @BeforeClass(alwaysRun = true)
+    public void init() throws Exception {
+        super.init();
+    }
 
     @Test(groups = "wso2.am")
     public void testCacheEviction() throws Exception {

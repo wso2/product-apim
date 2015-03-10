@@ -41,6 +41,7 @@ public class JmeterTestCases extends AMIntegrationBaseTest{
 
     @BeforeClass(alwaysRun = true)
     public void testChangeTransportMechanism() throws Exception {
+
         init();
         serverConfigurationManager = new ServerConfigurationManager(apimContext);
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
@@ -48,8 +49,8 @@ public class JmeterTestCases extends AMIntegrationBaseTest{
         File axis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator + "conf"
                 + File.separator + "axis2" + File.separator + "axis2.xml");
 
-        File sourceAxis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator
-                + "conf" + File.separator + "axis2" + File.separator + "axis2.xml_NHTTP");
+        File sourceAxis2xmlFile = new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+                + File.separator + "AM" + File.separator + "axis2" + File.separator + "axis2.xml_NHTTP");
 
         if (!axis2xmlFile.exists() || !sourceAxis2xmlFile.exists()) {
             throw new IOException("File not found in given location");
