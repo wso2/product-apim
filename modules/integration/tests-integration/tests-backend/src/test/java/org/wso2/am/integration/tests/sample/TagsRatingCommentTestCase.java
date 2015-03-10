@@ -17,6 +17,8 @@
 */
 package org.wso2.am.integration.tests.sample;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -42,6 +44,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 	private APIStoreRestClient apiStore;
 	private String publisherURLHttp;
 	private String storeURLHttp;
+    private static final Log log = LogFactory.getLog(TagsRatingCommentTestCase.class);
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
@@ -126,9 +129,9 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 			HttpResponse youTubeResponse = HttpRequestUtil
 					.doGet(getGatewayServerURLHttp()+"commentRating/1.0.0/most_popular",
 					       requestHeaders);
-            System.out.println(
+            log.info(
                     "==================================================================================" +
-                            i + "==========" + youTubeResponse.getResponseCode());
+                    i + "==========" + youTubeResponse.getResponseCode());
 			Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
 			Assert.assertTrue(youTubeResponse.getData().contains("<feed"),
 			                  "Response data mismatched");

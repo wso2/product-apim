@@ -1,5 +1,7 @@
 package org.wso2.am.integration.tests.sample;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -29,6 +31,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient;
     private TenantManagementServiceClient tenantManagementServiceClient;
+    private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
     private String publisherURLHttp;
     private String storeURLHttp;
@@ -143,7 +146,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
 
-        System.out.println("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
+        log.info("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
 
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
@@ -248,7 +251,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
 
-        System.out.println("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
+        log.info("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
 
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
@@ -322,7 +325,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
-        System.out.println("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
+        log.info("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
         // check claims
         String claim = jsonObject.getString("iss");
         assertTrue( "JWT assertion is invalid", claim.contains("wso2.org/products/am"));
