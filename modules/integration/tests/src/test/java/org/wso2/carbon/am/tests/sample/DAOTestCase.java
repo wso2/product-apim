@@ -98,6 +98,11 @@ public class DAOTestCase extends APIManagerIntegrationTest {
         String description = "This is test API create by API manager integration test";
         String providerName = "admin";
         String APIVersion = "1.0.0";
+
+        // This is because with the new context version strategy, if the context does not have the {version} param ,
+        // then we add the {version} param to the end of the context.
+        String apiContextAddedValue = APIContext + "/" + APIVersion;
+
         apiPublisher.login(userInfo.getUserName(), userInfo.getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
@@ -111,7 +116,8 @@ public class DAOTestCase extends APIManagerIntegrationTest {
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
         //Test API properties
         Assert.assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-        Assert.assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1), APIContext, "API context mismatch");
+        Assert.assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1), apiContextAddedValue, "API " +
+                                                                                                             "context mismatch");
         Assert.assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         Assert.assertEquals(apiBean.getId().getProviderName(), providerName, "Provider Name mismatch");
         for (String tag : apiBean.getTags()) {
