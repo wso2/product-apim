@@ -44,7 +44,7 @@ public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {
     private WebDriver driver;
 
     private static final String API_NAME = "YoutubeFeeds1";
-    private static final String API_CONTEXT = "/youtube1";
+    private static final String API_CONTEXT = "youtube1";
     private static final String API_VERSION = "1.0.0";
     private static final String API_DESCRIPTION = "Youtube Live Feeds1";
     private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
