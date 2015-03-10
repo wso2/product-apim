@@ -3,15 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
+        <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <artifactId>integration</artifactId>
-        <version>1.7.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <version>1.9.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <version>1.7.0-SNAPSHOT</version>
+
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.am.jmeter</artifactId>
+    <artifactId>org.wso2.carbon.am.integration.jmeter.test</artifactId>
     <name>WSO2 API Manager - Integration Tests - Jmeter</name>
     <packaging>jar</packaging>
 
@@ -223,22 +223,20 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>admin-clients</artifactId>
-            <version>${project.version}</version>
+            <artifactId>org.wso2.am.integration.admin.clients</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
-            <artifactId>integration-test-utils</artifactId>
-            <version>${project.version}</version>
+            <artifactId>org.wso2.am.integration.test.extensions</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.automation</groupId>
-            <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
-            <version>${test-automation-framework-version}</version>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.automationutils</groupId>
+            <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
         </dependency>
     </dependencies>
-    <properties>
-        <test-automation-framework-version>4.2.5</test-automation-framework-version>
-    </properties>
 
 </project>

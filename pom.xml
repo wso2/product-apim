@@ -414,22 +414,20 @@
                 <artifactId>jackson-mapper-lgpl</artifactId>
                 <version>${org.codehaus.jackson.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-rs-security-cors</artifactId>
                 <version>${org.apache.cxf.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.backend.service</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
+                <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>${apimgt.api.version}</version>
+                <version>1.2.3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jettison.wso2</groupId>
@@ -448,36 +446,6 @@
                 <version>${carbon.platform.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.automation</groupId>
-                <artifactId>org.wso2.carbon.automation.api</artifactId>
-                <version>${test-automation-framework-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.automation</groupId>
-                <artifactId>org.wso2.carbon.automation.core</artifactId>
-                <version>${test-automation-framework-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.automation</groupId>
-                <artifactId>org.wso2.carbon.automation.utils</artifactId>
-                <version>${test-automation-framework-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.automation</groupId>
-                <artifactId>org.wso2.carbon.automation.tools.jmeter</artifactId>
-                <version>${test-automation-framework-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>6.1.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.integration.framework</artifactId>
-                <version>4.2.0</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
                 <version>1.2.2</version>
@@ -486,6 +454,38 @@
                 <groupId>commons-digester</groupId>
                 <artifactId>commons-digester</artifactId>
                 <version>2.1</version>
+            </dependency>
+
+            <!--Test framework dependencies -->
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.test.utils</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.engine</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automation</groupId>
+                <artifactId>org.wso2.carbon.automation.extensions</artifactId>
+                <version>${carbon.automation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.extensions</artifactId>
+                <version>${carbon.automationutils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+                <version>${carbon.automationutils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.automationutils</groupId>
+                <artifactId>org.wso2.carbon.integration.common.admin.client</artifactId>
+                <version>${carbon.automationutils.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
@@ -498,20 +498,23 @@
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.automation</groupId>
-                <artifactId>org.wso2.carbon.automation.engine</artifactId>
-                <version>4.3.1</version>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.test.extensions</artifactId>
+                <version>${apimserver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.rampart</groupId>
-                <artifactId>rampart-core</artifactId>
-                <version>1.6.1-wso2v1</version>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.backend.service</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.integration.ui.pages</artifactId>
+                <version>${apimserver.version}</version>
             </dependency>
 
 
-
-
-            <!--<dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
                 <version>${carbon.platform.version}</version>
@@ -540,25 +543,21 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.event.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.aarservices.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.endpoint.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.localentry.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
@@ -569,25 +568,6 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.priority.executors.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.rest.api</artifactId>
-                <version>4.2.2</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>net.sf.saxon</groupId>
-                        <artifactId>Saxon-HE</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jdk12</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
@@ -728,7 +708,22 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-            </dependency>-->
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.rest.api</artifactId>
+                <version>${carbon.rest.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rampart</groupId>
+                <artifactId>rampart-core</artifactId>
+                <version>${rampart.wso2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -761,7 +756,8 @@
         <apimgt.gateway.feature>1.2.4-SNAPSHOT</apimgt.gateway.feature>
         <apimgt.interceptor.feature>1.2.1-SNAPSHOT</apimgt.interceptor.feature>
         <apimgt.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.publisher.feature.version>
-        <apimgt.startup.publisher.feature.version>1.2.4-SNAPSHOT</apimgt.startup.publisher.feature.version>
+        <apimgt.startup.publisher.feature.version>1.2.4-SNAPSHOT
+        </apimgt.startup.publisher.feature.version>
         <apimgt.store.feature.version>1.2.4-SNAPSHOT</apimgt.store.feature.version>
 
 
@@ -812,12 +808,18 @@
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
+
+        <carbon.automation.version>4.3.1</carbon.automation.version>
+        <carbon.automationutils.version>4.3.0</carbon.automationutils.version>
         <org.apache.cxf.version>2.7.2</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
+        <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
+        <rampart.wso2.version>1.6.1-wso2v13</rampart.wso2.version>
+        <slf4j.api.version>1.5.6</slf4j.api.version>
 
-        <test-automation-framework-version>4.2.7</test-automation-framework-version>
+
     </properties>
 
 </project>
