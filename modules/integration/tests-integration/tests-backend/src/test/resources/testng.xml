@@ -1,0 +1,28 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="ApiManager-features-test-suite">
+    <parameter name="useDefaultListeners" value="false"/>
+    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+        <classes>
+
+            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
+
+
+            <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.in/m.integration.tests.sample.APIApplicationLifeCycleTestCase"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>-->
+        </classes>
+   <!--     <packages>
+            <package name="org.wso2.am.integration.tests.*"/>
+        </packages>-->
+    </test>
+
+</suite>

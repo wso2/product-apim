@@ -23,6 +23,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.am.integration.test.utils.WireMonitorServer;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
@@ -31,7 +32,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
-public class PassthroughTestCase extends APIManagerIntegrationTest {
+public class PassthroughTestCase extends AMIntegrationBaseTest {
 
 	private ServerConfigurationManager serverConfigurationManager;
 
