@@ -28,51 +28,47 @@ import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
-import java.io.IOException;
 
-public class JmeterTestCases extends AMIntegrationBaseTest{
+public class APIMANAGER3195JWTWithWSClientTestCase extends AMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
-
-    protected Log log = LogFactory.getLog(getClass());
+    private Log log = LogFactory.getLog(getClass());
 
     @BeforeClass(alwaysRun = true)
-    public void testChangeTransportMechanism() throws Exception {
-        init();
-        serverConfigurationManager = new ServerConfigurationManager(apimContext);
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
+    public void init() throws Exception {
+        super.init();
+        if (isBuilderEnabled()) {
+            String apiManagerXml = getAMResourceLocation() + File.separator +
+                    "configFiles" + File.separator + "jwt_wsclient_config" + File.separator + "api-manager.xml";
 
-        File axis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator + "conf"
-                + File.separator + "axis2" + File.separator + "axis2.xml");
-
-        File sourceAxis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator
-                + "conf" + File.separator + "axis2" + File.separator + "axis2.xml_NHTTP");
-
-        if (!axis2xmlFile.exists() || !sourceAxis2xmlFile.exists()) {
-            throw new IOException("File not found in given location");
+            serverConfigurationManager = new ServerConfigurationManager(apimContext);
+            serverConfigurationManager.applyConfiguration(new File(apiManagerXml));
         }
 
-        serverConfigurationManager.applyConfiguration(sourceAxis2xmlFile, axis2xmlFile);
+        super.init();
     }
 
-    @Test(groups = "wso2.am", description = "Covers tenant creation, role creation, API creation, publish api," +
-            "get default app id, subscribe users to default app, invoke api")
-    public void testListServices() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Create APIs and subscribe")
+    public void createAndSubscribeForAPI() throws Exception {
+
         JMeterTest script =
                 new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
                         + File.separator + "AM" + File.separator + "scripts"
-                        + File.separator + "API_Manager_functionality_and_loadTest.jmx"));
+                        + File.separator + "APICreateSubscribeInvoke.jmx"));
 
         JMeterTestManager manager = new JMeterTestManager();
         manager.runTest(script);
+
+        log.info("JWTWithWSClientTestCase completed successfully");
     }
 
     @AfterClass(alwaysRun = true)
-    public void testCleanup() throws Exception {
-        serverConfigurationManager.restoreToLastConfiguration();
-        serverConfigurationManager = null;
+    public void destroy() throws Exception {
+        if (serverConfigurationManager != null) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
+        super.cleanup();
     }
 }

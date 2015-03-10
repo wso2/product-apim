@@ -22,11 +22,11 @@
                 <version>2.12.4</version>
                 <inherited>false</inherited>
                 <configuration>
-                    <!--     <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
+                         <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
                              -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
                              -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                         </argLine>-->
-                    <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m</argLine>
+                         </argLine>
+                    <!--<argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m</argLine>-->
                     <testFailureIgnore>true</testFailureIgnore>
                     <disableXmlReport>false</disableXmlReport>
                     <parallel>false</parallel>

@@ -20,7 +20,6 @@ package org.wso2.carbon.am.jmeter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
@@ -29,26 +28,29 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
 
-public class JmeterSuperTenantTestCase extends AMIntegrationBaseTest {
+public class APIMANAGER2937CacheEvictionTestCase extends AMIntegrationBaseTest {
+    protected Log log = LogFactory.getLog(getClass());
 
-    protected Log log = LogFactory.getLog(JmeterSuperTenantTestCase.class);
+    @Test(groups = "wso2.am")
+    public void testCacheEviction() throws Exception {
 
-    @BeforeClass(alwaysRun = true)
-    public void testChangeTransportMechanism() throws Exception {
-        init();
-    }
-
-    @Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
-            " subscribe users to default app, invoke api - On a" +
-            " super tenant setup")
-    public void testListServices() throws Exception {
-        JMeterTest script =
-                new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
-                        + File.separator + "AM" + File.separator + "scripts"
-                        + File.separator + "basic_functionality_test.jmx"));
+        log.info("Starting CacheEviction Test.");
+        JMeterTest publishScript = new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() +
+                File.separator + "artifacts" + File.separator + "AM" + File.separator + "scripts"
+                + File.separator + "eviction_test_publish_and_subscribe_script.jmx"));
 
         JMeterTestManager manager = new JMeterTestManager();
-        manager.runTest(script);
+        manager.runTest(publishScript);
+
+        log.info("Finished creating API. Starting run the load.");
+        Thread.sleep(1000);
+
+        JMeterTest scriptGET = new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator
+                + "artifacts" + File.separator + "AM" + File.separator + "scripts"
+                + File.separator + "eviction_test_run_load.jmx"));
+
+        manager.runTest(scriptGET);
+
+        log.info("Finished running load test");
     }
 }
-
