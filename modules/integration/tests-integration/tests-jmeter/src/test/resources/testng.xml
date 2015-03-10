@@ -11,7 +11,7 @@
                 class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
     </listeners>
 
-    <test name="AM-Sample-Test" preserve-order="true" verbose="2">
+    <test name="AM-Jmeter-Test" preserve-order="true" verbose="2">
         <classes>
 
             <class name="org.wso2.carbon.am.jmeter.APIMANAGER2964MySubscriptionsPerformanceTestCase"/>
