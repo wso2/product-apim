@@ -20,7 +20,7 @@ package org.wso2.carbon.am.jmeter;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 
@@ -30,7 +30,7 @@ import java.io.File;
  * This jmeter based test case added to automate test for issue
  * https://wso2.org/jira/browse/APIMANAGER-850
  */
-public class JmeterDomainRestrictionTestCase extends APIManagerIntegrationTest {
+public class JmeterDomainRestrictionTestCase extends AMIntegrationBaseTest {
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
