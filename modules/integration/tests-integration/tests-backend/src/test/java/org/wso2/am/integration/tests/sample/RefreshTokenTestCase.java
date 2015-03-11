@@ -125,7 +125,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + name + "&password=" + password + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "token");
+        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                         tokenEndpointURL).getData());
