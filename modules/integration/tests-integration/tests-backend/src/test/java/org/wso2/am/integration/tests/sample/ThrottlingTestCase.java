@@ -24,11 +24,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
@@ -39,20 +36,17 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class ThrottlingTestCase extends AMIntegrationBaseTest {
-	private APIPublisherRestClient apiPublisher;
-	private APIStoreRestClient apiStore;
-	private ServerConfigurationManager serverConfigurationManager;
 
-	@BeforeClass(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
 	    /*
         Before run this test we need to add throttling tiers xml file to registry and also we need to deploy API
         to gateway Server.
         Deploy API available in AM/synapseconfigs/throttling/throttling-api-synapse.xml
-        Add throttling definition available in configFiles/throttling/throttle-policy.xml to /_system/governance/apimgt/applicationdata/test-tiers.xml
+        Add throttling definition available in configFiles/throttling/throttle-policy.xml to
+        /_system/governance/apimgt/applicationdata/test-tiers.xml
          */
 		super.init();
-		serverConfigurationManager = new ServerConfigurationManager(apimContext);
 		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
 		                                  + File.separator + "synapseconfigs" + File.separator +
 		                                  "throttling"

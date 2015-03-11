@@ -92,8 +92,9 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        userManagementClient = new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(), "admin",
-                "admin");
+        userManagementClient = new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(),
+                apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
 
         // adding new role subscriber
         userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",

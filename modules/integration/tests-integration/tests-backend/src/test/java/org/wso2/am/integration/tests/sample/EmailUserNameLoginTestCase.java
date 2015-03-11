@@ -138,58 +138,52 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
      * @return boolean whether tenant creation was successful or not
      */
     private boolean createTenantWithEmailUserName(String userNameWithEmail, String pwd,
-                                                  String domainName, String backendUrl) throws XPathExpressionException {
+                                                  String domainName, String backendUrl)
+            throws XPathExpressionException, RemoteException, TenantMgtAdminServiceExceptionException {
         boolean isSuccess = false;
-        try {
-            String endPoint = backendUrl + "TenantMgtAdminService";
-            TenantMgtAdminServiceStub tenantMgtAdminServiceStub =
-                    new TenantMgtAdminServiceStub(
-                            endPoint);
-            AuthenticateStub.authenticateStub(apimContext.getSuperTenant().getContextUser().getUserName(),
-                    apimContext.getSuperTenant().getContextUser().getUserName(), tenantMgtAdminServiceStub);
 
-            Date date = new Date();
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(date);
+        String endPoint = backendUrl + "TenantMgtAdminService";
+        TenantMgtAdminServiceStub tenantMgtAdminServiceStub =
+                new TenantMgtAdminServiceStub(
+                        endPoint);
+        AuthenticateStub.authenticateStub(apimContext.getSuperTenant().getContextUser().getUserName(),
+                apimContext.getSuperTenant().getContextUser().getUserName(), tenantMgtAdminServiceStub);
 
-            TenantInfoBean tenantInfoBean = new TenantInfoBean();
-            tenantInfoBean.setActive(true);
-            tenantInfoBean.setEmail(userNameWithEmail);
-            tenantInfoBean.setAdminPassword(pwd);
-            tenantInfoBean.setAdmin(userNameWithEmail);
-            tenantInfoBean.setTenantDomain(domainName);
-            tenantInfoBean.setCreatedDate(calendar);
-            tenantInfoBean.setFirstname(apimContext.getContextTenant().getContextUser().getUserName());
-            tenantInfoBean.setLastname(apimContext.getContextTenant().getContextUser().getUserName()
-                    + "wso2automation");
-            tenantInfoBean.setSuccessKey("true");
-            tenantInfoBean.setUsagePlan("demo");
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
 
-            TenantInfoBean tenantInfoBeanGet;
+        TenantInfoBean tenantInfoBean = new TenantInfoBean();
+        tenantInfoBean.setActive(true);
+        tenantInfoBean.setEmail(userNameWithEmail);
+        tenantInfoBean.setAdminPassword(pwd);
+        tenantInfoBean.setAdmin(userNameWithEmail);
+        tenantInfoBean.setTenantDomain(domainName);
+        tenantInfoBean.setCreatedDate(calendar);
+        tenantInfoBean.setFirstname(apimContext.getContextTenant().getContextUser().getUserName());
+        tenantInfoBean.setLastname(apimContext.getContextTenant().getContextUser().getUserName()
+                + "wso2automation");
+        tenantInfoBean.setSuccessKey("true");
+        tenantInfoBean.setUsagePlan("demo");
 
-            tenantInfoBeanGet = tenantMgtAdminServiceStub.getTenant(domainName);
+        TenantInfoBean tenantInfoBeanGet;
 
-            if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
-                tenantMgtAdminServiceStub.activateTenant(domainName);
-                log.info("Tenant domain " + domainName + " Activated successfully");
+        tenantInfoBeanGet = tenantMgtAdminServiceStub.getTenant(domainName);
 
-            } else if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() == 0) {
-                tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
-                tenantMgtAdminServiceStub.activateTenant(domainName);
-                log.info("Tenant domain " + domainName +
-                        " created and activated successfully");
-                log.info("Tenant domain " + domainName + " created and activated successfully");
-                isSuccess = true;
-            } else {
-                log.info("Tenant domain " + domainName + " already registered");
-            }
-        } catch (RemoteException e) {
-            log.error("RemoteException thrown while adding user/tenants : ", e);
+        if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
+            tenantMgtAdminServiceStub.activateTenant(domainName);
+            log.info("Tenant domain " + domainName + " Activated successfully");
 
-        } catch (TenantMgtAdminServiceExceptionException e) {
-            log.error("Error connecting to the TenantMgtAdminService : ", e);
+        } else if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() == 0) {
+            tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
+            tenantMgtAdminServiceStub.activateTenant(domainName);
+            log.info("Tenant domain " + domainName +
+                    " created and activated successfully");
+            log.info("Tenant domain " + domainName + " created and activated successfully");
+            isSuccess = true;
+        } else {
+            log.info("Tenant domain " + domainName + " already registered");
         }
-
         return isSuccess;
     }
 

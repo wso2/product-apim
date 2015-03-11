@@ -60,18 +60,17 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
             storeURLHttp = getServerURLHttp();
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
                     "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
                     "log4j.properties"));
             super.init();
         } else {
             publisherURLHttp = getPublisherServerURLHttp();
             storeURLHttp = getStoreServerURLHttp();
         }
+
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
@@ -79,6 +78,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Token API Test sample")
     public void testTokenAPITestCase() throws Exception {
+
         String APIName = "RefreshTokenTestAPI";
         String APIContext = "refreshTokenTestAPI";
         String tags = "youtube, token, media";
@@ -125,15 +125,10 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + name + "&password=" + password + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps()+"token");
+        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                         tokenEndpointURL).getData());
-        /*
-        Response would be like -
-        {"token_type":"bearer","expires_in":3600,"refresh_token":"736b6b5354e4cf24f217718b2f3f72b",
-        "access_token":"e06f12e3d6b1367d8471b093162f6729"}
-        */
 
         // get Access Token and Refresh Token
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
@@ -144,7 +139,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp()+"refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
@@ -167,7 +162,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         youTubeResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp()+"refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");

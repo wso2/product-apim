@@ -86,9 +86,8 @@ public class DAOTestCase extends AMIntegrationBaseTest {
 
     private String computeSourcePath(String fileName) {
 
-        String sourcePath = getAMResourceLocation()
+        return getAMResourceLocation()
                             + File.separator + "jaggery/" + fileName;
-        return sourcePath;
     }
 
     @Test(groups = { "wso2.am" }, description = "API Life cycle test case")

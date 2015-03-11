@@ -16,7 +16,6 @@
 *under the License.
 */
 
-
 package org.wso2.am.integration.tests.rest;
 
 import org.testng.annotations.AfterClass;
@@ -40,21 +39,18 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator +
-                "rest"
-                + File.separator + "url-mapping-synapse.xml");
+        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator + "synapseconfigs"
+                + File.separator + "rest" + File.separator + "url-mapping-synapse.xml");
     }
 
-    @Test(groups = {"wso2.am"},
-            description = "Sending a Message Via REST to test uri template fix")
+    @Test(groups = {"wso2.am"}, description = "Sending a Message Via REST to test uri template fix")
     public void testRESTURITemplate() throws Exception {
         // Before apply this patch uri template not recognize localhost:8280/stockquote/test/
         // and localhost:8280/stockquote/test
         //maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
         //after fixing issue both will work.
         HttpResponse response = HttpRequestUtil
-                .sendGetRequest(getGatewayServerURLHttp() + "stockquote" + "/test/", null);
+                .sendGetRequest(getGatewayServerURLHttp() + "stockquote/test/", null);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
     }
 
