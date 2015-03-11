@@ -28,7 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
-import org.wso2.am.integration.test.utils.WireMonitorServer;
+import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;

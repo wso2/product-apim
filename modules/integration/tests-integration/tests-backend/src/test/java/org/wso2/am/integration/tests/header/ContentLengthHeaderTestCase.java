@@ -24,7 +24,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.admin.clients.common.AuthenticatorClient;
 import org.wso2.am.admin.clients.common.TenantManagementServiceClient;
-import org.wso2.am.integration.test.utils.WireMonitorServer;
+import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
