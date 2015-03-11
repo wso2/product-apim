@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -19,24 +19,23 @@
 package org.wso2.am.integration.tests.sample;
 
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 	private APIPublisherRestClient apiPublisher;
@@ -102,15 +101,15 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 				getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-				"http://localhost:8280/youtube/1.0.0/most_popular", requestHeaders);
-		Assert.assertEquals(youTubeResponse.getResponseCode(), 200,
-		                    "Response code mismatched when api invocation");
-		Assert.assertTrue(youTubeResponse.getData().contains("<feed"),
-		                  "Response data mismatched when api invocation");
-		Assert.assertTrue(youTubeResponse.getData().contains("<category"),
-		                  "Response data mismatched when api invocation");
-		Assert.assertTrue(youTubeResponse.getData().contains("<entry>"),
-		                  "Response data mismatched when api invocation");
+				getGatewayServerURLHttp()+"/youtube/1.0.0/most_popular", requestHeaders);
+		assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation");
+		assertTrue(youTubeResponse.getData().contains("<feed"),
+                "Response data mismatched when api invocation");
+		assertTrue(youTubeResponse.getData().contains("<category"),
+                "Response data mismatched when api invocation");
+		assertTrue(youTubeResponse.getData().contains("<entry>"),
+                "Response data mismatched when api invocation");
 
 	}
 

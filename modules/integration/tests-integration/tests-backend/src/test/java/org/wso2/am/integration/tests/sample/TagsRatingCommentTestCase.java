@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -15,36 +15,33 @@
 *specific language governing permissions and limitations
 *under the License.
 */
+
 package org.wso2.am.integration.tests.sample;
 
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
-import org.wso2.am.integration.test.utils.bean.APIBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 
 	private APIPublisherRestClient apiPublisher;
 	private APIStoreRestClient apiStore;
-	private String publisherURLHttp;
-	private String storeURLHttp;
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
@@ -52,7 +49,9 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 	    /*
         This test can point to external API manager deployment without adding any resources to system
          */
-		if (isBuilderEnabled()) {
+        String publisherURLHttp;
+        String storeURLHttp;
+        if (isBuilderEnabled()) {
 			publisherURLHttp = getServerURLHttp();
 			storeURLHttp = getServerURLHttp();
 		} else {
@@ -62,10 +61,10 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 		apiStore = new APIStoreRestClient(storeURLHttp);
 
-		apiPublisher.login(context.getContextTenant().getContextUser().getUserName(),
-		                   context.getContextTenant().getContextUser().getPassword());
-		apiStore.login(context.getContextTenant().getContextUser().getUserName(),
-		               context.getContextTenant().getContextUser().getPassword());
+		apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+		apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
 	}
 
 	@Test(groups = { "wso2.am" }, description = "Comment Rating Test case")
@@ -75,7 +74,7 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		String tags = "youtube, video, media";
 		String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
 		String description = "This is test API create by API manager integration test";
-		String providerName = "admin";
+		String providerName = apimContext.getContextTenant().getContextUser().getUserName();
 		String APIVersion = "1.0.0";
 
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
@@ -89,21 +88,21 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 				new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
 		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 		//Test API properties
-		Assert.assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-		Assert.assertEquals(
-				apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-				APIContext, "API context mismatch");
-		Assert.assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
-		Assert.assertEquals(apiBean.getId().getProviderName(), providerName,
-		                    "Provider Name mismatch");
+		assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
+		assertEquals(
+                apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
+                APIContext, "API context mismatch");
+		assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
+		assertEquals(apiBean.getId().getProviderName(), providerName,
+                "Provider Name mismatch");
 		for (String tag : apiBean.getTags()) {
-			Assert.assertTrue(tags.contains(tag), "API tag data mismatched");
+			assertTrue(tags.contains(tag), "API tag data mismatched");
 		}
-		Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
+		assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
 		apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
 		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-		                                                                  context.getContextTenant()
+                apimContext.getContextTenant()
 		                                                                         .getContextUser()
 		                                                                         .getUserName());
 		subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
@@ -127,27 +126,26 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		for (int i = 0; i < 19; i++) {
 
 			HttpResponse youTubeResponse = HttpRequestUtil
-					.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"),
+					.doGet(getGatewayServerURLHttp()+"/commentRating/1.0.0/most_popular",
 					       requestHeaders);
-			System.out.println(
-					"==================================================================================" +
-					i + "==========" + youTubeResponse.getResponseCode());
-			Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-			Assert.assertTrue(youTubeResponse.getData().contains("<feed"),
-			                  "Response data mismatched");
-			Assert.assertTrue(youTubeResponse.getData().contains("<category"),
-			                  "Response data mismatched");
-			Assert.assertTrue(youTubeResponse.getData().contains("<entry>"),
-			                  "Response data mismatched");
+
+			assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                    "Response code mismatched");
+			assertTrue(youTubeResponse.getData().contains("<feed"),
+                    "Response data mismatched");
+			assertTrue(youTubeResponse.getData().contains("<category"),
+                    "Response data mismatched");
+			assertTrue(youTubeResponse.getData().contains("<entry>"),
+                    "Response data mismatched");
 
 		}
 		//Do get,post,put,delete all here
 		//HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
-		//Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
+
 		Thread.sleep(60000);
 		HttpResponse youTubeResponse1 = HttpRequestUtil
-				.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), null);
-		Assert.assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
+				.doGet(getGatewayServerURLHttp()+"/commentRating/1.0.0/most_popular", null);
+		assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
 		// URL url1 = new URL(url);
 		// HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");
 		//Remove subscription and then remove API
@@ -174,5 +172,4 @@ public class TagsRatingCommentTestCase extends APIManagerIntegrationTest {
 		apiStore.removeApplication("CommentRatingAPI-Application");
 		super.cleanup();
 	}
-
 }

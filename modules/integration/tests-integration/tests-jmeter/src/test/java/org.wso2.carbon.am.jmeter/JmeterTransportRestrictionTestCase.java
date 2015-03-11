@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -19,24 +19,26 @@
 package org.wso2.carbon.am.jmeter;
 
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
 
-public class JmeterTransportRestrictionTestCase extends APIManagerIntegrationTest {
+public class JmeterTransportRestrictionTestCase extends AMIntegrationBaseTest{
 
-	@Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
-	                                        " subscribe users to default app, invoke api - On a" +
-	                                        " super tenant setup")
-	public void testListServices() throws Exception {
-		JMeterTest script =
-				new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
-				                        + File.separator + "transport_restriction_check.jmx"));
+    @Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
+            " subscribe users to default app, invoke api - On a" +
+            " super tenant setup")
+    public void testListServices() throws Exception {
+        JMeterTest script =
+                new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+                        + File.separator + "AM" + File.separator + "scripts"
+                        + File.separator + "transport_restriction_check.jmx"));
 
-		JMeterTestManager manager = new JMeterTestManager();
-		manager.runTest(script);
-	}
+        JMeterTestManager manager = new JMeterTestManager();
+        manager.runTest(script);
+    }
 }
 

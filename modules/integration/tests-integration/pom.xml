@@ -19,6 +19,7 @@ under the License.
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <parent>
         <artifactId>integration</artifactId>
         <groupId>org.wso2.am</groupId>
@@ -31,32 +32,22 @@ under the License.
     <artifactId>org.wso2.carbon.am.integration.test</artifactId>
     <packaging>pom</packaging>
 
-  <modules>
-      <module>tests-backend</module>
-      <!--<module>tests-jmeter</module>-->
-      <module>tests-jmeter</module>
-  </modules>
+    <modules>
+        <module>tests-backend</module>
+        <!--<module>tests-jmeter</module>-->
+    </modules>
     <dependencies>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.5.6</version>
-        </dependency>
-
     </dependencies>
 </project>

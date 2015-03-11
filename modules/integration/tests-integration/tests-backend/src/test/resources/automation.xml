@@ -200,6 +200,22 @@
                 <!--</users>-->
             <!--</tenant>-->
         </tenants>
+        <roles>
+            <role name="role1">
+                <permissions>
+                    <permission>/permission/admin/configure</permission>
+                    <permission>/permission/admin/login</permission>
+                    <permission>/permission/admin/manage</permission>
+                    <permission>/permission/admin/monitor</permission>
+                </permissions>
+            </role>
+            <role name="role2">
+                <permissions>
+                    <permission>/permission/admin/configure</permission>
+                    <permission>/permission/admin/login</permission>
+                </permissions>
+            </role>
+        </roles>
     </userManagement>
     <!--
    This section will initiate the initial deployment of the platform required by
@@ -223,6 +239,39 @@
                 <properties>
                 </properties>
             </instance>
+            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">8280</port>
+                    <port type="https">8243</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
         </productGroup>
     </platform>
 
@@ -235,7 +284,7 @@
                     <!--<parameter name="cmdArg" value="debug 5005" />-->
                 </class>
                 <class>
-                    <name>org.wso2.am.integration.test.extensions.user.mgt.UserPopulateExtension</name>
+                    <name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>
                 </class>
             </extentionClasses>
         </platformExecutionManager>

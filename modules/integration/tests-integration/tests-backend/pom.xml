@@ -27,7 +27,7 @@ under the License.
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>WSO2 API Manager - Integration Backend Test Module</name>
+    <name>WSO2 API Manager - Based on product backend Test Module</name>
     <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
     <packaging>jar</packaging>
 
@@ -37,11 +37,7 @@ under the License.
                 <artifactId>maven-surefire-plugin</artifactId>
                 <inherited>false</inherited>
                 <configuration>
-                    <!--<argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>-->
-                    <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                        -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                        -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                    </argLine>
+                    <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -253,38 +249,26 @@ under the License.
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.test.extensions</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-            <version>${apimserver.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.5.6</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
-            <version>4.3.0</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>1.2.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.sf.saxon</groupId>
@@ -300,7 +284,5 @@ under the License.
                 </exclusion>
             </exclusions>
         </dependency>
-
-
     </dependencies>
 </project>

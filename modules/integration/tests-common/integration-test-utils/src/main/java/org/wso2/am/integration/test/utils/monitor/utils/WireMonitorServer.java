@@ -20,34 +20,33 @@ package org.wso2.am.integration.test.utils.monitor.utils;
 
 /**
  * This class can be used to capture wire messages
- * 
  */
 public class WireMonitorServer {
 	private static final int TIMEOUT_VALUE = 60000;
-	boolean isFinished = false;
+	int READ_TIME_OUT = 30000;
+	public boolean isFinished = false;
 	String response;
 	int port;
 
 	/**
 	 * Start listening to a port
-	 * 
-	 * @param port
-	 *            to be listened
+	 *
+	 * @param port to be listened
 	 */
 	public WireMonitorServer(int port) {
 		this.port = port;
 	}
 
 	public void start() {
-        response = "";
-        isFinished = false;
+		response = "";
 		Thread thread = new WireMonitor(port, this);
 		thread.start();
 	}
 
-	
+
 	/**
 	 * Wait until response is received and returns
+	 *
 	 * @return will return null if response is not received
 	 */
 	public String getCapturedMessage() {
@@ -59,5 +58,13 @@ public class WireMonitorServer {
 			}
 		}
 		return response;
+	}
+
+	public void setReadTimeOut (int timeout) {
+		READ_TIME_OUT = timeout;
+	}
+
+	public void setFinished(boolean isFinished) {
+		this.isFinished = isFinished;
 	}
 }

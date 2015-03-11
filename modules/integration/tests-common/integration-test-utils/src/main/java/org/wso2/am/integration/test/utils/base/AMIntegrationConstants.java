@@ -20,5 +20,9 @@ package org.wso2.am.integration.test.utils.base;
 public class AMIntegrationConstants {
     public static final String AM_PRODUCT_GROUP_NAME = "APIM";
     public static final String AM_1ST_INSTANCE = "apim0001";
+    public static final String AM_STORE_INSTANCE = "store";
+    public static final String AM_PUBLISHER_INSTANCE = "publisher";
+    public static final String AM_GATEWAY_INSTANCE = "gateway";
+
 
 }

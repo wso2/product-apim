@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -15,70 +15,65 @@
 *specific language governing permissions and limitations
 *under the License.
 */
+
 package org.wso2.carbon.am.jmeter;
 
-
-
-
-import org.apache.axis2.AxisFault;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
 import java.io.IOException;
 
-public class JmeterTestCases extends AMIntegrationBaseTest {
+public class JmeterTestCases extends AMIntegrationBaseTest{
 
-	protected ServerConfigurationManager serverConfigurationManager;
+    private ServerConfigurationManager serverConfigurationManager;
 
-	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-	@BeforeClass(alwaysRun = true)
-	public void testChangeTransportMechanism() throws Exception, AxisFault {
-		super.init();
-		serverConfigurationManager = new ServerConfigurationManager(apimContext);
-		String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
+    protected Log log = LogFactory.getLog(getClass());
 
-		File axis2xmlFile =
-				new File(carbonHome + File.separator + "repository" + File.separator + "conf"
-				         + File.separator + "axis2" + File.separator + "axis2.xml");
+    @BeforeClass(alwaysRun = true)
+    public void testChangeTransportMechanism() throws Exception {
 
-		File sourceAxis2xmlFile =
-				new File(carbonHome + File.separator + "repository" + File.separator
-				         + "conf" + File.separator + "axis2" + File.separator + "axis2.xml_NHTTP");
+        init();
+        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
 
-		if (!axis2xmlFile.exists() || !sourceAxis2xmlFile.exists()) {
-			throw new IOException("File not found in given location");
-		}
+        File axis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator + "conf"
+                + File.separator + "axis2" + File.separator + "axis2.xml");
 
-		serverConfigurationManager.applyConfiguration(sourceAxis2xmlFile, axis2xmlFile);
-	}
+        File sourceAxis2xmlFile = new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+                + File.separator + "AM" + File.separator + "axis2" + File.separator + "axis2.xml_NHTTP");
 
-	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-	@Test(groups = "wso2.am",
-	      description = "Covers tenant creation, role creation, API creation, publish api," +
-	                    "get default app id, subscribe users to default app, invoke api")
-	public void testListServices() throws Exception {
-		JMeterTest script =
-				new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
-				                        + File.separator +
-				                        "API_Manager_functionality_and_loadTest.jmx"));
+        if (!axis2xmlFile.exists() || !sourceAxis2xmlFile.exists()) {
+            throw new IOException("File not found in given location");
+        }
 
-		JMeterTestManager manager = new JMeterTestManager();
-		manager.runTest(script);
-	}
+        serverConfigurationManager.applyConfiguration(sourceAxis2xmlFile, axis2xmlFile);
+    }
 
-	@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
-	@AfterClass(alwaysRun = true)
-	public void testCleanup() throws Exception {
-		serverConfigurationManager.restoreToLastConfiguration();
-		serverConfigurationManager = null;
-	}
+    @Test(groups = "wso2.am", description = "Covers tenant creation, role creation, API creation, publish api," +
+            "get default app id, subscribe users to default app, invoke api")
+    public void testListServices() throws Exception {
+        JMeterTest script =
+                new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+                        + File.separator + "AM" + File.separator + "scripts"
+                        + File.separator + "API_Manager_functionality_and_loadTest.jmx"));
+
+        JMeterTestManager manager = new JMeterTestManager();
+        manager.runTest(script);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void testCleanup() throws Exception {
+        serverConfigurationManager.restoreToLastConfiguration();
+        serverConfigurationManager = null;
+    }
 }

@@ -1,26 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+*WSO2 Inc. licenses this file to you under the Apache License,
+*Version 2.0 (the "License"); you may not use this file except
+*in compliance with the License.
+*You may obtain a copy of the License at
+*
+*http://www.apache.org/licenses/LICENSE-2.0
+*
+*Unless required by applicable law or agreed to in writing,
+*software distributed under the License is distributed on an
+*"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+*KIND, either express or implied.  See the License for the
+*specific language governing permissions and limitations
+*under the License.
+*/
 package org.wso2.am.integration.tests.sample;
 
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -32,18 +29,20 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class RefreshTokenTestCase extends AMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
-    private String publisherURLHttp;
-    private String storeURLHttp;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -54,23 +53,24 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
+        String publisherURLHttp;
+        String storeURLHttp;
         if (isBuilderEnabled()) {
             publisherURLHttp = getServerURLHttp();
             storeURLHttp = getServerURLHttp();
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
                     "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
                     "log4j.properties"));
             super.init();
         } else {
             publisherURLHttp = getPublisherServerURLHttp();
             storeURLHttp = getStoreServerURLHttp();
         }
+
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
@@ -78,6 +78,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Token API Test sample")
     public void testTokenAPITestCase() throws Exception {
+
         String APIName = "RefreshTokenTestAPI";
         String APIContext = "refreshTokenTestAPI";
         String tags = "youtube, token, media";
@@ -124,15 +125,10 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + name + "&password=" + password + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL("https://localhost:8243/token");
+        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                         tokenEndpointURL).getData());
-        /*
-        Response would be like -
-        {"token_type":"bearer","expires_in":3600,"refresh_token":"736b6b5354e4cf24f217718b2f3f72b",
-        "access_token":"e06f12e3d6b1367d8471b093162f6729"}
-        */
 
         // get Access Token and Refresh Token
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
@@ -143,13 +139,13 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet("http://localhost:8280/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
-        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<category"),
+        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        assertTrue(youTubeResponse.getData().contains("<category"),
                 "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"),
+        assertTrue(youTubeResponse.getData().contains("<entry>"),
                 "Response data mismatched");
 
         // get a new access token using refresh token
@@ -166,13 +162,13 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         youTubeResponse = HttpRequestUtil
-                .doGet("http://localhost:8280/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
-        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<category"),
+        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        assertTrue(youTubeResponse.getData().contains("<category"),
                 "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"),
+        assertTrue(youTubeResponse.getData().contains("<entry>"),
                 "Response data mismatched");
     }
 

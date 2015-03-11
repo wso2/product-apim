@@ -21,8 +21,10 @@ package org.wso2.am.integration.test.utils.publisher.utils;
 
 
 import org.wso2.am.integration.test.utils.VerificationUtil;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -343,4 +345,64 @@ public class APIPublisherRestClient {
             throw new Exception("API Copying failed> " + response.getData());
         }
     }
+
+    /**
+     * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
+     *
+     * @param apiIdentifier
+     * @param isRequireReSubscription true if Re-subscription is required else fasle
+     * @return Response of the API publish event
+     * @throws Exception
+     */
+    public HttpResponse changeAPILifeCycleStatusToPublish(APIIdentifier apiIdentifier, boolean isRequireReSubscription)
+            throws Exception {
+        checkAuthentication();
+        APILifeCycleStateRequest publishUpdateRequest = new APILifeCycleStateRequest(apiIdentifier.getApiName(),
+                apiIdentifier.getProviderName(),
+                APILifeCycleState.PUBLISHED);
+        publishUpdateRequest.setVersion(apiIdentifier.getVersion());
+        String requestParameters = publishUpdateRequest.generateRequestParameters();
+        if (isRequireReSubscription) {
+            requestParameters += "&requireResubscription=true";
+        }
+
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+                "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+                , requestParameters
+                , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("API LifeCycle Updating failed> " + response.getData());
+        }
+
+    }
+
+    /**
+     * Get the API information  for the given API Name,API Version and API Provider
+     *
+     * @param apiName  Name of the API
+     * @param provider Provider Name of the API
+     * @param version  Version of the API
+     * @return Response of the getAPI request
+     * @throws Exception
+     */
+    public HttpResponse getApi(String apiName, String provider, String version)
+            throws Exception {
+        checkAuthentication();
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+                "/publisher/site/blocks/listing/ajax/item-list.jag")
+                , "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + ""
+                , requestHeaders);
+
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("Get API Information failed> " + response.getData());
+        }
+
+    }
+
 }

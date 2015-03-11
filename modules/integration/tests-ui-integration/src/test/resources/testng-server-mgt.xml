@@ -13,13 +13,13 @@
     <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
         <classes>
 <class name="org.wso2.am.integration.ui.tests.APIMANAGER2604ApplicationPaginationTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>
-            <class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>
-            <class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>
+            <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>-->
             <class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/>
         </classes>
     </test>

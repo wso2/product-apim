@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
 WSO2 Inc. licenses this file to you under the Apache License,
 Version 2.0 (the "License"); you may not use this file except
@@ -29,13 +29,12 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
     <name>WSO2 API Manager - Integration Common Test Module</name>
     <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>1.2.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.sf.saxon</groupId>
@@ -54,7 +53,6 @@ under the License.
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
-            <version>1.9.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automation</groupId>
@@ -63,7 +61,6 @@ under the License.
         <dependency>
             <groupId>org.apache.rampart</groupId>
             <artifactId>rampart-core</artifactId>
-            <version>1.6.1-wso2v1</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.sf.saxon</groupId>
