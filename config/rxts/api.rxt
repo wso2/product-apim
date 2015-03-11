@@ -147,6 +147,9 @@
         <field type="text">
             <name>Tenants</name>
         </field>
+         <field type="text">
+            <name>Environments</name>
+         </field>
         <field type="options">
             <name label="Response Caching">Response Caching</name>
             <values>
