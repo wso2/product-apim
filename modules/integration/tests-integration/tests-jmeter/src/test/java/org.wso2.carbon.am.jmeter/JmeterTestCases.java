@@ -33,7 +33,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import java.io.File;
 import java.io.IOException;
 
-public class JmeterTestCases extends AMIntegrationBaseTest{
+public class JmeterTestCases extends AMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
 
@@ -43,6 +43,7 @@ public class JmeterTestCases extends AMIntegrationBaseTest{
     public void testChangeTransportMechanism() throws Exception {
 
         init();
+
         serverConfigurationManager = new ServerConfigurationManager(apimContext);
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
 

@@ -19,14 +19,13 @@
 package org.wso2.carbon.am.jmeter;
 
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
 
-public class JmeterTransportRestrictionTestCase extends AMIntegrationBaseTest{
+public class JmeterTransportRestrictionTestCase {
 
     @Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
             " subscribe users to default app, invoke api - On a" +

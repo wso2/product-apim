@@ -20,23 +20,16 @@ package org.wso2.carbon.am.jmeter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
 
-public class JmeterSuperTenantTestCase extends AMIntegrationBaseTest {
+public class JmeterSuperTenantTestCase {
 
     protected Log log = LogFactory.getLog(JmeterSuperTenantTestCase.class);
-
-    @BeforeClass(alwaysRun = true)
-    public void testChangeTransportMechanism() throws Exception {
-        init();
-    }
 
     @Test(groups = "wso2.am", description = "Covers API creation, publish api get default app id," +
             " subscribe users to default app, invoke api - On a" +
