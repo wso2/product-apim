@@ -139,7 +139,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
@@ -162,7 +162,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         youTubeResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(getGatewayServerURLHttp() + "/refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");

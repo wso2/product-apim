@@ -6,7 +6,6 @@
         <classes>
 
 
-            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
@@ -14,23 +13,19 @@
             <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
-
-            <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
+
+
 
 
 
         </classes>
-   <!--     <packages>
+        <!--     <packages>
             <package name="org.wso2.am.integration.tests.*"/>
         </packages>-->
     </test>

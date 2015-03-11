@@ -74,7 +74,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
         String apiContext = "/defaultversion";
-        String endpointUrl = getGatewayServerURLHttp() + "response";
+        String endpointUrl = getGatewayServerURLHttp() + "/response";
 
         //Create the api creation request object
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
@@ -114,7 +114,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        String directBackEndEndpoint = getGatewayServerURLHttp() + "response";
+        String directBackEndEndpoint = getGatewayServerURLHttp() + "/response";
 
         //Going to access the API without the version in the request url.
         String apiInvocationUrl = getGatewayServerURLHttp() + apiContext;

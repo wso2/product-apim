@@ -170,7 +170,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "token");
+        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
@@ -189,12 +189,12 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/testScopeAPI/1.0.0/ITEM", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Admin user cannot access the GET Method");
 
         // Accessing POST method
-        endPointURL = new URL(getGatewayServerURLHttp() + "testScopeAPI/1.0.0/PRODUCT/35");
+        endPointURL = new URL(getGatewayServerURLHttp() + "/testScopeAPI/1.0.0/PRODUCT/35");
         response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Admin user cannot access the POST Method");
@@ -211,13 +211,13 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/testScopeAPI/1.0.0/ITEM", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "User John cannot access the GET Method");
 
         try {
             // Accessing POST method
-            endPointURL = new URL(getGatewayServerURLHttp() + "testScopeAPI/1.0.0/PRODUCT/35");
+            endPointURL = new URL(getGatewayServerURLHttp() + "/testScopeAPI/1.0.0/PRODUCT/35");
             response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
             assertTrue(response.getResponseCode() != Response.Status.OK.getStatusCode(),
                     "testRole John can access the POST Method");

@@ -101,7 +101,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 				getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-				getGatewayServerURLHttp()+"youtube/1.0.0/most_popular", requestHeaders);
+				getGatewayServerURLHttp()+"/youtube/1.0.0/most_popular", requestHeaders);
 		assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 		assertTrue(youTubeResponse.getData().contains("<feed"),
