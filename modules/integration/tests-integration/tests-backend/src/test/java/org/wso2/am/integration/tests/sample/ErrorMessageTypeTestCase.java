@@ -61,7 +61,7 @@ public class ErrorMessageTypeTestCase extends AMIntegrationBaseTest {
         HttpResponse response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "stockquote/test/", null);
         assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(), "Response code mismatch");
         //message contains json string or not
-        assertTrue(response.getData().contains("{\"fault\":{"));
+        assertTrue(response.getData().contains("{\"fault\":{"),"Did not receive Json error response");
     }
 
     @AfterClass(alwaysRun = true)

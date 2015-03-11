@@ -61,6 +61,7 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
         String description = "This is test API create by API manager integration test";
         String providerName = "admin";
         String APIVersion = "1.0.0";
+
         //add all option methods
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
@@ -76,7 +77,7 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
         apiPublisher.deleteApi(APIName, APIVersion, providerName);
         //add assertion
         apiPublisher.addAPI(apiRequest);
-       // APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
+
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
@@ -104,7 +105,7 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
 
         JSONObject jsonObject = new JSONObject(response.getData());
         boolean error = (Boolean) jsonObject.get("error");
-        assertEquals(error, false);
+        assertEquals(error, false, "Modifying resources failed for API");
 
 
     }

@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -29,6 +29,7 @@ import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +102,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
 				getGatewayServerURLHttp()+"youtube/1.0.0/most_popular", requestHeaders);
-		assertEquals(youTubeResponse.getResponseCode(), 200,
+		assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 		assertTrue(youTubeResponse.getData().contains("<feed"),
                 "Response data mismatched when api invocation");

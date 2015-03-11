@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -16,10 +16,12 @@
 *under the License.
 */
 
+
 package org.wso2.am.integration.tests.sample;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -31,15 +33,21 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.testng.Assert.*;
+
 public class TokenAPITestCase extends AMIntegrationBaseTest {
+
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
+
+    private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -127,6 +135,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         HttpResponse youTubeResponseSandBox = HttpRequestUtil
                 .doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"),
                         requestHeadersSandBox);
+        log.info("Response "+ youTubeResponseSandBox);
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
 
         //Generate production token and invoke with that
@@ -159,6 +168,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
          */
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
         String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
+        log.info(refreshToken);
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check User Access Token
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
@@ -166,11 +176,12 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         HttpResponse youTubeResponse = HttpRequestUtil
                 .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
-        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<category"),
+        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched");
+        assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
+        assertTrue(youTubeResponse.getData().contains("<category"),
                 "Response data mismatched");
-        Assert.assertTrue(youTubeResponse.getData().contains("<entry>"),
+        assertTrue(youTubeResponse.getData().contains("<entry>"),
                 "Response data mismatched");
 
         //Check Application Access Token
@@ -178,41 +189,42 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         HttpResponse youTubeResponseWithApplicationToken = HttpRequestUtil
                 .doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
-        Assert.assertEquals(youTubeResponseWithApplicationToken.getResponseCode(), 200,
+        assertEquals(youTubeResponseWithApplicationToken.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
-        Assert.assertTrue(youTubeResponseWithApplicationToken.getData().contains("<feed"),
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<feed"),
                 "Response data mismatched");
-        Assert.assertTrue(youTubeResponseWithApplicationToken.getData().contains("<category"),
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<category"),
                 "Response data mismatched");
-        Assert.assertTrue(youTubeResponseWithApplicationToken.getData().contains("<entry>"),
+        assertTrue(youTubeResponseWithApplicationToken.getData().contains("<entry>"),
                 "Response data mismatched");
 
         //Invoke Https end point
         HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil
                 .doGet(getApiInvocationURLHttps("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
-        // Assert.assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
+        log.info("Response " +youTubeResponseWithApplicationTokenHttps);
+        // assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
 
         HttpResponse errorResponse = null;
         for (int i = 0; i < 40; i++) {
             errorResponse = HttpRequestUtil
-                    .doGet(getApiInvocationURLHttps("tokenTestAPI/1.0.0/most_popular"),
-                            requestHeaders);
-            errorResponse = HttpRequestUtil
                     .doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"),
                             requestHeaders);
         }
-        Assert.assertEquals(errorResponse.getResponseCode(), 503,
+
+        assert errorResponse != null;
+        assertEquals(errorResponse.getResponseCode(), 503,
                 "Response code mismatched while token API test case");
         Thread.sleep(60000);
         errorResponse = HttpRequestUtil
                 .doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
+        log.info("Error response "+errorResponse);
 
         apiPublisher.revokeAccessToken(accessToken, consumerKey, providerName);
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "this-is-incorrect-token");
         errorResponse = HttpRequestUtil
                 .doGet(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
-        Assert.assertEquals(errorResponse.getResponseCode(), 401,
+        assertEquals(errorResponse.getResponseCode(), 401,
                 "Response code mismatched while token API test case");
         //TODO handle this in automation core level
         try {
@@ -227,10 +239,11 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
             errorResponse = HttpRequestUtil
                     .doPost(new URL(getApiInvocationURLHttp("tokenTestAPI/1.0.0/most_popular")),
                             soapRequest.toString(), requestHeaders);
+            log.info("Error Response "+errorResponse);
         } catch (Exception e) {
             //handle error
         }
-        //Assert.assertEquals(errorResponse.getResponseCode(), 401, "Response code mismatched while token API test case");
+        //assertEquals(errorResponse.getResponseCode(), 401, "Response code mismatched while token API test case");
 
     }
 
