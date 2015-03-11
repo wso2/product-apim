@@ -21,20 +21,18 @@ package org.wso2.am.integration.test.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 
 class WireMonitor extends Thread {
 	private Log log = LogFactory.getLog(WireMonitor.class);
-	private static final int TIMEOUT_VALUE = 60000;
 	private int port;
 	private ServerSocket providerSocket;
 	private Socket connection = null;
-	public String message = "";
 	private WireMonitorServer trigger;
 
 	public void run() {
@@ -46,41 +44,50 @@ class WireMonitor extends Thread {
 			log.info("Waiting for connection");
 			connection = providerSocket.accept();
 			log.info("Connection received from " +
-			         connection.getInetAddress().getHostName());
-			InputStreamReader in = new InputStreamReader(connection.getInputStream());
-			BufferedReader rd =
-					new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line = "";
+					connection.getInetAddress().getHostName());
+			InputStream in = connection.getInputStream();
+			int ch;
+			StringBuffer buffer = new StringBuffer();
+			StringBuffer headerBuffer = new StringBuffer();
 			Long time = System.currentTimeMillis();
-			while ((line = rd.readLine()) != null && !line.equals("")) {
-				message = message + line;
+			int contentLength = -1;
+			while ((ch = in.read()) != 1) {
+				buffer.append((char) ch);
+				//message headers end with
+				if (contentLength == -1 && buffer.toString().endsWith("\r\n\r\n")) {
+					headerBuffer = new StringBuffer(buffer.toString());
+					if (buffer.toString().contains("Content-Length")) {
+						String headers = buffer.toString();
+						//getting content-length header
+						String contentLengthHeader = headers.substring(headers.indexOf("Content-Length:"));
+						contentLengthHeader = contentLengthHeader.substring(0, contentLengthHeader.indexOf("\r\n"));
+						contentLength = Integer.parseInt(contentLengthHeader.split(":")[1].trim());
+						//clear the buffer
+						buffer.setLength(0);
+					}
+				}
+
+				//braking loop since whole message is read
+				if (buffer.toString().length() == contentLength) {
+					break;
+				}
 				// In this case no need of reading more than timeout value
-				if (System.currentTimeMillis() > (time + TIMEOUT_VALUE)) {
+				if ( (System.currentTimeMillis() > (time + trigger.READ_TIME_OUT) ) || buffer.toString().contains("</soapenv:Envelope>")) {
 					break;
 				}
 			}
 
 			// Signaling Main thread to continue
-			trigger.response = message;
-			trigger.isFinished = true;
-
-			//Sending default response
-			PrintWriter out = new PrintWriter(connection.getOutputStream());
-			String responseText = "[Response] Request Received. This is the default Response.";
-			String httpResponse = "HTTP/1.1 200 OK\n" +
-			                      "Content-Type: text/xml;charset=utf-8\n" +
-			                      "Content-Length: " + responseText.length() + "\n" +
-			                      "\n" +
-			                      responseText;
-			out.write(httpResponse);
+			trigger.response = headerBuffer.toString() + buffer.toString();
+			trigger.setFinished(true);
+			OutputStream out = connection.getOutputStream();
+			out.write(("HTTP/1.1 202 Accepted" + "\r\n\r\n").getBytes(Charset.defaultCharset()));
 			out.flush();
-
-			in.close();
-			rd.close();
 			out.close();
+			in.close();
 
 		} catch (IOException ioException) {
-			ioException.printStackTrace();
+
 		} finally {
 			try {
 				connection.close();

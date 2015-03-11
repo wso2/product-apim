@@ -261,7 +261,7 @@
                 <properties>
                 </properties>
             </instance>
-            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>

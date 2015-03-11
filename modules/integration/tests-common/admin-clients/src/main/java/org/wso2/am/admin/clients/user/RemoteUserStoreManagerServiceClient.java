@@ -1,7 +1,5 @@
-package org.wso2.am.admin.clients.user;
-
 /*
- *Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *WSO2 Inc. licenses this file to you under the Apache License,
  *Version 2.0 (the "License"); you may not use this file except
@@ -18,6 +16,7 @@ package org.wso2.am.admin.clients.user;
  *under the License.
  */
 
+package org.wso2.am.admin.clients.user;
 
 import org.apache.axis2.AxisFault;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
@@ -50,7 +49,7 @@ public class RemoteUserStoreManagerServiceClient {
                         String profileName, boolean requirePasswordChange) throws UserStoreException, RemoteException,
             RemoteUserStoreManagerServiceUserStoreExceptionException {
 
-        remoteUserStoreManagerServiceStub.addUser(userName, (String) credential, roleList, claimValues,
+        remoteUserStoreManagerServiceStub.addUser(userName, credential, roleList, claimValues,
                 profileName, requirePasswordChange);
     }
 

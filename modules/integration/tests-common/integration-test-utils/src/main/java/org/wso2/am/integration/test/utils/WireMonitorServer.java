@@ -23,7 +23,8 @@ package org.wso2.am.integration.test.utils;
  */
 public class WireMonitorServer {
 	private static final int TIMEOUT_VALUE = 60000;
-	boolean isFinished = false;
+	int READ_TIME_OUT = 30000;
+	public boolean isFinished = false;
 	String response;
 	int port;
 
@@ -38,10 +39,10 @@ public class WireMonitorServer {
 
 	public void start() {
 		response = "";
-		isFinished = false;
 		Thread thread = new WireMonitor(port, this);
 		thread.start();
 	}
+
 
 	/**
 	 * Wait until response is received and returns
@@ -57,5 +58,13 @@ public class WireMonitorServer {
 			}
 		}
 		return response;
+	}
+
+	public void setReadTimeOut (int timeout) {
+		READ_TIME_OUT = timeout;
+	}
+
+	public void setFinished(boolean isFinished) {
+		this.isFinished = isFinished;
 	}
 }
