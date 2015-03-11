@@ -58,7 +58,7 @@ public class ErrorMessageTypeTestCase extends AMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Error Message format test sample")
     public void errorMessageTypeTestCase() throws Exception {
-        HttpResponse response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "stockquote/test/", null);
+        HttpResponse response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/stockquote/test/", null);
         assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(), "Response code mismatch");
         //message contains json string or not
         assertTrue(response.getData().contains("{\"fault\":{"),"Did not receive Json error response");

@@ -25,6 +25,7 @@ import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 
 import static org.testng.Assert.assertEquals;
@@ -47,13 +48,13 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 	@Test(groups = { "wso2.am" },
 	      description = "Sending a Message Via REST to test uri template fix")
 	public void testRESTURITemplate() throws Exception {
-		// Before apply this patch uri template not recognize localhost:8280/stockquote/test/ and localhost:8280/stockquote/test
+		// Before apply this patch uri template not recognize localhost:8280/stockquote/test/
+		// and localhost:8280/stockquote/test
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(getGatewayServerURLHttp()+"stockquote" + "/test/", null);
-		//        HttpResponse response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/test/", null);
-		assertEquals(response.getResponseCode(), 200, "Response code mismatch");
+				.sendGetRequest(getGatewayServerURLHttp()+"/stockquote/test/", null);
+		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 
 	@AfterClass(alwaysRun = true)
