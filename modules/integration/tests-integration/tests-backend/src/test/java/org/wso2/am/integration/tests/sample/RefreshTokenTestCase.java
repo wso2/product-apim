@@ -59,7 +59,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
             publisherURLHttp = getServerURLHttp();
             storeURLHttp = getServerURLHttp();
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
                     "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
