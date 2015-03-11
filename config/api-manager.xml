@@ -218,7 +218,11 @@
             Administrator password to login to the remote BAM server.
         -->
         <BAMPassword>${admin.password}</BAMPassword>
-
+        <!--
+            If below property set to true,then the response message size will be calculated and publish 
+            with each successful API invocation event.
+        -->
+        <PublishResponseMessageSize>false</PublishResponseMessageSize>
         <!--
             JNDI name of the data source to be used for getting BAM statistics.This data source should
             be defined in the master-datasources.xml file in conf/datasources directory.
