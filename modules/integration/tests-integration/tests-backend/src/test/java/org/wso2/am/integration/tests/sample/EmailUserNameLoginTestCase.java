@@ -35,6 +35,7 @@ import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceStub;
 import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -42,12 +43,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static org.testng.Assert.assertEquals;
-
-/*import org.wso2.carbon.am.tests.APIManagerIntegrationTest;
-import org.wso2.carbon.am.tests.util.WorkFlowAdminRestClient;
-import org.wso2.carbon.automation.api.clients.utils.AuthenticateStub;
-import org.wso2.carbon.automation.core.ProductConstant;
-import org.wso2.carbon.automation.core.utils.HttpResponse;*/
 
 /**
  * test case to test login using email user name. test is done for publisher,
@@ -75,22 +70,16 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
             workflowAdminURLHTTP = getServerURLHttp();
 
             String apimanagerxml =
-                    getAMResourceLocation()
-                            + File.separator +
-                            "configFiles" + File.separator + "emailusernametest/" +
-                            "api-manager.xml";
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                            File.separator + "api-manager.xml";
 
             String usermgtxml =
-                    getAMResourceLocation()
-                            + File.separator +
-                            "configFiles" + File.separator + "emailusernametest/" +
-                            "user-mgt.xml";
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                            File.separator + "user-mgt.xml";
 
             String carbonxml =
-                    getAMResourceLocation()
-                            + File.separator +
-                            "configFiles" + File.separator + "emailusernametest/" +
-                            "carbon.xml";
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                            File.separator + "carbon.xml";
 
             ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(apimanagerxml));
@@ -149,14 +138,15 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
      * @return boolean whether tenant creation was successful or not
      */
     private boolean createTenantWithEmailUserName(String userNameWithEmail, String pwd,
-                                                  String domainName, String backendUrl) {
+                                                  String domainName, String backendUrl) throws XPathExpressionException {
         boolean isSuccess = false;
         try {
             String endPoint = backendUrl + "TenantMgtAdminService";
             TenantMgtAdminServiceStub tenantMgtAdminServiceStub =
                     new TenantMgtAdminServiceStub(
                             endPoint);
-            AuthenticateStub.authenticateStub("admin", "admin", tenantMgtAdminServiceStub);
+            AuthenticateStub.authenticateStub(apimContext.getSuperTenant().getContextUser().getUserName(),
+                    apimContext.getSuperTenant().getContextUser().getUserName(), tenantMgtAdminServiceStub);
 
             Date date = new Date();
             Calendar calendar = new GregorianCalendar();
@@ -169,8 +159,9 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
             tenantInfoBean.setAdmin(userNameWithEmail);
             tenantInfoBean.setTenantDomain(domainName);
             tenantInfoBean.setCreatedDate(calendar);
-            tenantInfoBean.setFirstname("admin");
-            tenantInfoBean.setLastname("admin" + "wso2automation");
+            tenantInfoBean.setFirstname(apimContext.getContextTenant().getContextUser().getUserName());
+            tenantInfoBean.setLastname(apimContext.getContextTenant().getContextUser().getUserName()
+                    + "wso2automation");
             tenantInfoBean.setSuccessKey("true");
             tenantInfoBean.setUsagePlan("demo");
 
@@ -180,18 +171,16 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
 
             if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName + " Activated successfully");
                 log.info("Tenant domain " + domainName + " Activated successfully");
 
             } else if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() == 0) {
                 tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName +
+                log.info("Tenant domain " + domainName +
                         " created and activated successfully");
                 log.info("Tenant domain " + domainName + " created and activated successfully");
                 isSuccess = true;
             } else {
-                System.out.println("Tenant domain " + domainName + " already registered");
                 log.info("Tenant domain " + domainName + " already registered");
             }
         } catch (RemoteException e) {

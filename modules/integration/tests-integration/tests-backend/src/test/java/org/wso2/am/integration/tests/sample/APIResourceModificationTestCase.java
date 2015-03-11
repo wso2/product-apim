@@ -104,7 +104,7 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
 
         JSONObject jsonObject = new JSONObject(response.getData());
         boolean error = (Boolean) jsonObject.get("error");
-        assertEquals(error, false);
+        assertEquals(error, false, "Modifying resources failed for API");
 
 
     }

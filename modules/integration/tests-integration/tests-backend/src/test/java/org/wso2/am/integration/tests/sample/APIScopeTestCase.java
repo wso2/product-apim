@@ -15,6 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
+
 package org.wso2.am.integration.tests.sample;
 
 import org.apache.commons.logging.Log;
@@ -53,18 +54,21 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
     private static final String API_VERSION = "1.0.0";
 
-    private static final String API_PROVIDER = "admin";
-
     private static final String APP_NAME = "NewApplication";
 
     private static final String USER_JOHN = "john";
 
     private static final String SUBSCRIBER_ROLE = "subscriber";
 
+    private static String apiProvider;
+
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
+
         super.init();
+
+        apiProvider = apimContext.getSuperTenant().getContextUser().getUserName();
 
         String publisherURLHttp;
 
@@ -114,7 +118,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         //publishing API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, API_PROVIDER,
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, apiProvider,
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
 
@@ -145,14 +149,14 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
                 "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
 
 
-        apiPublisher.updateResourceOfAPI(API_PROVIDER, API_NAME, API_VERSION, modifiedResource);
+        apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
 
         // For Admin user
         // create new application and subscribing
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
         apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, API_PROVIDER);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
         subscriptionRequest.setApplicationName(APP_NAME);
         apiStore.subscribe(subscriptionRequest);
 
@@ -219,7 +223,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         } catch (Exception e) {
             log.error("user john cannot access the resources (expected behaviour)");
-            assertTrue(true);
+            assertTrue(true,"user john cannot access the resources");
         }
     }
 
@@ -231,7 +235,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         }
 
         if (apiPublisher != null) {
-            apiPublisher.deleteApi(API_NAME, API_VERSION, API_PROVIDER);
+            apiPublisher.deleteApi(API_NAME, API_VERSION, apiProvider);
         }
 
         if (userManagementClient != null) {

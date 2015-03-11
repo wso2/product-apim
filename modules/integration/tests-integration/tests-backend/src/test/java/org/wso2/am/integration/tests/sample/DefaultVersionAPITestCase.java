@@ -127,7 +127,8 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiInvocationUrl, headers);
 
         //Check if accessing the back-end directly and accessing it via the API yield the same responses.
-        assertEquals(httpResponse.getData(), directResponse.getData(), "Default version API test failed.");
+        assertEquals(httpResponse.getData(), directResponse.getData(), "Default version API test failed while " +
+                "invoking the API.");
     }
 
     @AfterClass(alwaysRun = true)

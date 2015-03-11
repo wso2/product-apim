@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -16,6 +16,7 @@
 *under the License.
 */
 
+
 package org.wso2.am.integration.tests.sample;
 
 import org.testng.annotations.AfterClass;
@@ -30,6 +31,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.activation.DataHandler;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
 
@@ -51,7 +53,6 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
          */
 		super.init();
 		serverConfigurationManager = new ServerConfigurationManager(apimContext);
-		super.init();
 		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
 		                                  + File.separator + "synapseconfigs" + File.separator +
 		                                  "throttling"
@@ -66,7 +67,6 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 		ResourceAdminServiceClient resourceAdminServiceStub =
 				new ResourceAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
 
-		//resourceAdminServiceStub.deleteResource("/_system/config/proxy");
 		resourceAdminServiceStub.addCollection("/_system/config/", "proxy", "",
 		                                       "Contains test proxy tests files");
 
@@ -81,7 +81,8 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 		Thread.sleep(2000);
 		HttpResponse response = HttpRequestUtil
 				.sendGetRequest(getGatewayServerURLHttp()+"stockquote" + "/test/", null);
-		assertEquals(response.getResponseCode(), 200, "Response code mismatch");
+		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
+                "did not receive 200");
 
 	}
 

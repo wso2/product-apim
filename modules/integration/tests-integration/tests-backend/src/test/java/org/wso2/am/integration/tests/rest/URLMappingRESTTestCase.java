@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -16,6 +16,7 @@
 *under the License.
 */
 
+
 package org.wso2.am.integration.tests.rest;
 
 import org.testng.annotations.AfterClass;
@@ -25,6 +26,7 @@ import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 
 import static org.testng.Assert.assertEquals;
@@ -35,30 +37,30 @@ import static org.testng.Assert.assertEquals;
  */
 public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 
-	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
-		super.init();
-		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
-		                                  + File.separator + "synapseconfigs" + File.separator +
-		                                  "rest"
-		                                  + File.separator + "url-mapping-synapse.xml");
-	}
+    @BeforeClass(alwaysRun = true)
+    public void init() throws Exception {
+        super.init();
+        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                + File.separator + "synapseconfigs" + File.separator +
+                "rest"
+                + File.separator + "url-mapping-synapse.xml");
+    }
 
-	@Test(groups = { "wso2.am" },
-	      description = "Sending a Message Via REST to test uri template fix")
-	public void testRESTURITemplate() throws Exception {
-		// Before apply this patch uri template not recognize localhost:8280/stockquote/test/ and localhost:8280/stockquote/test
-		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
-		//after fixing issue both will work.
-		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(getGatewayServerURLHttp()+"stockquote" + "/test/", null);
-		//        HttpResponse response = HttpRequestUtil.sendGetRequest(getApiInvocationURLHttp("stockquote") + "/test/", null);
-		assertEquals(response.getResponseCode(), 200, "Response code mismatch");
-	}
+    @Test(groups = {"wso2.am"},
+            description = "Sending a Message Via REST to test uri template fix")
+    public void testRESTURITemplate() throws Exception {
+        // Before apply this patch uri template not recognize localhost:8280/stockquote/test/
+        // and localhost:8280/stockquote/test
+        //maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
+        //after fixing issue both will work.
+        HttpResponse response = HttpRequestUtil
+                .sendGetRequest(getGatewayServerURLHttp() + "stockquote" + "/test/", null);
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
+    }
 
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		super.cleanup();
-	}
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        super.cleanup();
+    }
 }
 
