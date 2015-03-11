@@ -127,6 +127,8 @@ public class StoreHomePage extends PageHandler {
      * @throws java.io.IOException
      */
     public TestAPIPage goToRestClient() throws IOException {
+        clickElementByLinkText("home.theme.link");
+        clickElementByXpath("home.theme.light.link");
         clickElementByLinkText("store.menu.tools");
         waitUntilElementVisibilityByLinkText("store.menu.tools.restclient", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
         clickElementByLinkText("store.menu.tools.restclient");

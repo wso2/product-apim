@@ -25,10 +25,13 @@
             <!--<class name="SubscriptionAvailabilityTestCase"/>-->
             <!--<class name="APIVersoinStatTestCase"/>-->
             <!--<class name="OAuthConsumerAppsTestCase"/>-->
+<<<<<<< HEAD
+=======
             <!--<class name="org.wso2.carbon.am.integration.ui.APIMANAGER2957EpochTimeTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3017ExternalStoreLifeCycleTestCase"/>
             <class name="org.wso2.carbon.am.integration.ui.APIMANAGER3149SSOLogin"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.APIResourceBodyParameterRemovalTestCase"/>-->
+>>>>>>> 9c6532d4c399dd307c8486a9a771fa0aa9dd9ae1
         </classes>
     </test>
 </suite>
