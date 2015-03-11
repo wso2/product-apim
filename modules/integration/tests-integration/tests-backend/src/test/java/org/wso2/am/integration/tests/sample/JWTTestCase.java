@@ -26,15 +26,15 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
+import org.wso2.am.integration.test.utils.APIMgtTestUtil;
+import org.wso2.am.integration.test.utils.WireMonitorServer;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.WireMonitorServer;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
@@ -184,6 +184,8 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
+        log.info("\n\n\n\n\nserverMessage = " + serverMessage);
+
         String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
 
         log.info("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
@@ -251,7 +253,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, specific user claims", enabled = true)
     public void testSpecificUserJWTClaims() throws Exception {
 
-        //server.setFinished(false);
+        server.setFinished(false);
         server.start();
 
         String subscriberUser = "subscriberUser";
