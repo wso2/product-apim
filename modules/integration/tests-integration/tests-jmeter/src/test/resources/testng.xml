@@ -18,10 +18,9 @@
             <class name="org.wso2.carbon.am.jmeter.APIMANAGER3195JWTWithWSClientTestCase"/>
             <class name="org.wso2.carbon.am.jmeter.JmeterLoginTestCase"/>
             <class name="org.wso2.carbon.am.jmeter.JmeterTransportRestrictionTestCase"/>
-            <class name="org.wso2.carbon.am.jmeter.JmeterSuperTenantTestCase"/>
             <class name="org.wso2.carbon.am.jmeter.JmeterTestCases"/>
 
-            <!--
+            <!-- <class name="org.wso2.carbon.am.jmeter.JmeterSuperTenantTestCase"/>
             <class name="org.wso2.carbon.am.jmeter.JmeterPassThroughTestCase"/>-->
 
         </classes>
