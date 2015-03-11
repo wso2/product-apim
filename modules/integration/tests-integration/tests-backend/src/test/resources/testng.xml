@@ -3,6 +3,7 @@
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+
         <classes>
 
 
@@ -17,12 +18,15 @@
             <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIMANAGER3152RefreshTokenTestCase"/>
+
 
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
 
-
-
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
+          <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
+          <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
 
 
         </classes>
