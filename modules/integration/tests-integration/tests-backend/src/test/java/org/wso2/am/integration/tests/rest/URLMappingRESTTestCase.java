@@ -38,10 +38,10 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
 		super.init();
-		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
-		                                  + File.separator + "synapseconfigs" + File.separator +
-		                                  "rest"
-		                                  + File.separator + "url-mapping-synapse.xml");
+		loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+				+ File.separator + "synapseconfigs" + File.separator +
+				"rest"
+				+ File.separator + "url-mapping-synapse.xml");
 	}
 
 	@Test(groups = { "wso2.am" },

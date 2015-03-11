@@ -9,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
+import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -31,6 +32,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient;
     private TenantManagementServiceClient tenantManagementServiceClient;
+	private RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
     private String publisherURLHttp;
@@ -119,6 +121,25 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, admin user claims", enabled = true)
     public void testEnableJWTAndClaims() throws Exception {
 
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                apimContext.getContextUrls().getBackEndUrl(), apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+
+        String username = apimContext.getContextTenant().getContextUser().getUserName();
+        String profile = "default";
+
+        remoteUserStoreManagerServiceClient.setUserClaimValue(
+                username, "http://wso2.org/claims/givenname",
+                "first name", profile);
+
+        remoteUserStoreManagerServiceClient.setUserClaimValue(
+                username, "http://wso2.org/claims/lastname",
+                "last name", profile);
+
+        /*remoteUserStoreManagerServiceClient.setUserClaimValue(
+                username, "http://wso2.org/claims/wrongclaim",
+                "wrongclaim", profile)*/;
+
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
         super.init();
@@ -141,6 +162,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
         String url = getGatewayServerURLHttp()+"/tokenTest/1.0.0";
+
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
@@ -224,6 +246,21 @@ public class JWTTestCase extends AMIntegrationBaseTest{
                     new String[]{"Internal/subscriber"}, null);
         }
 
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                apimContext.getContextUrls().getBackEndUrl(), apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+
+        String username = subscriberUser;
+        String profile = "default";
+
+        remoteUserStoreManagerServiceClient.setUserClaimValue(
+                username, "http://wso2.org/claims/givenname",
+                "subscriberUser name", profile);
+
+        remoteUserStoreManagerServiceClient.setUserClaimValue(
+                username, "http://wso2.org/claims/lastname",
+                "subscriberUser name", profile);
+
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
         super.init();
@@ -272,6 +309,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, tenant user claims" , enabled = false)
     public void testTenantUserJWTClaims() throws Exception {
 
+        //server.setFinished(false);
         server.start();
 
         tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "admin", "Gold");

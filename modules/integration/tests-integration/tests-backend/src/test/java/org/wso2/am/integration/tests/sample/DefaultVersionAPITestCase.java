@@ -59,7 +59,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(getStoreServerURLHttp());
 
         //Load the back-end dummy API
-        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
+        loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
                 + File.separator + "dummy_api.xml");
     }

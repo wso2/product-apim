@@ -52,10 +52,10 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 		super.init();
 		serverConfigurationManager = new ServerConfigurationManager(apimContext);
 		super.init();
-		loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
-		                                  + File.separator + "synapseconfigs" + File.separator +
-		                                  "throttling"
-		                                  + File.separator + "throttling-api-synapse.xml");
+		loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+				+ File.separator + "synapseconfigs" + File.separator +
+				"throttling"
+				+ File.separator + "throttling-api-synapse.xml");
 
 	}
 

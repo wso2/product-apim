@@ -51,7 +51,7 @@ public class ErrorMessageTypeTestCase extends AMIntegrationBaseTest {
         String destinationPath = computeDestinationPathForDataSource("axis2.xml");
         String sourcePath = computeAxis2SourceResourcePath("axis2.xml");
         copyAxis2ConfigFile(sourcePath, destinationPath);
-        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
+        loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "error" + File.separator + "handle"
                 + File.separator + "error-handling-test-synapse.xml");
     }
