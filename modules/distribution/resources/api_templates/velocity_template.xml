@@ -186,7 +186,7 @@
         ######################## End of Macros ######################################
 
 
-<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="url">
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
 <resource faultSequence=#print_string_if_exist($faultSequence "fault")>
