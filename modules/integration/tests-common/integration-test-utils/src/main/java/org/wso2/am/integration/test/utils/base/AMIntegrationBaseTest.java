@@ -32,8 +32,13 @@ import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.endpoint.stub.types.EndpointAdminEndpointAdminException;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.localentry.stub.types.LocalEntryAdminException;
+import org.wso2.carbon.proxyadmin.stub.ProxyServiceAdminProxyAdminException;
+import org.wso2.carbon.rest.api.stub.RestApiAdminAPIException;
 import org.wso2.carbon.sequences.stub.types.SequenceEditorException;
+import org.wso2.carbon.task.stub.TaskManagementException;
 import org.xml.sax.SAXException;
 
 import javax.activation.DataHandler;
@@ -307,7 +312,7 @@ public class AMIntegrationBaseTest {
                 synapseConfiguration.addChild(itr.next());
             }
         }
-        apimTestCaseUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
+        apimTestCaseUtils.updateAPIMConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
                 sessionCookie);
 
         if (apimContext.getProductGroup().isClusterEnabled()) {
@@ -328,6 +333,11 @@ public class AMIntegrationBaseTest {
         }
     }
 
+    /**
+     * add proxy service config
+     * @param proxyConfig
+     * @throws Exception
+     */
     protected void addProxyService(OMElement proxyConfig) throws Exception {
         String proxyName = proxyConfig.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie, proxyName)) {
@@ -341,11 +351,23 @@ public class AMIntegrationBaseTest {
                 setEndpoints(proxyConfig));
     }
 
+    /**
+     * check proxy deployed
+     * @param proxyServiceName
+     * @throws Exception
+     */
+
     protected void isProxyDeployed(String proxyServiceName) throws Exception {
         Assert.assertTrue(apimTestCaseUtils.isProxyDeployed(contextUrls.getBackEndUrl(), sessionCookie,
                                                    proxyServiceName),
                           "Proxy Deployment failed or time out");
     }
+
+    /**
+     * delete proxy services
+     * @param proxyServiceName
+     * @throws Exception
+     */
 
     protected void deleteProxyService(String proxyServiceName) throws Exception {
         if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
@@ -363,6 +385,13 @@ public class AMIntegrationBaseTest {
         }
     }
 
+    /**
+     * deleteSequence
+     * @param sequenceName
+     * @throws SequenceEditorException
+     * @throws RemoteException
+     */
+
     protected void deleteSequence(String sequenceName)
             throws SequenceEditorException, RemoteException {
         if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, sequenceName)) {
@@ -372,6 +401,12 @@ public class AMIntegrationBaseTest {
             sequencesList.remove(sequenceName);
         }
     }
+
+    /**
+     * addSequence
+     * @param sequenceConfig
+     * @throws Exception
+     */
 
     protected void addSequence(OMElement sequenceConfig) throws Exception {
         String sequenceName = sequenceConfig.getAttributeValue(new QName("name"));
@@ -385,6 +420,12 @@ public class AMIntegrationBaseTest {
         }
         sequencesList.add(sequenceName);
     }
+
+    /**
+     * addEndpoint
+     * @param endpointConfig
+     * @throws Exception
+     */
 
     protected void addEndpoint(OMElement endpointConfig)
             throws Exception {
@@ -401,6 +442,12 @@ public class AMIntegrationBaseTest {
 
     }
 
+    /**
+     * addLocalEntry
+     * @param localEntryConfig
+     * @throws Exception
+     */
+
     protected void addLocalEntry(OMElement localEntryConfig) throws Exception {
         String localEntryName = localEntryConfig.getAttributeValue(new QName("key"));
         if (apimTestCaseUtils
@@ -414,6 +461,12 @@ public class AMIntegrationBaseTest {
         }
         localEntryList.add(localEntryName);
     }
+
+    /**
+     * addMessageProcessor
+     * @param messageProcessorConfig
+     * @throws Exception
+     */
 
     protected void addMessageProcessor(OMElement messageProcessorConfig) throws Exception {
         String messageProcessorName = messageProcessorConfig.getAttributeValue(new QName("name"));
@@ -430,6 +483,12 @@ public class AMIntegrationBaseTest {
         messageProcessorsList.add(messageProcessorName);
     }
 
+    /**
+     * addMessageStore
+     * @param messageStoreConfig
+     * @throws Exception
+     */
+
     protected void addMessageStore(OMElement messageStoreConfig) throws Exception {
         String messageStoreName = messageStoreConfig.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
@@ -445,6 +504,12 @@ public class AMIntegrationBaseTest {
         messageStoresList.add(messageStoreName);
     }
 
+    /**
+     * addSequenceTemplate
+     * @param sequenceTemplate
+     * @throws Exception
+     */
+
     protected void addSequenceTemplate(OMElement sequenceTemplate) throws Exception {
         String name = sequenceTemplate.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isSequenceTemplateExist(contextUrls.getBackEndUrl(), sessionCookie, name)) {
@@ -459,7 +524,13 @@ public class AMIntegrationBaseTest {
         sequenceTemplateList.add(name);
     }
 
-    protected void addApi(OMElement api) throws Exception {
+    /**
+     * addAPI
+     * @param api
+     * @throws Exception
+     */
+
+    protected void addAPI(OMElement api) throws Exception {
         String apiName = api.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, apiName)) {
             apimTestCaseUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, apiName);
@@ -471,6 +542,12 @@ public class AMIntegrationBaseTest {
         }
         apiList.add(apiName);
     }
+
+    /**
+     * addPriorityExecutor
+     * @param priorityExecutor
+     * @throws Exception
+     */
 
     protected void addPriorityExecutor(OMElement priorityExecutor) throws Exception {
         String executorName = priorityExecutor.getAttributeValue(new QName("name"));
@@ -487,6 +564,12 @@ public class AMIntegrationBaseTest {
         priorityExecutorList.add(executorName);
     }
 
+    /**
+     * addScheduledTask
+     * @param task
+     * @throws Exception
+     */
+
     protected void addScheduledTask(OMElement task) throws Exception {
         String taskName = task.getAttributeValue(new QName("name"));
         String taskGroup = task.getAttributeValue(new QName("group"));
@@ -502,6 +585,10 @@ public class AMIntegrationBaseTest {
         scheduledTaskList.add(new String[] { taskName, taskGroup });
     }
 
+    /**
+     * deleteMessageProcessors
+     * @throws APIManagerIntegrationTestException
+     */
 
     private void deleteMessageProcessors() throws APIManagerIntegrationTestException {
         if (messageProcessorsList != null) {
@@ -526,6 +613,11 @@ public class AMIntegrationBaseTest {
         }
     }
 
+    /**
+     * deleteMessageStores
+     * @throws APIManagerIntegrationTestException
+     */
+
     private void deleteMessageStores() throws APIManagerIntegrationTestException {
         if (messageStoresList != null) {
             Iterator<String> itr = messageStoresList.iterator();
@@ -549,7 +641,12 @@ public class AMIntegrationBaseTest {
         }
     }
 
-    private void deleteSequences() {
+    /**
+     * deleteSequences
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteSequences() throws APIManagerIntegrationTestException {
         if (sequencesList != null) {
             Iterator<String> itr = sequencesList.iterator();
             while (itr.hasNext()) {
@@ -561,8 +658,12 @@ public class AMIntegrationBaseTest {
                             apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie,
                                                     sequence);
                         }
-                    } catch (Exception e) {
-                        log.error("while undeploying Sequence. : " , e);
+                    } catch (RemoteException e) {
+                        log.error("while deleteSequences : ", e);
+                        throw new APIManagerIntegrationTestException("deleteSequences error ", e);
+                    } catch (SequenceEditorException e) {
+                        log.error("deleteSequences : ", e);
+                        throw new APIManagerIntegrationTestException("deleteSequences error ", e);
                     }
                 }
             }
@@ -570,7 +671,12 @@ public class AMIntegrationBaseTest {
         }
     }
 
-    private void deleteProxyServices() {
+    /**
+     * deleteProxyServices
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteProxyServices() throws APIManagerIntegrationTestException {
         if (proxyServicesList != null) {
             Iterator<String> itr = proxyServicesList.iterator();
             while (itr.hasNext()) {
@@ -581,15 +687,24 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
                                 proxyName);
                     }
-                } catch (Exception e) {
-                    log.error("Proxy deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteProxyServices : ", e);
+                    throw new APIManagerIntegrationTestException("deleteProxyServices error ", e);
+                } catch (ProxyServiceAdminProxyAdminException e) {
+                    log.error("while deleteProxyServices : ", e);
+                    throw new APIManagerIntegrationTestException("deleteProxyServices error ", e);
                 }
             }
             proxyServicesList.clear();
         }
     }
 
-    private void deleteEndpoints() {
+    /**
+     * deleteEndpoints
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteEndpoints() throws APIManagerIntegrationTestException {
         if (endpointsList != null) {
             Iterator<String> itr = endpointsList.iterator();
             while (itr.hasNext()) {
@@ -600,15 +715,24 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
                                 endpoint);
                     }
-                } catch (Exception e) {
-                    log.error("Endpoint deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteEndpoints : ", e);
+                    throw new APIManagerIntegrationTestException("deleteEndpoints error ", e);
+                } catch (EndpointAdminEndpointAdminException e) {
+                    log.error("while deleteEndpoints : ", e);
+                    throw new APIManagerIntegrationTestException("deleteEndpoints error ", e);
                 }
             }
             endpointsList.clear();
         }
     }
 
-    private void deleteLocalEntries() {
+    /**
+     * deleteLocalEntries
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteLocalEntries() throws APIManagerIntegrationTestException {
         if (localEntryList != null) {
             Iterator<String> itr = localEntryList.iterator();
             while (itr.hasNext()) {
@@ -619,15 +743,24 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteLocalEntry(contextUrls.getBackEndUrl(), sessionCookie,
                                 localEntry);
                     }
-                } catch (Exception e) {
-                    log.error("Local entry deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteLocalEntries : ", e);
+                    throw new APIManagerIntegrationTestException("deleteLocalEntries error ", e);
+                } catch (LocalEntryAdminException e) {
+                    log.error("while deleteLocalEntries : ", e);
+                    throw new APIManagerIntegrationTestException("deleteLocalEntries error ", e);
                 }
             }
             localEntryList.clear();
         }
     }
 
-    private void deleteSequenceTemplates() {
+    /**
+     * deleteSequenceTemplates
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteSequenceTemplates() throws APIManagerIntegrationTestException {
         if (sequenceTemplateList != null) {
             Iterator<String> itr = sequenceTemplateList.iterator();
             while (itr.hasNext()) {
@@ -638,15 +771,27 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
                                 localEntry);
                     }
-                } catch (Exception e) {
-                    log.error("Sequence entry deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
+                } catch (EndpointAdminEndpointAdminException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
+                } catch (SequenceEditorException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
                 }
             }
             sequenceTemplateList.clear();
         }
     }
 
-    private void deleteApi() {
+    /**
+     * deleteAPI
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteAPI() throws APIManagerIntegrationTestException {
         if (apiList != null) {
             Iterator<String> itr = apiList.iterator();
             while (itr.hasNext()) {
@@ -655,15 +800,24 @@ public class AMIntegrationBaseTest {
                     if (apimTestCaseUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, api)) {
                         apimTestCaseUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, api);
                     }
-                } catch (Exception e) {
-                    log.error("API deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteAPI : ", e);
+                    throw new APIManagerIntegrationTestException("deleteAPI error ", e);
+                } catch (RestApiAdminAPIException e) {
+                    log.error("while deleteAPI : ", e);
+                    throw new APIManagerIntegrationTestException("deleteAPI error ", e);
                 }
             }
             apiList.clear();
         }
     }
 
-    private void deletePriorityExecutors() {
+    /**
+     * deletePriorityExecutors
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deletePriorityExecutors() throws APIManagerIntegrationTestException {
         if (priorityExecutorList != null) {
             Iterator<String> itr = priorityExecutorList.iterator();
             while (itr.hasNext()) {
@@ -674,15 +828,24 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
                                 executor);
                     }
-                } catch (Exception e) {
-                    log.error("Priority executor deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deletePriorityExecutors : ", e);
+                    throw new APIManagerIntegrationTestException("deletePriorityExecutors error ", e);
+                } catch (ProxyServiceAdminProxyAdminException e) {
+                    log.error("while deletePriorityExecutors : ", e);
+                    throw new APIManagerIntegrationTestException("deletePriorityExecutors error ", e);
                 }
             }
             priorityExecutorList.clear();
         }
     }
 
-    private void deleteScheduledTasks() {
+    /**
+     * deleteScheduledTasks
+     * @throws APIManagerIntegrationTestException
+     */
+
+    private void deleteScheduledTasks() throws APIManagerIntegrationTestException {
         if (scheduledTaskList != null) {
             Iterator<String[]> itr = scheduledTaskList.iterator();
             while (itr.hasNext()) {
@@ -693,13 +856,25 @@ public class AMIntegrationBaseTest {
                         apimTestCaseUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie,
                                 executor[0], executor[1]);
                     }
-                } catch (Exception e) {
-                    log.error("Scheduled task deletion error : " , e);
+                } catch (RemoteException e) {
+                    log.error("while deleteScheduledTasks : ", e);
+                    throw new APIManagerIntegrationTestException("deleteScheduledTasks error ", e);
+                } catch (TaskManagementException e) {
+                    log.error("while deleteScheduledTasks : ", e);
+                    throw new APIManagerIntegrationTestException("deleteScheduledTasks error ", e);
                 }
             }
             scheduledTaskList.clear();
         }
     }
+
+    /**
+     * setEndpoints
+     * @param synapseConfig
+     * @return
+     * @throws XMLStreamException
+     * @throws XPathExpressionException
+     */
 
     protected OMElement setEndpoints(OMElement synapseConfig)
             throws XMLStreamException, XPathExpressionException {
@@ -707,6 +882,15 @@ public class AMIntegrationBaseTest {
         String config = replaceEndpoints(synapseConfig.toString());
         return AXIOMUtil.stringToOM(config);
     }
+
+    /**
+     * setEndpoints
+     * @param dataHandler
+     * @return
+     * @throws XMLStreamException
+     * @throws IOException
+     * @throws XPathExpressionException
+     */
 
     protected DataHandler setEndpoints(DataHandler dataHandler)
             throws XMLStreamException, IOException, XPathExpressionException {
@@ -716,6 +900,13 @@ public class AMIntegrationBaseTest {
         ByteArrayDataSource dbs = new ByteArrayDataSource(config.getBytes());
         return new DataHandler(dbs);
     }
+
+    /**
+     * replaceEndpoints
+     * @param config
+     * @return
+     * @throws XPathExpressionException
+     */
 
     private String replaceEndpoints(String config) throws XPathExpressionException {
         //this should be AS context
@@ -730,6 +921,17 @@ public class AMIntegrationBaseTest {
         return config;
     }
 
+    /**
+     * replaceEndpoints
+     * @param relativePathToConfigFile
+     * @param serviceName
+     * @param port
+     * @return
+     * @throws XMLStreamException
+     * @throws FileNotFoundException
+     * @throws XPathExpressionException
+     */
+
     protected OMElement replaceEndpoints(String relativePathToConfigFile, String serviceName,
                                          String port)
             throws XMLStreamException, FileNotFoundException, XPathExpressionException {
@@ -739,6 +941,14 @@ public class AMIntegrationBaseTest {
 
         return AXIOMUtil.stringToOM(config);
     }
+
+    /**
+     * isProxyWSDlExist
+     * @param serviceUrl
+     * @param synchronizingDelay
+     * @return
+     * @throws Exception
+     */
 
     private boolean isProxyWSDlExist(String serviceUrl, long synchronizingDelay)
             throws Exception {
@@ -775,7 +985,7 @@ public class AMIntegrationBaseTest {
             resultStr = buf.toString();
 
         } catch (IOException e) {
-            log.error("Stream error occured" + e);
+            log.error("Stream error occurred" + e);
             throw new IOException(e);
         }
         finally {
@@ -827,7 +1037,7 @@ public class AMIntegrationBaseTest {
 
             deleteLocalEntries();
 
-            deleteApi();
+            deleteAPI();
 
             deletePriorityExecutors();
 
