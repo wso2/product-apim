@@ -483,4 +483,44 @@ public class APIStoreRestClient {
 		}
 
 	}
+
+
+	/**
+	 * Get the  web page with filtered API when  click the API Tag link
+	 *
+	 * @param apiTag - API tag the need ti filter the api.
+	 * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
+	 * @throws Exception - Exception throws when  check the Authentication
+	 */
+	public HttpResponse getAPIPageFilteredWithTags(String apiTag)
+			throws Exception {
+		checkAuthentication();
+		HttpResponse response = HttpRequestUtil.sendGetRequest(backEndUrl + "/store/apis/list"
+				, "tag=" + apiTag + "&tenant=carbon.super");
+		return response;
+
+	}
+
+
+	/**
+	 * Subscribe and API. This method return the response of the subscription server REST call.
+	 *
+	 * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
+	 * @return HttpResponse - Response f the subscription server REST call
+	 * @throws Exception- Exception throws when  check the Authentication
+	 */
+	public HttpResponse subscribeAPI(SubscriptionRequest subscriptionRequest)
+			throws Exception {
+		//This method  do the same functionality as subscribe(), except this method  always returns the response object
+		//regardless of the response code. But subscribe() returns the response object only if  the response code is
+		// 200 or else it will return an Exception.
+		checkAuthentication();
+		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+				"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+				, subscriptionRequest.generateRequestParameters()
+				, requestHeaders);
+
+		return response;
+
+	}
 }

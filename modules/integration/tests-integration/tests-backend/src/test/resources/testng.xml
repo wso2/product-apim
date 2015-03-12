@@ -2,6 +2,15 @@
 
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
+
+
+    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+        <packages>
+            <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
+        </packages>
+    </test>
+
+
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
 
@@ -12,8 +21,6 @@
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
-
 
             <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/>-->
@@ -24,5 +31,8 @@
             <package name="org.wso2.am.integration.tests.*"/>
         </packages>-->
     </test>
+
+
+
 
 </suite>

@@ -154,11 +154,12 @@ public class APIMgtTestUtil {
 	/**
 	 * Get the API information from the response  object as Lost of  APIIdentifier
 	 *
-	 * @param httpResponse Response that contains the API information
-	 * @return List of APIIdentifier
-	 * @throws JSONException
+	 * @param httpResponse - Response that contains the API information
+	 * @return List - List of APIIdentifier that retrieve from the provided HttpResponse.
+	 * @throws APIManagerIntegrationTestException - throws APIManagerIntegrationTestException when a exception occurs
+	 *                                            while retrieve  JSON data.
 	 */
-	public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(HttpResponse httpResponse) throws JSONException {
+	public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(HttpResponse httpResponse) throws APIManagerIntegrationTestException {
 		List<APIIdentifier> apiIdentifierList = new ArrayList<APIIdentifier>();
 		String APIName;
 		String APIProvider;
@@ -186,7 +187,7 @@ public class APIMgtTestUtil {
 		} catch (JSONException e) {
 
 			log.error("Error when extraction data from JSON" + e.getMessage());
-			throw new RuntimeException("Error when extraction data from JSON", e);
+			throw new APIManagerIntegrationTestException("Error when extraction data from JSON", e);
 		}
 		return apiIdentifierList;
 	}
@@ -194,9 +195,9 @@ public class APIMgtTestUtil {
 	/**
 	 * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
 	 *
-	 * @param apiIdentifierToCheck
-	 * @param apiIdentifierList
-	 * @return
+	 * @param apiIdentifierToCheck - APIIdentifier with API information that need to check the availability.
+	 * @param apiIdentifierList    -  APIIdentifier  list to  check the availability.
+	 * @return boolean - true if API is found else false
 	 */
 	public static boolean isAPIAvailable(APIIdentifier apiIdentifierToCheck, List<APIIdentifier> apiIdentifierList) {
 		boolean isFound = false;

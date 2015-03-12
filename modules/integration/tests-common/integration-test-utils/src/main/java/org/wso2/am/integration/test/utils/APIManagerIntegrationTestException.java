@@ -27,12 +27,19 @@ public class APIManagerIntegrationTestException extends Exception {
     /**
      * Constructor for the custom Exception  class APIManagerIntegrationTestException.
      *
-     * @param message   Custom message.
-     * @param throwable Original Exception.
+     * @param message   - Custom message.
+     * @param throwable - Original Exception.
      */
     public APIManagerIntegrationTestException(String message, Throwable throwable) {
         super(message, throwable);
     }
 
-
+    /**
+     * Constructor for the custom Exception  class APIManagerIntegrationTestException.
+     *
+     * @param message - Custom message.
+     */
+    public APIManagerIntegrationTestException(String message) {
+        super(message);
+    }
 }
