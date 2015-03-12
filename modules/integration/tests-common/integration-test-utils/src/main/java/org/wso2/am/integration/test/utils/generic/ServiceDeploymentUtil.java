@@ -31,7 +31,13 @@ public class ServiceDeploymentUtil {
 
 	private static Log log = LogFactory.getLog(ServiceDeploymentUtil.class);
 
-
+	/**
+	 * isServiceWSDlExist
+	 * @param serviceUrl
+	 * @param synchronizingDelay
+	 * @return
+	 * @throws Exception
+	 */
 	public static boolean isServiceWSDlExist(String serviceUrl, long synchronizingDelay)
 			throws Exception {
 
@@ -51,7 +57,7 @@ public class ServiceDeploymentUtil {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException ignored) {
-
+				log.warn("Thread  interrupt error", ignored);
 			}
 		}
 
@@ -59,6 +65,12 @@ public class ServiceDeploymentUtil {
 
 	}
 
+	/**
+	 * is WSDL available
+	 * @param serviceEndpoint
+	 * @return
+	 * @throws IOException
+	 */
 	public static boolean isWSDLAvailable(String serviceEndpoint) throws IOException {
 		URL url = new URL(serviceEndpoint + "?wsdl");
 		boolean isWsdlExist = false;
