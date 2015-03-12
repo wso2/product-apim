@@ -38,7 +38,6 @@ package org.wso2.carbon.am.jmeter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
@@ -49,12 +48,7 @@ import java.io.File;
 
 public class JmeterLoginTestCase extends AMIntegrationBaseTest{
 
-    protected Log log = LogFactory.getLog(getClass());
-
-    @BeforeClass(alwaysRun = true)
-    public void testChangeTransportMechanism() throws Exception {
-        init();
-    }
+    protected Log log = LogFactory.getLog(JmeterLoginTestCase.class);
 
     @Test(groups = "wso2.am", description = "Login to api manager as user2")
     public void testListServices() throws Exception {

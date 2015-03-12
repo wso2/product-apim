@@ -287,7 +287,6 @@
 </inSequence>
 <outSequence>
 #if($statsEnabled)
-<property name="api.ut.requestEndTime" expression="get-property('SYSTEM_TIME')"/>
 <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"/>
 #end
 ## check and set response caching
