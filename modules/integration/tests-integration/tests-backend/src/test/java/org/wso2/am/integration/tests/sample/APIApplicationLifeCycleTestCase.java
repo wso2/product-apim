@@ -154,14 +154,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiStore.addRatingToAPI(APIName, APIVersion, providerName, "2");
         apiStore.addRatingToAPI(APIName, APIVersion, providerName, "1");
         apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
-        apiStore.getAllDocumentationOfApi(APIName, APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI(APIName, APIVersion, providerName);
         //apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
         //Negative cases
         apiStore.getPublishedAPIsByApplication("APILifeCycleTestAPI-application-wrong");
         apiStore.isRatingActivated();
         apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
         apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
-        apiStore.getAllDocumentationOfApi("NoAPI", APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI("NoAPI", APIVersion, providerName);
         apiRequest.setTags("updated");
         apiRequest.setProvider("admin");
         Thread.sleep(1000);
@@ -846,9 +846,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
 
-        /*apiPublisherRestClient.deleteApi("APILifeCycleTestAPIPublic", "1.0.0", "admin");
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIRoles", "1.0.0", "admin");*/
+        /*apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIPublic", "1.0.0", "admin");
+        apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");
+        apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIRoles", "1.0.0", "admin");*/
 
         Thread.sleep(5000);
         super.cleanup();

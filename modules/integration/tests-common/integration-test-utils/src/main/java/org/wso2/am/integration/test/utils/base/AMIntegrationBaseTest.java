@@ -265,20 +265,19 @@ public class AMIntegrationBaseTest {
                File.separator + "AM";
     }
 
+    /**
+     * this is used for for call axis2 server externally
+     * @param serviceName
+     * @return
+     * @throws XPathExpressionException
+     */
+
     protected String getBackEndServiceUrl(String serviceName) throws XPathExpressionException {
         return EndpointGenerator.getBackEndServiceEndpointUrl(serviceName);
     }
 
     protected boolean isBuilderEnabled() throws XPathExpressionException {
         return apimContext.getConfigurationValue("//executionEnvironment").equals("standalone");
-    }
-
-    protected boolean isClusterEnabled() throws XPathExpressionException {
-        return apimContext.getProductGroup().isClusterEnabled();
-    }
-
-    protected String getExecutionEnvironment() throws XPathExpressionException {
-        return apimContext.getConfigurationValue("//executionEnvironment");
     }
 
     /**

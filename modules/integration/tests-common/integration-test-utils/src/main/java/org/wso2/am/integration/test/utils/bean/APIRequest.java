@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +34,8 @@ import java.net.URL;
  */
 
 public class APIRequest extends AbstractRequest {
+
+    private static final Log log = LogFactory.getLog(APIRequest.class);
 
     private String name;
     private String context;
@@ -87,7 +91,15 @@ public class APIRequest extends AbstractRequest {
 
     private String provider ="admin";
 
-    public APIRequest(String apiName, String context, URL endpointUrl) {
+    /**
+     * create API request
+     * @param apiName
+     * @param context
+     * @param endpointUrl
+     * @throws JSONException
+     */
+
+    public APIRequest(String apiName, String context, URL endpointUrl) throws JSONException {
         this.name = apiName;
         this.context = context;
         try {
@@ -95,7 +107,8 @@ public class APIRequest extends AbstractRequest {
                                            + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                                            + endpointUrl.getProtocol() + "\"}");
         } catch (JSONException e) {
-            //ignore
+            log.error("JSON construct error", e);
+            throw new JSONException("JSON construct error");
         }
 
     }
@@ -109,8 +122,12 @@ public class APIRequest extends AbstractRequest {
         super.setAction(action);
     }
 
+    /**
+     * initialize method
+     */
     @Override
     public void init() {
+
         addParameter("name", name);
         addParameter("context", context);
         addParameter("endpoint_config", endpoint.toString());

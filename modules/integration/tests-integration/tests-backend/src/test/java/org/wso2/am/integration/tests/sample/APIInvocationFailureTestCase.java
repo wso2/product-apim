@@ -85,7 +85,7 @@ public class APIInvocationFailureTestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
 
@@ -124,7 +124,7 @@ public class APIInvocationFailureTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
                 providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
 

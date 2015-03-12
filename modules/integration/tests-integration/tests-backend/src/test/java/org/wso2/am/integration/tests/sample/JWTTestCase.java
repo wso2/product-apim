@@ -133,7 +133,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
     }
 
@@ -360,7 +360,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, provider,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(tenantUser, password);

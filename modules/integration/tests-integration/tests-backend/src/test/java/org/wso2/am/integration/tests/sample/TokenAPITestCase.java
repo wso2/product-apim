@@ -107,7 +107,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         // Create application
         apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");

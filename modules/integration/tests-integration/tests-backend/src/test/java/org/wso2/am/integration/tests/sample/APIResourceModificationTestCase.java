@@ -74,13 +74,13 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         //add assertion
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         //resource are modified by using swagger doc. create the swagger doc with modified
         //information. Similar thing happens when using UI to modify the resources

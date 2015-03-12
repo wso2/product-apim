@@ -91,7 +91,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
                 apimContext.getContextTenant().getContextUser().getUserName(),
                 APILifeCycleState.PUBLISHED);
         //Publish the API
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         //Login to the API Store
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),

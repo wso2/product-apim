@@ -121,7 +121,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         //publishing API
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, apiProvider,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
 
         //resources are modified using swagger doc.
@@ -236,7 +236,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         }
 
         if (apiPublisher != null) {
-            apiPublisher.deleteApi(API_NAME, API_VERSION, apiProvider);
+            apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
         }
 
         if (userManagementClient != null) {
