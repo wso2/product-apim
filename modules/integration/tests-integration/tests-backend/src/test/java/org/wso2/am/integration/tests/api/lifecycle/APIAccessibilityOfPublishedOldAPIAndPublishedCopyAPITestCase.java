@@ -42,7 +42,7 @@ import static org.testng.Assert.assertTrue;
  * still subscribe to old version. Test invocation of both old and new API versions.
  */
 
-public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPI extends APIManagerLifecycleBaseTest {
+public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extends APIManagerLifecycleBaseTest {
 
 
     private APIIdentifier apiIdentifierAPI1Version1;
