@@ -127,63 +127,6 @@ public class APIMTestCaseUtils {
 	}
 
 	/**
-	 * Loads the specified ESB configuration file from the classpath and deploys it into the ESB.
-	 *
-	 * @param synapseFilePath A relative path to the configuration file
-	 * @throws java.rmi.RemoteException If an error occurs while loading the specified configuration
-	 */
-	public void loadESBConfigurationFrom(String synapseFilePath, String backendURL,
-	                                     String sessionCookie)
-			throws Exception {
-		OMElement configElement = loadResource(synapseFilePath);
-		updateESBConfiguration(configElement, backendURL, sessionCookie);
-	}
-
-	/**
-	 * Loads the configuration of the specified sample into the ESB.
-	 *
-	 * @param number Sample number
-	 * @throws Exception If an error occurs while loading the sample configuration
-	 */
-	public OMElement loadESBSampleConfiguration(int number)
-			throws Exception {
-		String filePath = TestConfigurationProvider.getResourceLocation("ESB") +
-		                  File.separator + "samples" + File.separator + "synapse_sample_" + number +
-		                  ".xml";
-		File configFile = new File(filePath);
-		FileInputStream inputStream = null;
-		XMLStreamReader parser = null;
-		StAXOMBuilder builder = null;
-		OMElement documentElement = null;
-		try {
-			inputStream = new FileInputStream(configFile.getAbsolutePath());
-			parser = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
-			builder = new StAXOMBuilder(parser);
-			documentElement = builder.getDocumentElement().cloneOMElement();
-
-		} finally {
-			if (builder != null) {
-				builder.close();
-			}
-			if (parser != null) {
-				try {
-					parser.close();
-				} catch (XMLStreamException e) {
-					//ignore
-				}
-			}
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					//ignore
-				}
-			}
-		}
-		return documentElement;
-	}
-
-	/**
 	 * load synapse configuration from OMElement
 	 *
 	 * @param synapseConfig synapse configuration
@@ -193,9 +136,10 @@ public class APIMTestCaseUtils {
 	 * @throws javax.xml.stream.XMLStreamException
 	 * @throws javax.servlet.ServletException
 	 */
-	public void updateESBConfiguration(OMElement synapseConfig, String backendURL,
-	                                   String sessionCookie)
+	public void updateAPIMConfiguration(OMElement synapseConfig, String backendURL,
+										String sessionCookie)
 			throws Exception {
+
 		ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backendURL, sessionCookie);
 		EndPointAdminClient endPointAdminClient =
 				new EndPointAdminClient(backendURL, sessionCookie);
@@ -216,97 +160,63 @@ public class APIMTestCaseUtils {
 		PriorityMediationAdminClient priorityMediationAdminClient =
 				new PriorityMediationAdminClient(backendURL, sessionCookie);
 
-		Iterator<OMElement> localEntries = synapseConfig.getChildrenWithLocalName(LOCAL_ENTRY);
-		while (localEntries.hasNext()) {
-			OMElement localEntry = localEntries.next();
-			String le = localEntry.getAttributeValue(new QName(KEY));
-			if (ArrayUtils.contains(localEntryAdminServiceClient.getEntryNames(), le)) {
-				Assert.assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le),
-				                  le + " Local Entry deletion failed");
-				Assert.assertTrue(isLocalEntryUnDeployed(backendURL, sessionCookie, le),
-				                  le + " Local Entry undeployment failed");
-			}
-			Assert.assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry),
-			                  le + " Local Entry addition failed");
-			log.info(le + " LocalEntry Uploaded");
-		}
+		checkLocalEntries(synapseConfig, backendURL, sessionCookie, localEntryAdminServiceClient);
 
-		Iterator<OMElement> endpoints = synapseConfig.getChildrenWithLocalName(ENDPOINT);
-		while (endpoints.hasNext()) {
-			OMElement endpoint = endpoints.next();
-			String ep = endpoint.getAttributeValue(new QName(NAME));
-			if (ArrayUtils.contains(endPointAdminClient.getEndpointNames(), ep)) {
-				Assert.assertTrue(endPointAdminClient.deleteEndpoint(ep),
-				                  ep + " Endpoint deletion failed");
-				Assert.assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep),
-				                  ep + " Endpoint undeployment failed");
-			}
-			Assert.assertTrue(endPointAdminClient.addEndPoint(endpoint),
-			                  ep + " Endpoint addition failed");
-			log.info(ep + " Endpoint Uploaded");
-		}
+		checkEndPoints(synapseConfig, backendURL, sessionCookie, endPointAdminClient);
 
-		Iterator<OMElement> sequences = synapseConfig.getChildrenWithLocalName(SEQUENCE);
-		while (sequences.hasNext()) {
-			OMElement sequence = sequences.next();
-			String sqn = sequence.getAttributeValue(new QName(NAME));
-			boolean isSequenceExist = ArrayUtils.contains(sequenceAdminClient.getSequences(), sqn);
-			if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) &&
-			    isSequenceExist) {
-				sequenceAdminClient.updateSequence(sequence);
-			} else {
-				if (isSequenceExist) {
-					sequenceAdminClient.deleteSequence(sqn);
-					Assert.assertTrue(isSequenceUnDeployed(backendURL, sessionCookie, sqn),
-					                  sqn + " Sequence undeployment failed");
-				}
-				sequenceAdminClient.addSequence(sequence);
-			}
-			log.info(sqn + " Sequence Uploaded");
-		}
+		checkSequences(synapseConfig, backendURL, sessionCookie, sequenceAdminClient);
 
-		Iterator<OMElement> proxies = synapseConfig.getChildrenWithLocalName(PROXY);
-		while (proxies.hasNext()) {
-			OMElement proxy = proxies.next();
-			String proxyName = proxy.getAttributeValue(new QName(NAME));
-			if (adminServiceService.isServiceExists(proxyName)) {
-				proxyAdmin.deleteProxy(proxyName);
-				Assert.assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName),
-				                  proxyName + " Undeployment failed");
-			}
-			proxyAdmin.addProxyService(proxy);
-			log.info(proxyName + " Proxy Uploaded");
-		}
+		checkProxies(synapseConfig, backendURL, sessionCookie, proxyAdmin, adminServiceService);
 
-		Iterator<OMElement> messageStores = synapseConfig.getChildrenWithLocalName(MESSAGE_STORE);
-		while (messageStores.hasNext()) {
-			OMElement messageStore = messageStores.next();
-			String mStore = messageStore.getAttributeValue(new QName(NAME));
-			if (ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), mStore)) {
-				messageStoreAdminClient.deleteMessageStore(mStore);
-				Assert.assertTrue(isMessageStoreUnDeployed(backendURL, sessionCookie, mStore),
-				                  mStore + " Message Store undeployment failed");
-			}
-			messageStoreAdminClient.addMessageStore(messageStore);
-			log.info(mStore + " Message Store Uploaded");
-		}
+		checkMessageStores(synapseConfig, backendURL, sessionCookie, messageStoreAdminClient);
 
-		Iterator<OMElement> messageProcessors =
-				synapseConfig.getChildrenWithLocalName(MESSAGE_PROCESSOR);
-		while (messageProcessors.hasNext()) {
-			OMElement messageProcessor = messageProcessors.next();
-			String mProcessor = messageProcessor.getAttributeValue(new QName(NAME));
-			if (ArrayUtils
-					.contains(messageProcessorClient.getMessageProcessorNames(), mProcessor)) {
-				messageProcessorClient.deleteMessageProcessor(mProcessor);
+		checkMessageProcessors(synapseConfig, backendURL, sessionCookie, messageProcessorClient);
+
+		checkTemplates(synapseConfig, backendURL, sessionCookie, endpointTemplateAdminServiceClient, sequenceTemplateAdminServiceClient);
+
+		checkAPIs(synapseConfig, backendURL, sessionCookie, apiAdminClient);
+
+		checkPriorityExecutors(synapseConfig, backendURL, sessionCookie, priorityMediationAdminClient);
+
+		Thread.sleep(1000);
+		verifySynapseDeployment(synapseConfig, backendURL, sessionCookie);
+		log.info("Synapse configuration  Deployed");
+
+	}
+
+	private void checkPriorityExecutors(OMElement synapseConfig, String backendURL, String sessionCookie, PriorityMediationAdminClient priorityMediationAdminClient) throws RemoteException {
+		Iterator<OMElement> priorityExecutorList =
+				synapseConfig.getChildrenWithLocalName(PRIORITY_EXECUTOR);
+		while (priorityExecutorList.hasNext()) {
+			OMElement executor = priorityExecutorList.next();
+			String executorName = executor.getAttributeValue(new QName(NAME));
+			if (ArrayUtils.contains(priorityMediationAdminClient.getExecutorList(), executorName)) {
+				priorityMediationAdminClient.remove(executorName);
 				Assert.assertTrue(
-						isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor)
-						, mProcessor + " Message Processor undeployment failed");
+						isPriorityExecutorUnDeployed(backendURL, sessionCookie, executorName)
+						, executorName + " Priority Executor undeployment failed");
 			}
-			messageProcessorClient.addMessageProcessor(messageProcessor);
-			log.info(mProcessor + " Message Processor Uploaded");
+			priorityMediationAdminClient.addPriorityMediator(executorName, executor);
+			log.info(executorName + " Priority Executor Uploaded");
 		}
+	}
 
+	private void checkAPIs(OMElement synapseConfig, String backendURL, String sessionCookie, RestApiAdminClient apiAdminClient) throws RestApiAdminAPIException, RemoteException {
+		Iterator<OMElement> apiElements = synapseConfig.getChildrenWithLocalName(API);
+		while (apiElements.hasNext()) {
+			OMElement api = apiElements.next();
+			String apiName = api.getAttributeValue(new QName(NAME));
+			if (ArrayUtils.contains(apiAdminClient.getApiNames(), apiName)) {
+				apiAdminClient.deleteApi(apiName);
+				Assert.assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName)
+						, apiName + " Api undeployment failed");
+			}
+			apiAdminClient.add(api);
+			log.info(apiName + " API Uploaded");
+		}
+	}
+
+	private void checkTemplates(OMElement synapseConfig, String backendURL, String sessionCookie, EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient, SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient) throws RemoteException, EndpointAdminEndpointAdminException {
 		Iterator<OMElement> templates = synapseConfig.getChildrenWithLocalName(TEMPLATE);
 		while (templates.hasNext()) {
 			OMElement template = templates.next();
@@ -314,7 +224,7 @@ public class APIMTestCaseUtils {
 			if (template.getFirstChildWithName(
 					new QName(template.getNamespace().getNamespaceURI(), SEQUENCE)) != null) {
 				if (ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(),
-				                        templateName)) {
+						templateName)) {
 					sequenceTemplateAdminServiceClient.deleteTemplate(templateName);
 					Assert.assertTrue(
 							isSequenceTemplateUnDeployed(backendURL, sessionCookie, templateName)
@@ -335,39 +245,109 @@ public class APIMTestCaseUtils {
 			}
 			log.info(templateName + " Template Uploaded");
 		}
+	}
 
-		Iterator<OMElement> apiElements = synapseConfig.getChildrenWithLocalName(API);
-		while (apiElements.hasNext()) {
-			OMElement api = apiElements.next();
-			String apiName = api.getAttributeValue(new QName(NAME));
-			if (ArrayUtils.contains(apiAdminClient.getApiNames(), apiName)) {
-				apiAdminClient.deleteApi(apiName);
-				Assert.assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName)
-						, apiName + " Api undeployment failed");
-			}
-			apiAdminClient.add(api);
-			log.info(apiName + " API Uploaded");
-		}
-
-		Iterator<OMElement> priorityExecutorList =
-				synapseConfig.getChildrenWithLocalName(PRIORITY_EXECUTOR);
-		while (priorityExecutorList.hasNext()) {
-			OMElement executor = priorityExecutorList.next();
-			String executorName = executor.getAttributeValue(new QName(NAME));
-			if (ArrayUtils.contains(priorityMediationAdminClient.getExecutorList(), executorName)) {
-				priorityMediationAdminClient.remove(executorName);
+	private void checkMessageProcessors(OMElement synapseConfig, String backendURL, String sessionCookie, MessageProcessorClient messageProcessorClient) throws RemoteException, SequenceEditorException {
+		Iterator<OMElement> messageProcessors =
+				synapseConfig.getChildrenWithLocalName(MESSAGE_PROCESSOR);
+		while (messageProcessors.hasNext()) {
+			OMElement messageProcessor = messageProcessors.next();
+			String mProcessor = messageProcessor.getAttributeValue(new QName(NAME));
+			if (ArrayUtils
+					.contains(messageProcessorClient.getMessageProcessorNames(), mProcessor)) {
+				messageProcessorClient.deleteMessageProcessor(mProcessor);
 				Assert.assertTrue(
-						isPriorityExecutorUnDeployed(backendURL, sessionCookie, executorName)
-						, executorName + " Priority Executor undeployment failed");
+						isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor)
+						, mProcessor + " Message Processor undeployment failed");
 			}
-			priorityMediationAdminClient.addPriorityMediator(executorName, executor);
-			log.info(executorName + " Priority Executor Uploaded");
+			messageProcessorClient.addMessageProcessor(messageProcessor);
+			log.info(mProcessor + " Message Processor Uploaded");
 		}
+	}
 
-		Thread.sleep(1000);
-		verifySynapseDeployment(synapseConfig, backendURL, sessionCookie);
-		log.info("Synapse configuration  Deployed");
+	private void checkMessageStores(OMElement synapseConfig, String backendURL, String sessionCookie, MessageStoreAdminClient messageStoreAdminClient) throws RemoteException, SequenceEditorException, org.wso2.carbon.message.store.stub.Exception {
+		Iterator<OMElement> messageStores = synapseConfig.getChildrenWithLocalName(MESSAGE_STORE);
+		while (messageStores.hasNext()) {
+			OMElement messageStore = messageStores.next();
+			String mStore = messageStore.getAttributeValue(new QName(NAME));
+			if (ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), mStore)) {
+				messageStoreAdminClient.deleteMessageStore(mStore);
+				Assert.assertTrue(isMessageStoreUnDeployed(backendURL, sessionCookie, mStore),
+						mStore + " Message Store undeployment failed");
+			}
+			messageStoreAdminClient.addMessageStore(messageStore);
+			log.info(mStore + " Message Store Uploaded");
+		}
+	}
 
+	private void checkProxies(OMElement synapseConfig, String backendURL, String sessionCookie, ProxyServiceAdminClient proxyAdmin, ServiceAdminClient adminServiceService) throws Exception {
+		Iterator<OMElement> proxies = synapseConfig.getChildrenWithLocalName(PROXY);
+		while (proxies.hasNext()) {
+			OMElement proxy = proxies.next();
+			String proxyName = proxy.getAttributeValue(new QName(NAME));
+			if (adminServiceService.isServiceExists(proxyName)) {
+				proxyAdmin.deleteProxy(proxyName);
+				Assert.assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName),
+						proxyName + " Undeployment failed");
+			}
+			proxyAdmin.addProxyService(proxy);
+			log.info(proxyName + " Proxy Uploaded");
+		}
+	}
+
+	private void checkSequences(OMElement synapseConfig, String backendURL, String sessionCookie, SequenceAdminServiceClient sequenceAdminClient) throws SequenceEditorException, RemoteException {
+		Iterator<OMElement> sequences = synapseConfig.getChildrenWithLocalName(SEQUENCE);
+		while (sequences.hasNext()) {
+			OMElement sequence = sequences.next();
+			String sqn = sequence.getAttributeValue(new QName(NAME));
+			boolean isSequenceExist = ArrayUtils.contains(sequenceAdminClient.getSequences(), sqn);
+			if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) &&
+			    isSequenceExist) {
+				sequenceAdminClient.updateSequence(sequence);
+			} else {
+				if (isSequenceExist) {
+					sequenceAdminClient.deleteSequence(sqn);
+					Assert.assertTrue(isSequenceUnDeployed(backendURL, sessionCookie, sqn),
+							sqn + " Sequence undeployment failed");
+				}
+				sequenceAdminClient.addSequence(sequence);
+			}
+			log.info(sqn + " Sequence Uploaded");
+		}
+	}
+
+	private void checkEndPoints(OMElement synapseConfig, String backendURL, String sessionCookie, EndPointAdminClient endPointAdminClient) throws EndpointAdminEndpointAdminException, IOException, XMLStreamException {
+		Iterator<OMElement> endpoints = synapseConfig.getChildrenWithLocalName(ENDPOINT);
+		while (endpoints.hasNext()) {
+			OMElement endpoint = endpoints.next();
+			String ep = endpoint.getAttributeValue(new QName(NAME));
+			if (ArrayUtils.contains(endPointAdminClient.getEndpointNames(), ep)) {
+				Assert.assertTrue(endPointAdminClient.deleteEndpoint(ep),
+						ep + " Endpoint deletion failed");
+				Assert.assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep),
+				                  ep + " Endpoint undeployment failed");
+			}
+			Assert.assertTrue(endPointAdminClient.addEndPoint(endpoint),
+			                  ep + " Endpoint addition failed");
+			log.info(ep + " Endpoint Uploaded");
+		}
+	}
+
+	private void checkLocalEntries(OMElement synapseConfig, String backendURL, String sessionCookie, LocalEntriesAdminClient localEntryAdminServiceClient) throws LocalEntryAdminException, RemoteException {
+		Iterator<OMElement> localEntries = synapseConfig.getChildrenWithLocalName(LOCAL_ENTRY);
+		while (localEntries.hasNext()) {
+			OMElement localEntry = localEntries.next();
+			String le = localEntry.getAttributeValue(new QName(KEY));
+			if (ArrayUtils.contains(localEntryAdminServiceClient.getEntryNames(), le)) {
+				Assert.assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le),
+						le + " Local Entry deletion failed");
+				Assert.assertTrue(isLocalEntryUnDeployed(backendURL, sessionCookie, le),
+				                  le + " Local Entry undeployment failed");
+			}
+			Assert.assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry),
+			                  le + " Local Entry addition failed");
+			log.info(le + " LocalEntry Uploaded");
+		}
 	}
 
 	/**
