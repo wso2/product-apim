@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.esb;
+package org.wso2.am.integration.test.utils.generic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -43,7 +43,8 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import java.io.File;
 import java.net.URL;
 
-import static junit.framework.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertTrue;
+
 
 public class JWTTestCase extends AMIntegrationBaseTest{
 

@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.esb;
+package org.wso2.am.integration.test.utils.generic;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
@@ -60,7 +60,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ESBTestCaseUtils {
+public class APIMTestCaseUtils {
 
 	protected Log log = LogFactory.getLog(getClass());
 	private static int SERVICE_DEPLOYMENT_DELAY =
@@ -1844,7 +1844,7 @@ public class ESBTestCaseUtils {
 				OMElement apiOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the api to esb
+					//deploying the api to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1863,7 +1863,7 @@ public class ESBTestCaseUtils {
 				OMElement endpointOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the endpoints to esb
+					//deploying the endpoints to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1882,7 +1882,7 @@ public class ESBTestCaseUtils {
 				OMElement priorityExecutorsOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the priority-executors to esb
+					//deploying the priority-executors to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1905,7 +1905,7 @@ public class ESBTestCaseUtils {
 				OMElement sequencesOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the sequences to esb
+					//deploying the sequences to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1924,7 +1924,7 @@ public class ESBTestCaseUtils {
 				OMElement proxyServicesOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the proxy-services to esb
+					//deploying the proxy-services to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1944,7 +1944,7 @@ public class ESBTestCaseUtils {
 				OMElement localEntriesOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the local-entries to esb
+					//deploying the local-entries to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());
@@ -1965,7 +1965,7 @@ public class ESBTestCaseUtils {
 				OMElement taskOmElement;
 
 				for (File aFileArr : fileArr) {
-					//deploying the tasks to esb
+					//deploying the tasks to generic
 					String filePathArr[] = aFileArr.getAbsolutePath()
 					                               .split(TestConfigurationProvider
 							                                      .getResourceLocation());

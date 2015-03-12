@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.esb;
+package org.wso2.am.integration.test.utils.generic;
 
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
