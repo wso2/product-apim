@@ -24,8 +24,16 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import javax.xml.xpath.XPathExpressionException;
 
 public class EndpointGenerator {
+
+	/**
+	 * this is generate axis2 service back  end, If product does not include by default we refer to App server back end which hosted  axis2 service
+	 * @param serviceName
+	 * @return
+	 * @throws XPathExpressionException
+	 */
 	public static String getBackEndServiceEndpointUrl(String serviceName)
 			throws XPathExpressionException {
+
 		String backEndServiceUrl;
 		if (TestConfigurationProvider.isIntegration()) {
 			//            AutomationContext axis2 = new AutomationContext("AXIS2", TestUserMode.SUPER_TENANT_ADMIN);
