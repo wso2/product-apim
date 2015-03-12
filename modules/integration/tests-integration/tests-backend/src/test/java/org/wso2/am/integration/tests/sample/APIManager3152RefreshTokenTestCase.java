@@ -56,8 +56,8 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
          configFiles/tokenTest/log4j.properties
          */
 
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = getServerBackendUrlHttp();
+        String storeURLHttp = getServerBackendUrlHttp();
 
         userName = apimContext.getContextTenant().getTenantAdmin().getUserName();
 
