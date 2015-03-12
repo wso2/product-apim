@@ -56,12 +56,12 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 		              File.separator + "property" + File.separator +
 		              "FORCE_HTTP_CONTENT_LENGTH.xml";
 
-		OMElement synapseConfig = esbUtils.loadResource(file);
+		OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
 
 		AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
 		String session = login.login("abc@abc.com", "abc123", "localhost");
 
-		esbUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
+		apimTestCaseUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
 		                                session);
 		Thread.sleep(5000);
 

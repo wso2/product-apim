@@ -86,8 +86,8 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
     public void init() throws Exception {
         super.init();
 
-        String publisherURLHttp = getServerURLHttp();
-        String storeURLHttp = getServerURLHttp();
+        String publisherURLHttp = getPublisherServerURLHttp();
+        String storeURLHttp = getStoreServerURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         apiPublisherClientUser2 = new APIPublisherRestClient(publisherURLHttp);

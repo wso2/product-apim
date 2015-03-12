@@ -49,7 +49,7 @@ public class APIInvocationFailureTestCase extends AMIntegrationBaseTest {
     public void init() throws Exception {
         super.init();
 
-        publisherURLHttp = getServerURLHttp();
+        publisherURLHttp = getPublisherServerURLHttp();
 
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(

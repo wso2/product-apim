@@ -74,8 +74,8 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         super.init();
 
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
-            storeURLHttp = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
+            storeURLHttp = getStoreServerURLHttp();
 
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()

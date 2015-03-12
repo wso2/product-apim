@@ -75,8 +75,8 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         String storeURLHttp;
 
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
-            storeURLHttp = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
+            storeURLHttp = getStoreServerURLHttp();
 
         } else {
             publisherURLHttp = getPublisherServerURLHttp();

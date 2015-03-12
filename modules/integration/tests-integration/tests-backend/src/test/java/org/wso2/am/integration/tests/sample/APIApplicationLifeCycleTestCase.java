@@ -53,8 +53,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        publisherURLHttp = getServerURLHttp();
-        storeURLHttp = getServerURLHttp();
+        publisherURLHttp = getPublisherServerURLHttp();
+        storeURLHttp = getStoreServerURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 

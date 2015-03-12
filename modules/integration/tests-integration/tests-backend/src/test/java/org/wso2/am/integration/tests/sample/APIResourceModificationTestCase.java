@@ -42,7 +42,7 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
         super.init();
         String publisherURLHttp;
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
 
         } else {
             publisherURLHttp = getPublisherServerURLHttp();

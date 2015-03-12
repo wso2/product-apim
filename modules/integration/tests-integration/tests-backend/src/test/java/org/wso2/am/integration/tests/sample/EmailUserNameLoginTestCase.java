@@ -65,9 +65,9 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
         String storeURLHttp;
         String workflowAdminURLHTTP;
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
-            storeURLHttp = getServerURLHttp();
-            workflowAdminURLHTTP = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
+            storeURLHttp = getStoreServerURLHttp();
+            workflowAdminURLHTTP = getServerBackendUrlHttp();
 
             String apimanagerxml =
                     getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +

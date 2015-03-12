@@ -52,8 +52,8 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         String publisherURLHttp;
         String storeURLHttp;
         if (isBuilderEnabled()) {
-			publisherURLHttp = getServerURLHttp();
-			storeURLHttp = getServerURLHttp();
+			publisherURLHttp = getPublisherServerURLHttp();
+			storeURLHttp = getStoreServerURLHttp();
 		} else {
 			publisherURLHttp = getPublisherServerURLHttp();
 			storeURLHttp = getStoreServerURLHttp();

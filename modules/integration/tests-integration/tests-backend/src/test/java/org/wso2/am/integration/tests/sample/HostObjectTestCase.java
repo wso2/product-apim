@@ -66,8 +66,8 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
             Also need to copy the content of /resources/artifacts/AM/jaggery to servers following folder folder
             repository/deployment/server/jaggeryapps/testapp
             */
-			publisherURLHttp = getServerURLHttp();
-			storeURLHttp = getServerURLHttp();
+			publisherURLHttp = getPublisherServerURLHttp();
+			storeURLHttp = getStoreServerURLHttp();
             ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
 			serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                     + File.separator +
