@@ -61,7 +61,7 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 		AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
 		String session = login.login("abc@abc.com", "abc123", "localhost");
 
-		apimTestCaseUtils.updateAPIMConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
+		apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
 				session);
 		Thread.sleep(5000);
 

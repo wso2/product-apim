@@ -89,6 +89,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * init basic class
+     *
      * @throws Exception
      */
 
@@ -99,6 +100,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * init the object with user mode , create context objects and get session cookies
+     *
      * @param userMode
      * @throws Exception
      */
@@ -128,8 +130,8 @@ public class AMIntegrationBaseTest {
 
     protected void init(String domainKey, String userKey) throws Exception {
         apimContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                            AMIntegrationConstants.AM_1ST_INSTANCE,
-                                            domainKey, userKey);
+                AMIntegrationConstants.AM_1ST_INSTANCE,
+                domainKey, userKey);
         loginLogoutClient = new LoginLogoutClient(apimContext);
         sessionCookie = loginLogoutClient.login();
         backendURL = apimContext.getContextUrls().getBackEndUrl();
@@ -138,6 +140,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * get main url non secure
+     *
      * @return
      */
 
@@ -155,6 +158,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * get main url secure
+     *
      * @return
      */
 
@@ -172,6 +176,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * api invocation URL non secure
+     *
      * @param apiContext
      * @return
      * @throws XPathExpressionException
@@ -183,6 +188,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * api invocation URL secure
+     *
      * @param apiContext
      * @return
      * @throws XPathExpressionException
@@ -194,6 +200,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * proxy service URL of deployed server non secure
+     *
      * @param proxyServiceName
      * @return
      */
@@ -204,6 +211,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * proxy service URL of deployed server secure
+     *
      * @param proxyServiceName
      * @return
      */
@@ -215,6 +223,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * get server back end url secure
+     *
      * @return
      */
 
@@ -232,6 +241,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * get server back end url non secure
+     *
      * @return
      */
 
@@ -242,6 +252,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * login and return session cookie
+     *
      * @param apimContext
      * @return
      * @throws IOException
@@ -250,11 +261,12 @@ public class AMIntegrationBaseTest {
      * @throws SAXException
      * @throws XMLStreamException
      * @throws LoginAuthenticationExceptionException
+     *
      */
 
     protected String login(AutomationContext apimContext)
             throws IOException, XPathExpressionException, URISyntaxException, SAXException,
-                   XMLStreamException, LoginAuthenticationExceptionException {
+            XMLStreamException, LoginAuthenticationExceptionException {
         LoginLogoutClient loginLogoutClient = new LoginLogoutClient(apimContext);
         return loginLogoutClient.login();
     }
@@ -262,11 +274,12 @@ public class AMIntegrationBaseTest {
 
     protected String getAMResourceLocation() {
         return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
-               File.separator + "AM";
+                File.separator + "AM";
     }
 
     /**
      * this is used for for call axis2 server externally
+     *
      * @param serviceName
      * @return
      * @throws XPathExpressionException
@@ -281,7 +294,6 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     *
      * @param relativeFilePath
      * @throws Exception
      */
@@ -297,6 +309,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * update API manager synapse configs
+     *
      * @param synapseConfig
      * @throws Exception
      */
@@ -311,7 +324,7 @@ public class AMIntegrationBaseTest {
                 synapseConfiguration.addChild(itr.next());
             }
         }
-        apimTestCaseUtils.updateAPIMConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
+        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
                 sessionCookie);
 
         if (apimContext.getProductGroup().isClusterEnabled()) {
@@ -334,6 +347,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * add proxy service config
+     *
      * @param proxyConfig
      * @throws Exception
      */
@@ -347,34 +361,36 @@ public class AMIntegrationBaseTest {
         }
         proxyServicesList.add(proxyName);
         apimTestCaseUtils.addProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(proxyConfig));
+                proxyConfig);
     }
 
     /**
      * check proxy deployed
+     *
      * @param proxyServiceName
      * @throws Exception
      */
 
     protected void isProxyDeployed(String proxyServiceName) throws Exception {
         Assert.assertTrue(apimTestCaseUtils.isProxyDeployed(contextUrls.getBackEndUrl(), sessionCookie,
-                                                   proxyServiceName),
-                          "Proxy Deployment failed or time out");
+                proxyServiceName),
+                "Proxy Deployment failed or time out");
     }
 
     /**
      * delete proxy services
+     *
      * @param proxyServiceName
      * @throws Exception
      */
 
     protected void deleteProxyService(String proxyServiceName) throws Exception {
         if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                         proxyServiceName)) {
+                proxyServiceName)) {
             apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                                        proxyServiceName);
+                    proxyServiceName);
 
-            if (!apimTestCaseUtils.isProxyUnDeployed(contextUrls.getBackEndUrl(), sessionCookie, proxyServiceName))  {
+            if (!apimTestCaseUtils.isProxyUnDeployed(contextUrls.getBackEndUrl(), sessionCookie, proxyServiceName)) {
                 log.error("Proxy Deletion failed or time out");
             }
         }
@@ -386,6 +402,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteSequence
+     *
      * @param sequenceName
      * @throws SequenceEditorException
      * @throws RemoteException
@@ -403,6 +420,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addSequence
+     *
      * @param sequenceConfig
      * @throws Exception
      */
@@ -413,7 +431,7 @@ public class AMIntegrationBaseTest {
             apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie, sequenceName);
         }
         apimTestCaseUtils.addSequence(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(sequenceConfig));
+                sequenceConfig);
         if (sequencesList == null) {
             sequencesList = new ArrayList<String>();
         }
@@ -422,6 +440,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addEndpoint
+     *
      * @param endpointConfig
      * @throws Exception
      */
@@ -433,7 +452,7 @@ public class AMIntegrationBaseTest {
             apimTestCaseUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie, endpointName);
         }
         apimTestCaseUtils.addEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(endpointConfig));
+                endpointConfig);
         if (endpointsList == null) {
             endpointsList = new ArrayList<String>();
         }
@@ -443,6 +462,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addLocalEntry
+     *
      * @param localEntryConfig
      * @throws Exception
      */
@@ -463,6 +483,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addMessageProcessor
+     *
      * @param messageProcessorConfig
      * @throws Exception
      */
@@ -470,12 +491,12 @@ public class AMIntegrationBaseTest {
     protected void addMessageProcessor(OMElement messageProcessorConfig) throws Exception {
         String messageProcessorName = messageProcessorConfig.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isMessageProcessorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                             messageProcessorName)) {
+                messageProcessorName)) {
             apimTestCaseUtils.deleteMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
-                                            messageProcessorName);
+                    messageProcessorName);
         }
         apimTestCaseUtils.addMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(messageProcessorConfig));
+                messageProcessorConfig);
         if (messageProcessorsList == null) {
             messageProcessorsList = new ArrayList<String>();
         }
@@ -484,6 +505,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addMessageStore
+     *
      * @param messageStoreConfig
      * @throws Exception
      */
@@ -491,12 +513,12 @@ public class AMIntegrationBaseTest {
     protected void addMessageStore(OMElement messageStoreConfig) throws Exception {
         String messageStoreName = messageStoreConfig.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                         messageStoreName)) {
+                messageStoreName)) {
             apimTestCaseUtils.deleteMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
-                                        messageStoreName);
+                    messageStoreName);
         }
         apimTestCaseUtils.addMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(messageStoreConfig));
+                messageStoreConfig);
         if (messageStoresList == null) {
             messageStoresList = new ArrayList<String>();
         }
@@ -505,6 +527,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addSequenceTemplate
+     *
      * @param sequenceTemplate
      * @throws Exception
      */
@@ -515,7 +538,7 @@ public class AMIntegrationBaseTest {
             apimTestCaseUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie, name);
         }
         apimTestCaseUtils.addSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
-                setEndpoints(sequenceTemplate));
+                sequenceTemplate);
 
         if (sequenceTemplateList == null) {
             sequenceTemplateList = new ArrayList<String>();
@@ -525,6 +548,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addAPI
+     *
      * @param api
      * @throws Exception
      */
@@ -544,6 +568,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addPriorityExecutor
+     *
      * @param priorityExecutor
      * @throws Exception
      */
@@ -551,9 +576,9 @@ public class AMIntegrationBaseTest {
     protected void addPriorityExecutor(OMElement priorityExecutor) throws Exception {
         String executorName = priorityExecutor.getAttributeValue(new QName("name"));
         if (apimTestCaseUtils.isPriorityExecutorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                             executorName)) {
+                executorName)) {
             apimTestCaseUtils.deletePriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie,
-                                            executorName);
+                    executorName);
         }
         apimTestCaseUtils.addPriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie, priorityExecutor);
 
@@ -565,6 +590,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * addScheduledTask
+     *
      * @param task
      * @throws Exception
      */
@@ -574,19 +600,21 @@ public class AMIntegrationBaseTest {
         String taskGroup = task.getAttributeValue(new QName("group"));
         if (apimTestCaseUtils.isScheduleTaskExist(contextUrls.getBackEndUrl(), sessionCookie, taskName)) {
             apimTestCaseUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, taskName,
-                                        taskGroup);
+                    taskGroup);
         }
         apimTestCaseUtils.addScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, task);
 
         if (scheduledTaskList == null) {
             scheduledTaskList = new ArrayList<String[]>();
         }
-        scheduledTaskList.add(new String[] { taskName, taskGroup });
+        scheduledTaskList.add(new String[]{taskName, taskGroup});
     }
 
     /**
      * deleteMessageProcessors
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteMessageProcessors() throws APIManagerIntegrationTestException {
@@ -614,7 +642,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteMessageStores
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteMessageStores() throws APIManagerIntegrationTestException {
@@ -642,7 +672,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteSequences
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteSequences() throws APIManagerIntegrationTestException {
@@ -653,9 +685,9 @@ public class AMIntegrationBaseTest {
                 if (!sequence.equalsIgnoreCase("fault")) {
                     try {
                         if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                     sequence)) {
+                                sequence)) {
                             apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    sequence);
+                                    sequence);
                         }
                     } catch (RemoteException e) {
                         log.error("while deleteSequences : ", e);
@@ -672,7 +704,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteProxyServices
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteProxyServices() throws APIManagerIntegrationTestException {
@@ -700,7 +734,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteEndpoints
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteEndpoints() throws APIManagerIntegrationTestException {
@@ -728,7 +764,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteLocalEntries
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteLocalEntries() throws APIManagerIntegrationTestException {
@@ -756,7 +794,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteSequenceTemplates
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteSequenceTemplates() throws APIManagerIntegrationTestException {
@@ -787,7 +827,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteAPI
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteAPI() throws APIManagerIntegrationTestException {
@@ -813,7 +855,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deletePriorityExecutors
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deletePriorityExecutors() throws APIManagerIntegrationTestException {
@@ -841,7 +885,9 @@ public class AMIntegrationBaseTest {
 
     /**
      * deleteScheduledTasks
+     *
      * @throws APIManagerIntegrationTestException
+     *
      */
 
     private void deleteScheduledTasks() throws APIManagerIntegrationTestException {
@@ -874,6 +920,7 @@ public class AMIntegrationBaseTest {
      * @throws XMLStreamException
      * @throws XPathExpressionException
      */
+/*
 
     protected OMElement setEndpoints(OMElement synapseConfig)
             throws XMLStreamException, XPathExpressionException {
@@ -881,6 +928,7 @@ public class AMIntegrationBaseTest {
         String config = replaceEndpoints(synapseConfig.toString());
         return AXIOMUtil.stringToOM(config);
     }
+*/
 
     /**
      * setEndpoints
@@ -890,7 +938,7 @@ public class AMIntegrationBaseTest {
      * @throws IOException
      * @throws XPathExpressionException
      */
-
+/*
     protected DataHandler setEndpoints(DataHandler dataHandler)
             throws XMLStreamException, IOException, XPathExpressionException {
 
@@ -898,7 +946,7 @@ public class AMIntegrationBaseTest {
         config = replaceEndpoints(config);
         ByteArrayDataSource dbs = new ByteArrayDataSource(config.getBytes());
         return new DataHandler(dbs);
-    }
+    }*/
 
     /**
      * replaceEndpoints
@@ -907,7 +955,7 @@ public class AMIntegrationBaseTest {
      * @throws XPathExpressionException
      */
 
-    private String replaceEndpoints(String config) throws XPathExpressionException {
+    /*  private String replaceEndpoints(String config) throws XPathExpressionException {
         //this should be AS context
         String serviceUrl =
                 new AutomationContext("AS", TestUserMode.SUPER_TENANT_ADMIN).getContextUrls()
@@ -918,10 +966,11 @@ public class AMIntegrationBaseTest {
         config = config.replace("http://127.0.0.1:9000/services/"
                 , serviceUrl);
         return config;
-    }
+    }*/
 
     /**
      * replaceEndpoints
+     *
      * @param relativePathToConfigFile
      * @param serviceName
      * @param port
@@ -936,13 +985,14 @@ public class AMIntegrationBaseTest {
             throws XMLStreamException, FileNotFoundException, XPathExpressionException {
         String config = apimTestCaseUtils.loadResource(relativePathToConfigFile).toString();
         config = config.replace("http://localhost:" + port + "/services/" + serviceName,
-                                getBackEndServiceUrl(serviceName));
+                getBackEndServiceUrl(serviceName));
 
         return AXIOMUtil.stringToOM(config);
     }
 
     /**
      * isProxyWSDlExist
+     *
      * @param serviceUrl
      * @param synchronizingDelay
      * @return
@@ -958,6 +1008,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * read input stream as a string
+     *
      * @param in
      * @return
      * @throws IOException
@@ -977,7 +1028,7 @@ public class AMIntegrationBaseTest {
                 byte b = (byte) result;
                 buf.write(b);
 
-                    result = bis.read();
+                result = bis.read();
 
             }
 
@@ -986,8 +1037,7 @@ public class AMIntegrationBaseTest {
         } catch (IOException e) {
             log.error("Stream error occurred" + e);
             throw new IOException(e);
-        }
-        finally {
+        } finally {
             buf.close();
             bis.close();
         }
@@ -997,6 +1047,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * clean up deployed artifacts and other services
+     *
      * @throws Exception
      */
 
@@ -1061,6 +1112,7 @@ public class AMIntegrationBaseTest {
     /**
      * return publisher server url non secure
      * ex :  https://localhost:9743
+     *
      * @return
      */
 
@@ -1071,6 +1123,7 @@ public class AMIntegrationBaseTest {
     /**
      * return publisher server url secure
      * ex :  https://localhost:9443
+     *
      * @return
      */
 
@@ -1090,6 +1143,7 @@ public class AMIntegrationBaseTest {
     /**
      * return publisher server url non secure
      * ex :  https://localhost:9743
+     *
      * @return
      */
 
@@ -1100,6 +1154,7 @@ public class AMIntegrationBaseTest {
     /**
      * return publisher server url secure
      * ex :  https://localhost:9443
+     *
      * @return
      */
 
@@ -1115,6 +1170,7 @@ public class AMIntegrationBaseTest {
     /**
      * return gateway server url non secure
      * ex :  http://localhost:8280
+     *
      * @return
      */
 
@@ -1130,6 +1186,7 @@ public class AMIntegrationBaseTest {
     /**
      * return gateway server url secure
      * ex : https://localhost:8243
+     *
      * @return
      */
 
@@ -1144,6 +1201,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * get APIM server sessionCookie
+     *
      * @return
      */
 
@@ -1153,6 +1211,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * return store session  cookie
+     *
      * @return
      */
 
@@ -1162,6 +1221,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * return publisher session  cookie
+     *
      * @return
      */
 
@@ -1171,6 +1231,7 @@ public class AMIntegrationBaseTest {
 
     /**
      * return gateway session  cookie
+     *
      * @return
      */
 
