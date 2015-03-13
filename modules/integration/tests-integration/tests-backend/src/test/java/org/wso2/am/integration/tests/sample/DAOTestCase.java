@@ -57,9 +57,9 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(getStoreServerURLHttp());
 
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                           apimContext.getContextTenant().getContextUser().getPassword());
+                apimContext.getContextTenant().getContextUser().getPassword());
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                       apimContext.getContextTenant().getContextUser().getPassword());
+                apimContext.getContextTenant().getContextUser().getPassword());
 
     }
 
@@ -79,7 +79,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         File depFile = new File(deploymentPath);
         if (!depFile.exists() && !depFile.mkdir()) {
             log.error("Error while creating the deployment folder : "
-                      + deploymentPath);
+                    + deploymentPath);
         }
         return deploymentPath + File.separator + fileName;
     }
@@ -87,7 +87,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
     private String computeSourcePath(String fileName) {
 
         return getAMResourceLocation()
-                            + File.separator + "jaggery/" + fileName;
+                + File.separator + "jaggery/" + fileName;
     }
 
     @Test(groups = { "wso2.am" }, description = "API Life cycle test case")
@@ -127,9 +127,9 @@ public class DAOTestCase extends AMIntegrationBaseTest {
 
         apiStore.addApplication("DAOTestAPI-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                                                                          apimContext.getContextTenant()
-                                                                                  .getContextUser()
-                                                                                  .getUserName());
+                apimContext.getContextTenant()
+                        .getContextUser()
+                        .getUserName());
         subscriptionRequest.setApplicationName("DAOTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 

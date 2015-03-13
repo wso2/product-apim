@@ -76,6 +76,10 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String description = "This is test API create by API manager integration test";
         String providerName = "admin";
         String APIVersion = "1.0.0";
+        // This is because with the new context version strategy, if the context does not have the {version} param ,
+        // then we add the {version} param to the end of the context.
+        String apiContextAddedValue = APIContext + "/" + APIVersion;
+
         //add all option methods
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
@@ -98,7 +102,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-        assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1), APIContext, "API context mismatch");
+        assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
+                     apiContextAddedValue, "API context mismatch");
         assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         assertEquals(apiBean.getId().getProviderName(), providerName, "Provider Name mismatch");
         for (String tag : apiBean.getTags()) {
