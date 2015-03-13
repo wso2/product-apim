@@ -11,31 +11,8 @@
     <version>1.0.0</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
-    <name>PizzaShack Sample Pre-processor</name>	
-	<build>
-		
-		<plugins>
-			<plugin>
-			  <artifactId>maven-antrun-plugin</artifactId>
-			  <version>1.7</version>	
-			  <executions>
-			    <execution>
-			      <phase>validate</phase>
-			      <configuration>
-			        <tasks>
-		        	  <get src="https://svn.wso2.org/repos/wso2/carbon/platform/branches/turing/products/apimgt/1.8.0/modules/samples/PizzaShack/PizzaShack.zip" dest="../PizzaShack.zip" />
-				<unzip src="../PizzaShack.zip" dest="../"/>
-			       </tasks>
-			      </configuration>
-			      <goals>
-			        <goal>run</goal>
-			      </goals>
-			     </execution>
-			   </executions>
-			</plugin>
-		</plugins>
+    <name>PizzaShack Sample Pre-processor</name>
 
-	</build>
     <repositories>
         <repository>
             <id>wso2-nexus</id>
