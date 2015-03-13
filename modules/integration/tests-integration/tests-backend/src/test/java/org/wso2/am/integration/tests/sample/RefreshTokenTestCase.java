@@ -53,23 +53,17 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
-        String publisherURLHttp;
-        String storeURLHttp;
-        if (isBuilderEnabled()) {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-            serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
-                    "api-manager.xml"));
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
-                    "log4j.properties"));
-            super.init();
-        } else {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-        }
+
+        String publisherURLHttp = getPublisherServerURLHttp();
+        String storeURLHttp = getStoreServerURLHttp();
+        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
+                "api-manager.xml"));
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
+                "log4j.properties"));
+        super.init();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);

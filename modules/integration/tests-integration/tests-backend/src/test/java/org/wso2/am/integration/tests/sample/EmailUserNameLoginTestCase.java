@@ -60,40 +60,29 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
+        String publisherURLHttp = getPublisherServerURLHttp();
+        String storeURLHttp = getStoreServerURLHttp();
+        String workflowAdminURLHTTP = getServerBackendUrlHttp();
 
-        String publisherURLHttp;
-        String storeURLHttp;
-        String workflowAdminURLHTTP;
-        if (isBuilderEnabled()) {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-            workflowAdminURLHTTP = getServerBackendUrlHttp();
+        String apiManagerXml =
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                        File.separator + "api-manager.xml";
 
-            String apimanagerxml =
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                            File.separator + "api-manager.xml";
+        String userMgtXml =
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                        File.separator + "user-mgt.xml";
 
-            String usermgtxml =
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                            File.separator + "user-mgt.xml";
+        String carbonXml =
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
+                        File.separator + "carbon.xml";
 
-            String carbonxml =
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
-                            File.separator + "carbon.xml";
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
+        serverConfigurationManager.applyConfiguration(new File(carbonXml));
 
-            ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(apimanagerxml));
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(usermgtxml));
-            serverConfigurationManager.applyConfiguration(new File(carbonxml));
+        super.init();
 
-            super.init();
-
-        } else {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-            workflowAdminURLHTTP = getPublisherServerURLHttp();
-
-        }
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
         workflowAdmin = new WorkFlowAdminRestClient(workflowAdminURLHTTP);

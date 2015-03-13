@@ -38,84 +38,75 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class YouTubeAPITestCase extends AMIntegrationBaseTest {
-	private APIPublisherRestClient apiPublisher;
-	private APIStoreRestClient apiStore;
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
 
-	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
-		super.init();
-
-		String publisherURLHttp;
-		String storeURLHttp;
-
-		if (isBuilderEnabled()) {
-			publisherURLHttp = getPublisherServerURLHttp();
-			storeURLHttp = getStoreServerURLHttp();
-		} else {
-			publisherURLHttp = getPublisherServerURLHttp();
-			storeURLHttp = getStoreServerURLHttp();
-		}
+    @BeforeClass(alwaysRun = true)
+    public void init() throws Exception {
+        super.init();
+        String publisherURLHttp = getPublisherServerURLHttp();
+        String storeURLHttp = getStoreServerURLHttp();
 
         apiStore = new APIStoreRestClient(storeURLHttp);
-		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 
-		apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-		                   apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
 
-	}
+    }
 
-	@Test(groups = { "wso2.am" }, description = "You Tube sample")
-	public void testYouTubeApiSample() throws Exception {
-		APIRequest apiRequest = new APIRequest("YoutubeFeeds", "youtube",
-		                                       new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
-		apiPublisher.addAPI(apiRequest);
-		APILifeCycleStateRequest updateRequest =
-				new APILifeCycleStateRequest("YoutubeFeeds", apimContext
-						.getContextTenant().getContextUser().getUserName(),
-				                             APILifeCycleState.PUBLISHED
-				);
-		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
-		apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
-		SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
-		                                                                  apimContext.getContextTenant()
-				                                                                  .getContextUser()
-				                                                                  .getUserName()
-		);
-		subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
-		apiStore.subscribe(subscriptionRequest);
+    @Test(groups = {"wso2.am"}, description = "You Tube sample")
+    public void testYouTubeApiSample() throws Exception {
+        APIRequest apiRequest = new APIRequest("YoutubeFeeds", "youtube",
+                new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest("YoutubeFeeds", apimContext
+                        .getContextTenant().getContextUser().getUserName(),
+                        APILifeCycleState.PUBLISHED
+                );
+        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
+                apimContext.getContextTenant()
+                        .getContextUser()
+                        .getUserName()
+        );
+        subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
+        apiStore.subscribe(subscriptionRequest);
 
-		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("YoutubeFeeds-Application");
-		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-		JSONObject response = new JSONObject(responseString);
-		String accessToken =
-				response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-		Map<String, String> requestHeaders = new HashMap<String, String>();
-		requestHeaders.put("Authorization", "Bearer " + accessToken);
+        GenerateAppKeyRequest generateAppKeyRequest =
+                new GenerateAppKeyRequest("YoutubeFeeds-Application");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String accessToken =
+                response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
 
-		Thread.sleep(2000);
-		/*HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-				getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
+        Thread.sleep(2000);
+        /*HttpResponse youTubeResponse = HttpRequestUtil.doGet(
+                  getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-				getGatewayServerURLHttp()+"/youtube/1.0.0/most_popular", requestHeaders);
-		assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                getGatewayServerURLHttp() + "/youtube/1.0.0/most_popular", requestHeaders);
+        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
-		assertTrue(youTubeResponse.getData().contains("<feed"),
+        assertTrue(youTubeResponse.getData().contains("<feed"),
                 "Response data mismatched when api invocation");
-		assertTrue(youTubeResponse.getData().contains("<category"),
+        assertTrue(youTubeResponse.getData().contains("<category"),
                 "Response data mismatched when api invocation");
-		assertTrue(youTubeResponse.getData().contains("<entry>"),
+        assertTrue(youTubeResponse.getData().contains("<entry>"),
                 "Response data mismatched when api invocation");
 
-	}
+    }
 
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		apiStore.removeApplication("YoutubeFeeds-Application");
-		super.cleanup();
-	}
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        apiStore.removeApplication("YoutubeFeeds-Application");
+        super.cleanup();
+    }
 }

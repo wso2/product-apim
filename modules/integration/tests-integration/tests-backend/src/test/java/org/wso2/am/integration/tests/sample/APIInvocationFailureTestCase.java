@@ -64,8 +64,8 @@ public class APIInvocationFailureTestCase extends AMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Invalid token for tenant user api")
     public void APIInvocationFailureForTenant() throws Exception {
 
-        String APIName = "TokenTestAPI";
-        String APIContext = "tokenTestAPI";
+        String APIName = "TokenInvocationTestAPI";
+        String APIContext = "tokenInvocationTestAPI";
         String tags = "youtube, token, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
@@ -103,8 +103,8 @@ public class APIInvocationFailureTestCase extends AMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Invalid token for tenant user api")
     public void APIInvocationFailureForSuperTenant() throws Exception {
 
-        String APIName = "TokenTestAPI";
-        String APIContext = "tokenTestAPI";
+        String APIName = "TokenInvocationTestAPI";
+        String APIContext = "tokenInvocationTestAPI";
         String tags = "youtube, token, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";

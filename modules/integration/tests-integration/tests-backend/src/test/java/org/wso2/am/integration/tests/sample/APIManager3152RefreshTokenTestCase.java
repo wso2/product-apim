@@ -83,8 +83,8 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
     @Test(groups = "wso2.am", description = "Check whether refresh token issued in tenant mode")
     public void testForRefreshToken() throws Exception {
 
-        String APIName = "TokenTestAPI";
-        String APIContext = "tokenTestAPI";
+        String APIName = "TokenRefreshTestAPI";
+        String APIContext = "tokenRefreshTestAPI";
         String tags = "youtube, token, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";

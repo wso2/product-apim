@@ -70,18 +70,9 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         apiProvider = apimContext.getSuperTenant().getContextUser().getUserName();
 
-        String publisherURLHttp;
+        String publisherURLHttp = getPublisherServerURLHttp();
 
-        String storeURLHttp;
-
-        if (isBuilderEnabled()) {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-
-        } else {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-        }
+        String storeURLHttp = getStoreServerURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
@@ -179,7 +170,9 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         JSONObject accessTokenGenerationResponse;
 
         //Obtain user access token for Admin
-        requestBody = "grant_type=password&username=admin&password=admin&scope=admin_scope user_scope";
+        requestBody = "grant_type=password&username=" +
+                apimContext.getSuperTenant().getTenantAdmin().getUserName() + "&password="
+                + apimContext.getSuperTenant().getTenantAdmin().getPassword() + "&scope=admin_scope user_scope";
         accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                 requestBody, tokenEndpointURL)
                 .getData());
@@ -224,7 +217,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         } catch (Exception e) {
             log.error("user john cannot access the resources (expected behaviour)");
-            assertTrue(true,"user john cannot access the resources");
+            assertTrue(true, "user john cannot access the resources");
         }
     }
 

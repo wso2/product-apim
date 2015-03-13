@@ -40,140 +40,135 @@ import static org.testng.Assert.assertTrue;
 
 public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 
-	private APIPublisherRestClient apiPublisher;
-	private APIStoreRestClient apiStore;
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
 
-	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
-		super.init();
-	    /*
-        This test can point to external API manager deployment without adding any resources to system
-         */
-        String publisherURLHttp;
-        String storeURLHttp;
-        if (isBuilderEnabled()) {
-			publisherURLHttp = getPublisherServerURLHttp();
-			storeURLHttp = getStoreServerURLHttp();
-		} else {
-			publisherURLHttp = getPublisherServerURLHttp();
-			storeURLHttp = getStoreServerURLHttp();
-		}
-		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-		apiStore = new APIStoreRestClient(storeURLHttp);
+    @BeforeClass(alwaysRun = true)
+    public void init() throws Exception {
+        super.init();
+        /*
+       This test can point to external API manager deployment without adding any resources to system
+        */
 
-		apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
+        String publisherURLHttp = getPublisherServerURLHttp();
+        String storeURLHttp = getStoreServerURLHttp();
+
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+
+        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
-		apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
+        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
-	}
+    }
 
-	@Test(groups = { "wso2.am" }, description = "Comment Rating Test case")
-	public void testTagsRatingCommentTestCase() throws Exception {
-		String APIName = "CommentRatingAPI";
-		String APIContext = "commentRating";
-		String tags = "youtube, video, media";
-		String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
-		String description = "This is test API create by API manager integration test";
-		String providerName = apimContext.getContextTenant().getContextUser().getUserName();
-		String APIVersion = "1.0.0";
+    @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
+    public void testTagsRatingCommentTestCase() throws Exception {
+        String APIName = "CommentRatingAPI";
+        String APIContext = "commentRating";
+        String tags = "youtube, video, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String providerName = apimContext.getContextTenant().getContextUser().getUserName();
+        String APIVersion = "1.0.0";
 
         // This is because with the new context version strategy, if the context does not have the {version} param ,
         // then we add the {version} param to the end of the context.
         String apiContextAddedValue = APIContext + "/" + APIVersion;
 
-		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
-		apiRequest.setTags(tags);
-		apiRequest.setDescription(description);
-		apiRequest.setVersion(APIVersion);
-		apiPublisher.addAPI(apiRequest);
-		APIBean apiBean = APIMgtTestUtil
-				.getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
-		APILifeCycleStateRequest updateRequest =
-				new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-		apiPublisher.changeAPILifeCycleStatus(updateRequest);
-		//Test API properties
-		assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-		assertEquals(
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersion);
+        apiPublisher.addAPI(apiRequest);
+        APIBean apiBean = APIMgtTestUtil
+                .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        //Test API properties
+        assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
+        assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
                 apiContextAddedValue, "API context mismatch");
-		assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
-		assertEquals(apiBean.getId().getProviderName(), providerName,
+        assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
+        assertEquals(apiBean.getId().getProviderName(), providerName,
                 "Provider Name mismatch");
-		for (String tag : apiBean.getTags()) {
-			assertTrue(tags.contains(tag), "API tag data mismatched");
-		}
-		assertEquals(apiBean.getDescription(), description, "API description mismatch");
+        for (String tag : apiBean.getTags()) {
+            assertTrue(tags.contains(tag), "API tag data mismatched");
+        }
+        assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
-		apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
-		SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
+        apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
                 apimContext.getContextTenant()
-		                                                                         .getContextUser()
-		                                                                         .getUserName());
-		subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
-		apiStore.subscribe(subscriptionRequest);
+                        .getContextUser()
+                        .getUserName());
+        subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
+        apiStore.subscribe(subscriptionRequest);
 
-		GenerateAppKeyRequest generateAppKeyRequest =
-				new GenerateAppKeyRequest("CommentRatingAPI-Application");
-		String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-		JSONObject response = new JSONObject(responseString);
-		String accessToken =
-				response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-		Map<String, String> requestHeaders = new HashMap<String, String>();
-		requestHeaders.put("Authorization", "Bearer " + accessToken);
-		//Here add API tags and check same have in response.
-		//Here check same tags are there
-		//Add some comment to API
-		//check comment is there
-		//Add rating
-		//check rating
-		Thread.sleep(2000);
-		for (int i = 0; i < 19; i++) {
+        GenerateAppKeyRequest generateAppKeyRequest =
+                new GenerateAppKeyRequest("CommentRatingAPI-Application");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String accessToken =
+                response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        //Here add API tags and check same have in response.
+        //Here check same tags are there
+        //Add some comment to API
+        //check comment is there
+        //Add rating
+        //check rating
+        Thread.sleep(2000);
+        for (int i = 0; i < 19; i++) {
 
-			HttpResponse youTubeResponse = HttpRequestUtil
-					.doGet(getGatewayServerURLHttp()+"/commentRating/1.0.0/most_popular",
-					       requestHeaders);
+            HttpResponse youTubeResponse = HttpRequestUtil
+                    .doGet(getGatewayServerURLHttp() + "/commentRating/1.0.0/most_popular",
+                            requestHeaders);
 
-			assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+            assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
-			assertTrue(youTubeResponse.getData().contains("<feed"),
+            assertTrue(youTubeResponse.getData().contains("<feed"),
                     "Response data mismatched");
-			assertTrue(youTubeResponse.getData().contains("<category"),
+            assertTrue(youTubeResponse.getData().contains("<category"),
                     "Response data mismatched");
-			assertTrue(youTubeResponse.getData().contains("<entry>"),
+            assertTrue(youTubeResponse.getData().contains("<entry>"),
                     "Response data mismatched");
 
-		}
-		//Do get,post,put,delete all here
-		//HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
+        }
+        //Do get,post,put,delete all here
+        //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
 
-		Thread.sleep(60000);
-		HttpResponse youTubeResponse1 = HttpRequestUtil
-				.doGet(getGatewayServerURLHttp()+"/commentRating/1.0.0/most_popular", null);
-		assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
-		// URL url1 = new URL(url);
-		// HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");
-		//Remove subscription and then remove API
+        Thread.sleep(60000);
+        HttpResponse youTubeResponse1 = HttpRequestUtil
+                .doGet(getGatewayServerURLHttp() + "/commentRating/1.0.0/most_popular", null);
+        assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
+        // URL url1 = new URL(url);
+        // HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");
+        //Remove subscription and then remove API
 
-		apiStore.getAllPublishedAPIs();
-		apiStore.getAllApplications();
-		apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application");
-		apiStore.isRatingActivated();
-		apiStore.addRatingToAPI(APIName, APIVersion, providerName, "4");
-		apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
-		apiStore.getAllDocumentationOfAPI(APIName, APIVersion, providerName);
-		//apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
-		//Negative cases
-		//add assert
-		apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application-Wrong");
-		apiStore.isRatingActivated();
-		apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
-		apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
-		apiStore.getAllDocumentationOfAPI("NoAPI", APIVersion, providerName);
-	}
+        apiStore.getAllPublishedAPIs();
+        apiStore.getAllApplications();
+        apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application");
+        apiStore.isRatingActivated();
+        apiStore.addRatingToAPI(APIName, APIVersion, providerName, "4");
+        apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI(APIName, APIVersion, providerName);
+        //apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
+        //Negative cases
+        //add assert
+        apiStore.getPublishedAPIsByApplication("CommentRatingAPI-Application-Wrong");
+        apiStore.isRatingActivated();
+        apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
+        apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI("NoAPI", APIVersion, providerName);
+    }
 
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		apiStore.removeApplication("CommentRatingAPI-Application");
-		super.cleanup();
-	}
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        apiStore.removeApplication("CommentRatingAPI-Application");
+        super.cleanup();
+    }
 }

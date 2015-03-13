@@ -73,7 +73,6 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     public void init() throws Exception {
         super.init();
 
-        if (isBuilderEnabled()) {
             publisherURLHttp = getPublisherServerURLHttp();
             storeURLHttp = getStoreServerURLHttp();
 
@@ -87,10 +86,6 @@ public class JWTTestCase extends AMIntegrationBaseTest{
                     "configFiles/tokenTest/" +
                     "log4j.properties"));
 
-        } else {
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
-        }
 
 
         userManagementClient = new UserManagementClient(
