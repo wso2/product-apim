@@ -77,6 +77,10 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		String providerName = apimContext.getContextTenant().getContextUser().getUserName();
 		String APIVersion = "1.0.0";
 
+        // This is because with the new context version strategy, if the context does not have the {version} param ,
+        // then we add the {version} param to the end of the context.
+        String apiContextAddedValue = APIContext + "/" + APIVersion;
+
 		APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
 		apiRequest.setTags(tags);
 		apiRequest.setDescription(description);
@@ -91,7 +95,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
 		assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                APIContext, "API context mismatch");
+                apiContextAddedValue, "API context mismatch");
 		assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
 		assertEquals(apiBean.getId().getProviderName(), providerName,
                 "Provider Name mismatch");
