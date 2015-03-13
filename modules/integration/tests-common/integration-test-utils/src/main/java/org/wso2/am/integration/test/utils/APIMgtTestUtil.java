@@ -42,6 +42,12 @@ public class APIMgtTestUtil {
 
 	private static final Log log = LogFactory.getLog(APIMgtTestUtil.class);
 
+	/**
+	 * create API bean obj from response
+	 * @param httpResponse
+	 * @return
+	 */
+
 	public static APIBean getAPIBeanFromHttpResponse(HttpResponse httpResponse) {
 		JSONObject jsonObject = null;
 		String APIName = null;
@@ -108,6 +114,13 @@ public class APIMgtTestUtil {
 		return apiBean;
 	}
 
+	/**
+	 * send  GET to API resource
+	 * @param url
+	 * @param accessToken
+	 * @throws XPathExpressionException
+	 * @throws IOException
+	 */
     public static void sendGetRequest(String url, String accessToken) throws XPathExpressionException, IOException {
         HttpResponse httpResponse;
 
@@ -141,12 +154,20 @@ public class APIMgtTestUtil {
         }
     }
 
+	/**
+	 * decode  JWT string
+	 * @param serverMessage
+	 * @return
+	 */
 
     public static String getDecodedJWT(String serverMessage) {
+		// result comes as header values
         String[] headerArray = serverMessage.split("\n");
+		//tokenize  from JWT assertion header
         String[] jwtEncodedArray = headerArray[1].trim().split(":");
+		//take first part
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
-
+		// decode  JWT part
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes());
         return new String(jwtByteArray);
     }

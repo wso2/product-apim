@@ -27,6 +27,10 @@ public abstract class AbstractRequest {
     private Map parameterMap = new HashMap<String, String>();
     private static final String ACTION_PARAMETER_VALUE = "action";
 
+    /**
+     * generate request params to send in http request, with default action
+     * @return
+     */
     public String generateRequestParameters() {
         parameterMap.clear();
         setAction();
@@ -39,6 +43,12 @@ public abstract class AbstractRequest {
         }
         return requestParams;
     }
+
+    /**
+     * generate request params to send in http request, with given action
+     * @param actionName
+     * @return
+     */
 
     public String generateRequestParameters(String actionName) {
         parameterMap.clear();
@@ -53,6 +63,11 @@ public abstract class AbstractRequest {
         return requestParams;
     }
 
+    /**
+     * add parameter
+     * @param key
+     * @param value
+     */
     public void addParameter(String key, String value) {
         parameterMap.put(key, value);
     }

@@ -393,7 +393,7 @@
         check com.sun.mail.pop3 and com.sun.mail.imap package documentation for more details-->
     <!--</transportReceiver>-->
 
-    <!--<transportReceiver name="admin/https" class="org.wso2.esb.transport.tomcat.HttpsTransportListener">-->
+    <!--<transportReceiver name="admin/https" class="org.wso2.generic.transport.tomcat.HttpsTransportListener">-->
         <!--<parameter name="port" locked="false">9444</parameter>-->
         <!--<parameter name="non-blocking" locked="false">true</parameter>-->
     <!--</transportReceiver>-->

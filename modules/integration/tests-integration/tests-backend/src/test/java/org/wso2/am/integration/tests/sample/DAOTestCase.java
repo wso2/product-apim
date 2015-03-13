@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -21,21 +21,14 @@ package org.wso2.am.integration.tests.sample;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.APIBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -49,6 +42,9 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
 public class DAOTestCase extends AMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(DAOTestCase.class);
     private APIPublisherRestClient apiPublisher;
@@ -57,13 +53,13 @@ public class DAOTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiPublisher = new APIPublisherRestClient(getServerURLHttp());
-        apiStore = new APIStoreRestClient(getServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
 
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                           apimContext.getContextTenant().getContextUser().getPassword());
+                apimContext.getContextTenant().getContextUser().getPassword());
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                       apimContext.getContextTenant().getContextUser().getPassword());
+                apimContext.getContextTenant().getContextUser().getPassword());
 
     }
 
@@ -83,16 +79,15 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         File depFile = new File(deploymentPath);
         if (!depFile.exists() && !depFile.mkdir()) {
             log.error("Error while creating the deployment folder : "
-                      + deploymentPath);
+                    + deploymentPath);
         }
         return deploymentPath + File.separator + fileName;
     }
 
     private String computeSourcePath(String fileName) {
 
-        String sourcePath = getAMResourceLocation()
-                            + File.separator + "jaggery/" + fileName;
-        return sourcePath;
+        return getAMResourceLocation()
+                + File.separator + "jaggery/" + fileName;
     }
 
     @Test(groups = { "wso2.am" }, description = "API Life cycle test case")
@@ -104,9 +99,6 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String description = "This is test API create by API manager integration test";
         String providerName = "admin";
         String APIVersion = "1.0.0";
-
-        // This is because with the new context version strategy, if the context does not have the {version} param ,
-        // then we add the {version} param to the end of the context.
         String apiContextAddedValue = APIContext + "/" + APIVersion;
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
@@ -122,23 +114,23 @@ public class DAOTestCase extends AMIntegrationBaseTest {
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
         //Test API properties
-        Assert.assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-        Assert.assertEquals(
+        assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
+        assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
                 apiContextAddedValue, "API context mismatch");
-        Assert.assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
-        Assert.assertEquals(apiBean.getId().getProviderName(), providerName,
-                            "Provider Name mismatch");
+        assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
+        assertEquals(apiBean.getId().getProviderName(), providerName,
+                "Provider Name mismatch");
         for (String tag : apiBean.getTags()) {
-            Assert.assertTrue(tags.contains(tag), "API tag data mismatched");
+            assertTrue(tags.contains(tag), "API tag data mismatched");
         }
-        Assert.assertEquals(apiBean.getDescription(), description, "API description mismatch");
+        assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
         apiStore.addApplication("DAOTestAPI-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                                                                          apimContext.getContextTenant()
-                                                                                  .getContextUser()
-                                                                                  .getUserName());
+                apimContext.getContextTenant()
+                        .getContextUser()
+                        .getUserName());
         subscriptionRequest.setApplicationName("DAOTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 

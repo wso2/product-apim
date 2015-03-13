@@ -207,5 +207,9 @@ under the License.
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
+        </dependency>
     </dependencies>
 </project>
