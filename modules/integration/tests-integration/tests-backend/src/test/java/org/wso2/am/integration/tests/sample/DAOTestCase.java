@@ -105,6 +105,10 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String providerName = "admin";
         String APIVersion = "1.0.0";
 
+        // This is because with the new context version strategy, if the context does not have the {version} param ,
+        // then we add the {version} param to the end of the context.
+        String apiContextAddedValue = APIContext + "/" + APIVersion;
+
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -121,7 +125,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         Assert.assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         Assert.assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                APIContext, "API context mismatch");
+                apiContextAddedValue, "API context mismatch");
         Assert.assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         Assert.assertEquals(apiBean.getId().getProviderName(), providerName,
                             "Provider Name mismatch");
