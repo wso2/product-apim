@@ -13,7 +13,6 @@
         <classes>
             <!--<class name="YouTubeUIPagesTestCase"/>-->
             <!--<class name="YouTubeUIRecordedTestCase"/>-->
-
             <!-- Need to fix all the below test cases -->
             <!--<class name="org.wso2.carbon.am.integration.ui.LoginTestCase"/>-->
             <!--<class name="org.wso2.carbon.am.integration.ui.SubscriptionAvailabilityTestCase"/>-->
