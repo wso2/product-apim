@@ -319,7 +319,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("APILifeCycleTestAPI-application1"));
+                claim.contains("APILifeCycleTestAPI-application"));
 
     }
 
