@@ -22,13 +22,13 @@ import org.apache.axiom.om.OMElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.wso2.am.admin.clients.common.AuthenticatorClient;
-import org.wso2.am.admin.clients.common.TenantManagementServiceClient;
-import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
+import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 
 import java.io.*;
 import java.net.URL;
@@ -56,13 +56,13 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 		              File.separator + "property" + File.separator +
 		              "FORCE_HTTP_CONTENT_LENGTH.xml";
 
-		OMElement synapseConfig = esbUtils.loadResource(file);
+		OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
 
 		AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
 		String session = login.login("abc@abc.com", "abc123", "localhost");
 
-		esbUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
-		                                session);
+		apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
+				session);
 		Thread.sleep(5000);
 
 		// Start wireserver

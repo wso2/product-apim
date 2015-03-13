@@ -67,9 +67,9 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 		assertTrue(resourceAdminServiceStub.addResource(
                 "/_system/governance/apimgt/applicationdata/test-tiers.xml", "application/xml",
                 "xml files",
-                setEndpoints(new DataHandler(new URL("file:///" + getAMResourceLocation()
+                new DataHandler(new URL("file:///" + getAMResourceLocation()
                         + File.separator + "configFiles/throttling/" +
-                        "throttle-policy.xml")))
+                        "throttle-policy.xml"))
         )
                 , "Adding Resource failed");
 		Thread.sleep(2000);

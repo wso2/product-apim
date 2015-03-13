@@ -56,8 +56,8 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         String publisherURLHttp;
         String storeURLHttp;
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
-            storeURLHttp = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
+            storeURLHttp = getStoreServerURLHttp();
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
@@ -97,7 +97,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, name, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());

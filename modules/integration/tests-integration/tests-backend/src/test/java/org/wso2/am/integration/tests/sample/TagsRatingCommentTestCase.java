@@ -52,8 +52,8 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         String publisherURLHttp;
         String storeURLHttp;
         if (isBuilderEnabled()) {
-			publisherURLHttp = getServerURLHttp();
-			storeURLHttp = getServerURLHttp();
+			publisherURLHttp = getPublisherServerURLHttp();
+			storeURLHttp = getStoreServerURLHttp();
 		} else {
 			publisherURLHttp = getPublisherServerURLHttp();
 			storeURLHttp = getStoreServerURLHttp();
@@ -83,10 +83,10 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		apiRequest.setVersion(APIVersion);
 		apiPublisher.addAPI(apiRequest);
 		APIBean apiBean = APIMgtTestUtil
-				.getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
+				.getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
 		APILifeCycleStateRequest updateRequest =
 				new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-		apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+		apiPublisher.changeAPILifeCycleStatus(updateRequest);
 		//Test API properties
 		assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
 		assertEquals(
@@ -156,7 +156,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI(APIName, APIVersion, providerName, "4");
 		apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
-		apiStore.getAllDocumentationOfApi(APIName, APIVersion, providerName);
+		apiStore.getAllDocumentationOfAPI(APIName, APIVersion, providerName);
 		//apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
 		//Negative cases
 		//add assert
@@ -164,7 +164,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 		apiStore.isRatingActivated();
 		apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
 		apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
-		apiStore.getAllDocumentationOfApi("NoAPI", APIVersion, providerName);
+		apiStore.getAllDocumentationOfAPI("NoAPI", APIVersion, providerName);
 	}
 
 	@AfterClass(alwaysRun = true)

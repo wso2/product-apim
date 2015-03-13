@@ -49,8 +49,8 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 		String storeURLHttp;
 
 		if (isBuilderEnabled()) {
-			publisherURLHttp = getServerURLHttp();
-			storeURLHttp = getServerURLHttp();
+			publisherURLHttp = getPublisherServerURLHttp();
+			storeURLHttp = getStoreServerURLHttp();
 		} else {
 			publisherURLHttp = getPublisherServerURLHttp();
 			storeURLHttp = getStoreServerURLHttp();

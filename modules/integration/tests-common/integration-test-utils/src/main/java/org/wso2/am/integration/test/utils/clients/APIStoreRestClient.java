@@ -40,6 +40,14 @@ public class APIStoreRestClient {
 		}
 	}
 
+	/**
+	 * login to API store
+	 * @param userName
+	 * @param password
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse login(String userName, String password)
 			throws Exception {
 		HttpResponse response = HttpRequestUtil
@@ -60,6 +68,13 @@ public class APIStoreRestClient {
 
 	}
 
+	/**
+	 * subscribe to API
+	 * @param subscriptionRequest
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse subscribe(SubscriptionRequest subscriptionRequest)
 			throws Exception {
 		checkAuthentication();
@@ -76,11 +91,18 @@ public class APIStoreRestClient {
 
 	}
 
+	/**
+	 * generate token
+	 * @param generateAppKeyRequest
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+				"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
 				, generateAppKeyRequest.generateRequestParameters()
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
@@ -92,11 +114,18 @@ public class APIStoreRestClient {
 
 	}
 
+	/**
+	 * get all API's which are published
+	 * @param apiName
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse getAPI(String apiName)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs")
+				"/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs")
 				, ""
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
@@ -108,13 +137,29 @@ public class APIStoreRestClient {
 
 	}
 
+	/**
+	 * set HTTP headers
+	 * @param headerName
+	 * @param value
+	 */
+
 	public void setHttpHeader(String headerName, String value) {
 		this.requestHeaders.put(headerName, value);
 	}
 
+	/**
+	 * get headers
+	 * @param headerName
+	 * @return
+	 */
 	public String getHttpHeader(String headerName) {
 		return this.requestHeaders.get(headerName);
 	}
+
+	/**
+	 * removeHttpHeader
+	 * @param headerName
+	 */
 
 	public void removeHttpHeader(String headerName) {
 		this.requestHeaders.remove(headerName);
@@ -128,6 +173,12 @@ public class APIStoreRestClient {
 		return requestHeaders.put("Cookie", session);
 	}
 
+	/**
+	 * check whether the user is logged in
+	 * @return
+	 * @throws Exception
+	 */
+
 	private boolean checkAuthentication() throws Exception {
 		if (requestHeaders.get("Cookie") == null) {
 			throw new Exception("No Session Cookie found. Please login first");
@@ -135,6 +186,15 @@ public class APIStoreRestClient {
 		return true;
 	}
 
+	/**
+	 * get access key
+	 * @param consumeKey
+	 * @param consumerSecret
+	 * @param body
+	 * @param tokenEndpointURL
+	 * @return
+	 * @throws Exception
+	 */
 	public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret, String body,
 	                                          URL tokenEndpointURL)
 			throws Exception {
@@ -154,11 +214,17 @@ public class APIStoreRestClient {
 		}
 	}
 
+	/**
+	 * get all API's
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse getAllPublishedAPIs()
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-		                                              "/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"
+				"/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -166,12 +232,18 @@ public class APIStoreRestClient {
 			throw new Exception("Generating Application Key failed> " + response.getData());
 		}
 	}
+
+	/**
+	 * get all applications
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse getAllApplications()
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-		                                              "/store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications"
+				"/store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications"
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -179,13 +251,20 @@ public class APIStoreRestClient {
 			throw new Exception("Generating Application Key failed> " + response.getData());
 		}
 	}
+
+	/**
+	 * getPublishedAPIsByApplication
+	 * @param applicationName
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse getPublishedAPIsByApplication(String applicationName)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-		                                              "/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?action=getSubscriptionByApplication&app=" +
-		                                              applicationName
+				"/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?action=getSubscriptionByApplication&app=" +
+				applicationName
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -194,14 +273,23 @@ public class APIStoreRestClient {
 		}
 	}
 
+	/**
+	 * addRatingToAPI
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @param rating
+	 * @return
+	 * @throws Exception
+	 */
 	public HttpResponse addRatingToAPI(String apiName, String version, String provider,
 	                                   String rating)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doGet(backEndUrl + "/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-				       "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
-				       provider + "&rating=" + rating
+						"action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
+						provider + "&rating=" + rating
 						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -209,14 +297,23 @@ public class APIStoreRestClient {
 			throw new Exception("Generating Application Key failed> " + response.getData());
 		}
 	}
+
+	/**
+	 * removeRatingFromAPI
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doGet(backEndUrl + "/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-				       "action=removeRating&name=" + apiName + "&version=" + version +
-				       "&provider=" + provider
+						"action=removeRating&name=" + apiName + "&version=" + version +
+						"&provider=" + provider
 						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -224,13 +321,19 @@ public class APIStoreRestClient {
 			throw new Exception("Generating Application Key failed> " + response.getData());
 		}
 	}
+
+	/**
+	 * isRatingActivated
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse isRatingActivated()
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doGet(backEndUrl + "/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-				       "action=isRatingActivated"
+						"action=isRatingActivated"
 						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -239,18 +342,22 @@ public class APIStoreRestClient {
 		}
 	}
 
-	/*
-		apiData.name = request.getParameter("name");
-	apiData.version = request.getParameter("version");
-	apiData.provider = request.getParameter("provider")
+	/**
+	 * getAllDocumentationOfAPI
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @return
+	 * @throws Exception
 	 */
-	public HttpResponse getAllDocumentationOfApi(String apiName, String version, String provider)
+
+	public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response =
 				HttpRequestUtil.doGet(backEndUrl + "/store/site/blocks/api/listing/ajax/list.jag?" +
-				                      "action=getAllDocumentationOfApi&name=" + apiName +
-				                      "&version=" + version + "&provider=" + provider
+						"action=getAllDocumentationOfAPI&name=" + apiName +
+						"&version=" + version + "&provider=" + provider
 						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -259,18 +366,22 @@ public class APIStoreRestClient {
 		}
 	}
 
-	/*
-				  tenant = request.getParameter("tenant");
-			  var start=request.getParameter("start");
-			  var end=request.getParameter("end");
+	/**
+	 * getAllPaginatedPublishedAPIs
+	 * @param tenant
+	 * @param start
+	 * @param end
+	 * @return
+	 * @throws Exception
 	 */
+
 	public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response =
 				HttpRequestUtil.doGet(backEndUrl + "/store/site/blocks/api/listing/ajax/list.jag?" +
-				                      "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-				                      "&start=" + start + "&end=" + end
+						"action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
+						"&start=" + start + "&end=" + end
 						, requestHeaders);
 		if (response.getResponseCode() == 200) {
 			return response;
@@ -279,12 +390,19 @@ public class APIStoreRestClient {
 		}
 	}
 
+	/**
+	 * getAllPublishedAPIs for tenant
+	 * @param tenant
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse getAllPublishedAPIs(String tenant)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
-		                                                       tenant)
+				"/store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
+				tenant)
 				, ""
 				, requestHeaders);
 		if (response.getResponseCode() == 200) {
@@ -296,18 +414,25 @@ public class APIStoreRestClient {
 
 	}
 
-	public HttpResponse addApplication(String application, String tier, String callbackUrl,
-	                                   String description)
+	/**
+	 * addApplication
+	 * @param application
+	 * @param tier
+	 * @param callbackUrl
+	 * @param description
+	 * @return
+	 * @throws Exception
+	 */
+
+	public HttpResponse addApplication(String application, String tier, String callbackUrl, String description)
 			throws Exception {
+
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/application/application-add/ajax/application-add.jag?action=addApplication&tier=" +
-		                                                       tier + "&callbackUrl=" +
-		                                                       callbackUrl + "&description=" +
-		                                                       description + "&application=" +
-		                                                       application)
-				, ""
-				, requestHeaders);
+				"/store/site/blocks/application/application-add" +
+				"/ajax/application-add.jag?action=addApplication&tier=" + tier + "&callbackUrl=" +
+				callbackUrl + "&description=" + description + "&application=" + application), "", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -317,14 +442,18 @@ public class APIStoreRestClient {
 
 	}
 
-	public HttpResponse getApplications()
-			throws Exception {
+	/**
+	 * get applications
+	 * @return
+	 * @throws Exception
+	 */
+	public HttpResponse getApplications() throws Exception {
+
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications")
-				, ""
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/" +
+				"application-list/ajax/application-list.jag?action=getApplications"), "", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -334,15 +463,19 @@ public class APIStoreRestClient {
 
 	}
 
-	public HttpResponse removeApplication(String application)
-			throws Exception {
+	/**
+	 * delete application
+	 * @param application
+	 * @return
+	 * @throws Exception
+	 */
+	public HttpResponse removeApplication(String application) throws Exception {
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/application/application-remove/ajax/application-remove.jag?action=removeApplication&application=" +
-		                                                       application)
-				, ""
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/" +
+				"application-remove/ajax/application-remove.jag?action=removeApplication&application=" + application),
+				"", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -351,10 +484,20 @@ public class APIStoreRestClient {
 		}
 
 	}
+
+	/**
+	 * updateApplication
+	 * @param applicationOld
+	 * @param applicationNew
+	 * @param callbackUrlNew
+	 * @param descriptionNew
+	 * @param tier
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse updateApplication(String applicationOld, String applicationNew,
-	                                      String callbackUrlNew, String descriptionNew, String tier)
-			throws Exception {
+	                                      String callbackUrlNew, String descriptionNew, String tier) throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
 		                                                       "/store/site/blocks/application/application-update/ajax/application-update.jag?" +
@@ -363,9 +506,8 @@ public class APIStoreRestClient {
 		                                                       applicationNew + "&callbackUrlNew=" +
 		                                                       callbackUrlNew +
 		                                                       "&descriptionNew=" + descriptionNew +
-		                                                       "&tier=" + tier)
-				, ""
-				, requestHeaders);
+		                                                       "&tier=" + tier), "", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -374,15 +516,19 @@ public class APIStoreRestClient {
 		}
 
 	}
+
+	/**
+	 * get all subscriptions
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse getAllSubscriptions()
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
 		                                                       "/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-		                                                       "action=getAllSubscriptions")
-				, ""
-				, requestHeaders);
+		                                                       "action=getAllSubscriptions"), "", requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -392,15 +538,23 @@ public class APIStoreRestClient {
 
 	}
 
+	/**
+	 * unsubscribe from API
+	 * @param API
+	 * @param version
+	 * @param provider
+	 * @param applicationId
+	 * @return
+	 * @throws Exception
+	 */
     public HttpResponse removeAPISubscription(String API, String version, String provider, String applicationId)
             throws Exception {
         checkAuthentication();
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "/store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
-                API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId)
-                , ""
-                , requestHeaders);
+				"/store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
+				API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId), "", requestHeaders);
+
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
             return response;
@@ -410,13 +564,16 @@ public class APIStoreRestClient {
 
     }
 
-	public HttpResponse getAllTags()
-			throws Exception {
+	/**
+	 * get all tags of API
+	 * @return
+	 * @throws Exception
+	 */
+	public HttpResponse getAllTags() throws Exception {
+
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(
-				backEndUrl + "/store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags")
-				, ""
-				, requestHeaders);
+				backEndUrl + "/store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"), "", requestHeaders);
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -426,15 +583,18 @@ public class APIStoreRestClient {
 
 	}
 
-	/*
-			name = request.getParameter("name");
-		version = request.getParameter("version");
-		provider = request.getParameter("provider");
-		comment = request.getParameter("comment");
-		/home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/comment/comment-add/ajax/comment-add.jag
+
+	/**
+	 * add comment to api
+	 * @param name
+	 * @param version
+	 * @param provider
+	 * @param comment
+	 * @return
+	 * @throws Exception
 	 */
-	public HttpResponse addComment(String name, String version, String provider, String comment)
-			throws Exception {
+
+	public HttpResponse addComment(String name, String version, String provider, String comment) throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doPost(new URL(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
@@ -449,13 +609,19 @@ public class APIStoreRestClient {
 
 	}
 
-	public HttpResponse isCommentActivated()
-			throws Exception {
+	/**
+	 * isCommentActivated
+	 * @return
+	 * @throws Exception
+	 */
+	public HttpResponse isCommentActivated() throws Exception {
+
 		checkAuthentication();
+
 		HttpResponse response = HttpRequestUtil
 				.doGet(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-				       "action=isCommentActivated"
-						, requestHeaders);
+						"action=isCommentActivated", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;
@@ -465,16 +631,21 @@ public class APIStoreRestClient {
 
 	}
 
-	public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
-			throws Exception {
-		///home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
+	/**
+	 * getRecentlyAddedAPIs
+	 * @param tenant
+	 * @param limit
+	 * @return
+	 * @throws Exception
+	 */
+
+	public HttpResponse getRecentlyAddedAPIs(String tenant, String limit) throws Exception {
+
 		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-		                                                       "/store/site/blocks/api/recently-added/ajax/list.jag?action=getRecentlyAddedAPIs" +
-		                                                       "&tenant=" + tenant + "&limit=" +
-		                                                       limit)
-				, ""
-				, requestHeaders);
+		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/api/" +
+				"recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant="
+				+ tenant + "&limit=" + limit), "", requestHeaders);
+
 		if (response.getResponseCode() == 200) {
 			VerificationUtil.checkErrors(response);
 			return response;

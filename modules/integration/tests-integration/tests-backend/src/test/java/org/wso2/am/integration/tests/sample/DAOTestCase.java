@@ -53,8 +53,8 @@ public class DAOTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiPublisher = new APIPublisherRestClient(getServerURLHttp());
-        apiStore = new APIStoreRestClient(getServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
 
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                            apimContext.getContextTenant().getContextUser().getPassword());

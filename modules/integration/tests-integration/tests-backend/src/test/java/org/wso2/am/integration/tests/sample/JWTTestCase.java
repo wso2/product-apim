@@ -43,7 +43,8 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import java.io.File;
 import java.net.URL;
 
-import static junit.framework.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertTrue;
+
 
 public class JWTTestCase extends AMIntegrationBaseTest{
 
@@ -73,8 +74,8 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         super.init();
 
         if (isBuilderEnabled()) {
-            publisherURLHttp = getServerURLHttp();
-            storeURLHttp = getServerURLHttp();
+            publisherURLHttp = getPublisherServerURLHttp();
+            storeURLHttp = getStoreServerURLHttp();
 
             serverConfigurationManager = new ServerConfigurationManager(apimContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
@@ -132,7 +133,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
     }
 
@@ -359,7 +360,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, provider,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(tenantUser, password);

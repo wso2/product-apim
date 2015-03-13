@@ -239,12 +239,12 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?" +
-                                                      "action=getAllDocumentationOfApi&name=" + apiName + "&version=" + version + "&provider=" + provider
+                                                      "action=getAllDocumentationOfAPI&name=" + apiName + "&version=" + version + "&provider=" + provider
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("getAllDocumentationOfApi() failed: " + response.getData());
+            throw new Exception("getAllDocumentationOfAPI() failed: " + response.getData());
         }
     }
     /*
