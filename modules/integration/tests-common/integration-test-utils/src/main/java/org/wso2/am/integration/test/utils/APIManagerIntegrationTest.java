@@ -80,7 +80,7 @@ public abstract class APIManagerIntegrationTest {
 	}
 
 	protected void init(TestUserMode userMode) throws Exception {
-		context = new AutomationContext("AM", userMode);
+		context = new AutomationContext("APIM", userMode);
 		contextUrls = context.getContextUrls();
 		sessionCookie = login(context);
 		esbUtils = new ESBTestCaseUtils();

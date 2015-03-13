@@ -20,13 +20,13 @@ package org.wso2.carbon.am.jmeter;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
+import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 
 import java.io.File;
 
-public class JmeterSuperTenantTestCase extends APIManagerIntegrationTest {
+public class JmeterSuperTenantTestCase extends AMIntegrationBaseTest {
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
