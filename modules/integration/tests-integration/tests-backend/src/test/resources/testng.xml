@@ -14,7 +14,7 @@
             <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/>
+            <!--class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/-->
              <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
