@@ -21,7 +21,6 @@
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
 
             <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
