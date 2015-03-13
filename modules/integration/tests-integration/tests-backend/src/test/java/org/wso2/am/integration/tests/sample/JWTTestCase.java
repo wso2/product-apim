@@ -46,18 +46,16 @@ import java.net.URL;
 import static org.testng.AssertJUnit.assertTrue;
 
 
-public class JWTTestCase extends AMIntegrationBaseTest{
+public class JWTTestCase extends AMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient;
     private TenantManagementServiceClient tenantManagementServiceClient;
-	private RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient;
     private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
     private String publisherURLHttp;
     private String storeURLHttp;
     private WireMonitorServer server;
-    private int hostPort = 9988;
 
     private String APIName = "JWTTokenTestAPI";
     private String APIContext = "tokenTest";
@@ -73,23 +71,23 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     public void init() throws Exception {
         super.init();
 
-            publisherURLHttp = getPublisherServerURLHttp();
-            storeURLHttp = getStoreServerURLHttp();
+        publisherURLHttp = getPublisherServerURLHttp();
+        storeURLHttp = getStoreServerURLHttp();
 
-            serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
-                    "api-manager.xml"));
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                    + File.separator +
-                    "configFiles/tokenTest/" +
-                    "log4j.properties"));
-
+        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator +
+                "configFiles/tokenTest/" +
+                "api-manager.xml"));
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                + File.separator +
+                "configFiles/tokenTest/" +
+                "log4j.properties"));
 
 
         userManagementClient = new UserManagementClient(
-                apimContext.getContextUrls().getBackEndUrl(), apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextUrls().getBackEndUrl(),
+                apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
 
         AutomationContext automationContext = new AutomationContext("APIM", TestUserMode.SUPER_TENANT_ADMIN);
@@ -99,6 +97,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
                 apimContext.getContextUrls().getBackEndUrl(), loginLogoutClient.login());
 
 
+        int hostPort = 9988;
         server = new WireMonitorServer(hostPort);
         server.setReadTimeOut(300);
         server.start();
@@ -135,9 +134,11 @@ public class JWTTestCase extends AMIntegrationBaseTest{
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, admin user claims", enabled = true)
     public void testEnableJWTAndClaims() throws Exception {
 
-        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
-                apimContext.getContextUrls().getBackEndUrl(), apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
+                new RemoteUserStoreManagerServiceClient(
+                        apimContext.getContextUrls().getBackEndUrl(),
+                        apimContext.getContextTenant().getContextUser().getUserName(),
+                        apimContext.getContextTenant().getContextUser().getPassword());
 
         String username = apimContext.getContextTenant().getContextUser().getUserName();
         String profile = "default";
@@ -152,7 +153,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         /*remoteUserStoreManagerServiceClient.setUserClaimValue(
                 username, "http://wso2.org/claims/wrongclaim",
-                "wrongclaim", profile)*/;
+                "wrongclaim", profile)*/
 
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
@@ -175,7 +176,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp()+"/tokenTest/1.0.0";
+        String url = getGatewayServerURLHttp() + "/tokenTest/1.0.0";
 
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -193,56 +194,56 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         // check user profile info claims
         String claim = jsonObject.getString("http://wso2.org/claims/givenname");
-        assertTrue( "JWT claim givenname  not received" + claim , claim.contains("first name"));
+        assertTrue("JWT claim givenname  not received" + claim, claim.contains("first name"));
 
         claim = jsonObject.getString("http://wso2.org/claims/lastname");
-        assertTrue( "JWT claim lastname  not received" + claim , claim.contains("last name"));
+        assertTrue("JWT claim lastname  not received" + claim, claim.contains("last name"));
 
         boolean bExceptionOccured = false;
         try {
-            claim = jsonObject.getString("http://wso2.org/claims/wrongclaim");
-        }
-        catch (JSONException e) {
+            jsonObject.getString("http://wso2.org/claims/wrongclaim");
+        } catch (JSONException e) {
             bExceptionOccured = true;
         }
 
-        assertTrue( "JWT claim invalid  claim received", bExceptionOccured);
+        assertTrue("JWT claim invalid  claim received", bExceptionOccured);
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject) throws JSONException {
         String claim = jsonObject.getString("iss");
-        assertTrue( "JWT assertion is invalid", claim.contains("wso2.org/products/am"));
+        assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
-        assertTrue( "JWT claim subscriber invalid. Received " + claim , claim.contains("admin"));
+        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("admin"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
-        assertTrue( "JWT claim applicationname invalid. Received " + claim ,
+        assertTrue("JWT claim applicationname invalid. Received " + claim,
                 claim.contains("APILifeCycleTestAPI-application"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
-        assertTrue( "JWT claim applicationtier invalid. Received " + claim , claim.contains("Gold"));
+        assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
-        assertTrue( "JWT claim apicontext invalid. Received " + claim , claim.contains("/tokenTest"));
+        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/tokenTest" + "/"
+                + jsonObject.getString("http://wso2.org/claims/version")));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
-        assertTrue( "JWT claim version invalid. Received " + claim , claim.contains("1.0.0"));
+        assertTrue("JWT claim version invalid. Received " + claim, claim.contains("1.0.0"));
 
         claim = jsonObject.getString("http://wso2.org/claims/tier");
-        assertTrue( "JWT claim tier invalid. Received " + claim , claim.contains("Gold"));
+        assertTrue("JWT claim tier invalid. Received " + claim, claim.contains("Gold"));
 
         claim = jsonObject.getString("http://wso2.org/claims/keytype");
-        assertTrue( "JWT claim keytype invalid. Received " + claim , claim.contains("PRODUCTION"));
+        assertTrue("JWT claim keytype invalid. Received " + claim, claim.contains("PRODUCTION"));
 
         claim = jsonObject.getString("http://wso2.org/claims/usertype");
-        assertTrue( "JWT claim usertype invalid. Received " + claim , claim.contains("APPLICATION"));
+        assertTrue("JWT claim usertype invalid. Received " + claim, claim.contains("APPLICATION"));
 
         claim = jsonObject.getString("http://wso2.org/claims/enduserTenantId");
-        assertTrue( "JWT claim enduserTenantId invalid. Received " + claim , claim.contains("-1234"));
+        assertTrue("JWT claim enduserTenantId invalid. Received " + claim, claim.contains("-1234"));
 
         claim = jsonObject.getString("http://wso2.org/claims/role");
-        assertTrue( "JWT claim role invalid. Received " + claim ,
+        assertTrue("JWT claim role invalid. Received " + claim,
                 claim.contains("admin,Internal/subscriber,Internal/everyone"));
     }
 
@@ -262,19 +263,20 @@ public class JWTTestCase extends AMIntegrationBaseTest{
                     new String[]{"Internal/subscriber"}, null);
         }
 
-        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
-                apimContext.getContextUrls().getBackEndUrl(), apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
+                new RemoteUserStoreManagerServiceClient(
+                        apimContext.getContextUrls().getBackEndUrl(),
+                        apimContext.getContextTenant().getContextUser().getUserName(),
+                        apimContext.getContextTenant().getContextUser().getPassword());
 
-        String username = subscriberUser;
         String profile = "default";
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(
-                username, "http://wso2.org/claims/givenname",
+                subscriberUser, "http://wso2.org/claims/givenname",
                 "subscriberUser name", profile);
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(
-                username, "http://wso2.org/claims/lastname",
+                subscriberUser, "http://wso2.org/claims/lastname",
                 "subscriberUser name", profile);
 
         // restart the server since updated claims not picked unless cache expired
@@ -295,7 +297,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp()+"/tokenTest/1.0.0/";
+        String url = getGatewayServerURLHttp() + "/tokenTest/1.0.0/";
 
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -310,19 +312,19 @@ public class JWTTestCase extends AMIntegrationBaseTest{
 
         // check claims
         String claim = jsonObject.getString("iss");
-        assertTrue( "JWT assertion is invalid", claim.contains("wso2.org/products/am"));
+        assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
-        assertTrue( "JWT claim subscriber invalid. Received " + claim , claim.contains("subscriberUser"));
+        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("subscriberUser"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
-        assertTrue( "JWT claim applicationname invalid. Received " + claim ,
+        assertTrue("JWT claim applicationname invalid. Received " + claim,
                 claim.contains("APILifeCycleTestAPI-application1"));
 
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, tenant user claims" , enabled = false)
+    @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, tenant user claims", enabled = false)
     public void testTenantUserJWTClaims() throws Exception {
 
         //server.setFinished(false);
@@ -371,7 +373,7 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp()+"/t/wso2.com/tokenTest/1.0.0/";
+        String url = getGatewayServerURLHttp() + "/t/wso2.com/tokenTest/1.0.0/";
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
@@ -382,13 +384,13 @@ public class JWTTestCase extends AMIntegrationBaseTest{
         log.info("\n\n\n\n\ndecodedJWTString = " + decodedJWTString);
         // check claims
         String claim = jsonObject.getString("iss");
-        assertTrue( "JWT assertion is invalid", claim.contains("wso2.org/products/am"));
+        assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
-        assertTrue( "JWT claim subscriber invalid. Received " + claim , claim.contains("admin@wso2.com"));
+        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("admin@wso2.com"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
-        assertTrue( "JWT claim apicontext invalid. Received " + claim , claim.contains("/t/wso2.com/tokenTest"));
+        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/t/wso2.com/tokenTest"));
 
     }
 }
