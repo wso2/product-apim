@@ -35,7 +35,6 @@
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
 
         <classes>
-
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.APIManager3152RefreshTokenTestCase"/>
