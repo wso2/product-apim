@@ -159,7 +159,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     }
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
-            dependsOnMethods = "testSubscribeTheNewVersion", enabled = false)
+            dependsOnMethods = "testSubscribeTheNewVersion")
     public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
 
 
