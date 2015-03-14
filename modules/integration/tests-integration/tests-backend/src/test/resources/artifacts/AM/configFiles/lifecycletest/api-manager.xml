@@ -173,7 +173,7 @@
         <!--
             Enable/Disable token caching at gateway node.
         -->
-        <EnableGatewayKeyCache>false</EnableGatewayKeyCache>
+        <EnableGatewayKeyCache>true</EnableGatewayKeyCache>
 
         <!--
             Enable/Disable API resource caching at gateway node.

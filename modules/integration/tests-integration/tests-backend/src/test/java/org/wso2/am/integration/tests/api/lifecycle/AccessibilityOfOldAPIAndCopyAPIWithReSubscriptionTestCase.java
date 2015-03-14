@@ -56,8 +56,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.")
+    @Test(groups = {"wso2.am"}, description = "Test subscribe of old api version.", enabled = false)
     public void testSubscriptionOfOldAPI() throws Exception {
+        //Desable th etest case because of APIMANAGER-3374
         //Create and publish API version 1.0.0
         createAndPublishAPIWithoutRequireReSubscription(
                 apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1);
@@ -78,7 +79,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @Test(groups = {"wso2.am"}, description = "Test publishing of copied API with re-subscription required",
-            dependsOnMethods = "testSubscriptionOfOldAPI")
+            dependsOnMethods = "testSubscriptionOfOldAPI", enabled = false)
     public void testPublishCopiedAPIWithReSubscriptionRequired() throws Exception {
 
         // Copy  API
@@ -101,7 +102,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of old API version  before the new version is subscribed.",
-            dependsOnMethods = "testPublishCopiedAPIWithReSubscriptionRequired")
+            dependsOnMethods = "testPublishCopiedAPIWithReSubscriptionRequired", enabled = false)
     public void testInvokeOldAPIBeforeSubscribeTheNewVersion() throws Exception {
 
         //get access token
@@ -126,7 +127,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  before the new version is subscribed. " +
-            "This invocation should be failed", dependsOnMethods = "testInvokeOldAPIBeforeSubscribeTheNewVersion")
+            "This invocation should be failed", dependsOnMethods = "testInvokeOldAPIBeforeSubscribeTheNewVersion", enabled = false)
     public void testInvokeNewAPIBeforeSubscribeTheNewVersion() throws Exception {
 
         //Invoke  old version
@@ -143,7 +144,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     }
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe the new API Version",
-            dependsOnMethods = "testInvokeNewAPIBeforeSubscribeTheNewVersion")
+            dependsOnMethods = "testInvokeNewAPIBeforeSubscribeTheNewVersion", enabled = false)
     public void testSubscribeTheNewVersion() throws Exception {
 
         //subscribe new version
@@ -159,7 +160,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     }
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
-            dependsOnMethods = "testSubscribeTheNewVersion")
+            dependsOnMethods = "testSubscribeTheNewVersion", enabled = false)
     public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
 
 
