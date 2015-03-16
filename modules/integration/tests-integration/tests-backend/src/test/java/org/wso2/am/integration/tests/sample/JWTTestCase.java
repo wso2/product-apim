@@ -151,10 +151,6 @@ public class JWTTestCase extends AMIntegrationBaseTest {
                 username, "http://wso2.org/claims/lastname",
                 "last name", profile);
 
-        /*remoteUserStoreManagerServiceClient.setUserClaimValue(
-                username, "http://wso2.org/claims/wrongclaim",
-                "wrongclaim", profile)*/
-
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
         super.init();
@@ -224,8 +220,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
         assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
-        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/tokenTest" + "/"
-                + jsonObject.getString("http://wso2.org/claims/version")));
+        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/tokenTest"));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
         assertTrue("JWT claim version invalid. Received " + claim, claim.contains("1.0.0"));

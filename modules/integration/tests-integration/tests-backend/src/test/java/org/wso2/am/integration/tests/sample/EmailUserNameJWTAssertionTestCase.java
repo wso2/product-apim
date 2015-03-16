@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -98,7 +98,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest
                 updateRequest = new APILifeCycleStateRequest("test", userName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.login(userName, password);
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest("test", userName);

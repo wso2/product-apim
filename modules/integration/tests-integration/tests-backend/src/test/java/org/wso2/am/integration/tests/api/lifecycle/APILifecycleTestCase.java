@@ -27,8 +27,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.store.utils.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -81,6 +81,8 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
     private APIStoreRestClient apiStoreClientUser2;
     private ServerConfigurationManager serverManager;
     private static String API_BASE_URL;
+    private final String string = "Publish a API. Copy and create a new version, publish  the new version" +
+            " and deprecate the old version, test invocation of both old and new API versions.";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -137,7 +139,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
 
         //Verify the API in API Publisher
         List<APIIdentifier> apiPublisherAPIIdentifierList = APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
-                apiPublisherClientUser1.getApi(apiName, API1_PROVIDER_NAME, API_VERSION1));
+                apiPublisherClientUser1.getAPI(apiName, API1_PROVIDER_NAME, API_VERSION1));
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiPublisherAPIIdentifierList), true,
                 "Added Api is not available in APi Publisher. API Name:" + apiName + " API Version :" + API_VERSION1 +
                         " API Provider Name:" + API1_PROVIDER_NAME);
@@ -183,7 +185,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest publishUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION1);
-        apiPublisherClientUser1.changeAPILifeCycleStatusTo(publishUpdateRequest);
+        apiPublisherClientUser1.changeAPILifeCycleStatus(publishUpdateRequest);
 
         //Copy API version 1.0.0  to 2.0.0
         apiPublisherClientUser1.copyAPI(API1_PROVIDER_NAME, apiName, API_VERSION1, API_VERSION2, "");
@@ -192,7 +194,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         publishUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION2);
-        apiPublisherClientUser1.changeAPILifeCycleStatusTo(publishUpdateRequest);
+        apiPublisherClientUser1.changeAPILifeCycleStatus(publishUpdateRequest);
 
         // Check availability of old API version in API Store
         List<APIIdentifier> apiStoreAPIIdentifierList = APIMgtTestUtil.getAPIIdentifierListFromHttpResponse
@@ -240,8 +242,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Publish a API. Copy and create a new version, publish  the new version" +
-            " and deprecate the old version, test invocation of both old and new API versions.",
+    @Test(groups = {"wso2.am"}, description = string,
             dependsOnMethods = "testAccessibilityOfPublishedOldAPIAndPublishedCopyAPI")
     public void testAccessibilityOfDeprecatedOldAPIAndPublishedCopyAPI() throws Exception {
 
@@ -258,7 +259,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest publishUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION1);
-        apiPublisherClientUser1.changeAPILifeCycleStatusTo(publishUpdateRequest);
+        apiPublisherClientUser1.changeAPILifeCycleStatus(publishUpdateRequest);
 
         //Copy API version 1.0.0  to 2.0.0
         apiPublisherClientUser1.copyAPI(API1_PROVIDER_NAME, apiName, API_VERSION1, API_VERSION2, "");
@@ -267,7 +268,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         publishUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION2);
-        apiPublisherClientUser1.changeAPILifeCycleStatusTo(publishUpdateRequest);
+        apiPublisherClientUser1.changeAPILifeCycleStatus(publishUpdateRequest);
 
 
         //subscribe Old version
@@ -283,7 +284,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest deprecatedUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.DEPRECATED);
         deprecatedUpdateRequest.setVersion(API_VERSION1);
-        apiPublisherClientUser1.changeAPILifeCycleStatusTo(deprecatedUpdateRequest);
+        apiPublisherClientUser1.changeAPILifeCycleStatus(deprecatedUpdateRequest);
         //subscribe Old version
         String subscribeErrorMessage = "";
         try {
@@ -511,7 +512,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
                 APILifeCycleState.BLOCKED);
         blockUpdateRequest.setVersion(API_VERSION1);
         //Change API lifecycle  to Block
-        HttpResponse blockAPIActionResponse = apiPublisherClientUser1.changeAPILifeCycleStatusTo(blockUpdateRequest);
+        HttpResponse blockAPIActionResponse = apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
         Assert.assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         Assert.assertTrue(blockAPIActionResponse.getData().contains(
                 "\"newStatus\" : \"BLOCKED\", \"oldStatus\" : \"PUBLISHED\""), "Response data ");
@@ -570,7 +571,7 @@ public class APILifecycleTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest retireUpdateRequest = new APILifeCycleStateRequest(apiName, API1_PROVIDER_NAME,
                 APILifeCycleState.RETIRED);
         retireUpdateRequest.setVersion(API_VERSION1);
-        HttpResponse retireAPIActionResponse = apiPublisherClientUser1.changeAPILifeCycleStatusTo(retireUpdateRequest);
+        HttpResponse retireAPIActionResponse = apiPublisherClientUser1.changeAPILifeCycleStatus(retireUpdateRequest);
         Assert.assertEquals(retireAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
 
         //Verify the API in API Store : API should not be available in the store.
