@@ -23,7 +23,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.common.TenantManagementServiceClient;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
@@ -31,6 +30,7 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.io.File;
@@ -53,8 +53,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        publisherURLHttp = getServerURLHttp();
-        storeURLHttp = getServerURLHttp();
+        publisherURLHttp = getPublisherServerURLHttp();
+        storeURLHttp = getStoreServerURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
@@ -159,14 +159,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiStore.addRatingToAPI(APIName, APIVersion, providerName, "2");
         apiStore.addRatingToAPI(APIName, APIVersion, providerName, "1");
         apiStore.removeRatingFromAPI(APIName, APIVersion, providerName);
-        apiStore.getAllDocumentationOfApi(APIName, APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI(APIName, APIVersion, providerName);
         //apiStore.getAllPaginatedPublishedAPIs("carbon.super","0","10");
         //Negative cases
         apiStore.getPublishedAPIsByApplication("APILifeCycleTestAPI-application-wrong");
         apiStore.isRatingActivated();
         apiStore.addRatingToAPI("NoAPI", APIVersion, providerName, "4");
         apiStore.removeRatingFromAPI("NoAPI", APIVersion, providerName);
-        apiStore.getAllDocumentationOfApi("NoAPI", APIVersion, providerName);
+        apiStore.getAllDocumentationOfAPI("NoAPI", APIVersion, providerName);
         apiRequest.setTags("updated");
         apiRequest.setProvider("admin");
         Thread.sleep(1000);
@@ -851,9 +851,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
 
-        /*apiPublisherRestClient.deleteApi("APILifeCycleTestAPIPublic", "1.0.0", "admin");
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");
-        apiPublisherRestClient.deleteApi("APILifeCycleTestAPIRoles", "1.0.0", "admin");*/
+        /*apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIPublic", "1.0.0", "admin");
+        apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");
+        apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIRoles", "1.0.0", "admin");*/
 
         Thread.sleep(5000);
         super.cleanup();

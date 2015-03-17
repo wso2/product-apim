@@ -33,12 +33,24 @@ public class APIPublisherRestClient {
 	private static final String URL_SURFIX = "/publisher/site/blocks";
 	private Map<String, String> requestHeaders = new HashMap<String, String>();
 
+	/**
+	 * construct API resr client
+	 * @param backEndUrl
+	 */
 	public APIPublisherRestClient(String backEndUrl) {
 		this.backEndUrl = backEndUrl;
 		if (requestHeaders.get("Content-Type") == null) {
 			this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 		}
 	}
+
+	/**
+	 * login to publisher
+	 * @param userName
+	 * @param password
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse login(String userName, String password)
 			throws Exception {
@@ -60,6 +72,12 @@ public class APIPublisherRestClient {
 
 	}
 
+	/**
+	 * log out from publisher
+	 * @return
+	 * @throws Exception
+	 */
+
     public HttpResponse logout()
             throws Exception {
         HttpResponse response = HttpRequestUtil
@@ -79,6 +97,13 @@ public class APIPublisherRestClient {
 
     }
 
+	/**
+	 * add API to APIM
+	 * @param apiRequest
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse addAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();
@@ -94,6 +119,16 @@ public class APIPublisherRestClient {
 		}
 	}
 
+	/**
+	 * copy API
+	 * @param provider
+	 * @param APIName
+	 * @param oldVersion
+	 * @param newVersion
+	 * @param isDefaultVersion
+	 * @return
+	 * @throws Exception
+	 */
     public HttpResponse copyAPI(String provider, String APIName, String oldVersion,
                                 String newVersion, String isDefaultVersion)
             throws Exception {
@@ -111,6 +146,13 @@ public class APIPublisherRestClient {
         }
     }
 
+	/**
+	 * update created API
+	 * @param apiRequest
+	 * @return
+	 * @throws Exception
+	 */
+
 	public HttpResponse updateAPI(APIRequest apiRequest)
 			throws Exception {
 		checkAuthentication();
@@ -126,7 +168,14 @@ public class APIPublisherRestClient {
 		}
 	}
 
-	public HttpResponse changeAPILifeCycleStatusTo(APILifeCycleStateRequest updateRequest)
+	/**
+	 * change API status
+	 * @param updateRequest
+	 * @return
+	 * @throws Exception
+	 */
+
+	public HttpResponse changeAPILifeCycleStatus(APILifeCycleStateRequest updateRequest)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil.doPost(new URL(
@@ -142,7 +191,15 @@ public class APIPublisherRestClient {
 
 	}
 
-	public HttpResponse getApi(String apiName, String provider)
+	/**
+	 * get API info
+	 * @param apiName
+	 * @param provider
+	 * @return
+	 * @throws Exception
+	 */
+
+	public HttpResponse getAPI(String apiName, String provider)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
@@ -161,7 +218,16 @@ public class APIPublisherRestClient {
 
 	}
 
-	public HttpResponse deleteApi(String name, String version, String provider)
+	/**
+	 * delete API
+	 * @param name
+	 * @param version
+	 * @param provider
+	 * @return
+	 * @throws Exception
+	 */
+
+	public HttpResponse deleteAPI(String name, String version, String provider)
 			throws Exception {
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
@@ -173,7 +239,7 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Deletion failed> " + response.getData());
+			throw new Exception("API Deletion failed : " + response.getData());
 		}
 	}
 
@@ -197,6 +263,11 @@ public class APIPublisherRestClient {
 		return requestHeaders.put("Cookie", session);
 	}
 
+	/**
+	 * check whether  user is logged in
+	 * @return
+	 * @throws Exception
+	 */
 	private boolean checkAuthentication() throws Exception {
 		if (requestHeaders.get("Cookie") == null) {
 			throw new Exception("No Session Cookie found. Please login first");
@@ -205,27 +276,19 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * @param apiName  String name of the API that need to remove
-	 * @param version  String version of the API that need to remove
-	 * @param provider String provider name of the API that need to remove
+	 * add document to API
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @param docName
+	 * @param docType
+	 * @param sourceType
+	 * @param docUrl
+	 * @param summary
+	 * @param docLocation
 	 * @return
-	 * @throws Exception when invocation does ont return 200 response
+	 * @throws Exception
 	 */
-	public HttpResponse removeAPI(String apiName, String version, String provider)
-			throws Exception {
-		checkAuthentication();
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
-						, "action=removeAPI" + "&name=" + apiName + "&version=" + version +
-						  "&provider=" + provider
-						, requestHeaders);
-		if (response.getResponseCode() == 200) {
-			VerificationUtil.checkErrors(response);
-			return response;
-		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
-		}
-	}
 
 	public HttpResponse addDocument(String apiName, String version, String provider, String docName,
 	                                String docType, String sourceType, String docUrl,
@@ -242,9 +305,24 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * update document
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @param docName
+	 * @param docType
+	 * @param sourceType
+	 * @param docUrl
+	 * @param summary
+	 * @param docLocation
+	 * @return
+	 * @throws Exception
+	 */
 
     public HttpResponse updateDocument(String apiName, String version, String provider, String docName,
                                     String docType, String sourceType, String docUrl,
@@ -261,9 +339,21 @@ public class APIPublisherRestClient {
             VerificationUtil.checkErrors(response);
             return response;
         } else {
-            throw new Exception("API Subscription failed> " + response.getData());
+            throw new Exception("API Subscription failed : " + response.getData());
         }
     }
+
+	/**
+	 * add inline content
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @param docName
+	 * @param content
+	 * @param docDetails
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse inlineContent(String apiName, String version, String provider,
 	                                  String docName, String content, String docDetails)
@@ -279,9 +369,20 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * remove document
+	 * @param apiName
+	 * @param version
+	 * @param provider
+	 * @param docName
+	 * @param docType
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse removeDocumentation(String apiName, String version, String provider,
 	                                        String docName, String docType) throws Exception {
@@ -296,9 +397,16 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * get access token data
+	 * @param accessToken
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse getAccessTokenData(String accessToken) throws Exception {
 		checkAuthentication();
@@ -310,10 +418,18 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
 
+	/**
+	 * revoke access token
+	 * @param accessToken
+	 * @param consumerKey
+	 * @param authUser
+	 * @return
+	 * @throws Exception
+	 */
 	public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser)
 			throws Exception {
 		checkAuthentication();
@@ -328,9 +444,16 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * revoke access token by subscriber
+	 * @param subscriberName
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse revokeAccessTokenBySubscriber(String subscriberName) throws Exception {
 		checkAuthentication();
@@ -343,9 +466,18 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * update permissions to API access
+	 * @param tierName
+	 * @param permissionType
+	 * @param roles
+	 * @return
+	 * @throws Exception
+	 */
 
 	public HttpResponse updatePermissions(String tierName, String permissionType, String roles)
 			throws Exception {
@@ -361,10 +493,19 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
 
+	/**
+	 * create new API
+	 * @param provider
+	 * @param apiName
+	 * @param version
+	 * @param newVersion
+	 * @return
+	 * @throws Exception
+	 */
 	public HttpResponse createNewAPI(String provider, String apiName, String version,
 	                                 String newVersion) throws Exception {
 		checkAuthentication();
@@ -377,7 +518,35 @@ public class APIPublisherRestClient {
 			VerificationUtil.checkErrors(response);
 			return response;
 		} else {
-			throw new Exception("API Subscription failed> " + response.getData());
+			throw new Exception("API Subscription failed : " + response.getData());
 		}
 	}
+
+	/**
+	 * update resources of API
+	 * @param provider
+	 * @param apiName
+	 * @param version
+	 * @param swaggerRes
+	 * @return
+	 * @throws Exception
+	 */
+
+    public HttpResponse updateResourceOfAPI(String provider, String apiName, String version, String swaggerRes)
+            throws Exception {
+        checkAuthentication();
+        this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+                "/publisher/site/blocks/item-design/ajax/add.jag")
+                , "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
+                version +"&swagger="+swaggerRes
+                , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            //VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("API Resource update failed : " + response.getData());
+        }
+    }
 }

@@ -42,7 +42,7 @@ public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
 
 
     private static final String API_NAME = "YoutubeFeeds";
-    private static final String API_CONTEXT = "/youtube";
+    private static final String API_CONTEXT = "youtube";
     private static final String API_VERSION = "1.0.0";
     private static final String API_DESCRIPTION = "Youtube Live Feeds";
     private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
@@ -168,7 +168,9 @@ public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
 
     @Test(groups = "wso2.greg", dependsOnMethods = {"testSubscribeAPI"}, description = "verify subscribed api using RESTClient")
     public void testRestClient() throws Exception {
-        WebDriverWait wait = new WebDriverWait(driver, 60);
+        driver.findElement(By.linkText("Themes")).click();
+        driver.findElement(By.xpath("//form[@id='themeSelectForm']/table/tbody/tr/td[2]/div/a/img")).click();
+        WebDriverWait wait = new WebDriverWait(driver, 30);
         driver.findElement(By.linkText("Tools")).click();
         driver.findElement(By.linkText("RESTClient")).click();
 
