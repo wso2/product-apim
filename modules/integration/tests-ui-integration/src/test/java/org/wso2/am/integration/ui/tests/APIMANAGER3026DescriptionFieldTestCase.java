@@ -33,6 +33,11 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import java.net.URL;
 
+/**
+ * The issue in APIMANAGER3026 is when api is created by rest call via publisher APIs
+ * and when we try to edit description of created API, the description was not found.
+ * This was fixed and will test by this test case.
+ */
 public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestBase {
 
 	private WebDriver driver;
