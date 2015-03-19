@@ -22,6 +22,7 @@
             <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.ContentTypeTestCase"/>
 
             <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
