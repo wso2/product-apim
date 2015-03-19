@@ -19,6 +19,9 @@
 package org.wso2.am.integration.test.utils.store.utils;
 
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.VerificationUtil;
 import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
@@ -76,9 +79,11 @@ public class APIStoreRestClient {
     public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
             throws Exception {
         checkAuthentication();
+        HttpResponse response1=getAllApplications();
+        String appId = getApplicationId(response1.getData(), generateAppKeyRequest.getApplication());
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
                                                                "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
-                                                               "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000"),
+                                                               "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000&selectedAppID=" +appId),
                                                        "", requestHeaders);
 
         if (response.getResponseCode() == 200) {
@@ -444,5 +449,25 @@ public class APIStoreRestClient {
             throw new Exception("Get Api Information failed> " + response.getData());
         }
 
+    }
+    
+    private String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
+        String applicationId=null;
+        JSONObject obj;
+        try {
+            obj = new JSONObject(jsonStringOfApplications);
+            JSONArray arr = obj.getJSONArray("applications");
+            for (int i = 0; i < arr.length(); i++)
+            {
+                String appName = arr.getJSONObject(i).getString("name");
+                if(applicationName.equals(appName)){
+                    applicationId = arr.getJSONObject(i).getString("id");
+                }
+            } 
+        } catch (JSONException e) {
+          throw new  Exception("getting application Id failed ");
+        }
+        return applicationId;
+        
     }
 }

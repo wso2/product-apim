@@ -75,9 +75,10 @@ public class APIStoreRestClient {
     public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
             throws Exception {
         checkAuthentication();
+        HttpResponse response1=HttpRequestUtil.getAllApplications();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
         "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
-        "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000"),
+        "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000&selectedAppID=1"),
                 "", requestHeaders);  
         
         if (response.getResponseCode() == 200) {
