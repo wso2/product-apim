@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.base.AMIntegrationConstants;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
+import org.wso2.carbon.automation.engine.configurations.UrlGenerationUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
@@ -71,6 +72,7 @@ public class AMIntegrationUiTestBase {
         apimContext = new AutomationContext("APIM", userMode);
         contextUrls = apimContext.getContextUrls();
         sessionCookie = login(apimContext);
+        userInfo = apimContext.getContextTenant().getContextUser();
     }
 
     protected void init(String domainKey, String userKey) throws Exception {
@@ -92,7 +94,7 @@ public class AMIntegrationUiTestBase {
 
 
     protected String getLoginURL() throws XPathExpressionException {
-     return apimContext.getContextUrls().getBackEndUrl();
+     return UrlGenerationUtil.getLoginURL(apimContext.getInstance());
     }
     
     protected String getPublisherURL() throws Exception{

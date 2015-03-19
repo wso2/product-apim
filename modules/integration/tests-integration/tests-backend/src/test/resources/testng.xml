@@ -1,26 +1,63 @@
+<!--
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
+
+
+    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+        <packages>
+            <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
+        </packages>
+    </test>
+
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+
         <classes>
 
-            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIManager3152RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/-->
+             <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APILifecycleTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
 
+            <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
+          <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
+          <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
+                <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
+          <class name="org.wso2.am.integration.tests.sample.DefaultVersionWithScopesTesCase"/>
+          <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
 
-            <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/>-->
-            <!--<class name="org.wso2.am.in/m.integration.tests.sample.APIApplicationLifeCycleTestCase"/>&ndash;&gt;-->
-            <!--<class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>-->
         </classes>
-   <!--     <packages>
+        <!--     <packages>
             <package name="org.wso2.am.integration.tests.*"/>
         </packages>-->
     </test>

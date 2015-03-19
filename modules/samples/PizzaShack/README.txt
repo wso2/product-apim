@@ -53,7 +53,7 @@ INSTRUCTIONS
         Scope Name : Order Pizza
         Roles      : webuser
 
-        Scroll down to the secion which displays the API Resources and assign the 'Order Pizza' scope to the '/order' and '/order/{orderid}' Resources. Do not do any changes to the other resources.
+        Scroll down to the section which displays the API Resources and assign the 'Order Pizza' scope to the '/order' and '/order/{orderid}' Resources. Do not do any changes to the other resources.
 
         After the above information is entered, press the 'Save & Publish' button.
 

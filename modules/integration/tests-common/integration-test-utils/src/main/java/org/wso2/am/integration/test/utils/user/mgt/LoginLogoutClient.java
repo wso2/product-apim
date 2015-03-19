@@ -20,7 +20,7 @@ package org.wso2.am.integration.test.utils.user.mgt;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.admin.clients.common.AuthenticatorClient;
+import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -39,19 +39,16 @@ import java.rmi.RemoteException;
  */
 public class LoginLogoutClient {
     private static final Log log = LogFactory.getLog(LoginLogoutClient.class);
-    private String sessionCookie;
-    private int port;
-    private String hostName;
     private String backendURL;
     private AutomationContext automationContext;
     private AuthenticatorClient loginClient;
 
     public LoginLogoutClient(AutomationContext context) throws MalformedURLException,
-                                                               XPathExpressionException, AxisFault {
+            XPathExpressionException, AxisFault {
         URL backend = new URL(context.getContextUrls().getBackEndUrl());
         backendURL = context.getContextUrls().getBackEndUrl();
-        this.port = backend.getPort();
-        this.hostName = backend.getHost();
+        backend.getPort();
+        backend.getHost();
         this.automationContext = context;
         this.loginClient = new AuthenticatorClient(backendURL);
     }
@@ -63,7 +60,7 @@ public class LoginLogoutClient {
      */
     public String login()
             throws LoginAuthenticationExceptionException, IOException, XMLStreamException,
-                   URISyntaxException, SAXException, XPathExpressionException {
+            URISyntaxException, SAXException, XPathExpressionException {
         String userName;
         userName = automationContext.getContextTenant().getContextUser().getUserName();
         return loginClient.login(userName, automationContext.getContextTenant().getContextUser().getPassword()

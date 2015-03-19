@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -18,11 +18,12 @@
 
 package org.wso2.carbon.am.jmeter;
 
-import org.testng.annotations.BeforeClass;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
 
@@ -30,20 +31,18 @@ import java.io.File;
  * This jmeter based test case added to automate test for issue
  * https://wso2.org/jira/browse/APIMANAGER-850
  */
-public class JmeterDomainRestrictionTestCase extends APIManagerIntegrationTest {
+public class JmeterDomainRestrictionTestCase {
 
-	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
-		super.init();
-	}
+    protected Log log = LogFactory.getLog(JmeterDomainRestrictionTestCase.class);
 
-	@Test(groups = "wso2.am", description = "Login to api manager as user2")
-	public void testListServices() throws Exception {
-		JMeterTest script =
-				new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
-				                        + File.separator + "DomainRestrictionTest.jmx"));
+    @Test(groups = "wso2.am", description = "Login to api manager as user2")
+    public void testListServices() throws Exception {
+        JMeterTest script =
+                new JMeterTest(new File(TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
+                        + File.separator + "AM" + File.separator + "scripts"
+                        + File.separator + "DomainRestrictionTest.jmx"));
 
-		JMeterTestManager manager = new JMeterTestManager();
-		manager.runTest(script);
-	}
+        JMeterTestManager manager = new JMeterTestManager();
+        manager.runTest(script);
+    }
 }
