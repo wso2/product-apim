@@ -14,6 +14,7 @@
         <classes>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3026DescriptionFieldTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER2604ApplicationPaginationTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3366MultipleGatewayPublishTestCase"/>
             <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>-->
             <!--<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>-->
             <!--<class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>-->
