@@ -316,9 +316,9 @@
                 <version>4.0.0</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
+                <groupId>org.wso2.carbon.commons</groupId>
                 <artifactId>org.wso2.carbon.statistics.ui</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
@@ -770,6 +770,7 @@
         <carbon.registry.package.import.version.range>[4.3.0, 4.4.0)
         </carbon.registry.package.import.version.range>
 
+
 	<!-- Carbon Governance -->
         <carbon.governance.version>4.3.1-SNAPSHOT</carbon.governance.version>
         <carbon.governance.ext.version>4.3.1-SNAPSHOT</carbon.governance.ext.version>        
@@ -777,14 +778,35 @@
         <carbon.kernel.version>4.2.0</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <apim.version>1.2.5-SNAPSHOT</apim.version>
+
+	 <carbon.registry.version>4.3.2-SNAPSHOT</carbon.registry.version>
+
+
+        <carbon.kernel.version>4.4.0-SNAPSHOT</carbon.kernel.version>
+	<carbon.commons.version>4.3.6</carbon.commons.version>
+
+	<!-- carbon mediation -->
+        <carbon.mediation.version>4.3.2</carbon.mediation.version>
+
+	<!-- carbon identity -->
+	<carbon.identity.version>4.3.3</carbon.identity.version>
+
+	<!-- carbon deployment -->
+	<carbon.deployment.version>4.3.1</carbon.deployment.version>
+
+	<!-- carbon analytics -->
+	<carbon.analytics.version>1.0.1</carbon.analytics.version>
+
+        <apimserver.version>1.9.0-SNAPSHOT</apimserver.version>
+        <apim.version>1.2.4-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <carbon.platform.version>4.2.0</carbon.platform.version>
-        <synapse.version>2.1.2-wso2v9-SNAPSHOT</synapse.version>
+        <carbon.platform.version>4.4.0-SNAPSHOT</carbon.platform.version>
+        <synapse.version>2.1.2-wso2v7-SNAPSHOT</synapse.version>
         <axis2.transport.version>1.1.0-wso2v6</axis2.transport.version>
         <esb.version>4.0.0</esb.version>
         <passthru.transport.version>1.0.0</passthru.transport.version>
