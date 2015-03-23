@@ -48,7 +48,7 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends AMIntegrationUi
 
     @Test(groups = "wso2.am", description = "verify pagination in application creation page")
     public void appCreationPaginationTest() throws Exception {
-        driver.get(getStoreURL());
+        driver.get(getStoreURL() + "/?tenant=carbon.super");
 
         log.info("Started to Login to Store");
         driver.findElement(By.id("login-link")).click();
