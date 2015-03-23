@@ -23,9 +23,43 @@
 
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
-        <packages>
-            <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
-        </packages>
+        <!--<packages>-->
+            <!--<package name="org.wso2.am.integration.tests.api.lifecycle.*"/>-->
+        <!--</packages>-->
+
+
+
+
+    <classes>
+
+        <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
+
+        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+        <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+
+
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>-->
+        <!--Disable the test case because of APIMANAGER-3229-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>-->
+        <!--Disable the test case because of APIMANAGER-3374-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>-->
+        <!--Disable the test case because of APIMANAGER-3378-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>-->
+        <!--Disable the test case because of APIMANAGER-3377-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>-->
+
+    </classes>
     </test>
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">

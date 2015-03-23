@@ -46,7 +46,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
         applicationName =
                 (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
         apiStoreClientUser1.addApplication(applicationName, "", "", "");
@@ -57,7 +57,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
 
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1, apiStoreClientUser1, applicationName);
+        createPublishAndSubscribeToAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1, apiStoreClientUser1, applicationName);
 
 
         //get access token
@@ -70,7 +70,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before block");
@@ -85,8 +85,8 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     public void testChangeAPILifecycleToBlock() throws Exception {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
-                new APILifeCycleStateRequest(API1_NAME, API1_PROVIDER_NAME, APILifeCycleState.BLOCKED);
-        blockUpdateRequest.setVersion(API_VERSION1);
+                new APILifeCycleStateRequest(API1_NAME, USER_NAME1, APILifeCycleState.BLOCKED);
+        blockUpdateRequest.setVersion(API_VERSION_1_0_0);
         //Change API lifecycle  to Block
         HttpResponse blockAPIActionResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
@@ -103,7 +103,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched when invoke api after block");

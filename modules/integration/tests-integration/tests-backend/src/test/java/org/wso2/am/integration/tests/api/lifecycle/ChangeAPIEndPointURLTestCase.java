@@ -44,17 +44,17 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
         applicationName =
                 (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
         apiStoreClientUser1.addApplication(applicationName, "", "", "");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.", enabled = false)
+    @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
     public void testAPIInvocationBeforeChangeTheEndPointURL() throws Exception {
         //Disable the test case because of APIMANAGER-3378
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1,
+        createPublishAndSubscribeToAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1,
                 apiStoreClientUser1, applicationName);
 
         //get access token
@@ -66,7 +66,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -78,7 +78,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
-            dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL", enabled = false)
+            dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL() throws Exception {
 
 
@@ -87,7 +87,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         APIRequest apiRequestBean = new APIRequest(API1_NAME, API1_CONTEXT, new URL(API2_END_POINT_URL));
         apiRequestBean.setTags(API1_TAGS);
         apiRequestBean.setDescription(API1_DESCRIPTION);
-        apiRequestBean.setVersion(API_VERSION1);
+        apiRequestBean.setVersion(API_VERSION_1_0_0);
         apiRequestBean.setVisibility("public");
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiRequestBean);
@@ -102,11 +102,11 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
-            "  after end point URL  change", dependsOnMethods = "testEditEndPointURL", enabled = false)
+            "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");

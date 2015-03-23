@@ -22,12 +22,14 @@ import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.validation.VerificationUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -685,14 +687,16 @@ public class APIStoreRestClient {
 	 *
 	 * @param apiTag - API tag the need ti filter the api.
 	 * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
-	 * @throws Exception - Exception throws when  check the Authentication
+	 * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when check the
+	 * Authentication and HttpRequestUtil.sendGetRequest() method call
 	 */
-	public HttpResponse getAPIPageFilteredWithTags(String apiTag)
-			throws Exception {
-		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.sendGetRequest(backEndUrl + "/store/apis/list"
-				, "tag=" + apiTag + "&tenant=carbon.super");
-		return response;
+	public HttpResponse getAPIPageFilteredWithTags(String apiTag) throws APIManagerIntegrationTestException {
+		try {
+			checkAuthentication();
+			return HttpRequestUtil.sendGetRequest(backEndUrl + "/store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
+		} catch (Exception ex) {
+			throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
+		}
 
 	}
 
@@ -701,20 +705,40 @@ public class APIStoreRestClient {
 	 *
 	 * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
 	 * @return HttpResponse - Response f the subscription server REST call
-	 * @throws Exception- Exception throws when  check the Authentication
+	 * @throws APIManagerIntegrationTestException- Exception throws when check the Authentication and
+	 *                                             HttpRequestUtil.doPost() method call.
 	 */
-	public HttpResponse subscribeAPI(SubscriptionRequest subscriptionRequest)
-			throws Exception {
+	public HttpResponse subscribeToAPI(SubscriptionRequest subscriptionRequest) throws APIManagerIntegrationTestException {
 		//This method  do the same functionality as subscribe(), except this method  always returns the response object
 		//regardless of the response code. But subscribe() returns the response object only if  the response code is
 		// 200 or else it will return an Exception.
-		checkAuthentication();
-		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-				"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-				, subscriptionRequest.generateRequestParameters()
-				, requestHeaders);
+		try {
+			checkAuthentication();
+			return HttpRequestUtil.doPost(new URL(backEndUrl +
+					"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+					, subscriptionRequest.generateRequestParameters()
+					, requestHeaders);
 
-		return response;
+		} catch (Exception ex) {
+			throw new APIManagerIntegrationTestException("Exception when Subscribing to a API", ex);
+		}
+	}
+
+
+	/**
+	 * Retrieve the API store page as anonymous user.
+	 *
+	 * @param storeTenantDomain - Tenant domain of store that need to  get the page.
+	 * @return HttpResponse - Response with API store page of the provided domain.
+	 * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
+	 */
+
+	public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
+		try {
+			return HttpRequestUtil.doGet(backEndUrl + "/store/?tenant=" + storeTenantDomain, requestHeaders);
+		} catch (IOException ioE) {
+			throw new APIManagerIntegrationTestException("Exception when retrieve the API store page as anonymous user", ioE);
+		}
 
 	}
 }

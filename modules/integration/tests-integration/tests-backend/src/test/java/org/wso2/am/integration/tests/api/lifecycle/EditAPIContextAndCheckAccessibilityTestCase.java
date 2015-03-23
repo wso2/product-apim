@@ -46,18 +46,18 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
         applicationName =
                 (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
         apiStoreClientUser1.addApplication(applicationName, "", "", "");
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test invoke the API before the context change", enabled=false)
+    @Test(groups = {"wso2.am"}, description = "Test invoke the API before the context change")
     public void testInvokeAPIBeforeChangeAPIContext() throws Exception {
         //Disable the test case because of APIMANAGER-3377
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1,
+        createPublishAndSubscribeToAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1,
                 apiStoreClientUser1, applicationName);
 
         //get access token
@@ -69,7 +69,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the context");
@@ -81,7 +81,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API context",
-            dependsOnMethods = "testInvokeAPIBeforeChangeAPIContext", enabled=false)
+            dependsOnMethods = "testInvokeAPIBeforeChangeAPIContext")
     public void testEditAPIContext() throws Exception {
 
 
@@ -90,7 +90,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         APIRequest apiRequestBean = new APIRequest(API1_NAME, newContext, new URL(API1_END_POINT_URL));
         apiRequestBean.setTags(API1_TAGS);
         apiRequestBean.setDescription(API1_DESCRIPTION);
-        apiRequestBean.setVersion(API_VERSION1);
+        apiRequestBean.setVersion(API_VERSION_1_0_0);
         apiRequestBean.setVisibility("public");
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiRequestBean);
@@ -105,12 +105,12 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using old context after Context change" +
-            " after the API context change", dependsOnMethods = "testEditAPIContext", enabled=false)
+            " after the API context change", dependsOnMethods = "testEditAPIContext")
     public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
 
         //Invoke  old context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api before changing the context");
@@ -122,11 +122,11 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
-            dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext", enabled=false)
+            dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext")
     public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws Exception {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + newContext + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + newContext + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api after changing the context");

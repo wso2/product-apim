@@ -63,6 +63,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         serverManager.restartGracefully();
 
+
     }
 
     @AfterTest(alwaysRun = true)

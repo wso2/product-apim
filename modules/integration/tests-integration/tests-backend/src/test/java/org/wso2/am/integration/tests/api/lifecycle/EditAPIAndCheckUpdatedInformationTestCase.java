@@ -45,7 +45,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
 
     }
 
@@ -53,8 +53,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     @Test(groups = {"wso2.am"}, description = "Edit the API Information")
     public void testEditAPIInformation() throws Exception {
         //Create and publish API version 1.0.0
-        createAndPublishAPIWithoutRequireReSubscription(
-                apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1);
+        createAndPublishAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1, false);
 
         //Edit the api
         apiNewDescription = API1_DESCRIPTION + " New Description";
@@ -66,7 +65,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
         apiRequestBean.setTags(apiNewTags);
         apiRequestBean.setDescription(apiNewDescription);
-        apiRequestBean.setVersion(API_VERSION1);
+        apiRequestBean.setVersion(API_VERSION_1_0_0);
         apiRequestBean.setVisibility("public");
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiRequestBean);
@@ -85,7 +84,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
         APIBean apiBeanAfterUpdate =
                 APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
-                        API1_NAME, API1_PROVIDER_NAME, API_VERSION1));
+                        API1_NAME, USER_NAME1, API_VERSION_1_0_0));
         assertEquals(apiBeanAfterUpdate.getDescription(), apiNewDescription, "Updated Description is not available");
         assertTrue(apiBeanAfterUpdate.getTags().contains(newTag), "Newly added Tag is not available");
 

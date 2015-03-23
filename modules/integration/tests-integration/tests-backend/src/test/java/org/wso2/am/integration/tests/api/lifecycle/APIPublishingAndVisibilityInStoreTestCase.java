@@ -43,14 +43,14 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Create a API and  check its availability in Publisher.")
     public void testAPICreation() throws Exception {
         //Create APi
-        HttpResponse createAPIResponse = createAPI(API1_NAME, API1_CONTEXT, API_VERSION1, apiPublisherClientUser1);
+        HttpResponse createAPIResponse = createAPI(API1_NAME, API1_CONTEXT, API_VERSION_1_0_0, apiPublisherClientUser1);
         assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Create API Response Code is invalid." + getAPIIdentifierString(apiIdentifierAPI1Version1));
         assertEquals(getValueFromJSON(createAPIResponse, "error"), "false",
@@ -60,7 +60,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
         //Verify the API in API Publisher
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
-                        apiPublisherClientUser1.getApi(API1_NAME, API1_PROVIDER_NAME, API_VERSION1));
+                        apiPublisherClientUser1.getApi(API1_NAME, USER_NAME1, API_VERSION_1_0_0));
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiPublisherAPIIdentifierList), true,
                 "Added Api is not available in APi Publisher. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
     }
@@ -83,8 +83,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testAPIPublishing() throws Exception {
         //Publish the API
         APILifeCycleStateRequest publishUpdateRequest =
-                new APILifeCycleStateRequest(API1_NAME, API1_PROVIDER_NAME, APILifeCycleState.PUBLISHED);
-        publishUpdateRequest.setVersion(API_VERSION1);
+                new APILifeCycleStateRequest(API1_NAME, USER_NAME1, APILifeCycleState.PUBLISHED);
+        publishUpdateRequest.setVersion(API_VERSION_1_0_0);
         HttpResponse publishAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version1, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,

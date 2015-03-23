@@ -50,8 +50,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
-        apiIdentifierAPI1Version2 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION2);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
+        apiIdentifierAPI1Version2 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_2_0_0);
         applicationName =
                 (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
         apiStoreClientUser1.addApplication(applicationName, "", "", "");
@@ -62,13 +62,12 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     public void testSubscribeOldVersionBeforeDeprecate() throws Exception {
 
         //Create and publish API version 1.0.0
-        createAndPublishAPIWithoutRequireReSubscription(
-                apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1);
+        createAndPublishAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1, false);
         // Copy to version 2.0.0 and Publish Copied API
-        copyAndPublishCopiedAPI(apiIdentifierAPI1Version1, API_VERSION2, apiPublisherClientUser1, false);
+        copyAndPublishCopiedAPI(apiIdentifierAPI1Version1, API_VERSION_2_0_0, apiPublisherClientUser1, false);
 
         HttpResponse oldVersionSubscribeResponse =
-                subscribeAPI(apiIdentifierAPI1Version1, applicationName, apiStoreClientUser1);
+                subscribeToAPI(apiIdentifierAPI1Version1, applicationName, apiStoreClientUser1);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
                         getAPIIdentifierString(apiIdentifierAPI1Version1));
@@ -83,7 +82,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     public void testSubscribeNewVersion() throws Exception {
 
         HttpResponse newVersionSubscribeResponse =
-                subscribeAPI(apiIdentifierAPI1Version2, applicationName, apiStoreClientUser1);
+                subscribeToAPI(apiIdentifierAPI1Version2, applicationName, apiStoreClientUser1);
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version request not successful " +
                         getAPIIdentifierString(apiIdentifierAPI1Version2));
@@ -97,8 +96,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     public void testDeprecateOldVersion() throws Exception {
 
         APILifeCycleStateRequest deprecatedUpdateRequest =
-                new APILifeCycleStateRequest(API1_NAME, API1_PROVIDER_NAME, APILifeCycleState.DEPRECATED);
-        deprecatedUpdateRequest.setVersion(API_VERSION1);
+                new APILifeCycleStateRequest(API1_NAME, USER_NAME1, APILifeCycleState.DEPRECATED);
+        deprecatedUpdateRequest.setVersion(API_VERSION_1_0_0);
         HttpResponse deprecateAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatus(deprecatedUpdateRequest);
 
@@ -143,7 +142,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     public void testSubscribeOldVersionAfterDeprecate() throws Exception {
         //subscribe deprecated old version
 
-        HttpResponse oldVersionSubscribeResponse = subscribeAPI
+        HttpResponse oldVersionSubscribeResponse = subscribeToAPI
                 (apiIdentifierAPI1Version1, applicationName, apiStoreClientUser2);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Subscribe of old API version  after deprecate response code is invalid." +
@@ -169,7 +168,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 +
+                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API1_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(),
                 HTTP_RESPONSE_CODE_OK, "Response code mismatched");
@@ -177,7 +176,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
 
         //Invoke new version
         HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT +
-                "/" + API_VERSION2 + API1_END_POINT_METHOD, requestHeaders);
+                "/" + API_VERSION_2_0_0 + API1_END_POINT_METHOD, requestHeaders);
 
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched");

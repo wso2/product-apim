@@ -46,7 +46,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
+        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
 
         apiTagsMapBeforeChange = new HashMap<String, String>();
         apiTagsMapBeforeChange.put("APITagTest1", "Tag1, Tag2, Tag3");
@@ -71,7 +71,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             String apiName = apiTagEntry.getKey();
             String apiTags = apiTagEntry.getValue();
             String apiContext = apiName.toLowerCase();
-            APIIdentifier apiIdentifier = new APIIdentifier(API1_PROVIDER_NAME, apiName, API_VERSION1);
+            APIIdentifier apiIdentifier = new APIIdentifier(USER_NAME1, apiName, API_VERSION_1_0_0);
 
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiContext, apiTags, apiPublisherClientUser1);
 
@@ -84,8 +84,8 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
 
-            String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION1 +
-                    "&provider=" + API1_PROVIDER_NAME + "&tenant=carbon.super&tag=" + TEST_TAG + "";
+            String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 +
+                    "&provider=" + USER_NAME1 + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
                 //API Link should be in page
                 assertTrue(apiPageFilteredWithTagsResponseString.contains(apiLinkToTestInPage),
@@ -115,7 +115,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
             apiRequestBean.setTags(apiTags);
             apiRequestBean.setDescription(API1_DESCRIPTION);
-            apiRequestBean.setVersion(API_VERSION1);
+            apiRequestBean.setVersion(API_VERSION_1_0_0);
             apiRequestBean.setVisibility("public");
 
             //Update API with Edited Tags
@@ -136,8 +136,8 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
 
-            String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION1 +
-                    "&provider=" + API1_PROVIDER_NAME + "&tenant=carbon.super&tag=" + TEST_TAG + "";
+            String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" + API_VERSION_1_0_0 +
+                    "&provider=" + USER_NAME1 + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
                 //API Link should be in page
                 assertTrue(apiPageFilteredWithTagsResponseString.contains(apiLinkToTestInPage),
@@ -157,7 +157,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     public void cleanup() throws Exception {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
-            APIIdentifier apiIdentifier = new APIIdentifier(API1_PROVIDER_NAME, apiName, API_VERSION1);
+            APIIdentifier apiIdentifier = new APIIdentifier(USER_NAME1, apiName, API_VERSION_1_0_0);
             deleteAPI(apiIdentifier, apiPublisherClientUser1);
         }
     }
