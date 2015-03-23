@@ -12,6 +12,10 @@
 
     <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
         <classes>
+            <!--to run this test class, it is needed to setup API Manager with IS using SAML SSO-->
+            <!--class name="org.wso2.am.integration.ui.tests.APIMANAGER3272ExternalLogoutPageTestCase"/-->
+            <!--to run this test class, it is needed to create a jdbc mount of API Manager registry db-->
+            <!--class name="org.wso2.am.integration.ui.tests.APIMANAGER3250CrossTenantSubscriptionTestCase"/-->
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3026DescriptionFieldTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER2604ApplicationPaginationTestCase"/>
             <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>-->
