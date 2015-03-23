@@ -175,10 +175,7 @@
                 <include>**/**.sql</include>
             </includes>
         </fileSet>
-	<fileSet>
-            <directory>../../p2-profile-gen/target/WSO2-CARBON-PATCH-${carbon.version}-0001/dbscripts</directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
+
        <fileSet>
             <directory>
                 ../resources/migration-1.0.0_to_1.2.0/
@@ -397,6 +394,7 @@
              </includes>
         </fileSet-->
 
+
         <!--Below directory should contain the landing page of APIM,when it is added to SLive.For the moment this directory keeps as empty and this is for APIMANAGER-1340 -->
         <fileSet>
         <directory>src/main/resources/STRATOS_ROOT</directory>
@@ -430,140 +428,8 @@
             </includes>
         </fileSet>
 
-	<!-- Kernel patches -->
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0001</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0001/*.*</include>
-             </includes>
-        </fileSet>
 
 
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0002</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0002/*.*</include>
-             </includes>
-        </fileSet>
-
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0003</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0003/*.*</include>
-             </includes>
-        </fileSet>
-
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0004</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0004/*.*</include>
-             </includes>
-        </fileSet>
-
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0005</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0005/*.*</include>
-             </includes>
-        </fileSet>
-
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0006</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0006/*.*</include>
-             </includes>
-    	</fileSet>
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0007</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0007/*.*</include>
-             </includes>
-    	</fileSet>
-	<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0008</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0008/*.*</include>
-             </includes>
-    	</fileSet>
-		<fileSet>
-             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0009</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch0009/*.*</include>
-             </includes>
-            <excludes>
-                <exclude>**/patch0009/woden_${woden.version}.jar</exclude>
-
-            </excludes>
-    	</fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0001/dbscripts</directory>
-              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0002/dbscripts</directory>
-              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-              </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0002/lib</directory>
-              <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0003/dbscripts</directory>
-             <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0003/lib</directory>
-              <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0004/dbscripts</directory>
-              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0004/bin</directory>
-              <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0005/dbscripts</directory>
-              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0005/lib</directory>
-              <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
-    </fileSet>
-    <fileSet>
-              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0006/dbscripts</directory>
-              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-            <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0005/repository/resources/security</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/security/</outputDirectory>
-            <includes>
-            <include>**/client-truststore.jks</include>
-            </includes>
-    </fileSet>
-    <fileSet>
-            <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0006/lib</directory>
-            <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
-            <excludes>
-               <exclude>**/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
-               <exclude>**/org.wso2.carbon.server-4.2.0.jar</exclude>
-           </excludes>
-    </fileSet>
-    <fileSet>
-        <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0009/lib</directory>
-        <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
-    </fileSet>
         <!--End of  API Manager related -->
 
     </fileSets>
@@ -819,23 +685,6 @@
         </file>
 
 
-    <file>
-           <source>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0008/repository/conf/security/cipher-tool.properties</source>
-           <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
-           <filtered>true</filtered>
-           <fileMode>755</fileMode>
-    </file>
-    <file>
-        <source>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0002/repository/conf/security/cipher-text.properties</source>
-        <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
-        <filtered>true</filtered>
-        <fileMode>755</fileMode>
-    </file>
-    <file>
-        <source>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0008/repository/conf/security/authenticators.xml</source>
-        <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
-        <filtered>true</filtered>
-        <fileMode>755</fileMode>
-    </file>
+
 </files>
 </assembly>
