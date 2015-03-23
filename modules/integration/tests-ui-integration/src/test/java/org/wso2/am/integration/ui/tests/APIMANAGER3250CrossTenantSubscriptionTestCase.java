@@ -103,9 +103,9 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("txtUserName")));
 
         driver.findElement(By.id("txtUserName")).clear();
-        driver.findElement(By.id("txtUserName")).sendKeys("admin");
+        driver.findElement(By.id("txtUserName")).sendKeys(userInfo.getUserName());
         driver.findElement(By.id("txtPassword")).clear();
-        driver.findElement(By.id("txtPassword")).sendKeys("admin");
+        driver.findElement(By.id("txtPassword")).sendKeys(userInfo.getPassword());
         driver.findElement(By.cssSelector("input.button")).click();
         // create two tenant
         generateTenant("1");
@@ -171,7 +171,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         driver.get(getStoreURL() + "?tenant=test1.com");
 
         //wait for few seconds and refresh the store since it will take little time to appear the published APIs in store
-        Thread.sleep(20000);
+        Thread.sleep(30000);
         driver.navigate().refresh();
 
 
