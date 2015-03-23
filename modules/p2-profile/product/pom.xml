@@ -94,14 +94,14 @@
 
 								<featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.security.mgt.server.feature:${carbon.identity.version}</featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.service.mgt.server.feature:4.2.1</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.service.mgt.server.feature:${carbon.deployment.version}</featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.transport.mgt.feature:${carbon.commons.version}</featureArtifactDef>
+                                <!--featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.transport.mgt.feature:${carbon.commons.version}</featureArtifactDef-->
 
 
                                 <!--featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.transport.mail.feature:${carbon.commons.version}</featureArtifactDef-->
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transport.nhttp.feature:4.2.3</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transport.jms.feature:4.2.1</featureArtifactDef>
+                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transport.nhttp.feature:4.2.3</featureArtifactDef-->
+                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transport.jms.feature:4.2.1</featureArtifactDef-->
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.message.flows.feature:${carbon.commons.version}</featureArtifactDef>
 
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.xfer.feature:${carbon.platform.version}</featureArtifactDef-->
@@ -175,7 +175,9 @@
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.application.mgt.server.feature:${carbon.commons.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.application.mgt.synapse.server.feature:${carbon.mediation.version}</featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.application.deployer.synapse.feature:4.2.1</featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.mediation:org.wso2.carbon.application.deployer.synapse.feature:${carbon.mediation.version}
+                                </featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transports.passthru.feature:${passthru.transport.patch.version}</featureArtifactDef-->
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediation.templates.server.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.deployment.synchronizer.feature:${carbon.platform.version}</featureArtifactDef>
@@ -183,7 +185,7 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.community.features.server.feature:4.2.2</featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ec2.client.feature:${carbon.platform.version}</featureArtifactDef-->
 
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.throttle.feature:4.2.1</featureArtifactDef>
+                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.throttle.feature:4.2.1</featureArtifactDef-->
 
 
                                 <!-- reporting features -->
@@ -404,10 +406,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -468,7 +470,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
@@ -488,24 +490,24 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
-                                </feature>
-                                <feature>
+                                </feature-->
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -822,10 +824,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -884,7 +886,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
@@ -896,25 +898,25 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <!--temp-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1169,10 +1171,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1231,7 +1233,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.security.mgt.feature.group</id>
@@ -1243,24 +1245,24 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1539,10 +1541,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1601,7 +1603,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
@@ -1621,24 +1623,24 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1952,10 +1954,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2015,7 +2017,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
@@ -2035,24 +2037,24 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -2349,10 +2351,10 @@
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2413,7 +2415,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.application.deployer.synapse.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
@@ -2433,25 +2435,25 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.service.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
-                                </feature>
+                                </feature-->
                                 <!--feature>
                                     <id>org.wso2.carbon.transport.mail.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature-->
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.message.flows.feature.group</id>
                                     <version>${carbon.commons.version}</version>
