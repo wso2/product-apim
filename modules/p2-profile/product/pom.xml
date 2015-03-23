@@ -215,8 +215,8 @@
 								<featureArtifactDef>org.wso2.carbon.governance:org.wso2.carbon.governance.lifecycle.management.feature:${carbon.governance.version}</featureArtifactDef>
 
 								<!-- Cloud API Manager related features -->
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.common.feature:2.3.0</featureArtifactDef>                            
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.deployment.feature:2.2.1</featureArtifactDef>
+                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.common.feature:2.3.0</featureArtifactDef>                            
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.stratos.deployment.feature:2.2.1</featureArtifactDef-->
 								<featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.authenticator.saml2.sso.server.feature:${carbon.identity.version}</featureArtifactDef>
 								<featureArtifactDef> org.wso2.carbon.identity:org.wso2.carbon.identity.authenticator.saml2.sso.ui.feature:${carbon.identity.version}</featureArtifactDef>
 
@@ -725,14 +725,14 @@
 								</feature>
                                 <!--Start Stratos API Manager features-->
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1080,14 +1080,14 @@
                                     <version>4.2.1</version>
                                 </feature>
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
@@ -1422,14 +1422,14 @@
                                     <version>4.2.1</version>
                                 </feature>
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
@@ -1847,14 +1847,14 @@
 									<version>${carbon.identity.version}</version>
 								</feature>
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2251,14 +2251,14 @@
 									<version>${carbon.identity.version}</version>
 								</feature>
 
-                                <feature>
+                                <!--feature>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
 								<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2617,14 +2617,14 @@
                                     <version>4.2.1</version>
                                 </feature>
 
-                                <feature>
+                                <!--ture>
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
-                                </feature>
+                                </feature-->
 				<feature>
                                     <id>org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
