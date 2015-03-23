@@ -775,14 +775,12 @@
         <carbon.governance.version>4.3.1-SNAPSHOT</carbon.governance.version>
         <carbon.governance.ext.version>4.3.1-SNAPSHOT</carbon.governance.ext.version>        
 
-        <carbon.kernel.version>4.2.0</carbon.kernel.version>
+        <carbon.kernel.version>4.3.0</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <apim.version>1.2.5-SNAPSHOT</apim.version>
 
 	 <carbon.registry.version>4.3.2-SNAPSHOT</carbon.registry.version>
 
-
-        <carbon.kernel.version>4.4.0-SNAPSHOT</carbon.kernel.version>
 	<carbon.commons.version>4.3.6</carbon.commons.version>
 
 	<!-- carbon mediation -->
@@ -805,7 +803,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <carbon.platform.version>4.4.0-SNAPSHOT</carbon.platform.version>
+        <carbon.platform.version>4.3.0</carbon.platform.version>
         <synapse.version>2.1.2-wso2v7-SNAPSHOT</synapse.version>
         <axis2.transport.version>1.1.0-wso2v6</axis2.transport.version>
         <esb.version>4.0.0</esb.version>
