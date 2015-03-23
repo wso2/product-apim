@@ -16,17 +16,13 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.store.utils;
+package org.wso2.carbon.am.tests.util;
 
+import org.wso2.carbon.am.tests.util.bean.SubscriptionRequest;
+import org.wso2.carbon.am.tests.util.bean.GenerateAppKeyRequest;
+import org.wso2.carbon.automation.core.utils.HttpRequestUtil;
+import org.wso2.carbon.automation.core.utils.HttpResponse;
 import org.apache.commons.codec.binary.Base64;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.wso2.am.integration.test.utils.VerificationUtil;
-import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -79,13 +75,12 @@ public class APIStoreRestClient {
     public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
             throws Exception {
         checkAuthentication();
-        HttpResponse response1=getAllApplications();
-        String appId = getApplicationId(response1.getData(), generateAppKeyRequest.getApplication());
+        HttpResponse response1=HttpRequestUtil.getAllApplications();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
-                                                               "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
-                                                               "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000&selectedAppID=" +appId),
-                                                       "", requestHeaders);
-
+        "action=generateApplicationKey&application="+ generateAppKeyRequest.getApplication() +
+        "&keytype=" + generateAppKeyRequest.getKeyType() + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000&selectedAppID=1"),
+                "", requestHeaders);  
+        
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
             return response;
@@ -200,7 +195,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                                                      "action=addRating&name=" + apiName + "&version=" + version + "&provider=" + provider + "&rating=" + rating
+                "action=addRating&name=" + apiName + "&version=" + version + "&provider=" + provider + "&rating=" + rating
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -213,7 +208,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                                                      "action=removeRating&name=" + apiName + "&version=" + version + "&provider=" + provider
+                "action=removeRating&name=" + apiName + "&version=" + version + "&provider=" + provider
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -227,7 +222,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                                                      "action=isRatingActivated"
+                "action=isRatingActivated"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -244,12 +239,12 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?" +
-                                                      "action=getAllDocumentationOfAPI&name=" + apiName + "&version=" + version + "&provider=" + provider
+                "action=getAllDocumentationOfApi&name=" + apiName + "&version=" + version + "&provider=" + provider
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
         } else {
-            throw new Exception("getAllDocumentationOfAPI() failed: " + response.getData());
+            throw new Exception("getAllDocumentationOfApi() failed: " + response.getData());
         }
     }
     /*
@@ -261,7 +256,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl+"/store/site/blocks/api/listing/ajax/list.jag?" +
-                                                      "action=getAllPaginatedPublishedAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end
+                "action=getAllPaginatedPublishedAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             return response;
@@ -336,8 +331,8 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/application/application-update/ajax/application-update.jag?" +
-                                                               "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew="+applicationNew+"&callbackUrlNew="+callbackUrlNew+
-                                                               "&descriptionNew="+descriptionNew+"&tier="+tier)
+                "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew="+applicationNew+"&callbackUrlNew="+callbackUrlNew+
+                "&descriptionNew="+descriptionNew+"&tier="+tier)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -352,7 +347,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-                                                               "action=getAllSubscriptions")
+                "action=getAllSubscriptions")
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -389,11 +384,11 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +  "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                                                               "action=addComment&name="+name + "&version="+version+"&provider="+provider+"&comment="+comment)
-                , ""
-                , requestHeaders);
+                "action=addComment&name="+name + "&version="+version+"&provider="+provider+"&comment="+comment)
+                        , ""
+                        , requestHeaders);
         if (response.getResponseCode() == 200) {
-            VerificationUtil.checkErrors(response);
+        	VerificationUtil.checkErrors(response);
             return response;
         } else {
             throw new Exception("addComment() failed: " + response.getData());
@@ -405,7 +400,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doGet(backEndUrl + "/store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                                                      "action=isCommentActivated"
+                "action=isCommentActivated"
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
@@ -421,7 +416,7 @@ public class APIStoreRestClient {
         ///home/sanjeewa/carbon/turing/components/apimgt/api-store-web/1.2.0/src/site/blocks/api/recently-added/ajax/list.jag
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/api/recently-added/ajax/list.jag?action=getRecentlyAddedAPIs"+
-                                                               "&tenant="+tenant+"&limit="+limit)
+        "&tenant="+tenant+"&limit="+limit)
                 , ""
                 , requestHeaders);
         if (response.getResponseCode() == 200) {
@@ -431,43 +426,5 @@ public class APIStoreRestClient {
             throw new Exception("getRecentlyAddedAPIs() failed: " + response.getData());
         }
 
-    }
-
-    public HttpResponse removeAPISubscription(String API, String version, String provider, String applicationId)
-            throws Exception {
-        checkAuthentication();
-
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                                                               "/store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
-                                                               API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId)
-                , ""
-                , requestHeaders);
-        if (response.getResponseCode() == 200) {
-            org.wso2.am.integration.test.utils.validation.VerificationUtil.checkErrors(response);
-            return response;
-        } else {
-            throw new Exception("Get Api Information failed> " + response.getData());
-        }
-
-    }
-    
-    private String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
-        String applicationId=null;
-        JSONObject obj;
-        try {
-            obj = new JSONObject(jsonStringOfApplications);
-            JSONArray arr = obj.getJSONArray("applications");
-            for (int i = 0; i < arr.length(); i++)
-            {
-                String appName = arr.getJSONObject(i).getString("name");
-                if(applicationName.equals(appName)){
-                    applicationId = arr.getJSONObject(i).getString("id");
-                }
-            } 
-        } catch (JSONException e) {
-          throw new  Exception("getting application Id failed ");
-        }
-        return applicationId;
-        
     }
 }
