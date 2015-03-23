@@ -781,7 +781,7 @@
 
 	 <carbon.registry.version>4.3.2-SNAPSHOT</carbon.registry.version>
 
-	<carbon.commons.version>4.3.6</carbon.commons.version>
+	<carbon.commons.version>4.3.5</carbon.commons.version>
 
 	<!-- carbon mediation -->
         <carbon.mediation.version>4.3.2</carbon.mediation.version>
