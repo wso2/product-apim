@@ -28,6 +28,10 @@ public class GenerateAppKeyRequest extends AbstractRequest {
     private String callbackUrl = "some-url";
     private String authorizedDomains = "ALL";
     private int validityTime = 360000;
+    private String appId ="1";
+
+    
+  
 
     public GenerateAppKeyRequest(String application) {
         this.application = application;
@@ -45,6 +49,7 @@ public class GenerateAppKeyRequest extends AbstractRequest {
         addParameter("callbackUrl", callbackUrl);
         addParameter("authorizedDomains", authorizedDomains);
         addParameter("validityTime", String.valueOf(validityTime));
+        addParameter("selectedAppID", appId);
     }
 
     public String getApplication(){ return application; }
@@ -79,5 +84,14 @@ public class GenerateAppKeyRequest extends AbstractRequest {
 
     public void setValidityTime(int validityTime) {
         this.validityTime = validityTime;
+    }
+    
+    public String getAppId() {
+        return appId;
+    }
+
+    
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 }
