@@ -206,7 +206,7 @@
 
                                 <!-- Registry Features -->
 
-                                <featureArtifactDef>org.wso2.carbon.governance:org.wso2.carbon.registry.extensions.feature:${carbon.registry.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.registry:org.wso2.carbon.registry.extensions.feature:${carbon.registry.version}</featureArtifactDef>
 
 
 				<featureArtifactDef>org.wso2.carbon.registry:org.wso2.carbon.registry.handler.configuration.ui.feature:${carbon.registry.version}</featureArtifactDef>
