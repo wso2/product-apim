@@ -1,0 +1,433 @@
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Governance Registry Governance Artifacts - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+<h1>Governance Artifacts</h1>
+<p>
+    WSO2 Governance Registry stores governance metadata and information on governance related
+    entities.
+    Registry resources storing these information and/or metadata are known as Governance Artifacts.
+    Examples for Governance Artifacts include Services, WSDLs, Schemas, Processes and People.
+</p>
+<ul>
+    <li><a href="#configurableArtifacts">Configurable Governance Artifacts</a></li>
+    <li><a href="#configuringServices">Configuring Services</a></li>
+    <li><a href="#configLanguage">XML Language for Customizing Configurable Governance Artifacts</a></li>
+    <li><a href="#deployingRXT">Deploying a Configurable Governance Artifact</a></li>
+    <li><a href="#govArtifacts">Storing Governance Artifacts in GReg</a></li>
+    <li><a href="#defaultArtifacts">API and URI Artifacts</a></li>
+</ul>
+
+<a name="configurableArtifacts"></a>
+<h2>Configurable Governance Artifacts</h2>
+<p>
+    GReg allows users to customize information captured by Configurable Governance Artifacts.
+    Each Configurable Governance Artifact has a content template that can be customized by editing
+    the corresponding XML configuration. XML language described under
+    <a href="#configLanguage">XML Language for Customizing Configurable Governance Artifacts</a>
+    below should be used for this purpose.
+</p>
+
+<p>
+    Currently, WSO2 GReg supports the following Configurable Governance Artifact types.
+</p>
+
+<p>
+<ul>
+    <li>Services</li>
+    <li>People
+        <ul>
+            <li>Organizations</li>
+            <li>Departments</li>
+            <li>Project Groups</li>
+            <li>Persons</li>
+        </ul>
+    </li>
+    <li>Processes</li>
+</ul>
+</p>
+<p>
+    To customize each content template, user can simply edit the corresponding configuration XML by
+    clicking <b>Configure -> <i>artifact name</i></b> link in the right-hand side menu of WSO2 GReg.
+    For example, to customize Services, click on <b>Configure -> Services</b>.
+</p>
+
+<a name="configuringServices"></a>
+<h2>Configuring Services</h2>
+<p>
+    To customize Service content template. Click <b>Configure -> Services</b>. XML editor will
+    appear as shown in Figure 1. XML language described <a href="#configLanguage">here</a> should be
+    used for this configuration.
+</p>
+<p><img src="images/service_ui_config.png" width="742px"/></p>
+<p>Figure 1: Configuring Services</p>
+
+<a name="configLanguage"></a>
+<h2>XML Language for Customizing Configurable Governance Artifacts</h2>
+<p>
+    The following guide describes the XML language used in above content template configurations.
+</p>
+
+<h2><code>table</code> Element</h2>
+
+<p>
+    This element defines a group of input fields. All the input fields should be defined
+    inside a table element. In the generated UI, each table element will generate a corresponding
+    HTML table segment. Figure 2 below shows such generated HTML UI of the following table element.
+</p>
+<p>
+    Definition for UI shown in Figure 2:
+</p>
+<p>
+    <code>
+        &lt;table name=&#34;Overview&#34;&gt;<br/>
+        &#160;&#160;&lt;field type=&#34;text&#34; required=&#34;true&#34;&gt;
+        &lt;name&gt;Name&lt;/name&gt;
+        &lt;/field&gt;<br/>
+        &#160;&#160;&lt;field type=&#34;text&#34; required=&#34;true&#34;&gt;
+        &lt;name&gt;Namespace&lt;/name&gt;
+        &lt;/field&gt;<br/>
+        &#160;&#160;&lt;field type=&#34;text&#34;&gt;
+        &lt;name&gt;Version&lt;/name&gt;
+        &lt;/field&gt;<br/>
+        &#160;&#160;&lt;field type=&#34;text-area&#34;&gt;
+        &lt;name&gt;Description&lt;/name&gt;
+        &lt;/field&gt;<br/>
+        &lt;/table&gt;
+    </code>
+</p>
+<p><img src="images/table.png" width="742px"/></p>
+<p>Figure 2: Resulting HTML table segment</p>
+<p>
+    This element has a mandatory attribute, <code>name</code> which will be displayed as the heading
+    of the generated HTML table.</p>
+<p>
+    Example:
+</p>
+<p>
+    <code>&lt;table name="Overview"&gt;&lt;/table&gt;</code>
+</p>
+<p><img src="images/heading.png" width="742px"/></p>
+<p>
+    By default, a table has two columns. However, user can specify any number of columns using the
+    <code>columns</code> attribute.
+</p>
+<p>
+    <code>&lt;table name="Doc Links" columns="3"&gt;</code>
+</p>
+
+<h2><code>subheading</code> Element</h2>
+
+<p>
+    This elements specifies the headings for a table. Therefore, this always is a child element of a
+    table element. Number of <code>heading</code> elements within a <code>subheading</code> element
+    must equal the number of columns of the corresponding table. <code>subheading</code> element is
+    not mandatory inside a <code>table</code> element.
+</p>
+
+<p>
+    Example:
+</p>
+<p>
+    <code>
+        &lt;table name="Contacts"&gt;
+        <br/>&#160;&#160;&lt;subheading&gt;<br/>
+        &#160;&#160;&#160;&#160;&lt;heading&gt;Contact Type&lt;/heading&gt;
+        &lt;heading&gt;Contact Name/Organization Name&lt;/heading&gt;
+        <br/>
+        &#160;&#160;&lt;/subheading&gt;<br/>
+        &lt;/table&gt;
+    </code>
+</p>
+<p><img src="images/heading-1.png" width="742px"/></p>
+
+<p>
+    Example II:
+</p>
+
+<p>
+    <code>
+        &lt;table name="Doc Links" columns=3&gt;<br/>
+        &#160;&#160;&lt;subheading&gt;<br/>
+        &#160;&#160;&#160;&#160;&lt;heading&gt;Document Type&lt;/heading&gt;
+        &lt;heading&gt;URL&lt;/heading&gt;
+        &lt;heading&gt;Comment&lt;/heading&gt;<br/>
+        &#160;&#160;&lt;/subheading&gt;<br/>
+        &lt;/table&gt;
+    </code>
+</p>
+
+<p><img src="images/heading-2.png" width="742px"/></p>
+
+<p>
+    In the above example it can be seen that column number is set to 3. This will create three
+    columns and subheadings will be added as specified. If more than two columns are used,
+    field name will not be printed in front of the input field.
+</p>
+
+<p>
+    <code>
+        &lt;table name="Doc Links" columns="3"&gt;<br/>
+        &#160;&#160;&lt;subheading&gt;
+        &lt;heading&gt;Document Type&lt;/heading&gt;
+        &lt;heading&gt;URL&lt;/heading&gt;
+        &lt;heading&gt;Comment&lt;/heading&gt;
+        &lt;/subheading&gt;
+        <br/>&#160;&#160;&lt;field type="text"&gt;
+        &lt;name&gt;Document Type&lt;/name&gt;
+        &lt;/field&gt;
+        &lt;field type="text"&gt;
+        &lt;name&gt;URL&lt;/name&gt;
+        &lt;/field&gt;
+        &lt;field type="text-area"&gt;
+        &lt;name&gt;Document Comment&lt;/name&gt;
+        &lt;/field&gt;
+        <br/>&#160;&#160;&lt;field type="text"&gt;
+        &lt;name&gt;Document Type1&lt;/name&gt;
+        &lt;/field&gt;
+        &lt;field type="text"&gt;
+        &lt;name&gt;URL1&lt;/name&gt;
+        &lt;/field&gt;
+        &lt;field type="text"&gt;
+        &lt;name&gt;Document Comment 1&lt;/name&gt;
+        &lt;/field&gt;<br/>
+        &lt;/table&gt;
+    </code>
+</p>
+
+<h2><code>field</code> Element</h2>
+<p>
+    This element which defines in input field. It can be a text field, drop-down list, text area,
+    checkbox or a option-text. Option-text field is contains drop-down with a text field.
+</p>
+<p>
+    Ex: </p>
+<p><img src="images/heading-3.png" width="742px"/></p>
+<p>
+    <code>field</code> element can have couple of attributes including a mandatory attribute
+    <code>type</code>. <code>type</code> attribute specifies the field type which can be <code>text,
+    option, text-area, option-text, </code>or <code>checkbox.</code>
+</p>
+<p>
+    Some types of fields can have optional attributes. A text-area field accepts <code>height</code>
+    and <code>width</code> as optional attributes. The height and width should be numerical and the
+    value should be in pixels. The text field or an option-text accepts <code>url</code> as an
+    optional attribute. Setting <code>url="true"</code> will display the text as a URL instead of a
+    plain text box. Setting <code>path="true"</code> will provide the user a prompt to select a
+    resource path from the registry.
+</p>
+
+<h2><code>name</code> Element as a child of <code>field</code></h2>
+<p>
+    In addition to having a mandatory <code>type</code> attribute, field element should have another
+    child element named <code>name</code> to specify the name and to display as the caption of the
+    input field. Inside a single table element, the same name cannot be used for more than one field
+    of the same type.
+</p>
+<p>
+    Example: A field element to create a text field.
+</p>
+<p><code>
+    &lt;field type="text"&gt;
+    &lt;name&gt;Name&lt;/name&gt;
+    &lt;/field&gt;
+</code></p>
+<p><img src="images/heading-4.png" width="742px"/></p>
+<p>
+    When <code>option</code> or <code>option-text</code> types are used, the set of values to be
+    included in the drop-down list must be specified. <code>values</code> element is used for this
+    purpose.
+    Example: Definition of an "options" input field
+</p>
+<p>
+    <code>
+        &lt;field type="options"&gt;
+        &lt;name&gt;States&lt;/name&gt;
+        &lt;values&gt;
+        &lt;value&gt;Created&lt;/value&gt;
+        &lt;value&gt;Tested&lt;/value&gt;
+        &lt;value&gt;Deployed&lt;/value&gt;
+        &lt;value&gt;Deprecated&lt;/value&gt;
+        &lt;/values&gt;
+        &lt;/field&gt;
+    </code>
+</p>
+<p><img src="images/heading-5.png" width="742px"/></p>
+<p>Example: Definition option-text field, this has a drop-down list to select the caption of the
+    text input field.
+</p>
+<p><code>
+    &lt;field type="option-text"&gt;
+    &lt;name&gt;Contact&lt;/name&gt;
+    &lt;values&gt;
+    &lt;value&gt;Technical Owner&lt;/value&gt;&lt;value&gt;Business Owner&lt;/value&gt;
+    &lt;/values&gt;
+    &lt;/field&gt;
+</code></p>
+<p><img src="images/heading-3.png" width="742px"/></p>
+<p>
+    Mandatory input fields can be declared by setting the <code>mandatory</code> attribute to
+    <code>true</code>. Default value of this attribute will be <code>false</code> if it is not
+    specified in the <code>field</code> element.
+    For a mandatory field, the HTML form will show an error message during submission if the field is
+    not filled.
+</p>
+<p>
+    Example: Declaring a mandatory field
+</p>
+<p>
+    <code>
+        &lt;field type="text" required=true&gt;
+        &lt;name&gt;Name&lt;/name&gt;
+        &lt;/field&gt;
+    </code>
+</p>
+<p><img src="images/heading-6.png" width="742px"/></p>
+
+<h2><code>maxoccurs</code> attribute</h2>
+<p><code>maxoccurs</code> can be used only with field type option-text. This feature is useful
+    when there is a requirement to add a variable number of fields (option-text). Users will be able
+    to add those fields dynamically by clicking add link.
+    When a particular option-text field is declared with <code>maxoccurs=unbounded</code>, a link will
+    be displayed to add new input fields as required.
+</p>
+<p>
+    Example: Declaring <code>maxoccurs=unbounded</code> option-text fields
+</p><p>
+    <code>
+        &lt;table name="EndPoints"&gt;<br/>
+        &lt;subheading&gt;
+        &lt;heading&gt;Environments&lt;/heading&gt;
+        &lt;heading&gt;URL&lt;/heading&gt;
+        &lt;/subheading&gt;<br/>
+        &lt;field type="option-text" maxoccurs="unbounded"&gt;
+        &lt;name&gt;EndPoint&lt;/name&gt;
+        &lt;values&gt;
+        &lt;value&gt;Unknown&lt;/value&gt;
+        &lt;value&gt;Dev&lt;/value&gt;
+        &lt;value&gt;QA&lt;/value&gt;
+        &lt;value&gt;Test&lt;/value&gt;
+        &lt;/values&gt;
+        &lt;/field&gt;<br/>
+        &lt;/table&gt;
+    </code>
+</p>
+<p>
+    With this configuration following link will be displayed in the UI initially.
+</p>
+<p><img src="images/heading-7.png" width="742px"/></p>
+<p>
+    Users can click on  Add EndPoint link and add required number of endpoints. As seen in the figure,
+    the sub-headers are printed after the Add EndPoint link. When more than two sub headers are
+    specified, maxoccurs attribute cannot be set to unbounded.
+    Ex:
+</p>
+<p><img src="images/unbounded-field.png" width="742px"/></p>
+<h2>Configuring Filters</h2>
+<p>
+    When listing saved artifacts, a UI similar to the one that is used to add (or edit) artifacts
+    is used to specify the filter criteria. All the fields defined through the content template
+    configuration will be displayed in the filter UI unless filtering is explicitly disable for
+    a particular item. To disable filtering for all items under a table,
+    add <code>filter="false"</code> attribute at the table-level. To disable filtering for a single
+    field, add <code>filter="false"</code> attribute at the field-level.
+</p>
+<p>
+    <code>
+        &lt;table name="Contacts" filter="false"&gt;
+        &lt;subheading&gt;
+        &lt;heading&gt;Contact Type&lt;/heading&gt;
+        &lt;heading&gt;Contact Name/Organization Name&lt;/heading&gt;
+        &lt;/subheading&gt;
+        &lt;/table&gt;
+    </code>
+</p>
+<p>
+    <code>
+        &lt;field type="text" required=true filter="false"&gt;
+        &lt;name&gt;Name&lt;/name&gt;
+        &lt;/field&gt;
+    </code>
+</p>
+
+<a name="deployingRXT"></a>
+<h2>Deploying a Configurable Governance Artifact</h2>
+<p>
+    Once a Registry extension file is created, it is needed to get uploaded. Follow the instructions below to deploy the extension
+    file in the WSO2 Governance Registry.
+</p>
+
+<ul>
+    <li>Start up the WSO2 Governance Registry.</li>
+    <li>Go to Main->Browse->Detail to view and add the registry extension file to /_system/governance/repository/components/org.wso2.carbon.governance/types.</li>
+    <li>Sign-out and Sign-in.</li>
+    <li>Now you can see the newly added extension type in the "Metadata Add" and "List" panes.</li>
+</ul>
+
+<a name="govArtifacts"></a>
+<h2>Storing Governance Artifacts in GReg</h2>
+<p>
+    WSO2 Governance Registry provides a complete set of Service Metadata Management features leading
+    to better governance of your SOA system.
+</p>
+
+<p>Governing SOA with GReg involves two initial steps</p>
+<ul>
+    <li>Importing required Service metadata as Registry resources</li>
+    <li>Managing imported Registry Resources</li>
+</ul>
+<p>
+    Users can add service details in different ways such as saving complete set of service details,
+    importing WSDLs, Schemas and Policies of services in the SOA system. These operations can be
+    carried out using the upper part of the metadata menu which
+    contains the links  Add-&gt;Service, Add-&gt;Policy, Add-&gt;WSDL, Add-&gt;Schema. Users can upload policies, WSDLs and schemas from their local file system or
+    from a given URL as shown in the figures below.
+</p>
+<img src="images/add_artifact_url.png" width="743px"/>
+<p>Figure 3: Adding Policy using a URL</p>
+<img src="images/add_artifact_local.png" width="743px"/>
+<p>Figure 4: Adding Policy using Local File System</p>
+
+<a name="defaultArtifacts"></a>
+<h2>API and URI Artifacts</h2>
+<p>
+    API and URI are two artifact types which are implemented as Configurable Governance Artifacts. API is an artifact which
+    can be published to an Artifact Store which is defined to perform a particular task. URI artifact is used in order to
+    maintain and govern resources which are physically residing at an external repository and stored in the registry by its URI.
+</p>
+<p><img src="images/addAPI.png" width="900px"/></p>
+<p>Figure 5: Add API</p>
+
+<p><img src="images/apiList.png" width="900px"/></p>
+<p>Figure 6: List API</p>
+
+<p><img src="images/addURI.png" width="900px"/></p>
+<p>Figure 7: Add URI</p>
+
+<p><img src="images/uriList.png" width="900px"/></p>
+<p>Figure 8: List URI</p>
+
+</body>
+
+</html>

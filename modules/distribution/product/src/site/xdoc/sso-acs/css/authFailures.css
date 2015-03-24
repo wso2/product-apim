@@ -1,0 +1,28 @@
+.authFailures {
+    padding-top: 15px !important;
+    padding-left: 58px;
+}
+
+.authFailures li {
+    list-style-type: circle !important;
+    padding: 5px;
+}
+
+.authFailuresMsg {
+    background-image: url(../../dialog/img/error.gif);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    height: 48px;
+    padding-left: 58px;
+}
+
+.authFailuresTryAgain {
+    padding-top: 10px;
+    padding-left: 58px;
+}
+
+.authFailuresTryAgain a {
+    background-image: url(../images/reload.gif);
+    background-repeat: no-repeat;
+    padding-left: 20px;
+}

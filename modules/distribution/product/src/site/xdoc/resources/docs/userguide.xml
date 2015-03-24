@@ -1,0 +1,407 @@
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Registry Resources - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+<h1>Registry Resources</h1>
+
+<p>The WSO2 Registry is a repository that stores resources in a structured way.
+Here are some of the features provided by the registry interface. </p>
+<ul>
+  <li>Provides the facility to organize resources into collections. (Similar
+    to how you organize files in directories.) </li>
+  <li>Keeps multiple versions of resources </li>
+  <li>Manages social aspects such as rating,tagging and commenting resources </li>
+  <li>AtomPub interfaces to publish, view and manage resources from remote or
+    non-Java clients </li>
+</ul>
+<p></p>
+<p>The key components of Registry resource view would be as follows.</p>
+<p></p>
+<ul>
+    <li><a href="#registryUserInterface">Registry User Interface</a></li>
+    <ul>
+        <li><a href="#registryUserInterfaceView">Registry User Interface Views</a></li>
+        <li><a href="#componentsRegistryUserInterface">Components of Registry User Interface</a></li>
+    </ul>
+    <li><a href="#addResource">Add Resources</a></li>
+    <li><a href="#addCollections">Add Collections</a></li>
+    <li><a href="#symbolicRemoteLinks">Symbolic Links and Remote Links</a></li>
+    <li><a href="#mediaTypes">Media Types</a></li>
+    <li><a href="#optionalPortlets">Optional Portlets</a></li>
+</ul>
+
+<a name="registryUserInterface"></a>
+<h2>Registry User Interface</h2>
+<p>In the navigator, under Registry, click <strong>Resources</strong>. The Registry resource browser provides two resource
+ interfaces to the user, one is the <strong>Tree view</strong> and the other is the <strong>Detail view</strong> .</p>
+
+<a name="registryUserInterfaceView"></a>
+<h2>Registry User Interface Views</h2>
+<p></p>
+<h3>Tree view</h3>
+<p>The <strong>Tree view</strong> provides an hierarchical view of the organization of resources in the registry, which allows the users to
+ easily locate a resource.</p>
+<p><img src="images/registryBrowser.png" width="743px"/></p>
+<p>Figure 1 : Registry Resource Browser - Tree view </p>
+
+<h3>Detail view</h3>
+<p>The <strong>Detail view</strong> provides an informative view of a selected resource in the registry. Any resource in the registry can
+    either be a collection or resource. The Detail view of a collection and a resource would be different from information and
+    functionalities provided.</p>
+<p><img src="images/detail_view.png" width="743px"/></p>
+<p>Figure 2 : Registry Resource Browser - Detail view </p>
+<p></p>
+<h2>Components of Registry User Interface</h2>
+<p>The Detail view is the Registry User Interface for a resource. Following are the key components of Registry User Interface </p>
+<ul>
+  <li><a href="#Breadcrumb">Breadcrumb</a>:- Shows the current directory
+    hierarchy  </li>
+  <li><a href="#Meta">Meta Data Panel</a>:- Shows meta data for the
+    resource/collection </li>
+    <ul>
+        <li><a href="#viewVersion">View Version</a></li>
+        <li><a href="#detailsView">Details of version</a></li>
+    </ul>
+  <li><a href="#Properties">Properties Panel</a>:- Shows properties for the
+    resource/collection </li>
+  <li><a href="#Content">Content Panel</a>:- Shows the contents of the
+    resource/collection  </li>
+</ul>
+
+<p></p>
+
+<h3><a name="Breadcrumb" id="Breadcrumb">Resource Breadcrumb</a></h3>
+
+<p>Use the breadcrumb to navigate backward in the current branch of the
+directory path, by clicking on a directory name in the breadcrumb. Note
+that you can access the root of the directory path by clicking the Home
+icon in the breadcrumb. </p>
+
+<p><img src="images/breadcrumb.png" width="743px"/></p>
+
+<p>Figure 3: The Breadcrumb </p>
+
+<h3><a name="Meta" id="Meta">Meta Data Panel</a></h3>
+
+<p>The meta data panel displays the following properties of the resource
+or the collection </p>
+<ul>
+  <li>Created Time and Author </li>
+  <li>Last Updated Time and Author </li>
+  <li>Media Type which will get assigned while the resource get updated, but can be edited as user prefers.</li>
+  <li>URL for the permanent link </li>
+  <li>Versions of the resource </li>
+  <li>Description about the resource/collection. </li>
+</ul>
+
+<p></p>
+
+<p><img src="images/metadata.png" width="600px"/></p>
+
+<p>Figure 4 : The meta data panel </p>
+
+<h3><a name="viewVersion" id="viewVersion">View Version</a></h3>
+
+<p>Allows to view versions of a resource/collection. The importance of maintaining versions is to trace the changes made
+    to a resources and restore a resource back to that version if necessary. </p>
+
+<ul>
+    <li>Version - Shows the number of a resource/collection version.</li>
+    <li>Last Modified Date - Shows the last date of updating.</li>
+    <li>Last Modified By - Shows the author of alterations.</li>
+    <li>Actions</li>
+    <li>Details - Allows to get to the "Browse" page of a particular resource/collection version.</li>
+    <li>Restore - Allows to restore a resource/collection version.</li>
+</ul>
+
+<p><img src="images/version_view.png" width="900px"/></p>
+
+<p>Figure 5 : View version </p>
+
+<h3><a name="detailsView" id="detailsView">Details of version</a></h3>
+
+<p>When user clicks the Detail link from the View version of a resource the page get redirected to the Details page of that
+   version which illustrates the versioned components of a selected version of a resource. This would give a Browse view
+   of the versioned resource.</p>
+
+<p><img src="images/details_view.png" width="900px"/></p>
+
+<p>Figure 6 : Details view </p>
+
+<h3><a name="Properties" id="Properties">Properties Panel</a></h3>
+
+<p>This panel displays the properties of the currently selected resource
+or collection. New properties can be added, while existing properties can
+be edited or deleted.</p>
+
+<p><img src="images/properties.png" width="492px"/></p>
+
+<p>Figure 7 : The properties panel </p>
+
+<h3><a name="Content" id="Content">Content Panel</a></h3>
+
+<p>If the currently selected entity is a collection, the Content Panel
+shows the child entries under that collection. It provides details of each
+entry. An entry can be either another collection or a resource. </p>
+<ul>
+  <li>Name - Click to access the content of this entry </li>
+  <li>Created Date </li>
+  <li>Author </li>
+  <li>Ratings</li>
+  <li>The link to the Atom feed </li>
+</ul>
+
+<p><img src="images/entries.png" width="492px"/></p>
+
+<p>Figure 8 : View of Directory Entries </p>
+
+<p>If the currently selected entity is a resource, the Content panel
+provides a user interface through which you can display, edit upload, and
+download the content.</p>
+<p><img src="images/content.png" width="492px"/></p>
+<p>Figure 9 : View of the Content </p>
+<p></p>
+<a name="addResource"></a>
+<h2>Add Resources</h2>
+<p>When adding a resource users can select an upload method.An external entity can be uploaded by selecting <strong>upload
+content from file</strong> or <strong>import content from URL</strong>. By selecting the <strong>Create Text content</strong>
+a text resource can be created with defining the content as well. When the resource is being uploaded the name field will
+get populated by the resource name. The media type would also get added if the resource contains an identifiable media type
+or else the user has to manually enter. </p>
+
+<p><img src="images/addResource.png" width="600px"/></p>
+<p>Figure 10 : Add Resource </p>
+<p></p>
+<a name="addCollections"></a>
+<h2>Add Collections</h2>
+<p>Add collection is used to add a new collection. User can give a prefered name and a media type for the new collection. </p>
+
+<p><img src="images/addCollection.png" width="600px"/></p>
+<p>Figure 11 : Add Collection </p>
+<p></p>
+<a name="symbolicRemoteLinks"></a>
+<h2>Symbolic Links and Remote Links</h2>
+
+<p>Symbolic links and Remote links can be created in a similar way to adding a normal resource.
+Add resource drop down list contains options to add symbolic and remote links.</p>
+
+<p><img src="images/add_symlink.png" width="492px"/></p>
+<p>Figure 12 : Add Symbolic Link </p>
+
+<p>When adding a symbolic link, you have to provide a name for the link and the path of an existing
+resource or collection which is being linked. It creates a link to the particular resource.
+The created symbolic link is shown by an icon with an arrow in the entries panel.</p>
+
+<p><img src="images/symlink.png" width="492px"/></p>
+<p>Figure 13 : Symbolic Link</p>
+
+<p>Adding a Remote link is much similar to adding a symbolic link. You can mount a collection in a
+remotely deployed registry instance to your registry instance by adding a remote link. You can
+provide a name for the remote link in the name field, and choose the instance to which you are going
+to mount (Please refer the registry user guide to see how to configure the remote instances in
+registry.xml). You can give the path of the remote collection which you need to mount for the path
+field, or else the root collection will be mounted. </p>
+
+<p><img src="images/add_remotelink.png" width="492px"/></p>
+<p>Figure 14 : Add Remote Link</p>
+
+<p>After mounting the remote collection you can access and work on that collection from your local
+instance.</p>
+<p></p>
+<a name="mediaTypes"></a>
+<h2>Media Types</h2>
+
+<p>
+Each collection or resource that you create and store on the repository has an associated media
+type. However, you also have the option to leave this unspecified enforcing the default media type.
+There are two main ways in which you can configure media types for resources.
+</p>
+
+<p>
+The first method is by means of a one-time configuration which can be done by modifying the
+<strong>mime.types</strong> file found in the server configuration directory. This can be done just
+once before the initial start-up of the server.
+</p>
+
+<p>
+The second method is to configure the media types via the server administration console. For
+collections the first method does not apply, and the only available mechanism is to configure the
+media types via the server administration console.
+</p>
+
+<p>
+Initially the system will contain the media types defined in the <strong>mime.types</strong> file
+will be available for resources and a set of default media types will be available for collections.
+</p>
+
+<p>
+Managing media types for resources can be done via the server administration console, by editing the
+properties of the <strong>/_system/config/repository/components/org.wso2.carbon.governance/media-types/index</strong> collection.
+This collection contains two resources, <strong>collection</strong> and <strong>custom.ui</strong>. To manage media types of
+collections and custom user interfaces, you need to edit the properties of these two resources.
+</p>
+
+<p><img src="images/edit_mime_types.png" width="492px"/></p>
+<p>Figure 15 : Editing Media Types</p>
+<p></p>
+<a name="optionalPortlets"></a>
+<h2>Optional Portlets</h2>
+
+<ul>
+    <li><a href="#tagSearch">Tag Search</a></li>
+    <li><a href="#dependencies">Dependencies</a></li>
+    <li><a href="#associations">Associations</a></li>
+    <li><a href="#lifeCycles">Life Cycles</a></li>
+    <li><a href="#addSubscriptions">Adding Subscriptions</a></li>
+    <li><a href="#cmntRatTag">Comments,Ratings and Tags</a></li>
+</ul>
+
+<a name="tagSearch"></a>
+<h3>Tag Search</h3>
+
+<p>The <strong>Search</strong> portlet allows the user to search resources by tags assigned to it.</p>
+
+<p><img src="images/tagSearch.png" width="340px" /></p>
+<p>Figure 16: Search</p>
+
+<a name="dependencies"></a>
+<h3>Dependencies</h3>
+
+<p>The <strong>Dependencies</strong> portlet allows the user to add any resource as a dependency to the selected resource.
+ A dependency is also an association with the type <strong>depends</strong>. All the added dependencies will be shown on a
+table in the same portlet.</p>
+
+<p><img src="images/dependency.png" width="340px" /></p>
+<p>Figure 17: Add Dependencies</p>
+
+<a name="associations"></a>
+<h3>Associations</h3>
+
+<p>The <strong>Associations</strong> portlet allows the user to assign any resource as an association to the selected resource.
+The users are able to specify the type of the association and all the added association will be shown on a table in the
+same portlet.</p>
+
+<p><img src="images/associations.png" width="340px" /></p>
+<p>Figure 18: Add Associations</p>
+
+<a name="lifeCycles"></a>
+<h3>Life Cycles</h3>
+
+<p>The <strong>Life Cycle</strong> portlet allows the user to associate a life cycle aspect to a selected resource. The
+user will be prompted with all the available life cycles in a drop down list. When a life cycle is assigned, in the portlet
+it will display the life cycle name,the current state and the check list items of the current state if any. </p>
+
+<p><img src="images/lifeCycles.png" width="340px" /></p>
+<p>Figure 19: Add Life Cycles</p>
+
+<a name="addSubscriptions"></a>
+<h3>Adding Subscriptions</h3>
+
+<p>The <strong>Subscriptions</strong> portlet allows you to add subscriptions to resources and
+collections. Clicking <strong>Add Subscription</strong> brings up a form which allows users to
+create new subscriptions. If you already have any subscriptions, they will be listed in a table
+displayed within this portlet.</p>
+
+<p><img src="images/add_subscription.png" width="340px" /></p>
+
+<p>Figure 20: Add Subscriptions to a Resource</p>
+
+<p></p>
+<h3>Hierarchical Subscriptions</h3>
+
+<p>For Collections there is an additional facility of creating Hierarchical Subscriptions if needed. By default when a user
+adds a subscription to a Collection it will only get added to that collection. Similarly the user can add a subscription
+to that collection and its immediate child resources by selecting the option <strong>Collection and Children only</strong>
+or to that collection and all of its child resources by selecting the option <strong>Collection,Children and Grand Children</strong>.</p>
+
+<p><img src="images/HierSubscriptions.png" width="340px" /></p>
+
+<p>Figure 21: Add Subscriptions to a Collection</p>
+
+
+<p>Once a subscription has been added, you are also allowed to delete
+subscriptions (or unsubscribe), by clicking on the relevant <strong>Delete</strong> link.</p>
+
+<p><img src="images/manage_notifications.png" width="340px" /></p>
+
+<p>Figure 22: Manage Notifications</p>
+
+<p>Adding a subscription involves selecting the event type and the notification method. The event
+types supported by default are as follows:</p>
+
+<ul>
+  <li>Check LC Item   - Represents an event that fires when a item is checked in a lifecycle
+  check-list.</li>
+  <li>Uncheck LC Item - Represents an event that fires when a item is unchecked in a lifecycle
+  check-list.</li>
+  <li>Create Child    - Represents an event of creating a resource (or collection) within an
+  existing collection.</li>
+  <li>Delete Child    - Represents an event of deleting a resource (or collection) within an
+  existing collection.</li>
+  <li>Delete          - Represents an event of deleting a resource (or collection).</li>
+  <li>Create LC       - Represents an event of creating a lifecycle.</li>
+  <li>Delete LC       - Represents an event of deleting a lifecycle.</li>
+  <li>Change LC State - Represents an event of changing a lifecycle state.</li>
+  <li>Update          - Represents an event of updating a resource or collection.</li>
+  <li>LC Approval Needed - Represents an event that fires when lifecycle transition required user approvals .</li>
+  <li>LC Approval Withdrawn - Represents an event that fires when remove approval form(remove vote) transition event.</li>
+  <li>LC Approved  - Represents an event that fires when approve(vote) a transition event.</li>
+</ul>
+
+<p>Please note that some of these events may not be available for certain types resources and
+collections. We support a variety of notification methods as well.</p>
+
+<ul>
+  <li>E-mail          - Any valid e-mail address.</li>
+  <li>HTML/Plain-Text - An endpoint accepting HTML or text content.</li>
+  <li>SOAP            - An endpoint accepting notifications as a SOAP message.</li>
+  <li>User Profile    - A valid user's profile. Notifications will be sent to the e-mail address
+  specified on the user's default profile.</li>
+  <li>Group Profile   - A valid role. Notifications will be sent to all the users in the
+  specified role.</li>
+  <li>Management Console       - A valid role. Notifications will be sent to work-list for role.</li>
+  <li>JMX             - Notifications will be sent via JMX.</li>
+</ul>
+
+<p>Based on the notification method you select, you may be required to provide additional
+information, such as the e-mail address to use of the name of the user of whom the profile will be
+used. Having done this step, you will have to click on the <strong>Subscribe</strong> button to add
+a subscription (see Figure above).</p>
+<p></p>
+<a name="cmntRatTag"></a>
+<h3>Comments,Ratings and Tags</h3>
+
+<p> <strong>Comments,Ratings and Tags</strong> portlets allows the user to add comments, give ratings and add search tags
+for resources respectively.</p>
+
+<p><img src="images/comments.png" width="340px" /></p>
+<p>Figure 23: Add Comments</p>
+
+<p><img src="images/rating.png" width="340px" /></p>
+<p>Figure 24: Add Ratings</p>
+
+<p><img src="images/tags.png" width="340px" /></p>
+<p>Figure 25: Add Tags</p>
+</body>
+</html>

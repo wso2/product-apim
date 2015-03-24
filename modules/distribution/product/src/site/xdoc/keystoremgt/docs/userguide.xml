@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html><head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"></meta>
+  <title>KeyStore Management - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+  </head>
+<body>
+<h1>Key Store Management</h1>
+
+
+
+<p>Keystore management manages the keys that are stored in a database. A
+Keystore must contain a key pair with a certificate signed by a trusted
+Certification Authority (CA). The WSO2 Carbon
+uses the JKS type private key called WSO2 Carbon. </p>
+
+<p><img alt="" src="images/keystoremanagement.JPG" height="128" width="617"/></p>
+
+<p>Figure 1: Keystore Management</p>
+
+<h2>Adding a New Keystore</h2>
+
+<p>WSO2 Carbon keystore management provides the facility to manage multiple keystores. It supports
+two types of Keystores.</p>
+<ul>
+  <li>JKS (Java Key Store)
+    It can read and store key entries and certificate entries. However,
+    the key entries can store only private keys.
+  </li>
+  <li>PKCS12 (Public Key Cryptography Standards)
+    You can read a keystore in this format and can export the information
+    from that keystore, but you cannot modify the keystore. This is used to
+    import the certificates from different browsers into your Java
+    keystore.
+  </li>
+</ul>
+<ol>
+  
+  <li>In the navigator, under Configure, click <strong> Keystore</strong>.</li><li>Click on <strong>Add New Keystore. </strong>The <em><strong>Add New Keystore</strong></em> page appears.</li>
+  <li>Click <strong>Browse</strong> to locate the Keystore file you want to
+    add.</li>
+  <li>Provide the Password, Provider and the Keystore Type.</li>
+  <li>Click <strong>Next.</strong></li>
+  <li><span>You will be asked to provide <strong>Private key
+    Password</strong>.</span> </li>
+  
+  <li>Click <strong>Finish</strong>. 
+    <strong>Key Store Management</strong> table.</li>
+</ol>
+
+<p><strong>Note</strong>: Keystore management does not let you import an
+existing private key for which you already have a certificate. </p>
+
+<p></p>
+
+<p><img alt="" src="images/adding-keystore.JPG" height="201" width="586"/></p>
+
+<p>Figure 2: Adding a new keystore</p>
+
+</body></html>

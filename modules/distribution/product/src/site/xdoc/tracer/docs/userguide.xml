@@ -1,0 +1,78 @@
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+    <title>SOAP Message Tracer - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+
+
+<body>
+
+<div id="middle">
+    <h1>SOAP Monitor Tracer</h1>
+
+    <p>The Tracer shows the SOAP messages, the respective SOAP message requests
+        and responses - when the services are deployed on the server, and the invoked
+        operations. By default, this feature is turned off. You have to turn it on to
+        enable tracing. </p>
+
+    <p><strong>Warning</strong>: Turning on the Tracer feature will have a drag
+        on the performance. This is because all the SOAP messages will always be
+        completely built (i.e., deferred building will not be done) and stored in the
+        database by WSO2 Data Services. Hence this option should be used with
+        caution.</p>
+
+    <p>
+        <img src="images/tracer.jpg" alt="Figure 1:Turned OFF SOAP Tracer"/>
+    </p>
+
+    <p>Figure 1: Turned OFF SOAP Tracer</p>
+    <ol>
+        <li>In the navigator, under Monitor, click <strong>SOAP Message
+            Tracer</strong>. The <em><strong>SOAP Message Tracer</strong></em> page
+            appears.
+        </li>
+        <li>In the <strong>Status</strong> field, click <strong>On</strong>.
+            The tracer will show the messages of the operations that were
+            invoked.
+        </li>
+    </ol>
+
+    <p>By using the SOAP tracer, you can see the SOAP messages with their
+        time-stamps, service name, operation invoked and the number of requests to
+        the server. The most recent SOAP messages are listed on the top. When a
+        particular SOAP message is selected, its request and the response can be
+        viewed. </p>
+
+    <p><strong>Note</strong>: This tracer does not apply to operations invoked in
+        the admin services, as they are filtered out.</p>
+
+    <p>
+        <img src="images/tracer_on.jpg" alt="Soap Tracer- Request/Response Messages"/>
+    </p>
+
+    <p>Figure 2: SOAP Tracer- Request/Response Messages</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+  <title>Statistics Help - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+
+<div id="middle">
+<h1 id="Monitor1">Monitor Statistics</h1>
+This page shows some statistics related to the WSO2 Data Services instance.
+They include free memory, request count, server name, server start time,
+system up time, active services, total memory, average response time, minimum
+response time and maximum response time.
+
+
+<ol>
+  <li>In the navigator, under Monitor, click <strong>Statistics</strong>. The
+    <em><strong>System Statistics</strong></em> page appears.</li>
+  <li>To configure the statistics view, enter values in the Statistics
+    Configuration panel and click <strong>Update</strong>.</li>
+  <li>Refresh your page. </li>
+  <li>If you want to reset the previous values before submitting the page
+      after editing, click <strong>Reset</strong>.</li>
+</ol>
+
+<p><img src="images/statistics.jpg" alt="Figure: Monitor Statistics" />
+</p>
+
+<p>Figure 1: Monitor Statistics</p>
+</div>
+</body>
+</html>

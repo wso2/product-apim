@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<title>Logging Management - User Guide</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" /><title>Logging Management</title>
+<link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+
+<body>
+<div id="middle">
+<h1>Configure Logging</h1>
+<p>
+    This page shows the existing Log4j configuration. And it also allows you to modify existing configuration. You can
+    either modify the global Log4j configuration, an Appender or a Logger. If you select
+    <span style="font-weight: bold;">Persist all Configurations Changes</span> check box, all the modifications will be
+    persited and they will be available even after a server restart.
+</p>
+
+<h2>Configuring Log4J Loggers</h2>
+<p>Configuring properties related to Log4J loggers.<span style="color: red;"></span></p>
+		<ol>
+			<li>In the <span style="font-weight: bold;">View</span> list,
+				select the category of logs you want to view. The available
+				categories are,</li>
+			<p style="margin-left: 40px;">INFO - Information messages WARN -
+				Warning messages ERROR - Error messages DEBUG - Debug messages TRACE
+				- Trace messages FATAL - Fatal error messages</p>
+
+			<li>Select a Log Level (only the messages at that level and
+				below will be logged).
+				<ul>
+					<li>For example, if you select Log Level ERROR, then all ERROR
+						and FATAL messages will be logged or rather passed on to the
+						Appender.</li>
+					<li>Switching on Additivity allows to inherit all the
+						Appenders of the parent Logger.</li>
+				</ul></li>
+			<p>
+				<img alt="" src="images/config%20log4j%20loggers.JPG" />
+			</p>
+			<p style="text-align: center;">Figure 1: Monitor Logs</p>
+
+			<h2>Configuring Log4J Appenders</h2>
+			<p>Log4J Appenders consist of the appender name, log level, known
+				as the Threshold, log pattern and log file.</p>
+			<p>
+				The Threshold list is the same as the Log Level in Loggers, in name
+				and function. You can use Log Pattern to edit the format or the
+				layout in which the logs are created. You can refer to the <a
+					href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html">log4j
+					PatternLayout</a> page for descriptins of the values that are used in
+				the log pattern. Finally you can change the location of the log file
+				with the Log File option.
+			</p>
+			<ol>
+				<li>Select the Name of the appender you wish to modify.</li>
+				<li>Specify the desired log pattern.</li>
+				<li>Select the logging threshold.</li>
+				<li>Click <strong>Update</strong>.</li>
+			</ol>
+			<p>
+				<img alt="" src="images/config%20log%20appenders.JPG" />
+			</p>
+			<p style="text-align: center;">Figure 2: Configure Log4J
+				Appenders</p>
+			<p></p>
+			<h2 style="color: rgb(24, 0, 0);">Configuring Global Log4J
+				Loggers</h2>
+			<p>By using the Global Log4J configuration feature, you can set
+				the,</p>
+			<ul>
+				<li>Log Level</li>
+				<li>Log Pattern of Log4J Appenders</li>
+				<li>Loggers to the same value at the same time.</li>
+			</ul>
+			<p>
+				Modify the values for the above settings as required and click <span
+					style="font-weight: bold;">Update</span>.
+			</p>
+			<p>
+				<img alt="" src="images/global%20log4j%20config.JPG" />
+			</p>
+			<p style="text-align: center;">Figure 3: Global Log4J
+				Configuration</p>
+		</ol>
+		<p>
+There are two ways of configuring Log4j in WSO2 Carbon. Either by manually editing the log4j.properties file
+or through the management console. Changes you made to Log4j configuration through the management console are persisted in
+WSO2 Registry, therefore those changes will be available after server restarts. There is also an option to restore the
+original Log4j configuration from the log4j.properties file using the management console. But if you modify the
+log4j.properties file and restart the server, you will see the changes you've made. That means the earlier log4j
+configuration persisted in the registry is overwritten. 
+</p>
+</div>
+</body></html>

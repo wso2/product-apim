@@ -1,0 +1,129 @@
+div#messagebox {
+    background-image: url(../img/confirm.gif);
+    background-position: 15px 15px;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    padding-left: 75px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 360px;
+    height: 68px;
+    _height: 150px;
+    overflow: auto;
+}
+
+div#messagebox img {
+    float: left;
+    margin-right: 20px;
+}
+
+div#messagebox p {
+    font-size: 115%;
+    margin: 0px;
+}
+
+div#messagebox-warning {
+    background-image: url(../img/warning.gif);
+    background-position: 15px 15px;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    padding-left: 75px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 360px;
+    height: 68px;
+    _height: 150px;
+    overflow: auto;
+}
+
+div#messagebox-warning img {
+    float: left;
+    margin-right: 20px;
+}
+
+div#messagebox-warning p {
+    font-size: 115%;
+    margin: 0px;
+}
+div#messagebox-error { 
+	background-image: url(../img/error.gif); 
+	background-position: 15px 15px; 
+	background-repeat: no-repeat; 
+	background-attachment: scroll; 
+	height: 108px;
+	width: 400px; 
+	padding: 15px 15px 15px 75px;
+    overflow:auto;
+}
+
+div#messagebox-error img {
+    float: left;
+    margin-right: 20px;
+}
+
+div#messagebox-error p {
+    font-size: 115%;
+    margin: 0px;
+}
+div#messagebox-info {
+    background-image: url(../img/info.gif);
+    background-position: 15px 15px;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    padding-left: 75px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    height: 68px;
+    _height: 150px;
+    width: 360px;
+    overflow: auto;
+}
+
+div#messagebox-info img {
+    float: left;
+    margin-right: 20px;
+}
+
+div#messagebox-info p {
+    font-size: 115%;
+    margin: 0px;
+}
+div#messagebox-confirm {
+    background-image: url(../img/confirm.gif);
+    background-position: 15px 15px;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    padding-left: 75px;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 360px;
+    height: 68px;
+    _height: 150px;
+    overflow:auto;
+}
+
+div#messagebox-confirm img {
+    float: left;
+    margin-right: 20px;
+}
+
+div#messagebox-confirm p {
+    font-size: 115%;
+    margin: 0px;
+}
+div.ui-dialog-overlay{
+ filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale, src='../img/overlay.png');
+}
+div.ui-dialog-overlay[class] {
+    background-image:url(../img/overlay.png);
+}
+/* dialog overflow fix */
+.ui-dialog-content{
+padding:0px;
+overflow: auto;
+}
+

@@ -1,0 +1,4 @@
+div.ui-dialog-overlay {
+    /*filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=scale, src='../img/overlay.png');    */
+    background-image:none !important;
+}

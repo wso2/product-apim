@@ -1,0 +1,274 @@
+.placeholderClass {
+    color: #ccc;
+}
+
+#tabs ul li {
+    /* webkit */
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #cdd6e3 ), to( #ffffff ) ); /* mozilla - FF3.6+ */
+    background-image: -moz-linear-gradient( top, #cdd6e3 0%, #ffffff 100% ); /* IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColor = 0, endColorStr = #cdd6e3 ); /* IE8 */
+    -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColor = 0, endColoStr = #cdd6e3 );
+
+    padding: 2px 8px 3px;
+    color: #fff;
+    text-decoration: none;
+    line-height: 1;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+
+    border-bottom: none;
+    height: 20px;
+    margin-right: 5px;
+    border-top: solid 1px #b2ccdd;
+    border-left: solid 1px #b2ccdd;
+    border-right: solid 1px #b2ccdd;
+}
+
+#tabs ul li a {
+    color: #00608f;
+    padding: 2px;
+    font-size: .8em;
+}
+
+#tabs ul li.ui-tabs-selected {
+    background-image: none;
+    background-color: #fff;
+}
+
+#tabs ul li.ui-tabs-selected a {
+    color: #000;
+}
+
+#workArea {
+    padding-bottom: 0px;
+}
+
+.carbonFormTable {
+    color: #555;
+    width: 100%;
+}
+
+.carbonFormTable td {
+    vertical-align: top;
+    font-size: 12px;
+    padding-bottom: 5px !important;
+}
+
+.carbonFormTable input[type=text],.carbonFormTable input[type=password] {
+/* webkit */
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #f7f7f7 ), to( #ffffff ) ); /* mozilla - FF3.6+ */
+    background-image: -moz-linear-gradient( top, #f7f7f7 0%, #ffffff 100% ); /* IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColorStr = #f7f7f7ff, endColorStr = #ffffffff ); /* IE8 */
+    -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColorStr = #f7f7f7ff, endColoStr = #ffffffff );
+
+    background-repeat: repeat-x;
+    border: 1px solid #58697d;
+    min-width: 230px;
+    height: 20px;
+    color: #333333;
+    padding: 3px;
+    margin-right: 4px;
+    margin-bottom: 2px; /*font-family:tahoma, arial, sans-serif;*/
+}
+.carbonFormTable input[disabled=disabled]{
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #dddddd ), to( #eeeeee ) ); /* mozilla - FF3.6+ */
+      background-image: -moz-linear-gradient( top, #dddddd 0%, #eeeeee 100% ); /* IE 5.5 - 7 */
+      filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColorStr = #ddddddff, endColorStr = #eeeeeeff ); /* IE8 */
+      -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColorStr = #ddddddff, endColoStr = #eeeeeeff );
+
+}
+.carbonFormTable td.labelField, .carbonFormTable label.labelField {
+}
+
+.buttonRow {
+    padding: 10px; /* webkit */
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #f2f2f2 ), to( #ffffff ) ); /* mozilla - FF3.6+ */
+    background-image: -moz-linear-gradient( top, #f2f2f2 0%, #ffffff 100% ); /* IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColorStr = #f2f2f2ff, endColorStr = #ffffffff ); /* IE8 */
+    -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColorStr = #f2f2f2ff, endColoStr = #ffffffff );
+
+    border: solid 1px #b8c9d0;
+
+}
+.sub_buttonRow{
+     padding: 10px; /* webkit */
+    background-color:#f5f5f5;
+    border-left: solid 1px #b8c9d0;
+    border-right: solid 1px #b8c9d0;
+    border-bottom: solid 1px #b8c9d0;
+}
+.sub_buttonRow input.button,.sub_buttonRow button.button {
+    margin-right:10px;
+}
+.ui-tabs .ui-tabs-panel {
+    padding: 0px;
+}
+
+.togglebleTitle {
+/*background:transparent url(../images/arrowDownUp.png) no-repeat left -20px;*/
+    cursor: pointer;
+}
+
+.sectionSeperator {
+    color: #000;
+    text-transform: capitalize;
+    font-size: 12px;
+
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #ffffff ), to( #dddddd ) ); /* mozilla - FF3.6+ */
+    background-image: -moz-linear-gradient( top, #ffffff 0%, #dddddd 100% ); /* IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColorStr = #ffffff, endColorStr = #dddddd ); /* IE8 */
+    -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColorStr = #ffffff, endColoStr = #dddddd );
+
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: solid 1px #888888;
+    padding: 5px 10px;
+    width: auto;
+
+    -moz-box-shadow: 3px 3px 2px #ddd;
+    -webkit-box-shadow: 3px 3px 2px #ddd;
+    box-shadow: 3px 3px 2px #ddd;
+    margin-bottom: 10px;
+    clear: both;
+}
+
+.sectionSeperator img {
+    margin-left: 20px;
+}
+
+.contentHidden {
+/*background:transparent url(../images/arrowDownUp.png) no-repeat left 5px !important; */
+    color: #fff;
+    background-image: -webkit-gradient( linear, left top, left bottom, from( #555555 ), to( #dddddd ) ); /* mozilla - FF3.6+ */
+    background-image: -moz-linear-gradient( top, #888888 0%, #eeeeee 100% ); /* IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.gradient( gradientType = 0, startColorStr = #555555, endColorStr = #dddddd ); /* IE8 */
+    -ms-filter: progid: DXImageTransform . Microsoft . gradient( gradientType = 0, startColorStr = #555555, endColoStr = #dddddd );
+}
+
+.sectionSub {
+    padding-left: 10px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.sectionSubForm{
+    border: solid 1px #b8c9d0;
+}
+.sectionSub table.styledLeft{
+    margin-left:0px !important;
+}
+.sectionHelp {
+    padding-bottom: 10px;
+    font-style: italic;
+    background: transparent url( ../images/help-small-icon.png ) no-repeat left top;
+    text-indent: 20px;
+}
+
+.button, .button:visited {
+    font-family: Arial;
+  color: #000000;
+  font-size: 13px;
+  padding: 2px;
+  text-decoration: none;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+
+  text-shadow: 1px 1px 3px #ffffff;
+  border: solid #9D9FA1 1px;
+  background: -webkit-gradient(linear, 0 0, 0 100%, from(#f7f7f7), to(#cccccc));
+  background: -moz-linear-gradient(top, #f7f7f7, #cccccc);
+  -ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorStr=#f7f7f7, endColorStr=#cccccc);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorStr=#f7f7f7, endColorStr=#cccccc);
+  display:inline-block; /* IE is so silly */
+    position: relative;
+    cursor: pointer;
+}
+
+.button:hover, .button:focus {
+     background: #ededed;
+}
+input.button[disabled='disabled'] ,button.button[disabled='disabled'],input.button[disabled=''] ,button.button[disabled=''] {
+    color:#888;
+     background: #ededed;
+}
+input.button, button.button{ /*Fix for IE8 */
+    color:#222\0/ !important;
+}
+.txtbox-small {
+    width: 20px;
+}
+
+.txtbox-med {
+    width: 100px;
+}
+
+.txtbox-big {
+    width: 200px;
+}
+
+.expandedTextarea {
+    width: 99%;
+    height: 150px;
+}
+.sectionInputs{
+    background-color:#eee;
+    border:solid 1px #999;
+    padding:3px 0px 3px 3px;
+}
+.sectionInputs div.sectionHelp{
+    margin:10px 5px 0px 5px;    
+}
+ul.items{
+    margin:0px;
+    list-style-type:none;
+}
+ul.items li{
+    padding:5px 0px;
+}
+
+/* Tempory overrides */
+.ui-tabs-nav li a{
+    background:none;
+}
+/* -- Form headdings --*/
+.heading_A  {
+    font-size:12px;font-weight: bold;border-bottom: solid 1px #ccc;line-height: 20px;
+}
+.heading_B  {
+    font-size:12px;font-weight: bold;line-height: 20px;
+}
+.heading_C  {
+    color:#888;font-size:12px;font-weight: bold;line-height: 20px;
+}
+
+/* Icons */
+a.icon-a{
+    cursor:pointer;
+    color:#2F7ABD;
+    line-height:25px;
+}
+[class^="icon-"], [class*=" icon-"] {
+  display: inline-block;
+  line-height: 14px;
+  vertical-align: text-top;
+  background-repeat: no-repeat;
+  margin-right:5px;
+  *margin-right: .3em;
+}
+[class^="icon-"]:last-child, [class*=" icon-"]:last-child {
+  *margin-left: 0;
+}
+
+.icon-edit { width: 16px; height: 16px; background:url(../images/mainIcons.png) no-repeat -0px -0px; }
+.icon-add { width: 16px; height: 16px; background:url(../images/mainIcons.png) no-repeat -0px -16px; }
+.icon-add-small { width: 12px; height: 12px; background:url(../images/mainIcons.png) no-repeat -0px -32px; }
+.icon-delete { width: 16px; height: 16px; background:url(../images/mainIcons.png) no-repeat -0px -44px; }
+ .odd-even-data-table tr:nth-child(odd) td,
+.odd-even-data-table tr:nth-child(odd) th {
+    background-color: #f9f9f9;
+}
+.odd-even-data-table{
+    border-collapse:collapse;
+}
+

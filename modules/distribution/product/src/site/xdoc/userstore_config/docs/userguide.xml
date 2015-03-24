@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright 2008-2011 WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"></meta>
+    <title>User Store Management - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body style="font-family: Times New Roman,Times,serif; font-size: 12pt;">
+<h1>User Store Management</h1>
+<p>This user guide describes various configuration and management options available with user store management.</p>
+
+<p>The User Store Management component of the WSO2 Carbon facilitates the management
+    and control of user store configuration. The key functionalities of this component includes:</p>
+<ul>
+    <li>Create Secondary User Stores</li>
+    <li>Edit Secondary User Stores</li>
+    <li>Enable/Disable User Stores</li>
+    <li>Delete User Stores</li>
+</ul>
+
+<h2>Default View</h2>
+<p>The default view of user store management feature will show a summary of the available user store definitions.</p>
+
+<p><img alt="" src="../images/index-view.png"/></p>
+<p>Figure 1: Summary of available user store definitions</p>
+<p>The default view will be as above, until we define a secondary user store. To add a user store, we can go through
+    'Add Secondary User Store'</p>
+
+<h2>Selection</h2>
+<p><img alt="" src="../images/selection.png"/></p>
+<p>Figure 2: Select a preferred user store implementation</p>
+<p>Here it provides a form to define a user store, using the available user store manager implementations. At first we
+need to select the implementation class we are to use. By default identity server provides 4 such implementations</p>
+<ol>
+    <li>ReadWriteLDAPUserStoreManager</li>
+    <li>ReadOnlyLDAPUserStoreManager</li>
+    <li>ActiveDirectoryUserStoreManager</li>
+    <li>JDBCUserStoreManager</li>
+</ol>
+<p>In addition to the above we can add our own custom user store managers too. We just have to write our custom user manager
+implementing interface org.wso2.carbon.user.api.UserStoreManager and make it available in the server.
+From the drop down menu select the required user store manager implementation. It will provide a form to fill as follows
+according to the selected class</p>
+
+<h2>Define</h2>
+<p><img alt="" src="../images/definition.png"/></p>
+<p>Figure 3: Property defining</p>
+<p>A little description of what each property means is also given for the ease. Fill all the mandatory properties and optional
+properties as you wish.</p>
+
+<h2>Save</h2>
+<p><img alt="" src="../images/save.png"/></p>
+<p>Figure 4: Try to add the user store</p>
+<p>At saving the user store it will provide a notification as above. This means you have given all the required properties
+and identity server is in the process of adding this defined user store to the existing chain. Please not that this does
+not mean user store is successfully added. We have to wait little and refresh the page to confirm it.</p>
+
+<h2>Status</h2>
+<p><img alt="" src="../images/status.png"/></p>
+<p>Figure 5: Status after addition</p>
+<p>At refresh after a moment summary view will show something similar to above, if user store addition is a success.
+    Then we can use the provided links to edit,disable/enable the user store.</p>
+
+</body>
+</html>

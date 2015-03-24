@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+  <title>Synapse Configuration - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+<h1>Synapse Configuration</h1>
+
+<p>Use this feature to view your current system configuration, modify the
+configuration, and save the configuration to the system.</p>
+
+<h2>Changing the Configuration</h2>
+<ol>
+  <li>In the navigator, under Configure, click <strong>Synapse.
+    </strong><strong style="font-weight: normal;">
+    The</strong> <em><strong>Synapse Bus Configuration</strong></em> page
+    appears. It display the <strong
+    style="font-weight: normal;">Synapse.xml</strong> file.
+    <img alt="" src="images/synapse-config-admin.png" height="680" width="1286"/>
+    Figure 1: Synapse Configuration
+  </li>
+  <li>Modify the configuration as required, and
+  click <strong>Update</strong>.</li>
+  <li>If you want to undo the changes, click<strong>Reset</strong>.</li>
+</ol>
+<p>For <a href="http://wso2.org/library/esb">more information</a> please refer to the WSO2 library</p>
+</body>
+</html>

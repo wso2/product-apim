@@ -1,0 +1,94 @@
+body {
+background-image:url(../images/st-login-body-bg.gif);
+background-position:left top;
+background-repeat:repeat-x;
+font-family:"Calibri",Arial,Helvetica,san-serif;
+font-size:0.8em;
+margin:0;
+padding:0;
+}
+p {
+}
+td {
+}
+a:link {
+text-decoration:none;
+}
+a:visited {
+}
+a:hover {
+}
+a:active {
+}
+a img {
+border:0 none;
+}
+div#middle {
+background-color:#FFFFFF;
+margin:auto;
+width:961px;
+}
+div#header {
+background-image:url(../images/st-login-header-bg.gif);
+background-position:left top;
+background-repeat:no-repeat;
+height:87px;
+padding-top:94px;
+text-align:center;
+}
+div#content {
+background-image:url(../images/st-login-content-bg.gif);
+background-position:left top;
+background-repeat:no-repeat;
+padding-left:60px;
+padding-right:60px;
+padding-top:20px;
+}
+div#intro {
+padding-bottom:10px;
+text-align:center;
+}
+div#register {
+float:left;
+padding-top:85px;
+text-align:center;
+width:420px;
+}
+div#sign-in {
+border-left:1px solid #0499CC;
+float:left;
+padding:20px 30px 30px 50px;
+text-align:left;
+width:340px;
+}
+div#sign-in h2 {
+border-bottom:1px solid #78BDE8;
+font-size:130%;
+margin-bottom:10px;
+margin-top:0;
+padding-bottom:10px;
+padding-top:0;
+}
+div#sign-in table tr td {
+padding-bottom:5px;
+padding-right:7px;
+}
+div#sign-in table {
+border-bottom:1px solid #78BDE8;
+margin-bottom:7px;
+}
+div#footer {
+background-image:url(../images/st-login-footer-bg.gif);
+background-position:left top;
+background-repeat:no-repeat;
+margin-top:5px;
+padding-bottom:7px;
+padding-top:25px;
+text-align:center;
+}
+div.clear {
+clear:both;
+}
+#loginForm td label{
+    font-size:11px;
+}

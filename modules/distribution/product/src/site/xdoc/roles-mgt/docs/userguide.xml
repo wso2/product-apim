@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+  <title>Server Roles Management - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body style="font-family: Times New Roman,Times,serif; font-size: 12pt;">
+<h1>Server Roles Manager</h1>
+
+<h2>Introduction</h2>
+
+<p><strong>Server Roles Manager</strong> is a component to manage server roles property for
+   WSO2Carbon based products. Read more about <a href="server-roles.html">
+   <strong>Server Roles</strong></a>.</p>
+
+<p>As carbon supports adding different product features into one product instance original concept
+   of the server role property   being added into carbon.xml is hard to manage as users may have to
+   manually modify the carbon.xml to include the server-roles related to the product feature they
+   have added to a carbon product instance. As WSO2 Stratos and WSO2 Mars are introduced above
+   action is not possible for a tenant since the tenant user is remote to the server instance.</p>
+
+<p>To overcome those issues server role manager is introduced. Server role manager will store the
+   both carbon.xml default product roles and user/tenant specified server roles in Configuration
+   registry. So when a C-App is deploying in carbon the C-App deployer will check for afro-mentioned
+   server roles from the registry instead of carbon.xml.</p>
+
+<h2>How It Works</h2>
+
+<p>You can access the server roles manager UI clicking '<strong>Configure -> Server Roles</strong>'
+   or directly from <strong>https://&lt;host&gt;:&lt;port&gt;/carbon/roles-mgt/server-roles-mgt.jsp
+    </strong>.
+
+Server Roles Manager Displays all the server roles included in the current product instance in the
+landing page.
+
+<p><img alt="" src="../images/landingpage.jpg"/></p>
+<p>Figure 1: Server Roles Manager Landing page.</p>
+
+In server roles manager, server roles properties will be of two types, <strong>Default</strong> and
+<strong>Custom</strong>. Default type will be all the server roles picked from that particular
+product instance's carbon.xml and all other server roles added by the user will have type custom.
+</p>
+
+<h2>Functionality</h2>
+
+<p>Server Roles Manager has two basic functionalities,</p>
+	<ol>
+		<li>Add Server Role</li>
+		<p>You can add any textual name as a server role without special characters except
+           underscore.</p>
+		
+		<p><img alt="" src="../images/add_server_role.jpg"/></p>
+		<p>Figure 2: Add Server Role.</p>
+		
+		<p>Click the link '<strong>Add New Server Role</strong>' and a drop down menu will appear to
+           give the new role name. Just enter the preferred server role name than click
+            <strong>Add</strong>, and it will add the server role name.</p>
+		
+		<li>Remove Server Role</li>
+		<p>Simply click the <strong>garbage/delete icon</strong>
+           (<img alt="" src="../images/delete.gif"/>) at the right side of the any existing server
+           role. It will prompt a <strong>confirmation dialog</strong> and once confirmed it will
+           delete the server role.</p>
+		
+		<p><img alt="" src="../images/delete_server_role.jpg"/></p>
+		<p>Figure 2: Remove Server Role.</p>
+	
+	<p><strong>Note: </strong>Here users can even delete a default server role. Once it is deleted
+        when next time loading server role manager will not pick it up from the carbon.xml.</p>
+	</ol>
+</body>
+</html>

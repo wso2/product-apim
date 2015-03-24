@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html><head><title>WSO2 Carbon - About</title>
+
+<link href="../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+<body>
+<h1>Version 4.3.0</h1>
+<h2>About WSO2 Carbon </h2>
+<p>WSO2 Carbon is a component based Enterprise SOA platform. The
+design of
+WSO2 Carbon focuses on separating the key functionality of the SOA
+platform
+into separate pluggable Carbon components that can be mixed and
+matched, like
+customizable building blocks. This allows you to add only the
+functionality
+you need to start up, and continue to add product capabilities
+as your
+requirements grow. This helps a business to quickly adapt to
+changes.</p>
+<p>OSGi is used as the underlying core modularization technology
+within the
+Carbon platform. The Carbon framework is shipped with Eclipse Equinox
+by
+default, but can be supported on Spring dm Server, Felix or Knoplerfish
+if
+required. The OSGi technology even allows you to write your business
+functionality as an OSGi component and deploy it in the existing Carbon
+platform. </p>
+<p> For a quick start on using the WSO2 Carbon
+platform, the Carbon components are pre-assembled into the following
+products: </p>
+<ul id="CarbonProducts">
+    <li><a href="http://wso2.com/products/api-manager/">WSO2
+        API Manager</a></li>
+    <li><a href="http://wso2.com/products/application-server/">WSO2
+        Application Server</a></li>
+    <li><a href="http://wso2.com/products/business-activity-monitor/">WSO2
+        Business Activity Monitor</a></li>
+    <li><a href="http://wso2.com/products/business-process-server/">WSO2
+        Business Process Server</a></li>
+    <li><a href="http://wso2.com/products/business-rules-server/">WSO2
+        Business Rules Server</a></li>
+    <li><a href="http://wso2.com/products/complex-event-processing-server/">WSO2
+        Complex Event Processing Server</a></li>
+    <li><a href="http://wso2.com/products/data-services-server">WSO2
+        Data Services Server</a></li>
+    <li><a href="http://wso2.com/products/elastic-load-balancer/">WSO2
+        Elastic Load Balancer</a></li>
+    <li><a href="http://wso2.com/products/enterprise-service-bus/">WSO2
+        Enterprise Service Bus</a></li>
+    <li><a href="http://wso2.com/products/governance-registry/">WSO2
+        Governance Registry</a></li>
+    <li><a href="http://wso2.com/products/identity-server/">WSO2
+        Identity Server</a></li>
+    <li><a href="http://wso2.com/products/message-broker/">WSO2
+        Message Broker</a></li>
+    <li><a href="http://wso2.com/products/storage-server/">WSO2
+        Storage Server</a></li>
+</ul>
+<p>You can assemble your own products by combining
+components and
+deploying them in a preferred architecture. WSO2 Carbon offers P2 based provisioning support as well. Please visit the <a href="http://wso2.com/products/carbon/">Carbon product page</a> for more information. </p>
+<p>The WSO2 Carbon platform gives maximum flexibility to adapt
+the middleware
+to your enterprise architecture, rather than adapt your architecture to
+the
+middleware. </p>
+
+<h2>About WSO2</h2>
+<p>WSO2 is a Open Source technology company building Open Source
+middleware
+platforms for Web services and SOA. WSO2 delivers integrated middleware
+stacks, offering industry leading
+performance and convenience for customers. </p>
+<p>Founded in August 2005 by pioneers in Web services and Open
+Source, WSO2
+engineers contribute heavily to many key Apache Web services and other open source projects. </p>
+
+<h3>Have you tried...</h3>
+<p><a href="http://wso2.com/products/api-manager/"><img src="../admin/images/am_logo_h23.gif" alt="API Manager"/></a></p>
+<p><a href="http://wso2.com/products/application-server/"><img src="../admin/images/appserver_logo_h23.gif" alt="Application Server"/></a></p>
+<p><a href="http://wso2.com/products/business-activity-monitor/"><img src="../admin/images/bam_logo_h23.gif" alt="Business Activity Monitor"/></a></p>
+<p><a href="http://wso2.com/products/business-process-server/"><img src="../admin/images/bps_logo_h23.gif" alt="Business Process Server"/></a></p>
+<p><a href="http://wso2.com/products/business-rules-server"><img src="../admin/images/brs_logo_h23.gif" alt="Business Rules Server"/></a></p>
+<p><a href="http://wso2.com/products/complex-event-processing-server/"><img src="../admin/images/cep_logo_h23.gif" alt="Complex Event Processing Server"/></a></p>
+<p><a href="http://wso2.com/products/data-services-server"><img src="../admin/images/ds_logo_h23.gif" alt="Data Services Server"/></a></p>
+<p><a href="http://wso2.com/products/elastic-load-balancer/"><img src="../admin/images/elb_logo_h23.gif" alt="Elastic Load Balancer"/></a></p>
+<p><a href="http://wso2.com/products/enterprise-service-bus/"><img src="../admin/images/esb_logo_h23.gif" alt="Enterprise Service Bus"/></a></p>
+<p><a href="http://wso2.com/products/governance-registry/"><img src="../admin/images/registry_logo_h23.gif" alt="Governance Registry"/></a></p>
+<p><a href="http://wso2.com/products/identity-server/"><img src="../admin/images/identity_logo_h23.gif" alt="Identity Server"/></a></p>
+<p><a href="http://wso2.com/products/message-broker/"><img src="../admin/images/mb_logo_h23.gif" alt="Message Broker"/></a></p>
+<p><a href="http://wso2.com/products/storage-server/"><img src="../admin/images/ss_logo_h23.png" alt="Storage Server"/></a></p>
+<h3>Stay connected </h3>
+<p><a href="http://wso2.org/newsletter/subscriptions">Subscribe</a>
+to the WSO2 newsletter - project updates, events, articles, SOA news
+and much
+more.</p>
+<h3>Need more help?</h3>
+<ul>
+<li><a href="http://wso2.org/library">Read articles</a></li>
+<li><a href="http://wso2.com/support/">Get commercial
+support</a></li>
+</ul>
+<div id="footer-div">
+	<div class="footer-content">
+		<div class="copyright">
+		    &copy; 2005 - 2014 WSO2 Inc. All Rights Reserved.
+		</div>
+	</div>
+</div>
+</body></html>

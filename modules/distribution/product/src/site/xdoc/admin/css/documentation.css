@@ -1,0 +1,95 @@
+body {
+    background-color: white;
+    padding-left: 20px;
+    padding-top: 0px;
+    padding-right: 20px;
+    padding-bottom: 50px;
+    margin: 0px;
+    font-family: "Lucida Grande","Lucida Sans","Microsoft Sans Serif", "Lucida Sans Unicode","Verdana","Sans-serif","trebuchet ms";
+    color: #111;
+	font-size:12px;
+	font-size-adjust:none;
+	font-stretch:normal;
+	font-style:normal;
+	font-variant:normal;
+	font-weight:normal;
+	line-height:1.25em;
+	background-repeat: no-repeat;
+	background-position: left bottom;
+}
+
+p { margin-left: 20px;
+margin-right: 20px;}
+
+td { }
+
+a:link { }
+
+a:visited { }
+
+a:hover { }
+
+a:active { }
+
+h1, h2, h3, h4, h5 {
+margin: 0px;
+padding-left: 20px;
+padding-top: 5px;
+padding-bottom: 5px;
+font-weight: normal;
+}
+
+h1 {
+	background-image: url(../images/help-header.gif);
+	background-repeat: no-repeat;
+	background-position: left top;
+	padding-top: 90px;
+	padding-bottom: 25px;
+	font-size: 225%;
+	font-weight: normal;
+	padding-left: 20px;
+	color: #f47b20;
+	margin-left: -20px;
+	margin-right: -20px;
+}
+
+a img {
+ 	border: 0px;
+}
+table.styled {
+border: solid 0px #ccc;
+border-collapse: collapse;
+}
+table.styled tr td {
+border: solid 1px #ccc;
+padding: 3px;
+}
+table.styled tr td.subHeader {
+border: solid 0px #ccc;
+padding-top: 10px;
+padding-bottom: 5px;
+font-size: 125%;
+font-weight: bold;
+}
+
+div#footer-div {
+	height: 27px;
+	width: 100%;
+}
+
+div#footer-div div.footer-content {
+	height: 27px;
+	margin: auto;
+	padding: 0px;
+    margin-left: -20px;
+    margin-right: -20px;
+    background-color: #a9a9a9;
+}
+
+div#footer-div div.footer-content div.copyright {
+	padding-top: 5px;
+	color: #fff;
+	width: 450px;
+	float: left;
+	margin-left: 20px;
+}

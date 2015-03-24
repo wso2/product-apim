@@ -1,0 +1,49 @@
+.yuimenu {
+    font-size: 100%;
+    line-height: 1.5;
+}
+
+.yuimenu .bd {
+    background-color: #FFFFFF;
+    border: 1px solid #808080;
+}
+
+.yuimenu ul.first-of-type {
+    border-width: 0;
+}
+
+.yuimenu ul {
+    border-color: #CCCCCC;
+    border-style: solid;
+    border-width: 1px 0 0;
+    padding: 3px 0;
+}
+
+.yuimenubar ul, .yuimenu ul, .yuimenubar li, .yuimenu li, .yuimenu h6, .yuimenubar h6 {
+    margin: 0;
+    padding: 0;
+}
+
+.yuimenubar li, .yuimenu li {
+    list-style-type: none;
+}
+
+.yuimenuitemlabel {
+    color: #000000;
+    cursor: pointer;
+    padding: 0 20px;
+    text-decoration: none;
+}
+
+.yuimenubaritemlabel, .yuimenuitemlabel {
+    display: block;
+}
+
+.yuimenuitemlabel, .yuimenubaritemlabel {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.yuimenubar li, .yuimenu li {
+    list-style-type: none;
+}

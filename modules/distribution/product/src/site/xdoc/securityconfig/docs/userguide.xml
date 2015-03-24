@@ -1,0 +1,205 @@
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252"></meta>
+    <title>Security for Web Service - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+<body>
+
+<h1>Security for Web Services</h1>
+
+<p> Web Services security, or to be more precise, SOAP message security, identifies and
+    provides solutions for general computer security threats as well as threats unique
+    to Web services. </p>
+
+<p> WSO2 Carbon supports WS Security, WS-Policy and WS-Security Policy specifications.
+    These specifications define a behavioral model for Web services. A requirement for
+    one Web service may not be valid for another. Thus defining service-specific
+    requirements might be necessary.</p>
+
+<p> The WSO2 SOA platform provides important security features to your service. By default,
+    the security features are disabled. You should explicitly enable the security feature.</p>
+
+<h2>Adding Security Features</h2>
+
+<p> Understanding the exact security requirements should be the first step you should take
+    when planning to secure your Web services. For an example, you may have to consider what
+    security aspects are important to your service, whether it is the integrity,
+    confidentiality, or both. </p>
+
+<ol>
+    <li>In the navigator, under Manage/Services, click <strong>List</strong>.
+        The <em><strong>Deployed Services</strong></em> page appears.
+    </li>
+    <li>Click on the service name for which you want to add
+        security features. The <em><strong>Service Dashboard</strong></em>
+        page appears.
+    </li>
+    <li>Click <strong>Security</strong> in the <strong>Quality
+        of Service Configuration</strong> panel. The <em><strong>Security
+        for the Service</strong></em> page appears.
+    </li>
+    <li>To enable security for the service, in the <strong>Enable
+        Security? </strong> drop down list, click <strong>Yes.</strong></li>
+    
+    <p><img src="images/no_security.png" alt="Turning on Security" height="144" width="1018" border="1" style="border-color:darkgray"/></p>
+
+    <p><em><strong>Figure 1:</strong> Enabling security</em></p>
+
+    <p>A list of available security scenarios is displayed. In addition to that, an
+       option is provided to select a custom security policy from Registry.</p>
+
+    <p><img src="images/default_scenarios.png" alt="Selecting default security scenarios" height="624" width="998" border="1" style="border-color:darkgray"/></p>
+
+    <p><em><strong>Figure 2:</strong> Selecting Default Security Scenarios</em></p>
+
+    <p><img src="images/policy_from_registry.png" alt="Referring to a policy from Registry" height="114" width="993" border="1" style="border-color:darkgray"/></p>
+
+    <p><em><strong>Figure 3:</strong> Referring to a policy from Registry</em></p>
+    
+    <li>To enable security for your service, either you can select a default security scenario
+        from the 15 existing scenarios (as shown in Figure 2) or you can refer to a custom
+        security policy which is stored in Configuration Registry or Governance Registry
+        (as shown in Figure 3). After selecting the suitable option, click <strong>Next</strong>.
+        The <em><strong>Activate Security</strong></em> page appears. You can configure the
+        security features on this page. The configurations depend on your previous selections.
+
+        <br/>
+
+        If you have selected a default security scenario, this page will show you the user groups,
+        key stores etc. according to the selected security scenario. But if you have referred to a
+        custom security policy from Registry, this page will show all the options to select user
+        groups and key stores and you have to select those according to your policy.
+
+        <br/>
+        <br/>
+
+        <ul>
+            <ul>
+                <li>In a default scenario, if you have selected a policy that includes Username Token,
+                    you will have the User Group panel to choose the users who are
+                    allowed to access the service.
+
+                    <p><img src="images/activate_security_user_groups.png" alt="Activate Security - User Groups" height="250" width="1012" border="1" style="border-color:darkgray"/></p>
+
+                    <p><em><strong>Figure 4:</strong> Activate security - User Groups</em></p>
+                </li>
+            </ul>
+        </ul>
+
+        <ul>
+            <ul>
+                <li>In a default scenario, if you have selected a policy that requires signing or
+                    encryption, Trusted Key Stores and Private Key Store panels appear.
+                    Select the KeyStore (wso2carbon.jks) and the Private Key Store
+                    (Only the wso2carbon.jks keystore is available by default).
+
+                    <p><img src="images/activate_security_key_stores.png" alt="Activate Security - Selecting Key Stores" height="312" width="1011" border="1" style="border-color:darkgray"/></p>
+
+                    <p><em><strong>Figure 5:</strong> Activate Security - Selecting Key Stores</em></p>
+                </li>
+            </ul>
+        </ul>
+
+
+        <ul>
+            <ul>
+                <li>
+                    <p>
+                        If you are applying security scenario 16 (Kerberos Token based security) you have to associate
+                        your service with a service principal. Security scenario 16 is only applicable if you have a
+                        <strong>"Key Distribution Center (KDC)"</strong> and an <strong>"Authentication Server
+                        (AS)"</strong>
+                        in your environment. Commonly you can find KDC and an AS in a LDAP Directory server.
+                    </p>
+
+
+                        2 configuration files are used to specify Kerberos related parameters. They are, <br/>
+                        1. krb5.conf - Includes KDC server details, encryption/decryption algorithms etc ... <br/>
+                        2. jaas.conf - Includes information relevant to authorization.
+
+
+                    <p>Usually above files are located at {server installation directory}/repository/conf directory.</p>
+
+                    <p>
+                        After selecting scenario 16, you will be asked to fill information about service principal to
+                        associate web service with. There you need to specify service principal name and service
+                        principal password. Service principal must be already defined in the LDAP Directory server.
+                    </p>
+
+                    <p>
+                        Following picture depicts this behavior,
+                    </p>
+
+                    <p><img src="images/kerberos_spn.png" alt="Activate Security - Kerberos security policy"
+                            border="1" style="border-color:darkgray"/></p>
+
+                    <p><em><strong>Figure 6:</strong> Activate Security - Kerberos security policy</em></p>
+                </li>
+            </ul>
+        </ul>
+
+
+        <ul>
+            <ul>
+                <li>When you have referred to a custom policy from Registry, you will be provided
+                    with all possible options to select user groups, trusted key stores and private
+                    key store. You can select only the needed options according to your custom
+                    policy and ignore others. Even if you select unwanted stuff, those will not be
+                    used at runtime.
+
+                    <p><img src="images/activate_security_custom_policy.png" alt="Activate Security - Custom policies" height="423" width="1013" border="1" style="border-color:darkgray"/></p>
+
+                    <p><em><strong>Figure 7:</strong> Activate Security - Custom policies</em></p>
+                </li>
+            </ul>
+        </ul>
+
+
+    </li>
+
+    <li>Click <strong>Finish</strong>. You will see the message "Security Applied Successfully".
+        And you will be redirected to the Service Dashboard.</li>
+
+</ol>
+
+<h2>Disabling Security Features</h2>
+
+<p>This function is used to disable Security from a particular service.</p>
+
+<ol>
+    <li>In the navigator, under Manage/Service, click <strong>List</strong>.
+        The <em><strong>Deployed Services</strong></em> page appears.
+    </li>
+    <li>Click on the service name from which you want to disable security.
+        The <em><strong>Service Dashboard</strong></em> page appears.
+    </li>
+    <li>Click <strong>Security</strong> in the <strong>Quality of Service Configuration</strong>
+        panel. The <em><strong>Security for Service</strong></em> page appears.
+    </li>
+    <li>To disable security from the service, in the <strong>Enable
+        Security? </strong> drop down list, click <strong>No</strong> and confirm.</li>
+    <li>You will see the message "Security Applied Successfully".</li>
+</ol>
+
+<p><strong>Note</strong>: All default security scenarios are described in the wizard.</p>
+</body>
+</html>

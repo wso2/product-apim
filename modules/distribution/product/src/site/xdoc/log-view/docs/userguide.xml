@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+  <title>Monitor Logs - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head> 
+ 
+<body>
+<h1>Monitor Logs</h1>
+
+<p>Logs can be displayed as System logs or application logs.System Logs shows the log events of the system logs depending on the product. Application logs filter logs by the application, it can be services or web applications. There are two ways to configure system logs, 1) through Memory Appender where logs will be taken from the memory, 2) BAMLogEventAppender where logs will be published to bam and log events will be taken from BAM storages. Only the latest daily logs messages will be displayed in the UI where the logs events can be filtered accordingly. Log events are archived daily per tenant per product per date and can be downloaded for further analysis.
+</p>
+<p>The log messages, displayed in this page are obtained from a memory appender. Hence, the severity(log level) of the
+    displayed log messages are equal or higher than the threshold of the memory appender. For more information on
+    appenders, loggers and their log levels, please visit <a href="http://logging.apache.org/log4j/">here</a>. </p>
+
+<h3><strong>Log files on disk</strong></h3>
+<p>The location of the log files on disk is specified in the log4j.configuration file.</p>
+
+<h2>View Logs</h2>
+
+<p>This log events are displayed from bottom-up manner. You can also search for a
+particular log by a keyword using the <span style="font-weight: bold;">Search Logs</span>
+feature. <span style="color: red;"></span></p>
+<ol>
+  <li>In the navigator, under Monitor, click <span
+    style="font-weight: bold;">Logs</span>. The <span
+    style="font-style: italic; font-weight: bold;">System Logs/Application Logs</span> page
+    appears. </li>
+
+  <li>In the <span style="font-weight: bold;">View</span> list, select the
+    category of logs you want to view. The available categories are,  </li>
+</ol>
+
+<div style="margin-left: 40px;">
+INFO  - Information messages
+WARN  - Warning messages
+ERROR  - Error messages
+DEBUG  - Debug messages 
+TRACE  - Trace messages
+FATAL - Fatal error messages </div>
+<ol>
+</ol>
+
+<p><img alt="" src="images/logview.jpg" /></p>
+
+<p style="text-align:left;">Figure 1: Monitor Logs</p>
+
+<p><img alt="" src="images/logIndex.jpg" /></p>
+<p style="text-align:left;">Figure 2: Archived Logs</p>
+
+<p>To filter out application specific logs, go to Monitor -> Application Logs. This will display application specific logs.</p>
+
+
+<p><img alt="" src="images/application.jpg" /></p>
+<p style="text-align:left;">Figure 3: Application Logs</p>
+</body>
+</html>

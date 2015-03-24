@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WSO2 ESB - Filter Mediator </title>
+  <link href="css/esb-docs.css" rel="stylesheet" />
+  <link href="styles/dist-docs.css" rel="stylesheet" type="text/css"
+  media="all" />
+</head>
+
+<body>
+<h2>Filter Mediator</h2>
+
+<p>Filter mediator can be used for XPath filtering of messages. There are two
+modes of operation.</p>
+<ol>
+  <li>If user only specifies the XPath it will be evaluated for true or
+  false.</li>
+  <li>If user specifies a regular expression as well, the string returned from
+    evaluating the xpath will be matched against the regular expression.</li>
+</ol>
+
+<p>In both modes if evaluation of expression returns true child mediators will
+be executed.</p>
+
+<p>Filter mediator closely resembles the If/else control structure.</p>
+
+<h3>Syntax</h3>
+<pre xml:space="preserve"> &lt;filter (source="xpath" regex="string") | xpath="xpath"&gt;
+   mediator+
+ &lt;/filter&gt;</pre>
+
+<p>The &lt;filter&gt; mediator either test the given xpath expression as a
+Boolean expression, or match the evaluation result of a source xpath expression
+as a String against the given regular expression. If the test succeeds, the
+filter mediator will execute the enclosed mediators in sequence. </p>
+
+<p>One could also use this mediator to handle the failure case as well, in
+which case the configuration would be as follows </p>
+<pre xml:space="preserve"> &lt;filter (source="xpath" regex="string") | xpath="xpath"&gt;
+   &lt;then [sequence="string"]&gt;
+     mediator+
+   &lt;/then&gt;
+   &lt;else [sequence="string"]&gt;
+     mediator+
+   &lt;/else&gt;
+ &lt;/filter&gt;</pre>
+
+<p>In this case the filter condition remains as earlier and the succeeded
+messages will be mediated using the the set of mediators enclosed in the 'then'
+element in sequence, while failed messages will be mediated using the set of
+mediators enclosed in the else element in sequence</p>
+
+<h3>UI Configuration</h3>
+
+<p><img src="../filter-mediator/docs/images/filter_mediator_screenshot.jpg"
+alt="" /> </p>
+
+<p>Here are the configuration options related to Filter Mediator. </p>
+<ul>
+  <li>Specify As: Specify whether you give the condition as an XPath or a
+    Regular expression. </li>
+  <li>XPath: XPath expression if you selected the "Specify As" option to
+    "XPath". Note that you can define the namespaces used in the xpath by
+    clicking the "Namespaces" link </li>
+  <li>Source: XPath expression to locate the value which is going match with
+    the reguilar expression that you can define below. </li>
+  <li>Regex: Regular expression to match with the source value. </li>
+</ul>
+
+<h3>Example</h3>
+<pre xml:space="preserve">  &lt;filter source="get-property('To')" regex=".*/StockQuote.*"&gt;
+      &lt;then&gt;
+          &lt;send/&gt;                    
+      &lt;/then&gt;
+      &lt;else&gt;
+          &lt;drop/&gt;
+      &lt;/else&gt;
+  &lt;/filter&gt;     </pre>
+
+<p>In this example, filter will get the To header value and match it against
+the given regular expression. If this evaluation returns true, it will send the
+message. If the evaluation returns false it will drop the message.</p>
+</body>
+</html>

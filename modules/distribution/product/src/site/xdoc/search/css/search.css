@@ -1,0 +1,25 @@
+table tbody tr td {
+    border: 0 none;
+    padding: 0;
+    text-align: left;
+    vertical-align: top;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#mediaTypeAutoComplete {
+    width: 130px; /* set width here or else widget will expand to fit its container */
+}
+
+.loadMediaTypeButton {
+    margin-left: 170px;
+    display:block;
+    width:50px;
+}
+.search-subtitle{
+    color: #666666;
+    font-weight:bold;
+}

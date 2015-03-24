@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright 2008 WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"></meta>
+  <title>Claim Management - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body style="font-family: Times New Roman,Times,serif; font-size: 12pt;">
+<h1>Claim Management</h1>
+
+<p>A claim is a piece of information about a particular subject. The Claim Management component of the WSO2 Carbon enables to map a set of attributes from the underlying user store to a set of defined claims</p>
+<p>The underlying user store can be either the external user store or the internal user store.</p>
+<p>A set of claims are identified as a dialect. Different dialects represents the same piece of information with different claim URIs.</p>
+<p>With the help of Claim Management component, these different claims can be mapped with the attributes of the user which are associated with his profile.</p>
+
+<p><img alt="" src="../images/claim-mgt.png"/></p>
+<p>Figure 1: Claim Management</p>
+
+<p>Following dialects are defined by-default with WSO2 Claim Management Component.</p>
+<ul>  
+  <li>http://wso2.org/claims : Default dialect for WSO2 Carbon</li>
+  <li>http://schemas.xmlsoap.org/ws/2005/05/identity : Default dialect for Information Cards</li>
+  <li>http://axschema.org : Default dialect for OpenID Attribute EXchange</li>
+  <li>http://schema.openid.net/2007/05/claims : Default dialect for OpenID Simple Registration</li>
+</ul>
+
+<p>You can define a new Claim Dialect by clicking on the link 'Add New Claim Dialect'</p>
+
+<p><img alt="" src="../images/add-dialect.png"/></p>
+<p>Figure 2: Adding a new dialect</p>
+
+<ul>
+  <li><strong>Dialect Uri</strong>         : URI which uniquely identifies the Dialect. <i>Eg :- http://schema.openid.net/2007/05/claims</i></li>
+  <li><strong>Display Name </strong>         : Name of the dialect.</li>
+  <li><strong>Description</strong>         : Describe the Dialect, what it is designed for, etc.</li>
+  <li><strong>Claim Uri</strong>     : Each dialect should have at least one claim when defining it.</li>
+  <li><strong>Mapped Attribute</strong>     : Corresponding attribute name from the underlying user store for this claim.</li>
+  <li><strong>Regular Expression</strong>   : Regular expression to validate inputs for this claim.</li>
+  <li><strong>Display Order</strong>        : Display order of the above claim among all the other claims defined under the same dialect</li>
+  <li><strong>Supported by Default</strong> : If unchecked, this claim won't be prompted at the time of user registration</li>
+  <li><strong>Required</strong>             : Whether this claim is mandatory for user registration or not.</li>
+</ul>
+
+<p>From the Claim Dialect view [once you click on any available dialect links] you can views the claims defined for that particular dialect.</p>
+<p><img alt="" src="../images/view-dialect.png"/></p>
+<p>Figure 3: Viewing Dialect Information</p>
+
+It is possible to edit the claim mappings of a given dialect by clicking the 'Edit' link appearing for each claim mapping.
+<p><img alt="" src="../images/edit-claim-mapping.png"/></p>
+<p>Figure 4: Editing a Claim Mapping</p>
+
+You can extend a defined dialect by adding new claim mappings. Click 'Add New Claim Mapping' link to add a new claim mapping.
+<p><img alt="" src="../images/add-claim-mapping.png"/></p>
+<p>Figure 5: Adding a new claim mapping</p>
+
+<ul>  
+  <li><strong>Display Name</strong>         : Name of the claim displayed on the UI</li>
+  <li><strong>Description </strong>         : Describe the functionality of the claim</li>
+  <li><strong>Claim Uri   </strong>         : URI defined under the dialect, specific to the claim</li>
+  <li><strong>Mapped Attribute</strong>     : Corresponding attribute name from the underlying user store</li>
+  <li><strong>Regular Expression</strong>   : Regular expression to validate inputs</li>
+  <li><strong>Display Order</strong>        : Display order of the claim among all the other claims defined under the same dialect</li>
+  <li><strong>Supported by Default</strong> : If unchecked wont be prompted at the time of user registration</li>
+  <li><strong>Required</strong>             : Required for user registration</li>
+</ul>
+
+</body>
+</html>

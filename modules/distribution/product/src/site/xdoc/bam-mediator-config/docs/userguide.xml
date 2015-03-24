@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+    <title>Configuring BAM Server Profiles and Streams - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+<body>
+<h1>Configuring BAM Server Profiles and Streams</h1>
+
+<p>Before adding a BAM mediator to a mediator sequence BAM mediator configurations should be updated
+   as below. Configuration information are basically considered as a set of BAM server profiles
+   which contains transport and credential data required to connect to the BAM server. In each BAM
+   server profile one or many Event Stream configurations should be defined. Streams contains CEP
+   event stream related information like Stream Name, Stream Version etc and data to be extracted
+   from the configuration context of the mediation sequence.</p>
+<ol>
+    <li>To go to the configuration of BAM Mediator go to&nbsp;ESB management console <strong>Configure&rarr;BAM
+                                                                                             Server
+                                                                                             Profile</strong>
+        menu.<br/><br/></li>
+    <li>If there are no existing Profiles (in the very first time) click <strong>Add
+                                                                                 Profile</strong> to
+        add a new BAM Server Profile.<br/><br/><img
+                src="images/no-profiles.png"
+                class="confluence-embedded-image"/><br/><br/></li>
+
+    <li>If there are Profiles already existing either creation of new profiles or editing an already
+        existing Profile is possible by clicking on their <strong>Edit Profile</strong> link. If
+        there are unnecessary profiles they can be deleted by clicking on their <strong>Remove
+                                                                                        Profile</strong>
+        link.<br/><br/><img src="images/with-many-profiles.png"
+                          class="confluence-embedded-image"/><br/><br/></li>
+    <li>Enter a name for BAM server profile in <strong>Profile Name</strong>.<br/><br/></li>
+    <li>In <strong>Server Credential</strong> enter <strong>admin</strong> as <strong>User
+                                                                                      Name</strong>
+        and <strong>admin</strong> as <strong>Password</strong> by default.<br/><br/></li>
+    <li>In <strong>Server Transport</strong> select <strong>Thrift</strong> as the default <strong>Protocol</strong>.<br/><br/>
+    </li>
+    <li>If message confidentiality is required from ESB server to BAM server tick on <strong>Enable
+                                                                                             Security</strong>.<br/><br/>
+    </li>
+    <li>Enter the IP address of the BAM server's Thrift server as the <strong>IP Address</strong>.
+        By default it is the IP address of the localhost.<br/><br/></li>
+    <li>If security was not enabled <strong>Receiver Port</strong> will be asked and enter <strong>7611</strong>
+        by default which is the Thrift server port.<br/><br/></li>
+    <li><strong>Authentication Port</strong> should be given the port number of 100 higher than the
+                                             Receiver Port if it exists. Default Authentication Port
+                                             number is <strong>7711</strong>.<br/><br/><img
+                src="images/filled-profile.png"
+                class="confluence-embedded-image"/><br/><br/></li>
+    <li>Then you can define a set of Stream Configurations among which we select the required Stream
+        Configuration in the mediator definition time. In each Stream Configuration there must have,<br/><em><strong>Name</strong></em>
+        : Stream Name can be any string with alpha-numeric
+        characters<br/><em><strong>Version</strong></em> : Stream Version distinguishes different
+        streams with the same Stream Name. Default version should be <strong>1.0.0</strong>
+        .<br/><em><strong>Nickname</strong></em> : This is a user preferred nick name to the Stream
+        Name in alpha-numeric characters<br/><em><strong>Description</strong></em> : A description
+        describing about the particular stream defined by Stream Name, Stream Version pair.
+        Description should also consists of alpha-numeric characters.<br/><br/></li>
+    <li>For more configurations of a particular stream click on <strong>Edit Stream</strong>. To
+        remove an existing stream click on <strong>Remove Stream</strong>.<br/><br/></li>
+    <li>When editing a stream check on <strong>Dump header</strong> or <strong>Dump body</strong> if
+        you want to record SOAP header or SOAP body of messages respectively.<br/><br/></li>
+    <li>In Stream Properties the user can can extract several types of properties from the message.
+        Basically Stream Properties are divided into two.<br/><em><strong>Value</strong></em> : A
+        constant alpha-numeric string value entered to <strong>Value</strong> field is set as the
+        property.<br/><em><strong>Expression</strong></em> : The given expression in
+        <strong>Value</strong> field is considered as an expression and executed on the message to
+        get the property. <a rel="nofollow" class="external-link"
+                             href="http://rajikak.blogspot.com/2010/04/xpath-functions-and-properties-avilable.html">XPath
+                                                                                                                     properties
+                                                                                                                     and
+                                                                                                                     functions
+                                                                                                                     available
+                                                                                                                     in
+                                                                                                                     ESB</a>
+        are valid in the expression.<br/><br/><img
+                src="images/filled-streams.png"
+                class="confluence-embedded-image"/><br/><br/></li>
+    <li>After <strong>Stream Payload</strong> and <strong>Stream Properties</strong> are added or
+        updated <strong>Update</strong> should be clicked to update them to the specific Stream
+        Configuration.<br/><br/></li>
+    <li><strong>Add</strong> button adds a new Stream Property to the properties list and <strong>Cancel</strong>
+                             button ignores the updated Stream Properties data.<br/><br/></li>
+    <li>After all the changes are properly made to the <strong>BAM Server Profile</strong> click on
+        <strong>Save</strong> button to save all the configuration data to the secondary
+        storage.<br/><br/></li>
+    <li>After modifying the <strong>BAM Server Profile</strong> data the user can go back to
+        <strong>BAM Server Profiles</strong> list to see the new set of existing BAM Server Profiles
+        by clicking on the <strong>BAM Server Profile</strong> link on the top of the page.<br/><br/>
+    </li>
+    <li>Similarly the user may add enough number of BAM Server Profiles and many unique Stream
+        Configurations under a one BAM Server Profile.
+    </li>
+</ol>
+
+</body>
+
+</html>

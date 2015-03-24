@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+  <title>Mediation Tracer - User Guide</title>
+  <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+
+<div id="middle">
+<h1>Mediation Tracer</h1>
+Traces the entire path when a message travels along a mediation sequence.To
+see the trace messages, you have to enable tracing for a sequence.
+
+<strong>Warning</strong>: Turning on the Tracer feature will have a drag on
+the performance. This is because all the messages will always be completely
+built (i.e., deferred building will not be done) and stored in the database
+by WSO2 Data Services. Hence this option should be used with caution.
+
+
+
+<h2>Enabling Tracing
+</h2>
+<ol><li> In the navigator, under Manage/Mediation, click
+<strong>Sequences</strong>. The <em><strong>Mediation Sequences</strong></em>
+page appears.</li> 
+<li>Click <strong>Enable Tracing</strong>.When tracing is enabled, the
+linkwill display Disable Tracing.</li></ol>
+
+
+
+<div class="image">
+<img src="images/enable-tracing.png" alt=""/>
+
+<p>Figure 1: Enable tracing</p>
+</div>
+
+<h2>Viewing Trace Messages</h2>
+<ol>
+  <li>In the navigator, under Monitor, click <strong>Message Tracer</strong>.
+    The <em><strong>Mediation Message Tracer</strong></em> page appears.
+    You can use the search function to find specific log messages for
+    debugging purposes. </li>
+</ol>
+
+
+
+<div class="image">
+<img src="images/mediation-tracer.png" alt=""/>
+
+<p>Figure 2: Mediation trace messages</p>
+</div>
+</div>
+<p>For <a href="http://wso2.org/library/esb">more information</a> please refer to the WSO2 library</p>
+</body>
+</html>

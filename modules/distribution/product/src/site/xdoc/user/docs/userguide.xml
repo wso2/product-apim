@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+  <title>User Management - User Guide</title>
+  <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body style="font-family: Times New Roman,Times,serif; font-size: 12pt;">
+<h1>User Management</h1>
+
+<p>The User Management of the WSO2 Carbon facilitates the management
+and control of user accounts and user roles at different levels. The user store of Carbon 
+products can be configured to operate in either one of the following modes. And the functionality depend on it.</p>
+Modes of operation<br/>
+<ul>
+<li>User store operates in read/write mode - In "Read/Write" mode WSO2 Carbon read/write into the user store.</li>
+<li>User store operates in read only mode - In "Read Only" mode WSO2 Carbon guarantees that it does not modify any data in the user store. WSO2 Carbon maintains roles and permissions in the Carbon database but it can read users/roles from the configured user store.</li>
+</ul>
+
+<p><img alt="" src="../images/user-main.png"/></p>
+
+<p>Figure 1: User Management</p>
+
+<p>If the user store is operating in read/write mode you can,</p>
+<ul>
+  <li>Add, modify or remove user accounts</li>
+  <li>Reset passwords of users</li>
+  <li>Manage roles of users</li>  
+  <li>Bulk import users from other user stores - bulk import of users is only supported with JDBC user store.
+      This is not supported with the ldap user store which is the current default user store of carbon.
+      If you want to use this feature, please change to JDBC user store in user-mgt.xml which can be found in
+      [carbon_home]/repository/conf. </li>
+</ul>
+
+<p>If the user store is operating in read only mode you can,</p>
+<ul>
+  <li>View user accounts</li>
+</ul>
+
+<h2>User Accounts</h2>
+<ul>
+    <li>To add a user account, click <strong>Add New User</strong>. Enter the
+      user name and password, and click <strong>Finish</strong>. Please note that due to the inherited
+      behaviour of default user store - which is embedded-ldap, user names are case insensitive in 3.2.0
+      based carbon products.</li>
+    <li>To reset password, i.e., to change the password of the user,
+      click <strong>Change Password</strong>. Enter the new password and
+      click <strong>Change</strong>. Please note that you cannot change the
+      user name of an existing user.</li>
+    <li>To delete a user account, click <strong>Delete</strong>. Please note
+      that you cannot delete the admin user account from the system.</li>
+</ul>
+
+<h2>Bulk Import Users</h2>
+
+<p>You can also import users from existing user stores in bulk. You could be managing users in a relational database or a LDAP server. You can export users in to comma separated list (*.csv file) or to an excel sheet (*.xls files) and import into WSO2 Cloud Identity at once. This carbon version supports importing users from a .csv files and Excel sheets. The process can be high lighted as follows.</p>
+
+<em><strong>Step 1 :</strong></em> Export users from the current user store into a .csv file or excel sheet (97/2000/XP versions). Refer documentation and tools available with your current user store on how to export users.<br/>
+
+Many visual LDAP tools support exporting users in .csv format. Tools such as Apache Directory Studio, LDAP Amin Tool and Active Directory has step-by-step instructions on how to do it. Values in relational databases can also be obtained in .csv/.xls formats.<br/>
+
+<p><em><strong>The expected format of the CSV file is as follows.  The first line of the CSV file will be ignored considering it is not a username.</strong></em></p>
+
+<p><img alt="" src="../images/bulk-import-main.png"/></p>
+
+Figure 2 : Format of the CSV file<br/>
+
+<em><strong>Step 2 :</strong></em> Login to WSO2 Carbon based product as Organization Admin<br/>
+
+<em><strong>Step 3 :</strong></em> Click on User Management > Users > Bulk Import users<br/>
+
+<em><strong>Step 4 :</strong></em> Select the .csv/.xls file from the file browser<br/>
+
+<em><strong>Step 5 :</strong></em> Give a default password for users and click OK. All the users in .csv/.xls file will be created in WSO2 Carbon user store with the default password given by you. They will be assigned to the everyone role.<br/>
+
+<em><strong>Step 6 :</strong></em> Inform users to login and change their password within 24 hours.<br/>
+
+The default password of the imported users is valid only for 24 hours. You as the system administrator you can resolve issues of expired passwords by login in as the Admin and changing their password available in  User Management > Users page.<br/>
+
+<p></p>
+</body>
+</html>

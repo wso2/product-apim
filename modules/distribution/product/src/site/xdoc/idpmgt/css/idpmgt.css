@@ -1,0 +1,25 @@
+
+
+.showHideBtn {
+	background-color:#599bb3;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:arial;
+	font-size:12px;
+	font-weight:bold;
+	padding:2px 5px;
+	text-decoration:none;
+}
+.showHideBtn:hover {
+	background-color:#408c99;
+	color:#ffffff;
+	
+}
+.showHideBtn:active {
+	position:relative;
+	top:1px;
+}

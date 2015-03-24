@@ -1,0 +1,70 @@
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"/>
+  <title>Sign-in</title>
+  <link href="../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+<body>
+<h1>Sign-In</h1>
+
+<p>In the Sign-In panel, provide the user name and the password of your
+account and the server you want to sign in. Your user name and password will be
+authenticated, and you will authorized to perform functions according to your
+role. </p>
+
+<p><img src="images/login.png" alt="Sign-In Panel"/> </p>
+
+<p>Figure 1: Sign-In Panel. </p>
+If you are sign in on for the first time after the installation, use the
+following credentials.<br/>
+<br/>
+Username: <strong>admin<br/>
+</strong>Password: <strong>admin <br/>
+</strong>
+
+<p>You can sign in to a remote server by specifying its URL in the 'Server URL' field.
+This field defaults to the value "https://localhost:9443/services/". </p>
+
+<p>Enabling 'Remember Me' option makes it possible to sign-in to the management console in subsequent
+    attempts without entering user credentials.</p>
+
+<p>Please note that due to the inherited behaviour of default user store - which is embedded-ldap, 
+user names are case insensitive in 3.2.0 based carbon products.</p>
+
+<p>Please make sure you change the password for the admin account as the first
+task after you log on. You can change the password from the User management
+panel.</p>
+
+<p>Note that you cannot delete the admin account.</p>
+
+<p>If you are not the administrator, please contact your administrator to
+create an account for you.</p>
+
+<p>User accounts and user roles can be added and managed from the
+<em><strong>User Management</strong></em> page. Click <strong>Help</strong>
+on the <em><strong>User Management</strong></em> page for more information on
+adding and managing users.</p>
+
+<p>To access this page, in the navigator, under Configure, click <strong>Users
+and Roles</strong>. </p>
+</body>
+</html>

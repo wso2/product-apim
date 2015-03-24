@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+ ~ Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"></meta>
+    <title>Application - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+<body>
+
+<h2>Applications - User Guide</h2>
+
+    <p>A successful application can be easily tested through the user
+       interface. Several options are available to control your application.</p>
+    <br/>
+
+<h2>Unified Application Listing</h2>
+
+    <p>In the navigator, under Manage/Applications, click <strong>List</strong>.
+       The <em><strong>Running Applications</strong></em> page appears. Here we have a unified listing
+       of web applications, jax-ws/rs applications and jaggery applications.</p>
+
+    <p><img alt="" src="images/applicationslist.png"/></p>
+
+    <p>Figure 2: Unified Applications List.</p>
+    <br/>
+
+<h2>Testing the Web Application</h2>
+
+    <p>Click on the web application name you want to test. The
+        <em><strong>Web Application Dashboard</strong></em> page appears.</p>
+
+    <p><img alt="" src="images/webapp_dashboard.png"/></p>
+
+    <p>Figure 3: Web Application Dashboard.</p>
+    <ol>
+        <li>A page with your web application name appears. It contains the operations
+            available for your web application.
+        </li>
+        <li>In this page the Session Statistics pane shows the session related statistics collected for
+            the selected webapp. The Maximum Concurrent Active Session indicates the maximum
+            number sessions that have been concurrently active so far.
+        </li>
+        <li>Clicking the 'url' you will be directed the web application's index.html page</li>
+    </ol>
+
+    <p><span style="font-weight: bold;">Note</span>: Instead of using this user interface, you
+         can also manually place the .war containing all the required files into
+         CARBON_HOME/epository/deployment/webapps. These archive files will be deployed as web
+         applications. </p>
+    <br/>
+
+<h2>Testing the JAX-WS/JAX-RS Application</h2>
+
+    <p>Click on the JAX-WS/JAX-RS application name you want to test. The
+    <em><strong>JAX-WS/JAX-RS Application Dashboard</strong></em> page appears.</p>
+
+    <p><img alt="" src="images/jaxapp_dashboard.png"/></p>
+    <p>Figure 2: JAX-WS/JAX-RS Applications Dashboard.</p>
+
+    <ol>
+
+        <li>Click on the <strong>Find Services</strong> link on Unified Application Listing or
+            click in Services Context on the JAX-WS/JAX-RS Applications Dashboard
+            relevant to your application. It will list
+            all SOAP and RESTful services deployed through your application.
+        </li>
+        <p><img alt="" src="images/jaxapp_services.png"/></p>
+        <p>Figure 2: JAX-WS/JAX-RS Service List.</p>
+
+        <li>You can also find the WSDL URL's of the services and try those services using the external
+            Try-It tool which can be found under Tools/Try-It menu.
+        </li>
+    </ol>
+
+    <p><span style="font-weight: bold;">Note</span>: Instead of using this user interface, you can
+         also manually place your JAX-WS/JAX-RS war file into
+         CARBON_HOME/repository/deployment/jaxwebapps directory.</p>
+    <br/>
+
+<h2>Testing the Jaggery Application</h2>
+
+    <p>Click on the Jaggery application name you want to test. The
+        <em><strong>Jaggery Application Dashboard</strong></em> page appears.
+    </p>
+
+    <p><img alt="" src="images/jaggeryapp_dashboard.png"/></p>
+    <p>Figure 2: Jaggery Application Dashboard.</p>
+
+    <ol>
+        <li>A page with your Jaggery application name appears. It contains the operations
+            available for your Jaggery application.
+        </li>
+        <li>Clicking the 'url' you will be directed the Jaggery application's index.html page</li>
+    </ol>
+
+    <p><span style="font-weight: bold;">Note</span>: Instead of using this user interface, you can
+        also manually place the directory containing all the required files
+        into CARBON_HOME/epository/deployment/jaggeryapps. These archive files can be deployed
+        as Jaggery applications. </p>
+
+</body>
+</html>

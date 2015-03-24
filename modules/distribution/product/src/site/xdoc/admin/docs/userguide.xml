@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+    <title>WSO2 Carbon Server Home</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet"
+          type="text/css" media="all"/>
+</head>
+<body>
+<h1>
+    WSO2 Carbon Server Home Page</h1>
+
+<p> When you log on to
+    the WSO2 Carbon Server, the home page displays information about
+    the server hosting envrionment, the JVM configuration information, the
+    deployed operating system and the logged in user information in four
+    separate tables. </p>
+
+<table cellspacing="0" class="styled">
+    <tbody>
+	<tr><td colspan="2" class="subHeader">Server</td></tr>
+    <tr>
+        <td>
+            Host
+        </td>
+        <td>
+            The server IP address
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Server URL
+        </td>
+        <td>
+            URL of the hosted services
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Server Start Time
+        </td>
+        <td>
+            The server start time, displayed precisely to the second.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            System Up Time
+        </td>
+        <td>
+            The up time of the system, displayed precisely to the second.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Version
+        </td>
+        <td>
+            Server version
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Repository Location
+        </td>
+        <td>
+            The respository location folder used by Carbon.
+        </td>
+    </tr>
+
+    <tr><td class="subHeader">Operating System</td></tr>
+    <tr>
+        <td>
+            OS Name
+        </td>
+        <td>The version of the operating system used by the server</td>
+    </tr>
+    <tr>
+        <td>
+            OS Version
+        </td>
+        <td>The version of the operating system</td>
+    </tr>
+
+    <tr><td class="subHeader">Operating System User</td></tr>
+    <tr>
+        <td>
+            Country
+        </td>
+        <td>
+            The locale of the operating system user running the Carbon server.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Home
+        </td>
+        <td>
+            The home directory of the operating system user running Carbon.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Name
+        </td>
+        <td>
+            The name of the operating system user running Carbon.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Timezone
+        </td>
+        <td>
+            The timezone of the operating system user running Carbon.
+        </td>
+    </tr>
+
+    <tr><td class="subHeader">Java VM</td></tr>
+    <tr>
+        <td>
+            Java Home
+        </td>
+        <td>
+            The location of the Java runtime library
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Java Runtime Name
+        </td>
+        <td>
+            The Java runtime name ( For example : Java(TM) 2 Runtime
+            Environment, Standard Edition )
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Java Version
+        </td>
+        <td>
+            The version of the Java runtime library</td>
+    </tr>
+    <tr>
+        <td>
+            Java Vendor
+        </td>
+        <td>
+            The Java runtime vendor
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Java VM Version
+        </td>
+        <td>The version of the Java virtual machine</td>
+    </tr>
+
+    <tr><td class="subHeader">Registry</td></tr>
+    <tr>
+        <td>
+            Registry Type
+        </td>
+        <td>
+            Values can be 'Embedded' or 'Remote'. Indicates whether this server uses
+            an embedded Registry or remote Registry
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Registry Database Name
+        </td>
+        <td>
+            Name of the Registry DB
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Registry Database Version
+        </td>
+        <td>
+            Version of the Registry DB
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Database Driver Name
+        </td>
+        <td>
+            Name of the JDBC driver used
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Database Driver Version
+        </td>
+        <td>
+            Version of the JDBC driver used
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Database URL
+        </td>
+        <td>
+            JDBC URL of the Embedded Registry DB
+        </td>
+    </tr>
+
+    </tbody>
+</table>
+
+</body>
+</html>

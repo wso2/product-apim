@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+ ~ Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"/>
+    <title>Registry Search - User Guide</title>
+    <link href="../../admin/css/documentation.css" rel="stylesheet" type="text/css" media="all"/>
+</head>
+
+<body>                                                                                              
+<h1>Registry Search</h1>
+
+<h2>Search</h2>
+
+    <p> All resources found in the registry, can be searched through this interface. Search could be
+    refined by optionally providing, resource name, created date range, updated date range, tags,comments, association type,
+    association destination, property name, property value and the content. To search for matches containing a specific
+    pattern use the <strong>%</strong> symbol. The pattern matching can be used with the following fields "Resource name",
+    "created by", "updated by" and "property value". Also the search supports the use of part of the user name in the "created by"
+    and "updated by" fields. And also for the fields like Created data range,Updated range,Created user and Updated user
+    the negation option is provided in order to search other than the provided criteria.</p>
+
+    <p>To enter more than one term in tags, use comma (",") as the separator. To enter more than one
+        term in keywords, use space (" ") as the separator.</p>
+
+    <p><img src="images/main.png" width="777px"/></p>
+
+    <p>Figure 1: Search Interface</p>
+
+    <p>Created or Updated dates can be either entered in the format of MM/DD/YYYY or used the date
+    picker user interface provided.</p>
+
+    <p><img src="images/date.png" width="777px"/></p>
+
+    <p>Figure 2: Date picker user interface</p>
+
+    
+<br/><br/>
+
+<h3>Custom Search</h3>
+<p>The custom search provides the user with the ability to customize the search interface for a given media type.
+The search parameters for a given media type is configured by a user with admin privileges by creating a resource
+with the name of the media type (for <strong>application/wsdl+xml</strong> the resource name should be <strong>application-wsdl-xml</strong>)
+and declaring the parameters as properties. The search parameter name is given as the property name and the property value
+describes whether this parameter should be included in the custom search.</p>
+
+<p><img src="images/configuration.png" width="777px"/></p>
+<p>Figure 3: Custom search configuration </p>
+
+<p>The advanced search contains a field where the user can specify a media type. Upon selecting a media type,
+    custom search form for that media type will be automatically loaded.
+</p>
+
+<p><img src="images/custom_search.png" width="777px"/></p>
+
+<p>Figure 4: Custom search interface </p>
+
+<h2>Saving a Search Filter</h2>
+    <p>
+        Search criteria can be saved as a filter using the interface shown in Figure 5.
+    </p>
+
+    <p><img src="images/save_filter.png" width="777px"/></p>
+
+    <p>Figure 5: Save search filter user interface</p>
+
+<br/><br/>
+
+<h2>Loading a Search Filter</h2>
+    <p>A saved search filter can be loaded by selecting the filter name in the drop-down list shown
+    in Figure 6. Upon loading a search filter, search form fields are populated with previously saved values.
+    </p>
+
+    <p><img src="images/load_filter.png" width="777px"/></p>
+
+    <p>Figure 6: Save search filter user interface</p>
+
+<h2>Report generation for search results</h2>
+
+    <p>In the search result page the user is able to generate a report which will include search results.The user is able to
+    create reports in PDF,HTML or Excel.</p>
+    <p><img src="images/reporting_crumb.png" width="550px" /></p>
+    <p>Figure 7: Reporting options</p>
+
+</body>
+</html>
