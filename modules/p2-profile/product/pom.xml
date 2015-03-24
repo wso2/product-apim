@@ -86,7 +86,7 @@
 
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.databridge.datapublisher.feature:${carbon.commons.version}</featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.system.statistics.feature:4.2.2</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.system.statistics.feature:${carbon.commons.version}</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.soaptracer.feature:${carbon.commons.version}</featureArtifactDef>
 
@@ -474,7 +474,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
@@ -1607,7 +1607,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
@@ -2021,7 +2021,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
@@ -2419,7 +2419,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.system.statistics.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
