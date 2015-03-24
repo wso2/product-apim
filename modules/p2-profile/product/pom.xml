@@ -1594,7 +1594,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
-                                    <version>${carbon.kernel.imp.pkg.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                               <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf.feature.group</id>
@@ -2043,7 +2043,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
-                                    <version>${carbon.kernel.imp.pkg.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                               <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf.feature.group</id>
