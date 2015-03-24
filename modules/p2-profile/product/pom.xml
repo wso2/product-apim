@@ -912,10 +912,10 @@
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature-->
-                                <feature>
+                                <!--<feature>
                                     <id>org.wso2.carbon.statistics.transport.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1279,10 +1279,10 @@
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature-->
-                                <feature>
+                                <!--<feature>
                                     <id>org.wso2.carbon.statistics.transport.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1669,10 +1669,10 @@
                                     <id>org.wso2.carbon.mediation.statistics.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <feature>
+                                <!--<feature>
                                     <id>org.wso2.carbon.statistics.transport.feature.group</id>
                                     <version>${carbon.platform.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
