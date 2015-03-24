@@ -276,6 +276,9 @@
                                     org.wso2.carbon.multitenancy:org.wso2.carbon.tenant.deployment.feature:${carbon.multitenancy.version}
                                 </featureArtifactDef>
 
+				 <featureArtifactDef>
+                                    org.wso2.carbon:org.wso2.carbon.core.ui.feature:${carbon.kernel.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1591,7 +1594,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.imp.pkg.version}</version>
                                 </feature>
                               <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf.feature.group</id>
@@ -2040,7 +2043,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.imp.pkg.version}</version>
                                 </feature>
                               <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf.feature.group</id>
