@@ -328,7 +328,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
 
         String provider = "admin-AT-wso2.com";
         String tenantUser = "admin@wso2.com";
-        String password = "admin";
+        String password = "wso2@123";
         String accessToken;
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
