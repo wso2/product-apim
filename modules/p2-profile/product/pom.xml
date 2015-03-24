@@ -106,7 +106,7 @@
 
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.xfer.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mex.feature:${carbon.platform.version}</featureArtifactDef-->
-                                <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.datasource.server.feature:${carbon.commons.version}</featureArtifactDef-->
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.datasource.server.feature:4.2.1</featureArtifactDef>
 
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.tryit.feature:4.2.1</featureArtifactDef-->
 
@@ -439,10 +439,10 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
 
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -876,10 +876,10 @@
                                     <id>org.apache.synapse.transport.nhttp.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1243,10 +1243,10 @@
                                     <id>org.apache.synapse.transport.nhttp.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1633,10 +1633,10 @@
                                     <id>org.apache.synapse.transport.nhttp.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2082,10 +2082,10 @@
                                     <id>org.apache.synapse.transport.nhttp.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2500,10 +2500,10 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
 
-                                <!--feature>
+                                <feature>
                                     <id>org.wso2.carbon.datasource.server.feature.group</id>
                                     <version>4.2.1</version>
-                                </feature-->
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.task.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
