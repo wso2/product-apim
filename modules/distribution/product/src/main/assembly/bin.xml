@@ -661,7 +661,7 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.stratos.common.server_2.3.0/conf/tenant-mgt.xml</source>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.3.4/conf/tenant-mgt.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
@@ -676,13 +676,13 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
-	<file>
+	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
             <destName>message-tracer-config.xml</destName>
             <filtered>true</filtered>
 	    <fileMode>644</fileMode>
-        </file>
+        </file-->
 
 
 
