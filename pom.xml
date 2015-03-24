@@ -803,7 +803,7 @@
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.3.4</carbon.multitenancy.version>
         
-        <apim.version>1.2.4-SNAPSHOT</apim.version>
+        <apim.version>1.2.5-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
