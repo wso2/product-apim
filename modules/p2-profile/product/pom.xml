@@ -134,7 +134,12 @@
 				<!--featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediation.security.server.feature:${carbon.mediation.version}</featureArtifactDef-->
 
 				<featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediation.admin.feature:${carbon.mediation.version}</featureArtifactDef>
-
+                                <featureArtifactDef>
+                                    org.wso2.carbon.mediation:org.wso2.carbon.inbound.endpoints.server.feature:${carbon.mediation.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.commons:org.wso2.carbon.ndatasource.feature:${carbon.commons.version}
+                                </featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediation.statistics.feature:${carbon.mediation.version}</featureArtifactDef>
 
@@ -256,6 +261,21 @@
 			                    <featureArtifactDef>org.wso2.carbon.analytics:org.wso2.carbon.analytics.message.tracer.handler.feature:${carbon.analytics.version}</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:${carbon.mediation.version}</featureArtifactDef>
 			                    <!--featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.sequences.ui.feature:${carbon.mediation.version}</featureArtifactDef-->
+
+                                <!--8 Carbon-MultiTenancy-->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.multitenancy:org.wso2.carbon.tenant.common.feature:${carbon.multitenancy.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.multitenancy:org.wso2.carbon.tenant.usage.agent.feature:${carbon.multitenancy.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.multitenancy:org.wso2.carbon.tenant.throttling.agent.feature:${carbon.multitenancy.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.multitenancy:org.wso2.carbon.tenant.deployment.feature:${carbon.multitenancy.version}
+                                </featureArtifactDef>
+
 
                             </featureArtifacts>
                         </configuration>
@@ -437,6 +457,10 @@
                                 </feature-->
 				<feature>
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
 
@@ -776,6 +800,22 @@
                                    <id>org.wso2.carbon.forum.server.feature.group</id>
                                    <version>${carbon.apimgt.version}</version>
                                	</feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -854,6 +894,10 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -1122,6 +1166,22 @@
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1201,6 +1261,10 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -1464,6 +1528,22 @@
                                    <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                    <version>${carbon.identity.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                                    <version>${carbon.multitenancy.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1576,6 +1656,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
+                                <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
@@ -1885,6 +1969,22 @@
                                   <id>org.wso2.carbon.forum.server.feature.group</id>
                                   <version>${carbon.apimgt.version}</version>
                                 </feature>
+                    <feature>
+                        <id>org.wso2.carbon.tenant.common.feature.group</id>
+                        <version>${carbon.multitenancy.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                        <version>${carbon.multitenancy.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                        <version>${carbon.multitenancy.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                        <version>${carbon.multitenancy.version}</version>
+                    </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1906,6 +2006,22 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                            <features>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
 								<feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1991,6 +2107,10 @@
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
+                                   <version>${carbon.mediation.version}</version>
+                               </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2308,6 +2428,22 @@
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                            <features>
                                <feature>
+                                   <id>org.wso2.carbon.tenant.common.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.usage.agent.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.throttling.agent.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.tenant.deployment.feature.group</id>
+                                   <version>${carbon.multitenancy.version}</version>
+                               </feature>
+                               <feature>
                                    <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                    <version>${carbon.identity.version}</version>
                                </feature>
@@ -2388,6 +2524,10 @@
                                     <id>org.wso2.carbon.mediation.admin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.inbound.endpoints.server.feature.group</id>
+                                   <version>${carbon.mediation.version}</version>
+                               </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>

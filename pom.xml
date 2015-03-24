@@ -784,7 +784,7 @@
 	 <carbon.commons.version>4.3.5</carbon.commons.version>
 
 	<!-- carbon mediation -->
-        <carbon.mediation.version>4.3.2</carbon.mediation.version>
+        <carbon.mediation.version>4.3.1</carbon.mediation.version>
 
 	<!-- carbon identity -->
 	<carbon.identity.version>4.3.3</carbon.identity.version>
@@ -794,7 +794,8 @@
 
 	<!-- carbon analytics -->
 	<carbon.analytics.version>1.0.1</carbon.analytics.version>
-
+        <!-- Carbon Multitenancy version-->
+        <carbon.multitenancy.version>4.3.4</carbon.multitenancy.version>
         <apimserver.version>1.9.0-SNAPSHOT</apimserver.version>
         <apim.version>1.2.4-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
