@@ -1228,7 +1228,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
@@ -1618,7 +1618,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
@@ -2067,7 +2067,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
