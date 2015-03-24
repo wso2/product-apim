@@ -235,7 +235,7 @@
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.application.authentication.framework.server.feature:${carbon.identity.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.um.ws.service.server.feature:${carbon.identity.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.um.ws.service.client.feature:${carbon.identity.version}</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ntask.core.feature:${carbon.kernel.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.ntask.core.feature:${carbon.commons.version}</featureArtifactDef>
 
 								<featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.module.mgt.server.feature:${carbon.deployment.version}</featureArtifactDef>
 								<!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.caching.server.feature:${carbon.platform.version}</featureArtifactDef-->
@@ -392,7 +392,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -810,7 +810,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1157,7 +1157,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1527,7 +1527,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1940,7 +1940,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                	<feature>
 									<id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -2337,7 +2337,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
