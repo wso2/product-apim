@@ -158,7 +158,7 @@
 				                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.forum.server.feature:${carbon.apimgt.version}</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediators.server.feature:${carbon.mediation.version}</featureArtifactDef>
-								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.proxyadmin.server.feature:4.2.2</featureArtifactDef>
+								<!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.proxyadmin.server.feature:4.2.2</featureArtifactDef-->
 
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.rule.mediation.server.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.rule.mediator.feature:${carbon.platform.version}</featureArtifactDef-->
@@ -234,8 +234,8 @@
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.application.authenticator.samlsso.server.feature:${carbon.identity.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.application.authentication.framework.server.feature:${carbon.identity.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.um.ws.service.server.feature:${carbon.identity.version}</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.um.ws.service.client.feature:4.2.1</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ntask.core.feature:4.2.4</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.um.ws.service.client.feature:${carbon.identity.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ntask.core.feature:${carbon.kernel.version}</featureArtifactDef>
 
 								<featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.module.mgt.server.feature:${carbon.deployment.version}</featureArtifactDef>
 								<!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.caching.server.feature:${carbon.platform.version}</featureArtifactDef-->
@@ -392,7 +392,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -456,10 +456,10 @@
                                     <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -719,7 +719,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 								<feature>
 									<id>org.wso2.carbon.claim.mgt.feature.group</id>
@@ -810,7 +810,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -864,10 +864,10 @@
                                     <id>org.wso2.carbon.mediation.statistics.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.statistics.transport.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1079,7 +1079,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 
                                 <!--feature>
@@ -1157,7 +1157,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1211,10 +1211,10 @@
                                     <id>org.wso2.carbon.mediation.statistics.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.statistics.transport.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1421,7 +1421,7 @@
                                 </feature>
 				                <feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 
                                 <!--feature>
@@ -1527,7 +1527,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1565,10 +1565,10 @@
                                     <id>org.wso2.carbon.mediation.initializer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
 				<!--feature>
                                     <id>org.wso2.carbon.mediation.security.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1842,7 +1842,7 @@
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 								<feature>
 									<id>org.wso2.carbon.claim.mgt.feature.group</id>
@@ -1940,7 +1940,7 @@
                                 </feature-->
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                	<feature>
 									<id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -1979,10 +1979,10 @@
                                     <id>org.wso2.carbon.mediation.initializer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
 				<!--feature>
                                     <id>org.wso2.carbon.mediation.security.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2246,7 +2246,7 @@
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 								<feature>
 									<id>org.wso2.carbon.claim.mgt.feature.group</id>
@@ -2337,7 +2337,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.logging.mgt.feature.group</id>
@@ -2376,10 +2376,10 @@
                                     <id>org.wso2.carbon.mediation.initializer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-								<feature>
+								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
-                                </feature>
+                                </feature-->
 				<!--feature>
                                     <id>org.wso2.carbon.mediation.security.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2616,7 +2616,7 @@
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
 
                                 <!--ture>
