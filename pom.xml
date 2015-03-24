@@ -784,7 +784,7 @@
 	 <carbon.commons.version>4.3.5</carbon.commons.version>
 
 	<!-- carbon mediation -->
-        <carbon.mediation.version>4.3.0</carbon.mediation.version>
+        <carbon.mediation.version>4.3.1</carbon.mediation.version>
 
 	<!-- carbon identity -->
 	<carbon.identity.version>4.3.3</carbon.identity.version>
