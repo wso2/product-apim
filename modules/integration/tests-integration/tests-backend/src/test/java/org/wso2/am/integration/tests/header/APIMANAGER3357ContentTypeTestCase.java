@@ -38,7 +38,7 @@ import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import java.io.File;
 import java.io.IOException;
 
-public class ContentTypeTestCase extends AMIntegrationBaseTest {
+public class APIMANAGER3357ContentTypeTestCase extends AMIntegrationBaseTest {
     public WireMonitorServer wireServer;
 
     @BeforeClass(alwaysRun = true)
