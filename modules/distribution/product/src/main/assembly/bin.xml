@@ -49,7 +49,6 @@
                 <exclude>**/dbscripts/mysql.sql</exclude>
                 <exclude>**/dbscripts/db2.sql</exclude>
                 <exclude>**/dbscripts/mysql_cluster.sql</exclude>
-	        	<exclude>**/lib/org.wso2.carbon.server-${carbon.platform.version}.jar</exclude>
 	        	<exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/bin/ciphertool.bat</exclude>
                 <exclude>**/cipher-text.properties</exclude>
@@ -375,14 +374,14 @@
             </includes>
         </fileSet>
 
-        <!--Multitenancy related file -->
         <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.stratos.common.server_2.3.0/conf</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/multitenancy</outputDirectory>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <includes>
                 <include>**/stratos.xml</include>
                 <include>**/multitenancy-packages.xml</include>
                 <include>**/usage-throttling-agent-config.xml</include>
+                <include>**/cloud-services-desc.xml</include>
             </includes>
         </fileSet>
 
