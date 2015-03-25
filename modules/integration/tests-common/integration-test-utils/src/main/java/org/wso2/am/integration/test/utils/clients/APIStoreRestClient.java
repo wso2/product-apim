@@ -19,6 +19,9 @@
 package org.wso2.am.integration.test.utils.clients;
 
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.validation.VerificationUtil;
@@ -101,6 +104,9 @@ public class APIStoreRestClient {
 	public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
 			throws Exception {
 		checkAuthentication();
+		HttpResponse responseApp = getAllApplications();
+        String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
+        generateAppKeyRequest.setAppId(appId);
 		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
 				"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
 				, generateAppKeyRequest.generateRequestParameters()
@@ -652,6 +658,63 @@ public class APIStoreRestClient {
 		} else {
 			throw new Exception("Get Api Information failed> " + response.getData());
 		}
+
+	}
+	
+	  private String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
+	        String applicationId=null;
+	        JSONObject obj;
+	        try {
+	            obj = new JSONObject(jsonStringOfApplications);
+	            JSONArray arr = obj.getJSONArray("applications");
+	            for (int i = 0; i < arr.length(); i++)
+	            {
+	                String appName = arr.getJSONObject(i).getString("name");
+	                if(applicationName.equals(appName)){
+	                    applicationId = arr.getJSONObject(i).getString("id");
+	                }
+	            } 
+	        } catch (JSONException e) {
+	          throw new  Exception("getting application Id failed ");
+	        }
+	        return applicationId;
+	        
+	    }
+	/**
+	 * Get the  web page with filtered API when  click the API Tag link
+	 *
+	 * @param apiTag - API tag the need ti filter the api.
+	 * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
+	 * @throws Exception - Exception throws when  check the Authentication
+	 */
+	public HttpResponse getAPIPageFilteredWithTags(String apiTag)
+			throws Exception {
+		checkAuthentication();
+		HttpResponse response = HttpRequestUtil.sendGetRequest(backEndUrl + "/store/apis/list"
+				, "tag=" + apiTag + "&tenant=carbon.super");
+		return response;
+
+	}
+
+	/**
+	 * Subscribe and API. This method return the response of the subscription server REST call.
+	 *
+	 * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
+	 * @return HttpResponse - Response f the subscription server REST call
+	 * @throws Exception- Exception throws when  check the Authentication
+	 */
+	public HttpResponse subscribeAPI(SubscriptionRequest subscriptionRequest)
+			throws Exception {
+		//This method  do the same functionality as subscribe(), except this method  always returns the response object
+		//regardless of the response code. But subscribe() returns the response object only if  the response code is
+		// 200 or else it will return an Exception.
+		checkAuthentication();
+		HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+				"/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+				, subscriptionRequest.generateRequestParameters()
+				, requestHeaders);
+
+		return response;
 
 	}
 }
