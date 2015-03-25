@@ -375,7 +375,7 @@
         </fileSet>
 
         <fileSet>
-            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/</directory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/multitenancy</outputDirectory>
             <includes>
                 <include>**/stratos.xml</include>
