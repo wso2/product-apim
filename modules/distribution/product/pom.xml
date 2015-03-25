@@ -118,16 +118,19 @@
                                         <exclude name="**/editarea/**"/>
                                         <exclude name="**/codepress/**"/>
                                         <exclude name="**/WEB-INF/**"/>
+                                        <exclude name="**/diffview/**"/>
                                         <include name="**/*.html"/>
                                     </fileset>
                                     <mapper type="glob" from="*.html" to="*.xml"/>
                                 </move>
+                                <delete dir="src/site/xdoc"/>
                                 <mkdir dir="src/site/xdoc"/>
                                 <copy todir="src/site/xdoc" overwrite="false" includeemptydirs="false">
                                     <fileset dir="${tempdir}/web">
                                         <exclude name="**/yui/**"/>
                                         <exclude name="**/ajax/**"/>
                                         <exclude name="**/WEB-INF/**"/>
+                                        <exclude name="**/diffview/**"/>
                                         <exclude name="**/*.html"/>
                                         <exclude name="**/*.js"/>
                                         <exclude name="**/*.jsp"/>
