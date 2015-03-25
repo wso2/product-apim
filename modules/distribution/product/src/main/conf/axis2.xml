@@ -768,10 +768,11 @@
 	</phase>
 	<phase name="Validation"/>
         <phase name="Transport">
-            <handler name="TenantActiveCheckDispatcher"
+            <!--TEMPORALY-->
+            <!--handler name="TenantActiveCheckDispatcher"
                      class="org.wso2.carbon.tenant.dispatcher.TenantActiveCheckDispatcher">
                 <order phase="Transport"/>
-            </handler>
+            </handler-->
             <handler name="RequestURIBasedDispatcher"
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher">
                 <order phase="Transport"/>
