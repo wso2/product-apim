@@ -55,7 +55,7 @@
                 <exclude>**/cipher-tool.properties</exclude>
                 <exclude>**/authenticators.xml</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
-                <exclude>**/client-truststore.jks</exclude>
+                <!--exclude>**/client-truststore.jks</exclude-->
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
