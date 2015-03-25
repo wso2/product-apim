@@ -787,8 +787,9 @@
                      class="org.wso2.carbon.core.transports.smtp.SMTPFaultHandler">
                 <order phase="Transport"/>
             </handler-->
-            <handler name="CacheMessageBuilderDispatchandler"
-                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/>
+            <!-- TEMPORALY-->
+            <!--handler name="CacheMessageBuilderDispatchandler"
+                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/-->
             <handler name="CarbonContentConfigurator"
                      class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
         </phase>
