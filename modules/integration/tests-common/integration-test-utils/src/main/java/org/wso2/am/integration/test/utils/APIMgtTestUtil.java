@@ -19,6 +19,9 @@
 package org.wso2.am.integration.test.utils;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.bean.APIBean;
@@ -31,9 +34,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class APIMgtTestUtil {
+
+	private static final Log log = LogFactory.getLog(APIMgtTestUtil.class);
+
+	/**
+	 * create API bean obj from response
+	 * @param httpResponse
+	 * @return
+	 */
 
 	public static APIBean getAPIBeanFromHttpResponse(HttpResponse httpResponse) {
 		JSONObject jsonObject = null;
@@ -101,6 +114,13 @@ public class APIMgtTestUtil {
 		return apiBean;
 	}
 
+	/**
+	 * send  GET to API resource
+	 * @param url
+	 * @param accessToken
+	 * @throws XPathExpressionException
+	 * @throws IOException
+	 */
     public static void sendGetRequest(String url, String accessToken) throws XPathExpressionException, IOException {
         HttpResponse httpResponse;
 
@@ -134,13 +154,81 @@ public class APIMgtTestUtil {
         }
     }
 
+	/**
+	 * decode  JWT string
+	 * @param serverMessage
+	 * @return
+	 */
 
     public static String getDecodedJWT(String serverMessage) {
+		// result comes as header values
         String[] headerArray = serverMessage.split("\n");
+		//tokenize  from JWT assertion header
         String[] jwtEncodedArray = headerArray[1].trim().split(":");
+		//take first part
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
-
+		// decode  JWT part
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes());
         return new String(jwtByteArray);
     }
+
+	/**
+	 * Get the API information from the response  object as Lost of  APIIdentifier
+	 *
+	 * @param httpResponse Response that contains the API information
+	 * @return List of APIIdentifier
+	 * @throws JSONException
+	 */
+	public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(HttpResponse httpResponse) throws JSONException {
+		List<APIIdentifier> apiIdentifierList = new ArrayList<APIIdentifier>();
+		String APIName;
+		String APIProvider;
+		String APIVersion;
+
+		try {
+			JSONObject jsonRootObject = new JSONObject(httpResponse.getData());
+
+			if (jsonRootObject.has("apis")) {
+				JSONArray jsonArray = jsonRootObject.getJSONArray("apis");
+				for (int index = 0; index < jsonArray.length(); index++) {
+					JSONObject jsonObject = (JSONObject) jsonArray.get(index);
+					APIName = jsonObject.getString("name");
+					APIVersion = jsonObject.getString("version");
+					APIProvider = jsonObject.getString("provider");
+					apiIdentifierList.add(new APIIdentifier(APIProvider, APIName, APIVersion));
+				}
+			} else if (jsonRootObject.has("api")) {
+				APIName = jsonRootObject.getJSONObject("api").getString("name");
+				APIVersion = jsonRootObject.getJSONObject("api").getString("version");
+				APIProvider = jsonRootObject.getJSONObject("api").getString("provider");
+				apiIdentifierList.add(new APIIdentifier(APIProvider, APIName, APIVersion));
+			}
+
+		} catch (JSONException e) {
+
+			log.error("Error when extraction data from JSON" + e.getMessage());
+			throw new RuntimeException("Error when extraction data from JSON", e);
+		}
+		return apiIdentifierList;
+	}
+
+	/**
+	 * Check  the given API is available in the APIIdentifier List. it will match for API Name,API Version and API Provider
+	 *
+	 * @param apiIdentifierToCheck
+	 * @param apiIdentifierList
+	 * @return
+	 */
+	public static boolean isAPIAvailable(APIIdentifier apiIdentifierToCheck, List<APIIdentifier> apiIdentifierList) {
+		boolean isFound = false;
+		for (APIIdentifier apiIdentifier : apiIdentifierList) {
+			if (apiIdentifier.getApiName().equals(apiIdentifierToCheck.getApiName()) &&
+					apiIdentifier.getVersion().equals(apiIdentifierToCheck.getVersion()) &&
+					apiIdentifier.getProviderName().equals(apiIdentifierToCheck.getProviderName())) {
+				isFound = true;
+				break;
+			}
+		}
+		return isFound;
+	}
 }

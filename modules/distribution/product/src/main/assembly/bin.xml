@@ -127,7 +127,13 @@
                   <exclude>cipher-tool.properties</exclude>
           </excludes>
         </fileSet>
-
+	<fileSet>
+            <directory>src/main/assembly</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/site/tenant_themes</outputDirectory>
+           <excludes>
+                  <exclude>*</exclude>
+          </excludes>
+        </fileSet>
         <fileSet>
             <directory>src/main/conf/synapse-configs</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/synapse-configs</outputDirectory>

@@ -167,7 +167,7 @@
 
         <!--JSON Message Formatters-->
         <messageFormatter contentType="application/json"
-                          class="org.apache.axis2.json.JSONMessageFormatter"/>
+                          class="org.apache.synapse.commons.json.JsonStreamFormatter"/>
 	<!--messageFormatter contentType="application/json"
                           class="org.apache.axis2.json.JSONStreamFormatter"/-->
         <messageFormatter contentType="application/json/badgerfish"
@@ -229,7 +229,7 @@
 
         <!--JSON Message Builders-->
         <messageBuilder contentType="application/json"
-                        class="org.apache.axis2.json.JSONBuilder"/>
+                        class="org.apache.synapse.commons.json.JsonStreamBuilder"/>
 	<!--messageBuilder contentType="application/json"
                         class="org.apache.axis2.json.JSONStreamBuilder"/-->
         <messageBuilder contentType="application/json/badgerfish"

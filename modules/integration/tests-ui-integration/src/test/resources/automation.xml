@@ -50,13 +50,13 @@
         <selenium>
             <!-- Change to enable remote webDriver -->
             <!-- URL of remote webDriver server  -->
-            <remoteDriverUrl enable="true">http://10.100.2.51:4444/wd/hub/</remoteDriverUrl>
+            <remoteDriverUrl enable="false">http://10.100.2.51:4444/wd/hub/</remoteDriverUrl>
 
             <!-- Type of the browser selenium tests are running" -->
             <browser>
                 <browserType>firefox</browserType>
                 <!-- path to webDriver executable - required only for chrome-->
-                <webdriverPath enable="false">/home/test/name/webDriver</webdriverPath>
+                <webdriverPath enable="true">/home/test/name/webDriver</webdriverPath>
             </browser>
         </selenium>
     </tools>
@@ -209,7 +209,7 @@
         <!--
         cluster instance details to be used to platform test execution
         -->
-        <productGroup name="AS" clusteringEnabled="false" default="true">
+        <productGroup name="APIM" clusteringEnabled="false" default="true">
 
             <instance name="appServerInstance0001" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
@@ -232,6 +232,9 @@
                     <name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name>
                     <!--<parameter name="-DportOffset" value="0" />-->
                     <!--<parameter name="cmdArg" value="debug 5005" />-->
+                </class>
+                <class>
+                    <name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>
                 </class>
             </extentionClasses>
         </platformExecutionManager>

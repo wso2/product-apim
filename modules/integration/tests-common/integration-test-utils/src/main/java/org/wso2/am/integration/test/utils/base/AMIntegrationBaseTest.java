@@ -23,31 +23,29 @@ import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
-import org.wso2.am.integration.admin.clients.common.SecurityAdminServiceClient;
-import org.wso2.am.integration.test.utils.esb.ESBTestCaseUtils;
-import org.wso2.am.integration.test.utils.esb.EndpointGenerator;
-import org.wso2.am.integration.test.utils.esb.ServiceDeploymentUtil;
-import org.wso2.am.integration.test.utils.user.mgt.LoginLogoutClient;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.generic.EndpointGenerator;
+import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
-import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.security.mgt.stub.config.SecurityAdminServiceSecurityConfigExceptionException;
+import org.wso2.carbon.endpoint.stub.types.EndpointAdminEndpointAdminException;
+import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.localentry.stub.types.LocalEntryAdminException;
+import org.wso2.carbon.proxyadmin.stub.ProxyServiceAdminProxyAdminException;
+import org.wso2.carbon.rest.api.stub.RestApiAdminAPIException;
 import org.wso2.carbon.sequences.stub.types.SequenceEditorException;
+import org.wso2.carbon.task.stub.TaskManagementException;
 import org.xml.sax.SAXException;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -60,13 +58,17 @@ import java.util.regex.Matcher;
  * Users need to extend this class to write integration tests.
  */
 public class AMIntegrationBaseTest {
+
     private static final Log log = LogFactory.getLog(AMIntegrationBaseTest.class);
-    protected AutomationContext apimContext;
+
+    protected AutomationContext apimContext, storeContext, publisherContext, gatewayContext;
     protected String sessionCookie;
+    protected String storeSessionCookie;
+    protected String publisherSessionCookie;
+    protected String gatewaySessionCookie;
     protected String backendURL;
     protected String webAppURL;
     protected LoginLogoutClient loginLogoutClient;
-    protected User userInfo;
 
     protected OMElement synapseConfiguration = null;
     private List<String> proxyServicesList = null;
@@ -80,32 +82,67 @@ public class AMIntegrationBaseTest {
     private List<String> priorityExecutorList = null;
     private List<String[]> scheduledTaskList = null;
 
-    protected ESBTestCaseUtils esbUtils;
+    protected APIMTestCaseUtils apimTestCaseUtils;
 
     protected TestUserMode userMode;
-    protected ContextUrls contextUrls;
+    protected ContextUrls contextUrls, storeUrls, publisherUrls, gatewayUrls;
+
+    /**
+     * init basic class
+     *
+     * @throws Exception
+     */
 
     protected void init() throws Exception {
         userMode = TestUserMode.SUPER_TENANT_ADMIN;
         init(userMode);
     }
 
+    /**
+     * init the object with user mode , create context objects and get session cookies
+     *
+     * @param userMode
+     * @throws Exception
+     */
+
     protected void init(TestUserMode userMode) throws Exception {
-        apimContext = new AutomationContext("APIM", userMode);
+
+        apimContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME, userMode);
         contextUrls = apimContext.getContextUrls();
         sessionCookie = login(apimContext);
-        esbUtils = new ESBTestCaseUtils();
+        apimTestCaseUtils = new APIMTestCaseUtils();
+
+        storeContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                AMIntegrationConstants.AM_STORE_INSTANCE, userMode);
+        storeUrls = storeContext.getContextUrls();
+        storeSessionCookie = login(storeContext);
+
+        publisherContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                AMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
+        publisherUrls = publisherContext.getContextUrls();
+        publisherSessionCookie = login(publisherContext);
+
+        gatewayContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                AMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
+        gatewayUrls = gatewayContext.getContextUrls();
+        //gatewaySessionCookie = login(gatewayContext);
     }
 
     protected void init(String domainKey, String userKey) throws Exception {
         apimContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                            AMIntegrationConstants.AM_1ST_INSTANCE,
-                                            domainKey, userKey);
+                AMIntegrationConstants.AM_1ST_INSTANCE,
+                domainKey, userKey);
         loginLogoutClient = new LoginLogoutClient(apimContext);
         sessionCookie = loginLogoutClient.login();
         backendURL = apimContext.getContextUrls().getBackEndUrl();
         webAppURL = apimContext.getContextUrls().getWebAppURL();
     }
+
+    /**
+     * get main url non secure
+     *
+     * @return
+     */
 
     protected String getMainSequenceURL() {
         String mainSequenceUrl = contextUrls.getServiceUrl();
@@ -119,6 +156,12 @@ public class AMIntegrationBaseTest {
 
     }
 
+    /**
+     * get main url secure
+     *
+     * @return
+     */
+
     protected String getMainSequenceURLHttps() {
         String mainSequenceUrl = contextUrls.getSecureServiceUrl();
         if (mainSequenceUrl.endsWith("/services")) {
@@ -131,35 +174,60 @@ public class AMIntegrationBaseTest {
 
     }
 
+    /**
+     * api invocation URL non secure
+     *
+     * @param apiContext
+     * @return
+     * @throws XPathExpressionException
+     */
+
     protected String getApiInvocationURLHttp(String apiContext) throws XPathExpressionException {
-        if (isBuilderEnabled()) {
-            return getMainSequenceURL() + apiContext;
-        } else {
-            return getGatewayServerURLHttp() + apiContext;
-        }
+        return getGatewayServerURLHttp() + apiContext;
     }
 
+    /**
+     * api invocation URL secure
+     *
+     * @param apiContext
+     * @return
+     * @throws XPathExpressionException
+     */
+
     protected String getApiInvocationURLHttps(String apiContext) throws XPathExpressionException {
-        if (isBuilderEnabled()) {
-            return getMainSequenceURLHttps() + apiContext;
-        } else {
-            return getGatewayServerURLHttps() + apiContext;
-        }
+        return getGatewayServerURLHttps() + apiContext;
     }
+
+    /**
+     * proxy service URL of deployed server non secure
+     *
+     * @param proxyServiceName
+     * @return
+     */
 
     protected String getProxyServiceURLHttp(String proxyServiceName) {
         return contextUrls.getServiceUrl() + "/" + proxyServiceName;
     }
 
+    /**
+     * proxy service URL of deployed server secure
+     *
+     * @param proxyServiceName
+     * @return
+     */
+
     protected String getProxyServiceURLHttps(String proxyServiceName) {
         return contextUrls.getSecureServiceUrl() + "/" + proxyServiceName;
     }
 
-    protected String getServerURLHttp() throws XPathExpressionException {
-        return getServerBackendUrlHttp();
-    }
 
-    protected String getServerURLHttps() {
+    /**
+     * get server back end url secure
+     *
+     * @return
+     */
+
+    protected String getBackEndURLHttps() {
         String serverUrl = contextUrls.getBackEndUrl();
         if (serverUrl.endsWith("/services")) {
             serverUrl = serverUrl.replace("/services", "");
@@ -170,32 +238,52 @@ public class AMIntegrationBaseTest {
         return serverUrl;
     }
 
-    private String getServerBackendUrlHttp() throws XPathExpressionException {
-        String httpPort = apimContext.getInstance().getPorts().get("http");
-        String hostName = apimContext.getInstance().getHosts().get("default");
 
-        String url = "http://" + hostName;
-        if (httpPort != null) {
-            url = url + ":" + httpPort;
-        }
-        return url;
+    /**
+     * get server back end url non secure
+     *
+     * @return
+     */
+
+    protected String getServerBackendUrlHttp() throws XPathExpressionException {
+        String serverUrl = contextUrls.getWebAppURL();
+        return serverUrl;
     }
+
+    /**
+     * login and return session cookie
+     *
+     * @param apimContext
+     * @return
+     * @throws IOException
+     * @throws XPathExpressionException
+     * @throws URISyntaxException
+     * @throws SAXException
+     * @throws XMLStreamException
+     * @throws LoginAuthenticationExceptionException
+     *
+     */
 
     protected String login(AutomationContext apimContext)
             throws IOException, XPathExpressionException, URISyntaxException, SAXException,
-                   XMLStreamException, LoginAuthenticationExceptionException {
+            XMLStreamException, LoginAuthenticationExceptionException {
         LoginLogoutClient loginLogoutClient = new LoginLogoutClient(apimContext);
         return loginLogoutClient.login();
     }
 
-    protected boolean isRunningOnStratos() throws XPathExpressionException {
-        return apimContext.getConfigurationValue("//executionEnvironment").equals("platform");
-    }
 
     protected String getAMResourceLocation() {
         return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
-               File.separator + "AM";
+                File.separator + "AM";
     }
+
+    /**
+     * this is used for for call axis2 server externally
+     *
+     * @param serviceName
+     * @return
+     * @throws XPathExpressionException
+     */
 
     protected String getBackEndServiceUrl(String serviceName) throws XPathExpressionException {
         return EndpointGenerator.getBackEndServiceEndpointUrl(serviceName);
@@ -205,107 +293,28 @@ public class AMIntegrationBaseTest {
         return apimContext.getConfigurationValue("//executionEnvironment").equals("standalone");
     }
 
-    protected boolean isClusterEnabled() throws XPathExpressionException {
-        return apimContext.getProductGroup().isClusterEnabled();
-    }
+    /**
+     * @param relativeFilePath
+     * @throws Exception
+     */
 
-    protected String getExecutionEnvironment() throws XPathExpressionException {
-        return apimContext.getConfigurationValue("//executionEnvironment");
-    }
-
-    protected void loadSampleESBConfiguration(int sampleNo) throws Exception {
-        OMElement synapseSample = esbUtils.loadESBSampleConfiguration(sampleNo);
-        updateESBConfiguration(synapseSample);
-
-    }
-
-    protected void loadESBConfigurationFromClasspath(String relativeFilePath) throws Exception {
+    protected void loadAPIMConfigurationFromClasspath(String relativeFilePath) throws Exception {
         relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", Matcher
                 .quoteReplacement(File.separator));
 
-        OMElement synapseConfig = esbUtils.loadResource(relativeFilePath);
-        updateESBConfiguration(synapseConfig);
+        OMElement synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
+        updateAPIMConfiguration(synapseConfig);
 
     }
 
-    protected void loadESBConfigurationFromFileHierarchy(String dirPath) throws Exception {
+    /**
+     * update API manager synapse configs
+     *
+     * @param synapseConfig
+     * @throws Exception
+     */
 
-        String initialPath = dirPath;
-        dirPath = dirPath.replaceAll("[\\\\/]", Matcher.quoteReplacement(File.separator));
-
-        String resourcePath = FrameworkPathUtil.getSystemResourceLocation();
-
-        if (resourcePath.endsWith("resources/")) {
-            resourcePath = resourcePath.replace("resources/", "resources");
-        }
-
-        dirPath = resourcePath + dirPath;
-
-        File dir = new File(dirPath);
-
-        if (dir.isDirectory()) {
-
-            // load synapse config
-            OMElement synapseConfig = esbUtils.loadResource(initialPath + "/synapse.xml");
-            updateESBConfiguration(synapseConfig);
-
-            File[] files = new File(dirPath).listFiles();
-
-            for (File file : files) {
-                if (file.isDirectory()) {
-
-                    if (file.getName().equalsIgnoreCase("proxy-services")) {
-                        File[] proxies = new File(file.getPath()).listFiles();
-
-                        for (File proxyFile : proxies) {
-                            synapseConfig = esbUtils.loadResource(initialPath + File.separator +
-                                                                  file.getName() + File.separator +
-                                                                  proxyFile.getName());
-                            addProxyService(synapseConfig);
-                        }
-                    } else if (file.getName().equalsIgnoreCase("endpoints")) {
-                        File[] endpoints = new File(file.getPath()).listFiles();
-
-                        for (File endpoint : endpoints) {
-                            synapseConfig = esbUtils.loadResource(initialPath + File.separator +
-                                                                  file.getName() + File.separator +
-                                                                  endpoint.getName());
-                            addEndpoint(synapseConfig);
-                        }
-                    } else if (file.getName().equalsIgnoreCase("local-entries")) {
-                        File[] localentries = new File(file.getPath()).listFiles();
-
-                        for (File localentry : localentries) {
-                            synapseConfig = esbUtils.loadResource(initialPath + File.separator +
-                                                                  file.getName() + File.separator +
-                                                                  localentry.getName());
-                            addLocalEntry(synapseConfig);
-                        }
-                    } else if (file.getName().equalsIgnoreCase("sequences")) {
-                        File[] sequences = new File(file.getPath()).listFiles();
-
-                        for (File sequence : sequences) {
-                            synapseConfig = esbUtils.loadResource(initialPath + File.separator +
-                                                                  file.getName() + File.separator +
-                                                                  sequence.getName());
-                            addSequence(synapseConfig);
-                        }
-                    } else if (file.getName().equalsIgnoreCase("tasks")) {
-                        File[] tasks = new File(file.getPath()).listFiles();
-
-                        for (File task : tasks) {
-                            synapseConfig = esbUtils.loadResource(initialPath + File.separator +
-                                                                  file.getName() + File.separator +
-                                                                  task.getName());
-                            addScheduledTask(synapseConfig);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    protected void updateESBConfiguration(OMElement synapseConfig) throws Exception {
+    protected void updateAPIMConfiguration(OMElement synapseConfig) throws Exception {
 
         if (synapseConfiguration == null) {
             synapseConfiguration = synapseConfig;
@@ -315,8 +324,8 @@ public class AMIntegrationBaseTest {
                 synapseConfiguration.addChild(itr.next());
             }
         }
-        esbUtils.updateESBConfiguration(setEndpoints(synapseConfig), contextUrls.getBackEndUrl(),
-                                        sessionCookie);
+        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
+                sessionCookie);
 
         if (apimContext.getProductGroup().isClusterEnabled()) {
             long deploymentDelay =
@@ -336,83 +345,114 @@ public class AMIntegrationBaseTest {
         }
     }
 
+    /**
+     * add proxy service config
+     *
+     * @param proxyConfig
+     * @throws Exception
+     */
     protected void addProxyService(OMElement proxyConfig) throws Exception {
         String proxyName = proxyConfig.getAttributeValue(new QName("name"));
-        if (esbUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie, proxyName)) {
-            esbUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie, proxyName);
+        if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie, proxyName)) {
+            apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie, proxyName);
         }
         if (proxyServicesList == null) {
             proxyServicesList = new ArrayList<String>();
         }
         proxyServicesList.add(proxyName);
-        esbUtils.addProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                                 setEndpoints(proxyConfig));
-
-       /* if (ExecutionEnvironment.stratos.name().equalsIgnoreCase(getExecutionEnvironment())) {
-            long deploymentDelay = FrameworkFactory.getFrameworkProperties(
-                    ProductConstant.ESB_SERVER_NAME).getEnvironmentVariables().getDeploymentDelay();
-
-            Assert.assertTrue(isProxyWSDlExist(getProxyServiceURL(proxyName), deploymentDelay)
-                    , "Deployment Synchronizing failed in workers");
-            Assert.assertTrue(isProxyWSDlExist(getProxyServiceURL(proxyName), deploymentDelay)
-                    , "Deployment Synchronizing failed in workers");
-            Assert.assertTrue(isProxyWSDlExist(getProxyServiceURL(proxyName), deploymentDelay)
-                    , "Deployment Synchronizing failed in workers");
-
-        }*/
+        apimTestCaseUtils.addProxyService(contextUrls.getBackEndUrl(), sessionCookie,
+                proxyConfig);
     }
+
+    /**
+     * check proxy deployed
+     *
+     * @param proxyServiceName
+     * @throws Exception
+     */
 
     protected void isProxyDeployed(String proxyServiceName) throws Exception {
-        Assert.assertTrue(esbUtils.isProxyDeployed(contextUrls.getBackEndUrl(), sessionCookie,
-                                                   proxyServiceName),
-                          "Proxy Deployment failed or time out");
+        Assert.assertTrue(apimTestCaseUtils.isProxyDeployed(contextUrls.getBackEndUrl(), sessionCookie,
+                proxyServiceName),
+                "Proxy Deployment failed or time out");
     }
 
+    /**
+     * delete proxy services
+     *
+     * @param proxyServiceName
+     * @throws Exception
+     */
+
     protected void deleteProxyService(String proxyServiceName) throws Exception {
-        if (esbUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                         proxyServiceName)) {
-            esbUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                                        proxyServiceName);
-            Assert.assertTrue(esbUtils.isProxyUnDeployed(contextUrls.getBackEndUrl(), sessionCookie,
-                                                         proxyServiceName),
-                              "Proxy Deletion failed or time out");
+        if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
+                proxyServiceName)) {
+            apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
+                    proxyServiceName);
+
+            if (!apimTestCaseUtils.isProxyUnDeployed(contextUrls.getBackEndUrl(), sessionCookie, proxyServiceName)) {
+                log.error("Proxy Deletion failed or time out");
+            }
         }
+
         if (proxyServicesList != null && proxyServicesList.contains(proxyServiceName)) {
             proxyServicesList.remove(proxyServiceName);
         }
     }
 
+    /**
+     * deleteSequence
+     *
+     * @param sequenceName
+     * @throws SequenceEditorException
+     * @throws RemoteException
+     */
+
     protected void deleteSequence(String sequenceName)
             throws SequenceEditorException, RemoteException {
-        if (esbUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, sequenceName)) {
-            esbUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie, sequenceName);
+        if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, sequenceName)) {
+            apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie, sequenceName);
         }
         if (sequencesList != null && sequencesList.contains(sequenceName)) {
             sequencesList.remove(sequenceName);
         }
     }
 
+    /**
+     * addSequence
+     *
+     * @param sequenceConfig
+     * @throws Exception
+     */
+
     protected void addSequence(OMElement sequenceConfig) throws Exception {
         String sequenceName = sequenceConfig.getAttributeValue(new QName("name"));
-        if (esbUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, sequenceName)) {
-            esbUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie, sequenceName);
+        if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, sequenceName)) {
+            apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie, sequenceName);
         }
-        esbUtils.addSequence(contextUrls.getBackEndUrl(), sessionCookie,
-                             setEndpoints(sequenceConfig));
+        apimTestCaseUtils.addSequence(contextUrls.getBackEndUrl(), sessionCookie,
+                sequenceConfig);
         if (sequencesList == null) {
             sequencesList = new ArrayList<String>();
         }
         sequencesList.add(sequenceName);
     }
 
+    /**
+     * addEndpoint
+     *
+     * @param endpointConfig
+     * @throws Exception
+     */
+
     protected void addEndpoint(OMElement endpointConfig)
             throws Exception {
         String endpointName = endpointConfig.getAttributeValue(new QName("name"));
-        if (esbUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, endpointName)) {
-            esbUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie, endpointName);
+        if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie, endpointName)) {
+            apimTestCaseUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie, endpointName);
         }
-        esbUtils.addEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
-                             setEndpoints(endpointConfig));
+        apimTestCaseUtils.addEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
+                endpointConfig);
         if (endpointsList == null) {
             endpointsList = new ArrayList<String>();
         }
@@ -420,13 +460,20 @@ public class AMIntegrationBaseTest {
 
     }
 
+    /**
+     * addLocalEntry
+     *
+     * @param localEntryConfig
+     * @throws Exception
+     */
+
     protected void addLocalEntry(OMElement localEntryConfig) throws Exception {
         String localEntryName = localEntryConfig.getAttributeValue(new QName("key"));
-        if (esbUtils
+        if (apimTestCaseUtils
                 .isLocalEntryExist(contextUrls.getBackEndUrl(), sessionCookie, localEntryName)) {
-            esbUtils.deleteLocalEntry(contextUrls.getBackEndUrl(), sessionCookie, localEntryName);
+            apimTestCaseUtils.deleteLocalEntry(contextUrls.getBackEndUrl(), sessionCookie, localEntryName);
         }
-        esbUtils.addLocalEntry(contextUrls.getBackEndUrl(), sessionCookie, localEntryConfig);
+        apimTestCaseUtils.addLocalEntry(contextUrls.getBackEndUrl(), sessionCookie, localEntryConfig);
 
         if (localEntryList == null) {
             localEntryList = new ArrayList<String>();
@@ -434,43 +481,64 @@ public class AMIntegrationBaseTest {
         localEntryList.add(localEntryName);
     }
 
+    /**
+     * addMessageProcessor
+     *
+     * @param messageProcessorConfig
+     * @throws Exception
+     */
+
     protected void addMessageProcessor(OMElement messageProcessorConfig) throws Exception {
         String messageProcessorName = messageProcessorConfig.getAttributeValue(new QName("name"));
-        if (esbUtils.isMessageProcessorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                             messageProcessorName)) {
-            esbUtils.deleteMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
-                                            messageProcessorName);
+        if (apimTestCaseUtils.isMessageProcessorExist(contextUrls.getBackEndUrl(), sessionCookie,
+                messageProcessorName)) {
+            apimTestCaseUtils.deleteMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
+                    messageProcessorName);
         }
-        esbUtils.addMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
-                                     setEndpoints(messageProcessorConfig));
+        apimTestCaseUtils.addMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
+                messageProcessorConfig);
         if (messageProcessorsList == null) {
             messageProcessorsList = new ArrayList<String>();
         }
         messageProcessorsList.add(messageProcessorName);
     }
 
+    /**
+     * addMessageStore
+     *
+     * @param messageStoreConfig
+     * @throws Exception
+     */
+
     protected void addMessageStore(OMElement messageStoreConfig) throws Exception {
         String messageStoreName = messageStoreConfig.getAttributeValue(new QName("name"));
-        if (esbUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                         messageStoreName)) {
-            esbUtils.deleteMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
-                                        messageStoreName);
+        if (apimTestCaseUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
+                messageStoreName)) {
+            apimTestCaseUtils.deleteMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
+                    messageStoreName);
         }
-        esbUtils.addMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
-                                 setEndpoints(messageStoreConfig));
+        apimTestCaseUtils.addMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
+                messageStoreConfig);
         if (messageStoresList == null) {
             messageStoresList = new ArrayList<String>();
         }
         messageStoresList.add(messageStoreName);
     }
 
+    /**
+     * addSequenceTemplate
+     *
+     * @param sequenceTemplate
+     * @throws Exception
+     */
+
     protected void addSequenceTemplate(OMElement sequenceTemplate) throws Exception {
         String name = sequenceTemplate.getAttributeValue(new QName("name"));
-        if (esbUtils.isSequenceTemplateExist(contextUrls.getBackEndUrl(), sessionCookie, name)) {
-            esbUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie, name);
+        if (apimTestCaseUtils.isSequenceTemplateExist(contextUrls.getBackEndUrl(), sessionCookie, name)) {
+            apimTestCaseUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie, name);
         }
-        esbUtils.addSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
-                                     setEndpoints(sequenceTemplate));
+        apimTestCaseUtils.addSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
+                sequenceTemplate);
 
         if (sequenceTemplateList == null) {
             sequenceTemplateList = new ArrayList<String>();
@@ -478,12 +546,19 @@ public class AMIntegrationBaseTest {
         sequenceTemplateList.add(name);
     }
 
-    protected void addApi(OMElement api) throws Exception {
+    /**
+     * addAPI
+     *
+     * @param api
+     * @throws Exception
+     */
+
+    protected void addAPI(OMElement api) throws Exception {
         String apiName = api.getAttributeValue(new QName("name"));
-        if (esbUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, apiName)) {
-            esbUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, apiName);
+        if (apimTestCaseUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, apiName)) {
+            apimTestCaseUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, apiName);
         }
-        esbUtils.addAPI(contextUrls.getBackEndUrl(), sessionCookie, api);
+        apimTestCaseUtils.addAPI(contextUrls.getBackEndUrl(), sessionCookie, api);
 
         if (apiList == null) {
             apiList = new ArrayList<String>();
@@ -491,14 +566,21 @@ public class AMIntegrationBaseTest {
         apiList.add(apiName);
     }
 
+    /**
+     * addPriorityExecutor
+     *
+     * @param priorityExecutor
+     * @throws Exception
+     */
+
     protected void addPriorityExecutor(OMElement priorityExecutor) throws Exception {
         String executorName = priorityExecutor.getAttributeValue(new QName("name"));
-        if (esbUtils.isPriorityExecutorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                             executorName)) {
-            esbUtils.deletePriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie,
-                                            executorName);
+        if (apimTestCaseUtils.isPriorityExecutorExist(contextUrls.getBackEndUrl(), sessionCookie,
+                executorName)) {
+            apimTestCaseUtils.deletePriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie,
+                    executorName);
         }
-        esbUtils.addPriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie, priorityExecutor);
+        apimTestCaseUtils.addPriorityExecutor(contextUrls.getBackEndUrl(), sessionCookie, priorityExecutor);
 
         if (priorityExecutorList == null) {
             priorityExecutorList = new ArrayList<String>();
@@ -506,109 +588,113 @@ public class AMIntegrationBaseTest {
         priorityExecutorList.add(executorName);
     }
 
+    /**
+     * addScheduledTask
+     *
+     * @param task
+     * @throws Exception
+     */
+
     protected void addScheduledTask(OMElement task) throws Exception {
         String taskName = task.getAttributeValue(new QName("name"));
         String taskGroup = task.getAttributeValue(new QName("group"));
-        if (esbUtils.isScheduleTaskExist(contextUrls.getBackEndUrl(), sessionCookie, taskName)) {
-            esbUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, taskName,
-                                        taskGroup);
+        if (apimTestCaseUtils.isScheduleTaskExist(contextUrls.getBackEndUrl(), sessionCookie, taskName)) {
+            apimTestCaseUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, taskName,
+                    taskGroup);
         }
-        esbUtils.addScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, task);
+        apimTestCaseUtils.addScheduleTask(contextUrls.getBackEndUrl(), sessionCookie, task);
 
         if (scheduledTaskList == null) {
             scheduledTaskList = new ArrayList<String[]>();
         }
-        scheduledTaskList.add(new String[] { taskName, taskGroup });
+        scheduledTaskList.add(new String[]{taskName, taskGroup});
     }
 
-    protected void applySecurity(String serviceName, int policyId, String[] userGroups)
-            throws SecurityAdminServiceSecurityConfigExceptionException, RemoteException,
-                   InterruptedException {
-        SecurityAdminServiceClient securityAdminServiceClient =
-                new SecurityAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
-        //  if (FrameworkFactory.getFrameworkProperties(ProductConstant.ESB_SERVER_NAME).getEnvironmentSettings().is_runningOnStratos()) {
+    /**
+     * deleteMessageProcessors
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
 
-        //      securityAdminServiceClient.applySecurity(serviceName, policyId + "", userGroups,
-        //    new String[]{"service.jks"}, "service.jks");
-        //  } else {
-        securityAdminServiceClient.applySecurity(serviceName, policyId + "", userGroups,
-                                                 new String[] { "wso2carbon.jks" },
-                                                 "wso2carbon.jks");
-        //  }
-        log.info("Security Scenario " + policyId + " Applied");
-
-        Thread.sleep(1000);
-
-    }
-
-    protected void applySecurity(String serviceName, String policyPath, String[] userGroups)
-            throws SecurityAdminServiceSecurityConfigExceptionException, RemoteException,
-                   InterruptedException {
-
-		/*SecurityAdminServiceClient securityAdminServiceClient =
-				new SecurityAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
-		securityAdminServiceClient.applySecurity(serviceName, policyPath,
-		                                         new String[] { "wso2carbon.jks" },
-		                                         "wso2carbon.jks", userGroups);
-
-		log.info("Security Scenario " + policyPath + " Applied");
-
-		Thread.sleep(1000);*/
-
-    }
-
-    private void deleteMessageProcessors() {
+    private void deleteMessageProcessors() throws APIManagerIntegrationTestException {
         if (messageProcessorsList != null) {
             Iterator<String> itr = messageProcessorsList.iterator();
             while (itr.hasNext()) {
                 String messageProcessor = itr.next();
                 try {
-                    if (esbUtils.isMessageProcessorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                         messageProcessor)) {
-                        esbUtils.deleteMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
-                                                        messageProcessor);
+                    if (apimTestCaseUtils.isMessageProcessorExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            messageProcessor)) {
+                        apimTestCaseUtils.deleteMessageProcessor(contextUrls.getBackEndUrl(), sessionCookie,
+                                messageProcessor);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Message Processor. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("deleteMessageProcessors error ", e);
+                    throw new APIManagerIntegrationTestException("deleteMessageProcessors error ", e);
+                } catch (SequenceEditorException e) {
+                    log.error("deleteMessageProcessors error ", e);
+                    throw new APIManagerIntegrationTestException("deleteMessageProcessors error ", e);
                 }
             }
             messageProcessorsList.clear();
         }
     }
 
-    private void deleteMessageStores() {
+    /**
+     * deleteMessageStores
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteMessageStores() throws APIManagerIntegrationTestException {
         if (messageStoresList != null) {
             Iterator<String> itr = messageStoresList.iterator();
             while (itr.hasNext()) {
                 String messageStore = itr.next();
                 try {
-                    if (esbUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                     messageStore)) {
-                        esbUtils.deleteMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    messageStore);
+                    if (apimTestCaseUtils.isMessageStoreExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            messageStore)) {
+                        apimTestCaseUtils.deleteMessageStore(contextUrls.getBackEndUrl(), sessionCookie,
+                                messageStore);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Message store. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while undeploying Message store. : ", e);
+                    throw new APIManagerIntegrationTestException("deleteMessageStores error ", e);
+                } catch (SequenceEditorException e) {
+                    log.error("while undeploying Message store. : ", e);
+                    throw new APIManagerIntegrationTestException("deleteMessageStores error ", e);
                 }
             }
             messageStoresList.clear();
         }
     }
 
-    private void deleteSequences() {
+    /**
+     * deleteSequences
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteSequences() throws APIManagerIntegrationTestException {
         if (sequencesList != null) {
             Iterator<String> itr = sequencesList.iterator();
             while (itr.hasNext()) {
                 String sequence = itr.next();
                 if (!sequence.equalsIgnoreCase("fault")) {
                     try {
-                        if (esbUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                     sequence)) {
-                            esbUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    sequence);
+                        if (apimTestCaseUtils.isSequenceExist(contextUrls.getBackEndUrl(), sessionCookie,
+                                sequence)) {
+                            apimTestCaseUtils.deleteSequence(contextUrls.getBackEndUrl(), sessionCookie,
+                                    sequence);
                         }
-                    } catch (Exception e) {
-                        Assert.fail("while undeploying Sequence. " + e.getMessage());
+                    } catch (RemoteException e) {
+                        log.error("while deleteSequences : ", e);
+                        throw new APIManagerIntegrationTestException("deleteSequences error ", e);
+                    } catch (SequenceEditorException e) {
+                        log.error("deleteSequences : ", e);
+                        throw new APIManagerIntegrationTestException("deleteSequences error ", e);
                     }
                 }
             }
@@ -616,171 +702,260 @@ public class AMIntegrationBaseTest {
         }
     }
 
-    private void deleteProxyServices() {
+    /**
+     * deleteProxyServices
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteProxyServices() throws APIManagerIntegrationTestException {
         if (proxyServicesList != null) {
             Iterator<String> itr = proxyServicesList.iterator();
             while (itr.hasNext()) {
                 String proxyName = itr.next();
                 try {
-                    if (esbUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                     proxyName)) {
-                        esbUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    proxyName);
-
-                   /*     if (ExecutionEnvironment.stratos.name().equalsIgnoreCase(getExecutionEnvironment())) {
-                            long deploymentDelay = FrameworkFactory.getFrameworkProperties(
-                                    ProductConstant.ESB_SERVER_NAME).getEnvironmentVariables().getDeploymentDelay();
-
-                            Assert.assertTrue(isProxyWSDlNotExist(getProxyServiceURL(proxyName), deploymentDelay)
-                                    , "Proxy UnDeployment Synchronizing failed in workers");
-                            Assert.assertTrue(isProxyWSDlNotExist(getProxyServiceURL(proxyName), deploymentDelay)
-                                    , "Proxy UnDeployment Synchronizing failed in workers");
-                            Assert.assertTrue(isProxyWSDlNotExist(getProxyServiceURL(proxyName), deploymentDelay)
-                                    , "Proxy UnDeployment Synchronizing failed in workers");
-
-                        }*/
+                    if (apimTestCaseUtils.isProxyServiceExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            proxyName)) {
+                        apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
+                                proxyName);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Proxy. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteProxyServices : ", e);
+                    throw new APIManagerIntegrationTestException("deleteProxyServices error ", e);
+                } catch (ProxyServiceAdminProxyAdminException e) {
+                    log.error("while deleteProxyServices : ", e);
+                    throw new APIManagerIntegrationTestException("deleteProxyServices error ", e);
                 }
             }
             proxyServicesList.clear();
         }
     }
 
-    private void deleteEndpoints() {
+    /**
+     * deleteEndpoints
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteEndpoints() throws APIManagerIntegrationTestException {
         if (endpointsList != null) {
             Iterator<String> itr = endpointsList.iterator();
             while (itr.hasNext()) {
                 String endpoint = itr.next();
                 try {
-                    if (esbUtils.isEndpointExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                 endpoint)) {
-                        esbUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
-                                                endpoint);
+                    if (apimTestCaseUtils.isEndpointExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            endpoint)) {
+                        apimTestCaseUtils.deleteEndpoint(contextUrls.getBackEndUrl(), sessionCookie,
+                                endpoint);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Endpoint. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteEndpoints : ", e);
+                    throw new APIManagerIntegrationTestException("deleteEndpoints error ", e);
+                } catch (EndpointAdminEndpointAdminException e) {
+                    log.error("while deleteEndpoints : ", e);
+                    throw new APIManagerIntegrationTestException("deleteEndpoints error ", e);
                 }
             }
             endpointsList.clear();
         }
     }
 
-    private void deleteLocalEntries() {
+    /**
+     * deleteLocalEntries
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteLocalEntries() throws APIManagerIntegrationTestException {
         if (localEntryList != null) {
             Iterator<String> itr = localEntryList.iterator();
             while (itr.hasNext()) {
                 String localEntry = itr.next();
                 try {
-                    if (esbUtils.isLocalEntryExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                   localEntry)) {
-                        esbUtils.deleteLocalEntry(contextUrls.getBackEndUrl(), sessionCookie,
-                                                  localEntry);
+                    if (apimTestCaseUtils.isLocalEntryExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            localEntry)) {
+                        apimTestCaseUtils.deleteLocalEntry(contextUrls.getBackEndUrl(), sessionCookie,
+                                localEntry);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying LocalEntry. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteLocalEntries : ", e);
+                    throw new APIManagerIntegrationTestException("deleteLocalEntries error ", e);
+                } catch (LocalEntryAdminException e) {
+                    log.error("while deleteLocalEntries : ", e);
+                    throw new APIManagerIntegrationTestException("deleteLocalEntries error ", e);
                 }
             }
             localEntryList.clear();
         }
     }
 
-    private void deleteSequenceTemplates() {
+    /**
+     * deleteSequenceTemplates
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteSequenceTemplates() throws APIManagerIntegrationTestException {
         if (sequenceTemplateList != null) {
             Iterator<String> itr = sequenceTemplateList.iterator();
             while (itr.hasNext()) {
                 String localEntry = itr.next();
                 try {
-                    if (esbUtils.isSequenceTemplateExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                         localEntry)) {
-                        esbUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
-                                                        localEntry);
+                    if (apimTestCaseUtils.isSequenceTemplateExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            localEntry)) {
+                        apimTestCaseUtils.deleteSequenceTemplate(contextUrls.getBackEndUrl(), sessionCookie,
+                                localEntry);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Sequence Template. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
+                } catch (EndpointAdminEndpointAdminException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
+                } catch (SequenceEditorException e) {
+                    log.error("while deleteSequenceTemplates : ", e);
+                    throw new APIManagerIntegrationTestException("deleteSequenceTemplates error ", e);
                 }
             }
             sequenceTemplateList.clear();
         }
     }
 
-    private void deleteApi() {
+    /**
+     * deleteAPI
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteAPI() throws APIManagerIntegrationTestException {
         if (apiList != null) {
             Iterator<String> itr = apiList.iterator();
             while (itr.hasNext()) {
                 String api = itr.next();
                 try {
-                    if (esbUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, api)) {
-                        esbUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, api);
+                    if (apimTestCaseUtils.isApiExist(contextUrls.getBackEndUrl(), sessionCookie, api)) {
+                        apimTestCaseUtils.deleteApi(contextUrls.getBackEndUrl(), sessionCookie, api);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Api. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteAPI : ", e);
+                    throw new APIManagerIntegrationTestException("deleteAPI error ", e);
+                } catch (RestApiAdminAPIException e) {
+                    log.error("while deleteAPI : ", e);
+                    throw new APIManagerIntegrationTestException("deleteAPI error ", e);
                 }
             }
             apiList.clear();
         }
     }
 
-    private void deletePriorityExecutors() {
+    /**
+     * deletePriorityExecutors
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deletePriorityExecutors() throws APIManagerIntegrationTestException {
         if (priorityExecutorList != null) {
             Iterator<String> itr = priorityExecutorList.iterator();
             while (itr.hasNext()) {
                 String executor = itr.next();
                 try {
-                    if (esbUtils.isPriorityExecutorExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                         executor)) {
-                        esbUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    executor);
+                    if (apimTestCaseUtils.isPriorityExecutorExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            executor)) {
+                        apimTestCaseUtils.deleteProxyService(contextUrls.getBackEndUrl(), sessionCookie,
+                                executor);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying Priority Executor. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deletePriorityExecutors : ", e);
+                    throw new APIManagerIntegrationTestException("deletePriorityExecutors error ", e);
+                } catch (ProxyServiceAdminProxyAdminException e) {
+                    log.error("while deletePriorityExecutors : ", e);
+                    throw new APIManagerIntegrationTestException("deletePriorityExecutors error ", e);
                 }
             }
             priorityExecutorList.clear();
         }
     }
 
-    private void deleteScheduledTasks() {
+    /**
+     * deleteScheduledTasks
+     *
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+
+    private void deleteScheduledTasks() throws APIManagerIntegrationTestException {
         if (scheduledTaskList != null) {
             Iterator<String[]> itr = scheduledTaskList.iterator();
             while (itr.hasNext()) {
                 String[] executor = itr.next();
                 try {
-                    if (esbUtils.isScheduleTaskExist(contextUrls.getBackEndUrl(), sessionCookie,
-                                                     executor[0])) {
-                        esbUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie,
-                                                    executor[0], executor[1]);
+                    if (apimTestCaseUtils.isScheduleTaskExist(contextUrls.getBackEndUrl(), sessionCookie,
+                            executor[0])) {
+                        apimTestCaseUtils.deleteScheduleTask(contextUrls.getBackEndUrl(), sessionCookie,
+                                executor[0], executor[1]);
                     }
-                } catch (Exception e) {
-                    Assert.fail("while undeploying ScheduledTask Executor. " + e.getMessage());
+                } catch (RemoteException e) {
+                    log.error("while deleteScheduledTasks : ", e);
+                    throw new APIManagerIntegrationTestException("deleteScheduledTasks error ", e);
+                } catch (TaskManagementException e) {
+                    log.error("while deleteScheduledTasks : ", e);
+                    throw new APIManagerIntegrationTestException("deleteScheduledTasks error ", e);
                 }
             }
             scheduledTaskList.clear();
         }
     }
 
+    /**
+     * setEndpoints
+     * @param synapseConfig
+     * @return
+     * @throws XMLStreamException
+     * @throws XPathExpressionException
+     */
+/*
+
     protected OMElement setEndpoints(OMElement synapseConfig)
             throws XMLStreamException, XPathExpressionException {
-        if (isBuilderEnabled()) {
-            return synapseConfig;
-        }
+
         String config = replaceEndpoints(synapseConfig.toString());
         return AXIOMUtil.stringToOM(config);
     }
+*/
 
+    /**
+     * setEndpoints
+     * @param dataHandler
+     * @return
+     * @throws XMLStreamException
+     * @throws IOException
+     * @throws XPathExpressionException
+     */
+/*
     protected DataHandler setEndpoints(DataHandler dataHandler)
             throws XMLStreamException, IOException, XPathExpressionException {
-        if (isBuilderEnabled()) {
-            return dataHandler;
-        }
+
         String config = readInputStreamAsString(dataHandler.getInputStream());
         config = replaceEndpoints(config);
         ByteArrayDataSource dbs = new ByteArrayDataSource(config.getBytes());
         return new DataHandler(dbs);
-    }
+    }*/
 
-    private String replaceEndpoints(String config) throws XPathExpressionException {
+    /**
+     * replaceEndpoints
+     * @param config
+     * @return
+     * @throws XPathExpressionException
+     */
+
+    /*  private String replaceEndpoints(String config) throws XPathExpressionException {
         //this should be AS context
         String serviceUrl =
                 new AutomationContext("AS", TestUserMode.SUPER_TENANT_ADMIN).getContextUrls()
@@ -791,17 +966,38 @@ public class AMIntegrationBaseTest {
         config = config.replace("http://127.0.0.1:9000/services/"
                 , serviceUrl);
         return config;
-    }
+    }*/
+
+    /**
+     * replaceEndpoints
+     *
+     * @param relativePathToConfigFile
+     * @param serviceName
+     * @param port
+     * @return
+     * @throws XMLStreamException
+     * @throws FileNotFoundException
+     * @throws XPathExpressionException
+     */
 
     protected OMElement replaceEndpoints(String relativePathToConfigFile, String serviceName,
                                          String port)
             throws XMLStreamException, FileNotFoundException, XPathExpressionException {
-        String config = esbUtils.loadResource(relativePathToConfigFile).toString();
+        String config = apimTestCaseUtils.loadResource(relativePathToConfigFile).toString();
         config = config.replace("http://localhost:" + port + "/services/" + serviceName,
-                                getBackEndServiceUrl(serviceName));
+                getBackEndServiceUrl(serviceName));
 
         return AXIOMUtil.stringToOM(config);
     }
+
+    /**
+     * isProxyWSDlExist
+     *
+     * @param serviceUrl
+     * @param synchronizingDelay
+     * @return
+     * @throws Exception
+     */
 
     private boolean isProxyWSDlExist(String serviceUrl, long synchronizingDelay)
             throws Exception {
@@ -809,36 +1005,57 @@ public class AMIntegrationBaseTest {
 
     }
 
-    private boolean isProxyWSDlNotExist(String serviceUrl, long synchronizingDelay)
-            throws Exception {
 
-        return new ServiceDeploymentUtil().isServiceWSDlNotExist(serviceUrl, synchronizingDelay);
+    /**
+     * read input stream as a string
+     *
+     * @param in
+     * @return
+     * @throws IOException
+     */
 
-    }
+    private String readInputStreamAsString(InputStream in) throws IOException {
 
-    protected String getSessionCookie() {
-        return sessionCookie;
-    }
-
-    private String readInputStreamAsString(InputStream in)
-            throws IOException {
+        String resultStr = null;
 
         BufferedInputStream bis = new BufferedInputStream(in);
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int result = bis.read();
-        while (result != -1) {
-            byte b = (byte) result;
-            buf.write(b);
-            result = bis.read();
+
+        try {
+
+            int result = bis.read();
+            while (result != -1) {
+                byte b = (byte) result;
+                buf.write(b);
+
+                result = bis.read();
+
+            }
+
+            resultStr = buf.toString();
+
+        } catch (IOException e) {
+            log.error("Stream error occurred" + e);
+            throw new IOException(e);
+        } finally {
+            buf.close();
+            bis.close();
         }
-        return buf.toString();
+
+        return resultStr;
     }
+
+    /**
+     * clean up deployed artifacts and other services
+     *
+     * @throws Exception
+     */
 
     protected void cleanup() throws Exception {
         try {
             if (synapseConfiguration != null) {
-                esbUtils.deleteArtifact(synapseConfiguration, contextUrls.getBackEndUrl(),
-                                        sessionCookie);
+                apimTestCaseUtils.deleteArtifact(synapseConfiguration, contextUrls.getBackEndUrl(),
+                        sessionCookie);
                 if (apimContext.getProductGroup().isClusterEnabled()) {
 
                     long deploymentDelay =
@@ -849,15 +1066,9 @@ public class AMIntegrationBaseTest {
                     while (proxies.hasNext()) {
                         String proxy = proxies.next().getAttributeValue(new QName("name"));
 
-                        Assert.assertTrue(
-                                isProxyWSDlNotExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                                , "UnDeployment Synchronizing failed in workers");
-                        Assert.assertTrue(
-                                isProxyWSDlNotExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                                , "UnDeployment Synchronizing failed in workers");
-                        Assert.assertTrue(
-                                isProxyWSDlNotExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                                , "UnDeployment Synchronizing failed in workers");
+                        if (isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)) {
+                            log.error("UnDeployment Synchronizing failed in workers");
+                        }
                     }
                 }
             }
@@ -876,7 +1087,7 @@ public class AMIntegrationBaseTest {
 
             deleteLocalEntries();
 
-            deleteApi();
+            deleteAPI();
 
             deletePriorityExecutors();
 
@@ -892,47 +1103,142 @@ public class AMIntegrationBaseTest {
             localEntryList = null;
             apiList = null;
             priorityExecutorList = null;
-            esbUtils = null;
+            apimTestCaseUtils = null;
             scheduledTaskList = null;
 
         }
     }
 
+    /**
+     * return publisher server url non secure
+     * ex :  https://localhost:9743
+     *
+     * @return
+     */
+
     protected String getStoreServerURLHttp() {
-        return "http://localhost:9763";
+        return storeUrls.getWebAppURL();
     }
+
+    /**
+     * return publisher server url secure
+     * ex :  https://localhost:9443
+     *
+     * @return
+     */
 
     protected String getStoreServerURLHttps() {
-        return "https://localhost:9443";
+
+        String httpsURL = null;
+
+        httpsURL = storeUrls.getBackEndUrl();
+
+        if (httpsURL.endsWith("/services")) {
+            httpsURL = httpsURL.replace("/services", "");
+        }
+
+        return httpsURL;
     }
+
+    /**
+     * return publisher server url non secure
+     * ex :  https://localhost:9743
+     *
+     * @return
+     */
 
     protected String getPublisherServerURLHttp() {
-        return "http://localhost:9763";
+        return publisherUrls.getWebAppURL();
     }
+
+    /**
+     * return publisher server url secure
+     * ex :  https://localhost:9443
+     *
+     * @return
+     */
 
     protected String getPublisherServerURLHttps() {
-        return "https://localhost:9443";
+        String httpsURL = publisherUrls.getBackEndUrl();
+        if (httpsURL.endsWith("/services")) {
+            httpsURL = httpsURL.replace("/services", "");
+        }
+
+        return httpsURL;
     }
+
+    /**
+     * return gateway server url non secure
+     * ex :  http://localhost:8280
+     *
+     * @return
+     */
 
     protected String getGatewayServerURLHttp() {
-        return "http://localhost:8280/";
+        String httpURL = gatewayUrls.getServiceUrl();
+        if (httpURL.endsWith("/services")) {
+            httpURL = httpURL.replace("/services", "");
+        }
+
+        return httpURL;
     }
+
+    /**
+     * return gateway server url secure
+     * ex : https://localhost:8243
+     *
+     * @return
+     */
 
     protected String getGatewayServerURLHttps() {
-        return "https://localhost:8243/";
+        String httpsURL = gatewayUrls.getSecureServiceUrl();
+        if (httpsURL.endsWith("/services")) {
+            httpsURL = httpsURL.replace("/services", "");
+        }
+
+        return httpsURL;
     }
 
-    protected String getTestApplicationUsagePublisherServerURLHttp() {
-        return "http://localhost:9763/testapp/testUsageWithBAM.jag";
+    /**
+     * get APIM server sessionCookie
+     *
+     * @return
+     */
+
+    protected String getSessionCookie() {
+        return sessionCookie;
     }
 
-    protected String getTestApplicationStoreServerURLHttp() {
-        return "http://localhost:9763/testapp/testStore.jag";
+    /**
+     * return store session  cookie
+     *
+     * @return
+     */
+
+    public String getStoreSessionCookie() {
+        return storeSessionCookie;
     }
 
-    protected String getTestApplicationPublisherServerURLHttp() {
-        return "http://localhost:9763/testapp/testPublisher.jag";
+    /**
+     * return publisher session  cookie
+     *
+     * @return
+     */
+
+    public String getPublisherSessionCookie() {
+        return publisherSessionCookie;
     }
+
+    /**
+     * return gateway session  cookie
+     *
+     * @return
+     */
+
+    public String getGatewaySessionCookie() {
+        return gatewaySessionCookie;
+    }
+
 
 }
 

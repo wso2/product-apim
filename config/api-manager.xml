@@ -133,6 +133,7 @@
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
                 <Environment type="hybrid">
                         <Name>Production and Sandbox</Name>
+                    <Description> Description of environment</Description>
 			<!--
             			Server URL of the API gateway.
         		-->
@@ -217,7 +218,11 @@
             Administrator password to login to the remote BAM server.
         -->
         <BAMPassword>${admin.password}</BAMPassword>
-
+        <!--
+            If below property set to true,then the response message size will be calculated and publish 
+            with each successful API invocation event.
+        -->
+        <PublishResponseMessageSize>false</PublishResponseMessageSize>
         <!--
             JNDI name of the data source to be used for getting BAM statistics.This data source should
             be defined in the master-datasources.xml file in conf/datasources directory.
@@ -295,6 +300,7 @@
         -If you are at the Gateway node, you need to point "ThriftClientPort" value to the "ThriftServerPort" value given at KeyManager node.
         -If you need to start two API Manager instances in the same machine, you need to give different ports to "ThriftServerPort" value in two nodes.
         -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
+	-Gateway use this parameter to connect key validation thrift service. 
         -->
 
         <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
@@ -303,11 +309,6 @@
         <ThriftServerPort>10397</ThriftServerPort>
 	<!--ThriftServerHost>localhost</ThriftServerHost-->
 	<EnableThriftServer>true</EnableThriftServer>
-	<!--
-	   This parameter is used to specify Thrift server host name. In a distributed deployment we must set this parameter
-	   if keymanager running on separate machine. Gateway use this parameter to connect key validation thrift service
-	-->
-	<!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
 
         <!--
             Remove UserName from JWT Token
