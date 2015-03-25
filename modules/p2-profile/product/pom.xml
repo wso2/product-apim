@@ -279,6 +279,7 @@
 				 <featureArtifactDef>
                                     org.wso2.carbon:org.wso2.carbon.core.ui.feature:${carbon.kernel.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.thrift.authentication.feature:${carbon.identity.version}</featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -389,6 +390,10 @@
                             <destination>${basedir}/target/wso2carbon-core-${carbon.kernel.version}/repository/components</destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -839,6 +844,10 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1206,6 +1215,10 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1580,6 +1593,10 @@
 					<id>org.wso2.carbon.identity.user.profile.feature.group</id>
 					<version>${carbon.identity.version}</version>
 				</feature>
+                               <feature>
+                               <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                               <version>${carbon.identity.version}</version>
+                               </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -2010,6 +2027,10 @@
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                            <features>
                                <feature>
+                                   <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                   <version>${carbon.identity.version}</version>
+                               </feature>
+                               <feature>
                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
                                    <version>${carbon.multitenancy.version}</version>
                                </feature>
@@ -2430,6 +2451,10 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                            <features>
+                               <feature>
+                                   <id>org.wso2.carbon.identity.thrift.authentication.feature.group</id>
+                                   <version>${carbon.identity.version}</version>
+                               </feature>
                                <feature>
                                    <id>org.wso2.carbon.tenant.common.feature.group</id>
                                    <version>${carbon.multitenancy.version}</version>

@@ -55,7 +55,7 @@
                 <exclude>**/cipher-tool.properties</exclude>
                 <exclude>**/authenticators.xml</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
-                <exclude>**/client-truststore.jks</exclude>
+                <!--exclude>**/client-truststore.jks</exclude-->
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
@@ -674,6 +674,12 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>
+            ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/thrift-authentication.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
 	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
