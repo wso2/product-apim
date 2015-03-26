@@ -18,9 +18,11 @@
 
 package org.wso2.am.integration.test.utils.clients;
 
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.validation.VerificationUtil;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -549,4 +551,47 @@ public class APIPublisherRestClient {
             throw new Exception("API Resource update failed : " + response.getData());
         }
     }
+
+	/**
+	 * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
+	 *
+	 * @param apiIdentifier           - Instance of APIIdentifier
+	 * @param isRequireReSubscription - true if Re-subscription is required else false.
+	 * @return HttpResponse - Response of the API publish event
+	 * @throws Exception - Exception Throws in checkAuthentication() and when do the REST service calls to do the
+	 *                   lifecycle change
+	 */
+	public HttpResponse changeAPILifeCycleStatusToPublish(APIIdentifier apiIdentifier, boolean isRequireReSubscription)
+			throws Exception {
+		checkAuthentication();
+		APILifeCycleStateRequest publishUpdateRequest =
+				new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(), APILifeCycleState.PUBLISHED);
+		publishUpdateRequest.setVersion(apiIdentifier.getVersion());
+		String requestParameters = publishUpdateRequest.generateRequestParameters();
+		if (isRequireReSubscription) {
+			requestParameters += "&requireResubscription=true";
+		}
+
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+				, requestParameters, requestHeaders);
+
+	}
+
+	/**
+	 * Get the API information  for the given API Name,API Version and API Provider
+	 *
+	 * @param apiName  - Name of the API
+	 * @param provider - Provider Name of the API
+	 * @param version  - Version of the API
+	 * @return HttpResponse -  Response of the getAPI request
+	 * @throws Exception - Exception Throws in checkAuthentication() and when do the REST service calls to get the
+	 *                   API information.
+	 */
+	public HttpResponse getApi(String apiName, String provider, String version)
+			throws Exception {
+		checkAuthentication();
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
+				, "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
+
+	}
 }
