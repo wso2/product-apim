@@ -28,7 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -146,7 +146,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
             //publishing API
             APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, API_PROVIDER,
                     APILifeCycleState.PUBLISHED);
-            apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+            apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
             //resources are modified using swagger doc.
             String modifiedResource = "{\"apiVersion\":\"1.0.0\",\"swaggerVersion\":\"1.2\"," +
@@ -246,7 +246,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
         }
 
         if (apiPublisher != null) {
-            apiPublisher.deleteApi(API_NAME, API_VERSION, API_PROVIDER);
+            apiPublisher.deleteAPI(API_NAME, API_VERSION, API_PROVIDER);
         }
 
         if (userManagementClient != null) {
