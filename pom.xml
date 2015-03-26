@@ -867,6 +867,29 @@
         <carbon.social.version>1.2.0</carbon.social.version>
         <i18n.feature.version>1.0.0</i18n.feature.version>
 
+        <!-- Store -->
+        <caramel.feature.version>1.0.1</caramel.feature.version>
+        <handlebars.feature.version>1.0.0</handlebars.feature.version>
+        <markdown.feature.version>1.0.0</markdown.feature.version>
+        <process.feature.version>1.2.0</process.feature.version>
+        <carbon.feature.version>1.2.1</carbon.feature.version>
+        <uuid.feature.version>1.2.0</uuid.feature.version>
+        <sso.feature.version>1.2.0</sso.feature.version>
+        <es.feature.version>2.0.0</es.feature.version>
+        <carbon.social.version>1.2.0</carbon.social.version>
+        <i18n.feature.version>1.0.0</i18n.feature.version>
+        <!--<event.feature.version>1.0.0</event.feature.version>-->
+        <!--<login.feature.version>1.0.0</login.feature.version>-->
+        <!--<permission.feature.version>1.0.0</permission.feature.version>-->
+        <!--<registration.feature.version>1.0.0</registration.feature.version>-->
+        <!--<sso.feature.version>1.0.0</sso.feature.version>-->
+        <!--<store.feature.version>1.0.0</store.feature.version>-->
+        <!--<ues.feature.version>1.0.0</ues.feature.version>-->
+        <!--<claims.feature.version>1.0.0</claims.feature.version>-->
+
+        <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
+        <eclipse.version>3.2.0</eclipse.version>
+
     </properties>
 
 </project>
