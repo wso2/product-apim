@@ -281,6 +281,69 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.identity:org.wso2.carbon.identity.thrift.authentication.feature:${carbon.identity.version}</featureArtifactDef>
 
+                                <!--Asset Store Feature list -->
+                                <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.feature:${org.jaggery.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs:org.jaggeryjs.feature:${org.jaggery.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:caramel.feature:${caramel.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:handlebars.feature:${handlebars.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:markdown.feature:${markdown.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:carbon.feature:${carbon.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:process.feature:${process.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:uuid.feature:${uuid.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:i18n.feature:${i18n.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.jaggeryjs.modules:sso.feature:${sso.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:event.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:login.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:permission.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:registration.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <!-- <featureArtifactDef>org.wso2.carbon.store:sso.feature:${es.feature.version}
+                                 </featureArtifactDef>-->
+                                <featureArtifactDef>org.wso2.carbon.store:store.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:ues.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.store:account-management.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:rxt.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.store:lifecycle.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.store:utils.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.store:org.wso2.es.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.store:org.wso2.carbon.social.feature:${carbon.social.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
+                                </featureArtifactDef>
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -824,6 +887,93 @@
                                     <id>org.wso2.carbon.tenant.deployment.feature.group</id>
                                     <version>${carbon.multitenancy.version}</version>
                                 </feature>
+
+                                <!-- Features related to Asset Store -->
+                                <feature>
+                                    <id>org.jaggeryjs.feature.group</id>
+                                    <version>${org.jaggery.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                                    <version>${caramel.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                                    <version>${handlebars.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                                    <version>${markdown.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                    <version>${carbon.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.process.feature.group</id>
+                                    <version>${process.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                    <version>${uuid.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                    <version>${sso.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
+                                </feature>
+                                <!--feature>
+                                    <id>org.wso2.store.event.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature-->
+                                <feature>
+                                    <id>org.wso2.store.modules.login.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.permission.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.registration.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <!--<feature>
+                                    <id>org.wso2.store.modules.sso.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>-->
+                                <feature>
+                                    <id>org.wso2.store.modules.store.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.ues.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.account-management.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.rxt.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.utils.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.server.feature.group</id>
+                                    <version>${org.jaggery.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -1194,6 +1344,81 @@
                                     <id>org.wso2.carbon.tenant.deployment.feature.group</id>
                                     <version>${carbon.multitenancy.version}</version>
                                 </feature>
+
+                                <!-- Features related to Asset Store -->
+                                <feature>
+                                    <id>org.jaggeryjs.feature.group</id>
+                                    <version>${org.jaggery.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                                    <version>${caramel.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                                    <version>${handlebars.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                                    <version>${markdown.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                    <version>${carbon.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.process.feature.group</id>
+                                    <version>${process.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                    <version>${uuid.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                    <version>${sso.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.event.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.login.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.permission.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.registration.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <!--<feature>
+                                    <id>org.wso2.store.modules.sso.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>-->
+                                <feature>
+                                    <id>org.wso2.store.modules.store.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.ues.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.account-management.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -1560,6 +1785,85 @@
                                     <id>org.wso2.carbon.tenant.deployment.feature.group</id>
                                     <version>${carbon.multitenancy.version}</version>
                                 </feature>
+
+                                <!-- Features related to Asset Store -->
+                                <feature>
+                                    <id>org.jaggeryjs.feature.group</id>
+                                    <version>${org.jaggery.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                                    <version>${caramel.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                                    <version>${handlebars.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                                    <version>${markdown.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                    <version>${carbon.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.process.feature.group</id>
+                                    <version>${process.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                    <version>${uuid.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                    <version>${sso.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.event.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.login.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.permission.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.registration.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <!--<feature>
+                                    <id>org.wso2.store.modules.sso.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>-->
+                                <feature>
+                                    <id>org.wso2.store.modules.store.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.ues.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.account-management.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.social.feature.group</id>
+                                    <version>${carbon.social.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -2005,6 +2309,85 @@
                         <id>org.wso2.carbon.tenant.deployment.feature.group</id>
                         <version>${carbon.multitenancy.version}</version>
                     </feature>
+
+                    <!-- Features related to Asset Store -->
+                    <feature>
+                        <id>org.jaggeryjs.feature.group</id>
+                        <version>${org.jaggery.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                        <version>${caramel.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                        <version>${handlebars.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                        <version>${markdown.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                        <version>${carbon.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.process.feature.group</id>
+                        <version>${process.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                        <version>${uuid.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.sso.feature.group</id>
+                        <version>${sso.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                        <version>${i18n.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.event.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.login.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.permission.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.registration.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <!--<feature>
+                        <id>org.wso2.store.modules.sso.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>-->
+                    <feature>
+                        <id>org.wso2.store.modules.store.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.ues.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.account-management.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.es.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.carbon.social.feature.group</id>
+                        <version>${carbon.social.version}</version>
+                    </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -2429,6 +2812,85 @@
                                    <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
                                    <version>4.2.3</version>
                                	</feature-->
+
+                               <!-- Features related to Asset Store -->
+                               <feature>
+                                   <id>org.jaggeryjs.feature.group</id>
+                                   <version>${org.jaggery.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                                   <version>${caramel.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                                   <version>${handlebars.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                                   <version>${markdown.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                   <version>${carbon.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.process.feature.group</id>
+                                   <version>${process.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                   <version>${uuid.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                   <version>${sso.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                   <version>${i18n.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.event.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.login.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.permission.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.registration.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <!--<feature>
+                                   <id>org.wso2.store.modules.sso.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>-->
+                               <feature>
+                                   <id>org.wso2.store.modules.store.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.ues.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.account-management.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.es.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.social.feature.group</id>
+                                   <version>${carbon.social.version}</version>
+                               </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -2826,6 +3288,84 @@
                                <feature>
                                    <id>org.wso2.carbon.idp.mgt.feature.group</id>
                                    <version>${carbon.identity.version}</version>
+                               </feature>
+
+                               <!-- Features related to Asset Store -->
+                               <feature>
+                                   <id>org.jaggeryjs.feature.group</id>
+                                   <version>${org.jaggery.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.caramel.feature.group</id>
+                                   <version>${caramel.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.handlebars.feature.group</id>
+                                   <version>${handlebars.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.markdown.feature.group</id>
+                                   <version>${markdown.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                   <version>${carbon.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.process.feature.group</id>
+                                   <version>${process.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                   <version>${uuid.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                   <version>${sso.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                   <version>${i18n.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.event.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.login.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.permission.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.registration.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <!--<feature>
+                                   <id>org.wso2.store.modules.sso.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>-->
+                               <feature>
+                                   <id>org.wso2.store.modules.store.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.ues.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.account-management.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.es.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.social.feature.group</id>
+                                   <version>${carbon.social.version}</version>
                                </feature>
 
                             </features>
