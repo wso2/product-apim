@@ -437,8 +437,8 @@
 
 
         <fileSet>
-            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/social</directory>
-            <outputDirectory>${pom.artifactId}-${build.version}/dbscripts/social</outputDirectory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/social</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/social</outputDirectory>
             <excludes>
                 <exclude>**/.svn</exclude>
             </excludes>
