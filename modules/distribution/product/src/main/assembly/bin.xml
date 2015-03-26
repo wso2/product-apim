@@ -418,6 +418,9 @@
                 <exclude>**/carbon/**</exclude>
                 <exclude>**/process/**</exclude>
             </excludes-->
+            <includes>
+                <include>*/**</include>
+            </includes>
         </fileSet>
 
         <fileSet>
@@ -431,6 +434,29 @@
 
 
         <!--End of  API Manager related -->
+
+
+        <fileSet>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/social</directory>
+            <outputDirectory>${pom.artifactId}-${build.version}/dbscripts/social</outputDirectory>
+            <excludes>
+                <exclude>**/.svn</exclude>
+            </excludes>
+        </fileSet>
+
+        <!-- ES store -->
+        <fileSet>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-publisher</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/es-publisher</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-sso</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/sso</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-store</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/es-store</outputDirectory>
+        </fileSet>
 
     </fileSets>
     <dependencySets>
