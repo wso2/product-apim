@@ -53,7 +53,7 @@
                 <exclude>**/bin/ciphertool.bat</exclude>
                 <exclude>**/cipher-text.properties</exclude>
                 <exclude>**/cipher-tool.properties</exclude>
-                <exclude>**/authenticators.xml</exclude>
+                <!--exclude>**/authenticators.xml</exclude-->
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
                 <!--exclude>**/client-truststore.jks</exclude-->
                 <exclude>**/secret-conf.properties</exclude>
