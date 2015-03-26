@@ -594,4 +594,20 @@ public class APIPublisherRestClient {
 				, "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
 
 	}
+
+	/**
+	 * Check the Endpoint is valid
+	 *
+	 * @param endpointUrl url of the endpoint
+	 * @param type        type of Endpoint
+	 * @return HttpResponse -  Response of the getAPI request
+	 * @throws Exception - Exception Throws in checkAuthentication() and when do the REST service calls to get the
+	 *                   API information.
+	 */
+	public HttpResponse checkValidEndpoint(String type, String endpointUrl)
+			throws Exception {
+		checkAuthentication();
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/add.jag")
+				, "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
+	}
 }
