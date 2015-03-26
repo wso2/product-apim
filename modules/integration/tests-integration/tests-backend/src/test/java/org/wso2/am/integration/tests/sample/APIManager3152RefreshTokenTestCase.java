@@ -24,8 +24,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
@@ -100,7 +100,7 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName + "@11wso2.com",
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(userName + "@11wso2.com", apimContext.getContextTenant().getTenantAdmin().getPassword());
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName+"-AT-11wso2.com");
