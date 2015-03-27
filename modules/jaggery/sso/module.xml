@@ -1,7 +1,10 @@
-<module name="sso" expose="true"  xmlns="http://wso2.org/projects/jaggery/module.xml">
-    <hostObject>
-        <className>org.wso2.carbon.hostobjects.sso.SAMLSSORelyingPartyObject</className>
-        <name>SSORelyingParty</name>
-    </hostObject>
-
+<module name="sso" expose="false" xmlns="http://wso2.org/projects/jaggery/module.xml">
+	<script>
+		<name>client</name>
+		<path>scripts/sso.client.js</path>
+	</script>
+	<hostObject>
+		<className>org.wso2.carbon.hostobjects.sso.SAMLSSORelyingPartyObject</className>
+		<name>SSORelyingParty</name>
+	</hostObject>
 </module>
