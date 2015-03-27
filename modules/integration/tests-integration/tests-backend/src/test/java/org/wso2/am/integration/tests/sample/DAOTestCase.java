@@ -27,8 +27,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -106,13 +106,13 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
         APIBean apiBean = APIMgtTestUtil
-                .getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
+                .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(
