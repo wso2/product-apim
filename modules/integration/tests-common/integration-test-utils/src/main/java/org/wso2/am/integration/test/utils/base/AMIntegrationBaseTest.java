@@ -123,6 +123,7 @@ public class AMIntegrationBaseTest {
                 AMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
         gatewayUrls = gatewayContext.getContextUrls();
         gatewaySessionCookie = login(gatewayContext);
+
     }
 
     protected void init(String domainKey, String userKey) throws Exception {
@@ -193,13 +194,13 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * ex :  https://localhost:9743
+     * ex :  https://localhost:9763
      *
      * @return publisher server url non secure
      */
 
     protected String getPublisherServerURLHttp() {
-        return publisherUrls.getWebAppURL() +"/publisher/";
+        return publisherUrls.getWebAppURL() + "/publisher/";
     }
 
     /**
@@ -218,13 +219,13 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * ex :  https://localhost:9743
+     * ex :  https://localhost:9763
      *
      * @return store server url non secure
      */
 
     protected String getStoreServerURLHttp() {
-        return storeUrls.getWebAppURL() +"/store/";
+        return storeUrls.getWebAppURL() + "/store/";
     }
 
     /**
@@ -288,7 +289,7 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getProxyServiceURLHttp(String proxyServiceName) {
-        return contextUrls.getServiceUrl() + "/" + proxyServiceName;
+        return contextUrls.getServiceUrl() + "/" + proxyServiceName + "/";
     }
 
     /**
@@ -299,7 +300,7 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getProxyServiceURLHttps(String proxyServiceName) {
-        return contextUrls.getSecureServiceUrl() + "/" + proxyServiceName;
+        return contextUrls.getSecureServiceUrl() + "/" + proxyServiceName + "/";
     }
 
     protected String getBackEndServiceUrl(String serviceName) throws XPathExpressionException {
@@ -330,7 +331,7 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getServerBackendUrlHttp() throws XPathExpressionException {
-        return contextUrls.getWebAppURL()+"/services/";
+        return contextUrls.getWebAppURL() + "/services/";
     }
 
     /**
