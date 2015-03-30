@@ -101,7 +101,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * add API to APIM
-	 * @param apiRequest
+	 * @param apiRequest - Constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -122,7 +122,7 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * copy API
+	 * copy API from existing API
 	 * @param provider
 	 * @param APIName
 	 * @param oldVersion
@@ -150,7 +150,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * update created API
-	 * @param apiRequest
+	 * @param apiRequest - constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -171,8 +171,8 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * change API status
-	 * @param updateRequest
+	 * change status of a created API
+	 * @param updateRequest - APILifeCycleStateRequest object
 	 * @return
 	 * @throws Exception
 	 */
