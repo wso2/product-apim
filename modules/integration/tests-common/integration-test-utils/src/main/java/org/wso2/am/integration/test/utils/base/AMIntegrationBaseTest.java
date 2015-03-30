@@ -17,7 +17,6 @@
 */
 package org.wso2.am.integration.test.utils.base;
 
-import org.apache.axiom.attachments.ByteArrayDataSource;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
@@ -25,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.generic.EndpointGenerator;
 import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -41,7 +39,6 @@ import org.wso2.carbon.sequences.stub.types.SequenceEditorException;
 import org.wso2.carbon.task.stub.TaskManagementException;
 import org.xml.sax.SAXException;
 
-import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
@@ -125,7 +122,7 @@ public class AMIntegrationBaseTest {
         gatewayContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
         gatewayUrls = gatewayContext.getContextUrls();
-        //gatewaySessionCookie = login(gatewayContext);
+        gatewaySessionCookie = login(gatewayContext);
     }
 
     protected void init(String domainKey, String userKey) throws Exception {
@@ -139,15 +136,15 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * get main url non secure
+     * - eg: http://localhost:8280/
      *
-     * @return
+     * @return main sequence url non secure
      */
 
     protected String getMainSequenceURL() {
         String mainSequenceUrl = contextUrls.getServiceUrl();
         if (mainSequenceUrl.endsWith("/services")) {
-            mainSequenceUrl = mainSequenceUrl.replace("/services", "");
+            mainSequenceUrl = mainSequenceUrl.replace("/services", "/");
         }
         if (!mainSequenceUrl.endsWith("/")) {
             mainSequenceUrl = mainSequenceUrl + "/";
@@ -157,15 +154,15 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * get main url secure
+     * - eg: https://localhost:8243/
      *
-     * @return
+     * @return main sequence url secure
      */
 
     protected String getMainSequenceURLHttps() {
         String mainSequenceUrl = contextUrls.getSecureServiceUrl();
         if (mainSequenceUrl.endsWith("/services")) {
-            mainSequenceUrl = mainSequenceUrl.replace("/services", "");
+            mainSequenceUrl = mainSequenceUrl.replace("/services", "/");
         }
         if (!mainSequenceUrl.endsWith("/")) {
             mainSequenceUrl = mainSequenceUrl + "/";
@@ -175,27 +172,112 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * api invocation URL non secure
+     * eg :  http://localhost:9763/services/
+     *
+     * @return gateway server url non secure
+     */
+
+    protected String getGatewayServerURLHttp() {
+        return gatewayUrls.getWebAppURL() + "/services/";
+    }
+
+    /**
+     * eg : https://localhost:9443/services/
+     *
+     * @return gateway server url secure
+     */
+
+    protected String getGatewayServerURLHttps() {
+
+        return gatewayUrls.getBackEndUrl();
+    }
+
+    /**
+     * ex :  https://localhost:9743
+     *
+     * @return publisher server url non secure
+     */
+
+    protected String getPublisherServerURLHttp() {
+        return publisherUrls.getWebAppURL() +"/publisher/";
+    }
+
+    /**
+     * ex :  https://localhost:9443
+     *
+     * @return publisher server url secure
+     */
+
+    protected String getPublisherServerURLHttps() {
+        String httpsURL = publisherUrls.getBackEndUrl();
+        if (httpsURL.endsWith("services/")) {
+            httpsURL = httpsURL.replace("services/", "publisher/");
+        }
+
+        return httpsURL;
+    }
+
+    /**
+     * ex :  https://localhost:9743
+     *
+     * @return store server url non secure
+     */
+
+    protected String getStoreServerURLHttp() {
+        return storeUrls.getWebAppURL() +"/store/";
+    }
+
+    /**
+     * ex :  https://localhost:9443
+     *
+     * @return store server url secure
+     */
+
+    protected String getStoreServerURLHttps() {
+
+        String httpsURL = null;
+
+        httpsURL = storeUrls.getBackEndUrl();
+
+        if (httpsURL.endsWith("services/")) {
+            httpsURL = httpsURL.replace("services/", "store/");
+        }
+
+        return httpsURL;
+    }
+
+    /**
+     * - eg: http://localhost:8280/apiContext/
      *
      * @param apiContext
-     * @return
+     * @return api invocation URL non secure
      * @throws XPathExpressionException
      */
 
     protected String getApiInvocationURLHttp(String apiContext) throws XPathExpressionException {
-        return getGatewayServerURLHttp() + apiContext;
+
+        if (getMainSequenceURL().endsWith("/")) {
+            return getMainSequenceURL() + apiContext.replaceFirst("/", "") + "/";
+        } else {
+            return getMainSequenceURL() + apiContext + "/";
+        }
+
     }
 
     /**
-     * api invocation URL secure
+     * - eg: https://localhost:8243/apiContext/
      *
      * @param apiContext
-     * @return
+     * @return api invocation URL secure
      * @throws XPathExpressionException
      */
 
     protected String getApiInvocationURLHttps(String apiContext) throws XPathExpressionException {
-        return getGatewayServerURLHttps() + apiContext;
+        if (getMainSequenceURL().endsWith("/")) {
+            return getMainSequenceURLHttps() + apiContext.replaceFirst("/", "") + "/";
+        } else {
+            return getMainSequenceURLHttps() + apiContext + "/";
+        }
     }
 
     /**
@@ -220,6 +302,9 @@ public class AMIntegrationBaseTest {
         return contextUrls.getSecureServiceUrl() + "/" + proxyServiceName;
     }
 
+    protected String getBackEndServiceUrl(String serviceName) throws XPathExpressionException {
+        return contextUrls.getBackEndUrl();
+    }
 
     /**
      * get server back end url secure
@@ -228,14 +313,13 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getBackEndURLHttps() {
-        String serverUrl = contextUrls.getBackEndUrl();
-        if (serverUrl.endsWith("/services")) {
+        /*  if (serverUrl.endsWith("/services")) {
             serverUrl = serverUrl.replace("/services", "");
         }
         if (serverUrl.endsWith("/")) {
             serverUrl = serverUrl.substring(0, (serverUrl.length() - 1));
-        }
-        return serverUrl;
+        }*/
+        return contextUrls.getBackEndUrl();
     }
 
 
@@ -246,8 +330,29 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getServerBackendUrlHttp() throws XPathExpressionException {
-        String serverUrl = contextUrls.getWebAppURL();
-        return serverUrl;
+        return contextUrls.getWebAppURL()+"/services/";
+    }
+
+    /**
+     * @param relativeFilePath
+     * @throws Exception
+     */
+
+
+    /**
+     * get APIM server sessionCookie
+     *
+     * @return
+     */
+
+
+    protected void loadAPIMConfigurationFromClasspath(String relativeFilePath) throws Exception {
+        relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", Matcher
+                .quoteReplacement(File.separator));
+
+        OMElement synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
+        updateAPIMConfiguration(synapseConfig);
+
     }
 
     /**
@@ -285,27 +390,6 @@ public class AMIntegrationBaseTest {
      * @throws XPathExpressionException
      */
 
-    protected String getBackEndServiceUrl(String serviceName) throws XPathExpressionException {
-        return EndpointGenerator.getBackEndServiceEndpointUrl(serviceName);
-    }
-
-    protected boolean isBuilderEnabled() throws XPathExpressionException {
-        return apimContext.getConfigurationValue("//executionEnvironment").equals("standalone");
-    }
-
-    /**
-     * @param relativeFilePath
-     * @throws Exception
-     */
-
-    protected void loadAPIMConfigurationFromClasspath(String relativeFilePath) throws Exception {
-        relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", Matcher
-                .quoteReplacement(File.separator));
-
-        OMElement synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
-        updateAPIMConfiguration(synapseConfig);
-
-    }
 
     /**
      * update API manager synapse configs
@@ -1109,101 +1193,6 @@ public class AMIntegrationBaseTest {
         }
     }
 
-    /**
-     * return publisher server url non secure
-     * ex :  https://localhost:9743
-     *
-     * @return
-     */
-
-    protected String getStoreServerURLHttp() {
-        return storeUrls.getWebAppURL();
-    }
-
-    /**
-     * return publisher server url secure
-     * ex :  https://localhost:9443
-     *
-     * @return
-     */
-
-    protected String getStoreServerURLHttps() {
-
-        String httpsURL = null;
-
-        httpsURL = storeUrls.getBackEndUrl();
-
-        if (httpsURL.endsWith("/services")) {
-            httpsURL = httpsURL.replace("/services", "");
-        }
-
-        return httpsURL;
-    }
-
-    /**
-     * return publisher server url non secure
-     * ex :  https://localhost:9743
-     *
-     * @return
-     */
-
-    protected String getPublisherServerURLHttp() {
-        return publisherUrls.getWebAppURL();
-    }
-
-    /**
-     * return publisher server url secure
-     * ex :  https://localhost:9443
-     *
-     * @return
-     */
-
-    protected String getPublisherServerURLHttps() {
-        String httpsURL = publisherUrls.getBackEndUrl();
-        if (httpsURL.endsWith("/services")) {
-            httpsURL = httpsURL.replace("/services", "");
-        }
-
-        return httpsURL;
-    }
-
-    /**
-     * return gateway server url non secure
-     * ex :  http://localhost:8280
-     *
-     * @return
-     */
-
-    protected String getGatewayServerURLHttp() {
-        String httpURL = gatewayUrls.getServiceUrl();
-        if (httpURL.endsWith("/services")) {
-            httpURL = httpURL.replace("/services", "");
-        }
-
-        return httpURL;
-    }
-
-    /**
-     * return gateway server url secure
-     * ex : https://localhost:8243
-     *
-     * @return
-     */
-
-    protected String getGatewayServerURLHttps() {
-        String httpsURL = gatewayUrls.getSecureServiceUrl();
-        if (httpsURL.endsWith("/services")) {
-            httpsURL = httpsURL.replace("/services", "");
-        }
-
-        return httpsURL;
-    }
-
-    /**
-     * get APIM server sessionCookie
-     *
-     * @return
-     */
 
     protected String getSessionCookie() {
         return sessionCookie;

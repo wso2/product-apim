@@ -227,51 +227,59 @@
         -->
         <productGroup name="APIM" clusteringEnabled="false" default="true">
 
-            <instance name="apim0001" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="apim0001" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
                     <port type="http">9763</port>
                     <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
                     <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
-            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="store" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
                     <port type="http">9763</port>
                     <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
-            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
                     <port type="http">9763</port>
                     <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
-            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">8280</port>
-                    <port type="https">8243</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
+
         </productGroup>
     </platform>
 
