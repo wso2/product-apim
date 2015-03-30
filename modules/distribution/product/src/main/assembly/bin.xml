@@ -247,14 +247,22 @@
 	     </excludes>
          </fileSet-->
 
-        <fileSet>
+        <!--fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/workflow-admin/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/workflow-admin</outputDirectory>
-        </fileSet>
-	<fileSet>
+        </fileSet-->
+	<!--fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/admin-dashboard/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-dashboard</outputDirectory>
-        </fileSet>
+        </fileSet-->
+        <fileSet>
+           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/store/extensions</directory>
+           <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions</outputDirectory>
+       </fileSet>
+       <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/extensions</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions</outputDirectory>
+       </fileSet>
 	<!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/modules</directory>
