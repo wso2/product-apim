@@ -125,6 +125,7 @@
                   <exclude>application-authentication.xml</exclude>
                   <exclude>cipher-text.properties</exclude>
                   <exclude>cipher-tool.properties</exclude>
+                  <exclude>sso-idp-config.xml</exclude>
           </excludes>
         </fileSet>
 	<fileSet>
@@ -223,7 +224,7 @@
             <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.7.0_to_1.8.0</outputDirectory>
         </fileSet>
 
-	<fileSet>
+	<!--fileSet>
              <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
 	     <excludes>
@@ -244,7 +245,7 @@
 		<exclude>login/**</exclude>
 		<exclude>styles-layout.css</exclude>
 	     </excludes>
-         </fileSet>
+         </fileSet-->
 
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/workflow-admin/</directory>
@@ -437,8 +438,8 @@
 
 
         <fileSet>
-            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/social</directory>
-            <outputDirectory>${pom.artifactId}-${build.version}/dbscripts/social</outputDirectory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/social</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/social</outputDirectory>
             <excludes>
                 <exclude>**/.svn</exclude>
             </excludes>
@@ -447,7 +448,7 @@
         <!-- ES store -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-publisher</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/es-publisher</outputDirectory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-sso</directory>
@@ -455,7 +456,14 @@
         </fileSet>
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-store</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/es-store</outputDirectory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/store</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/conf/</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/security/</outputDirectory>
+            <includes>
+                <include>**/sso-idp-config.xml</include>
+            </includes>
         </fileSet>
 
     </fileSets>
@@ -708,6 +716,12 @@
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
+        <!--file>
+            <source>src/main/conf/sso-idp-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+            <destName>sso-idp-config.xml</destName>
+            <filtered>true</filtered>
+        </file-->
 	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
