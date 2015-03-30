@@ -773,10 +773,10 @@
                                     <version>${carbon.registry.version}</version>f0
                                 </feature>
                                 <!--API Management related feature-->
-                               <feature>
+                               <!--<feature>
                                     <id>org.jaggeryjs.feature.group</id>
                                     <version>${org.jaggery.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.jaggeryjs.modules.carbon.feature.group</id>
                                     <version>${carbon.feature.version}</version>
@@ -1003,6 +1003,14 @@
                                 <feature>
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.store.modules.event.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.social.feature.group</id>
+                                    <version>${carbon.social.version}</version>
                                 </feature>
 
                             </features>
@@ -2238,10 +2246,10 @@
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                               <feature>
+                               <!--<feature>
                                     <id>org.jaggeryjs.feature.group</id>
                                     <version>${org.jaggery.version}</version>
-                                </feature>
+                                </feature>-->
                                 <feature>
                                     <id>org.jaggeryjs.modules.carbon.feature.group</id>
                                     <version>${carbon.feature.version}</version>
@@ -2441,6 +2449,18 @@
                     <feature>
                         <id>org.wso2.carbon.social.feature.group</id>
                         <version>${carbon.social.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.rxt.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.wso2.store.modules.utils.feature.group</id>
+                        <version>${es.feature.version}</version>
+                    </feature>
+                    <feature>
+                        <id>org.jaggeryjs.server.feature.group</id>
+                        <version>${org.jaggery.version}</version>
                     </feature>
 
                             </features>
@@ -2786,10 +2806,10 @@
                                     <id>org.wso2.carbon.registry.ws.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                               <feature>
+                               <!--<feature>
                                     <id>org.jaggeryjs.feature.group</id>
                                     <version>${org.jaggery.version}</version>
-                                </feature>
+                                </feature>-->
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
@@ -2948,6 +2968,18 @@
                                <feature>
                                    <id>org.wso2.carbon.social.feature.group</id>
                                    <version>${carbon.social.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.rxt.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.store.modules.utils.feature.group</id>
+                                   <version>${es.feature.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.jaggeryjs.server.feature.group</id>
+                                   <version>${org.jaggery.version}</version>
                                </feature>
 
                             </features>
