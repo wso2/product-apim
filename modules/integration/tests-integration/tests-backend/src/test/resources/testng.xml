@@ -22,7 +22,7 @@
     <parameter name="useDefaultListeners" value="false"/>
 
 
-   <!-- <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+    <!-- <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <packages>
             <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
         </packages>
@@ -48,12 +48,13 @@
             <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
+            <class name="org.wso2.am.integration.tests.sample.APIMANAGER2611EndpointValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
 
             <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
           <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
-
+                <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
           <class name="org.wso2.am.integration.tests.sample.DefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
 

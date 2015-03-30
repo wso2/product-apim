@@ -21,6 +21,11 @@ package org.wso2.am.integration.test.utils.bean;
 /**
  * action=addAPISubscription&name=apiName&version=1.0.0&provider=provider&tier=Gold&applicationName=DefaultApplication
  */
+
+/**
+ * Basic request for subscribe to API
+ */
+
 public class SubscriptionRequest extends AbstractRequest {
 
     private String name;
@@ -29,10 +34,25 @@ public class SubscriptionRequest extends AbstractRequest {
     private String applicationName = "DefaultApplication";
     private String tier = "Gold";
 
+    /**
+     * Constructor using default values
+     * @param apiName
+     * @param provider
+     */
+
     public SubscriptionRequest(String apiName, String provider) {
         this.name = apiName;
         this.provider = provider;
     }
+
+    /**
+     * constructor with more configurable params
+     * @param apiName
+     * @param apiVersion
+     * @param provider
+     * @param appName
+     * @param tier
+     */
 
     public SubscriptionRequest(String apiName, String apiVersion, String provider, String appName, String tier){
         this.name = apiName;
