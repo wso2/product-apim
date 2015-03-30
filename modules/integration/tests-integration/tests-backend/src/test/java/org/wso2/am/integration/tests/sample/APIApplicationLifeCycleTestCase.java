@@ -26,8 +26,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
@@ -92,14 +92,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         //add assertion
         apiPublisher.addAPI(apiRequest);
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisher.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisher.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
@@ -397,20 +397,20 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
 
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
         //add assertion
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);
         updateRequest2.setVersion(APIVersionNew);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -495,11 +495,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
 
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -512,7 +512,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.RETIRED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -522,7 +522,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.BLOCKED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest3);
 
         apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -561,29 +561,29 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.addAPI(apiRequest);
 
         //publish initial version
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         //publish new version
         apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
         //add assertion
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);
         updateRequest2.setVersion(APIVersionNew);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         //deprecate old version
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.DEPRECATED);
         updateRequest3.setVersion(APIVersionOld);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest3);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -660,9 +660,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("public");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName, providerName));
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
     }
 
@@ -687,11 +687,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("private");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion;
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
     }
 
     public void addVisibleToRolesAPI(APIPublisherRestClient apiPublisherRestClient) throws Exception {
@@ -716,11 +716,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(
                 APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
     }
 
 
