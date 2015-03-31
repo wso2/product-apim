@@ -50,8 +50,8 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
        This test can point to external API manager deployment without adding any resources to system
         */
 
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -125,7 +125,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         for (int i = 0; i < 19; i++) {
 
             HttpResponse youTubeResponse = HttpRequestUtil
-                    .doGet(getGatewayServerURLHttp() + "/commentRating/1.0.0/most_popular",
+                    .doGet(gatewayUrls.getWebAppURLNhttp() + "/commentRating/1.0.0/most_popular",
                             requestHeaders);
 
             assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -143,7 +143,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 
         Thread.sleep(60000);
         HttpResponse youTubeResponse1 = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/commentRating/1.0.0/most_popular", null);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/commentRating/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         // URL url1 = new URL(url);
         // HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");

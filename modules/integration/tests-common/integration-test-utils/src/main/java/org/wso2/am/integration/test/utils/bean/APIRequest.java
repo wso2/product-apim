@@ -33,6 +33,9 @@ import java.net.URL;
  * &resourceMethodAuthType-0=Application&resourceMethodThrottlingTier-0=Unlimited&uriTemplate-0=/*
  */
 
+/**
+ * Basic API request
+ */
 public class APIRequest extends AbstractRequest {
 
     private static final Log log = LogFactory.getLog(APIRequest.class);

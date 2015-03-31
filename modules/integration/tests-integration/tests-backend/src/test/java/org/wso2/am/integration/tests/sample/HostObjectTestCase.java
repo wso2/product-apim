@@ -64,8 +64,8 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         Also need to copy the content of /resources/artifacts/AM/jaggery to servers following folder folder
         repository/deployment/server/jaggeryapps/testapp
         */
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator +
@@ -188,7 +188,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         String finalOutputPublisher = null;
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp() + "/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -211,7 +211,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         Thread.sleep(20000);
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(getStoreServerURLHttp() + "/testapp/testStore.jag");
+            URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "/testapp/testStore.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
