@@ -22,11 +22,15 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.net.URL;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
@@ -37,32 +41,56 @@ import static org.testng.Assert.assertTrue;
  */
 public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecycleBaseTest {
 
-
-    private APIIdentifier apiIdentifierAPI1Version1;
+    private static final String API_NAME = "APILifeCycleTestAPI1";
+    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
+    private APIIdentifier apiIdentifier;
+    private String providerName;
+    private APICreationRequestBean apiCreationRequestBean;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
+        providerName = apimContext.getContextTenant().getContextUser().getUserName();
+        apiCreationRequestBean =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiPublisherClientUser1 = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStoreClientUser1 = new APIStoreRestClient(getStoreServerURLHttp());
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Create a API and  check its availability in Publisher.")
     public void testAPICreation() throws Exception {
         //Create APi
-        HttpResponse createAPIResponse = createAPI(API1_NAME, API1_CONTEXT, API_VERSION_1_0_0, apiPublisherClientUser1);
+        // HttpResponse createAPIResponse = createAPI(API1_NAME, API1_CONTEXT, API_VERSION_1_0_0, apiPublisherClientUser1);
+        HttpResponse createAPIResponse = apiPublisherClientUser1.addAPI(apiCreationRequestBean);
         assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Create API Response Code is invalid." + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                "Create API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(createAPIResponse, "error"), "false",
-                "Error in API Creation in " + getAPIIdentifierString(apiIdentifierAPI1Version1) +
+                "Error in API Creation in " + getAPIIdentifierString(apiIdentifier) +
                         "Response Data:" + createAPIResponse.getData());
-
         //Verify the API in API Publisher
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
-                        apiPublisherClientUser1.getApi(API1_NAME, USER_NAME1, API_VERSION_1_0_0));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiPublisherAPIIdentifierList), true,
-                "Added Api is not available in APi Publisher. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                        apiPublisherClientUser1.getApi(API_NAME, providerName, API_VERSION_1_0_0));
+        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifier, apiPublisherAPIIdentifierList), true,
+                "Added Api is not available in APi Publisher. " + getAPIIdentifierString(apiIdentifier));
     }
 
 
@@ -71,9 +99,9 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreBeforePublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
-                "Api is visible in API Store before publish." + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API_NAME));
+        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList), false,
+                "Api is visible in API Store before publish." + getAPIIdentifierString(apiIdentifier));
     }
 
 
@@ -83,14 +111,14 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testAPIPublishing() throws Exception {
         //Publish the API
         APILifeCycleStateRequest publishUpdateRequest =
-                new APILifeCycleStateRequest(API1_NAME, USER_NAME1, APILifeCycleState.PUBLISHED);
+                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION_1_0_0);
         HttpResponse publishAPIResponse =
-                apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version1, false);
+                apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifier));
         assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
-                "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
+                "API status Change is invalid in" + getAPIIdentifierString(apiIdentifier) +
                         "Response Data:" + publishAPIResponse.getData());
     }
 
@@ -99,16 +127,16 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreAfterPublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
-                "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API_NAME));
+        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList), true,
+                "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifier));
 
     }
 
 
     @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception {
-        deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
     }
 
 

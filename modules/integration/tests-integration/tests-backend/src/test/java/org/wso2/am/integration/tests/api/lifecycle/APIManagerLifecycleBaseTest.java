@@ -35,7 +35,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Base test class for all API Manager lifecycle test cases. This class contents the all the
@@ -43,36 +42,12 @@ import java.net.URL;
  */
 public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
 
-
-    protected static final String API1_NAME = "APILifeCycleTestAPI1";
-    protected static final String API1_CONTEXT = "testAPI1";
-    protected static final String API1_TAGS = "youtube, video, media";
-    protected static final String API1_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
-    protected static final String API1_DESCRIPTION = "This is test API create by API manager integration test";
-    protected static final String API1_END_POINT_METHOD = "/most_popular";
-    protected static final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
-    protected static final String API2_END_POINT_METHOD = "/";
-    protected static final String API1_RESPONSE_DATA = "<feed";
-    protected static final String API2_RESPONSE_DATA = "AcceptanceSampling";
-    protected static final String USER_KEY_USER2 = "userKey1";
-    protected static final String API_VERSION_1_0_0 = "1.0.0";
-    protected static final String API_VERSION_2_0_0 = "2.0.0";
-    protected static final String CARBON_SUPER_TENANT2_KEY = "userKey2";
-    protected static final String TENANT_DOMAIN_KEY = "wso2.com";
-    protected static final String TENANT_DOMAIN_ADMIN_KEY = "admin";
-    protected static String USER_NAME1;
-    protected static String USER_NAME2;
-
-    protected APIPublisherRestClient apiPublisherClientUser1;
-    protected APIStoreRestClient apiStoreClientUser1;
-    protected APIPublisherRestClient apiPublisherClientUser2;
-    protected APIStoreRestClient apiStoreClientUser2;
-
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
 
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
@@ -89,7 +64,6 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-
     protected static String API_BASE_URL;
 
     @BeforeClass(alwaysRun = true)
@@ -98,124 +72,6 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
 
 
         API_BASE_URL = getGatewayServerURLHttp() + "/";
-
-
-        USER_NAME1 = apimContext.getContextTenant().getContextUser().getUserName();
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        apiPublisherClientUser2 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
-
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
-
-
-        //Login to API Publisher with  User1
-        USER_NAME2 = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
-        String user2PassWord = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword();
-        apiPublisherClientUser2.login(USER_NAME2, user2PassWord);
-        //Login to API Store with  User1
-        apiStoreClientUser2.login(USER_NAME2, user2PassWord);
-
-    }
-
-
-    /**
-     * Create a API in API Publisher
-     *
-     * @param apiName             - Name of the API
-     * @param apiContext          - API Context
-     * @param apiVersion          - API Version
-     * @param publisherRestClient - Instance of APIPublisherRestClient
-     * @return HttpResponse - Response of the API creation server call.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the
-     *                                                                               method call of addAPI() in APIPublisherRestClient.java
-     */
-    protected HttpResponse createAPI(String apiName, String apiContext, String apiVersion, APIPublisherRestClient
-            publisherRestClient) throws APIManagerIntegrationTestException {
-        try {
-            //Create the API Request
-            APIRequest apiRequestBean = new APIRequest(apiName, apiContext, new URL(API1_END_POINT_URL));
-            apiRequestBean.setTags(API1_TAGS);
-            apiRequestBean.setDescription(API1_DESCRIPTION);
-            apiRequestBean.setVersion(apiVersion);
-            apiRequestBean.setVisibility("public");
-
-            //Add the API to API Publisher
-            return publisherRestClient.addAPI(apiRequestBean);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when creating an APi", e);
-        }
-
-    }
-
-    /**
-     * Create a API in API Publisher
-     *
-     * @param apiName             - Name of the API
-     * @param apiContext          - API Context
-     * @param apiVersion          - API Version
-     * @param apiTags             - API Tags
-     * @param publisherRestClient - Instance of APIPublisherRestClient
-     * @return HttpResponse - Response of the API creation server call.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the
-     *                                                                               method call of addAPI() in APIPublisherRestClient.java
-     */
-    protected HttpResponse createAPI(String apiName, String apiContext, String apiVersion, String apiTags,
-                                     APIPublisherRestClient publisherRestClient) throws APIManagerIntegrationTestException {
-        try {
-            //Create the API Request
-            APIRequest apiRequestBean = new APIRequest(apiName, apiContext, new URL(API1_END_POINT_URL));
-            apiRequestBean.setTags(apiTags);
-            apiRequestBean.setDescription(API1_DESCRIPTION);
-            apiRequestBean.setVersion(apiVersion);
-            apiRequestBean.setVisibility("public");
-
-            //Add the API to API Publisher
-            return publisherRestClient.addAPI(apiRequestBean);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when creating an APi", e);
-        }
-    }
-
-    /**
-     * Create a API in API Publisher
-     *
-     * @param apiName             - Name of the API
-     * @param apiContext          - API Context
-     * @param apiVersion          - API Version
-     * @param apiTags             - API Tags
-     * @param apiVisibility       - API Visibility
-     * @param apiRoles            - API Role
-     * @param publisherRestClient - Instance of APIPublisherRestClient
-     * @return - Response of the API creation server call.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the
-     *                                                                               method call of addAPI() in APIPublisherRestClient.java
-     */
-    protected HttpResponse createAPI(String apiName, String apiContext, String apiVersion, String apiTags,
-                                     String apiVisibility, String apiRoles, APIPublisherRestClient publisherRestClient)
-            throws APIManagerIntegrationTestException {
-        try {
-            //Create the API Request
-            APIRequest apiRequestBean = new APIRequest(apiName, apiContext, new URL(API1_END_POINT_URL));
-            apiRequestBean.setTags(apiTags);
-            apiRequestBean.setDescription(API1_DESCRIPTION);
-            apiRequestBean.setVersion(apiVersion);
-            apiRequestBean.setVisibility(apiVisibility);
-            apiRequestBean.setRoles(apiRoles);
-
-            //Add the API to API Publisher
-            return publisherRestClient.addAPI(apiRequestBean);
-
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when creating an APi", e);
-        }
 
     }
 
@@ -255,29 +111,6 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
         return storeRestClient.subscribeToAPI(subscriptionRequest);
     }
 
-
-    /**
-     * Generate the access token
-     *
-     * @param storeRestClient - Instance of storeRestClient
-     * @return String - Access Token as a String.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the  method
-     *                                                                               call of generateApplicationKey()
-     *                                                                               in APIStoreRestClient.java
-     */
-    protected String getAccessToken(APIStoreRestClient storeRestClient) throws APIManagerIntegrationTestException {
-
-        try {
-            GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
-            String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
-            JSONObject response = new JSONObject(responseString);
-            return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when get access token", e);
-        }
-
-
-    }
 
     /**
      * Generate the access token
@@ -431,18 +264,17 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
      *
      * @param apiIdentifier           - Instance of APIIdentifier object  that include the  API Name,
      *                                API Version and API Provider
-     * @param apiContext              - Context of the API
+     * @param apiCreationRequestBean  - Instance of APICreationRequestBean with all needed API information
      * @param publisherRestClient     - Instance of APIPublisherRestClient
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API
      *                                                                               create and publish activities.
      */
-    public void createAndPublishAPI(APIIdentifier apiIdentifier, String apiContext,
+    public void createAndPublishAPI(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                     APIPublisherRestClient publisherRestClient,
                                     boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
         //Create the API
-        HttpResponse createAPIResponse =
-                createAPI(apiIdentifier.getApiName(), apiContext, apiIdentifier.getVersion(), publisherRestClient);
+        HttpResponse createAPIResponse = publisherRestClient.addAPI(apiCreationRequestBean);
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             //Publish the API
@@ -451,14 +283,14 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
                     verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED,
                             APILifeCycleState.PUBLISHED))) {
                 throw new APIManagerIntegrationTestException("Error in API Publishing" +
-                        getAPIIdentifierString(apiIdentifier) + " API Context :" + apiContext +
+                        getAPIIdentifierString(apiIdentifier) +
                         "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());
             }
 
         } else {
             throw new APIManagerIntegrationTestException("Error in API Creation." +
-                    getAPIIdentifierString(apiIdentifier) + " API Context :" + apiContext +
+                    getAPIIdentifierString(apiIdentifier) +
                     "Response Code:" + createAPIResponse.getResponseCode() +
                     " Response Data :" + createAPIResponse.getData());
         }
@@ -466,65 +298,21 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
 
     }
 
-
-    /**
-     * Create and publish a API.
-     *
-     * @param apiIdentifier           - Instance of APIIdentifier object  that include the  API Name,
-     *                                API Version and API Provider
-     * @param apiContext              - Context of the API
-     * @param apiTags                 - Tags that need to include in  the API
-     * @param publisherRestClient     - Instance of APIPublisherRestClient
-     * @param isRequireReSubscription - If publish with re-subscription required option true else false.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API create
-     *                                                                               and publish activities.
-     */
-    private void createAndPublishAPI(APIIdentifier apiIdentifier, String apiContext, String apiTags,
-                                     APIPublisherRestClient publisherRestClient, boolean isRequireReSubscription)
-            throws APIManagerIntegrationTestException {
-
-        HttpResponse createAPIResponse =
-                createAPI(apiIdentifier.getApiName(), apiContext, apiIdentifier.getVersion(), apiTags, publisherRestClient);
-
-        //Create the API
-        if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                getValueFromJSON(createAPIResponse, "error").equals("false")) {
-            //Publish the API
-            HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
-            if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED))) {
-                throw new APIManagerIntegrationTestException("Error in API Publishing" +
-                        getAPIIdentifierString(apiIdentifier) + " API Context :" + apiContext +
-                        "Response Code:" + publishAPIResponse.getResponseCode() +
-                        " Response Data :" + publishAPIResponse.getData());
-            }
-
-        } else {
-            throw new APIManagerIntegrationTestException("Error in API Creation." +
-                    getAPIIdentifierString(apiIdentifier) + " API Context :" + apiContext +
-                    "Response Code:" + createAPIResponse.getResponseCode() +
-                    " Response Data :" + createAPIResponse.getData());
-        }
-
-
-    }
 
     /**
      * Create and publish a API with re-subscription not required.
      *
-     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name,
-     *                            API Version and API Provider
-     * @param apiContext          - Context of the API
-     * @param apiTags             - Tags that need to include in  the API
-     * @param publisherRestClient - Instance of APIPublisherRestClient
+     * @param apiIdentifier          - Instance of APIIdentifier object  that include the  API Name,
+     *                               API Version and API Provider
+     * @param apiCreationRequestBean - Instance of APICreationRequestBean with all needed API information
+     * @param publisherRestClient    - Instance of APIPublisherRestClient
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API create
      *                                                                               and publish activities.
      */
-    protected void createAndPublishAPIWithoutRequireReSubscription(APIIdentifier apiIdentifier, String apiContext,
-                                                                   String apiTags,
+    protected void createAndPublishAPIWithoutRequireReSubscription(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                                                    APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
-        createAndPublishAPI(apiIdentifier, apiContext, apiTags, publisherRestClient, false);
+        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
     }
 
 
@@ -586,20 +374,20 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
     /**
      * Create publish and subscribe a API.
      *
-     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name,
-     *                            API Version and API Provider
-     * @param apiContext          - Context of the API
-     * @param publisherRestClient -  Instance of APIPublisherRestClient
-     * @param storeRestClient     - Instance of APIStoreRestClient
-     * @param applicationName     - Name of the Application that the API need to subscribe.
+     * @param apiIdentifier          - Instance of APIIdentifier object  that include the  API Name,
+     *                               API Version and API Provider
+     * @param apiCreationRequestBean - Instance of APICreationRequestBean with all needed API information
+     * @param publisherRestClient    -  Instance of APIPublisherRestClient
+     * @param storeRestClient        - Instance of APIStoreRestClient
+     * @param applicationName        - Name of the Application that the API need to subscribe.
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API create
      *                                                                               publish and subscribe a API activities.
      */
-    protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier, String apiContext,
+    protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                                   APIPublisherRestClient publisherRestClient,
                                                   APIStoreRestClient storeRestClient, String applicationName)
             throws APIManagerIntegrationTestException {
-        createAndPublishAPI(apiIdentifier, apiContext, publisherRestClient, false);
+        createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
         HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(httpResponseSubscribeAPI, "error").equals("false"))) {

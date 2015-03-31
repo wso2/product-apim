@@ -21,7 +21,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -37,28 +39,53 @@ import static org.testng.Assert.assertTrue;
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private APIIdentifier apiIdentifierAPI1Version1;
+    private static final String API_NAME = "APILifeCycleTestAPI1";
+    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_TAGS = "youtube, video, media";
+    private static final String API1_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API1_END_POINT_METHOD = "/most_popular";
+    private static final String API1_RESPONSE_DATA = "<feed";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String API2_RESPONSE_DATA = "AcceptanceSampling";
+    private static final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
+    private static final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
+    private APIIdentifier apiIdentifier;
+    private String providerName;
+    private APICreationRequestBean apiCreationRequestBean;
     private Map<String, String> requestHeaders;
-    private String applicationName;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifierAPI1Version1 = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
-        applicationName =
-                (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
-        apiStoreClientUser1.addApplication(applicationName, "", "", "");
+        providerName = apimContext.getContextTenant().getContextUser().getUserName();
+        apiCreationRequestBean =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API1_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiPublisherClientUser1 = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStoreClientUser1 = new APIStoreRestClient(getStoreServerURLHttp());
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
     public void testAPIInvocationBeforeChangeTheEndPointURL() throws Exception {
         //Disable the test case because of APIMANAGER-3378
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeToAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1,
-                apiStoreClientUser1, applicationName);
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                apiStoreClientUser1, APPLICATION_NAME);
 
         //get access token
-        String accessToken = getAccessToken(apiStoreClientUser1, applicationName);
+        String accessToken = getAccessToken(apiStoreClientUser1, APPLICATION_NAME);
 
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
@@ -66,7 +93,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -81,23 +108,19 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL() throws Exception {
 
-
         //Create the API Request with new context
-
-        APIRequest apiRequestBean = new APIRequest(API1_NAME, API1_CONTEXT, new URL(API2_END_POINT_URL));
-        apiRequestBean.setTags(API1_TAGS);
-        apiRequestBean.setDescription(API1_DESCRIPTION);
-        apiRequestBean.setVersion(API_VERSION_1_0_0);
-        apiRequestBean.setVisibility("public");
+        APICreationRequestBean apiCreationRequestBeanUpdate =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API2_END_POINT_URL));
+        apiCreationRequestBeanUpdate.setTags(API_TAGS);
+        apiCreationRequestBeanUpdate.setDescription(API_DESCRIPTION);
         //Update API with Edited information
-        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiRequestBean);
+        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBeanUpdate);
 
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
-                "Error in API end point URL Update in " + getAPIIdentifierString(apiIdentifierAPI1Version1) +
+                "Error in API end point URL Update in " + getAPIIdentifierString(apiIdentifier) +
                         "Response Data:" + updateAPIHTTPResponse.getData());
-
     }
 
 
@@ -106,7 +129,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0,
+                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");
@@ -117,14 +140,13 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
                 "Response data mismatched when invoke  API  after change the end point URL. It contains the" +
                         " Old end point URL response data. Response Data:" + oldVersionInvokeResponse.getData());
 
-
     }
 
 
     @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception {
-        apiStoreClientUser1.removeApplication(applicationName);
-        deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
 
     }
 

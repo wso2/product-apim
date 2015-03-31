@@ -22,8 +22,14 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.net.URL;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -34,21 +40,45 @@ import static org.testng.Assert.assertTrue;
  * tab should show the correct information about subscribed uses.
  */
 public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTest {
+    private static final String API_NAME = "APILifeCycleTestAPI1";
+    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
 
-
+    private String providerName;
     private APIIdentifier apiIdentifier;
-    private String applicationName;
+    private static final String APPLICATION_NAME = "UsersAndDocsInAPIOverviewTestCase";
+    private Map<String, String> requestHeaders;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
+    private APIStoreRestClient apiStoreClientUser2;
+    private APICreationRequestBean apiCreationRequestBean;
     private static String APPLICATION_DESCRIPTION = "";
     private static String APPLICATION_CALL_BACK_URL = "";
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifier = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
-        applicationName =
-                (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
+        providerName = apimContext.getContextTenant().getContextUser().getUserName();
+
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+
+        apiPublisherClientUser1 = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStoreClientUser1 = new APIStoreRestClient(getStoreServerURLHttp());
+
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
 
 
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
 
@@ -56,27 +86,28 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     public void testNumberOfUsersInAPIOverview() throws Exception {
 
 
-        apiStoreClientUser1.addApplication(applicationName, TIER_GOLD, APPLICATION_CALL_BACK_URL, APPLICATION_DESCRIPTION);
-        apiStoreClientUser2.addApplication(applicationName, TIER_GOLD, APPLICATION_CALL_BACK_URL, APPLICATION_DESCRIPTION);
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, APPLICATION_CALL_BACK_URL, APPLICATION_DESCRIPTION);
+        apiStoreClientUser2.addApplication(APPLICATION_NAME, TIER_GOLD, APPLICATION_CALL_BACK_URL, APPLICATION_DESCRIPTION);
         //Create publish and subscribe a API by user 1
-        APIIdentifier apiIdentifier = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
+        APIIdentifier apiIdentifier = new APIIdentifier(publisherSessionCookie, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
+
         createPublishAndSubscribeToAPI(
-                apiIdentifier, API1_CONTEXT, apiPublisherClientUser1, apiStoreClientUser1, applicationName);
+                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
 
         HttpResponse publisherOverviewPageResponse1 =
-                apiPublisherClientUser1.getAPIInformationPage(API1_NAME, USER_NAME1, API_VERSION_1_0_0);
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse1.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when retrieving the Publisher Overview page");
         assertEquals(getUserStringInOverview(publisherOverviewPageResponse1.getData()),
                 "1 User", "User count is not equal to 1 , when only one user subscription is available");
 
         // subscribe 2nd user
-        subscribeToAPI(this.apiIdentifier, applicationName, apiStoreClientUser2);
+        subscribeToAPI(this.apiIdentifier, APPLICATION_NAME, apiStoreClientUser2);
 
 
         HttpResponse publisherOverviewPageResponse2 =
-                apiPublisherClientUser1.getAPIInformationPage(API1_NAME, USER_NAME1, API_VERSION_1_0_0);
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse2.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertEquals(getUserStringInOverview(publisherOverviewPageResponse2.getData()),
                 "2 Users", "User count is not equal to 2 , when only one user subscription is available");
@@ -89,11 +120,11 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
             dependsOnMethods = "testNumberOfUsersInAPIOverview")
     public void testUsersInformationInUserTabInAPIOverview() throws APIManagerIntegrationTestException {
         HttpResponse publisherOverviewPageResponse =
-                apiPublisherClientUser1.getAPIInformationPage(API1_NAME, USER_NAME1, API_VERSION_1_0_0);
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when retrieving the Publisher Overview page");
-        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), USER_NAME1), "");
-        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), USER_NAME2), "");
+        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
+        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
 
 
     }
@@ -105,18 +136,18 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         // Add 2 documents
         String doc1Name = "Doc1";
         String doc2Name = "Doc2";
-        apiPublisherClientUser1.addDocument(API1_NAME, API_VERSION_1_0_0, USER_NAME1, doc1Name,
+        apiPublisherClientUser1.addDocument(API_NAME, API_VERSION_1_0_0, providerName, doc1Name,
                 "how to", "inline", "", "test doc 1", "");
-        apiPublisherClientUser1.addDocument(API1_NAME, API_VERSION_1_0_0, USER_NAME1, doc2Name,
+        apiPublisherClientUser1.addDocument(API_NAME, API_VERSION_1_0_0, providerName, doc2Name,
                 "how to", "inline", "", "test doc 2", "");
         HttpResponse publisherOverviewPageResponse =
-                apiPublisherClientUser1.getAPIInformationPage(API1_NAME, USER_NAME1, API_VERSION_1_0_0);
+                apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when retrieving the Publisher Overview page");
 
-        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API1_NAME + "-" + doc1Name + "\""),
+        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API_NAME + "-" + doc1Name + "\""),
                 " Doc Name:" + doc1Name + " is not available in API overview Page");
-        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API1_NAME + "-" + doc2Name + "\""),
+        assertTrue(publisherOverviewPageResponse.getData().contains("id=\"" + API_NAME + "-" + doc2Name + "\""),
                 " Doc Name:" + doc2Name + " is not available in API overview Page");
 
     }
@@ -155,8 +186,8 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
 
     @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception {
-        apiStoreClientUser1.removeApplication(applicationName);
-        apiStoreClientUser2.removeApplication(applicationName);
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        apiStoreClientUser2.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
 
     }

@@ -21,7 +21,10 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -39,21 +42,38 @@ import static org.testng.Assert.assertTrue;
  * and do a new silver subscription and test invocation under Silver tier.
  */
 public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
-
-    private APIIdentifier apiIdentifier;
+    private static final String API_NAME = "APILifeCycleTestAPI1";
+    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_END_POINT_METHOD = "/most_popular";
+    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "ChangeAPITierAndTestInvokingTestCase";
     private String applicationNameGold;
     private String applicationNameSilver;
-
-    Map<String, String> requestHeadersGoldTier;
-    Map<String, String> requestHeadersSilverTier;
-
+    private  Map<String, String> requestHeadersGoldTier;
+    private Map<String, String> requestHeadersSilverTier;
+    private APIIdentifier apiIdentifier;
+    private String providerName;
+    private APICreationRequestBean apiCreationRequestBean;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiIdentifier = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
-
+        providerName = apimContext.getContextTenant().getContextUser().getUserName();
+        apiPublisherClientUser1 = new APIPublisherRestClient(getPublisherServerURLHttp());
+        apiStoreClientUser1 = new APIStoreRestClient(getStoreServerURLHttp());
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
+                apimContext.getContextTenant().getContextUser().getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
 
@@ -62,12 +82,13 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
 
         applicationNameGold = APPLICATION_NAME + TIER_GOLD;
         apiStoreClientUser1.addApplication(applicationNameGold, TIER_GOLD, "", "");
-        //Create publish and subscribe a API
-        APIIdentifier apiIdentifier = new APIIdentifier(USER_NAME1, API1_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(TIER_GOLD);
+        apiCreationRequestBean =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiCreationRequestBean.setTier(TIER_GOLD);
         createPublishAndSubscribeToAPI(
-                apiIdentifier, API1_CONTEXT, apiPublisherClientUser1, apiStoreClientUser1, applicationNameGold);
-
+                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, applicationNameGold);
 
         //get access token
         String accessToken = getAccessToken(apiStoreClientUser1, applicationNameGold);
@@ -81,30 +102,25 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 +
-                            API1_END_POINT_METHOD, requestHeadersGoldTier);
+                    HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                            API_END_POINT_METHOD, requestHeadersGoldTier);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API level tier");
-            assertTrue(invokeResponse.getData().contains(API1_RESPONSE_DATA),
+            assertTrue(invokeResponse.getData().contains(API_RESPONSE_DATA),
                     "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API level tier");
-
         }
 
         currentTime = System.currentTimeMillis();
-
-
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API1_END_POINT_METHOD, requestHeadersGoldTier);
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                API_END_POINT_METHOD, requestHeadersGoldTier);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API level tier");
         assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API level tier");
-
-
     }
 
 
@@ -114,32 +130,26 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         //wait millisecond to expire the throttling block
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
         HttpResponse invokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
                         requestHeadersGoldTier);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched, " +
                 "Invocation fails after wait " + (THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME) +
                 "millisecond to expire the throttling block");
-        assertTrue(invokeResponse.getData().contains(API1_RESPONSE_DATA), "Response data mismatched. " +
+        assertTrue(invokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched. " +
                 "Invocation fails after wait " + (THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME) +
                 "millisecond to expire the throttling block");
-
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Test changing of the API Tier from Gold to Silver",
             dependsOnMethods = "testInvokingAfterExpireThrottleExpireTime")
     public void testEditAPITierToSilver() throws Exception {
-
-        APIRequest apiRequestBean = new APIRequest(API1_NAME, API1_CONTEXT, new URL(API1_END_POINT_URL));
-        apiRequestBean.setTags(API1_TAGS);
-        apiRequestBean.setDescription(API1_DESCRIPTION);
-        apiRequestBean.setVersion(API_VERSION_1_0_0);
-        apiRequestBean.setVisibility("public");
-        apiRequestBean.setTier(TIER_SILVER);
-        apiRequestBean.setTiersCollection("Silver");
-
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiCreationRequestBean.setTier(TIER_SILVER);
+        apiCreationRequestBean.setTiersCollection(TIER_SILVER);
         //Update API with Edited information with Tier Silver
-        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiRequestBean);
+        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update API Response Code is" +
                 " invalid. Updating of API information fail" + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Error in API Update in " +
@@ -161,44 +171,37 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         subscribeToAPI(apiIdentifier, applicationNameSilver, apiStoreClientUser1);
         //get access token
         String accessToken = getAccessToken(apiStoreClientUser1, applicationNameSilver);
-
         // Create requestHeaders
         requestHeadersSilverTier = new HashMap<String, String>();
         requestHeadersSilverTier.put("Authorization", "Bearer " + accessToken);
         //millisecond to expire the throttling block
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
-
         long startTime = System.currentTimeMillis();
-
         long currentTime;
         for (int invocationCount = 1; invocationCount <= SILVER_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
+                    HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
                             requestHeadersSilverTier);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched. " +
                     "Invocation attempt:" + invocationCount + " failed  during :" + (currentTime - startTime) +
                     " milliseconds under Silver API level tier");
-            assertTrue(invokeResponse.getData().contains(API1_RESPONSE_DATA), "Response data mismatched." +
+            assertTrue(invokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched." +
                     " Invocation attempt:" + invocationCount + " failed  during :" + (currentTime - startTime) +
                     " milliseconds under Silver API level tier");
 
         }
 
         currentTime = System.currentTimeMillis();
-
-
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API1_END_POINT_METHOD, requestHeadersSilverTier);
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                API_END_POINT_METHOD, requestHeadersSilverTier);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Silver API level tier");
         assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Silver API level tier");
-
-
     }
 
 

@@ -34,18 +34,28 @@
 
         <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
 
-        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
-        <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>-->
+
+
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>-->
+
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPI"/>-->
+
+        <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPI"/>
+
+
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
 
 
         <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>-->
@@ -62,38 +72,38 @@
     </classes>
     </test>
 
-    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+    <!--<test name="apim-integration-tests-samples" preserve-order="true" parallel="false">-->
 
-        <classes>
+        <!--<classes>-->
 
-            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIManager3152RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
-            <!--class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/-->
-             <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.APIManager3152RefreshTokenTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>-->
+            <!--&lt;!&ndash;class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/&ndash;&gt;-->
+             <!--<class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
 
-            <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
-                <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.DefaultVersionWithScopesTesCase"/>
-          <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+            <!--&lt;!&ndash; <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>-->
+          <!--<class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>-->
+          <!--<class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>-->
+                <!--<class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>-->
+          <!--<class name="org.wso2.am.integration.tests.sample.DefaultVersionWithScopesTesCase"/>-->
+          <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> &ndash;&gt;-->
 
-        </classes>
-        <!--     <packages>
-            <package name="org.wso2.am.integration.tests.*"/>
-        </packages>-->
-    </test>
+        <!--</classes>-->
+        <!--&lt;!&ndash;     <packages>-->
+            <!--<package name="org.wso2.am.integration.tests.*"/>-->
+        <!--</packages>&ndash;&gt;-->
+    <!--</test>-->
 
 </suite>

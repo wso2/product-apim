@@ -682,14 +682,13 @@ public class APIStoreRestClient {
 	        return applicationId;
 	        
 	    }
-
 	/**
 	 * Get the  web page with filtered API when  click the API Tag link
 	 *
 	 * @param apiTag - API tag the need ti filter the api.
 	 * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
 	 * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when check the
-	 *                                                                               Authentication and HttpRequestUtil.sendGetRequest() method call
+	 * Authentication and HttpRequestUtil.sendGetRequest() method call
 	 */
 	public HttpResponse getAPIPageFilteredWithTags(String apiTag) throws APIManagerIntegrationTestException {
 		try {
