@@ -733,6 +733,11 @@
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file>
+        <file>
+            <source>src/main/publisher/publisher-tenant.json</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/publisher/config</outputDirectory>
+            <filtered>true</filtered>
+        </file>
         <!--file>
             <source>src/main/conf/sso-idp-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
