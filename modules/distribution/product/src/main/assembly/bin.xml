@@ -473,6 +473,15 @@
                 <include>**/sso-idp-config.xml</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/security/
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/security/</outputDirectory>
+            <includes>
+                <include>**/sso_redirect.html</include>
+            </includes>
+        </fileSet>
 
     </fileSets>
     <dependencySets>
