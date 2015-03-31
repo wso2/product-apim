@@ -33,7 +33,7 @@ public class APIMANAGER2611EndpointValidationTestCase extends AMIntegrationBaseT
 
 	@Test(groups = { "wso2.am" }, description = "Validate endpoint with Http Head not support End point")
 	public void checkEndpointValidation() throws Exception {
-		APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(getPublisherServerURLHttp());
+		APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
 		apiPublisherRestClient.login("admin", "admin");
 		org.wso2.carbon.automation.test.utils.http.client.HttpResponse
 				response = apiPublisherRestClient.checkValidEndpoint("http", "http://localhost:9763/oauth2/token");

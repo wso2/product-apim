@@ -67,8 +67,8 @@ public class JWTTestCase extends AMIntegrationBaseTest {
     public void init() throws Exception {
         super.init();
 
-        publisherURLHttp = getPublisherServerURLHttp();
-        storeURLHttp = getStoreServerURLHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        storeURLHttp = storeUrls.getWebAppURLHttp();
 
         //enable JWT token generation
         serverConfigurationManager = new ServerConfigurationManager(apimContext);
@@ -164,7 +164,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp() + "/tokenTest/1.0.0";
+        String url = gatewayUrls.getWebAppURLNhttp() + "/tokenTest/1.0.0";
 
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -283,7 +283,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp() + "/tokenTest/1.0.0/";
+        String url = gatewayUrls.getWebAppURLNhttp() + "/tokenTest/1.0.0/";
 
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -357,7 +357,7 @@ public class JWTTestCase extends AMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getGatewayServerURLHttp() + "/t/wso2.com/tokenTest/1.0.0/";
+        String url = gatewayUrls.getWebAppURLNhttp() + "/t/wso2.com/tokenTest/1.0.0/";
         APIMgtTestUtil.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 

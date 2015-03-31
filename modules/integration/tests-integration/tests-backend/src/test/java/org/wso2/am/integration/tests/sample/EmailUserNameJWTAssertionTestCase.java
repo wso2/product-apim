@@ -69,8 +69,8 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         password = apimContext.getContextTenant().getTenantAdmin().getPassword();
 
 
-        publisherURLHttp = getServerBackendUrlHttp();
-        String storeURLHttp = getServerBackendUrlHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         String apiManagerXml =
                 getAMResourceLocation() +
@@ -130,7 +130,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -182,7 +182,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -241,7 +241,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -299,7 +299,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];

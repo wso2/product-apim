@@ -53,8 +53,8 @@ public class DAOTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
-        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
@@ -157,7 +157,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -183,7 +183,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));

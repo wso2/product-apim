@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.URLBean;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
@@ -82,7 +83,8 @@ public class AMIntegrationBaseTest {
     protected APIMTestCaseUtils apimTestCaseUtils;
 
     protected TestUserMode userMode;
-    protected ContextUrls contextUrls, storeUrls, publisherUrls, gatewayUrls;
+    protected ContextUrls contextUrls;
+    protected URLBean storeUrls, publisherUrls, gatewayUrls;
 
     /**
      * init basic class
@@ -111,18 +113,18 @@ public class AMIntegrationBaseTest {
 
         storeContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_STORE_INSTANCE, userMode);
-        storeUrls = storeContext.getContextUrls();
         storeSessionCookie = login(storeContext);
+        storeUrls = new URLBean(storeContext.getContextUrls());
 
         publisherContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
-        publisherUrls = publisherContext.getContextUrls();
         publisherSessionCookie = login(publisherContext);
+        publisherUrls = new URLBean(publisherContext.getContextUrls());
 
         gatewayContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
-        gatewayUrls = gatewayContext.getContextUrls();
         gatewaySessionCookie = login(gatewayContext);
+        gatewayUrls = new URLBean(gatewayContext.getContextUrls());
 
     }
 
@@ -173,81 +175,6 @@ public class AMIntegrationBaseTest {
     }
 
     /**
-     * eg :  http://localhost:9763/services/
-     *
-     * @return gateway server url non secure
-     */
-
-    protected String getGatewayServerURLHttp() {
-        return gatewayUrls.getWebAppURL() + "/services/";
-    }
-
-    /**
-     * eg : https://localhost:9443/services/
-     *
-     * @return gateway server url secure
-     */
-
-    protected String getGatewayServerURLHttps() {
-
-        return gatewayUrls.getBackEndUrl();
-    }
-
-    /**
-     * ex :  https://localhost:9763
-     *
-     * @return publisher server url non secure
-     */
-
-    protected String getPublisherServerURLHttp() {
-        return publisherUrls.getWebAppURL() + "/publisher/";
-    }
-
-    /**
-     * ex :  https://localhost:9443
-     *
-     * @return publisher server url secure
-     */
-
-    protected String getPublisherServerURLHttps() {
-        String httpsURL = publisherUrls.getBackEndUrl();
-        if (httpsURL.endsWith("services/")) {
-            httpsURL = httpsURL.replace("services/", "publisher/");
-        }
-
-        return httpsURL;
-    }
-
-    /**
-     * ex :  https://localhost:9763
-     *
-     * @return store server url non secure
-     */
-
-    protected String getStoreServerURLHttp() {
-        return storeUrls.getWebAppURL() + "/store/";
-    }
-
-    /**
-     * ex :  https://localhost:9443
-     *
-     * @return store server url secure
-     */
-
-    protected String getStoreServerURLHttps() {
-
-        String httpsURL = null;
-
-        httpsURL = storeUrls.getBackEndUrl();
-
-        if (httpsURL.endsWith("services/")) {
-            httpsURL = httpsURL.replace("services/", "store/");
-        }
-
-        return httpsURL;
-    }
-
-    /**
      * - eg: http://localhost:8280/apiContext/
      *
      * @param apiContext
@@ -256,12 +183,7 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getApiInvocationURLHttp(String apiContext) throws XPathExpressionException {
-
-        if (getMainSequenceURL().endsWith("/")) {
-            return getMainSequenceURL() + apiContext.replaceFirst("/", "") + "/";
-        } else {
-            return getMainSequenceURL() + apiContext + "/";
-        }
+        return gatewayUrls.getWebAppURLNhttp() + apiContext;
 
     }
 
@@ -274,11 +196,8 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getApiInvocationURLHttps(String apiContext) throws XPathExpressionException {
-        if (getMainSequenceURL().endsWith("/")) {
-            return getMainSequenceURLHttps() + apiContext.replaceFirst("/", "") + "/";
-        } else {
-            return getMainSequenceURLHttps() + apiContext + "/";
-        }
+        return gatewayUrls.getWebAppURLNhttps() + apiContext;
+
     }
 
     /**
@@ -314,12 +233,6 @@ public class AMIntegrationBaseTest {
      */
 
     protected String getBackEndURLHttps() {
-        /*  if (serverUrl.endsWith("/services")) {
-            serverUrl = serverUrl.replace("/services", "");
-        }
-        if (serverUrl.endsWith("/")) {
-            serverUrl = serverUrl.substring(0, (serverUrl.length() - 1));
-        }*/
         return contextUrls.getBackEndUrl();
     }
 

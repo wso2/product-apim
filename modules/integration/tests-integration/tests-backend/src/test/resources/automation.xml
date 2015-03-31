@@ -240,7 +240,7 @@
                 <properties>
                 </properties>
             </instance>
-            <instance name="store" type="standalone" nonBlockingTransportEnabled="true">
+            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
@@ -266,7 +266,7 @@
                 <properties>
                 </properties>
             </instance>
-            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="true">
+            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
@@ -287,7 +287,7 @@
         <platformExecutionManager>
             <extentionClasses>
                 <class>
-                    <name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name>
+                    <name>org.wso2.carbon.integration.common.extensions.carbonserver.CarbonServerExtension</name>
                     <!--<parameter name="-DportOffset" value="0" />-->
                     <!--<parameter name="cmdArg" value="debug 5005" />-->
                 </class>
