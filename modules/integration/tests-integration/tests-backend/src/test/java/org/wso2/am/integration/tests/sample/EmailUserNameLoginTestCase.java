@@ -60,9 +60,9 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
-        String workflowAdminURLHTTP = getServerBackendUrlHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String workflowAdminURLHTTP = storeUrls.getWebAppURLHttp();
 
         String apiManagerXml =
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +

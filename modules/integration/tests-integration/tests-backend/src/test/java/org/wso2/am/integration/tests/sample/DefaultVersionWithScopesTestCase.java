@@ -76,8 +76,8 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
         super.init();
 
         //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
-        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
@@ -209,7 +209,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token sam received
-            response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "sam cannot access the GET Method. Response = "
                             + response.getData());
@@ -225,7 +225,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token mike received.
-            response = HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Mike should receive an HTTP 403 when trying to access"
                             + " the GET resource. But the response code was " + response.getResponseCode());

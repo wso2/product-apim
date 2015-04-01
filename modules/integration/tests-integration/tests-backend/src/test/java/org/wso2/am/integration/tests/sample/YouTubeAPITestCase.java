@@ -44,8 +44,8 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
@@ -92,7 +92,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
                   getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-                getGatewayServerURLHttp() + "/youtube/1.0.0/most_popular", requestHeaders);
+                gatewayUrls.getWebAppURLNhttp() + "/youtube/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<feed"),

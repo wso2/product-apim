@@ -53,8 +53,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        publisherURLHttp = getPublisherServerURLHttp();
-        storeURLHttp = getStoreServerURLHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
@@ -133,7 +133,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         Thread.sleep(60000);
         //  for (int i = 0; i < 19; i++) {
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -144,11 +144,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
         //Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
         //Thread.sleep(60000);
-        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "-wrong-tokent-text-");
-        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponseError.getResponseCode(), 401, "Response code mismatched");
 
         apiStore.getAllPublishedAPIs();
@@ -196,9 +196,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String accessToken1 = response1.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeaders1 = new HashMap<String, String>();
         requestHeaders1.put("Authorization", "Bearer " + accessToken1);
-        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         for (int i = 0; i < 40; i++) {
-            youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+            youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         }
         assertEquals(youTubeResponseTestApp.getResponseCode(), 503, "Response code mismatched");
 
@@ -453,13 +453,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -626,13 +626,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");

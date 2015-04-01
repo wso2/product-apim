@@ -28,7 +28,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import java.net.URL;

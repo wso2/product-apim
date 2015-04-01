@@ -56,8 +56,8 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
          configFiles/tokenTest/log4j.properties
          */
 
-        String publisherURLHttp = getServerBackendUrlHttp();
-        String storeURLHttp = getServerBackendUrlHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         userName = apimContext.getContextTenant().getTenantAdmin().getUserName();
 
@@ -120,7 +120,7 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "@11wso2.com&password=" +
                 apimContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                 consumerSecret,
                 requestBody,

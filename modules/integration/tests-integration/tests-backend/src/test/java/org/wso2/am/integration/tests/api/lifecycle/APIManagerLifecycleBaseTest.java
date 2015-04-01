@@ -77,8 +77,8 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
     public void init() throws Exception {
         super.init();
         API1_PROVIDER_NAME = apimContext.getContextTenant().getContextUser().getUserName();
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         apiPublisherClientUser2 = new APIPublisherRestClient(publisherURLHttp);
@@ -91,7 +91,7 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
         apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
 
-        API_BASE_URL = getGatewayServerURLHttp()+"/";
+        API_BASE_URL = gatewayUrls.getWebAppURLNhttp()+"/";
         //Login to API Publisher with  User1
         String userNameUser1 = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
         String passwordUser1 = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword();

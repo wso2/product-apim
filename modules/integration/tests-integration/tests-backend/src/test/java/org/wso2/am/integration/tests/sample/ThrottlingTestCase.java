@@ -74,7 +74,7 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
                 , "Adding Resource failed");
 		Thread.sleep(2000);
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(getGatewayServerURLHttp()+"/stockquote" + "/test/", null);
+				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"/stockquote" + "/test/", null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
                 "did not receive 200");
 
