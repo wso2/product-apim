@@ -291,9 +291,6 @@
 
     <ApplicationTokenScope>am_application_scope</ApplicationTokenScope>
 
-    <!-- Resource manager implementation class -->
-    <ResourceManagerImplementationClassName>org.wso2.carbon.mit.ResourceManagerImpl</ResourceManagerImplementationClassName>
-
     <!-- key validation handler implementation class -->
     <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
 
