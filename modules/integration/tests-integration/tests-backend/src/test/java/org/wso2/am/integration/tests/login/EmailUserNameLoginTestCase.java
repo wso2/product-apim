@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.login;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

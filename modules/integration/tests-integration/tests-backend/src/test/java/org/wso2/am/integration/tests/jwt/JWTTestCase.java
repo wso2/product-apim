@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.jwt;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -105,8 +105,8 @@ public class JWTTestCase extends AMIntegrationBaseTest {
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(wireMonitorURL));
         apiRequest.setTags(tags);
@@ -150,12 +150,12 @@ public class JWTTestCase extends AMIntegrationBaseTest {
         addAPI();
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
-        apiStoreRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient.addApplication(ApplicationName, APITier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(ApplicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 

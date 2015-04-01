@@ -17,7 +17,7 @@
 */
 
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.token;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,7 +83,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Token API Test sample")
+    @Test(groups = {"wso2.am"}, description = "Token API Test other")
     public void testTokenAPITestCase() throws Exception {
 
         String APIName = "TokenTestAPI";

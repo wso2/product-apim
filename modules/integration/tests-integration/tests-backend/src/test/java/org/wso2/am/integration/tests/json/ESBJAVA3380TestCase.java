@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.json;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -65,7 +65,7 @@ public class ESBJAVA3380TestCase extends AMIntegrationBaseTest {
         loadAPIMConfigurationFromClasspath(relativeFilePath);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Json to XML Test sample")
+    @Test(groups = {"wso2.am"}, description = "Json to XML Test other")
     public void jsonToXmlTestCase() throws Exception {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();

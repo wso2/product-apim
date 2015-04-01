@@ -17,7 +17,7 @@
 */
 
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.hostobject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,7 +92,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         try {
             FileManipulator.copyFile(sourceFile, destFile);
         } catch (IOException e) {
-            log.error("Error while copying the sample into Jaggery server", e);
+            log.error("Error while copying the other into Jaggery server", e);
         }
     }
 
