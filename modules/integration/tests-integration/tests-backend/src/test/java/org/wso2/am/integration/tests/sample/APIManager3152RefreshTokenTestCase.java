@@ -24,8 +24,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
@@ -56,8 +56,8 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
          configFiles/tokenTest/log4j.properties
          */
 
-        String publisherURLHttp = getServerBackendUrlHttp();
-        String storeURLHttp = getServerBackendUrlHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         userName = apimContext.getContextTenant().getTenantAdmin().getUserName();
 
@@ -100,7 +100,7 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName + "@11wso2.com",
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(userName + "@11wso2.com", apimContext.getContextTenant().getTenantAdmin().getPassword());
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName+"-AT-11wso2.com");
@@ -120,7 +120,7 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "@11wso2.com&password=" +
                 apimContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                 consumerSecret,
                 requestBody,

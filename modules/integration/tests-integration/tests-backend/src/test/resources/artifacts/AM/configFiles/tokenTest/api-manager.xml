@@ -461,7 +461,7 @@
             Enable/Disable the API Startup Publisher
         -->
 	
-	<Enabled>true</Enabled>
+	<Enabled>false</Enabled>
 	
 	<!--
 	Configuration to create APIs for local endpoints. 
