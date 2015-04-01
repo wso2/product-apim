@@ -53,7 +53,7 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(getGatewayServerURLHttp()+"/stockquote/test/", null);
+				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"/stockquote/test/", null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 

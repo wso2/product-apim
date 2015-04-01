@@ -28,8 +28,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -64,8 +64,8 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         Also need to copy the content of /resources/artifacts/AM/jaggery to servers following folder folder
         repository/deployment/server/jaggeryapps/testapp
         */
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator +
@@ -136,13 +136,13 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
         APIBean apiBean = APIMgtTestUtil
-                .getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
+                .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(
@@ -188,7 +188,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         String finalOutputPublisher = null;
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp() + "/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -211,7 +211,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         Thread.sleep(20000);
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(getStoreServerURLHttp() + "/testapp/testStore.jag");
+            URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "/testapp/testStore.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));

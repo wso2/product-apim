@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -69,8 +69,8 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         password = apimContext.getContextTenant().getTenantAdmin().getPassword();
 
 
-        publisherURLHttp = getServerBackendUrlHttp();
-        String storeURLHttp = getServerBackendUrlHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         String apiManagerXml =
                 getAMResourceLocation() +
@@ -98,7 +98,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         APILifeCycleStateRequest
                 updateRequest = new APILifeCycleStateRequest("test", userName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.login(userName, password);
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest("test", userName);
@@ -130,7 +130,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -182,7 +182,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getGatewayServerURLHttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -241,7 +241,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -299,7 +299,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];

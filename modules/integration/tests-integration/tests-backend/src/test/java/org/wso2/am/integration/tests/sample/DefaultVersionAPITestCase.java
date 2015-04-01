@@ -55,8 +55,8 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         super.init();
 
         //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
-        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
@@ -74,7 +74,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
         String apiContext = "/defaultversion";
-        String endpointUrl = getGatewayServerURLHttp() + "/response";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "/response";
 
         //Create the api creation request object
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
@@ -114,10 +114,10 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        String directBackEndEndpoint = getGatewayServerURLHttp() + "/response";
+        String directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "/response";
 
         //Going to access the API without the version in the request url.
-        String apiInvocationUrl = getGatewayServerURLHttp() + apiContext;
+        String apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;
 
         HttpResponse directResponse = HttpRequestUtil.doGet(directBackEndEndpoint, null);
 

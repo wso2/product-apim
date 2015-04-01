@@ -83,7 +83,7 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 		InputStreamReader isr = new InputStreamReader(fis, "UTF8");
 		Reader inputReader = new BufferedReader(isr);
 
-		URL postEndpoint = new URL(getGatewayServerURLHttp()+"/t/abc.com/stock/1.0.0");
+		URL postEndpoint = new URL(gatewayUrls.getWebAppURLNhttp()+"/t/abc.com/stock/1.0.0");
 		//URL postEndpoint = new URL("http://localhost:8280/t/abc.com/helloabc/1.0.0");
 
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("foo.out")));

@@ -26,8 +26,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
@@ -53,8 +53,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        publisherURLHttp = getPublisherServerURLHttp();
-        storeURLHttp = getStoreServerURLHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
@@ -92,14 +92,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         //add assertion
         apiPublisher.addAPI(apiRequest);
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisher.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisher.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
@@ -133,7 +133,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         Thread.sleep(60000);
         //  for (int i = 0; i < 19; i++) {
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -144,11 +144,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
         //Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
         //Thread.sleep(60000);
-        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "-wrong-tokent-text-");
-        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponseError.getResponseCode(), 401, "Response code mismatched");
 
         apiStore.getAllPublishedAPIs();
@@ -196,9 +196,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String accessToken1 = response1.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeaders1 = new HashMap<String, String>();
         requestHeaders1.put("Authorization", "Bearer " + accessToken1);
-        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         for (int i = 0; i < 40; i++) {
-            youTubeResponseTestApp = HttpRequestUtil.doGet(getGatewayServerURLHttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+            youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
         }
         assertEquals(youTubeResponseTestApp.getResponseCode(), 503, "Response code mismatched");
 
@@ -397,20 +397,20 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
 
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
         //add assertion
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);
         updateRequest2.setVersion(APIVersionNew);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -453,13 +453,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -495,11 +495,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
 
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -512,7 +512,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.RETIRED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -522,7 +522,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.BLOCKED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest3);
 
         apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -561,29 +561,29 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.addAPI(apiRequest);
 
         //publish initial version
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest1 = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest1);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         //publish new version
         apiPublisherRestClient.copyAPI(providerName, APIName, APIVersionOld, APIVersionNew, "");
         //add assertion
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest2 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);
         updateRequest2.setVersion(APIVersionNew);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest2);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         //deprecate old version
-        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName,
+        apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName,
                 providerName));
         APILifeCycleStateRequest updateRequest3 = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.DEPRECATED);
         updateRequest3.setVersion(APIVersionOld);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest3);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest3);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
@@ -626,13 +626,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -660,9 +660,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("public");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(APIName, providerName));
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
     }
 
@@ -687,11 +687,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setVisibility("private");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion;
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
     }
 
     public void addVisibleToRolesAPI(APIPublisherRestClient apiPublisherRestClient) throws Exception {
@@ -716,11 +716,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion
-        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getApi(
+        APIBean apiBean = APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherRestClient.getAPI(
                 APIName, providerName));
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(
                 APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisherRestClient.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
     }
 
 

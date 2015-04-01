@@ -101,7 +101,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * add API to APIM
-	 * @param apiRequest
+	 * @param apiRequest - Constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -122,7 +122,7 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * copy API
+	 * copy API from existing API
 	 * @param provider
 	 * @param APIName
 	 * @param oldVersion
@@ -150,7 +150,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * update created API
-	 * @param apiRequest
+	 * @param apiRequest - constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -171,8 +171,8 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * change API status
-	 * @param updateRequest
+	 * change status of a created API
+	 * @param updateRequest - APILifeCycleStateRequest object
 	 * @return
 	 * @throws Exception
 	 */
@@ -472,6 +472,7 @@ public class APIPublisherRestClient {
 		}
 	}
 
+
 	/**
 	 * update permissions to API access
 	 * @param tierName
@@ -552,6 +553,33 @@ public class APIPublisherRestClient {
         }
     }
 
+
+/**
+     * Get the API information  for the given API Name,API Version and API Provider
+     *
+     * @param apiName  Name of the API
+     * @param provider Provider Name of the API
+     * @param version  Version of the API
+     * @return Response of the getAPI request
+     * @throws Exception
+     */
+    public HttpResponse getAPI(String apiName, String provider, String version)
+            throws Exception {
+        checkAuthentication();
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+                "/publisher/site/blocks/listing/ajax/item-list.jag")
+                , "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + ""
+                , requestHeaders);
+
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("Get API Information failed> " + response.getData());
+        }
+
+    }
+
 	/**
 	 * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
 	 *
@@ -593,5 +621,21 @@ public class APIPublisherRestClient {
 		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
 				, "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
 
+	}
+
+	/**
+	 * Check the Endpoint is valid
+	 *
+	 * @param endpointUrl url of the endpoint
+	 * @param type        type of Endpoint
+	 * @return HttpResponse -  Response of the getAPI request
+	 * @throws Exception - Exception Throws in checkAuthentication() and when do the REST service calls to get the
+	 *                   API information.
+	 */
+	public HttpResponse checkValidEndpoint(String type, String endpointUrl)
+			throws Exception {
+		checkAuthentication();
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/add.jag")
+				, "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
 	}
 }
