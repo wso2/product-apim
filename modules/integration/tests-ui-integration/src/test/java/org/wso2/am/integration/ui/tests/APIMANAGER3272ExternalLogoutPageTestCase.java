@@ -64,11 +64,7 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
         }
 
         apiStoreUrl = getStoreURL();
-        byte userId = 0;
-        //FrameworkProperties properties = FrameworkFactory.getFrameworkProperties(ProductConstant.AM_SERVER_NAME);
-        //UserInfo userInfo = UserListCsvReader.getUserInfo(userId);
-        this.logViewerClient = new LogViewerClient(backendURL,
-                TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
+        this.logViewerClient = new LogViewerClient(backendURL, TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
 
 
     }
@@ -107,7 +103,7 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
                 if (logEvents[i] != null) {
                     if (logEvents[i].getMessage().contains("ERROR")) {
                         log.error("Server log reports error " + logEvents[i].getMessage());
-                        if (!logEvents[i].getMessage().contains(sessionInvalidatedError)) {
+                        if (logEvents[i].getMessage().contains(sessionInvalidatedError)) {
                             Assert.fail("Session already invalidated...");
                         }
 
@@ -124,37 +120,50 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
     /*
     * Edits site.json by setting keyStorePassword to empty and enabling SSO.
     */
-    private boolean editStoreConfig(String externalLogoutPage) throws IOException {
+    private boolean editStoreConfig(String externalLogoutPage) {
         String serverRoot = System.getProperty(ServerConstants.CARBON_HOME);
         String deploymentPath = serverRoot + getStoreSiteConfPath();
         File file = new File(deploymentPath);
         StringBuilder content = new StringBuilder();
-        if (file.exists()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-            while (reader.ready()) {
-                content.append(reader.readLine() + "\r\n");
-            }
-            reader.close();
-            int ssoConfigIndex = content.indexOf("ssoConfiguration");
+        try {
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                try {
+                    while (reader.ready()) {
+                        content.append(reader.readLine() + "\r\n");
+                    }
+                } finally {
+                    reader.close();
+                }
 
-            if (ssoConfigIndex > -1) {
-                String ssoConfigElement = content.substring(ssoConfigIndex);
-                log.debug("SSO Configuration before editing : " + ssoConfigElement);
-                int originalLength = ssoConfigElement.length();
-                ssoConfigElement = ssoConfigElement.replaceFirst("\"enabled\" : \"false\"",
-                        "\"enabled\" : \"true\"").replaceAll
-                        ("\"keyStorePassword\" : \"[a-zA-Z0-9]*\"", "\"keyStorePassword\" : \"\"");
-                ssoConfigElement.concat("\"externalLogoutPage\" : " + externalLogoutPage);
-                content.replace(ssoConfigIndex, originalLength, ssoConfigElement);
-                String jsonConfig = content.toString();
-                log.debug("SSO Configuration after editing : " + jsonConfig);
+                int ssoConfigIndex = content.indexOf("ssoConfiguration");
 
-                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-                writer.write(jsonConfig);
-                writer.close();
-                return true;
+                if (ssoConfigIndex > -1) {
+                    String ssoConfigElement = content.substring(ssoConfigIndex);
+                    log.debug("SSO Configuration before editing : " + ssoConfigElement);
+                    int originalLength = ssoConfigElement.length();
+                    ssoConfigElement = ssoConfigElement.replaceFirst("\"enabled\" : \"false\"",
+                            "\"enabled\" : \"true\"").replaceAll
+                            ("\"keyStorePassword\" : \"[a-zA-Z0-9]*\"", "\"keyStorePassword\" : \"\"");
+                    ssoConfigElement.concat("\"externalLogoutPage\" : " + externalLogoutPage);
+                    content.replace(ssoConfigIndex, originalLength, ssoConfigElement);
+                    String jsonConfig = content.toString();
+                    log.debug("SSO Configuration after editing : " + jsonConfig);
+
+                    OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+                    try {
+                        writer.write(jsonConfig);
+                    } finally {
+                        writer.close();
+                    }
+                    return true;
+                }
             }
+
+        } catch (IOException ex) {
+            log.error("Exception occurred while file reading or writing " + ex);
         }
+
         return false;
     }
 
