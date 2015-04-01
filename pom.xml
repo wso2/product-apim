@@ -765,7 +765,7 @@
         </apimgt.startup.publisher.feature.version>
         <apimgt.store.feature.version>1.2.4-SNAPSHOT</apimgt.store.feature.version>
 
-        <carbon.deployment.version>4.2.2-SNAPSHOT</carbon.deployment.version>
+        <carbon.deployment.version>4.2.3-SNAPSHOT</carbon.deployment.version>
 
         <carbon.kernel.version>4.2.0</carbon.kernel.version>
         <apimserver.version>1.9.0-SNAPSHOT</apimserver.version>
