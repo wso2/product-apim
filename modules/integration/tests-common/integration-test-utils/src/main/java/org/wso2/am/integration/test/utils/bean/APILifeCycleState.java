@@ -17,6 +17,9 @@ package org.wso2.am.integration.test.utils.bean;
 *under the License.
 */
 
+/**
+ * API life cycle state used too update API's in test cases
+ */
 public enum APILifeCycleState {
 
     PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"),

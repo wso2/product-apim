@@ -25,7 +25,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.extensions.servers.carbonserver.MultipleServersManager;
+import org.wso2.carbon.integration.common.extensions.carbonserver.MultipleServersManager;
 
 import java.io.*;
 import java.net.InetAddress;

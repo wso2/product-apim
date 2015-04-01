@@ -77,7 +77,7 @@ public class ESBJAVA3380TestCase extends AMIntegrationBaseTest {
 
         try {
             response = HttpRequestUtil.doPost(new URL(
-                    getGatewayServerURLHttp()+"/Weather/1.0.0"), payload,
+                    gatewayUrls.getWebAppURLNhttp()+"/Weather/1.0.0"), payload,
                     requestHeaders);
         } catch (Exception e) {
             Assert.assertFalse(

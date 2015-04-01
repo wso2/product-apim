@@ -60,8 +60,8 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
           WSo2 Load balancer fronted 2 gateways 2 key manager setup with WSClient mode. Please refer resource api-manager.xml file.
         */
 
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         serverConfigurationManager = new ServerConfigurationManager(apimContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator +
@@ -128,7 +128,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
         requestHeadersSandBox.put("Authorization", "Bearer " + SANDbOXAccessToken);
         HttpResponse youTubeResponseSandBox = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular",
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular",
                         requestHeadersSandBox);
         log.info("Response " + youTubeResponseSandBox);
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
@@ -152,7 +152,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayServerURLHttps() + "/token");
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                         tokenEndpointURL).getData()
@@ -169,7 +169,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
@@ -183,7 +183,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         HttpResponse youTubeResponseWithApplicationToken = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponseWithApplicationToken.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched");
         assertTrue(youTubeResponseWithApplicationToken.getData().contains("<feed"),
@@ -195,7 +195,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
 
         //Invoke Https end point
         HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         log.info("Response " + youTubeResponseWithApplicationTokenHttps);
         assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
 
@@ -211,14 +211,14 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
                 "Response code mismatched while token API test case");
         Thread.sleep(60000);
         errorResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         log.info("Error response " + errorResponse);
 
         apiPublisher.revokeAccessToken(accessToken, consumerKey, providerName);
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "this-is-incorrect-token");
         errorResponse = HttpRequestUtil
-                .doGet(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(errorResponse.getResponseCode(), 401,
                 "Response code mismatched while token API test case");
         //TODO handle this in automation core level
@@ -232,7 +232,7 @@ public class TokenAPITestCase extends AMIntegrationBaseTest {
                     .append("<GetMyName xmlns=\"http://tempuri.org/\"><name>Sam</name></GetMyName>");
             soapRequest.append("</soap:Body></soap:Envelope>");
             errorResponse = HttpRequestUtil
-                    .doPost(new URL(getGatewayServerURLHttp() + "/tokenTestAPI/1.0.0/most_popular"),
+                    .doPost(new URL(gatewayUrls.getWebAppURLNhttp() + "/tokenTestAPI/1.0.0/most_popular"),
                             soapRequest.toString(), requestHeaders);
             log.info("Error Response " + errorResponse);
         } catch (Exception e) {
