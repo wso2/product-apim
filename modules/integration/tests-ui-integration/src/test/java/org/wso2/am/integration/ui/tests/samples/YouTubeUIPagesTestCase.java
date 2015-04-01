@@ -37,7 +37,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
- * UI Test case for the Youtube API sample.
+ * UI Test case for the Youtube API other.
  * This test case was created using Page object method.
  */
 public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {

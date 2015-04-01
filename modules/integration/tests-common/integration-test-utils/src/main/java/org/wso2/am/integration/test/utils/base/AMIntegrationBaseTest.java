@@ -291,18 +291,14 @@ public class AMIntegrationBaseTest {
     }
 
 
+    /**
+     * Get resources location for  test case
+     * @return
+     */
     protected String getAMResourceLocation() {
         return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
                 File.separator + "AM";
     }
-
-    /**
-     * this is used for for call axis2 server externally
-     *
-     * @param serviceName
-     * @return
-     * @throws XPathExpressionException
-     */
 
 
     /**

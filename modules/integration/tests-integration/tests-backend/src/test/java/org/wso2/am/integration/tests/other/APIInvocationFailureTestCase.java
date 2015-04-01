@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.other;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;

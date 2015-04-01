@@ -15,7 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.token;
 
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -70,7 +70,7 @@ public class RefreshTokenTestCase extends AMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Token API Test sample")
+    @Test(groups = {"wso2.am"}, description = "Token API Test other")
     public void testTokenAPITestCase() throws Exception {
 
         String APIName = "RefreshTokenTestAPI";

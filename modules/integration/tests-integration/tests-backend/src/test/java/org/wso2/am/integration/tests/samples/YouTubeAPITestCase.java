@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.samples;
 
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -58,7 +58,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "You Tube sample")
+    @Test(groups = {"wso2.am"}, description = "You Tube other")
     public void testYouTubeApiSample() throws Exception {
         APIRequest apiRequest = new APIRequest("YoutubeFeeds", "youtube",
                 new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
