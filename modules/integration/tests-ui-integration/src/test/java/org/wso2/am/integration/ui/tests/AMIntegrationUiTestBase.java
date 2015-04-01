@@ -88,7 +88,7 @@ public class AMIntegrationUiTestBase {
     protected String login(AutomationContext apimContext)
             throws IOException, XPathExpressionException, URISyntaxException, SAXException,
                    XMLStreamException, LoginAuthenticationExceptionException {
-        org.wso2.am.integration.test.utils.user.mgt.LoginLogoutClient loginLogoutClient = new org.wso2.am.integration.test.utils.user.mgt.LoginLogoutClient(apimContext);
+        LoginLogoutClient loginLogoutClient = new LoginLogoutClient(apimContext);
         return loginLogoutClient.login();
     }
 
@@ -112,6 +112,15 @@ public class AMIntegrationUiTestBase {
             return carbonLoginURL.split("carbon")[0] + "store";
         } else {
         	throw new Exception("Error while composing Store Login URL");
+        }
+    }
+
+    protected String getAdminDashboardURL() throws Exception{
+        String carbonLoginURL = getLoginURL();
+        if(carbonLoginURL.contains("/carbon")) {
+            return carbonLoginURL.split("carbon")[0] + "admin-dashboard";
+        } else {
+            throw new Exception("Error while composing admin-dashboard Login URL");
         }
     }
 }

@@ -64,6 +64,12 @@ public class ConfigureAnalyticsPage extends PageHandler {
         clickElementByXpath("admin.dashboard.save.config.button.xpath");
         log.info("Configuration Saved : Finish ");
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.error("Error while saving analytics configurations");
+        }
+
         return getTextOfElementByClassName("admin.dashboard.save.config.message");
     }
 

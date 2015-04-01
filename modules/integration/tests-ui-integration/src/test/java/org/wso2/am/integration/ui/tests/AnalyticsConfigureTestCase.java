@@ -55,15 +55,19 @@ public class AnalyticsConfigureTestCase extends AMIntegrationUiTestBase {
 
     }
 
-    @Test(groups = "wso2.apim", description = "verify admin dashboard - configure analytics page")
+    /*
+    To run this test case the bam analyzer node should be run on the https://localhost:9446 (port offset 3) with the
+     credentials admin,admin
+     */
+    @Test(groups = "wso2.apim", description = "verify admin dashboard - configure analytics page", enabled = false)
     public void testAdminDashboardAnalyticsPage() throws Exception {
         AdminDashboardLoginPage adminDashboardLoginPage = new AdminDashboardLoginPage(driver);
         ConfigureAnalyticsPage configureAnalyticsPage = adminDashboardLoginPage.
                 getConfigureAnalyticsPage(userInfo.getUserName(), userInfo.getPassword());
-        String configSavedMessage = configureAnalyticsPage.addConfigurations(EVENT_RECEIVER_URL, EVENT_RECEIVER_USERNAME, EVENT_RECEIVER_PASSWORD,
-                DATA_ANALYZER_URL, DATA_ANALYZER_USERNAME, DATA_ANALYZER_PASSWORD, STAT_DS_URL, STAT_DS_CLASS_NAME,
-                STAT_DS_USERNAME, STAT_DS_PASSWORD);
-        assertEquals(configSavedMessage,"Configuration Saved");
+        String configSavedMessage = configureAnalyticsPage.addConfigurations(EVENT_RECEIVER_URL, EVENT_RECEIVER_USERNAME,
+                EVENT_RECEIVER_PASSWORD, DATA_ANALYZER_URL, DATA_ANALYZER_USERNAME, DATA_ANALYZER_PASSWORD, STAT_DS_URL,
+                STAT_DS_CLASS_NAME,STAT_DS_USERNAME, STAT_DS_PASSWORD);
+        assertEquals(configSavedMessage,"Configurations Saved!");
         configureAnalyticsPage.logOut();
     }
 
