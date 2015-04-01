@@ -24,8 +24,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -44,8 +44,8 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        String publisherURLHttp = getPublisherServerURLHttp();
-        String storeURLHttp = getStoreServerURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
@@ -68,7 +68,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
                         .getContextTenant().getContextUser().getUserName(),
                         APILifeCycleState.PUBLISHED
                 );
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
                 apimContext.getContextTenant()
@@ -92,7 +92,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
                   getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-                getGatewayServerURLHttp() + "/youtube/1.0.0/most_popular", requestHeaders);
+                gatewayUrls.getWebAppURLNhttp() + "/youtube/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<feed"),

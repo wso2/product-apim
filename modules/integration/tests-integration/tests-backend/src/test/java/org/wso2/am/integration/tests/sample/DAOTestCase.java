@@ -27,8 +27,8 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -53,8 +53,8 @@ public class DAOTestCase extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        apiPublisher = new APIPublisherRestClient(getPublisherServerURLHttp());
-        apiStore = new APIStoreRestClient(getStoreServerURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
                 apimContext.getContextTenant().getContextUser().getPassword());
@@ -106,13 +106,13 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteApi(APIName, APIVersion, providerName);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
         APIBean apiBean = APIMgtTestUtil
-                .getAPIBeanFromHttpResponse(apiPublisher.getApi(APIName, providerName));
+                .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatusTo(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(
@@ -157,7 +157,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -183,7 +183,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(getPublisherServerURLHttp()+"/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
