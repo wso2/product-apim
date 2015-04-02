@@ -21,7 +21,7 @@ package org.wso2.am.integration.tests.rest;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -34,15 +34,18 @@ import static org.testng.Assert.assertEquals;
  * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-769
  * This test class test the Rest URI template patterns like uri-template="/view/*"
  */
-public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
+public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
+
+	String gatewaySessionCookie;
 
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
 		super.init();
-		loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+		gatewaySessionCookie = createSession(gatewayContext);
+		loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
 				+ File.separator + "synapseconfigs" + File.separator +
 				"rest"
-				+ File.separator + "url-mapping-synapse.xml");
+				+ File.separator + "url-mapping-synapse.xml", gatewayContext, gatewaySessionCookie);
 	}
 
 	@Test(groups = { "wso2.am" },
@@ -53,7 +56,7 @@ public class URLMappingRESTTestCase extends AMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"/stockquote/test/", null);
+				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"stockquote/test/", null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 

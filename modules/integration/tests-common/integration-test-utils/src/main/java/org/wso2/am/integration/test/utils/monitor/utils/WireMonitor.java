@@ -36,6 +36,10 @@ class WireMonitor extends Thread {
 	private WireMonitorServer trigger;
 
 	public void run() {
+
+		OutputStream out = null;
+		InputStream in = null;
+
 		try {
 
 			// creating a server socket
@@ -45,7 +49,7 @@ class WireMonitor extends Thread {
 			connection = providerSocket.accept();
 			log.info("Connection received from " +
 					connection.getInetAddress().getHostName());
-			InputStream in = connection.getInputStream();
+			in = connection.getInputStream();
 			int ch;
 			StringBuffer buffer = new StringBuffer();
 			StringBuffer headerBuffer = new StringBuffer();
@@ -80,16 +84,34 @@ class WireMonitor extends Thread {
 			// Signaling Main thread to continue
 			trigger.response = headerBuffer.toString() + buffer.toString();
 			trigger.setFinished(true);
-			OutputStream out = connection.getOutputStream();
+
+			out = connection.getOutputStream();
 			out.write(("HTTP/1.1 202 Accepted" + "\r\n\r\n").getBytes(Charset.defaultCharset()));
 			out.flush();
-			out.close();
-			in.close();
+
 
 		} catch (IOException ioException) {
 
 		} finally {
+
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					log.error("Stream close exception", e);
+				}
+			}
+
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					log.error("Stream close exception", e);
+				}
+			}
+
 			try {
+
 				connection.close();
 				providerSocket.close();
 			} catch (Exception e) {

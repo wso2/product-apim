@@ -23,7 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -35,7 +35,9 @@ import java.net.URL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class ThrottlingTestCase extends AMIntegrationBaseTest {
+public class ThrottlingTestCase extends APIMIntegrationBaseTest {
+
+	String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
@@ -47,10 +49,11 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
         /_system/governance/apimgt/applicationdata/test-tiers.xml
          */
 		super.init();
-		loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+		gatewaySessionCookie = createSession(gatewayContext);
+		loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
 				+ File.separator + "synapseconfigs" + File.separator +
 				"throttling"
-				+ File.separator + "throttling-api-synapse.xml");
+				+ File.separator + "throttling-api-synapse.xml", gatewayContext, gatewaySessionCookie);
 
 	}
 
@@ -59,7 +62,7 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 		//APIProviderHostObject test=new APIProviderHostObject("admin");
 		//add client IP to tiers xml
 		ResourceAdminServiceClient resourceAdminServiceStub =
-				new ResourceAdminServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
+				new ResourceAdminServiceClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 
 		resourceAdminServiceStub.addCollection("/_system/config/", "proxy", "",
 		                                       "Contains test proxy tests files");
@@ -74,7 +77,7 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
                 , "Adding Resource failed");
 		Thread.sleep(2000);
 		HttpResponse response = HttpRequestUtil
-				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"/stockquote" + "/test/", null);
+				.sendGetRequest(gatewayUrls.getWebAppURLNhttp()+"stockquote" + "/test/", null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
                 "did not receive 200");
 

@@ -22,7 +22,6 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.verification.VerificationUtil;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -33,7 +32,7 @@ import java.util.Map;
 
 public class APIPublisherRestClient {
 	private String backEndUrl;
-	private static final String URL_SURFIX = "/publisher/site/blocks";
+	private static final String URL_SURFIX = "publisher/site/blocks";
 	private Map<String, String> requestHeaders = new HashMap<String, String>();
 
 	/**
@@ -61,17 +60,14 @@ public class APIPublisherRestClient {
 				.doPost(new URL(backEndUrl + URL_SURFIX + "/user/login/ajax/login.jag")
 						, "action=login&username=" + userName + "&password=" + password + "",
 						requestHeaders);
-		if (response.getResponseCode() == 200) {
-			VerificationUtil.checkErrors(response);
-			String session = getSession(response.getHeaders());
-			if (session == null) {
-				throw new Exception("No session cookie found with response");
-			}
-			setSession(session);
-			return response;
-		} else {
-			throw new Exception("User Login failed> " + response.getData());
+
+		String session = getSession(response.getHeaders());
+		if (session == null) {
+			throw new APIManagerIntegrationTestException("No session cookie found with response");
 		}
+		setSession(session);
+		return response;
+
 
 	}
 
@@ -170,7 +166,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil.doPost(new URL(
-				backEndUrl + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+				backEndUrl + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
 				, updateRequest.generateRequestParameters()
 				, requestHeaders);
 
@@ -191,7 +187,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/listing/ajax/item-list.jag")
 						,
 						"action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + ""
 						, requestHeaders);
@@ -215,7 +211,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/remove.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/item-add/ajax/remove.jag")
 						, "action=removeAPI&name=" + name + "&version=" + version + "&provider=" +
 						  provider
 						, requestHeaders);
@@ -280,7 +276,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
 						, "action=addDocumentation" + "&mode=''&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
 						  docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
@@ -313,7 +309,7 @@ public class APIPublisherRestClient {
         checkAuthentication();
 
         HttpResponse response = HttpRequestUtil
-                .doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+                .doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
                         , "action=addDocumentation" + "&mode=Update&provider=" + provider + "&apiName=" +
                         apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
                         docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
@@ -342,7 +338,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
 						, "action=addInlineContent" + "&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&content=" +
 						  content + "&docDetails=" + docDetails
@@ -367,7 +363,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
 						, "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
 						  docType
@@ -388,7 +384,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/token.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/token.jag")
 						, "action=getAccessTokenData" + "&accessToken=" + accessToken
 						, requestHeaders);
 
@@ -409,7 +405,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/revokeToken.jag")
 						,
 						"action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
 						authUser + "&consumerKey=" + consumerKey
@@ -431,7 +427,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tokens/ajax/revokeToken.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/revokeToken.jag")
 						,
 						"action=revokeAccessTokenBySubscriber" + "&subscriberName=" + subscriberName
 						, requestHeaders);
@@ -455,7 +451,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/tiers/ajax/tiers.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/tiers/ajax/tiers.jag")
 						,
 						"action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
 						permissionType + "&roles=" + roles
@@ -480,7 +476,7 @@ public class APIPublisherRestClient {
 		checkAuthentication();
 
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "/publisher/site/blocks/overview/ajax/overview.jag")
+				.doPost(new URL(backEndUrl + "publisher/site/blocks/overview/ajax/overview.jag")
 						, "action=createNewAPI" + "&provider=" + provider + "&apiName=" + apiName +
 						  "&version=" + version + "&newVersion=" + newVersion
 						, requestHeaders);
@@ -506,7 +502,7 @@ public class APIPublisherRestClient {
         this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "/publisher/site/blocks/item-design/ajax/add.jag")
+                "publisher/site/blocks/item-design/ajax/add.jag")
                 , "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
                 version +"&swagger="+swaggerRes
                 , requestHeaders);
@@ -530,7 +526,7 @@ public class APIPublisherRestClient {
         checkAuthentication();
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "/publisher/site/blocks/listing/ajax/item-list.jag")
+                "publisher/site/blocks/listing/ajax/item-list.jag")
                 , "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + ""
                 , requestHeaders);
 
@@ -560,7 +556,7 @@ public class APIPublisherRestClient {
 			requestParameters += "&requireResubscription=true";
 		}
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
 				, requestParameters, requestHeaders);
 
 	}
@@ -580,7 +576,7 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/listing/ajax/item-list.jag")
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/listing/ajax/item-list.jag")
 				, "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
 
 	}
@@ -599,7 +595,7 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "/publisher/site/blocks/item-add/ajax/add.jag")
+		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/item-add/ajax/add.jag")
 				, "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
 	}
 }

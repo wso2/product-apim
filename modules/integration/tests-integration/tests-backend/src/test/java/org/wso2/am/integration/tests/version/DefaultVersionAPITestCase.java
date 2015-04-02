@@ -21,7 +21,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -44,37 +44,37 @@ import static org.testng.Assert.assertEquals;
  * url. Ex: http://localhost:8280/twitter
  * </p>
  */
-public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
+public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
-
     private APIStoreRestClient apiStore;
+    private String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-
+        gatewaySessionCookie = createSession(gatewayContext);
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml");
+                + File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API")
     public void testDefaultVersionAPI() throws Exception {
 
         //Login to the API Publisher
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
-        String apiContext = "/defaultversion";
-        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "/response";
+        String apiContext = "defaultversion";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
@@ -88,21 +88,21 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                apimContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getUserName(),
                 APILifeCycleState.PUBLISHED);
         //Publish the API
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         //Login to the API Store
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         //Add an Application in the Store.
         apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
 
         //Subscribe the API to the DefaultApplication
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                apimContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getUserName(),
                 "DefaultVersionAPP", "Unlimited");
         apiStore.subscribe(subscriptionRequest);
 
@@ -114,7 +114,7 @@ public class DefaultVersionAPITestCase extends AMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        String directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "/response";
+        String directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Going to access the API without the version in the request url.
         String apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;

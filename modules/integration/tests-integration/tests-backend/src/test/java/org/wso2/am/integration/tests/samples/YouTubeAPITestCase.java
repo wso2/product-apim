@@ -22,7 +22,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -37,7 +37,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class YouTubeAPITestCase extends AMIntegrationBaseTest {
+public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
@@ -51,10 +51,10 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
     }
 
@@ -64,14 +64,14 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
                 new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest("YoutubeFeeds", apimContext
+                new APILifeCycleStateRequest("YoutubeFeeds", publisherContext
                         .getContextTenant().getContextUser().getUserName(),
                         APILifeCycleState.PUBLISHED
                 );
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
-                apimContext.getContextTenant()
+                storeContext.getContextTenant()
                         .getContextUser()
                         .getUserName()
         );
@@ -92,7 +92,7 @@ public class YouTubeAPITestCase extends AMIntegrationBaseTest {
                   getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-                gatewayUrls.getWebAppURLNhttp() + "/youtube/1.0.0/most_popular", requestHeaders);
+                gatewayUrls.getWebAppURLNhttp() + "youtube/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<feed"),

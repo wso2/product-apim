@@ -23,7 +23,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -34,7 +34,7 @@ import static org.testng.Assert.assertTrue;
  * test fail test scenarios
  */
 
-public class LoginValidationTestCase extends AMIntegrationBaseTest {
+public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
 
 
@@ -49,7 +49,7 @@ public class LoginValidationTestCase extends AMIntegrationBaseTest {
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
         userManagementClient = new UserManagementClient(
-                apimContext.getContextUrls().getBackEndUrl(), getSessionCookie());
+                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
 
     }
 

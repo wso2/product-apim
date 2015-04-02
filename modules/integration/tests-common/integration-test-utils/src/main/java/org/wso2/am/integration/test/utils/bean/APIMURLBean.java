@@ -34,7 +34,6 @@ public class APIMURLBean {
     private String webAppURLNhttp; // http://localhost:8280
     private String webAppURLNhttps; // https://localhost:8243
 
-
     /**
      * base constructor
      * @param contextUrls
@@ -44,13 +43,13 @@ public class APIMURLBean {
 
         String tempUrl = contextUrls.getBackEndUrl();
 
-        webAppURLHttp = contextUrls.getWebAppURL();
+        webAppURLHttp = contextUrls.getWebAppURL() + "/";
 
         if (tempUrl.endsWith("/services/")) {
             tempUrl = tempUrl.replace("/services/", "");
         }
 
-        webAppURLHttps = tempUrl;
+        webAppURLHttps = tempUrl + "/";
 
         tempUrl = contextUrls.getServiceUrl();
 
@@ -58,7 +57,7 @@ public class APIMURLBean {
             tempUrl = tempUrl.replace("/services", "");
         }
 
-        webAppURLNhttp = tempUrl;
+        webAppURLNhttp = tempUrl + "/";
 
         tempUrl = contextUrls.getSecureServiceUrl();
 
@@ -66,7 +65,7 @@ public class APIMURLBean {
             tempUrl = tempUrl.replace("/services", "");
         }
 
-        webAppURLNhttps = tempUrl;
+        webAppURLNhttps = tempUrl + "/";
 
 
     }
