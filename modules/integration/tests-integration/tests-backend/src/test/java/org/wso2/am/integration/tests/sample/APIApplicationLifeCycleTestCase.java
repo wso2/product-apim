@@ -213,7 +213,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         assertTrue(apiData.contains("false"), "Error while removing applications");
 
         apiStore.getAllApplications();
-        apiData = apiStore.getAllSubscriptions().getData();
+        apiData = apiStore.getAllSubscriptions("test-application").getData();
         assertTrue(apiData.contains("test-application"), "Error while getting all the subscriptions");
 
         apiStore.getAllTags();

@@ -16,21 +16,20 @@
 *under the License.
 */
 
+
 package org.wso2.am.integration.test.utils.clients;
 
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.codec.binary.Base64;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.validation.VerificationUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 public class APIStoreRestClient {
     private String backEndUrl;
@@ -105,7 +104,7 @@ public class APIStoreRestClient {
             throws Exception {
         checkAuthentication();
         HttpResponse responseApp = getAllApplications();
-        String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
+        String appId = APIMgtTestUtil.getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
         generateAppKeyRequest.setAppId(appId);
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
                 "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
@@ -529,12 +528,12 @@ public class APIStoreRestClient {
      * @throws Exception
      */
 
-    public HttpResponse getAllSubscriptions()
+    public HttpResponse getAllSubscriptions(String selectedApp)
             throws Exception {
         checkAuthentication();
         HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
                 "/store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-                "action=getAllSubscriptions"), "", requestHeaders);
+                "action=getAllSubscriptions&selectedApp=" + selectedApp), "", requestHeaders);
         if (response.getResponseCode() == 200) {
             VerificationUtil.checkErrors(response);
             return response;
@@ -661,25 +660,7 @@ public class APIStoreRestClient {
 
     }
 
-    private String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
-        String applicationId=null;
-        JSONObject obj;
-        try {
-            obj = new JSONObject(jsonStringOfApplications);
-            JSONArray arr = obj.getJSONArray("applications");
-            for (int i = 0; i < arr.length(); i++)
-            {
-                String appName = arr.getJSONObject(i).getString("name");
-                if(applicationName.equals(appName)){
-                    applicationId = arr.getJSONObject(i).getString("id");
-                }
-            }
-        } catch (JSONException e) {
-            throw new  Exception("getting application Id failed ");
-        }
-        return applicationId;
 
-    }
     /**
      * Get the  web page with filtered API when  click the API Tag link
      *

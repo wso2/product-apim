@@ -231,4 +231,37 @@ public class APIMgtTestUtil {
 		}
 		return isFound;
 	}
+	
+	
+    /**
+     * Given the json String of applications and the application name, the method parses the 
+     * json string and extracts the application Id.
+     * @param jsonStringOfApplications
+     *        the json string the contains the applications and its information
+     * @param applicationName
+     *        The application name of which the id is required
+     * @return
+     *       returns the application Id
+     * @throws Exception
+     *       The exception is thrown when the JSON Object creation has caused an exception.
+     */
+    public static String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
+        String applicationId=null;
+        JSONObject obj;
+        try {
+            obj = new JSONObject(jsonStringOfApplications);
+            JSONArray arr = obj.getJSONArray("applications");
+            for (int i = 0; i < arr.length(); i++)
+            {
+                String appName = arr.getJSONObject(i).getString("name");
+                if(applicationName.equals(appName)){
+                    applicationId = arr.getJSONObject(i).getString("id");
+                }
+            }
+        } catch (JSONException e) {
+            throw new  Exception("getting application Id failed ");
+        }
+        return applicationId;
+
+    }
 }

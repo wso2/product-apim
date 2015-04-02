@@ -394,6 +394,7 @@
     If there are multiple API modification during a short time period, better to disable cache.
     -->
         <EnableRecentlyAddedAPICache>false</EnableRecentlyAddedAPICache>
+ <GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor>
 
     </APIStore>
 
