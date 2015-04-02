@@ -117,6 +117,11 @@
                 <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
+               <GrantTypeName>open_keymanager</GrantTypeName>
+               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantHandler</GrantTypeHandlerImplClass>
+               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantValidator</GrantTypeValidatorImplClass>
+           </SupportedGrantType>
+            <SupportedGrantType>
                 <GrantTypeName>refresh_token</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>

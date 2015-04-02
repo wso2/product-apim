@@ -22,7 +22,7 @@
     <parameter name="useDefaultListeners" value="false"/>
 
 
-    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <packages>
             <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
         </packages>
@@ -33,27 +33,28 @@
         <classes>
 
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIManager3152RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DAOTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.EmailUserNameLoginTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ErrorMessageTypeTestCase"/>
-            <!--class name="org.wso2.am.integration.tests.sample.ESBJAVA3380TestCase"/-->
-            <class name="org.wso2.am.integration.tests.sample.JWTTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.TagsRatingCommentTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.TokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.YouTubeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
+            <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.otherESBJAVA3380TestCase"/>-->
+            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
-            <class name="org.wso2.am.integration.tests.sample.APIMANAGER2611EndpointValidationTestCase"/>
-            <!-- <class name="org.wso2.am.integration.tests.sample.EmailUserNameJWTAssertionTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.HostObjectTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.APIScopeTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
+          <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+          <class name="org.wso2.am.integration.tests.otherAPIScopeTestCase"/>
                 <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
-          <class name="org.wso2.am.integration.tests.sample.DefaultVersionWithScopesTesCase"/>
+          <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
 		<class name="org.wso2.am.integration.tests.sample.APIApplicationSubscriptionSharingTestCase"/>
         </classes>

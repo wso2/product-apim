@@ -239,7 +239,7 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
         try {
             FileManipulator.copyFile(sourceFile, destinationFile);
         } catch (IOException e) {
-            log.error("Error while copying the sample into Jaggery server", e);
+            log.error("Error while copying the other into Jaggery server", e);
         }
     }
 
@@ -249,7 +249,7 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
         try {
             FileManipulator.copyFile(sourceFile, destinationFile);
         } catch (IOException e) {
-            log.error("Error while copying the sample into Jaggery server", e);
+            log.error("Error while copying the other into Jaggery server", e);
         }
     }
 

@@ -27,17 +27,34 @@ import org.wso2.carbon.user.core.UserStoreException;
 
 import java.rmi.RemoteException;
 
+/**
+ * this client is used for update user claims, and related operations
+ */
+
 public class RemoteUserStoreManagerServiceClient {
 
     private final String serviceName = "RemoteUserStoreManagerService";
     private RemoteUserStoreManagerServiceStub remoteUserStoreManagerServiceStub;
 
+    /**
+     * Create Remote user store admin client
+     * @param backEndUrl - url to log
+     * @param sessionCookie - session cookie
+     * @throws AxisFault
+     */
     public RemoteUserStoreManagerServiceClient(String backEndUrl, String sessionCookie) throws AxisFault {
         String endPoint = backEndUrl + serviceName;
         remoteUserStoreManagerServiceStub = new RemoteUserStoreManagerServiceStub(endPoint);
         AuthenticateStub.authenticateStub(sessionCookie, remoteUserStoreManagerServiceStub);
     }
 
+    /**
+     * Create Remote user store admin client using username and password
+     * @param backEndUrl
+     * @param userName
+     * @param password
+     * @throws AxisFault
+     */
     public RemoteUserStoreManagerServiceClient(String backEndUrl, String userName, String password)
             throws AxisFault {
         String endPoint = backEndUrl + serviceName;
@@ -45,6 +62,18 @@ public class RemoteUserStoreManagerServiceClient {
         AuthenticateStub.authenticateStub(userName, password, remoteUserStoreManagerServiceStub);
     }
 
+    /**
+     * add user to user store
+     * @param userName
+     * @param credential - password
+     * @param roleList - permission roles
+     * @param claimValues - claim values
+     * @param profileName - user profile
+     * @param requirePasswordChange
+     * @throws UserStoreException
+     * @throws RemoteException
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     */
     public void addUser(String userName, String credential, String[] roleList, ClaimValue[] claimValues,
                         String profileName, boolean requirePasswordChange) throws UserStoreException, RemoteException,
             RemoteUserStoreManagerServiceUserStoreExceptionException {
@@ -53,15 +82,42 @@ public class RemoteUserStoreManagerServiceClient {
                 profileName, requirePasswordChange);
     }
 
+    /**
+     * get available profiles
+     * @param userName
+     * @return
+     * @throws RemoteException
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     */
     public String[] getProfileNames(String userName) throws RemoteException,
             RemoteUserStoreManagerServiceUserStoreExceptionException {
         return remoteUserStoreManagerServiceStub.getProfileNames(userName);
     }
 
+    /**
+     * get user claim values for given claim URL's
+     * @param userName
+     * @param claims
+     * @param profileName
+     * @return
+     * @throws RemoteException
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     */
+
     public ClaimValue[] getUserClaimValuesForClaims(String userName, String[] claims, String profileName)
             throws RemoteException, RemoteUserStoreManagerServiceUserStoreExceptionException {
         return remoteUserStoreManagerServiceStub.getUserClaimValuesForClaims(userName, claims, profileName);
     }
+
+    /**
+     * set user claim value
+     * @param username
+     * @param claim - claim URI
+     * @param value - value of the claim
+     * @param profile - user profile
+     * @throws RemoteUserStoreManagerServiceUserStoreExceptionException
+     * @throws RemoteException
+     */
 
     public void setUserClaimValue(String username, String claim, String value, String profile)
             throws RemoteUserStoreManagerServiceUserStoreExceptionException, RemoteException {

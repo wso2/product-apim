@@ -36,8 +36,8 @@ public class APIPublisherRestClient {
 	private Map<String, String> requestHeaders = new HashMap<String, String>();
 
 	/**
-	 * construct API resr client
-	 * @param backEndUrl
+	 * construct API rest client
+	 * @param backEndUrl - url of the publisher jaggery app
 	 */
 	public APIPublisherRestClient(String backEndUrl) {
 		this.backEndUrl = backEndUrl;
@@ -47,9 +47,9 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * login to publisher
-	 * @param userName
-	 * @param password
+	 * login to publisher app
+	 * @param userName - provided user name
+	 * @param password - password
 	 * @return
 	 * @throws Exception
 	 */
@@ -101,7 +101,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * add API to APIM
-	 * @param apiRequest
+	 * @param apiRequest - Constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -122,12 +122,12 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * copy API
-	 * @param provider
-	 * @param APIName
-	 * @param oldVersion
-	 * @param newVersion
-	 * @param isDefaultVersion
+	 * copy API from existing API
+	 * @param provider - name of the provider , ex: admin
+	 * @param APIName - API name
+	 * @param oldVersion - existing version
+	 * @param newVersion - new version
+	 * @param isDefaultVersion - check default version
 	 * @return
 	 * @throws Exception
 	 */
@@ -150,7 +150,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * update created API
-	 * @param apiRequest
+	 * @param apiRequest - constructed API request object
 	 * @return
 	 * @throws Exception
 	 */
@@ -171,8 +171,8 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * change API status
-	 * @param updateRequest
+	 * change status of a created API
+	 * @param updateRequest - APILifeCycleStateRequest object
 	 * @return
 	 * @throws Exception
 	 */
@@ -195,8 +195,8 @@ public class APIPublisherRestClient {
 
 	/**
 	 * get API info
-	 * @param apiName
-	 * @param provider
+	 * @param apiName - API name
+	 * @param provider - name of the provider
 	 * @return
 	 * @throws Exception
 	 */
@@ -222,9 +222,9 @@ public class APIPublisherRestClient {
 
 	/**
 	 * delete API
-	 * @param name
-	 * @param version
-	 * @param provider
+	 * @param name - API name
+	 * @param version - API version
+	 * @param provider - name of the provider
 	 * @return
 	 * @throws Exception
 	 */
@@ -279,15 +279,15 @@ public class APIPublisherRestClient {
 
 	/**
 	 * add document to API
-	 * @param apiName
-	 * @param version
-	 * @param provider
-	 * @param docName
-	 * @param docType
-	 * @param sourceType
-	 * @param docUrl
-	 * @param summary
-	 * @param docLocation
+	 * @param apiName - API name
+	 * @param version - API version
+	 * @param provider - name of the provider
+	 * @param docName - document name
+	 * @param docType - type of document
+	 * @param sourceType - source ( url,file)
+	 * @param docUrl - URL of doc
+	 * @param summary - summary of doc
+	 * @param docLocation - location
 	 * @return
 	 * @throws Exception
 	 */
@@ -295,6 +295,11 @@ public class APIPublisherRestClient {
 	public HttpResponse addDocument(String apiName, String version, String provider, String docName,
 	                                String docType, String sourceType, String docUrl,
 	                                String summary, String docLocation) throws Exception {
+
+		/*curl -X POST -b cookies http://localhost:9763/publisher/site/blocks/documentation/ajax/docs.jag -d
+		"action=addDocumentation&provider=admin&apiName=PhoneVerification&version=1.0.0
+		&docName=testDoc&docType=how to&sourceType=inline&docUrl=&summary=testing&docLocation="*/
+
 		checkAuthentication();
 		HttpResponse response = HttpRequestUtil
 				.doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
@@ -313,15 +318,15 @@ public class APIPublisherRestClient {
 
 	/**
 	 * update document
-	 * @param apiName
-	 * @param version
-	 * @param provider
-	 * @param docName
-	 * @param docType
-	 * @param sourceType
-	 * @param docUrl
-	 * @param summary
-	 * @param docLocation
+	 * @param apiName - API name
+	 * @param version - API version
+	 * @param provider - name of the provider
+	 * @param docName - document name
+	 * @param docType - type of document
+	 * @param sourceType - source ( url,file)
+	 * @param docUrl - URL of doc
+	 * @param summary - summary of doc
+	 * @param docLocation - location
 	 * @return
 	 * @throws Exception
 	 */
@@ -329,6 +334,8 @@ public class APIPublisherRestClient {
     public HttpResponse updateDocument(String apiName, String version, String provider, String docName,
                                     String docType, String sourceType, String docUrl,
                                     String summary, String docLocation) throws Exception {
+
+		//API call is same as add document , but mode=Update indicates the update action
         checkAuthentication();
         HttpResponse response = HttpRequestUtil
                 .doPost(new URL(backEndUrl + "/publisher/site/blocks/documentation/ajax/docs.jag")
@@ -347,12 +354,12 @@ public class APIPublisherRestClient {
 
 	/**
 	 * add inline content
-	 * @param apiName
-	 * @param version
-	 * @param provider
-	 * @param docName
-	 * @param content
-	 * @param docDetails
+	 * @param apiName - API name
+	 * @param version - API version
+	 * @param provider - name of the provider
+	 * @param docName - document name
+	 * @param content - content of  doc
+	 * @param docDetails - details
 	 * @return
 	 * @throws Exception
 	 */
@@ -377,11 +384,11 @@ public class APIPublisherRestClient {
 
 	/**
 	 * remove document
-	 * @param apiName
-	 * @param version
-	 * @param provider
-	 * @param docName
-	 * @param docType
+	 * @param apiName - API name
+	 * @param version - API version
+	 * @param provider - name of the provider
+	 * @param docName - document name
+	 * @param docType - document type
 	 * @return
 	 * @throws Exception
 	 */
@@ -405,7 +412,7 @@ public class APIPublisherRestClient {
 
 	/**
 	 * get access token data
-	 * @param accessToken
+	 * @param accessToken - access token
 	 * @return
 	 * @throws Exception
 	 */
