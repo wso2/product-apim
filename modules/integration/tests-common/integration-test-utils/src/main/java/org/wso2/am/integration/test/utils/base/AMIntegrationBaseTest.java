@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.URLBean;
+import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
@@ -84,14 +84,13 @@ public class AMIntegrationBaseTest {
 
     protected TestUserMode userMode;
     protected ContextUrls contextUrls;
-    protected URLBean storeUrls, publisherUrls, gatewayUrls;
+    protected APIMURLBean storeUrls, publisherUrls, gatewayUrls;
 
     /**
      * init basic class
      *
      * @throws Exception
      */
-
     protected void init() throws Exception {
         userMode = TestUserMode.SUPER_TENANT_ADMIN;
         init(userMode);
@@ -109,22 +108,23 @@ public class AMIntegrationBaseTest {
         apimContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME, userMode);
         contextUrls = apimContext.getContextUrls();
         sessionCookie = login(apimContext);
+
         apimTestCaseUtils = new APIMTestCaseUtils();
 
         storeContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_STORE_INSTANCE, userMode);
         storeSessionCookie = login(storeContext);
-        storeUrls = new URLBean(storeContext.getContextUrls());
+        storeUrls = new APIMURLBean(storeContext.getContextUrls());
 
         publisherContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
         publisherSessionCookie = login(publisherContext);
-        publisherUrls = new URLBean(publisherContext.getContextUrls());
+        publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
 
         gatewayContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 AMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
         gatewaySessionCookie = login(gatewayContext);
-        gatewayUrls = new URLBean(gatewayContext.getContextUrls());
+        gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
 
     }
 

@@ -27,13 +27,12 @@ import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
  *
  */
 
-public class URLBean {
+public class APIMURLBean {
 
-    ContextUrls contextUrls = null;
     private String webAppURLHttp; // http://localhost:9763
-    private String webAppURLHttps; // http://localhost:9443
+    private String webAppURLHttps; // https://localhost:9443
     private String webAppURLNhttp; // http://localhost:8280
-    private String webAppURLNhttps; // http://localhost:8243
+    private String webAppURLNhttps; // https://localhost:8243
 
 
     /**
@@ -41,34 +40,36 @@ public class URLBean {
      * @param contextUrls
      */
 
-    public URLBean(ContextUrls contextUrls) {
-        this.contextUrls = contextUrls;
-        buildUrls();
-    }
+    public APIMURLBean(ContextUrls contextUrls) {
 
-    private void buildUrls() {
+        String tempUrl = contextUrls.getBackEndUrl();
 
         webAppURLHttp = contextUrls.getWebAppURL();
 
-        webAppURLHttps = contextUrls.getBackEndUrl();
-
-        if (webAppURLHttps.endsWith("/services/")) {
-            webAppURLHttps = webAppURLHttps.replace("/services/", "");
+        if (tempUrl.endsWith("/services/")) {
+            tempUrl = tempUrl.replace("/services/", "");
         }
 
-        webAppURLNhttp = contextUrls.getServiceUrl();
+        webAppURLHttps = tempUrl;
 
-        if (webAppURLNhttp.endsWith("/services")) {
-            webAppURLNhttp = webAppURLNhttp.replace("/services", "");
+        tempUrl = contextUrls.getServiceUrl();
+
+        if (tempUrl.endsWith("/services")) {
+            tempUrl = tempUrl.replace("/services", "");
         }
 
-        webAppURLNhttps = contextUrls.getServiceUrl();
+        webAppURLNhttp = tempUrl;
 
-        if (webAppURLNhttps.endsWith("/services")) {
-            webAppURLNhttps = webAppURLNhttps.replace("/services", "");
+        tempUrl = contextUrls.getSecureServiceUrl();
+
+        if (tempUrl.endsWith("/services")) {
+            tempUrl = tempUrl.replace("/services", "");
         }
+
+        webAppURLNhttps = tempUrl;
+
+
     }
-
 
     public String getWebAppURLHttp() {
         return webAppURLHttp;

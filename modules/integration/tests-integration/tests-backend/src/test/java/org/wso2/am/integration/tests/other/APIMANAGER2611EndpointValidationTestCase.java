@@ -43,7 +43,7 @@ public class APIMANAGER2611EndpointValidationTestCase extends AMIntegrationBaseT
 			Assert.assertEquals(responseString.contains("success"), true);
 		} else {
 			Assert.assertTrue(false,
-			                  "Endpoint Validation Fail due to endpoint validation endpoint didn't work" + statusCode);
+			                  "Endpoint Validation Fail due to endpoint verification endpoint didn't work" + statusCode);
 		}
 
 	}
