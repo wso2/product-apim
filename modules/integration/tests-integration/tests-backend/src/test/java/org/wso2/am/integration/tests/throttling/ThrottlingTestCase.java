@@ -17,7 +17,7 @@
 */
 
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.throttling;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -54,7 +54,7 @@ public class ThrottlingTestCase extends AMIntegrationBaseTest {
 
 	}
 
-	@Test(groups = { "wso2.am" }, description = "Token API Test sample")
+	@Test(groups = { "wso2.am" }, description = "Token API Test other")
 	public void throttlingTestCase() throws Exception {
 		//APIProviderHostObject test=new APIProviderHostObject("admin");
 		//add client IP to tiers xml

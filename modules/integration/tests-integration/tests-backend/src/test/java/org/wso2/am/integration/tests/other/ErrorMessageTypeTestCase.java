@@ -15,7 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +56,7 @@ public class ErrorMessageTypeTestCase extends AMIntegrationBaseTest {
                 + File.separator + "error-handling-test-synapse.xml");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Error Message format test sample")
+    @Test(groups = {"wso2.am"}, description = "Error Message format test other")
     public void errorMessageTypeTestCase() throws Exception {
         HttpResponse response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/stockquote/test/", null);
         assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(), "Response code mismatch");
@@ -94,7 +94,7 @@ public class ErrorMessageTypeTestCase extends AMIntegrationBaseTest {
         try {
             FileManipulator.copyFile(sourceFile, destFile);
         } catch (IOException e) {
-            log.error("Error while copying the sample into Jaggery server", e);
+            log.error("Error while copying the other into Jaggery server", e);
         }
     }
 

@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,7 +69,7 @@ public class DAOTestCase extends AMIntegrationBaseTest {
         try {
             FileManipulator.copyFile(sourceFile, destFile);
         } catch (IOException e) {
-            log.error("Error while copying the sample into Jaggery server", e);
+            log.error("Error while copying the other into Jaggery server", e);
         }
     }
 

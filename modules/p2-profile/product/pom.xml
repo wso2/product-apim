@@ -404,6 +404,8 @@
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.bam.message.tracer.handler.feature:4.2.3</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediator.bam.feature:4.2.0</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.ui.feature:4.2.0</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ndatasource.feature:4.2.3</featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -914,6 +916,14 @@
                                    <id>org.wso2.carbon.forum.server.feature.group</id>
                                    <version>1.0.1</version>
                                	</feature>
+                            <feature>
+                                <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                <version>${carbon.deployment.version}</version>
+                            </feature>
+                            <feature>
+                                <id>org.wso2.carbon.ndatasource.feature.group</id>
+                                <version>4.2.3</version>
+                            </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1249,6 +1259,14 @@
                                	</feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
+                                    <version>4.2.3</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.ndatasource.feature.group</id>
                                     <version>4.2.3</version>
                                 </feature>
                             </features>
@@ -1588,6 +1606,14 @@
                                 <feature>
                                    <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                    <version>4.2.3</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.ndatasource.feature.group</id>
+                                    <version>4.2.3</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2002,6 +2028,14 @@
                                   <id>org.wso2.carbon.forum.server.feature.group</id>
                                   <version>1.0.1</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.ndatasource.feature.group</id>
+                                    <version>4.2.3</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2394,6 +2428,14 @@
                                    <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
                                    <version>4.2.3</version>
                                	</feature>
+                               <feature>
+                                   <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                   <version>${carbon.deployment.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.ndatasource.feature.group</id>
+                                   <version>4.2.3</version>
+                               </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2760,7 +2802,14 @@
                                    <id>org.wso2.carbon.idp.mgt.feature.group</id>
                                    <version>4.2.4</version>
                                </feature>
-
+                               <feature>
+                                   <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                   <version>${carbon.deployment.version}</version>
+                               </feature>
+                               <feature>
+                                   <id>org.wso2.carbon.ndatasource.feature.group</id>
+                                   <version>4.2.3</version>
+                               </feature>
                             </features>
                         </configuration>
                     </execution>

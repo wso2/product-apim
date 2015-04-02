@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.token;
 
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;

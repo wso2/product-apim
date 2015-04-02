@@ -15,7 +15,7 @@
  * under the License. */
 
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.jwt;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;

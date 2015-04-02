@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.sample;
+package org.wso2.am.integration.tests.version;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
