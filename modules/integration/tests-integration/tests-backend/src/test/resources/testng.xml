@@ -56,7 +56,7 @@
                 <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
-		<class name="org.wso2.am.integration.tests.sample.APIApplicationSubscriptionSharingTestCase"/>
+          <class name="org.wso2.am.integration.tests.store.APIApplicationSubscriptionSharingTestCase"/>
         </classes>
         <!--     <packages>
             <package name="org.wso2.am.integration.tests.*"/>
