@@ -271,6 +271,16 @@
         -->
         <!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
 
+        <!-- 
+        Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens
+        -->
+        <ApplicationTokenScope>am_application_scope</ApplicationTokenScope>
+
+        <!-- 
+        Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a custom KeyValidation Handler
+        -->    
+        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
+
         <!--
             Remove UserName from JWT Token
         -->

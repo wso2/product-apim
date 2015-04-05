@@ -348,9 +348,20 @@
         </fileSet>
 
 	<!--copy web app for OAuth feature-->
-        <fileSet>
+        <!--fileSet>
        	    <directory>
 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>oauth2.war</include>
+            </includes>
+        </fileSet-->
+
+        <!-- Adding as a temporary fix. -->
+        <fileSet>
+            <directory>
+            ../../../modules/patches/resources/webapps
             </directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <includes>
@@ -367,7 +378,7 @@
             </includes>
         </fileSet>
 
-        <fileSet>
+        <!--fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
             </directory>
@@ -376,7 +387,19 @@
             <includes>
                 <include>authenticationendpoint.war</include>
             </includes>
+        </fileSet-->
+
+         <!-- Adding as a temporary fix. -->
+        <fileSet>
+            <directory>
+            ../../../modules/patches/resources/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>authenticationendpoint.war</include>
+            </includes>
         </fileSet>
+
 
         <!--Multitenancy related file -->
         <fileSet>
@@ -504,6 +527,15 @@
 
             </excludes>
     	</fileSet>
+
+        <!-- !! Adding as a temporary fix !!-->
+        <fileSet>
+             <directory>../../../modules/patches</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch1072/*.*</include>
+             </includes>
+        </fileSet>
     <fileSet>
               <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0001/dbscripts</directory>
               <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
@@ -751,6 +783,12 @@
         </file>
         <file>
             <source>../../../config/api-manager.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>../../../config/key-manager.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>

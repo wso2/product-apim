@@ -34,7 +34,7 @@ import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 /**
- * UI Test case for the Youtube API sample.
+ * UI Test case for the Youtube API other.
  * This test case was created using Selenium Record ui method.
  */
 public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
