@@ -34,6 +34,7 @@
     <property name="Host" scope="transport" action="remove"/>
     <property name="Accept" scope="transport" action="remove"/>
     <property name="messageType" value="application/xml" scope="axis2"/>
+    <sequence key="_cors_request_handler"/>
     <send/>
     <drop/>
 </sequence>
