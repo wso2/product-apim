@@ -22,11 +22,11 @@
     <parameter name="useDefaultListeners" value="false"/>
 
 
-     <!--<test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <packages>
             <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
         </packages>
-    </test>-->
+    </test>
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
 

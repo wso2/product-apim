@@ -19,13 +19,14 @@
 package org.wso2.am.integration.tests.login;
 
 
-import org.testng.Assert;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import static org.testng.Assert.assertTrue;
@@ -54,23 +55,21 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Login as invalid user to publisher")
-    public void testInvalidLoginAsPublisherTestCase() {
+    public void testInvalidLoginAsPublisherTestCase() throws Exception {
 
         boolean loginFailed = false;
         String error = "";
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         //Try invalid login to publisher
-        try {
-            apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName()
-                            + "invalid",
-                    publisherContext.getContextTenant().getContextUser().getPassword());
-        } catch (Exception e) {
-            loginFailed = true;
-            error = e.getMessage().toString();
-        }
+        HttpResponse httpResponse = apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName()
+                        + "invalid",
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
-        assertTrue(loginFailed && error.contains("Please recheck the username and password and try again"),
+        JSONObject response = new JSONObject(httpResponse.getData());
+
+        assertTrue( response.getString("error").toString().equals("true")
+                        && response.getString("message").toString().contains("Please recheck the username and password and try again"),
                 "Invalid user can login to the API publisher");
 
     }
@@ -90,15 +89,13 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
                     new String[]{"Internal/subscriber"}, null);
         }
 
-        try {
-            apiPublisherRestClient.login("subscriberUser",
-                    "password@123");
-        } catch (Exception e) {
-            loginFailed = true;
-            error = e.getMessage().toString();
-        }
+        HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser",
+                "password@123");
 
-        Assert.assertTrue(loginFailed && error.contains("Login failed.Insufficient privileges"),
+        JSONObject response = new JSONObject(httpResponse.getData());
+
+        assertTrue( response.getString("error").toString().equals("true")
+                        && response.getString("message").toString().contains("Login failed.Insufficient privileges"),
                 "Invalid subscriber can login to the API publisher");
     }
 
@@ -118,15 +115,13 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
                     new String[]{"Internal/subscriber"}, null);
         }
 
-        try {
-            apiPublisherRestClient.login("subscriberUser@wso2.com",
-                    "password@123");
-        } catch (Exception e) {
-            loginFailed = true;
-            error = e.getMessage().toString();
-        }
+        HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser@wso2.com",
+                "password@123");
 
-        Assert.assertTrue(loginFailed && error.contains("Operation not successful: " +
+        JSONObject response = new JSONObject(httpResponse.getData());
+
+        assertTrue( response.getString("error").toString().equals("true")
+                        && response.getString("message").toString().contains(
                         "Login failed.Please recheck the username and password and try again"),
                 "Invalid tenant subscriber can login to the API publisher");
 
@@ -175,38 +170,14 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
                     new String[]{APIPublisherRole}, null);
         }
 
-        try {
-            apiStoreRestClient.login("invaliduser", "invaliduser@123");
-        } catch (Exception e) {
-            loginFailed = true;
-            errorString = e.getMessage().toString();
-        }
+        HttpResponse httpResponse = apiStoreRestClient.login("invaliduser", "invaliduser@123");
 
-        Assert.assertTrue(loginFailed && errorString.contains("Operation not successful: " +
+        JSONObject response = new JSONObject(httpResponse.getData());
+
+        assertTrue( response.getString("error").toString().equals("true")
+                        && response.getString("message").toString().contains(
                         "Login failed.Please recheck the username and password and try again"),
                 "Invalid user can login to the API store");
-        loginFailed = false;
-
-        try {
-            apiStoreRestClient.login(APICreatorUser, password);
-        } catch (Exception e) {
-            loginFailed = true;
-            errorString = e.getMessage().toString();
-        }
-
-        Assert.assertTrue(loginFailed && errorString.contains("Login failed.Insufficient Privileges"),
-                "API creator can login to the API store");
-        loginFailed = false;
-
-        try {
-            apiStoreRestClient.login(APIPublisherUser, password);
-        } catch (Exception e) {
-            loginFailed = true;
-            errorString = e.getMessage().toString();
-        }
-
-        Assert.assertTrue(loginFailed && errorString.contains("Login failed.Insufficient Privileges"),
-                "API publisher can login to the API store");
 
     }
 
