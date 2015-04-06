@@ -227,7 +227,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/role");
         assertTrue("JWT claim role invalid. Received " + claim,
-                claim.contains("admin,Internal/subscriber,Internal/everyone"));
+                claim.contains("admin") && claim.contains("Internal/subscriber") && claim.contains("Internal/everyone"));
     }
 
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, specific user claims", enabled = true)

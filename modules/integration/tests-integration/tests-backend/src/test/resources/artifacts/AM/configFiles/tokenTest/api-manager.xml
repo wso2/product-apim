@@ -289,6 +289,12 @@
         -->
        <!-- <RemoveUserNameToJWTForApplicationToken>true</RemoveUserNameToJWTForApplicationToken>-->
 
+    <ApplicationTokenScope>am_application_scope</ApplicationTokenScope>
+
+    <!-- key validation handler implementation class -->
+    <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
+
+
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 	
