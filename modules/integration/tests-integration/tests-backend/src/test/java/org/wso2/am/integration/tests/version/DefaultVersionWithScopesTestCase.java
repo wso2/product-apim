@@ -26,7 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -47,7 +47,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
+public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(DefaultVersionWithScopesTestCase.class);
 
@@ -80,9 +80,9 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadAPIMConfigurationFromClasspath("artifacts" + File.separator + "AM"
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml");
+                + File.separator + "dummy_api.xml", gatewayContext, createSession(gatewayContext));
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
@@ -91,7 +91,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
 
         //Add a user called mike and assign him to the subscriber role.
         try {
-            userManagementClient = new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(), "admin",
+            userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "admin",
                     "admin");
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
@@ -209,7 +209,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token sam received
-            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "sam cannot access the GET Method. Response = "
                             + response.getData());
@@ -225,7 +225,7 @@ public class DefaultVersionWithScopesTestCase extends AMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token mike received.
-            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Mike should receive an HTTP 403 when trying to access"
                             + " the GET resource. But the response code was " + response.getResponseCode());

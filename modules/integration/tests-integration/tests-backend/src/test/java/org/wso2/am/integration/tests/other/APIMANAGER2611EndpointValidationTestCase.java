@@ -22,10 +22,10 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 
-public class APIMANAGER2611EndpointValidationTestCase extends AMIntegrationBaseTest {
+public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBaseTest {
 	@BeforeClass(alwaysRun = true)
 	public void init() throws Exception {
 		super.init();
@@ -43,7 +43,7 @@ public class APIMANAGER2611EndpointValidationTestCase extends AMIntegrationBaseT
 			Assert.assertEquals(responseString.contains("success"), true);
 		} else {
 			Assert.assertTrue(false,
-			                  "Endpoint Validation Fail due to endpoint validation endpoint didn't work" + statusCode);
+			                  "Endpoint Validation Fail due to endpoint verification endpoint didn't work" + statusCode);
 		}
 
 	}

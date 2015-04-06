@@ -22,7 +22,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -38,7 +38,7 @@ import static org.testng.Assert.assertNotNull;
  In this test case, It will check refresh token is present in the token response with grant type as password in
  tenant mode.
  */
-public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
+public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -59,9 +59,9 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        userName = apimContext.getContextTenant().getTenantAdmin().getUserName();
+        userName = gatewayContext.getContextTenant().getTenantAdmin().getUserName();
 
-        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
@@ -73,11 +73,11 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
 
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                apimContext.getContextUrls().getBackEndUrl(), getSessionCookie());
+                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
 
         tenantManagementServiceClient.addTenant("11wso2.com",
-                apimContext.getContextTenant().getTenantAdmin().getPassword(),
-                apimContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+                gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
+                gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
     }
 
     @Test(groups = "wso2.am", description = "Check whether refresh token issued in tenant mode")
@@ -102,7 +102,7 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        apiStore.login(userName + "@11wso2.com", apimContext.getContextTenant().getTenantAdmin().getPassword());
+        apiStore.login(userName + "@11wso2.com", storeContext.getContextTenant().getTenantAdmin().getPassword());
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName+"-AT-11wso2.com");
         subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
@@ -119,8 +119,8 @@ public class APIManager3152RefreshTokenTestCase extends AMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "@11wso2.com&password=" +
-                apimContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/token");
+                storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                 consumerSecret,
                 requestBody,

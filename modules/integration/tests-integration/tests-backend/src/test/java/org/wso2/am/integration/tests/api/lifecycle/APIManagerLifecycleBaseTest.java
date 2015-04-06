@@ -23,7 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -37,7 +37,7 @@ import java.net.URL;
  * Base test class for all API Manager lifecycle test cases. This class contents the all the
  * common variables and t methods.
  */
-public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
+public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
 
 
     protected static final String API1_NAME = "APILifeCycleTestAPI1";
@@ -76,7 +76,7 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
-        API1_PROVIDER_NAME = apimContext.getContextTenant().getContextUser().getUserName();
+        API1_PROVIDER_NAME = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
@@ -85,16 +85,16 @@ public class APIManagerLifecycleBaseTest extends AMIntegrationBaseTest {
         apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  User1
-        apiPublisherClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  User1
-        apiStoreClientUser1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
-        API_BASE_URL = gatewayUrls.getWebAppURLNhttp()+"/";
+        API_BASE_URL = gatewayUrls.getWebAppURLNhttp();
         //Login to API Publisher with  User1
-        String userNameUser1 = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
-        String passwordUser1 = apimContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword();
+        String userNameUser1 = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
+        String passwordUser1 = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword();
 
         apiPublisherClientUser2.login(userNameUser1, passwordUser1);
         //Login to API Store with  User1
