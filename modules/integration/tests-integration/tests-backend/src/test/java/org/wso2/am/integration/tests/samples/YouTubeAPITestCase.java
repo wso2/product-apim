@@ -42,7 +42,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();

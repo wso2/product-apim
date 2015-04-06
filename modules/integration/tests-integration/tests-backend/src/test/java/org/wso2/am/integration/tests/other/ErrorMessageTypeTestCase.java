@@ -43,7 +43,7 @@ public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
     String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         /*
           This test will check API Manager will return auth failures in JSON format
          */

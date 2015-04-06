@@ -31,16 +31,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class APIPublisherRestClient {
-	private String backEndUrl;
+	private String backendURL;
 	private static final String URL_SURFIX = "publisher/site/blocks";
 	private Map<String, String> requestHeaders = new HashMap<String, String>();
 
 	/**
 	 * construct API rest client
-	 * @param backEndUrl - url of the publisher jaggery app
+	 * @param backendURL - url of the publisher jaggery app
 	 */
-	public APIPublisherRestClient(String backEndUrl) {
-		this.backEndUrl = backEndUrl;
+	public APIPublisherRestClient(String backendURL) {
+		this.backendURL = backendURL;
 		if (requestHeaders.get("Content-Type") == null) {
 			this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 		}
@@ -50,14 +50,13 @@ public class APIPublisherRestClient {
 	 * login to publisher app
 	 * @param userName - provided user name
 	 * @param password - password
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse login(String userName, String password)
 			throws Exception {
 		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + URL_SURFIX + "/user/login/ajax/login.jag")
+				.doPost(new URL(backendURL + URL_SURFIX + "/user/login/ajax/login.jag")
 						, "action=login&username=" + userName + "&password=" + password + "",
 						requestHeaders);
 
@@ -73,39 +72,31 @@ public class APIPublisherRestClient {
 
 	/**
 	 * log out from publisher
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
     public HttpResponse logout()
             throws Exception {
 
-        HttpResponse response = HttpRequestUtil
-                .doGet(backEndUrl + URL_SURFIX + "/user/login/ajax/login.jag?action=logout",
+		return HttpRequestUtil
+                .doGet(backendURL + URL_SURFIX + "/user/login/ajax/login.jag?action=logout",
                         requestHeaders);
-
-		return response;
-
     }
 
 	/**
 	 * add API to APIM
 	 * @param apiRequest - Constructed API request object
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse addAPI(APIRequest apiRequest)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response =
-				HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
+		return HttpRequestUtil.doPost(new URL(backendURL + URL_SURFIX + "/item-add/ajax/add.jag")
 						, apiRequest.generateRequestParameters()
 						, requestHeaders);
-
-		return response;
 	}
 
 	/**
@@ -115,7 +106,7 @@ public class APIPublisherRestClient {
 	 * @param oldVersion - existing version
 	 * @param newVersion - new version
 	 * @param isDefaultVersion - check default version
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
     public HttpResponse copyAPI(String provider, String APIName, String oldVersion,
@@ -124,75 +115,63 @@ public class APIPublisherRestClient {
 
         checkAuthentication();
 
-        HttpResponse response =
-                HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/overview/ajax/overview.jag")
+		return HttpRequestUtil.doPost(new URL(backendURL + URL_SURFIX + "/overview/ajax/overview.jag")
                         , "action=createNewAPI&provider=" + provider + "&apiName=" + APIName + "&version="
                             + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion
                         , requestHeaders);
-
-		return response;
     }
 
 	/**
 	 * update created API
 	 * @param apiRequest - constructed API request object
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse updateAPI(APIRequest apiRequest)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response =
-				HttpRequestUtil.doPost(new URL(backEndUrl + URL_SURFIX + "/item-add/ajax/add.jag")
+		return	HttpRequestUtil.doPost(new URL(backendURL + URL_SURFIX + "/item-add/ajax/add.jag")
 						, apiRequest.generateRequestParameters("updateAPI")
 						, requestHeaders);
-
-		return response;
 	}
 
 	/**
 	 * change status of a created API
 	 * @param updateRequest - APILifeCycleStateRequest object
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse changeAPILifeCycleStatus(APILifeCycleStateRequest updateRequest)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil.doPost(new URL(
-				backEndUrl + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+		return HttpRequestUtil.doPost(new URL(
+				backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
 				, updateRequest.generateRequestParameters()
 				, requestHeaders);
 
-		return response;
 	}
 
 	/**
 	 * get API info
 	 * @param apiName - API name
 	 * @param provider - name of the provider
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse getAPI(String apiName, String provider)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/listing/ajax/item-list.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag")
 						,
 						"action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + ""
 						, requestHeaders);
-
-		return response;
 
 	}
 
@@ -201,34 +180,19 @@ public class APIPublisherRestClient {
 	 * @param name - API name
 	 * @param version - API version
 	 * @param provider - name of the provider
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse deleteAPI(String name, String version, String provider)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/item-add/ajax/remove.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/remove.jag")
 						, "action=removeAPI&name=" + name + "&version=" + version + "&provider=" +
 						  provider
 						, requestHeaders);
-
-		return response;
-	}
-
-	public void setHttpHeader(String headerName, String value) {
-		this.requestHeaders.put(headerName, value);
-	}
-
-	public String getHttpHeader(String headerName) {
-		return this.requestHeaders.get(headerName);
-	}
-
-	public void removeHttpHeader(String headerName) {
-		this.requestHeaders.remove(headerName);
 	}
 
 	private String getSession(Map<String, String> responseHeaders) {
@@ -240,8 +204,7 @@ public class APIPublisherRestClient {
 	}
 
 	/**
-	 * check whether  user is logged in
-	 * @return
+	 * check whether user is authorized
 	 * @throws Exception
 	 */
 	private void checkAuthentication() throws Exception {
@@ -261,10 +224,9 @@ public class APIPublisherRestClient {
 	 * @param docUrl - URL of doc
 	 * @param summary - summary of doc
 	 * @param docLocation - location
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse addDocument(String apiName, String version, String provider, String docName,
 	                                String docType, String sourceType, String docUrl,
 	                                String summary, String docLocation) throws Exception {
@@ -275,76 +237,14 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag")
 						, "action=addDocumentation" + "&mode=''&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
 						  docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
 						  + summary + "&docLocation=" + docLocation
 						, requestHeaders);
 
-		return response;
-	}
-
-	/**
-	 * update document
-	 * @param apiName - API name
-	 * @param version - API version
-	 * @param provider - name of the provider
-	 * @param docName - document name
-	 * @param docType - type of document
-	 * @param sourceType - source ( url,file)
-	 * @param docUrl - URL of doc
-	 * @param summary - summary of doc
-	 * @param docLocation - location
-	 * @return
-	 * @throws Exception
-	 */
-
-    public HttpResponse updateDocument(String apiName, String version, String provider, String docName,
-                                    String docType, String sourceType, String docUrl,
-                                    String summary, String docLocation) throws Exception {
-
-		//API call is same as add document , but mode=Update indicates the update action
-        checkAuthentication();
-
-        HttpResponse response = HttpRequestUtil
-                .doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
-                        , "action=addDocumentation" + "&mode=Update&provider=" + provider + "&apiName=" +
-                        apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
-                        docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl
-                        + summary + "&docLocation=" + docLocation
-                        , requestHeaders);
-
-		return response;
-    }
-
-	/**
-	 * add inline content
-	 * @param apiName - API name
-	 * @param version - API version
-	 * @param provider - name of the provider
-	 * @param docName - document name
-	 * @param content - content of  doc
-	 * @param docDetails - details
-	 * @return
-	 * @throws Exception
-	 */
-
-	public HttpResponse inlineContent(String apiName, String version, String provider,
-	                                  String docName, String content, String docDetails)
-			throws Exception {
-
-		checkAuthentication();
-
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
-						, "action=addInlineContent" + "&provider=" + provider + "&apiName=" +
-						  apiName + "&version=" + version + "&docName=" + docName + "&content=" +
-						  content + "&docDetails=" + docDetails
-						, requestHeaders);
-
-		return response;
 	}
 
 	/**
@@ -354,49 +254,28 @@ public class APIPublisherRestClient {
 	 * @param provider - name of the provider
 	 * @param docName - document name
 	 * @param docType - document type
-	 * @return
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse removeDocumentation(String apiName, String version, String provider,
 	                                        String docName, String docType) throws Exception {
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/documentation/ajax/docs.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag")
 						, "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
 						  apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
 						  docType
 						, requestHeaders);
 
-		return response;
-	}
-
-	/**
-	 * get access token data
-	 * @param accessToken - access token
-	 * @return
-	 * @throws Exception
-	 */
-
-	public HttpResponse getAccessTokenData(String accessToken) throws Exception {
-
-		checkAuthentication();
-
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/token.jag")
-						, "action=getAccessTokenData" + "&accessToken=" + accessToken
-						, requestHeaders);
-
-		return response;
 	}
 
 	/**
 	 * revoke access token
-	 * @param accessToken
-	 * @param consumerKey
-	 * @param authUser
-	 * @return
+	 * @param accessToken - access token already  received
+	 * @param consumerKey -  consumer key returned
+	 * @param authUser    - user name
+	 * @return http response object
 	 * @throws Exception
 	 */
 	public HttpResponse revokeAccessToken(String accessToken, String consumerKey, String authUser)
@@ -404,96 +283,47 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/revokeToken.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/tokens/ajax/revokeToken.jag")
 						,
 						"action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
 						authUser + "&consumerKey=" + consumerKey
 						, requestHeaders
 				);
-
-		return response;
-	}
-
-	/**
-	 * revoke access token by subscriber
-	 * @param subscriberName
-	 * @return
-	 * @throws Exception
-	 */
-
-	public HttpResponse revokeAccessTokenBySubscriber(String subscriberName) throws Exception {
-
-		checkAuthentication();
-
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/tokens/ajax/revokeToken.jag")
-						,
-						"action=revokeAccessTokenBySubscriber" + "&subscriberName=" + subscriberName
-						, requestHeaders);
-
-		return response;
 	}
 
 
 	/**
 	 * update permissions to API access
-	 * @param tierName
-	 * @param permissionType
-	 * @param roles
-	 * @return
+	 * @param tierName 			- name of api throttling tier
+	 * @param permissionType 	- permission type
+	 * @param roles				- roles of permission
+	 * @return http response object
 	 * @throws Exception
 	 */
-
 	public HttpResponse updatePermissions(String tierName, String permissionType, String roles)
 			throws Exception {
 
 		checkAuthentication();
 
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/tiers/ajax/tiers.jag")
+		return HttpRequestUtil
+				.doPost(new URL(backendURL + "publisher/site/blocks/tiers/ajax/tiers.jag")
 						,
 						"action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
 						permissionType + "&roles=" + roles
 						, requestHeaders
 				);
-
-		return response;
-	}
-
-	/**
-	 * create new API
-	 * @param provider
-	 * @param apiName
-	 * @param version
-	 * @param newVersion
-	 * @return
-	 * @throws Exception
-	 */
-	public HttpResponse createNewAPI(String provider, String apiName, String version,
-	                                 String newVersion) throws Exception {
-
-		checkAuthentication();
-
-		HttpResponse response = HttpRequestUtil
-				.doPost(new URL(backEndUrl + "publisher/site/blocks/overview/ajax/overview.jag")
-						, "action=createNewAPI" + "&provider=" + provider + "&apiName=" + apiName +
-						  "&version=" + version + "&newVersion=" + newVersion
-						, requestHeaders);
-
-		return response;
 	}
 
 	/**
 	 * update resources of API
-	 * @param provider
-	 * @param apiName
-	 * @param version
-	 * @param swaggerRes
-	 * @return
+	 * @param provider - provider name of creator
+	 * @param apiName  - name of api
+	 * @param version  - api version
+	 * @param swaggerRes - swagger doc
+	 * @return http response object
 	 * @throws Exception
 	 */
-
     public HttpResponse updateResourceOfAPI(String provider, String apiName, String version, String swaggerRes)
             throws Exception {
 
@@ -501,13 +331,12 @@ public class APIPublisherRestClient {
 
         this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+        return HttpRequestUtil.doPost(new URL(backendURL +
                 "publisher/site/blocks/item-design/ajax/add.jag")
                 , "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
                 version +"&swagger="+swaggerRes
                 , requestHeaders);
 
-		return response;
     }
 
 
@@ -517,7 +346,7 @@ public class APIPublisherRestClient {
      * @param apiName  Name of the API
      * @param provider Provider Name of the API
      * @param version  Version of the API
-     * @return Response of the getAPI request
+     * @return http response object
      * @throws Exception
      */
     public HttpResponse getAPI(String apiName, String provider, String version)
@@ -525,13 +354,10 @@ public class APIPublisherRestClient {
 
         checkAuthentication();
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
+        return HttpRequestUtil.doPost(new URL(backendURL +
                 "publisher/site/blocks/listing/ajax/item-list.jag")
                 , "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + ""
                 , requestHeaders);
-
-		return response;
-
     }
 
 	/**
@@ -556,7 +382,7 @@ public class APIPublisherRestClient {
 			requestParameters += "&requireResubscription=true";
 		}
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
+		return HttpRequestUtil.doPost(new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
 				, requestParameters, requestHeaders);
 
 	}
@@ -576,7 +402,7 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/listing/ajax/item-list.jag")
+		return HttpRequestUtil.doPost(new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag")
 				, "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
 
 	}
@@ -595,7 +421,7 @@ public class APIPublisherRestClient {
 
 		checkAuthentication();
 
-		return HttpRequestUtil.doPost(new URL(backEndUrl + "publisher/site/blocks/item-add/ajax/add.jag")
+		return HttpRequestUtil.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag")
 				, "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
 	}
 }

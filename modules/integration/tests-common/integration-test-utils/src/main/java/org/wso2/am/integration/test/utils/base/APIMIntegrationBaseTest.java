@@ -21,22 +21,20 @@ import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
-import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
-import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 
@@ -57,12 +55,14 @@ public class APIMIntegrationBaseTest {
     protected TestUserMode userMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrls;
 
+
     /**
-     * init basic class
+     * This method will initialize test environment
+     * based on user mode and configuration given at automation.xml
      *
-     * @throws Exception
+     * @throws APIManagerIntegrationTestException
      */
-    protected void init() throws Exception {
+    protected void init() throws APIManagerIntegrationTestException {
         userMode = TestUserMode.SUPER_TENANT_ADMIN;
         init(userMode);
     }
@@ -70,42 +70,88 @@ public class APIMIntegrationBaseTest {
     /**
      * init the object with user mode , create context objects and get session cookies
      *
-     * @param userMode
-     * @throws Exception
+     * @param userMode - user mode to run the tests
+     * @throws APIManagerIntegrationTestException
      */
-
-    protected void init(TestUserMode userMode) throws Exception {
+    protected void init(TestUserMode userMode) throws APIManagerIntegrationTestException {
 
         apimTestCaseUtils = new APIMTestCaseUtils();
 
-        storeContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
-        storeUrls = new APIMURLBean(storeContext.getContextUrls());
+        try {
 
-        publisherContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
-        publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
+            //create store server instance based on configuration given at automation.xml
+            storeContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_STORE_INSTANCE, userMode);
+            storeUrls = new APIMURLBean(storeContext.getContextUrls());
 
-        gatewayContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
-        gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
+            //create publisher server instance based on configuration given at automation.xml
+            publisherContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, userMode);
+            publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
+
+            //create gateway server instance based on configuration given at automation.xml
+            gatewayContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
+            gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
+
+        } catch (XPathExpressionException e) {
+            log.error("Init failed", e);
+            throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
+        }
 
     }
 
-    protected void init(String domainKey, String userKey, String instance) throws Exception {
-        /*apimContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_1ST_INSTANCE,
-                domainKey, userKey);
-        loginLogoutClient = new LoginLogoutClient(apimContext);
-        backendURL = apimContext.getContextUrls().getBackEndUrl();
-        webAppURL = apimContext.getContextUrls().getWebAppURL();*/
+    /**
+     * init the object with tenant domain, user key and instance of store,publisher and gateway
+     * create context objects and construct URL bean
+      * @param domainKey            - tenant domain key
+     * @param userKey               - tenant user key
+     * @param publisherInstance     - publisher instance name in automation.xml
+     * @param storeInstance         - store instance name in automation.xml
+     * @param gatewayInstance       - gateway instance name in automation.xml
+     * @throws APIManagerIntegrationTestException
+     */
+    protected void init(String domainKey, String userKey,
+                                     String publisherInstance, String storeInstance, String gatewayInstance)
+            throws APIManagerIntegrationTestException {
+
+        apimTestCaseUtils = new APIMTestCaseUtils();
+
+        try {
+
+            //create store server instance based configuration given at automation.xml
+            storeContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            storeInstance, domainKey, userKey);
+            storeUrls = new APIMURLBean(storeContext.getContextUrls());
+
+            //create publisher server instance
+            publisherContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            publisherInstance, domainKey, userKey);
+            publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
+
+            //create gateway server instance
+            gatewayContext =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            gatewayInstance, domainKey, userKey);
+            gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
+
+        } catch (XPathExpressionException e) {
+            log.error("Init failed", e);
+            throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
+        }
+
     }
 
     /**
      * proxy service URL of deployed server non secure
      *
-     * @param proxyServiceName
-     * @return
+     * @param proxyServiceName - name of proxy service
+     * @return                 - url of proxy service
      */
     protected String getProxyServiceURLHttp(String proxyServiceName) {
         try {
@@ -117,115 +163,136 @@ public class APIMIntegrationBaseTest {
         return null;
     }
 
-
     /**
-     * @param relativeFilePath
-     * @throws Exception
+     * @param relativeFilePath - file path to load config
+     * @throws                   APIManagerIntegrationTestException
      */
     protected void loadSynapseConfigurationFromClasspath(String relativeFilePath, AutomationContext automationContext,
-                                                         String sessionCookie) throws Exception {
+                                                         String sessionCookie) throws APIManagerIntegrationTestException {
         relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", Matcher
                 .quoteReplacement(File.separator));
 
-        OMElement synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
-        updateSynapseConfiguration(synapseConfig, automationContext, sessionCookie);
+        OMElement synapseConfig;
+        try {
+            synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
+        } catch (FileNotFoundException e) {
+            log.error("synapse config loading issue",e);
+            throw new APIManagerIntegrationTestException("synapse config loading issue",e);
+        } catch (XMLStreamException e) {
+            log.error("synapse config loading issue", e);
+            throw new APIManagerIntegrationTestException("synapse config loading issue",e);
+        }
+
+        try {
+            updateSynapseConfiguration(synapseConfig, automationContext, sessionCookie);
+        } catch (Exception e) {
+            log.error("synapse config loading issue", e);
+            throw new APIManagerIntegrationTestException("synapse config loading issue",e);
+        }
 
     }
 
     /**
-     * login and return session cookie
      *
-     * @param automationContext - created automation context
-     * @return - session cookie
-     * @throws IOException
-     * @throws XPathExpressionException
-     * @throws URISyntaxException
-     * @throws SAXException
-     * @throws XMLStreamException
-     * @throws LoginAuthenticationExceptionException
-     *
+     * @param automationContext - automation context instance of given server
+     * @return                  - created session cookie variable
+     * @throws                   APIManagerIntegrationTestException
      */
-
     protected String createSession(AutomationContext automationContext)
-            throws IOException, XPathExpressionException, URISyntaxException, SAXException,
-            XMLStreamException, LoginAuthenticationExceptionException {
-        LoginLogoutClient loginLogoutClient = new LoginLogoutClient(automationContext);
-        return loginLogoutClient.login();
+            throws APIManagerIntegrationTestException {
+        LoginLogoutClient loginLogoutClient;
+        try {
+            loginLogoutClient = new LoginLogoutClient(automationContext);
+            return loginLogoutClient.login();
+        } catch (Exception e) {
+            log.error("session creation error", e);
+            throw new APIManagerIntegrationTestException("session creation error",e);
+        }
     }
-
 
     /**
      * Get resources location for  test case
-     * @return
+     *
+     * @return - resource location file path
      */
     protected String getAMResourceLocation() {
         return FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
                 File.separator + "AM";
     }
 
-
     /**
-     * update API manager synapse configs
+     * update synapse config to  server
      *
-     * @param synapseConfig
-     * @throws Exception
+     * @param synapseConfig     - config to upload
+     * @param automationContext - automation context of the server instance
+     * @param sessionCookie     -  logged in session cookie
+     * @throws APIManagerIntegrationTestException - APIManagerIntegrationTestException
      */
     protected void updateSynapseConfiguration(OMElement synapseConfig, AutomationContext automationContext, String sessionCookie)
-            throws Exception {
+            throws APIManagerIntegrationTestException {
 
         if (synapseConfiguration == null) {
             synapseConfiguration = synapseConfig;
         } else {
-            Iterator<OMElement> itr = synapseConfig.cloneOMElement().getChildElements();
+            Iterator<OMElement> itr = synapseConfig.cloneOMElement().getChildElements();  //ToDo
             while (itr.hasNext()) {
                 synapseConfiguration.addChild(itr.next());
             }
         }
-        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, automationContext.getContextUrls().getBackEndUrl(),
-                sessionCookie);
 
-        if (automationContext.getProductGroup().isClusterEnabled()) {
-            long deploymentDelay =
-                    Long.parseLong(automationContext.getConfigurationValue("//deploymentDelay"));
-            Thread.sleep(deploymentDelay);
-            Iterator<OMElement> proxies = synapseConfig.getChildrenWithLocalName("proxy");
-            while (proxies.hasNext()) {
-                String proxy = proxies.next().getAttributeValue(new QName("name"));
+        try {
 
-                Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                        , "Deployment Synchronizing failed in workers");
-                Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                        , "Deployment Synchronizing failed in workers");
-                Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                        , "Deployment Synchronizing failed in workers");
+            apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, automationContext.getContextUrls().getBackEndUrl(),
+                    sessionCookie);
+
+            if (automationContext.getProductGroup().isClusterEnabled()) {
+                long deploymentDelay =
+                        Long.parseLong(automationContext.getConfigurationValue("//deploymentDelay"));
+                Thread.sleep(deploymentDelay);
+                Iterator<OMElement> proxies = synapseConfig.getChildrenWithLocalName("proxy"); //ToDo
+                while (proxies.hasNext()) {
+                    String proxy = proxies.next().getAttributeValue(new QName("name"));
+
+                    Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
+                            , "Deployment Synchronizing failed in workers");
+                    Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
+                            , "Deployment Synchronizing failed in workers");
+                    Assert.assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
+                            , "Deployment Synchronizing failed in workers");
+                }
             }
+
+        } catch (Exception e) {
+            log.error("synapse config  upload error", e);
+            throw new APIManagerIntegrationTestException("synapse config  upload error",e);
         }
     }
 
     /**
-     * isProxyWSDlExist
+     * check whether the proxy service wsdl exist
      *
-     * @param serviceUrl
-     * @param synchronizingDelay
-     * @return
-     * @throws Exception
+     * @param serviceUrl         - proxy service URL
+     * @param synchronizingDelay - delay to update
+     * @return                   - whether wsdl exist or not
+     * @throws APIManagerIntegrationTestException - APIManagerIntegrationTestException
      */
     private boolean isProxyWSDlExist(String serviceUrl, long synchronizingDelay)
-            throws Exception {
-        return new ServiceDeploymentUtil().isServiceWSDlExist(serviceUrl, synchronizingDelay);
+            throws APIManagerIntegrationTestException {
+        try {
+            return  ServiceDeploymentUtil.isServiceWSDlExist(serviceUrl, synchronizingDelay);
+        } catch (Exception e) {
+            log.error("wsdl lookup error", e);
+            throw new APIManagerIntegrationTestException("wsdl lookup error",e);
+        }
 
     }
-
-
-
 
     /**
      * clean up deployed artifacts and other services
      *
-     * @throws Exception
+     * @throws APIManagerIntegrationTestException
      */
-
-    protected void cleanup() throws Exception {
+    protected void cleanup() throws APIManagerIntegrationTestException {
 
     }
 

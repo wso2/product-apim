@@ -44,8 +44,8 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     private static final String TEST_TAG = "Tag3";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
-        super.init();
+    public void initialize() throws Exception {
+        super.initialize();
         apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
 
         apiTagsMapBeforeChange = new HashMap<String, String>();
@@ -154,7 +154,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanup() throws Exception {
+    public void destroy() throws Exception {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             APIIdentifier apiIdentifier = new APIIdentifier(API1_PROVIDER_NAME, apiName, API_VERSION1);

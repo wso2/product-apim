@@ -72,7 +72,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
     private static final String SUBSCRIBER_ROLE = "subscriber";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
 
         //Initialize publisher and store.

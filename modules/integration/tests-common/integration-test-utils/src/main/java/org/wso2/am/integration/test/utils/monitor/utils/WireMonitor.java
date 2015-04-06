@@ -90,7 +90,8 @@ class WireMonitor extends Thread {
 			out.flush();
 
 
-		} catch (IOException ioException) {
+		} catch (IOException ioException) { //Throw run exception - IllegalStateException
+			throw new IllegalStateException("wire monitor error occurred",ioException);
 
 		} finally {
 

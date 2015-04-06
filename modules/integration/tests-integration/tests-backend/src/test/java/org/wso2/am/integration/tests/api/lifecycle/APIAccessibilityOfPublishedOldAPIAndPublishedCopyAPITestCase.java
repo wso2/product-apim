@@ -50,8 +50,8 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
     private String applicationName;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
-        super.init();
+    public void initialize() throws Exception {
+        super.initialize();
         apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
         apiIdentifierAPI1Version2 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION2);
         applicationName = (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
@@ -170,7 +170,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanup() throws Exception {
+    public void destroy() throws Exception {
         apiStoreClientUser1.removeApplication(applicationName);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);

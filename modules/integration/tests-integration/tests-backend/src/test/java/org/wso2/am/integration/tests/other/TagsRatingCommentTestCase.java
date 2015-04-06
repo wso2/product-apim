@@ -44,7 +44,7 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         /*
        This test can point to external API manager deployment without adding any resources to system

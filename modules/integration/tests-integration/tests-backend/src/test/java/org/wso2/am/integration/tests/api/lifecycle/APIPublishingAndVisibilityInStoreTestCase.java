@@ -41,8 +41,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     private APIIdentifier apiIdentifierAPI1Version1;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
-        super.init();
+    public void initialize() throws Exception {
+        super.initialize();
         apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
     }
 
@@ -107,7 +107,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanup() throws Exception {
+    public void destroy() throws Exception {
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
     }
 

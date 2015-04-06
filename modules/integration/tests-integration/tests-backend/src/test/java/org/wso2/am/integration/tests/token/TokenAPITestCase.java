@@ -50,7 +50,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         /*
           If test run in external distributed deployment you need to copy following resources accordingly.

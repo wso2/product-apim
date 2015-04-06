@@ -27,6 +27,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
@@ -98,7 +99,7 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void stop() throws Exception {
+    public void stop() throws APIManagerIntegrationTestException {
         cleanup();
     }
 }

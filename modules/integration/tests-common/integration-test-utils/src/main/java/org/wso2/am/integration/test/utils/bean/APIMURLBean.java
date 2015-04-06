@@ -29,14 +29,14 @@ import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
 
 public class APIMURLBean {
 
-    private String webAppURLHttp; // http://localhost:9763
-    private String webAppURLHttps; // https://localhost:9443
-    private String webAppURLNhttp; // http://localhost:8280
-    private String webAppURLNhttps; // https://localhost:8243
+    private String webAppURLHttp; // web app URL http , ex : http://localhost:9763
+    private String webAppURLHttps; // web app URL https , ex: https://localhost:9443
+    private String webAppURLNhttp; // web app URL nhttp, ex: http://localhost:8280
+    private String webAppURLNhttps; // web app URL nhttps, ex: https://localhost:8243
 
     /**
-     * base constructor
-     * @param contextUrls
+     * construct basic URL's to be used from the given automation context object
+     * @param contextUrls - context url object of automation context
      */
 
     public APIMURLBean(ContextUrls contextUrls) {

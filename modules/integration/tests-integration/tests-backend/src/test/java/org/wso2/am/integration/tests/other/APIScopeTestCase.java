@@ -64,7 +64,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         super.init();
 

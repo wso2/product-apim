@@ -27,7 +27,7 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 
 public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBaseTest {
 	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
+	public void setEnvironment() throws Exception {
 		super.init();
 	}
 

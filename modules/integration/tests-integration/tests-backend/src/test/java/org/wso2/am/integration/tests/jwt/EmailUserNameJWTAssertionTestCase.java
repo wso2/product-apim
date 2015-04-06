@@ -56,9 +56,8 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(EmailUserNameJWTAssertionTestCase.class);
 
-    @Override
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         APIPublisherRestClient apiPublisher;
         String publisherURLHttp;
 

@@ -51,7 +51,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
     private String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         gatewaySessionCookie = createSession(gatewayContext);
         //Initialize publisher and store.
