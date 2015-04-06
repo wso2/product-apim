@@ -27,8 +27,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -38,7 +37,7 @@ import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import java.io.File;
 import java.io.IOException;
 
-public class APIMANAGER3357ContentTypeTestCase extends AMIntegrationBaseTest {
+public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
     public WireMonitorServer wireServer;
 
     @BeforeClass(alwaysRun = true)
@@ -46,14 +45,14 @@ public class APIMANAGER3357ContentTypeTestCase extends AMIntegrationBaseTest {
         super.init();
         wireServer = new WireMonitorServer(8991);
 
-        AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
+        AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
         String session = login.login("admin", "admin", "localhost");
         // Upload the synapse
         String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
                 File.separator + "property" + File.separator +
                 "CONTENT_TYPE_TEST.xml";
         OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
-        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
+        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
                 session);
         Thread.sleep(5000);
 
