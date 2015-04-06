@@ -122,6 +122,10 @@ public class PageHandler {
         driver.findElement(By.cssSelector(getElementByKey(cssSelector))).click();
     }
 
+    protected void clearTextBoxById(String id) throws IOException {
+        driver.findElement(By.id(getElementByKey(id))).clear();
+    }
+
 
     /**
      * Wait until the given element to be visible by element Link Text. Max Waiting time should provide as second parameter.

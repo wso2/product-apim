@@ -48,6 +48,8 @@ public class APIMTestConstants {
     public static final String PUBLISHER_HOME_PAGE_URL_VERIFICATION = "publisher/site/pages/index.jag";
     public static final String STORE_HOME_PAGE_URL_VERIFICATION = "store/";
     public static final String STORE_REST_CLIENT_URL_VERIFICATION = "/rest-client.jag?";
+    public static final String ADMIN_DASHBOARD_LOGIN_PAGE_URL_VERIFICATION = "login.jag?requestedPage=/admin-dashboard/";
+    public static final String ADMIN_DASHBOARD_CONFIGURE_ANALYTICS_PAGE_URL_VERIFICATION = "admin-dashboard/analytics";
 
     public static final long MAX_LOOP_WAIT_TIME_MILLISECONDS = 60000;
     public static final long WAIT_TIME_VISIBILITY_ELEMENT_SECONDS = 60;
