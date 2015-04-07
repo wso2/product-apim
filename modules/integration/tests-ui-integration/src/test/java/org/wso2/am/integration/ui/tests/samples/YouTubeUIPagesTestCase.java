@@ -70,7 +70,7 @@ public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {
         assertEquals(publisherHomePage.getAPIViewText(), API_DESCRIPTION, API_DESCRIPTION + " Should appear in API List");
         publisherHomePage.logOut();
         //Navigate to Store
-        driver.get(getStoreURL());
+        driver.get(getStoreURL() + "/?tenant=carbon.super");
         StoreHomePage storeHomePage = new StoreHomePage(driver);
         storeHomePage.loginAs(userInfo.getUserName(), userInfo.getPassword());
         APIAccessInfo apiAccessInfo = storeHomePage.doSubscribe(API_NAME + APIMTestConstants.HYPHEN + API_VERSION);

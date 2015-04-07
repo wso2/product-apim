@@ -43,6 +43,7 @@ public class APIMTestConstants {
     public static final String BEARER = "Bearer";
     public static final String SPACE = " ";
     public static final String HYPHEN = "-";
+    public static final String COLON = ":";
 
     public static final String PUBLISHER_LOGIN_PAGE_URL_VERIFICATION = "login.jag?requestedPage=/publisher/";
     public static final String PUBLISHER_HOME_PAGE_URL_VERIFICATION = "publisher/site/pages/index.jag";
