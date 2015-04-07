@@ -24,7 +24,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -41,7 +41,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
+public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private UserManagementClient userManagementClient;
@@ -49,20 +49,22 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     //move to base class
     private String publisherURLHttp;
     private String storeURLHttp;
+    private String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
         super.init();
+        gatewaySessionCookie = createSession(gatewayContext);
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
         userManagementClient = new UserManagementClient(
-                apimContext.getContextUrls().getBackEndUrl(), getSessionCookie());
+                gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 
         tenantManagementServiceClient = new TenantManagementServiceClient(
-                apimContext.getContextUrls().getBackEndUrl(), getSessionCookie());
+                gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")
@@ -81,14 +83,12 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String apiContextAddedValue = APIContext + "/" + APIVersion;
 
         //add all option methods
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisher.addAPI(apiRequest);
@@ -110,11 +110,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
            assertTrue(tags.contains(tag), "API tag data mismatched");
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         apiStore.addApplication("APILifeCycleTestAPI-application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName("APILifeCycleTestAPI-application");
         apiStore.subscribe(subscriptionRequest);
 
@@ -133,7 +133,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         Thread.sleep(60000);
         //  for (int i = 0; i < 19; i++) {
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -144,11 +144,11 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
         //Assert.assertEquals(youTubeResponse.getResponseCode(), 503, "Response code mismatched");
         //Thread.sleep(60000);
-        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         requestHeaders.clear();
         requestHeaders.put("Authorization", "Bearer " + "-wrong-tokent-text-");
-        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", null);
+        HttpResponse youTubeResponseError = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", null);
         assertEquals(youTubeResponseError.getResponseCode(), 401, "Response code mismatched");
 
         apiStore.getAllPublishedAPIs();
@@ -187,7 +187,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //Test case to create new application and make subscriptions to that application
         SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest1.setApplicationName("test-application");
         apiStore.subscribe(subscriptionRequest1);
         GenerateAppKeyRequest generateAppKeyRequest1 = new GenerateAppKeyRequest("test-application");
@@ -196,9 +196,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         String accessToken1 = response1.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeaders1 = new HashMap<String, String>();
         requestHeaders1.put("Authorization", "Bearer " + accessToken1);
-        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+        HttpResponse youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", requestHeaders1);
         for (int i = 0; i < 40; i++) {
-            youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"/testAPI/1.0.0/most_popular", requestHeaders1);
+            youTubeResponseTestApp = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", requestHeaders1);
         }
         assertEquals(youTubeResponseTestApp.getResponseCode(), 503, "Response code mismatched");
 
@@ -237,9 +237,9 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         //Try invalid login to publisher
         try {
-            apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName()
+            apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName()
                     + "invalid",
-                    apimContext.getContextTenant().getContextUser().getPassword());
+                    publisherContext.getContextTenant().getContextUser().getPassword());
         } catch (Exception e) {
             assertTrue(e.getMessage().toString().contains(
                     "Please recheck the username and password and try again"),
@@ -316,8 +316,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
                 new String[]{"Internal/everyone"}, null);
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         addPublicAPI(apiPublisherRestClient);
         addVisibleToDomainOnlyAPI(apiPublisherRestClient);
@@ -336,8 +336,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
   Assert.assertTrue(bPublishedAPI, "Anonymous user can view other API's");*/
 
         APIStoreRestClient apiStore1 = new APIStoreRestClient(storeURLHttp);
-        apiStore1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore1.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         publishedAPIs = apiStore1.getAllPublishedAPIs().getData();
         bPublishedAPI = false;
 
@@ -383,16 +383,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //add all option methods
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersionOld);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
@@ -413,8 +411,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest2);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -426,7 +424,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //subscribe to the old API version
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         apiData = apiStore.subscribe(subscriptionRequest).getData();
 
         Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
@@ -453,13 +451,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testAPI/1.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testAPI/2.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -482,15 +480,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //add all option methods
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersionOld);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
@@ -502,8 +498,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest1);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -546,16 +542,14 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //add all option methods
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersionOld);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
@@ -586,8 +580,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest3);
 
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         String apiData = apiStore.getAllPublishedAPIs().getData();
 
@@ -599,7 +593,7 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         //subscribe to the old API version
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         apiData = apiStore.subscribe(subscriptionRequest).getData();
 
         Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
@@ -626,13 +620,13 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         //check rating
         Thread.sleep(60000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/1.0.0/most_popular"), requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testAPI/1.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<entry>"), "Response data mismatched");
 
-        youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("/testAPI/2.0.0/most_popular"), requestHeaders);
+        youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testAPI/2.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
         Assert.assertTrue(youTubeResponse.getData().contains("<category"), "Response data mismatched");
@@ -655,8 +649,6 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("public");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion
@@ -681,9 +673,6 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products/" +
-                "bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMex" +
-                "TestProcess/echo.wsdl");
         apiRequest.setVisibility("private");
         apiPublisherRestClient.addAPI(apiRequest);
         //add assertion;
@@ -709,9 +698,6 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk" +
-                "/products/bps/modules/samples/product/src/main/resources/bpel" +
-                "/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisherRestClient.addAPI(apiRequest);
@@ -732,8 +718,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
 
         APIStoreRestClient apiStoreRestClient1 = new APIStoreRestClient(storeURLHttp);
 
-        apiStoreRestClient1.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStoreRestClient1.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         tenantManagementServiceClient.addTenant("wso2.com", "wso2@123", "wso2", "Gold");
 
@@ -848,8 +834,8 @@ public class APIApplicationLifeCycleTestCase extends AMIntegrationBaseTest {
     public void destroy() throws Exception {
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisherRestClient.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         /*apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIPublic", "1.0.0", "admin");
         apiPublisherRestClient.deleteAPI("APILifeCycleTestAPIDomainOnly", "1.0.0", "admin");

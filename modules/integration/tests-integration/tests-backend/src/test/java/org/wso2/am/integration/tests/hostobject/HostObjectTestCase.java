@@ -26,7 +26,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -48,7 +48,7 @@ import java.util.Map;
 
 import static org.testng.Assert.*;
 
-public class HostObjectTestCase extends AMIntegrationBaseTest {
+public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -66,7 +66,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         */
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator +
                 "configFiles/hostobjecttest/" +
@@ -80,10 +80,10 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
     }
 
     private void copySampleFile(String sourcePath, String destPath) {
@@ -157,7 +157,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
         apiStore.addApplication("HostObjectTestAPI-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant()
+                storeContext.getContextTenant()
                         .getContextUser()
                         .getUserName());
         subscriptionRequest.setApplicationName("HostObjectTestAPI-Application");
@@ -188,7 +188,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         String finalOutputPublisher = null;
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "/testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -211,7 +211,7 @@ public class HostObjectTestCase extends AMIntegrationBaseTest {
         Thread.sleep(20000);
         //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "/testapp/testStore.jag");
+            URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "testapp/testStore.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));

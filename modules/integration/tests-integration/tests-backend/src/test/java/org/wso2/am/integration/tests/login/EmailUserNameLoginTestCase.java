@@ -25,7 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.admin.clients.rest.api.WorkFlowAdminRestClient;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -49,7 +49,7 @@ import static org.testng.Assert.assertEquals;
  * store and admin-dashboard. modified api manager configurations can be found in
  * configFiles/emailusernametest location
  */
-public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
+public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -76,12 +76,10 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
                         File.separator + "carbon.xml";
 
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
         serverConfigurationManager.applyConfiguration(new File(carbonXml));
-
-        super.init();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -92,13 +90,13 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Email username login test case")
     public void LoginWithEmailUserNameTestCase() throws Exception {
 
-        String userNameWithEmail = apimContext.getContextTenant().getTenantUser("userKey1").getUserName() + "@wso2.com";
-        String password = apimContext.getContextTenant().getTenantUser("userKey1").getPassword();
+        String userNameWithEmail = gatewayContext.getContextTenant().getTenantUser("userKey1").getUserName() + "@wso2.com";
+        String password = gatewayContext.getContextTenant().getTenantUser("userKey1").getPassword();
         String domainName = "tenant.com";
         String fullUserName = userNameWithEmail + "@" + domainName;
         boolean isSuccessful =
                 createTenantWithEmailUserName(userNameWithEmail, password,
-                        domainName, apimContext.getContextUrls().getBackEndUrl());
+                        domainName, gatewayContext.getContextUrls().getBackEndUrl());
         assertEquals(isSuccessful, true);
 
         HttpResponse login;
@@ -135,8 +133,8 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
         TenantMgtAdminServiceStub tenantMgtAdminServiceStub =
                 new TenantMgtAdminServiceStub(
                         endPoint);
-        AuthenticateStub.authenticateStub(apimContext.getSuperTenant().getContextUser().getUserName(),
-                apimContext.getSuperTenant().getContextUser().getUserName(), tenantMgtAdminServiceStub);
+        AuthenticateStub.authenticateStub(gatewayContext.getSuperTenant().getContextUser().getUserName(),
+                gatewayContext.getSuperTenant().getContextUser().getUserName(), tenantMgtAdminServiceStub);
 
         Date date = new Date();
         Calendar calendar = new GregorianCalendar();
@@ -149,8 +147,8 @@ public class EmailUserNameLoginTestCase extends AMIntegrationBaseTest {
         tenantInfoBean.setAdmin(userNameWithEmail);
         tenantInfoBean.setTenantDomain(domainName);
         tenantInfoBean.setCreatedDate(calendar);
-        tenantInfoBean.setFirstname(apimContext.getContextTenant().getContextUser().getUserName());
-        tenantInfoBean.setLastname(apimContext.getContextTenant().getContextUser().getUserName()
+        tenantInfoBean.setFirstname(gatewayContext.getContextTenant().getContextUser().getUserName());
+        tenantInfoBean.setLastname(gatewayContext.getContextTenant().getContextUser().getUserName()
                 + "wso2automation");
         tenantInfoBean.setSuccessKey("true");
         tenantInfoBean.setUsagePlan("demo");

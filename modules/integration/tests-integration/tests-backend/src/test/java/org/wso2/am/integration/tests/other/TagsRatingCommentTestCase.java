@@ -23,7 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIMgtTestUtil;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -38,7 +38,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
+public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -56,10 +56,10 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
@@ -69,7 +69,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         String tags = "youtube, video, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = apimContext.getContextTenant().getContextUser().getUserName();
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
 
         // This is because with the new context version strategy, if the context does not have the {version} param ,
@@ -101,7 +101,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 
         apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                apimContext.getContextTenant()
+                storeContext.getContextTenant()
                         .getContextUser()
                         .getUserName());
         subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
@@ -125,7 +125,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
         for (int i = 0; i < 19; i++) {
 
             HttpResponse youTubeResponse = HttpRequestUtil
-                    .doGet(gatewayUrls.getWebAppURLNhttp() + "/commentRating/1.0.0/most_popular",
+                    .doGet(gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/most_popular",
                             requestHeaders);
 
             assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -143,7 +143,7 @@ public class TagsRatingCommentTestCase extends AMIntegrationBaseTest {
 
         Thread.sleep(60000);
         HttpResponse youTubeResponse1 = HttpRequestUtil
-                .doGet(gatewayUrls.getWebAppURLNhttp() + "/commentRating/1.0.0/most_popular", null);
+                .doGet(gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/most_popular", null);
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         // URL url1 = new URL(url);
         // HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");

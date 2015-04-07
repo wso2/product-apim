@@ -301,7 +301,7 @@
         <EnableJWTCache>false</EnableJWTCache>
 
         <!--
-            Enable/Disable API key validation information caching at key-management server
+            Enable/Disable API key verification information caching at key-management server
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
@@ -323,7 +323,7 @@
 	<EnableThriftServer>true</EnableThriftServer>
 	<!--
 	   This parameter is used to specify Thrift server host name. In a distributed deployment we must set this parameter
-	   if keymanager running on separate machine. Gateway use this parameter to connect key validation thrift service
+	   if keymanager running on separate machine. Gateway use this parameter to connect key verification thrift service
 	-->
 	<!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
 

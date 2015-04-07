@@ -27,48 +27,48 @@ import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
  *
  */
 
-public class URLBean {
+public class APIMURLBean {
 
-    ContextUrls contextUrls = null;
     private String webAppURLHttp; // http://localhost:9763
-    private String webAppURLHttps; // http://localhost:9443
+    private String webAppURLHttps; // https://localhost:9443
     private String webAppURLNhttp; // http://localhost:8280
-    private String webAppURLNhttps; // http://localhost:8243
-
+    private String webAppURLNhttps; // https://localhost:8243
 
     /**
      * base constructor
      * @param contextUrls
      */
 
-    public URLBean(ContextUrls contextUrls) {
-        this.contextUrls = contextUrls;
-        buildUrls();
+    public APIMURLBean(ContextUrls contextUrls) {
+
+        String tempUrl = contextUrls.getBackEndUrl();
+
+        webAppURLHttp = contextUrls.getWebAppURL() + "/";
+
+        if (tempUrl.endsWith("/services/")) {
+            tempUrl = tempUrl.replace("/services/", "");
+        }
+
+        webAppURLHttps = tempUrl + "/";
+
+        tempUrl = contextUrls.getServiceUrl();
+
+        if (tempUrl.endsWith("/services")) {
+            tempUrl = tempUrl.replace("/services", "");
+        }
+
+        webAppURLNhttp = tempUrl + "/";
+
+        tempUrl = contextUrls.getSecureServiceUrl();
+
+        if (tempUrl.endsWith("/services")) {
+            tempUrl = tempUrl.replace("/services", "");
+        }
+
+        webAppURLNhttps = tempUrl + "/";
+
+
     }
-
-    private void buildUrls() {
-
-        webAppURLHttp = contextUrls.getWebAppURL();
-
-        webAppURLHttps = contextUrls.getBackEndUrl();
-
-        if (webAppURLHttps.endsWith("/services/")) {
-            webAppURLHttps = webAppURLHttps.replace("/services/", "");
-        }
-
-        webAppURLNhttp = contextUrls.getServiceUrl();
-
-        if (webAppURLNhttp.endsWith("/services")) {
-            webAppURLNhttp = webAppURLNhttp.replace("/services", "");
-        }
-
-        webAppURLNhttps = contextUrls.getServiceUrl();
-
-        if (webAppURLNhttps.endsWith("/services")) {
-            webAppURLNhttps = webAppURLNhttps.replace("/services", "");
-        }
-    }
-
 
     public String getWebAppURLHttp() {
         return webAppURLHttp;
