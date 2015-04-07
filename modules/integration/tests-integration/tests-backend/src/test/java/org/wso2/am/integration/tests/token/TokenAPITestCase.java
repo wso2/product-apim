@@ -115,8 +115,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Generate sandbox Token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequestSandBox =
-                new GenerateAppKeyRequest("TokenTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequestSandBox =
+                new APPKeyRequestGenerator("TokenTestAPI-Application");
         generateAppKeyRequestSandBox.setKeyType("SANDBOX");
         String responseStringSandBox =
                 apiStore.generateApplicationKey(generateAppKeyRequestSandBox).getData();
@@ -133,8 +133,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("TokenTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("TokenTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         /*Response would be like -

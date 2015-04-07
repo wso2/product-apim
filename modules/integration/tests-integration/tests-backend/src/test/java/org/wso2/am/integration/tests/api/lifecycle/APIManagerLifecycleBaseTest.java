@@ -195,7 +195,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected String getAccessToken(APIStoreRestClient storeRestClient) throws Exception {
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultApplication");
         String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -212,7 +212,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected String getAccessToken(APIStoreRestClient storeRestClient, String applicationName) throws Exception {
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(applicationName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

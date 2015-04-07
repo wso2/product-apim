@@ -23,7 +23,6 @@ package org.wso2.am.integration.test.utils;
  */
 public class APIManagerIntegrationTestException extends Exception {
 
-
     /**
      * Constructor for the custom Exception  class APIManagerIntegrationTestException.
      *
@@ -31,10 +30,8 @@ public class APIManagerIntegrationTestException extends Exception {
      * @param throwable - Original Exception.
      */
     public APIManagerIntegrationTestException(String message, Throwable throwable) {
-
         super(message, throwable);
     }
-
 
     /**
      * Constructor for the custom Exception  class APIManagerIntegrationTestException.
@@ -44,6 +41,4 @@ public class APIManagerIntegrationTestException extends Exception {
     public APIManagerIntegrationTestException(String message) {
         super(message);
     }
-
-
 }

@@ -105,14 +105,14 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
         // Check availability of old API version in API Store
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
                 "Old version Api is not visible in API Store after publish new version." + getAPIIdentifierString(
                         apiIdentifierAPI1Version1));
 
         // Check availability of new API version in API Store
         apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList), true,
                 "New version Api is not visible in API Store after publish new version." + getAPIIdentifierString(
                         apiIdentifierAPI1Version2));

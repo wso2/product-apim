@@ -71,7 +71,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreBeforePublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
                 "Api is visible in API Store before publish." + getAPIIdentifierString(apiIdentifierAPI1Version1));
     }
@@ -99,7 +99,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreAfterPublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
+                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
                 "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
 

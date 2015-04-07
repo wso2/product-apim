@@ -156,7 +156,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName(ApplicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(ApplicationName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(ApplicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -275,7 +275,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName(ApplicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(ApplicationName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(ApplicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -349,7 +349,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName(ApplicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(ApplicationName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(ApplicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();

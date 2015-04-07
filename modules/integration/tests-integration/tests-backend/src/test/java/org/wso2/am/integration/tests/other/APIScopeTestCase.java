@@ -153,7 +153,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(APP_NAME);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject jsonResponse = new JSONObject(responseString);
 

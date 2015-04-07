@@ -29,7 +29,8 @@ public abstract class AbstractRequest {
 
     /**
      * generate request params to send in http request, with default action
-     * @return
+     *
+     * @return - request parameters
      */
     public String generateRequestParameters() {
         parameterMap.clear();
@@ -46,28 +47,23 @@ public abstract class AbstractRequest {
 
     /**
      * generate request params to send in http request, with given action
-     * @param actionName
-     * @return
+     *
+     * @param actionName - Request action name
+     * @return - request params
      */
-
     public String generateRequestParameters(String actionName) {
         parameterMap.clear();
         setAction();
         init();
         String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
-        Iterator<String> irt = parameterMap.keySet().iterator();
-        while (irt.hasNext()) {
-            String key = irt.next();
+
+        for (String key : (Iterable<String>) parameterMap.keySet()) {
             requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
         }
+
         return requestParams;
     }
 
-    /**
-     * add parameter
-     * @param key
-     * @param value
-     */
     public void addParameter(String key, String value) {
         parameterMap.put(key, value);
     }

@@ -21,28 +21,27 @@ package org.wso2.am.integration.test.utils.bean;
 import org.wso2.carbon.automation.engine.context.beans.ContextUrls;
 
 /**
- * this class creates basic URL's that needs to be used
+ * this class creates basic URLs that needs to be used
  * Do not hard code any web app names in this class, construct them outside
- * make sure you have enabled nonBlockingTransportEnabled="true"
- *
+ * make sure you have enabled nonBlockingTransportEnabled="true" in product group instance
+ * at automation.xml
  */
-
 public class APIMURLBean {
 
-    private String webAppURLHttp; // web app URL http , ex : http://localhost:9763
-    private String webAppURLHttps; // web app URL https , ex: https://localhost:9443
+    private String webAppURLHttp; // web app URL http, ex : http://localhost:9763
+    private String webAppURLHttps; // web app URL https, ex: https://localhost:9443
     private String webAppURLNhttp; // web app URL nhttp, ex: http://localhost:8280
     private String webAppURLNhttps; // web app URL nhttps, ex: https://localhost:8243
 
     /**
      * construct basic URL's to be used from the given automation context object
+     *
      * @param contextUrls - context url object of automation context
      */
 
     public APIMURLBean(ContextUrls contextUrls) {
 
         String tempUrl = contextUrls.getBackEndUrl();
-
         webAppURLHttp = contextUrls.getWebAppURL() + "/";
 
         if (tempUrl.endsWith("/services/")) {

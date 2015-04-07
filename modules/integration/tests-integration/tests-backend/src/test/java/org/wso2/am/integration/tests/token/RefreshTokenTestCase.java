@@ -104,8 +104,8 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("RefreshTokenTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("RefreshTokenTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
 
