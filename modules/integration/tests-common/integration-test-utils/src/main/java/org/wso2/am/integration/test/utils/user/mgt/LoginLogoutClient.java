@@ -57,6 +57,8 @@ public class LoginLogoutClient {
      * Log in to a Carbon server
      *
      * @return The session cookie on successful login
+     * @throws LoginAuthenticationExceptionException, IOException, XMLStreamException,
+     *                                                URISyntaxException, SAXException, XPathExpressionException
      */
     public String login()
             throws LoginAuthenticationExceptionException, IOException, XMLStreamException,
