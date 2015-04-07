@@ -318,11 +318,24 @@
                 <include>**/**.xml</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
             <includes>
                 <include>**/**</include>
+            </includes>
+        </fileSet>-->
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/lifecycle-config.xsd</include>
+                <include>**/rxt.xsd</include>
+                <include>**/scxml.xsd</include>
+                <include>**/services-config.xml</include>
+                <include>**/services-config.xsd</include>
+                <include>**/service-ui-config.xsd</include>
+                <include>**/lifecycles/ServiceLifeCycle.xml</include>
             </includes>
         </fileSet>
         <fileSet>
