@@ -34,8 +34,9 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 public class APIMANAGER3277SSOLogin extends AMIntegrationUiTestBase {
 
 	private WebDriver driver;
-	private String TEST_DATA_PASSWORD = "admin", TEST_DATA_FULL_USERNAME = "admin@carbon.super";
-	protected String publisherURL;
+       private String TEST_DATA_PASSWORD = "admin", TEST_DATA_FULL_USERNAME = "admin@carbon.super",
+            USERNAME_FIELD = "username", PASSWORD_FIELD = "password";
+       protected String publisherURL;
 
 	@BeforeClass(alwaysRun = true)
 	protected void init() throws Exception {
@@ -50,14 +51,14 @@ public class APIMANAGER3277SSOLogin extends AMIntegrationUiTestBase {
 		// login to publisher
 		driver.get(publisherURL + "/site/pages/login.jag");
 		// wait until load the page
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
-		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(TEST_DATA_FULL_USERNAME);
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(USERNAME_FIELD)));
+		driver.findElement(By.id(USERNAME_FIELD)).clear();
+		driver.findElement(By.id(USERNAME_FIELD)).sendKeys(TEST_DATA_FULL_USERNAME);
 
 		// this is the password field in IS sso login page
-		if (driver.findElement(By.id("password")) != null) {
-			driver.findElement(By.id("password")).clear();
-			driver.findElement(By.id("password")).sendKeys(TEST_DATA_PASSWORD);
+		if (driver.findElement(By.id(PASSWORD_FIELD)) != null) {
+			driver.findElement(By.id(PASSWORD_FIELD)).clear();
+			driver.findElement(By.id(PASSWORD_FIELD)).sendKeys(TEST_DATA_PASSWORD);
 
 			driver.findElement(By.cssSelector(".btn")).click();
 		}
