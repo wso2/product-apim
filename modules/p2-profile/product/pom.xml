@@ -253,7 +253,7 @@
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:4.2.1</featureArtifactDef>
                 		        <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.logging.mgt.feature:4.2.2</featureArtifactDef>
-				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.relying.party.server.feature:4.2.2</featureArtifactDef>
+				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.relying.party.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.user.profile.feature:4.2.5-SNAPSHOT</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.databridge.datapublisher.feature:4.2.1</featureArtifactDef>
@@ -375,7 +375,7 @@
                                 <!--Identity Feature-->
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.user.mgt.feature:4.2.2</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.core.feature:4.2.5-SNAPSHOT</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.provider.server.feature:4.2.4</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.provider.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.self.registration.server.feature:4.2.2</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.oauth.feature:4.2.5-SNAPSHOT</featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.oauth.server.feature:4.2.4</featureArtifactDef-->
@@ -521,7 +521,7 @@
                                 </feature>
 				<feature>
 					<id>org.wso2.carbon.identity.relying.party.server.feature.group</id>
-					<version>4.2.2</version>
+					<version>4.2.5-SNAPSHOT</version>
 				</feature>
                                 <feature>
                                     <id>org.wso2.carbon.as.runtimes.cxf.feature.group</id>
@@ -742,7 +742,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.oauth.feature.group</id>
@@ -1146,7 +1146,7 @@
                                 </feature>
                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.feature.group</id>
@@ -1492,7 +1492,7 @@
                                 </feature>
                                <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.feature.group</id>
@@ -1879,7 +1879,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.oauth.feature.group</id>
@@ -2293,7 +2293,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.oauth.feature.group</id>
@@ -2671,7 +2671,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
