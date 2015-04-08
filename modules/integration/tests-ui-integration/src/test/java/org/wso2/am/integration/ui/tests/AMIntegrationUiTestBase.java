@@ -21,7 +21,7 @@ package org.wso2.am.integration.ui.tests;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.integration.test.utils.base.AMIntegrationConstants;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.configurations.UrlGenerationUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -76,8 +76,8 @@ public class AMIntegrationUiTestBase {
     }
 
     protected void init(String domainKey, String userKey) throws Exception {
-        apimContext = new AutomationContext(AMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                            AMIntegrationConstants.AM_1ST_INSTANCE,
+        apimContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                            APIMIntegrationConstants.AM_1ST_INSTANCE,
                                             domainKey, userKey);
         loginLogoutClient = new LoginLogoutClient(apimContext);
         sessionCookie = loginLogoutClient.login();

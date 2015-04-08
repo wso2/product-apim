@@ -24,7 +24,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -40,7 +40,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class APIScopeTestCase extends AMIntegrationBaseTest {
+public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIScopeTestCase.class);
 
@@ -68,7 +68,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         super.init();
 
-        apiProvider = apimContext.getSuperTenant().getContextUser().getUserName();
+        apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
@@ -83,9 +83,9 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        userManagementClient = new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(),
-                apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(),
+                gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
 
         // adding new role subscriber
         userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
@@ -101,8 +101,8 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         String url = "http://www.thomas-bayer.com/sqlrest/";
         String description = "This is a test API created by API manager integration test";
 
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -145,8 +145,8 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         // For Admin user
         // create new application and subscribing
-        apiStore.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
         subscriptionRequest.setApplicationName(APP_NAME);
@@ -161,7 +161,7 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/token");
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
@@ -171,8 +171,8 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
 
         //Obtain user access token for Admin
         requestBody = "grant_type=password&username=" +
-                apimContext.getSuperTenant().getTenantAdmin().getUserName() + "&password="
-                + apimContext.getSuperTenant().getTenantAdmin().getPassword() + "&scope=admin_scope user_scope";
+                storeContext.getSuperTenant().getTenantAdmin().getUserName() + "&password="
+                + storeContext.getSuperTenant().getTenantAdmin().getPassword() + "&scope=admin_scope user_scope";
         accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                 requestBody, tokenEndpointURL)
                 .getData());
@@ -182,12 +182,12 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testScopeAPI/1.0.0/ITEM", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Admin user cannot access the GET Method");
 
         // Accessing POST method
-        endPointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/testScopeAPI/1.0.0/PRODUCT/35");
+        endPointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "testScopeAPI/1.0.0/PRODUCT/35");
         response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Admin user cannot access the POST Method");
@@ -204,13 +204,13 @@ public class APIScopeTestCase extends AMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "testScopeAPI/1.0.0/ITEM", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "User John cannot access the GET Method");
 
         try {
             // Accessing POST method
-            endPointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "/testScopeAPI/1.0.0/PRODUCT/35");
+            endPointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "testScopeAPI/1.0.0/PRODUCT/35");
             response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
             assertTrue(response.getResponseCode() != Response.Status.OK.getStatusCode(),
                     "testRole John can access the POST Method");

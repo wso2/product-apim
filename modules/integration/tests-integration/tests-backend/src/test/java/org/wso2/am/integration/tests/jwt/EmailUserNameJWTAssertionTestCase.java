@@ -25,7 +25,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -45,7 +45,7 @@ import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 
-public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
+public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;
 
@@ -65,8 +65,8 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         ServerConfigurationManager serverConfigurationManager;
         super.init();
 
-        userName = apimContext.getContextTenant().getTenantAdmin().getUserName();
-        password = apimContext.getContextTenant().getTenantAdmin().getPassword();
+        userName = gatewayContext.getContextTenant().getTenantAdmin().getUserName();
+        password = gatewayContext.getContextTenant().getTenantAdmin().getPassword();
 
 
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -83,10 +83,9 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
                         File.separator +
                         "configFiles/emailusernamejwttest/" +
                         "user-mgt.xml";
-        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
         serverConfigurationManager.applyConfiguration(new File(userMgtXml));
-        super.init();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -130,7 +129,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -165,7 +164,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         String userName = "admin@wso2.com";
         String password = "admin123";
         UserManagementClient userManagementClient =
-                new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(), "admin", "admin");
+                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "admin", "admin");
         userManagementClient
                 .addUser(userName, password, new String[]{"Internal/subscriber"}, "admin2");
         String requestBody = "grant_type=password&username=" + userName + "@" +
@@ -182,7 +181,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "/test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -222,10 +221,10 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         String fullUserName = userName + "@" + domainName;
         boolean isSuccessful =
                 createTenantWithEmailUserName(userName, password,
-                        domainName, apimContext.getContextUrls().getBackEndUrl());
+                        domainName, gatewayContext.getContextUrls().getBackEndUrl());
         assertEquals(isSuccessful, true);
         UserManagementClient userManagementClient =
-                new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(), fullUserName, password);
+                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), fullUserName, password);
         userManagementClient
                 .addRemoveRolesOfUser(fullUserName, new String[]{"Internal/subscriber"}, null);
         String requestBody =
@@ -241,7 +240,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -282,7 +281,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         String domainName = "adc.com";
         String fullUserName = userNameWithEmail + "@" + domainName;
         UserManagementClient userManagementClient =
-                new UserManagementClient(apimContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
+                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
         userManagementClient
                 .addUser(userNameWithEmail, password, new String[]{"Internal/subscriber"},
                         "abc");
@@ -299,7 +298,7 @@ public class EmailUserNameJWTAssertionTestCase extends AMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(getApiInvocationURLHttp("/test/1.0.0/"), requestHeaders);
+        HttpRequestUtil.doGet( gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];

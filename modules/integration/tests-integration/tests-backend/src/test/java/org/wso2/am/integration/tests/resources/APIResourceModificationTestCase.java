@@ -22,7 +22,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -33,7 +33,7 @@ import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
 
-public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
+public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
 
@@ -57,14 +57,12 @@ public class APIResourceModificationTestCase extends AMIntegrationBaseTest {
         String APIVersion = "1.0.0";
 
         //add all option methods
-        apiPublisher.login(apimContext.getContextTenant().getContextUser().getUserName(),
-                apimContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/" +
-                "products/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
         apiPublisher.addAPI(apiRequest);

@@ -28,7 +28,7 @@
             <!--<class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>-->
             <!--<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>-->
             <!--<class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>-->
-            <!--class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/-->
+            <class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/>
             <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3363StoreAPIConsoleWithReverseProxy" />-->
         </classes>
     </test>

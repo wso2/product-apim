@@ -22,7 +22,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -37,14 +37,16 @@ import java.util.Map;
  * https://wso2.org/jira/browse/APIMANAGER-3076
  * This class tests the conversion of json with special characters to xml.
  */
-public class ESBJAVA3380TestCase extends AMIntegrationBaseTest {
+public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
+    String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
 
         super.init();
+
         /*
            * If test run in external distributed deployment you need to copy
            * following resources accordingly. configFiles/json_to_xml/axis2.xml
@@ -52,17 +54,18 @@ public class ESBJAVA3380TestCase extends AMIntegrationBaseTest {
            */
 
         serverConfigurationManager = new ServerConfigurationManager(
-                apimContext);
+                gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
-        super.init();
+
+        gatewaySessionCookie = createSession(gatewayContext);
 
         String apiMngrSynapseConfigPath = "/artifacts/AM/synapseconfigs/property/json_to_xml.xml";
         String relativeFilePath = apiMngrSynapseConfigPath.replaceAll(
                 "[\\\\/]", File.separator);
-        loadAPIMConfigurationFromClasspath(relativeFilePath);
+        loadSynapseConfigurationFromClasspath(relativeFilePath, gatewayContext, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Json to XML Test other")
@@ -77,7 +80,7 @@ public class ESBJAVA3380TestCase extends AMIntegrationBaseTest {
 
         try {
             response = HttpRequestUtil.doPost(new URL(
-                    gatewayUrls.getWebAppURLNhttp()+"/Weather/1.0.0"), payload,
+                    gatewayUrls.getWebAppURLNhttp()+"Weather/1.0.0"), payload,
                     requestHeaders);
         } catch (Exception e) {
             Assert.assertFalse(

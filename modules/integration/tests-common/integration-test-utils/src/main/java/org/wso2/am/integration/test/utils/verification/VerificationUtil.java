@@ -16,7 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.test.utils.validation;
+package org.wso2.am.integration.test.utils.verification;
 
 import org.json.JSONObject;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
