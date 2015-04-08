@@ -61,6 +61,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -1540,7 +1541,7 @@ public class APIMTestCaseUtils {
         StringBuilder sb = new StringBuilder();
         BufferedReader rd = null;
         try {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             String line;
             while ((line = rd.readLine()) != null) {
                 sb.append(line);
@@ -1556,7 +1557,7 @@ public class APIMTestCaseUtils {
         }
     }
 
-    public static String getDecodedJWT(String serverMessage) {
+    public static String getDecodedJWT(String serverMessage) throws UnsupportedEncodingException {
         // result comes as header values
         String[] headerArray = serverMessage.split("\n");
         //tokenize  from JWT assertion header
@@ -1564,8 +1565,8 @@ public class APIMTestCaseUtils {
         //take first part
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
         // decode  JWT part
-        byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes());
-        return new String(jwtByteArray);
+        byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes("UTF-8"));
+        return new String(jwtByteArray, "UTF-8");
     }
 
     /**
