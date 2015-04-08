@@ -21,9 +21,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -59,9 +59,9 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
         //Verify the API in API Publisher
         List<APIIdentifier> apiPublisherAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                         apiPublisherClientUser1.getApi(API1_NAME, API1_PROVIDER_NAME, API_VERSION1));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiPublisherAPIIdentifierList), true,
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiPublisherAPIIdentifierList), true,
                 "Added Api is not available in APi Publisher. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
     }
 
@@ -71,8 +71,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreBeforePublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
                 "Api is visible in API Store before publish." + getAPIIdentifierString(apiIdentifierAPI1Version1));
     }
 
@@ -99,8 +99,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     public void testVisibilityOfAPIInStoreAfterPublishing() throws Exception {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
                 "Api is not visible in API Store after publish. " + getAPIIdentifierString(apiIdentifierAPI1Version1));
 
     }

@@ -21,9 +21,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -105,9 +105,9 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testChangeAPILifecycleToRetired")
     public void testAvailabilityOfRetiredAPIInStore() throws Exception {
         //  Verify the API in API Store : API should not be available in the store.
-        List<APIIdentifier> apiStoreAPIIdentifierList = APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
+        List<APIIdentifier> apiStoreAPIIdentifierList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                 apiStoreClientUser1.getAPI());
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
                 "Api is  visible in API Store after retire." + getAPIIdentifierString(apiIdentifierAPI1Version1));
 
     }

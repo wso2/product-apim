@@ -20,7 +20,6 @@ package org.wso2.am.integration.test.utils.base;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -236,9 +235,9 @@ public class APIMIntegrationBaseTest {
 
         try {
 
-            apimTestCaseUtils.updateAPIMConfiguration(synapseConfig,
-                                                      automationContext.getContextUrls().getBackEndUrl(),
-                                                      sessionCookie);
+            apimTestCaseUtils.updateSynapseConfiguration(synapseConfig,
+                                                         automationContext.getContextUrls().getBackEndUrl(),
+                                                         sessionCookie);
 
             if (automationContext.getProductGroup().isClusterEnabled()) {
 
