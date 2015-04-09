@@ -863,10 +863,10 @@
         <caramel.feature.version>1.0.1</caramel.feature.version>
         <handlebars.feature.version>1.0.0</handlebars.feature.version>
         <markdown.feature.version>1.0.0</markdown.feature.version>
-        <process.feature.version>1.2.1</process.feature.version>
-        <carbon.feature.version>1.2.1</carbon.feature.version>
-        <uuid.feature.version>1.2.1</uuid.feature.version>
-        <sso.feature.version>1.2.1</sso.feature.version>
+        <process.feature.version>1.2.2</process.feature.version>
+        <carbon.feature.version>1.2.2</carbon.feature.version>
+        <uuid.feature.version>1.2.2</uuid.feature.version>
+        <sso.feature.version>1.2.2</sso.feature.version>
         <es.feature.version>2.0.1-SNAPSHOT</es.feature.version>
         <carbon.social.version>1.2.1-SNAPSHOT</carbon.social.version>
         <i18n.feature.version>1.0.0</i18n.feature.version>
