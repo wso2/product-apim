@@ -251,7 +251,7 @@
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transports.passthru.feature:${passthru.transport.patch.version}</featureArtifactDef-->
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediation.templates.server.feature:${carbon.platform.version}</featureArtifactDef-->
                                 <featureArtifactDef>
-                                    org.wso2.carbon.commons:org.wso2.carbon.deployment.synchronizer.feature:${carbon.platform.version}
+                                    org.wso2.carbon.commons:org.wso2.carbon.deployment.synchronizer.feature:${carbon.commons.version}
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
@@ -919,7 +919,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -1450,7 +1450,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -1892,7 +1892,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -2394,7 +2394,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -2956,7 +2956,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -3462,7 +3462,7 @@
                                 </feature-->
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.commons.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>

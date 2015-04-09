@@ -207,7 +207,7 @@
                                     org.wso2.carbon.identity.self.registration.serve:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.deployment.synchronizer:${carbon.platform.version}
+                                    org.wso2.carbon.deployment.synchronizer:${carbon.commons.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.registry.community.features.server:${carbon.registry.version}
