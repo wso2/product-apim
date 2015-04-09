@@ -406,6 +406,7 @@
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.ui.feature:4.2.0</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ndatasource.feature:4.2.3</featureArtifactDef>
+				<featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:1.0.0-SNAPSHOT</featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -924,6 +925,11 @@
                                 <id>org.wso2.carbon.ndatasource.feature.group</id>
                                 <version>4.2.3</version>
                             </feature>
+                            <feature>
+                                <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                <version>1.0.0-SNAPSHOT</version>
+                            </feature>
+
                             </features>
                         </configuration>
                     </execution>
