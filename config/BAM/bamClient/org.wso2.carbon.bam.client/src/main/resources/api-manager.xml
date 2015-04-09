@@ -17,11 +17,11 @@
         <BAMTrustStore>repository/resources/security/client-truststore.jks</BAMTrustStore>
         <BAMTrustStorePassword>wso2carbon</BAMTrustStorePassword>
     </APIUsageTracking>
-    <APIKeyManager>
+    <APIKeyValidator>
         <ServerURL>https://localhost:9443/services/</ServerURL>
         <Username>admin</Username>
         <Password>admin</Password>
-    </APIKeyManager>
+    </APIKeyValidator>
     <APIGateway>
         <ServerURL>https://localhost:9443/services/</ServerURL>
         <Username>admin</Username>
