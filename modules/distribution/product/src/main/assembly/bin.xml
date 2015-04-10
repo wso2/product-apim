@@ -59,7 +59,8 @@
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
-		<exclude>**/repository/components/plugins/*email.verification_4.2.0.jar</exclude>
+                <exclude>**/repository/components/plugins/*email.verification_4.2.0.jar</exclude>
+                <exclude>**/repository/deployment/server/synapse-configs/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
