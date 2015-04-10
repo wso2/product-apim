@@ -271,15 +271,15 @@
                 <include>*/**</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--fileSet>
             <directory>../../jaggery</directory>
             <outputDirectory>wso2am-${pom.version}/modules</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
             </includes>
-        </fileSet>
+        </fileSet-->
 	<!-- Copying styles for tenants -->
-        <fileSet>
+        <fileSet>            t
             <directory>../../../modules/styles/service/src/main/resources/web/styles/images</directory>
             <outputDirectory>wso2am-${pom.version}/resources/allthemes/Default/images</outputDirectory>
         </fileSet>
