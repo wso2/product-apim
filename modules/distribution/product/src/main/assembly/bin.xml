@@ -281,11 +281,11 @@
             <directory>../../../modules/styles/service/src/main/resources/web/styles/css</directory>
             <outputDirectory>wso2am-${pom.version}/resources/allthemes/Default/admin</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>../../../config/rxts</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/rxts</outputDirectory>
+	<fileSet>
+       	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/rxts</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/rxts</outputDirectory>
             <includes>
-                <include>**/**.rxt</include>
+                <include>*.rxt</include>
             </includes>
         </fileSet>
 	<!-- Jmeter Intergration Tests -->
@@ -348,7 +348,7 @@
         </fileSet>
 
 	<!--copy web app for OAuth feature-->
-        <!--fileSet>
+        <fileSet>
        	    <directory>
 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
             </directory>
@@ -356,18 +356,8 @@
             <includes>
                 <include>oauth2.war</include>
             </includes>
-        </fileSet-->
-
-        <!-- Adding as a temporary fix. -->
-        <fileSet>
-            <directory>
-            ../../../modules/patches/resources/webapps
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
-            <includes>
-                <include>oauth2.war</include>
-            </includes>
         </fileSet>
+
 	<fileSet>
        	    <directory>
 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/rxts/forum
@@ -378,7 +368,7 @@
             </includes>
         </fileSet>
 
-        <!--fileSet>
+        <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
             </directory>
@@ -387,19 +377,7 @@
             <includes>
                 <include>authenticationendpoint.war</include>
             </includes>
-        </fileSet-->
-
-         <!-- Adding as a temporary fix. -->
-        <fileSet>
-            <directory>
-            ../../../modules/patches/resources/webapps
-            </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
-            <includes>
-                <include>authenticationendpoint.war</include>
-            </includes>
         </fileSet>
-
 
         <!--Multitenancy related file -->
         <fileSet>
@@ -528,14 +506,7 @@
             </excludes>
     	</fileSet>
 
-        <!-- !! Adding as a temporary fix !!-->
-        <fileSet>
-             <directory>../../../modules/patches</directory>
-             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
-             <includes>
-                  <include>**/patch1072/*.*</include>
-             </includes>
-        </fileSet>
+
     <fileSet>
               <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0001/dbscripts</directory>
               <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
