@@ -236,7 +236,7 @@
         This is used by API store to generate and manage API keys. API gateway uses it to
         validate and authenticate users against the provided API keys.
     -->
-    <APIKeyManager>
+    <APIKeyValidator>
         <!--
             Server URL of the API key manager
         -->
@@ -310,7 +310,7 @@
 	org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
 	<EncryptPersistedTokens>false</EncryptPersistedTokens>
 
-    </APIKeyManager>
+    </APIKeyValidator>
 
     <!--
         Settings related to managing API access tiers.
