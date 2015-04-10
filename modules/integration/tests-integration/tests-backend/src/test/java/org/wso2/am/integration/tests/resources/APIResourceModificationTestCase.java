@@ -38,7 +38,7 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);

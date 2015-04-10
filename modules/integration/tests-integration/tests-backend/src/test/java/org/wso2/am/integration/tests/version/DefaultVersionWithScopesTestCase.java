@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -72,7 +73,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
     private static final String SUBSCRIBER_ROLE = "subscriber";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
 
         //Initialize publisher and store.
@@ -86,8 +87,9 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
-    public void testDefaultVersionAPIWithScopes() throws UserAdminUserAdminException, RemoteException,
-            XPathExpressionException, JSONException {
+    public void testDefaultVersionAPIWithScopes()
+            throws UserAdminUserAdminException, RemoteException,
+                   XPathExpressionException, APIManagerIntegrationTestException {
 
         //Add a user called mike and assign him to the subscriber role.
         try {
@@ -183,7 +185,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             apiStore.subscribe(subscriptionRequest);
 
             //Generate production token and invoke with that
-            GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(APP_NAME);
+            APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
             String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
             JSONObject jsonResponse = new JSONObject(responseString);
 

@@ -39,7 +39,7 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 	String gatewaySessionCookie;
 
 	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
+	public void setEnvironment() throws Exception {
 		super.init();
 		gatewaySessionCookie = createSession(gatewayContext);
 		loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"

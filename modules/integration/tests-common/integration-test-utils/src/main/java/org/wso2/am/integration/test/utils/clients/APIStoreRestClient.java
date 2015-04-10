@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -22,7 +22,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wso2.am.integration.test.utils.bean.GenerateAppKeyRequest;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -31,124 +32,110 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Provides set of method to invoke publisher API
+ */
 public class APIStoreRestClient {
-    private String backEndUrl;
+    private String backendURL;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
-    public APIStoreRestClient(String backEndUrl) {
-        this.backEndUrl = backEndUrl;
+    public APIStoreRestClient(String backendURL) {
+        this.backendURL = backendURL;
         if (requestHeaders.get("Content-Type") == null) {
             this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
         }
     }
 
     /**
-     * login to API store
-     * @param userName
-     * @param password
-     * @return
-     * @throws Exception
+     * Login to API store
+     *
+     * @param userName - username to login
+     * @param password - password to login
+     * @return - http response
+     * @throws APIManagerIntegrationTestException - Throws if login to store fails
      */
     public HttpResponse login(String userName, String password)
-            throws Exception {
-        HttpResponse response = HttpRequestUtil
-                .doPost(new URL(backEndUrl + "store/site/blocks/user/login/ajax/login.jag")
-                        , "action=login&username=" + userName + "&password=" + password + "",
-                        requestHeaders);
+            throws APIManagerIntegrationTestException {
+        HttpResponse response;
+        try {
+            response = HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
+                    "action=login&username=" + userName + "&password=" + password + "",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to login to the store app ", e);
+        }
 
         String session = getSession(response.getHeaders());
+
         if (session == null) {
-            throw new Exception("No session cookie found with response");
+            throw new APIManagerIntegrationTestException("No session cookie found with response");
         }
+
         setSession(session);
         return response;
-
     }
 
     /**
-     * subscribe to API
-     * @param subscriptionRequest
-     * @return
-     * @throws Exception
+     * Subscribe to API
+     *
+     * @param subscriptionRequest - subscribe api request
+     * @return - http response
+     * @throws APIManagerIntegrationTestException - throws if subscription fails
      */
     public HttpResponse subscribe(SubscriptionRequest subscriptionRequest)
-            throws Exception {
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
+                    subscriptionRequest.generateRequestParameters(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("subscript to api fails", e);
+        }
+    }
 
-        checkAuthentication();
+    /**
+     * Generate token
+     *
+     * @param generateAppKeyRequest - generate api key request
+     * @return - http response
+     * @throws APIManagerIntegrationTestException - throws if application key generation fails.
+     */
+    public HttpResponse generateApplicationKey(APPKeyRequestGenerator generateAppKeyRequest)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            HttpResponse responseApp = getAllApplications();
+            String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
+            generateAppKeyRequest.setAppId(appId);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-                , subscriptionRequest.generateRequestParameters()
-                , requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
+                    generateAppKeyRequest.generateRequestParameters(), requestHeaders);
 
-        return response;
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("subscript to api fails", e);
+        }
 
     }
 
     /**
-     * generate token
-     * @param generateAppKeyRequest
-     * @return
-     * @throws Exception
+     * Get api which are published
+     *
+     * @return - http response of get API post request
+     * @throws APIManagerIntegrationTestException - throws if API information retrieval fails.
      */
-    public HttpResponse generateApplicationKey(GenerateAppKeyRequest generateAppKeyRequest)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse responseApp = getAllApplications();
-        String appId = getApplicationId(responseApp.getData(), generateAppKeyRequest.getApplication());
-        generateAppKeyRequest.setAppId(appId);
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-                , generateAppKeyRequest.generateRequestParameters()
-                , requestHeaders);
-        return response;
+    public HttpResponse getAPI() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"),
+                    "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve API information ", e);
+        }
 
-    }
-
-    /**
-     * get all API's which are published
-     * @param apiName
-     * @return
-     * @throws Exception
-     */
-
-    public HttpResponse getAPI(String apiName)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs")
-                , ""
-                , requestHeaders);
-        return response;
-
-    }
-
-    /**
-     * set HTTP headers
-     * @param headerName
-     * @param value
-     */
-
-    public void setHttpHeader(String headerName, String value) {
-        this.requestHeaders.put(headerName, value);
-    }
-
-    /**
-     * get headers
-     * @param headerName
-     * @return
-     */
-    public String getHttpHeader(String headerName) {
-        return this.requestHeaders.get(headerName);
-    }
-
-    /**
-     * removeHttpHeader
-     * @param headerName
-     */
-
-    public void removeHttpHeader(String headerName) {
-        this.requestHeaders.remove(headerName);
     }
 
     private String getSession(Map<String, String> responseHeaders) {
@@ -160,427 +147,494 @@ public class APIStoreRestClient {
     }
 
     /**
-     * check whether the user is logged in
-     * @return
-     * @throws Exception
+     * Check whether the user is logged in
+     *
+     * @throws APIManagerIntegrationTestException - If session cookie not found in the request header
      */
-
-    private void checkAuthentication() throws Exception {
+    private void checkAuthentication() throws APIManagerIntegrationTestException {
         if (requestHeaders.get("Cookie") == null) {
-            throw new Exception("No Session Cookie found. Please login first");
+            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first");
         }
     }
 
     /**
-     * get access key
-     * @param consumeKey
-     * @param consumerSecret
-     * @param body
-     * @param tokenEndpointURL
-     * @return
-     * @throws Exception
+     * Generate user access key
+     *
+     * @param consumeKey       - consumer  key of user
+     * @param consumerSecret   - consumer secret key
+     * @param messageBody      - message body
+     * @param tokenEndpointURL - token endpoint url
+     * @return - http response of generate access token api call
+     * @throws APIManagerIntegrationTestException - throws if generating APIM access token fails
      */
-    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret, String body,
-                                              URL tokenEndpointURL)
-            throws Exception {
-        checkAuthentication();
-        Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
-        String basicAuthHeader = consumeKey + ":" + consumerSecret;
-        byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes());
-        authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-        authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes));
-        HttpResponse response = HttpRequestUtil.doPost(tokenEndpointURL
-                , body
-                , authenticationRequestHeaders);
-        return response;
+    public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
+                                              String messageBody, URL tokenEndpointURL)
+            throws APIManagerIntegrationTestException {
+
+        try {
+            checkAuthentication();
+            Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
+            String basicAuthHeader = consumeKey + ":" + consumerSecret;
+            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
+
+            authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
+
+            return HttpRequestUtil.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to generate API access token ", e);
+        }
     }
 
     /**
-     * get all API's
-     * @return
-     * @throws Exception
+     * Get all published apis
+     *
+     * @return - http response of get all published apis
+     * @throws APIManagerIntegrationTestException - throws if getting publish APIs fails
      */
-
-    public HttpResponse getAllPublishedAPIs()
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-                "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"
-                , requestHeaders);
-        return response;
+    public HttpResponse getAllPublishedAPIs() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get retrieve all published APIs ", e);
+        }
     }
 
     /**
-     * get all applications
-     * @return
-     * @throws Exception
+     * Get all the applications
+     *
+     * @return - http response of get get all applications
+     * @throws APIManagerIntegrationTestException - throws if get all application fails.
      */
-
-    public HttpResponse getAllApplications()
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-                "store/site/blocks/application/application-list/ajax/application-list.jag?action=getApplications"
-                , requestHeaders);
-        return response;
+    public HttpResponse getAllApplications() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/application/application-list/ajax/" +
+                    "application-list.jag?action=getApplications",
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve all applications ", e);
+        }
     }
 
     /**
-     * getPublishedAPIsByApplication
-     * @param applicationName
-     * @return
-     * @throws Exception
+     * Get application details by given name
+     *
+     * @param applicationName - application name
+     * @return - http response of get application request
+     * @throws APIManagerIntegrationTestException - throws if get application by name fails
      */
-
     public HttpResponse getPublishedAPIsByApplication(String applicationName)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doGet(backEndUrl +
-                "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?action=getSubscriptionByApplication&app=" +
-                applicationName
-                , requestHeaders);
-        return response;
+            throws APIManagerIntegrationTestException {
+        try {
+
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/subscription/subscription-list/ajax/" +
+                    "subscription-list.jag?action=getSubscriptionByApplication&app=" +
+                    applicationName, requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " +
+                                                         applicationName, e);
+        }
+
     }
 
     /**
-     * addRatingToAPI
-     * @param apiName
-     * @param version
-     * @param provider
-     * @param rating
-     * @return
-     * @throws Exception
+     * Add rating into api
+     *
+     * @param apiName  - name of api
+     * @param version  - api version
+     * @param provider - provider of api
+     * @param rating   - api rating
+     * @return - http response of add rating request
+     * @throws APIManagerIntegrationTestException - throws if rating of api fails
      */
     public HttpResponse addRatingToAPI(String apiName, String version, String provider,
-                                       String rating)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil
-                .doGet(backEndUrl + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                        "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
-                        provider + "&rating=" + rating
-                        , requestHeaders);
-        return response;
+                                       String rating) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
+                    provider + "&rating=" + rating, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to rate API -  " + apiName, e);
+        }
     }
 
     /**
-     * removeRatingFromAPI
-     * @param apiName
-     * @param version
-     * @param provider
-     * @return
-     * @throws Exception
+     * Remove rating of given API
+     *
+     * @param apiName  - name of api
+     * @param version  - api version
+     * @param provider - provider of api
+     * @return - http response of remove rating request
+     * @throws APIManagerIntegrationTestException - Throws if remove API rating fails
      */
-
     public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil
-                .doGet(backEndUrl + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                        "action=removeRating&name=" + apiName + "&version=" + version +
-                        "&provider=" + provider
-                        , requestHeaders);
-        return response;
+            throws APIManagerIntegrationTestException {
+        try {
+
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    "action=removeRating&name=" + apiName + "&version=" + version +
+                    "&provider=" + provider, requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " +
+                                                         apiName, e);
+        }
     }
 
     /**
-     * isRatingActivated
-     * @return
-     * @throws Exception
+     * Check if API rating activated
+     *
+     * @return - http response of rating activated request
+     * @throws APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
      */
-
-    public HttpResponse isRatingActivated()
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil
-                .doGet(backEndUrl + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
-                        "action=isRatingActivated"
-                        , requestHeaders);
-        return response;
+    public HttpResponse isRatingActivated() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
+                    "action=isRatingActivated", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved", e);
+        }
     }
 
     /**
-     * getAllDocumentationOfAPI
-     * @param apiName
-     * @param version
-     * @param provider
-     * @return
-     * @throws Exception
+     * Method to retrieve all documents of given api
+     *
+     * @param apiName  - name of api
+     * @param version  - api version
+     * @param provider - provider of api
+     * @return - http response of get all documentation of APIs
+     * @throws APIManagerIntegrationTestException - throws if retrieval of API documentation fails
      */
-
     public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response =
-                HttpRequestUtil.doGet(backEndUrl + "store/site/blocks/api/listing/ajax/list.jag?" +
-                        "action=getAllDocumentationOfAPI&name=" + apiName +
-                        "&version=" + version + "&provider=" + provider
-                        , requestHeaders);
-        return response;
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+                    "action=getAllDocumentationOfAPI&name=" + apiName +
+                    "&version=" + version + "&provider=" + provider, requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
+                                                         apiName, e);
+
+        }
     }
 
     /**
-     * getAllPaginatedPublishedAPIs
-     * @param tenant
-     * @param start
-     * @param end
-     * @return
-     * @throws Exception
+     * Get all paginated published API for a given tenant
+     *
+     * @param tenant - tenant name
+     * @param start  - starting index
+     * @param end    - closing  index
+     * @return - http response of paginated published APIs
+     * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
-
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response =
-                HttpRequestUtil.doGet(backEndUrl + "store/site/blocks/api/listing/ajax/list.jag?" +
-                        "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
-                        "&start=" + start + "&end=" + end
-                        , requestHeaders);
-        return response;
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+                                         "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
+                                         "&start=" + start + "&end=" + end, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
+                                                         "APIs for tenant - " + tenant, e);
+        }
     }
 
     /**
-     * getAllPublishedAPIs for tenant
-     * @param tenant
-     * @return
-     * @throws Exception
+     * Get all published APIs for tenant
+     *
+     * @param tenant - tenant name
+     * @return - http response of published API
+     * @throws APIManagerIntegrationTestException - throws if published API retrieval fails.
      */
-
     public HttpResponse getAllPublishedAPIs(String tenant)
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
-                tenant)
-                , ""
-                , requestHeaders);
-        return response;
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
+                            tenant), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve published" +
+                                                         "APIs for tenant - " + tenant, e);
 
+        }
     }
 
     /**
-     * addApplication
-     * @param application
-     * @param tier
-     * @param callbackUrl
-     * @param description
-     * @return
-     * @throws Exception
+     * Add application
+     *
+     * @param application - application  name
+     * @param tier        - throttling tier
+     * @param callbackUrl - callback url
+     * @param description - description of app
+     * @return - http response of add application
+     * @throws APIManagerIntegrationTestException - if fails to add application
      */
+    public HttpResponse addApplication(String application, String tier, String callbackUrl,
+                                       String description)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL +
+                            "store/site/blocks/application/application-add" +
+                            "/ajax/application-add.jag?action=addApplication&tier=" +
+                            tier + "&callbackUrl=" + callbackUrl + "&description=" + description +
+                            "&application=" + application), "", requestHeaders);
 
-    public HttpResponse addApplication(String application, String tier, String callbackUrl, String description)
-            throws Exception {
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to add application - " + application, e);
 
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/application/application-add" +
-                "/ajax/application-add.jag?action=addApplication&tier=" + tier + "&callbackUrl=" +
-                callbackUrl + "&description=" + description + "&application=" + application), "", requestHeaders);
-
-        return response;
-
+        }
     }
 
     /**
-     * get applications
-     * @return
-     * @throws Exception
+     * Get application
+     *
+     * @return - http response of get applications
+     * @throws APIManagerIntegrationTestException - throws if applications cannot be retrieved.
      */
-    public HttpResponse getApplications() throws Exception {
+    public HttpResponse getApplications() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/application/application-list/ajax/" +
+                            "application-list.jag?action=getApplications"), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get applications", e);
 
-        checkAuthentication();
-
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "store/site/blocks/application/" +
-                "application-list/ajax/application-list.jag?action=getApplications"), "", requestHeaders);
-
-        return response;
-
+        }
     }
 
     /**
-     * delete application
-     * @param application
-     * @return
-     * @throws Exception
+     * Delete application
+     *
+     * @param application - application name
+     * @return - http response of remove application request
+     * @throws APIManagerIntegrationTestException - throws if remove application fails
      */
-    public HttpResponse removeApplication(String application) throws Exception {
-        checkAuthentication();
+    public HttpResponse removeApplication(String application)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/application/application-remove/ajax/application-remove.jag?" +
+                            "action=removeApplication&application=" + application), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to remove application - " + application, e);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "store/site/blocks/application/" +
-                "application-remove/ajax/application-remove.jag?action=removeApplication&application=" + application),
-                "", requestHeaders);
-
-        return response;
-
+        }
     }
 
     /**
-     * updateApplication
-     * @param applicationOld
-     * @param applicationNew
-     * @param callbackUrlNew
-     * @param descriptionNew
-     * @param tier
-     * @return
-     * @throws Exception
+     * Update given application
+     *
+     * @param applicationOld - application name old
+     * @param applicationNew - new  application name
+     * @param callbackUrlNew - call back url
+     * @param descriptionNew - updated description
+     * @param tier           - access tier
+     * @return - http response of update application
+     * @throws APIManagerIntegrationTestException - throws if update application fails
      */
-
     public HttpResponse updateApplication(String applicationOld, String applicationNew,
-                                          String callbackUrlNew, String descriptionNew, String tier) throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/application/application-update/ajax/application-update.jag?" +
-                "action=updateApplication&applicationOld=" +
-                applicationOld + "&applicationNew=" +
-                applicationNew + "&callbackUrlNew=" +
-                callbackUrlNew +
-                "&descriptionNew=" + descriptionNew +
-                "&tier=" + tier), "", requestHeaders);
+                                          String callbackUrlNew, String descriptionNew, String tier)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/application/application-update/ajax/application-update.jag?" +
+                            "action=updateApplication&applicationOld=" + applicationOld + "&applicationNew=" +
+                            applicationNew + "&callbackUrlNew=" + callbackUrlNew + "&descriptionNew=" +
+                            descriptionNew + "&tier=" + tier), "", requestHeaders);
 
-        return response;
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld, e);
 
-    }
-
-    /**
-     * get all subscriptions
-     * @return
-     * @throws Exception
-     */
-
-    public HttpResponse getAllSubscriptions()
-            throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
-                "action=getAllSubscriptions"), "", requestHeaders);
-        return response;
+        }
 
     }
 
     /**
-     * unsubscribe from API
-     * @param API
-     * @param version
-     * @param provider
-     * @param applicationId
-     * @return
-     * @throws Exception
+     * Get all subscriptions
+     *
+     * @return - http response of get all subscription request
+     * @throws APIManagerIntegrationTestException - throws if get all subscriptions fails
      */
-    public HttpResponse removeAPISubscription(String API, String version, String provider, String applicationId)
-            throws Exception {
-        checkAuthentication();
+    public HttpResponse getAllSubscriptions() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                            "action=getAllSubscriptions"), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?action=removeSubscription&name=" +
-                API + "&version=" + version + "&provider=" + provider + "&applicationId=" + applicationId), "", requestHeaders);
-
-        return response;
-
+        }
     }
 
     /**
-     * get all tags of API
-     * @return
-     * @throws Exception
+     * Unsubscribe from API
+     *
+     * @param API           - name of api
+     * @param version       - api version
+     * @param provider      - provider name
+     * @param applicationId - application id
+     * @return - http response of unsubscription request
+     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
      */
-    public HttpResponse getAllTags() throws Exception {
+    public HttpResponse removeAPISubscription(String API, String version, String provider,
+                                              String applicationId)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
+                            "&applicationId=" + applicationId), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
 
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(
-                backEndUrl + "store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"), "", requestHeaders);
-        return response;
+        }
+    }
+
+    /**
+     * Get all API tags
+     *
+     * @return - http response of get all api tags
+     * @throws APIManagerIntegrationTestException - throws if get all tags fails
+     */
+    public HttpResponse getAllTags() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/tag/tag-cloud/ajax/list.jag?action=getAllTags"),
+                    "", requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all tags", e);
+        }
 
     }
 
 
     /**
-     * add comment to api
-     * @param name
-     * @param version
-     * @param provider
-     * @param comment
-     * @return
-     * @throws Exception
+     * Add comment to given API
+     *
+     * @param apiName  - name of the api
+     * @param version  - api version
+     * @param provider - provider name
+     * @param comment  - comment to  add
+     * @return - http response of add comment
+     * @throws APIManagerIntegrationTestException - throws if add comment fails
      */
-
-    public HttpResponse addComment(String name, String version, String provider, String comment) throws Exception {
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil
-                .doPost(new URL(backEndUrl + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                        "action=addComment&name=" + name + "&version=" + version + "&provider=" +
-                        provider + "&comment=" + comment), "", requestHeaders);
-        return response;
-
+    public HttpResponse addComment(String apiName, String version, String provider, String comment)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                            "action=addComment&name=" + apiName + "&version=" + version + "&provider=" +
+                            provider + "&comment=" + comment), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable add a comment in to API - " + apiName, e);
+        }
     }
 
     /**
-     * isCommentActivated
-     * @return
-     * @throws Exception
+     * Check whether commenting is enabled
+     *
+     * @return - http response of comment status
+     * @throws APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
      */
-    public HttpResponse isCommentActivated() throws Exception {
-
-        checkAuthentication();
-
-        HttpResponse response = HttpRequestUtil
-                .doGet(backEndUrl + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
-                        "action=isCommentActivated", requestHeaders);
-
-        return response;
-
+    public HttpResponse isCommentActivated() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
+                    "action=isCommentActivated", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Failed to get comment activation status", e);
+        }
     }
 
     /**
-     * getRecentlyAddedAPIs
-     * @param tenant
-     * @param limit
-     * @return
-     * @throws Exception
+     * Get recently added APIs by tenant
+     *
+     * @param tenant - tenant name
+     * @param limit  - limit of result set
+     * @return - http response of recently added API request
+     * @throws APIManagerIntegrationTestException - throws if
      */
-
-    public HttpResponse getRecentlyAddedAPIs(String tenant, String limit) throws Exception {
-
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "store/site/blocks/api/" +
-                "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant="
-                + tenant + "&limit=" + limit), "", requestHeaders);
-
-        return response;
-
+    public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/api/" +
+                            "recently-added/ajax/list.jag?action=getRecentlyAddedAPIs&tenant=" +
+                            tenant + "&limit=" + limit), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Failed to get recently added APIs from tenant - " +
+                                                         tenant, e);
+        }
     }
 
-    private String getApplicationId(String jsonStringOfApplications, String applicationName) throws Exception{
-        String applicationId=null;
+    private String getApplicationId(String jsonStringOfApplications, String applicationName)
+            throws APIManagerIntegrationTestException {
+        String applicationId = null;
         JSONObject obj;
         try {
             obj = new JSONObject(jsonStringOfApplications);
             JSONArray arr = obj.getJSONArray("applications");
-            for (int i = 0; i < arr.length(); i++)
-            {
+            for (int i = 0; i < arr.length(); i++) {
                 String appName = arr.getJSONObject(i).getString("name");
-                if(applicationName.equals(appName)){
+                if (applicationName.equals(appName)) {
                     applicationId = arr.getJSONObject(i).getString("id");
                 }
             }
         } catch (JSONException e) {
-            throw new  Exception("getting application Id failed ");
+            throw new APIManagerIntegrationTestException("getting application Id failed ", e);
         }
         return applicationId;
-
     }
+
     /**
-     * Get the  web page with filtered API when  click the API Tag link
+     * Get the  web page with filtered API when click the API Tag link
      *
      * @param apiTag - API tag the need ti filter the api.
      * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
-     * @throws Exception - Exception throws when  check the Authentication
+     * @throws APIManagerIntegrationTestException - throws when check the Authentication
      */
     public HttpResponse getAPIPageFilteredWithTags(String apiTag)
-            throws Exception {
-        checkAuthentication();
-        return HttpRequestUtil.sendGetRequest(backEndUrl + "store/apis/list"
-                , "tag=" + apiTag + "&tenant=carbon.super");
-
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.sendGetRequest(
+                    backendURL + "store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Failed to get API filtered with tags", e);
+        }
     }
 
     /**
@@ -588,22 +642,20 @@ public class APIStoreRestClient {
      *
      * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
      * @return HttpResponse - Response f the subscription server REST call
-     * @throws Exception- Exception throws when  check the Authentication
+     * @throws APIManagerIntegrationTestException - throws when  check the Authentication
      */
     public HttpResponse subscribeAPI(SubscriptionRequest subscriptionRequest)
-            throws Exception {
+            throws APIManagerIntegrationTestException {
         //This method  do the same functionality as subscribe(), except this method  always returns the response object
         //regardless of the response code. But subscribe() returns the response object only if  the response code is
         // 200 or else it will return an Exception.
-        checkAuthentication();
-        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl +
-                "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-                , subscriptionRequest.generateRequestParameters()
-                , requestHeaders);
-
-        return response;
-
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
+                    subscriptionRequest.generateRequestParameters(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Failed to get API filtered with tags", e);
+        }
     }
-
-
 }

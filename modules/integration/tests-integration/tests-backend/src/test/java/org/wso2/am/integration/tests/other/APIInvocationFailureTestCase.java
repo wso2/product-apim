@@ -46,7 +46,7 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     private String tenantDomain = "testwso2.com";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
 
         publisherURLHttp = publisherUrls.getWebAppURLHttp();

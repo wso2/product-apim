@@ -74,7 +74,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static String API_BASE_URL;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void initialize() throws Exception {
         super.init();
         API1_PROVIDER_NAME = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -195,7 +195,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected String getAccessToken(APIStoreRestClient storeRestClient) throws Exception {
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultApplication");
         String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -212,7 +212,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected String getAccessToken(APIStoreRestClient storeRestClient, String applicationName) throws Exception {
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(applicationName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -326,7 +326,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     private HttpResponse publishAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient,
                                     boolean isRequireReSubscription) throws Exception {
         APILifeCycleStateRequest publishUpdateRequest =
-                new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
+                new APILifeCycleStateRequest(
+                        apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
                         APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(apiIdentifier.getVersion());
         return publisherRestClient.changeAPILifeCycleStatusToPublish(apiIdentifier, isRequireReSubscription);
@@ -498,7 +499,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
      * @throws Exception
      */
-    protected void copyAndPublishCopiedAPI(APIIdentifier apiIdentifier, String newAPIVersion, APIPublisherRestClient publisherRestClient, boolean isRequireReSubscription) throws Exception {
+    protected void copyAndPublishCopiedAPI(APIIdentifier apiIdentifier, String newAPIVersion,
+                                           APIPublisherRestClient publisherRestClient, boolean isRequireReSubscription) throws Exception {
 
         copyAPI(apiIdentifier, newAPIVersion, publisherRestClient);
         APIIdentifier copiedAPIIdentifier = new APIIdentifier(apiIdentifier.getProviderName(), apiIdentifier.getApiName(), newAPIVersion);

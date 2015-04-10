@@ -56,9 +56,8 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(EmailUserNameJWTAssertionTestCase.class);
 
-    @Override
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         APIPublisherRestClient apiPublisher;
         String publisherURLHttp;
 
@@ -102,8 +101,8 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest("test", userName);
         apiStore.subscribe(subscriptionRequest);
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("DefaultApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         consumerKey =

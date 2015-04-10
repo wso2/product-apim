@@ -21,6 +21,7 @@ package org.wso2.am.integration.test.utils.verification;
 import org.json.JSONObject;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+//Todo - class comment
 public class VerificationUtil {
 	public static void checkErrors(HttpResponse response) throws Exception {
 		JSONObject jsonObject = new JSONObject(response.getData());
