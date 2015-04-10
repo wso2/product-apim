@@ -279,7 +279,7 @@
             </includes>
         </fileSet-->
 	<!-- Copying styles for tenants -->
-        <fileSet>            t
+        <fileSet>
             <directory>../../../modules/styles/service/src/main/resources/web/styles/images</directory>
             <outputDirectory>wso2am-${pom.version}/resources/allthemes/Default/images</outputDirectory>
         </fileSet>
