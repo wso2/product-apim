@@ -21,9 +21,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -46,8 +46,8 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     private Map<String, String> requestHeaders;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
-        super.init();
+    public void initialize() throws Exception {
+        super.initialize();
         apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
         applicationName =
                 (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
@@ -105,9 +105,9 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
             dependsOnMethods = "testChangeAPILifecycleToRetired")
     public void testAvailabilityOfRetiredAPIInStore() throws Exception {
         //  Verify the API in API Store : API should not be available in the store.
-        List<APIIdentifier> apiStoreAPIIdentifierList = APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
-                apiStoreClientUser1.getAPI(API1_NAME));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
+        List<APIIdentifier> apiStoreAPIIdentifierList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
+                apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
                 "Api is  visible in API Store after retire." + getAPIIdentifierString(apiIdentifierAPI1Version1));
 
     }
@@ -130,7 +130,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanup() throws Exception {
+    public void destroy() throws Exception {
         apiStoreClientUser1.removeApplication(applicationName);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
     }

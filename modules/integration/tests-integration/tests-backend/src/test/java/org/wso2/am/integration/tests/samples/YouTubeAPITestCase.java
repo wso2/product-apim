@@ -42,7 +42,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -78,8 +78,8 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("YoutubeFeeds-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("YoutubeFeeds-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =

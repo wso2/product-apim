@@ -51,7 +51,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
     private String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         gatewaySessionCookie = createSession(gatewayContext);
         //Initialize publisher and store.
@@ -107,7 +107,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultVersionAPP");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultVersionAPP");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
 

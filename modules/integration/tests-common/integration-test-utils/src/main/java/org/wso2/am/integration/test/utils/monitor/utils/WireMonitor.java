@@ -29,101 +29,96 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 
 class WireMonitor extends Thread {
-	private Log log = LogFactory.getLog(WireMonitor.class);
-	private int port;
-	private ServerSocket providerSocket;
-	private Socket connection = null;
-	private WireMonitorServer trigger;
+    private Log log = LogFactory.getLog(WireMonitor.class);
+    private int port;
+    private ServerSocket providerSocket;
+    private Socket connection = null;
+    private WireMonitorServer trigger;
 
-	public void run() {
+    public void run() {
 
-		OutputStream out = null;
-		InputStream in = null;
+        OutputStream out = null;
+        InputStream in = null;
 
-		try {
+        try {
+            // creating a server socket
+            providerSocket = new ServerSocket(port, 10);
 
-			// creating a server socket
-			providerSocket = new ServerSocket(port, 10);
+            log.info("Waiting for connection");
+            connection = providerSocket.accept();
+            log.info("Connection received from " +
+                     connection.getInetAddress().getHostName());
+            in = connection.getInputStream();
+            int ch;
+            StringBuilder buffer = new StringBuilder();
+            StringBuffer headerBuffer = new StringBuffer();
+            Long time = System.currentTimeMillis();
+            int contentLength = -1;
+            while ((ch = in.read()) != 1) {
+                buffer.append((char) ch);
+                //message headers end with
+                if (contentLength == -1 && buffer.toString().endsWith("\r\n\r\n")) {
+                    headerBuffer = new StringBuffer(buffer.toString());
+                    if (buffer.toString().contains("Content-Length")) {
+                        String headers = buffer.toString();
+                        //getting content-length header
+                        String contentLengthHeader = headers.substring(headers.indexOf("Content-Length:"));
+                        contentLengthHeader = contentLengthHeader.substring(0, contentLengthHeader.indexOf("\r\n"));
+                        contentLength = Integer.parseInt(contentLengthHeader.split(":")[1].trim());
+                        //clear the buffer
+                        buffer.setLength(0);
+                    }
+                }
 
-			log.info("Waiting for connection");
-			connection = providerSocket.accept();
-			log.info("Connection received from " +
-					connection.getInetAddress().getHostName());
-			in = connection.getInputStream();
-			int ch;
-			StringBuffer buffer = new StringBuffer();
-			StringBuffer headerBuffer = new StringBuffer();
-			Long time = System.currentTimeMillis();
-			int contentLength = -1;
-			while ((ch = in.read()) != 1) {
-				buffer.append((char) ch);
-				//message headers end with
-				if (contentLength == -1 && buffer.toString().endsWith("\r\n\r\n")) {
-					headerBuffer = new StringBuffer(buffer.toString());
-					if (buffer.toString().contains("Content-Length")) {
-						String headers = buffer.toString();
-						//getting content-length header
-						String contentLengthHeader = headers.substring(headers.indexOf("Content-Length:"));
-						contentLengthHeader = contentLengthHeader.substring(0, contentLengthHeader.indexOf("\r\n"));
-						contentLength = Integer.parseInt(contentLengthHeader.split(":")[1].trim());
-						//clear the buffer
-						buffer.setLength(0);
-					}
-				}
+                //braking loop since whole message is read
+                if (buffer.toString().length() == contentLength) {
+                    break;
+                }
+                // In this case no need of reading more than timeout value
+                if ((System.currentTimeMillis() > (time + trigger.READ_TIME_OUT)) || buffer.toString().contains("</soapenv:Envelope>")) {
+                    break;
+                }
+            }
 
-				//braking loop since whole message is read
-				if (buffer.toString().length() == contentLength) {
-					break;
-				}
-				// In this case no need of reading more than timeout value
-				if ( (System.currentTimeMillis() > (time + trigger.READ_TIME_OUT) ) || buffer.toString().contains("</soapenv:Envelope>")) {
-					break;
-				}
-			}
+            // Signaling Main thread to continue
+            trigger.response = headerBuffer.toString() + buffer.toString();
+            trigger.setFinished(true);
 
-			// Signaling Main thread to continue
-			trigger.response = headerBuffer.toString() + buffer.toString();
-			trigger.setFinished(true);
-
-			out = connection.getOutputStream();
-			out.write(("HTTP/1.1 202 Accepted" + "\r\n\r\n").getBytes(Charset.defaultCharset()));
-			out.flush();
+            out = connection.getOutputStream();
+            out.write(("HTTP/1.1 202 Accepted" + "\r\n\r\n").getBytes(Charset.defaultCharset()));
+            out.flush();
 
 
-		} catch (IOException ioException) {
+        } catch (IOException ioException) { //Throw run exception - IllegalStateException
+            throw new IllegalStateException("wire monitor error occurred", ioException);
 
-		} finally {
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    log.warn("Stream close exception", e);
+                }
+            }
 
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-					log.error("Stream close exception", e);
-				}
-			}
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log.warn("Stream close exception", e);
+                }
+            }
+            try {
+                connection.close();
+                providerSocket.close();
+            } catch (IOException e) {
+                log.warn("Error closing provide socket or connection");
+            }
+        }
+    }
 
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					log.error("Stream close exception", e);
-				}
-			}
-
-			try {
-
-				connection.close();
-				providerSocket.close();
-			} catch (Exception e) {
-
-			}
-		}
-
-	}
-
-	public WireMonitor(int listenPort, WireMonitorServer trigger) {
-		port = listenPort;
-		this.trigger = trigger;
-	}
-
+    public WireMonitor(int listenPort, WireMonitorServer trigger) {
+        port = listenPort;
+        this.trigger = trigger;
+    }
 }

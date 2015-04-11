@@ -42,7 +42,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     @BeforeTest(alwaysRun = true)
     public void startChangeAPIMConfigureXml() throws Exception {
-        super.init();
+        super.initialize();
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
         String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
                 File.separator +

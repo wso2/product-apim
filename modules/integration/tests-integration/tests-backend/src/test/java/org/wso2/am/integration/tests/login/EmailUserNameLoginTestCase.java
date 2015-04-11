@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.admin.clients.rest.api.WorkFlowAdminRestClient;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -56,9 +57,9 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
     private WorkFlowAdminRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
 
-    @Override
+
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -76,15 +77,23 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
                 getAMResourceLocation() + File.separator + "configFiles" + File.separator + "emailusernametest" +
                         File.separator + "carbon.xml";
 
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
-        serverConfigurationManager.applyConfiguration(new File(carbonXml));
+        configureServer(apiManagerXml, userMgtXml, carbonXml);
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
         workflowAdmin = new WorkFlowAdminRestClient(workflowAdminURLHTTP);
 
+    }
+
+    private void configureServer(String apiManagerXml, String userMgtXml, String carbonXml) throws Exception {
+        try {
+            ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
+            serverConfigurationManager.applyConfiguration(new File(carbonXml));
+        }catch (Exception e){
+            throw new APIManagerIntegrationTestException("Error while changing server configuration", e);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Email username login test case")
