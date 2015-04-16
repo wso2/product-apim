@@ -134,8 +134,8 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName("DAOTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("DAOTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("DAOTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =

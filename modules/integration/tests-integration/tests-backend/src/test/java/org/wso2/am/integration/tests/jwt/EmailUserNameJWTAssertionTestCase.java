@@ -101,8 +101,8 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest("test", userName);
         apiStore.subscribe(subscriptionRequest);
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("DefaultApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         consumerKey =

@@ -32,7 +32,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
-public class APIMANAGER2604ApplicationPaginationTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER2604ApplicationPaginationTestCase extends APIMIntegrationUiTestBase {
 
     private WebDriver driver;
     private final String TEST_DATA_USERNAME = "admin";
@@ -48,6 +48,9 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends AMIntegrationUi
 
     @Test(groups = "wso2.am", description = "verify pagination in application creation page")
     public void appCreationPaginationTest() throws Exception {
+
+        WebDriverWait wait = new WebDriverWait(driver, 60);
+
         driver.get(getStoreURL() + "/?tenant=carbon.super");
 
         log.info("Started to Login to Store");
@@ -57,8 +60,8 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends AMIntegrationUi
 
         userNameField.sendKeys(TEST_DATA_USERNAME);
         passwordField.sendKeys(TEST_DATA_PASSWORD);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
-        WebDriverWait wait = new WebDriverWait(driver, 10);
 
         //check the presence of admin name in store home page to verify the user has logged to store.
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_USERNAME)));
@@ -83,6 +86,8 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends AMIntegrationUi
        create application for the given application name
      */
     private void createApplication(String appName) {
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("application-name")));
         WebElement name = driver.findElement(By.id("application-name"));
         name.sendKeys(appName);
         WebElement tier = driver.findElement(By.id("appTier"));

@@ -14,12 +14,12 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class TestNameLengthTestCase extends AMIntegrationUiTestBase {
+public class TestNameLengthTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
     private static final String USER_NAME = "admin";
     private static final CharSequence PASSWORD = "admin";
     private static final String API_NAME = "YoutubeFeedszlongName1YoutubeFeedszlongName2YoutubeFeedszlongName3";
-    private static final String API_CONTEXT = "/youtube";
+    private static final String API_CONTEXT = "youtubeContext";
     private static final String API_VERSION = "1.0.0";
     private static final String API_DESCRIPTION = "Youtube Live Feeds";
     private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
@@ -78,10 +78,22 @@ public class TestNameLengthTestCase extends AMIntegrationUiTestBase {
 
     @Test(groups = "wso2.apim", description = "adding new api with long name", dependsOnMethods = "testPublishAPI")
     public void testVerifyAPIName() throws InterruptedException {
-        String apiXpath = "//div[2]/div/div[2]/div/ul/li/div/div/a";
-        driver.findElement(By.linkText("Browse")).click();
         WebDriverWait wait = new WebDriverWait(driver, 60);
+        String apiXpath = "//div[2]/div/div[2]/div/ul/li/div/div/a";
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
+        driver.findElement(By.linkText("Browse")).click();
+        Thread.sleep(5000);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(apiXpath)));
+
+        long startTime = System.currentTimeMillis();
+        long nowTime = startTime;
+
+        while ((driver.findElement(By.xpath(apiXpath))).getText().isEmpty() && (nowTime - startTime) < (180 * 1000)) {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
+            driver.findElement(By.linkText("Browse")).click();
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(apiXpath)));
+            nowTime = System.currentTimeMillis();
+        }
 
         assertTrue(driver.findElement(By.xpath(apiXpath)).getText().contains("YoutubeFeedszlongName1"), "truncated API name found");
         assertEquals(driver.findElement(By.xpath(apiXpath)).getSize().getWidth(), 150, "Expected width of element not matching");

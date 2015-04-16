@@ -11,7 +11,7 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
-public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends AMIntegrationUiTestBase {
+public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends APIMIntegrationUiTestBase {
 
 	private WebDriver driver;
 	private static final String API_DESCRIPTION = "Publish into Gateways";
@@ -34,9 +34,9 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 	public void testPublishApiWithOutEnvironmentTabSelection() throws Exception {
 
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -73,6 +73,7 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("techOwnerMail")).sendKeys("tec@tech.com");
 		driver.findElement(By.id("publish_api")).click();
 		driver.findElement(By.linkText("Edit")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
 		driver.findElement(By.cssSelector("input.btn.btn-primary")).click();
 		driver.findElement(By.cssSelector("a.wizard-done")).click();
 		driver.findElement(By.xpath("//div[@id='item-add']/center/ul/li[3]/a")).click();

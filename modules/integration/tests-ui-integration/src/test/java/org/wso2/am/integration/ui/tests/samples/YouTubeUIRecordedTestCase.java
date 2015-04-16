@@ -29,7 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.ui.tests.AMIntegrationUiTestBase;
+import org.wso2.am.integration.ui.tests.APIMIntegrationUiTestBase;
 import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
@@ -37,7 +37,7 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
  * UI Test case for the Youtube API other.
  * This test case was created using Selenium Record ui method.
  */
-public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
+public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
 
 
@@ -65,9 +65,9 @@ public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
 
         WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.findElement(By.id("username")).clear();
-        driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+        driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("pass")).clear();
-        driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+        driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.id("loginButton")).click();
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
@@ -118,12 +118,13 @@ public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
     @Test(groups = "wso2.greg", dependsOnMethods = {"testPublishAPI"}, description = "verify API subscribe")
     public void testSubscribeAPI() throws Exception {
         WebDriverWait wait = new WebDriverWait(driver, 60);
-        driver.get(getStoreURL());
+        driver.get(getStoreURL() + "/?tenant=carbon.super");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-link")));
         driver.findElement(By.id("login-link")).click();
         driver.findElement(By.id("username")).clear();
-        driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+        driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("password")).clear();
-        driver.findElement(By.id("password")).sendKeys(userInfo.getPassword());
+        driver.findElement(By.id("password")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
@@ -168,22 +169,35 @@ public class YouTubeUIRecordedTestCase extends AMIntegrationUiTestBase {
 
     @Test(groups = "wso2.greg", dependsOnMethods = {"testSubscribeAPI"}, description = "verify subscribed api using RESTClient")
     public void testRestClient() throws Exception {
-        driver.findElement(By.linkText("Themes")).click();
-        driver.findElement(By.xpath("//form[@id='themeSelectForm']/table/tbody/tr/td[2]/div/a/img")).click();
         WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Themes")));
+        driver.findElement(By.linkText("Themes")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//form[@id='themeSelectForm']/table/tbody/tr/td[2]/div/a/img")));
+        driver.findElement(By.xpath("//form[@id='themeSelectForm']/table/tbody/tr/td[2]/div/a/img")).click();
         driver.findElement(By.linkText("Tools")).click();
         driver.findElement(By.linkText("RESTClient")).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Form")));
         driver.findElement(By.linkText("Form")).click();
 
         driver.findElement(By.id("req_url")).clear();
-        driver.findElement(By.id("req_url")).sendKeys(accessHTTPURL + API_METHOD);
+        driver.findElement(By.id("req_url")).sendKeys(accessHTTPURL + API_METHOD + "\n");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.input-large.key")));
         driver.findElement(By.cssSelector("input.input-large.key")).clear();
-        driver.findElement(By.cssSelector("input.input-large.key")).sendKeys("Authorization");
+        driver.findElement(By.cssSelector("input.input-large.key")).sendKeys("Authorization\n");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.input-xxlarge.value")));
         driver.findElement(By.cssSelector("input.input-xxlarge.value")).clear();
-        driver.findElement(By.cssSelector("input.input-xxlarge.value")).sendKeys("Bearer  " + accessToken);
+        driver.findElement(By.cssSelector("input.input-xxlarge.value")).sendKeys("Bearer  " + accessToken + "\n");
         driver.findElement(By.id("sendBtn")).click();
+
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Response Body")));
+
+        long startTime = System.currentTimeMillis();
+        long nowTime = startTime;
+
+        while ((driver.findElement(By.id("responseDivContent")).getText().trim().isEmpty() && (nowTime - startTime) < (30 * 1000))) {
+            nowTime = System.currentTimeMillis();
+        }
 
         Assert.assertTrue(driver.findElement(By.id("responseDivContent")).getText().contains("Twitter"), "Twitter");
         driver.findElement(By.cssSelector("a.link-to-user.dropdown-toggle")).click();

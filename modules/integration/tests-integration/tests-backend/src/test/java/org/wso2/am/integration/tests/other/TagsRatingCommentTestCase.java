@@ -107,8 +107,8 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("CommentRatingAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("CommentRatingAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =

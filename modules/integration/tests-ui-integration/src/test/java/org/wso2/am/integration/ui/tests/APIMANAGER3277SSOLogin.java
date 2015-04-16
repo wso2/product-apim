@@ -31,15 +31,15 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
  * This test should run with the following configuration
  * Configure AM and IS to use in SSO mode
  */
-public class APIMANAGER3277SSOLogin extends AMIntegrationUiTestBase {
+public class APIMANAGER3277SSOLogin extends APIMIntegrationUiTestBase {
 
 	private WebDriver driver;
        private String TEST_DATA_PASSWORD = "admin", TEST_DATA_FULL_USERNAME = "admin@carbon.super",
-            USERNAME_FIELD = "username", PASSWORD_FIELD = "password";
+            USERNAME_FIELD = "username", PASSWORD_FIELD = "pass";
        protected String publisherURL;
 
 	@BeforeClass(alwaysRun = true)
-	protected void init() throws Exception {
+	protected void setEnvironment() throws Exception {
 		super.init();
 		driver = BrowserManager.getWebDriver();
 		publisherURL = getPublisherURL();
@@ -47,7 +47,7 @@ public class APIMANAGER3277SSOLogin extends AMIntegrationUiTestBase {
 
 	@Test(groups = "wso2.am")
 	public void loginToPublisher() throws Exception {
-		WebDriverWait wait = new WebDriverWait(driver, 10);
+		WebDriverWait wait = new WebDriverWait(driver, 60);
 		// login to publisher
 		driver.get(publisherURL + "/site/pages/login.jag");
 		// wait until load the page
@@ -55,14 +55,12 @@ public class APIMANAGER3277SSOLogin extends AMIntegrationUiTestBase {
 		driver.findElement(By.id(USERNAME_FIELD)).clear();
 		driver.findElement(By.id(USERNAME_FIELD)).sendKeys(TEST_DATA_FULL_USERNAME);
 
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(PASSWORD_FIELD)));
 		// this is the password field in IS sso login page
-		if (driver.findElement(By.id(PASSWORD_FIELD)) != null) {
-			driver.findElement(By.id(PASSWORD_FIELD)).clear();
-			driver.findElement(By.id(PASSWORD_FIELD)).sendKeys(TEST_DATA_PASSWORD);
+		driver.findElement(By.id(PASSWORD_FIELD)).clear();
+		driver.findElement(By.id(PASSWORD_FIELD)).sendKeys(TEST_DATA_PASSWORD);
 
-			driver.findElement(By.cssSelector(".btn")).click();
-		}
-
+		driver.findElement(By.cssSelector(".btn")).click();
 		// wait until load the page
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		// if element present, test it successful

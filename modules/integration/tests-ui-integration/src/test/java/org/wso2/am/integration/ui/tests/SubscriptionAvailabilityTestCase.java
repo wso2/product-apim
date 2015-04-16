@@ -19,14 +19,13 @@
 package org.wso2.am.integration.ui.tests;
 
 
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
@@ -35,11 +34,12 @@ import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
 import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
+import java.util.concurrent.TimeUnit;
 
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
-public class SubscriptionAvailabilityTestCase extends AMIntegrationUiTestBase {
+public class SubscriptionAvailabilityTestCase extends APIMIntegrationUiTestBase {
 	private WebDriver driver;
 	
 	private static final String TEST_DATA_TENANT_DOMAIN = "test3.org";
@@ -54,7 +54,7 @@ public class SubscriptionAvailabilityTestCase extends AMIntegrationUiTestBase {
 	
     
 	@BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
         driver.get(getLoginURL());
@@ -63,10 +63,13 @@ public class SubscriptionAvailabilityTestCase extends AMIntegrationUiTestBase {
 	@Test(groups = "wso2.am", description = "This method adds and publishes the Test API in carbon.super store")
     public void testcreateAndPublishAPI() throws Exception {
 		String loginURL = getPublisherURL();
-		HttpContext httpContext = TestUtil.login(userInfo.getUserName(), userInfo.getPassword(), loginURL);			
+		HttpContext httpContext = TestUtil.login(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword(), loginURL);
 	
-		assertTrue(TestUtil.addAPI(userInfo.getUserName(), TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
-		assertTrue(TestUtil.publishAPI(userInfo.getUserName(), TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
+		assertTrue(TestUtil.addAPI(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
+		assertTrue(TestUtil.publishAPI(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
 		
         System.out.println("API Create and Publish test case is completed ");
     }
@@ -79,7 +82,8 @@ public class SubscriptionAvailabilityTestCase extends AMIntegrationUiTestBase {
     public void testTenantCreation() throws Exception {
 
         LoginPage test = new LoginPage(driver);
-        test.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         addNewTenantHome.addNewTenant(TEST_DATA_TENANT_DOMAIN, TEST_DATA_TENANT_FIRST_NAME, TEST_DATA_TENANT_LAST_NAME, 
@@ -123,15 +127,20 @@ public class SubscriptionAvailabilityTestCase extends AMIntegrationUiTestBase {
         
         //select API
         driver.navigate().to(getStoreURL() + "/apis/info?name=" + TEST_DATA_API_NAME
-                             + "&version=" + TEST_DATA_API_VERSION + "&provider=" + userInfo.getUserName() + "&tenant=" + SUPER_TENANT_DOMAIN_NAME);        
+                             + "&version=" + TEST_DATA_API_VERSION + "&provider=" +
+                gatewayContext.getContextTenant().getContextUser().getUserName() + "&tenant=" + SUPER_TENANT_DOMAIN_NAME);
         
       
-        assertFalse(driver.getPageSource().contains("subscribe-button"), "Subscription availability of " + userInfo.getUserName() + "-" 
+        assertFalse(driver.getPageSource().contains("subscribe-button"), "Subscription availability of " +
+                gatewayContext.getContextTenant().getContextUser().getUserName() + "-"
         				+ TEST_DATA_API_NAME + "-" + TEST_DATA_API_VERSION + " is \'Available to current Tenant only\'. " +
         						"Hence Subscribe option shouldn't be visible to Tenant " + TEST_DATA_TENANT_DOMAIN);
         driver.close();
         
 	}
-
+    @AfterClass(alwaysRun = true)
+    public void tearDown() throws Exception {
+        driver.quit();
+    }
 
 }

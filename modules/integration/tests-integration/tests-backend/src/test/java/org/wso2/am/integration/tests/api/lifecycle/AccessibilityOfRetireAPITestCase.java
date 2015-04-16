@@ -106,7 +106,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     public void testAvailabilityOfRetiredAPIInStore() throws Exception {
         //  Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList = APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(
-                apiStoreClientUser1.getAPI(API1_NAME));
+                apiStoreClientUser1.getAPI());
         assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), false,
                 "Api is  visible in API Store after retire." + getAPIIdentifierString(apiIdentifierAPI1Version1));
 

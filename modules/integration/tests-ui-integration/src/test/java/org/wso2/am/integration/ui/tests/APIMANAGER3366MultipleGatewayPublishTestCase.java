@@ -37,7 +37,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class APIMANAGER3366MultipleGatewayPublishTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegrationUiTestBase {
 	private WebDriver driver;
 	private static final String API_DESCRIPTION = "Publish into Gateways";
 	private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
@@ -55,13 +55,13 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends AMIntegrationU
 
 	}
 
-	@Test(groups = "wso2.am", description = "publish api without environment tab selection")
+	@Test(groups = "wso2.am", description = "publish api without environment tab selection" , enabled = false)
 	public void testPublishApiWithOutEnvironmentTabSelection() throws Exception {
 
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -96,12 +96,12 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends AMIntegrationU
 
 	}
 
-	@Test(groups = "wso2.am", description = "published with select environments section")
+	@Test(groups = "wso2.am", description = "published with select environments section", enabled = false)
 	public void testPublishApiWithEnvironmentTabSelection() throws Exception {
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -143,9 +143,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends AMIntegrationU
 	@Test(groups = "wso2.am", description = "published with deselect environment")
 	public void testPublishApiWithDeSelectEnvironment() throws Exception {
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -172,6 +172,7 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends AMIntegrationU
 		driver.findElement(By.xpath("//button[@type='button']")).click();
 		driver.findElement(By.xpath("//input[@value='Gold']")).click();
 		driver.findElement(By.cssSelector("legend.legend-with-hidden-info.js_hidden_section_title")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.env")));
 		WebElement checkBox = driver.findElement(By.cssSelector("input.env"));
 		if (checkBox.isSelected()) {
 			checkBox.click();

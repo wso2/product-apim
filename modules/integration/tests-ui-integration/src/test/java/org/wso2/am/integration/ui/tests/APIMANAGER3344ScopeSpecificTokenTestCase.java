@@ -32,7 +32,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
-public class APIMANAGER3344ScopeSpecificTokenTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiTestBase {
 	private WebDriver driver;
 	private String publisherURL;
 	private String storeURL;
@@ -58,8 +58,8 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends AMIntegrationUiTes
 		driver.get(publisherURL + "/site/pages/login.jag");
 		WebElement userNameField = driver.findElement(By.id("username"));
 		WebElement passwordField = driver.findElement(By.id("pass"));
-		userNameField.sendKeys(userInfo.getUserName());
-		passwordField.sendKeys(userInfo.getPassword());
+		userNameField.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		passwordField.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 
 		//add api details
@@ -68,39 +68,58 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends AMIntegrationUiTes
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name")));
 		driver.findElement(By.id("name")).clear();
 		driver.findElement(By.id("name")).sendKeys("Twitter");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("context")));
 		driver.findElement(By.id("context")).clear();
 		driver.findElement(By.id("context")).sendKeys("twitter");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("version")));
 		driver.findElement(By.id("version")).clear();
 		driver.findElement(By.id("version")).sendKeys("1.0");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("resource_url_pattern")));
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("tweet");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.http_verb_select")));
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("resource_url_pattern")));
 		driver.findElement(By.id("add_resource")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("context")));
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("retweet");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.http_verb_select")));
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("add_resource")));
 		driver.findElement(By.id("add_resource")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("resource_url_pattern")));
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("view");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.http_verb_select")));
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("add_resource")));
 		driver.findElement(By.id("add_resource")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("resource_url_pattern")));
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("delete");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.http_verb_select")));
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("add_resource")));
 		driver.findElement(By.id("add_resource")).click();
 
 		//go to implement and select specify inline
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_implement")));
 		driver.findElement(By.id("go_to_implement")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(
 				By.xpath("(//input[@name='implementation_methods'])[2]")));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//input[@name='implementation_methods'])[2]")));
 		driver.findElement(By.xpath("(//input[@name='implementation_methods'])[2]")).click();
 
 		//go to manage
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
 		driver.findElement(By.id("go_to_manage")).click();
 		wait.until(ExpectedConditions
 				           .visibilityOfElementLocated(By.xpath("//button[@type='button']")));
 		driver.findElement(By.xpath("//button[@type='button']")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@value='Unlimited']")));
 		driver.findElement(By.xpath("//input[@value='Unlimited']")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#layout-base > div.row-fluid")));
 		driver.findElement(By.cssSelector("#layout-base > div.row-fluid")).click();
 
 		//define scopes
@@ -140,21 +159,21 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends AMIntegrationUiTes
 		// Find and fill Username
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
 		WebElement usernameEle = driver.findElement(By.id("username"));
-		usernameEle.sendKeys(userInfo.getUserName());
+		usernameEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 
 		// Find and fill Password
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("password")));
 
 		WebElement passwordEle = driver.findElement(By.id("password"));
-		passwordEle.sendKeys(userInfo.getPassword());
+		passwordEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 
 		// find Login button and click on it.
 		driver.findElement(By.id("loginBtn")).click();
 		threadWait(1000);
 
 		//go to my applications and add an application
-		driver.findElement(By.linkText("My Applications")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("My Applications")));
+		driver.findElement(By.linkText("My Applications")).click();
 		driver.findElement(By.id("application-name")).clear();
 		driver.findElement(By.id("application-name")).sendKeys("app01");
 		driver.findElement(By.id("application-add-button")).click();

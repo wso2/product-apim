@@ -38,7 +38,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 /**
  * In order to run this test case, there needs to mount registry in API Manager
  */
-public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrationUiTestBase {
 
     public static final String PUBLISHED = "PUBLISHED";
     //public static final String AVAILABLE_TO_ALL_TENANTS = "Available to all the Tenants";
@@ -56,7 +56,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
             TEST_DATA_API_VERSION = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
-    protected void init() throws Exception {
+    protected void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
     }
@@ -64,7 +64,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
 
     public void generateTenant(String postfix) throws Exception {
 
-        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebDriverWait wait = new WebDriverWait(driver, 30);
         // wait until load the page
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#menu-panel-button3 > span")));
 
@@ -94,8 +94,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
     @Test(groups = "wso2.am")
     public void checkCrossTenantSubscription() throws Exception {
 
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-
+        WebDriverWait wait = new WebDriverWait(driver, 60);
 
         driver.get(getLoginURL());
 
@@ -103,14 +102,13 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("txtUserName")));
 
         driver.findElement(By.id("txtUserName")).clear();
-        driver.findElement(By.id("txtUserName")).sendKeys(userInfo.getUserName());
+        driver.findElement(By.id("txtUserName")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("txtPassword")).clear();
-        driver.findElement(By.id("txtPassword")).sendKeys(userInfo.getPassword());
+        driver.findElement(By.id("txtPassword")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.cssSelector("input.button")).click();
         // create two tenant
         generateTenant("1");
         generateTenant("2");
-
 
         //login to publisher
         driver.get(getPublisherURL() + "/site/pages/login.jag");
@@ -150,18 +148,22 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         driver.findElement(By.id("publish_api")).click();
 
         //check whether the publish is success
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("lifecyclesLink")));
         driver.findElement(By.id("lifecyclesLink")).click();
 
         //browse store
         driver.get(getStoreURL() + "?tenant=test2.com");
+        driver.navigate().refresh();
 
         log.info("Started to Login to Store");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-link")));
         driver.findElement(By.id("login-link")).click();
         WebElement userNameField = driver.findElement(By.id("username"));
         WebElement passwordField = driver.findElement(By.id("password"));
 
         userNameField.sendKeys("admin@test2.com");
         passwordField.sendKeys(TEST_DATA_PASSWORD);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
         //check the presence of admin name in store home page to verify the user has logged to store.
@@ -174,10 +176,8 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         Thread.sleep(30000);
         driver.navigate().refresh();
 
-
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector(".title")));
-
         driver.findElement(By.cssSelector(".title")).click();
 
         new Select(driver.findElement(By.id("application-list"))).selectByVisibleText(DEFAULT_APPLICATION);
@@ -185,19 +185,21 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends AMIntegration
         driver.findElement(By.id("subscribe-button")).click();
 
         //restart the server to unload the tenants
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.restartGracefully();
 
         //browse store
         driver.get(getStoreURL() + "?tenant=test2.com");
 
         log.info("Started to Login to Store");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-link")));
         driver.findElement(By.id("login-link")).click();
         WebElement userNameField1 = driver.findElement(By.id("username"));
         WebElement passwordField1 = driver.findElement(By.id("password"));
 
         userNameField1.sendKeys("admin@test2.com");
         passwordField1.sendKeys(TEST_DATA_PASSWORD);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
         //check the presence of admin name in store home page to verify the user has logged to store.

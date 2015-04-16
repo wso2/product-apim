@@ -23,6 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -32,7 +34,7 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 /**
  * This test class is added to test the pagination when doing a api search
  */
-public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestBase {
+public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTestBase {
     private WebDriver driver;
     private String publisherURL;
     private String storeURL;
@@ -45,7 +47,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
         driver = BrowserManager.getWebDriver();
 
         publisherURL = getPublisherURL();
-        storeURL = getPublisherURL();
+        storeURL = getStoreURL();
     }
 
     @Test(groups = "wso2.am", description = "verify login to api manager")
@@ -56,13 +58,13 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
         WebElement userNameField = driver.findElement(By.id("username"));
         WebElement passwordField = driver.findElement(By.id("pass"));
 
-        userNameField.sendKeys(userInfo.getUserName());
-        passwordField.sendKeys(userInfo.getPassword());
+        userNameField.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+        passwordField.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.id("loginButton")).click();
 
         // Adding 13 APIS
         for (int i = 0; i < 13; i++) {
-            publishAPI("testApi" + i, "/context" + i);
+            publishAPI("testApi" + i, "context" + i);
         }
 
         try {
@@ -72,7 +74,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
         }
 
         // Searching in store
-        driver.get(storeURL + "/site/pages/list-apis.jag");
+        driver.get(storeURL + "/site/pages/list-apis.jag?tenant=carbon.super");
         WebElement searchTxtBox = driver.findElement(By.name("query"));
         searchTxtBox.sendKeys("testApi");
         driver.findElement(By.className("search-button")).click();
@@ -106,6 +108,8 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
 
     public void publishAPI(String apiname, String apicontext) {
 
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+
         driver.findElement(By.linkText("Add")).click();
 
         WebElement name = driver.findElement(By.id("name"));
@@ -129,6 +133,8 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
         } catch (InterruptedException e) {
             log.warn("Interrupted Exception while saving resource " + e);
         }
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
         driver.findElement(By.cssSelector("input.btn.btn-primary")).click();
 
         // waiting until API is saved
@@ -155,8 +161,11 @@ public class APIMANAGER3154StoreSearchResultDisplay extends AMIntegrationUiTestB
         }
 
         // setting the tier
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@type='button']")));
         driver.findElement(By.xpath("//button[@type='button']")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//form[@id='manage_form']/fieldset/div[2]/div/div/ul/li[2]/a/label")));
         driver.findElement(By.xpath("//form[@id='manage_form']/fieldset/div[2]/div/div/ul/li[2]/a/label")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
         driver.findElement(By.id("publish_api")).click();
 
         // waiting to finish the API state update

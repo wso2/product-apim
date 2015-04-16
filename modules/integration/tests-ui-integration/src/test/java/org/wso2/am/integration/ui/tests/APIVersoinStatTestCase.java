@@ -23,6 +23,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
@@ -31,14 +32,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
 
-public class APIVersoinStatTestCase extends AMIntegrationUiTestBase {
+public class APIVersoinStatTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
 
     private static final String TEST_DATA_API_NAME = "SubAvailabilityTestAPI";
     private static final String TEST_DATA_API_VERSION = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
         driver.get(getLoginURL());
@@ -70,7 +71,8 @@ public class APIVersoinStatTestCase extends AMIntegrationUiTestBase {
                 By.className("versionTxt")));
         // Go to test API
         driver.navigate().to(getPublisherURL() + "/info?name=" + TEST_DATA_API_NAME
-                             + "&version=" + TEST_DATA_API_VERSION + "&provider=" + userInfo.getUserName());
+                             + "&version=" + TEST_DATA_API_VERSION + "&provider=" +
+                gatewayContext.getContextTenant().getContextUser().getUserName());
 
         //click on versions tab
         wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -88,7 +90,12 @@ public class APIVersoinStatTestCase extends AMIntegrationUiTestBase {
         assertTrue(driver.findElement(By.xpath("//div[@id=\"versionChart\"]/span")).getText().contains("No Data Found"));
         assertTrue(driver.findElement(By.xpath("//div[@id=\"versionUserChart\"]/span")).getText().contains("No Data Found"));
 
-        driver.close();
+    }
 
+    @AfterClass(alwaysRun = true)
+    public void tearDown() throws Exception {
+        if (driver != null) {
+            driver.quit();
+        }
     }
 }

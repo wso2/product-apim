@@ -164,8 +164,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
                 "url-no-need", "summary", "");
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("HostObjectTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("HostObjectTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =

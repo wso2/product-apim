@@ -2,4 +2,13 @@
 
 <suite name="APPServer-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
+
+    <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
+        <packages>
+            <package name="org.wso2.am.integration.ui.tests.*"/>
+        </packages>
+        <!--<classes>
+            <class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>
+        </classes>-->
+    </test>
 </suite>

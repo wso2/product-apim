@@ -92,7 +92,7 @@ public class PublisherHomePage extends PageHandler {
      * @return value of the APIView UI element
      */
     public String getAPIViewText() throws IOException {
-        return getTextOfElementById("publisher.api.apiview.id");
+        return getTextOfElementById("publisher.api.apiview.id",  30);
     }
 
     /**

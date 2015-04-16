@@ -44,7 +44,7 @@ import static org.testng.Assert.assertTrue;
     Need to configure LB with APIM 1.8 and run the test case
     note that replace the server urls with LB urls
  */
-public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiTestBase {
+public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationUiTestBase {
     private String TEST_DATA_API_NAME = "APIMANAGER3412";
     private String TEST_DATA_API_VERSION = "1.0.0";
     private String TEST_DATA_TENANT = "apimanager3412.com";
@@ -59,7 +59,7 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
     private String storeURL;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         publisherURL = getPublisherURL();
         storeURL = getStoreURL();
@@ -72,7 +72,7 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
     public void createTenantAndAPI() throws Exception {
         driver.get(getLoginURL());
         LoginPage login = new LoginPage(driver);
-        login.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(), gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";

@@ -56,6 +56,7 @@ public class StoreHomePage extends PageHandler {
      * @param password Password
      */
     public void loginAs(String userName, CharSequence password) throws IOException {
+        waitUntilElementVisibilityByLinkText("store.login.link", 60);
         clickElementByLinkText("store.login.link");
         fillTextBoxById("store.login.username.id", userName);
         fillTextBoxById("store.login.password.id", password);

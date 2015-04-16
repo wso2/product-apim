@@ -18,7 +18,7 @@
 package org.wso2.am.integration.test.utils.base;
 
 /**
- * define constants that are used in the automation.xml
+ * define constants that are used in APIM integration tests
  */
 public class APIMIntegrationConstants {
     public static final String AM_PRODUCT_GROUP_NAME = "APIM";

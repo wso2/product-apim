@@ -41,7 +41,7 @@ import static org.testng.Assert.assertTrue;
     Need to configure LB with APIM 1.8 and run the test case
     note that replace the server urls with LB urls
  */
-public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegrationUiTestBase {
+public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrationUiTestBase {
     private String TEST_DATA_API_NAME = "APIMANAGER3363";
     private String TEST_DATA_API_VERSION = "1.0.0";
     private String TEST_DATA_TENANT = "apimanager3363.com";
@@ -54,7 +54,7 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
     private String publisherURL;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
         driver.get(getLoginURL());
@@ -65,7 +65,8 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
     @Test(groups = "wso2.am", description = "Create tenant and api")
     public void createTenantAndAPI() throws Exception {
         LoginPage login = new LoginPage(driver);
-        login.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
@@ -111,16 +112,17 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
         driver.findElement(By.id("summary")).sendKeys("test");
         driver.findElement(By.id("saveDocBtn")).click();
 
-        Thread.sleep(120 * 1000); // waiting to publish API in store
+        Thread.sleep(60 * 1000); // waiting to publish API in store
 
         // go to store > API > API Console
         driver.get(getStoreURL() + "?tenant=" + TEST_DATA_TENANT);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_API_NAME)));
-
         driver.findElement(By.linkText(TEST_DATA_API_NAME)).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("API Console")));
         driver.findElement(By.linkText("API Console")).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.info_title")));
         // API name is visible if the page loaded successfully
         assertEquals(driver.findElement(By.cssSelector("div.info_title")).getText(), TEST_DATA_API_NAME);
     }

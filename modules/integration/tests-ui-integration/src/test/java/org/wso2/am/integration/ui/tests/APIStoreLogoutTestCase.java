@@ -1,7 +1,5 @@
 package org.wso2.am.integration.ui.tests;
 
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -14,15 +12,17 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
-import static org.testng.Assert.assertTrue;
+import java.util.concurrent.TimeUnit;
+
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * This test class verifies the fix for
  * https://wso2.org/jira/browse/APIMANAGER-3224
  *
  */
-public class APIStoreLogoutTestCase extends AMIntegrationUiTestBase {
+public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 
 	private WebDriver driver;
 
@@ -31,7 +31,7 @@ public class APIStoreLogoutTestCase extends AMIntegrationUiTestBase {
 	private static final String SUPER_TENANT_DOMAIN_NAME = "carbon.super";
 
 	@BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
+	public void setEnvironment() throws Exception {
 		super.init();
 		driver = BrowserManager.getWebDriver();
 		driver.get(getLoginURL());
@@ -41,12 +41,13 @@ public class APIStoreLogoutTestCase extends AMIntegrationUiTestBase {
 	public void testcreateAndPublishAPI() throws Exception {
 		String loginURL = getPublisherURL();
 		HttpContext httpContext =
-		                          TestUtil.login(userInfo.getUserName(), userInfo.getPassword(),
+		                          TestUtil.login(gatewayContext.getContextTenant().getContextUser().getUserName(),
+										  gatewayContext.getContextTenant().getContextUser().getPassword(),
 		                                         loginURL);
 
-		assertTrue(TestUtil.addAPI(userInfo.getUserName(), TEST_DATA_API_NAME,
+		assertTrue(TestUtil.addAPI(gatewayContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
 		                           TEST_DATA_API_VERSION, httpContext, loginURL));
-		assertTrue(TestUtil.publishAPI(userInfo.getUserName(), TEST_DATA_API_NAME,
+		assertTrue(TestUtil.publishAPI(gatewayContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
 		                               TEST_DATA_API_VERSION, httpContext, loginURL));
 
 		System.out.println("API Create and Publish test case is completed ");
@@ -58,19 +59,19 @@ public class APIStoreLogoutTestCase extends AMIntegrationUiTestBase {
 		// Go to the Tenant store and click Login
 		driver.get(getStoreURL() + "?tenant=" +
 		           SUPER_TENANT_DOMAIN_NAME);
-		WebDriverWait wait = new WebDriverWait(driver, 30);
+		WebDriverWait wait = new WebDriverWait(driver, 60);
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Login")));
 		driver.findElement(By.linkText("Login")).click();
 
 		// Find and fill Username
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
 		WebElement usernameEle = driver.findElement(By.id("username"));
-		usernameEle.sendKeys(userInfo.getUserName());
+		usernameEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 
 		// Find and fill Password
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("password")));
 		WebElement passwordEle = driver.findElement(By.id("password"));
-		passwordEle.sendKeys(userInfo.getPassword());
+		passwordEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 
 		// find Login button and click on it.
 		driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
@@ -79,17 +80,16 @@ public class APIStoreLogoutTestCase extends AMIntegrationUiTestBase {
 		// select API
 		driver.navigate().to(getStoreURL() + "/apis/info?name=" +
 		                             TEST_DATA_API_NAME + "&version=" + TEST_DATA_API_VERSION +
-		                             "&provider=" + userInfo.getUserName() + "&tenant=" +
+		                             "&provider=" + gatewayContext.getContextTenant().getContextUser().getUserName() + "&tenant=" +
 		                             SUPER_TENANT_DOMAIN_NAME);
 
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(userInfo.getUserName())));
-		driver.findElement(By.linkText(userInfo.getUserName())).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())));
+		driver.findElement(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())).click();
 
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("logout-link")));
 		driver.findElement(By.id("logout-link")).click();
 
 		assertFalse(driver.getPageSource().contains("Error 500"), "500 error when Logout");
-		driver.close();
 	}
 
 	@AfterClass(alwaysRun = true)

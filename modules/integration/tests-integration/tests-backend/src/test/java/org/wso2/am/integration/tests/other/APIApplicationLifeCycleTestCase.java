@@ -127,7 +127,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName("APILifeCycleTestAPI-application");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("APILifeCycleTestAPI-application");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("APILifeCycleTestAPI-application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -199,7 +199,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest1.setApplicationName("test-application");
         apiStore.subscribe(subscriptionRequest1);
-        GenerateAppKeyRequest generateAppKeyRequest1 = new GenerateAppKeyRequest("test-application");
+        APPKeyRequestGenerator generateAppKeyRequest1 = new APPKeyRequestGenerator("test-application");
         String responseString1 = apiStore.generateApplicationKey(generateAppKeyRequest1).getData();
         JSONObject response1 = new JSONObject(responseString1);
         String accessToken1 = response1.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -446,7 +446,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
                 "Can not subscribe to the old API version");
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
@@ -615,7 +615,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(apiData.contains("{\"error\" : false, \"status\" : \"UNBLOCKED\"}"),
                 "Can not subscribe to the old API version");
 
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest("DefaultApplication");
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
