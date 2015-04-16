@@ -22,11 +22,11 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -81,7 +81,7 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiPublisher.addAPI(apiRequest);
-        APIBean apiBean = APIMgtTestUtil
+        APIBean apiBean = APIMTestCaseUtils
                 .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);

@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -19,12 +19,11 @@
 package org.wso2.am.integration.test.utils.bean;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public abstract class AbstractRequest {
     public String action;
-    private Map parameterMap = new HashMap<String, String>();
+    private Map<String, String> parameterMap = new HashMap<String, String>();
     private static final String ACTION_PARAMETER_VALUE = "action";
 
     /**
@@ -37,12 +36,16 @@ public abstract class AbstractRequest {
         setAction();
         init();
         String requestParams = ACTION_PARAMETER_VALUE + "=" + action;
-        Iterator<String> irt = parameterMap.keySet().iterator();
-        while (irt.hasNext()) {
-            String key = irt.next();
-            requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
+        StringBuilder bufferAppender = new StringBuilder();
+        bufferAppender.append(requestParams);
+        for (Object o : parameterMap.keySet()) {
+            String key = (String) o;
+            bufferAppender.append("&");
+            bufferAppender.append(key);
+            bufferAppender.append("=");
+            bufferAppender.append(parameterMap.get(key));
         }
-        return requestParams;
+        return bufferAppender.toString();
     }
 
     /**
@@ -56,12 +59,16 @@ public abstract class AbstractRequest {
         setAction();
         init();
         String requestParams = ACTION_PARAMETER_VALUE + "=" + actionName;
-
-        for (String key : (Iterable<String>) parameterMap.keySet()) {
-            requestParams = requestParams + "&" + key + "=" + parameterMap.get(key);
+        StringBuilder bufferAppender = new StringBuilder();
+        bufferAppender.append(requestParams);
+        for (Object o : parameterMap.keySet()) {
+            String key = (String) o;
+            bufferAppender.append("&");
+            bufferAppender.append(key);
+            bufferAppender.append("=");
+            bufferAppender.append(parameterMap.get(key));
         }
-
-        return requestParams;
+        return bufferAppender.toString();
     }
 
     public void addParameter(String key, String value) {

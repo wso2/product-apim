@@ -175,10 +175,10 @@ public class APIStoreRestClient {
             checkAuthentication();
             Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
             String basicAuthHeader = consumeKey + ":" + consumerSecret;
-            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes());
+            byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
 
             authenticationRequestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes));
+            authenticationRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
 
             return HttpRequestUtil.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
 

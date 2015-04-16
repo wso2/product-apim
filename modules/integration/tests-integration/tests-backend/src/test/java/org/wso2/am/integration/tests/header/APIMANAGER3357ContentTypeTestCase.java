@@ -53,8 +53,8 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
                 File.separator + "property" + File.separator +
                 "CONTENT_TYPE_TEST.xml";
         OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
-        apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
-                session);
+        apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
+                                                     session);
         Thread.sleep(5000);
 
     }

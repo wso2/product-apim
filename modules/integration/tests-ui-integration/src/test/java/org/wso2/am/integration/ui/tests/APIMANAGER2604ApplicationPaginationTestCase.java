@@ -31,6 +31,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 public class APIMANAGER2604ApplicationPaginationTestCase extends APIMIntegrationUiTestBase {
 
@@ -51,7 +52,7 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends APIMIntegration
 
         WebDriverWait wait = new WebDriverWait(driver, 60);
 
-        driver.get(getStoreURL() + "/?tenant=carbon.super");
+        driver.get(getStoreURL() + "/?tenant=" + MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
 
         log.info("Started to Login to Store");
         driver.findElement(By.id("login-link")).click();
@@ -69,7 +70,7 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends APIMIntegration
 
         log.info("browsing the application adding page");
         //browsing the application adding page.
-        driver.get(getStoreURL() + "/site/pages/applications.jag?tenant=carbon.super");
+        driver.get(getStoreURL() + "/site/pages/applications.jag?tenant=" + MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
 
         for (int i = 0; i <= 20; i++) {
             createApplication("testApp" + i);

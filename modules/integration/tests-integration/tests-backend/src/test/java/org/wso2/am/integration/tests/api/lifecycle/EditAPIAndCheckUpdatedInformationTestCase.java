@@ -21,9 +21,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -84,7 +84,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     public void testUpdatedAPIInformationFromAPIPublisher() throws Exception {
 
         APIBean apiBeanAfterUpdate =
-                APIMgtTestUtil.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
+                APIMTestCaseUtils.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
                         API1_NAME, API1_PROVIDER_NAME, API_VERSION1));
         assertEquals(apiBeanAfterUpdate.getDescription(), apiNewDescription, "Updated Description is not available");
         assertTrue(apiBeanAfterUpdate.getTags().contains(newTag), "Newly added Tag is not available");

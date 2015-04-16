@@ -27,11 +27,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -163,10 +163,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         String url = gatewayUrls.getWebAppURLNhttp() + "tokenTest/1.0.0";
 
-        APIMgtTestUtil.sendGetRequest(url, accessToken);
+        APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
-        String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -282,12 +282,12 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         String url = gatewayUrls.getWebAppURLNhttp() + "tokenTest/1.0.0/";
 
-        APIMgtTestUtil.sendGetRequest(url, accessToken);
+        APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
         Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"), "JWT assertion not in the header");
 
-        String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -355,10 +355,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
         String url = gatewayUrls.getWebAppURLNhttp() + "t/wso2.com/tokenTest/1.0.0/";
-        APIMgtTestUtil.sendGetRequest(url, accessToken);
+        APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
-        String decodedJWTString = APIMgtTestUtil.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
 
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 

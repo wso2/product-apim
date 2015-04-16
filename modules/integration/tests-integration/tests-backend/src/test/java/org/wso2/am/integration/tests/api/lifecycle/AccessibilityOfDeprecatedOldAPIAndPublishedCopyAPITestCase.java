@@ -22,9 +22,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -118,8 +118,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     public void testVisibilityOfOldAPIInStoreAfterDeprecate() throws Exception {
         //Verify the API in API Store
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
                      "Old API version is not visible in API Store after deprecate." +
                      getAPIIdentifierString(apiIdentifierAPI1Version1));
 
@@ -131,8 +131,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
     public void testVisibilityOfNewAPIInStore() throws Exception {
         //Verify the API in API Store
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList), true,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList), true,
                      "New API version is not visible in API Store after deprecate the old version." +
                      getAPIIdentifierString(apiIdentifierAPI1Version2));
 

@@ -41,7 +41,6 @@ class WireMonitor extends Thread {
         InputStream in = null;
 
         try {
-
             // creating a server socket
             providerSocket = new ServerSocket(port, 10);
 
@@ -94,12 +93,11 @@ class WireMonitor extends Thread {
             throw new IllegalStateException("wire monitor error occurred", ioException);
 
         } finally {
-
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    log.error("Stream close exception", e);
+                    log.warn("Stream close exception", e);
                 }
             }
 
@@ -107,7 +105,7 @@ class WireMonitor extends Thread {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    log.error("Stream close exception", e);
+                    log.warn("Stream close exception", e);
                 }
             }
             try {
