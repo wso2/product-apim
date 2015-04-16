@@ -1,6 +1,5 @@
-package org.wso2.am.integration.test.utils.bean;
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -17,14 +16,15 @@ package org.wso2.am.integration.test.utils.bean;
 *under the License.
 */
 
+package org.wso2.am.integration.test.utils.bean;
+
+
 /**
  * API life cycle state used too update API's in test cases
  */
 public enum APILifeCycleState {
-
-    PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"), BLOCKED("BLOCKED"),
-    RETIRED("RETIRED");
-
+    PUBLISHED("PUBLISHED"), CREATED("CREATED"), DEPRECATED("DEPRECATED"),
+    BLOCKED("BLOCKED"), RETIRED("RETIRED");
     private String state;
 
     APILifeCycleState(String state) {

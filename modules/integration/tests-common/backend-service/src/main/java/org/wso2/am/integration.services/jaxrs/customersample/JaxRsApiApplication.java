@@ -20,7 +20,12 @@ package org.wso2.am.integration.services.jaxrs.customersample;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
+import java.util.Set;
 
 @ApplicationPath( "api" )
 public class JaxRsApiApplication extends Application {
+    @Override
+    public Set<Class<?>> getClasses() {
+        return null;
+    }
 }

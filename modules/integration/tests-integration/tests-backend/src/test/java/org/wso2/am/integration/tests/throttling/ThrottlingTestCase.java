@@ -40,7 +40,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 	String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
-	public void init() throws Exception {
+	public void setEnvironment() throws Exception {
 	    /*
         Before run this test we need to add throttling tiers xml file to registry and also we need to deploy API
         to gateway Server.

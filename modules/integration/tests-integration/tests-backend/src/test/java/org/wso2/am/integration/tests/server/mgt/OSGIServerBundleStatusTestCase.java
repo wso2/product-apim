@@ -51,7 +51,7 @@ public class OSGIServerBundleStatusTestCase {
     private PrintStream out;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         // to start the server from a different port offset
         serverPropertyMap.put("-DportOffset", "1");
         // start with OSGI component service

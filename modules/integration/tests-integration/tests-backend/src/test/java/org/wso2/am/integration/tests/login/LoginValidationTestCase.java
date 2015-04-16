@@ -44,7 +44,7 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
     private UserManagementClient userManagementClient;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
