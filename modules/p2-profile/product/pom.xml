@@ -348,9 +348,11 @@
                                 <!-- end reporting features -->
 
                                 <!--API Management related feature-->
-                                <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.feature:0.9.0.ALPHA4.wso2v1</featureArtifactDef>
+                                <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.feature:0.9.0.ALPHA4.wso2v7</featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs.modules:carbon.feature:${carbon.feature.version}</featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs.modules:process.feature:${process.feature.version}</featureArtifactDef>
+				<featureArtifactDef>org.jaggeryjs.modules:i18n.feature:${i18n.feature.version}</featureArtifactDef>
+
                                 <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${apimgt.feature.version}</featureArtifactDef>
 								<featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${stratos.version}</featureArtifactDef>
 
@@ -807,7 +809,7 @@
                                 <!--API Management related feature-->
                                <feature>
                                     <id>org.jaggeryjs.feature.group</id>
-                                    <version>0.9.0.ALPHA4.wso2v1</version>
+                                    <version>0.9.0.ALPHA4.wso2v7</version>
                                 </feature>
                                 <feature>
                                     <id>org.jaggeryjs.modules.carbon.feature.group</id>
@@ -816,6 +818,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.process.feature.group</id>
                                     <version>${process.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
@@ -1963,7 +1969,7 @@
                                 </feature>
                                <feature>
                                     <id>org.jaggeryjs.feature.group</id>
-                                    <version>0.9.0.ALPHA4.wso2v1</version>
+                                    <version>0.9.0.ALPHA4.wso2v7</version>
                                 </feature>
                                 <feature>
                                     <id>org.jaggeryjs.modules.carbon.feature.group</id>
@@ -1972,6 +1978,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.process.feature.group</id>
                                     <version>${process.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
@@ -2384,7 +2394,11 @@
                                 </feature>
                                <feature>
                                     <id>org.jaggeryjs.feature.group</id>
-                                    <version>0.9.0.ALPHA4.wso2v1</version>
+                                    <version>0.9.0.ALPHA4.wso2v7</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
+                                    <version>${i18n.feature.version}</version>
                                 </feature>
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
@@ -2898,5 +2912,6 @@
     <properties>
         <carbon.feature.version>1.1.0</carbon.feature.version>
         <process.feature.version>1.0.0</process.feature.version>
+	<i18n.feature.version>1.0.0</i18n.feature.version>
     </properties>
 </project>
