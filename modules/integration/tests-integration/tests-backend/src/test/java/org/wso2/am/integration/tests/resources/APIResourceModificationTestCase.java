@@ -74,24 +74,19 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        //resource are modified by using swagger doc. create the swagger doc with modified
-        //information. Similar thing happens when using UI to modify the resources
+        // resource are modified by using swagger doc. create the swagger doc
+        // with modified
+        // information. Similar thing happens when using UI to modify the
+        // resources
 
-        String modifiedResource = "{\"apiVersion\":\"1.0.0\",\"swaggerVersion\":\"1.2\"," +
-                "\"authorizations\":{\"oauth2\":{\"scopes\":[{\"description\":\"\",\"name\":" +
-                "\"testscope\",\"roles\":\"internal/subscriber\",\"key\":\"scopeKey\"}]," +
-                "\"type\":\"oauth2\"}},\"apis\":[{\"index\":0,\"file\":{\"apiVersion\":\"1.0.0\"," +
-                "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"index\":0," +
-                "\"path\":\"/*\",\"operations\":[{\"scope\":\"scopeKey\",\"auth_type\":\"None\"," +
-                "\"throttling_tier\":\"Unlimited\",\"method\":\"GET\",\"parameters\":[]}," +
-                "{\"scope\":\"scopeKey\",\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
-                "\"method\":\"POST\",\"parameters\":[]},{\"scope\":\"\",\"auth_type\":\"None\"," +
-                "\"throttling_tier\":\"Unlimited\",\"method\":\"PUT\",\"parameters\":[]}," +
-                "{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\",\"method\":\"DELETE\"," +
-                "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
-                "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
-                "\"/default\"}],\"info\":{\"title\":\"" + APIName + "\",\"termsOfServiceUrl\":\"" +
-                "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
+        String modifiedResource = "{\"paths\":{\"/*\":{\"put\":{\"responses\":{\"200\":{}}," +
+                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"},\"post\":{\"responses\":{\"200\":{}}," +
+                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"scopeKey\"},\"get\":{\"responses\":{\"200\":{}}," +
+                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"scopeKey\"},\"delete\":{\"responses\":{\"200\":{}}," +
+                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"},\"options\":{\"responses\":{\"200\":{}}," +
+                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"}}}," +
+                "\"swagger\":\"2.0\",\"info\":{\"title\":\"APIResourceTestAPI\",\"version\":\"1.0.0\"}," +
+                "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"testscope\",\"description\":\"\",\"key\":\"scopeKey\",\"roles\":\"internal/subscriber\"}]}}}";
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
