@@ -24,11 +24,11 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -51,7 +51,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
@@ -108,7 +108,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
-        APIBean apiBean = APIMgtTestUtil
+        APIBean apiBean = APIMTestCaseUtils
                 .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
@@ -134,8 +134,8 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         subscriptionRequest.setApplicationName("DAOTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("DAOTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("DAOTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =

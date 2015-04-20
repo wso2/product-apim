@@ -22,9 +22,9 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -50,8 +50,8 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
     private String applicationName;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
-        super.init();
+    public void initialize() throws Exception {
+        super.initialize();
         apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
         apiIdentifierAPI1Version2 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION2);
         applicationName = (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
@@ -105,15 +105,15 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
         // Check availability of old API version in API Store
         List<APIIdentifier> apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList), true,
                 "Old version Api is not visible in API Store after publish new version." + getAPIIdentifierString(
                         apiIdentifierAPI1Version1));
 
         // Check availability of new API version in API Store
         apiStoreAPIIdentifierList =
-                APIMgtTestUtil.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI(API1_NAME));
-        assertEquals(APIMgtTestUtil.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList), true,
+                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
+        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList), true,
                 "New version Api is not visible in API Store after publish new version." + getAPIIdentifierString(
                         apiIdentifierAPI1Version2));
     }
@@ -170,7 +170,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanup() throws Exception {
+    public void destroy() throws Exception {
         apiStoreClientUser1.removeApplication(applicationName);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);

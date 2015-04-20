@@ -43,7 +43,7 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
     String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         super.init();
 

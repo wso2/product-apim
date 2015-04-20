@@ -19,21 +19,20 @@
 package org.wso2.am.integration.test.utils.bean;
 
 /**
+ * Generate application key request
+ *
  * action=generateApplicationKey&application=DefaultApplication&keytype=PRODUCTION&callbackUrl=&authorizedDomains=ALL&validityTime=360000
  */
-public class GenerateAppKeyRequest extends AbstractRequest {
+public class APPKeyRequestGenerator extends AbstractRequest {
 
-    private String application ="DefaultApplication";
+    private String application = "DefaultApplication";
     private String keyType = "PRODUCTION";
     private String callbackUrl = "some-url";
     private String authorizedDomains = "ALL";
     private int validityTime = 360000;
-    private String appId ="1";
+    private String appId = "1";
 
-    
-  
-
-    public GenerateAppKeyRequest(String application) {
+    public APPKeyRequestGenerator(String application) {
         this.application = application;
     }
 
@@ -52,7 +51,9 @@ public class GenerateAppKeyRequest extends AbstractRequest {
         addParameter("selectedAppID", appId);
     }
 
-    public String getApplication(){ return application; }
+    public String getApplication() {
+        return application;
+    }
 
     public String getKeyType() {
         return keyType;
@@ -85,12 +86,11 @@ public class GenerateAppKeyRequest extends AbstractRequest {
     public void setValidityTime(int validityTime) {
         this.validityTime = validityTime;
     }
-    
+
     public String getAppId() {
         return appId;
     }
 
-    
     public void setAppId(String appId) {
         this.appId = appId;
     }

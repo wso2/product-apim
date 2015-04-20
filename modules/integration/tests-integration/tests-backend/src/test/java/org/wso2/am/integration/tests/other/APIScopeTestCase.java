@@ -64,7 +64,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         super.init();
 
@@ -118,27 +118,14 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
-        String modifiedResource = "{\"apiVersion\":\"1.0.0\",\"swaggerVersion\":\"1.2\"," +
-                "\"authorizations\":{\"oauth2\":{\"scopes\":[{\"description\":\"\", " +
-                "\"name\":\"admin_scope\",\"roles\":\"admin\",\"key\":\"admin_scope\"}," +
-                "{\"description\":\"\",\"name\":\"user_scope\",\"roles\":\"admin,subscriber\"," +
-                "\"key\":\"user_scope\"}]," +
-                "\"type\":\"oauth2\"}},\"apis\":[{\"index\":0,\"file\":{\"apiVersion\":\"1.0.0\"," +
-                "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"index\":0," +
-                "\"path\":\"/*\",\"operations\":[{\"scope\":\"user_scope\"," +
-                "\"auth_type\":\"Application User\"," +
-                "\"throttling_tier\":\"Unlimited\",\"method\":\"GET\",\"parameters\":[]}," +
-                "{\"scope\":\"admin_scope\",\"auth_type\":\"Application User\"," +
-                "\"throttling_tier\":\"Unlimited\"," +
-                "\"method\":\"POST\",\"parameters\":[]},{\"scope\":\"\",\"auth_type\":\"Application" +
-                " User\"," +
-                "\"throttling_tier\":\"Unlimited\",\"method\":\"PUT\",\"parameters\":[]}," +
-                "{\"auth_type\":\"Application User\",\"throttling_tier\":\"Unlimited\"," +
-                "\"method\":\"DELETE\"," +
-                "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
-                "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
-                "\"/default\"}],\"info\":{\"title\":\"" + API_NAME + "\",\"termsOfServiceUrl\":\"" +
-                "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
+        String modifiedResource = "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
+                "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"}," +
+                "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
+                "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
 
 
         apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
@@ -153,7 +140,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
-        GenerateAppKeyRequest generateAppKeyRequest = new GenerateAppKeyRequest(APP_NAME);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject jsonResponse = new JSONObject(responseString);
 

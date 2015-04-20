@@ -25,11 +25,11 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIMgtTestUtil;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -54,7 +54,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
 
         /*
@@ -138,7 +138,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
-        APIBean apiBean = APIMgtTestUtil
+        APIBean apiBean = APIMTestCaseUtils
                 .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
@@ -164,8 +164,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
                 "url-no-need", "summary", "");
-        GenerateAppKeyRequest generateAppKeyRequest =
-                new GenerateAppKeyRequest("HostObjectTestAPI-Application");
+        APPKeyRequestGenerator generateAppKeyRequest =
+                new APPKeyRequestGenerator("HostObjectTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =
