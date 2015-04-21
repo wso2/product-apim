@@ -313,6 +313,22 @@
     </APIKeyValidator>
 
     <!--
+    Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
+    Unless a ThirdParty KeyManager is used, you don't need to configure this section.
+    -->
+    
+    <!--APIKeyManager>
+        <KeyManagerClientImpl>org.wso2.carbon.apimgt.keymgt.AMDefaultKeyManagerImpl</KeyManagerClientImpl>
+        <Configuration>
+            <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+            <Username>${admin.username}</Username>
+            <Password>${admin.password}</Password>
+            <TokenURL>https://${carbon.local.ip}:${https.nio.port}/token</TokenURL>
+            <RevokeURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeURL>
+        </Configuration>
+    </APIKeyManager-->
+
+    <!--
         Settings related to managing API access tiers.
     -->
     <TierManagement>
