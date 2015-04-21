@@ -55,13 +55,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -1574,10 +1568,10 @@ public class APIMTestCaseUtils {
      *
      * @param httpResponse Response that contains the API information
      * @return List of APIIdentifier
-     * @throws JSONException
+     * @throws org.json.JSONException
      */
     public static List<APIIdentifier> getAPIIdentifierListFromHttpResponse(
-            HttpResponse httpResponse) throws JSONException {
+            HttpResponse httpResponse) throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiIdentifierList = new ArrayList<APIIdentifier>();
         String APIName;
         String APIProvider;
@@ -1604,7 +1598,7 @@ public class APIMTestCaseUtils {
 
         } catch (JSONException e) {
             log.error("Error when extraction data from JSON" + e.getMessage());
-            throw new RuntimeException("Error when extraction data from JSON", e);
+            throw new APIManagerIntegrationTestException("Error when extraction data from JSON", e);
         }
         return apiIdentifierList;
     }
