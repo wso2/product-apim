@@ -141,6 +141,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
     }
 
