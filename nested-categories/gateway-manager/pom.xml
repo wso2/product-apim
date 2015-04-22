@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ ~ Copyright (c) 2009-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");
+ ~ you may not use this file except in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~      http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing, software
+ ~ distributed under the License is distributed on an "AS IS" BASIS,
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ~ See the License for the specific language governing permissions and
+ ~ limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>org.wso2.apimgt.nested.categories</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>org.wso2.apimgt.gateway-manager.nested.category.feature</artifactId>
+    <packaging>pom</packaging>
+    <name>Gateway Manager</name>
+    <url>http://wso2.org</url>
+    <description>Includes features for Gateway Manager.</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wso2.maven</groupId>
+                <artifactId>carbon-p2-plugin</artifactId>
+                <version>${carbon.p2.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>1-p2-feature-generation</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>p2-feature-gen</goal>
+                        </goals>
+                        <configuration>
+                            <id>org.wso2.apimgt.gateway-manager.nested.category</id>
+                            <propertiesFile>../../../etc/feature.properties</propertiesFile>
+                            <adviceFile>
+                                <properties>
+                                    <propertyDef>org.eclipse.equinox.p2.type.category:true</propertyDef>
+                                    <propertyDef>org.wso2.carbon.p2.category.type:composite</propertyDef>
+                                    <propertyDef>org.wso2.carbon.p2.category.property:true</propertyDef>
+                                </properties>
+                            </adviceFile>
+                            <importFeatures>
+                                <importFeatureDef>org.apache.synapse.transport.nhttp:${synapse.version}</importFeatureDef>
+                                <importFeatureDef>org.apache.synapse.wso2:${synapse.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.am.styles:${apimserver.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.apimgt.core:${apim.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.apimgt.gateway:${apim.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.application.deployer.synapse:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.application.mgt.synapse.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.core.common:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.core.runtime:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.core.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.databridge.datapublisher:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.datasource.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.deployment.synchronizer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.event.common:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.event.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.governance.lifecycle.management:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.governance.metadata:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.core:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.oauth.common:4.2.1 </importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.oauth.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.provider.server${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.self.registration.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.localentry.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.logging.mgt:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediation.configadmin:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediation.initializer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediation.statistics:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediation.tracer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediators.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.message.flows:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mex:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.module.mgt.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.ntask.core:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.associations.dependencies:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.community.features:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.community.features.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.core:4.2.1</importFeatureDef>
+                                <!--<importFeatureDef>org.wso2.carbon.registry.core.server:${carbon.platform.version}</importFeatureDef>-->
+                                <importFeatureDef>org.wso2.carbon.registry.extensions:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.extensions:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.resource.properties:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.ui.menu:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.ui.menu.governance:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.ws:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.relay:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.relay.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.rest.api.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.security.mgt:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.security.mgt.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.sequences.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.service.mgt.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.statistics.transport:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.common:2.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.deployment:${stratos.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.throttling.agent:${stratos.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.usage.agent:${stratos.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.task.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.throttle:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.jms:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.mail:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.mgt:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.nhttp:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transports.passthru:${passthru.transport.patch.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.tryit:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.um.ws.service.client:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.um.ws.service.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.user.mgt:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${stratos.version}</importFeatureDef>
+                            </importFeatures>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
