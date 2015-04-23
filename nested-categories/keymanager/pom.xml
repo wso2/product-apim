@@ -57,7 +57,7 @@
                             <importFeatures>
 
 				<!--<importFeatureDef>org.jaggeryjs:0.9.0.ALPHA4.wso2v1</importFeatureDef> -->
-				<importFeatureDef>org.wso2.carbon.apimgt.feature:${apimgt.core.feature.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.apimgt.core:${apimgt.core.feature.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.apache.synapse.wso2:${synapse.version}</importFeatureDef>
@@ -69,7 +69,7 @@
 				<importFeatureDef>org.wso2.carbon.identity.oauth:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.provider.server:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.idp.mgt:${identity.core.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.relying.party:${identity.core.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.relying.party.server:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.self.registration.server:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.application.authentication.framework.server:${identity.core.version}</importFeatureDef>
 				<!--importFeatureDef>org.wso2.carbon.identity.oauth.common:4.2.3</importFeatureDef-->
