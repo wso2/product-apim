@@ -62,9 +62,9 @@
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.apache.synapse.wso2:${synapse.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.deployment.synchronizer:4.2.3</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.event.common:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.event.server:4.2.2</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.event.server:4.2.2</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.identity.core:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.oauth:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.provider:${identity.core.version}</importFeatureDef>
@@ -85,16 +85,15 @@
 				<importFeatureDef>org.wso2.carbon.stratos.deployment:2.2.1</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.system.statistics:4.2.2</importFeatureDef>
 
-				<importFeatureDef>org.wso2.carbon.um.ws.service.client:4.2.2</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.um.ws.service.client:4.2.2</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.um.ws.service.server:4.2.2</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.webapp.mgt.server:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.registry.community.features:4.2.2</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.registry.community.features:4.2.2</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.registry.contentsearch:4.2.2</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.governance.metadata.feature:4.2.2</importFeatureDef>
-				
-				<importFeatureDef>org.wso2.carbon.registry.community.features.server:4.2.2</importFeatureDef>
+				<!--importFeatureDef>org.wso2.carbon.governance.metadata.feature:4.2.2</importFeatureDef-->
+				<importFeatureDef>org.wso2.carbon.governance.metadata.server.feature:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.bam.message.tracer.handler:4.2.3</importFeatureDef>
 
                             </importFeatures>

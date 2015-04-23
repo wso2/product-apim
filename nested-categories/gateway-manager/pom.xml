@@ -55,80 +55,77 @@
                                 </properties>
                             </adviceFile>
                             <importFeatures>
-                                <importFeatureDef>org.apache.synapse.transport.nhttp:${synapse.version}</importFeatureDef>
-                                <importFeatureDef>org.apache.synapse.wso2:${synapse.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.am.styles:${apimserver.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.apimgt.core:${apim.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.apimgt.gateway:${apim.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.application.deployer.synapse:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.jaggeryjs:0.9.0.ALPHA4.wso2v1</importFeatureDef>
+                                <importFeatureDef>org.apache.synapse.transport.nhttp:2.1.2-wso2v6</importFeatureDef>
+                                <importFeatureDef>org.apache.synapse.wso2:2.1.2-wso2v6</importFeatureDef>
+                                <importFeatureDef>org.wso2.am.styles:1.8.0</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.apimgt.core:1.2.3</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.apimgt.gateway:1.2.3</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.application.deployer.synapse:4.2.2</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.application.mgt.synapse.server:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.core.common:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.core.runtime:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.core.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.databridge.datapublisher:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.datasource.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.deployment.synchronizer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.databridge.datapublisher:4.2.3</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.deployment.synchronizer:4.2.3</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.event.common:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.event.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.governance.lifecycle.management:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.governance.metadata:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.core:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.oauth.common:4.2.1 </importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.oauth.server:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.provider.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.provider.server${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.identity.self.registration.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.localentry.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.logging.mgt:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.event.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.governance.lifecycle.management:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.governance.metadata:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.core:4.2.4</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.oauth:4.2.4 </importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.provider.server:4.2.4</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.self.registration.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.identity.application.authentication.framework.server:4.2.3</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.localentry.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.logging.mgt:4.2.2</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mediation.configadmin:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.mediation.initializer:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.proxyadmin.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediation.initializer:4.2.3</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mediation.statistics:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mediation.tracer:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.mediators.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediators.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediator.bam:4.2.0</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.message.flows:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mex:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.module.mgt.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.ntask.core:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.ntask.core:4.2.4</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.registry.associations.dependencies:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.registry.community.features:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.registry.community.features.server:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.registry.core:4.2.1</importFeatureDef>
-                                <!--<importFeatureDef>org.wso2.carbon.registry.core.server:${carbon.platform.version}</importFeatureDef>-->
-                                <importFeatureDef>org.wso2.carbon.registry.extensions:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.registry.extensions:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.registry.resource.properties:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.community.features:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.community.features.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.core:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.contentsearch:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.extensions:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.registry.resource.properties:4.2.1</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.registry.ui.menu:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.registry.ui.menu.governance:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.registry.ws:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.relay:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.relay.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.rest.api.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.security.mgt:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.security.mgt.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.sequences.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.service.mgt.server:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.rest.api.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.security.mgt:4.2.5</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.security.mgt.server:4.2.5</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.sequences.server:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.service.mgt.server:4.2.2</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.statistics.transport:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.stratos.common:2.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.stratos.deployment:${stratos.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.stratos.throttling.agent:${stratos.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.stratos.usage.agent:${stratos.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.common:2.3.0</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.stratos.deployment:2.2.1</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.task.server:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.throttle:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.transport.jms:${carbon.platform.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.jms:4.2.1</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.transport.mail:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.transport.mgt:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.transport.nhttp:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.transports.passthru:${passthru.transport.patch.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.tryit:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.um.ws.service.client:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.um.ws.service.server:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.user.mgt:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.transport.nhttp:4.2.3</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.tryit:4.2.1</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.um.ws.service.client:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.um.ws.service.server:4.2.2</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${stratos.version}</importFeatureDef>
+				                <importFeatureDef>org.wso2.carbon.bam.message.tracer.handler:4.2.3</importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>
