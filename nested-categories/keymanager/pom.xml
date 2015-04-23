@@ -67,7 +67,7 @@
 				<!--importFeatureDef>org.wso2.carbon.event.server:4.2.2</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.identity.core:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.oauth:${identity.core.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.provider:${identity.core.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.provider.server:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.idp.mgt:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.relying.party:${identity.core.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.self.registration.server:4.2.2</importFeatureDef>
