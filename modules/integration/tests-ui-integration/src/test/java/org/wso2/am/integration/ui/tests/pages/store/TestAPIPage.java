@@ -52,12 +52,14 @@ public class TestAPIPage extends PageHandler {
      */
     public void testAPI(String apiURL, String accessToken) throws IOException {
         waitUntilElementVisibilityByLinkText("restclient.api.url.form.linktext", 30);
-        clickElementByLinkText("restclient.api.url.form.linktext");
+//        clickElementByLinkText("restclient.api.url.form.linktext");
         fillTextBoxById("restclient.api.test.url.id", apiURL + "\n");
-        waitUntilElementVisibilityByCssSelector("restclient.api.test.header.key.css",30);
-        fillTextBoxByCssSelector("restclient.api.test.header.key.css", APIMTestConstants.AUTHORIAZATION);
-        waitUntilElementVisibilityByCssSelector("restclient.api.test.header.value.css",30);
-        fillTextBoxByCssSelector("restclient.api.test.header.value.css", APIMTestConstants.BEARER + APIMTestConstants.SPACE + accessToken);
+//        waitUntilElementVisibilityByCssSelector("restclient.api.test.header.key.css",30);
+//        fillTextBoxByCssSelector("restclient.api.test.header.key.css", APIMTestConstants.AUTHORIAZATION);
+//        waitUntilElementVisibilityByCssSelector("restclient.api.test.header.value.css",30);
+//        fillTextBoxByCssSelector("restclient.api.test.header.value.css", APIMTestConstants.BEARER + APIMTestConstants.SPACE + accessToken);
+
+        fillTextBoxById("restclient.api.raw.textarea",APIMTestConstants.AUTHORIAZATION+":"+APIMTestConstants.BEARER + APIMTestConstants.SPACE + accessToken);
         log.info("API Test :start : accessToken:" + accessToken + "-> apiURL" + apiURL);
         waitUntilElementVisibilityById("restclient.api.test.send.button.id", 30);
         clickElementById("restclient.api.test.send.button.id");
