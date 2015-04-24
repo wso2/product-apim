@@ -59,7 +59,8 @@
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
-		<exclude>**/repository/components/plugins/*email.verification_4.2.0.jar</exclude>
+                <exclude>**/repository/components/plugins/*email.verification_4.2.0.jar</exclude>
+                <exclude>**/repository/deployment/server/synapse-configs/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -271,13 +272,13 @@
                 <include>*/**</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--fileSet>
             <directory>../../jaggery</directory>
             <outputDirectory>wso2am-${pom.version}/modules</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
             </includes>
-        </fileSet>
+        </fileSet-->
 	<!-- Copying styles for tenants -->
         <fileSet>
             <directory>../../../modules/styles/service/src/main/resources/web/styles/images</directory>
@@ -318,11 +319,24 @@
                 <include>**/**.xml</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
             <includes>
                 <include>**/**</include>
+            </includes>
+        </fileSet>-->
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/lifecycle-config.xsd</include>
+                <include>**/rxt.xsd</include>
+                <include>**/scxml.xsd</include>
+                <include>**/services-config.xml</include>
+                <include>**/services-config.xsd</include>
+                <include>**/service-ui-config.xsd</include>
+                <include>**/lifecycles/ServiceLifeCycle.xml</include>
             </includes>
         </fileSet>
         <fileSet>
