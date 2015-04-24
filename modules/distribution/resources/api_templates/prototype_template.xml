@@ -256,9 +256,6 @@ methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($f
 </handlers>
 #end
 #if($apiStatus == 'PROTOTYPED')
-<handlers>
-    <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"/>
-</handlers>
 #end
 #end
 ## end of apiIsBlocked check
