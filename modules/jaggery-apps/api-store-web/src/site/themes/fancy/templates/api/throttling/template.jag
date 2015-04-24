@@ -120,6 +120,7 @@ var i, length, app, thumbURL, api = outputs.api, templatesList = outputs.uriTemp
 
 
                                 <% getAuthVal=putAuthVal=postAuthVal=deleteAuthVal=optionAuthVal=""; %>
+                                <% getThrottlingTier=postThrottlingTier=deleteThrottlingTier=optionsThrottlingTier=putThrottlingTier=""; %>
                             </tr>
                             <%
                             }}%>
