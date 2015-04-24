@@ -59,6 +59,7 @@
 				<!--<importFeatureDef>org.jaggeryjs:0.9.0.ALPHA4.wso2v1</importFeatureDef> -->
 				<importFeatureDef>org.wso2.carbon.apimgt.core:${apimgt.core.feature.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
+                <importFeatureDef>org.wso2.carbon.bam.service.agent:${carbon.deployment.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.apache.synapse.wso2:${synapse.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.deployment.synchronizer:4.2.3</importFeatureDef>
