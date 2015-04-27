@@ -91,7 +91,7 @@
 				<!--importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.webapp.mgt.server:4.2.2</importFeatureDef>
                 <importFeatureDef>org.wso2.carbon.identity.sts.mgt:${identity.core.version}</importFeatureDef>
-                <!--importFeatureDef>org.wso2.carbon.sts:4.2.2</importFeatureDef-->
+                <importFeatureDef>org.wso2.carbon.sts:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
 				<!--importFeatureDef>org.wso2.carbon.registry.community.features:4.2.2</importFeatureDef-->
 				<importFeatureDef>org.wso2.carbon.registry.contentsearch:4.2.2</importFeatureDef>
