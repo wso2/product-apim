@@ -62,7 +62,7 @@
 				<importFeatureDef>org.wso2.carbon.apimgt.core:1.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.databridge.datapublisher:4.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.deployment.synchronizer:4.2.3</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.deployment.synchronizer:4.2.4</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.endpoint.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.event.common:${carbon.platform.version}</importFeatureDef>
