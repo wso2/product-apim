@@ -250,7 +250,7 @@
                             <publishArtifactRepository>true</publishArtifactRepository>
                             <featureArtifacts>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.feature:${carbon.platform.version}</featureArtifactDef>
-				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:4.2.1</featureArtifactDef>
+				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
                 		        <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.logging.mgt.feature:4.2.2</featureArtifactDef>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.relying.party.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
@@ -337,7 +337,7 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.application.deployer.synapse.feature:4.2.1</featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.transports.passthru.feature:${passthru.transport.patch.version}</featureArtifactDef-->
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediation.templates.server.feature:${carbon.platform.version}</featureArtifactDef-->
-                                <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.deployment.synchronizer.feature:4.2.4</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.deployment.synchronizer.feature:4.2.2</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.community.features.server.feature:4.2.2</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ec2.client.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.throttle.feature:4.2.1</featureArtifactDef>
@@ -522,7 +522,7 @@
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
 				<feature>
 					<id>org.wso2.carbon.identity.relying.party.server.feature.group</id>
@@ -792,7 +792,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -1204,7 +1204,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -1558,7 +1558,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -1962,7 +1962,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -2391,7 +2391,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
@@ -2546,7 +2546,7 @@
                                 </feature>
                                <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
@@ -2793,7 +2793,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
-                                    <version>4.2.4</version>
+                                    <version>4.2.2</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
