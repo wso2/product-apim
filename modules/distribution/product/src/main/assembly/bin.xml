@@ -726,7 +726,7 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.3.4/conf/tenant-mgt.xml</source>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.4.0/conf/tenant-mgt.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
@@ -766,7 +766,18 @@
 	    <fileMode>644</fileMode>
         </file-->
 
-
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/lifecycles/APILifeCycle.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/lifecycles</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+	<file>
+		<source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/association-config.xml</source>
+            	<outputDirectory>wso2am-${pom.version}/repository/conf/etc/</outputDirectory>
+            	<fileMode>644</fileMode>
+	</file>
 
 </files>
 </assembly>
