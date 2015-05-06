@@ -2413,6 +2413,10 @@
                                     <id>org.jaggeryjs.modules.ws.feature.group</id>
                                     <version>1.1.0</version>
                                 </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.process.feature.group</id>
+                                    <version>${process.feature.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>

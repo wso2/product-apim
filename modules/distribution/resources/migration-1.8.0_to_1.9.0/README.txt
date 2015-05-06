@@ -15,4 +15,6 @@ Notes
 - The mysql.sql in the migrate directories should be run against the API_M database.
 - Set apim.home in build.xml of ./migration-1.6.0_to_1.7.0/api-migration/ (check other build.xml files as well)
 - To run the rxt migration script which I shared you need to install the library xmlstarlet. Make sure to mention this in the doc as well. 
+- If you need to get case senstive support in data level (ex: Same Application Name with different cases), please create the API_M database with a case sensitive Collation. 
+
 
