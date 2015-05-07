@@ -291,6 +291,14 @@
 
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
+
+        <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
+         API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
+         In distributed deployment we should configure this property in key manager node by pointing
+         gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
+         Also please note that we should point gateway revoke service to key manager
+    -->
+    <RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
 	
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to

@@ -47,13 +47,13 @@
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
-
+            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>

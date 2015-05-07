@@ -759,8 +759,8 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>../../../config/key-manager.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <source>../../../config/bam.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>

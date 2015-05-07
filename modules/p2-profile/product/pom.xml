@@ -250,7 +250,7 @@
                             <publishArtifactRepository>true</publishArtifactRepository>
                             <featureArtifacts>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.feature:${carbon.platform.version}</featureArtifactDef>
-				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:4.2.1</featureArtifactDef>
+				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
                 		        <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.logging.mgt.feature:4.2.2</featureArtifactDef>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.relying.party.server.feature:4.2.5-SNAPSHOT</featureArtifactDef>
@@ -352,6 +352,7 @@
                                 <featureArtifactDef>org.jaggeryjs.modules:carbon.feature:${carbon.feature.version}</featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs.modules:process.feature:${process.feature.version}</featureArtifactDef>
 				<featureArtifactDef>org.jaggeryjs.modules:i18n.feature:${i18n.feature.version}</featureArtifactDef>
+				<featureArtifactDef>org.jaggeryjs.modules:ws.feature:1.1.0</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${apimgt.feature.version}</featureArtifactDef>
 								<featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${stratos.version}</featureArtifactDef>
@@ -521,7 +522,7 @@
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
 				<feature>
 					<id>org.wso2.carbon.identity.relying.party.server.feature.group</id>
@@ -822,6 +823,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
+                                    <version>1.1.0</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
@@ -1983,6 +1988,10 @@
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
+                                    <version>1.1.0</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
@@ -2400,6 +2409,14 @@
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
+                                    <version>1.1.0</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.process.feature.group</id>
+                                    <version>${process.feature.version}</version>
+                                </feature>
 								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
@@ -2533,7 +2550,7 @@
                                 </feature>
                                <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
-                                    <version>4.2.1</version>
+                                    <version>4.2.5-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
