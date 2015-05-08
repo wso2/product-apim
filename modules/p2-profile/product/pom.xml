@@ -317,7 +317,7 @@
 
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.server.feature:4.2.1</featureArtifactDef>
 
-				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.forum.server.feature:1.0.1</featureArtifactDef>
+				                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.forum.server.feature:${carbon.forum.server.feature.version}</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediators.server.feature:${carbon.platform.version}</featureArtifactDef>
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.proxyadmin.server.feature:4.2.2</featureArtifactDef>
@@ -927,7 +927,7 @@
                                	</feature>
 				<feature>
                                    <id>org.wso2.carbon.forum.server.feature.group</id>
-                                   <version>1.0.1</version>
+                                   <version>${carbon.forum.server.feature.version}</version>
                                	</feature>
                             <feature>
                                 <id>org.wso2.carbon.bam.service.agent.feature.group</id>
@@ -2072,7 +2072,7 @@
                                	</feature>
 				<feature>
                                   <id>org.wso2.carbon.forum.server.feature.group</id>
-                                  <version>1.0.1</version>
+                                  <version>${carbon.forum.server.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
