@@ -230,6 +230,25 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+		    <execution>
+                        <id>11-unpack-kernel-patch</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon</groupId>
+                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
+                                    <version>0010</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -395,12 +414,12 @@
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.rm.server.feature:${carbon.platform.version}</featureArtifactDef>
                                 <!-- as runtime features-->
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.as.runtimes.cxf.feature:4.2.2</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.webapp.mgt.server.feature:4.2.2</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.webapp.mgt.server.feature:4.2.3-SNAPSHOT</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.jaxws.webapp.mgt.server.feature:${carbon.platform.version}</featureArtifactDef>
                                 <!-- end of as runtime features-->
 								<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.claim.mgt.feature:4.2.1</featureArtifactDef>
                                 <!---->
-                                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.webapp.mgt.feature:4.2.2</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.webapp.mgt.feature:4.2.3-SNAPSHOT</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.jaxws.webapp.mgt.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.idp.mgt.feature:4.2.5-SNAPSHOT</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.contentsearch.feature:4.2.2</featureArtifactDef>
@@ -534,7 +553,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>4.2.3-SNAPSHOT</version>
                                 </feature>
 				<feature>
 					<id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -898,7 +917,7 @@
                                 </feature>
                                 <feature>
                                   <id>org.wso2.carbon.webapp.mgt.feature.group</id>
-                                  <version>4.2.2</version>
+                                  <version>4.2.3-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                 <id>org.wso2.carbon.jaxws.webapp.mgt.feature.group</id>
@@ -1708,7 +1727,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>4.2.3-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jaxws.webapp.mgt.server.feature.group</id>
@@ -2056,7 +2075,7 @@
                                 </feature>
                                 <feature>
                                   <id>org.wso2.carbon.webapp.mgt.feature.group</id>
-                                  <version>4.2.2</version>
+                                  <version>4.2.3-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                 <id>org.wso2.carbon.jaxws.webapp.mgt.feature.group</id>
@@ -2137,7 +2156,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
-                                    <version>4.2.2</version>
+                                    <version>4.2.3-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.jaxws.webapp.mgt.server.feature.group</id>
@@ -2480,7 +2499,7 @@
                                 </feature>
                                 <feature>
                                   <id>org.wso2.carbon.webapp.mgt.feature.group</id>
-                                  <version>4.2.2</version>
+                                  <version>4.2.3-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                 <id>org.wso2.carbon.jaxws.webapp.mgt.feature.group</id>
