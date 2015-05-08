@@ -754,7 +754,7 @@
         <apimgt.handlers.security.stub>4.2.0</apimgt.handlers.security.stub>
         <carbon.forum.version>1.2.0-SNAPSHOT</carbon.forum.version>
         <carbon.forum.feature.version>1.2.0-SNAPSHOT</carbon.forum.feature.version>
-        <carbon.forum.server.feature.version>1.0.1-SNAPSHOT</carbon.forum.server.feature.version>
+        <carbon.forum.server.feature.version>1.2.0-SNAPSHOT</carbon.forum.server.feature.version>
 
         <apimgt.core.feature.version>1.2.4-SNAPSHOT</apimgt.core.feature.version>
         <apimgt.feature.version>1.2.4-SNAPSHOT</apimgt.feature.version>
