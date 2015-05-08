@@ -183,9 +183,6 @@
                                     org.wso2.carbon.relay.server:${carbon.mediation.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.am.styles:${apimserver.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
                                     org.wso2.carbon.identity.provider.server:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
