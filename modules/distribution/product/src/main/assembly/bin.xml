@@ -268,6 +268,14 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/extensions</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions</outputDirectory>
        </fileSet>
+        <fileSet>
+            <directory>src/main/api-publisher-extension/am-publisher-defaults</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions/app/am-publisher-defaults</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/api-publisher-extension/am-publisher-common</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions/app/am-publisher-common</outputDirectory>
+        </fileSet>
 	<!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/modules</directory>

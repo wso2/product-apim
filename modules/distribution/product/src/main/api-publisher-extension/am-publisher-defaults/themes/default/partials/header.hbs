@@ -1,0 +1,20 @@
+<!-- header -->
+<header>
+	<div class="row wr-global-header">
+		<div class="col-sm-8 app-logo">
+			<a href='{{url ""}}{{meta.landingPage}}'>
+				<img src="{{url ""}}/extensions/app/am-publisher-defaults/themes/default/imgs/logo.png"/>
+			</a>
+		</div>
+		<div class="col-sm-4">
+			<div class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{cuser.username}} <i class="fa fa-user fa-lg"></i> <span class="caret"></span></a>
+				<ul class="dropdown-menu pull-right" role="menu">
+					<li><a onclick="window.location.href='{{url "/logout"}}'" href="#"><i class="fa fa-sign-out"></i>
+                        {{t "Sign out"}}</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</header>
+<!-- /header -->
