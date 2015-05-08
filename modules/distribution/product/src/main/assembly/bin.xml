@@ -261,8 +261,8 @@
            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions</outputDirectory>
        </fileSet>
         <fileSet>
-            <directory>src/main/api-store-extension/am_store</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions/app/am_store</outputDirectory>
+            <directory>src/main/api-store-extension/am-store-defaults</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions/app/am-store-defaults</outputDirectory>
         </fileSet>
        <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/extensions</directory>
