@@ -16,7 +16,7 @@
  *  under the License.
  *
  */
-app.dependencies = ['store-common'];
+app.dependencies = ['default'];
 app.server = function(ctx) {
     return {
         configs: {
