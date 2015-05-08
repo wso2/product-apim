@@ -505,6 +505,13 @@
 
             </excludes>
     	</fileSet>
+	<fileSet>
+             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch0010/*.*</include>
+             </includes>
+    	</fileSet>
 
 
     <fileSet>
@@ -565,6 +572,10 @@
     </fileSet>
     <fileSet>
         <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0009/lib</directory>
+        <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
+    </fileSet>
+    <fileSet>
+        <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010/lib</directory>
         <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
     </fileSet>
         <!--End of  API Manager related -->
