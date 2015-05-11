@@ -84,8 +84,10 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("techOwnerMail")).sendKeys("tec@tech.com");
 		driver.findElement(By.id("publish_api")).click();
 		driver.findElement(By.linkText("Edit")).click();
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
-		driver.findElement(By.cssSelector("input.btn.btn-primary")).click();
+		/*wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
+		driver.findElement(By.cssSelector("input.btn.btn-primary")).click();*/
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@id='saveBtn']")));
+		driver.findElement(By.xpath("//button[@id='saveBtn']")).click();
 		driver.findElement(By.cssSelector("a.wizard-done")).click();
 		driver.findElement(By.xpath("//div[@id='item-add']/center/ul/li[3]/a")).click();
 		driver.findElement(By.xpath("//form[@id='manage_form']/fieldset[3]/legend")).click();

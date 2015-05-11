@@ -30,6 +30,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiTestBase {
@@ -39,6 +40,7 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 	WebDriverWait wait;
 
 	private static final String SUPER_TENANT_DOMAIN_NAME = "carbon.super";
+	private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
 
 	private static final Log log =
 			LogFactory.getLog(APIMANAGER3344ScopeSpecificTokenTestCase.class);
@@ -113,19 +115,20 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		//go to implement and select specify inline
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_implement")));
 		driver.findElement(By.id("go_to_implement")).click();
-		wait.until(ExpectedConditions.visibilityOfElementLocated(
-				By.xpath("(//input[@name='implementation_methods'])[2]")));
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//input[@name='implementation_methods'])[2]")));
-		driver.findElement(By.xpath("(//input[@name='implementation_methods'])[2]")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+		driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
 
 		//go to manage
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
+		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
+		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(API_URL);
 		driver.findElement(By.id("go_to_manage")).click();
-		wait.until(ExpectedConditions
-				           .visibilityOfElementLocated(By.xpath("//button[@type='button']")));
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
 		driver.findElement(By.xpath("//button[@type='button']")).click();
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@value='Unlimited']")));
 		driver.findElement(By.xpath("//input[@value='Unlimited']")).click();
+
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#layout-base > div.row-fluid")));
 		driver.findElement(By.cssSelector("#layout-base > div.row-fluid")).click();
 
@@ -184,11 +187,21 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		driver.findElement(By.id("application-name")).clear();
 		driver.findElement(By.id("application-name")).sendKeys("app01");
 		driver.findElement(By.id("application-add-button")).click();
-		threadWait(1000);
+		threadWait(5000);
 
 		//go to created API and subscribe
 		driver.findElement(By.linkText("APIs")).click();
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Twitter")));
+
+		long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
+		long startTime = System.currentTimeMillis();
+		long nowTime = startTime;
+		while ((!driver.getPageSource().contains("Twitter")) && (nowTime - startTime) < loopMaxTime) {
+			driver.findElement(By.linkText("APIs")).click();
+			Thread.sleep(1000);
+			nowTime = System.currentTimeMillis();
+		}
+
+		//wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Twitter")));
 		driver.findElement(By.linkText("Twitter")).click();
 		new Select(driver.findElement(By.id("application-list"))).selectByVisibleText("app01");
 		driver.findElement(By.id("subscribe-button")).click();

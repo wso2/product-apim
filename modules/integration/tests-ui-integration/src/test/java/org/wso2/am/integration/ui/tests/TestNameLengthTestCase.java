@@ -90,7 +90,6 @@ public class TestNameLengthTestCase extends APIMIntegrationUiTestBase {
         String apiXpath = "//div[2]/div/div[2]/div/ul/li/div/div/a";
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
         driver.findElement(By.linkText("Browse")).click();
-        Thread.sleep(5000);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(apiXpath)));
 
         long startTime = System.currentTimeMillis();
