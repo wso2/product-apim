@@ -126,6 +126,13 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
         // create new API
         driver.findElement(By.linkText("Add")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+        driver.findElement(By.id("create-new-api")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+        driver.findElement(By.id("designNewAPI")).click();
+
         driver.findElement(By.id("name")).clear();
         driver.findElement(By.id("name")).sendKeys(TEST_DATA_API_NAME);
         driver.findElement(By.id("context")).clear();
@@ -133,10 +140,17 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
         driver.findElement(By.id("version")).clear();
         driver.findElement(By.id("version")).sendKeys(TEST_DATA_API_VERSION);
 
+        driver.findElement(By.id("resource_url_pattern")).clear();
+        driver.findElement(By.id("resource_url_pattern")).sendKeys("*");
+        driver.findElement(By.cssSelector("input.http_verb_select")).click();
+        driver.findElement(By.id("add_resource")).click();
+
         driver.findElement(By.id("go_to_implement")).click();
 
-        driver.findElement(By.cssSelector("a.btn:nth-child(4)")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+        driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
 
+        /*driver.findElement(By.cssSelector("a.btn:nth-child(4)")).click();*/
 
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(TEST_DATA_API_END_POINT);

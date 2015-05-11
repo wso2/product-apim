@@ -40,6 +40,13 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+		driver.findElement(By.id("create-new-api")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+		driver.findElement(By.id("designNewAPI")).click();
+
 		driver.findElement(By.id("name")).clear();
 		driver.findElement(By.id("name")).sendKeys("APIMANAGER3371");
 		driver.findElement(By.id("context")).clear();
@@ -50,11 +57,15 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("description")).sendKeys(API_DESCRIPTION);
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("*");
-		driver.findElement(By.id("inputResource")).clear();
-		driver.findElement(By.id("inputResource")).sendKeys("default");
+		/*driver.findElement(By.id("inputResource")).clear();
+		driver.findElement(By.id("inputResource")).sendKeys("default");*/
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
 		driver.findElement(By.id("add_resource")).click();
 		driver.findElement(By.id("go_to_implement")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+		driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
+
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
 		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
 		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(API_URL);

@@ -87,7 +87,7 @@ public class APIMANAGER2604ApplicationPaginationTestCase extends APIMIntegration
        create application for the given application name
      */
     private void createApplication(String appName) {
-        WebDriverWait wait = new WebDriverWait(driver, 30);
+        WebDriverWait wait = new WebDriverWait(driver, 60);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("application-name")));
         WebElement name = driver.findElement(By.id("application-name"));
         name.sendKeys(appName);

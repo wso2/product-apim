@@ -65,6 +65,13 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		//add api details
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+		driver.findElement(By.id("create-new-api")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+		driver.findElement(By.id("designNewAPI")).click();
+
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name")));
 		driver.findElement(By.id("name")).clear();
 		driver.findElement(By.id("name")).sendKeys("Twitter");

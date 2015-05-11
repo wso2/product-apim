@@ -27,6 +27,8 @@ import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -70,6 +72,7 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
 
     @Test(groups = "wso2.am", description = "Create tenant and api")
     public void createTenantAndAPI() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.get(getLoginURL());
         LoginPage login = new LoginPage(driver);
         login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(), gatewayContext.getContextTenant().getContextUser().getPassword());
@@ -88,6 +91,13 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
         driver.findElement(By.id("pass")).sendKeys(TEST_DATA_TENANT_ADMIN_PASSWORD);
         driver.findElement(By.id("loginButton")).click();
         driver.findElement(By.linkText("Add")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+        driver.findElement(By.id("create-new-api")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+        driver.findElement(By.id("designNewAPI")).click();
+
         driver.findElement(By.id("name")).clear();
         driver.findElement(By.id("name")).sendKeys(TEST_DATA_API_NAME);
         driver.findElement(By.id("context")).clear();
@@ -101,10 +111,14 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
         driver.findElement(By.id("description")).sendKeys("This is test API");
         driver.findElement(By.id("resource_url_pattern")).clear();
         driver.findElement(By.id("resource_url_pattern")).sendKeys("testapi");
-        driver.findElement(By.cssSelector("input.http_verb_select")).click();
-        driver.findElement(By.xpath("//input[@value='POST']")).click();
+        //driver.findElement(By.cssSelector("input.http_verb_select")).click();
+        driver.findElement(By.xpath("//label[contains(.,'post')]")).click();
         driver.findElement(By.id("add_resource")).click();
         driver.findElement(By.id("go_to_implement")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+        driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
+
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys("whatever");
         driver.findElement(By.id("go_to_manage")).click();

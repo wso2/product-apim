@@ -20,6 +20,8 @@
 
 package org.wso2.am.integration.ui.tests.samples;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -51,6 +53,8 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
     private String accessToken;
     private String accessHTTPURL;
 
+    private static final Log log = LogFactory.getLog(YouTubeUIRecordedTestCase.class);
+
     @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception {
         super.init();
@@ -73,6 +77,12 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
         driver.findElement(By.linkText("Add")).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+        driver.findElement(By.id("create-new-api")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+        driver.findElement(By.id("designNewAPI")).click();
+
         driver.findElement(By.id("name")).clear();
         driver.findElement(By.id("name")).sendKeys(API_NAME);
         driver.findElement(By.id("context")).clear();
@@ -88,17 +98,19 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
         driver.findElement(By.id("resource_url_pattern")).clear();
         driver.findElement(By.id("resource_url_pattern")).sendKeys("*");
-        driver.findElement(By.id("inputResource")).clear();
-        driver.findElement(By.id("inputResource")).sendKeys("default");
+        /*driver.findElement(By.id("inputResource")).clear();
+        driver.findElement(By.id("inputResource")).sendKeys("default");*/
         driver.findElement(By.cssSelector("input.http_verb_select")).click();
         driver.findElement(By.id("add_resource")).click();
         driver.findElement(By.id("go_to_implement")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+        driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(API_URL);
         driver.findElement(By.id("go_to_manage")).click();
-
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
         driver.findElement(By.xpath("//button[@type='button']")).click();
@@ -128,8 +140,15 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
+        // Waiting for logging
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            log.warn("Interrupted Exception while Doing the API Search " + e);
+        }
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("APIs")));
+
         long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
         long startTime = System.currentTimeMillis();
         long nowTime = startTime;
@@ -144,9 +163,12 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.id("subscribe-button")).click();
         driver.findElement(By.linkText("Go to My Subscriptions")).click();
 
-        WebElement generateButton = driver.findElement(By.xpath("//div/div/div/div/button"));
+        //WebElement generateButton = driver.findElement(By.xpath("//div/div/div/div/button"));
+
+        WebElement generateButton = driver.findElement(By.xpath("//div[@class='cDivDefaultBtnSet']"));
+
         String genButtonText = generateButton.getText();
-        if (genButtonText.equals("Generate")) {
+        if (genButtonText.equalsIgnoreCase("Generate keys")) {
             generateButton.click();
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span.accessTokenDisplayPro.keyValues")));
             accessToken = driver.findElement(By.cssSelector("span.accessTokenDisplayPro.keyValues")).getText();

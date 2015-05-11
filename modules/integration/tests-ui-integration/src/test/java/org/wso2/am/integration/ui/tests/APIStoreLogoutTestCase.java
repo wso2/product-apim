@@ -1,5 +1,7 @@
 package org.wso2.am.integration.ui.tests;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -29,6 +31,8 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 	private static final String TEST_DATA_API_NAME = "LogoutTestAPI";
 	private static final String TEST_DATA_API_VERSION = "1.0.0";
 	private static final String SUPER_TENANT_DOMAIN_NAME = "carbon.super";
+
+	private static final Log log = LogFactory.getLog(APIStoreLogoutTestCase.class);
 
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
@@ -77,11 +81,25 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 		driver.findElement(By.id("loginBtn")).click();
 
+		// waiting to finish the login
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted Exception while changing API state " + e);
+		}
+
 		// select API
 		driver.navigate().to(getStoreURL() + "/apis/info?name=" +
 		                             TEST_DATA_API_NAME + "&version=" + TEST_DATA_API_VERSION +
 		                             "&provider=" + gatewayContext.getContextTenant().getContextUser().getUserName() + "&tenant=" +
 		                             SUPER_TENANT_DOMAIN_NAME);
+
+		// waiting till load
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted Exception while changing API state " + e);
+		}
 
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())));
 		driver.findElement(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())).click();

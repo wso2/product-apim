@@ -59,7 +59,10 @@ public class PublisherHomePage extends PageHandler {
             throws IOException {
         log.info("Create API : Start :: API Name:" + apiName + "-> API Context:" + apiContext + "-> API Version:" + apiVersion + "-> API URL:" + apiUrl);
         //Go to new API section
-        clickElementByLinkText("publisher.api.newapi.linktext");
+        clickElementByLinkText("Add");
+
+        clickElementById("create-new-api");
+        clickElementById("designNewAPI");
         //Design phase
         fillTextBoxById("publisher.api.name", apiName);
         fillTextBoxById("publisher.api.context", apiContext);
@@ -73,6 +76,8 @@ public class PublisherHomePage extends PageHandler {
         clickElementByXpath("publisher.api.resource_http_method.get");
         clickElementById("publisher.api.addresource.button.id");
         clickElementById("publisher.api.go_to_implement.button.id");
+        clickElementByXpath("//div[@value='#managed-api']");
+
         waitUntilElementVisibilityById("publisher.api.go_to_manage.button.id", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
         //Implement phase
         fillTextBoxById("publisher.api.production.endpoint", apiUrl);

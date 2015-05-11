@@ -112,6 +112,12 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
 
         driver.findElement(By.linkText("Add")).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+        driver.findElement(By.id("create-new-api")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+        driver.findElement(By.id("designNewAPI")).click();
+
         WebElement name = driver.findElement(By.id("name"));
         name.sendKeys(apiname);
 
@@ -122,8 +128,6 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         version.sendKeys("1.0.0");
 
         driver.findElement(By.id("resource_url_pattern")).sendKeys("*");
-        driver.findElement(By.id("inputResource")).clear();
-        driver.findElement(By.id("inputResource")).sendKeys("Getter");
         driver.findElement(By.cssSelector("input.http_verb_select")).click();
         driver.findElement(By.id("add_resource")).click();
 
@@ -134,8 +138,8 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
             log.warn("Interrupted Exception while saving resource " + e);
         }
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
-        driver.findElement(By.cssSelector("input.btn.btn-primary")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@id='saveBtn']")));
+        driver.findElement(By.xpath("//button[@id='saveBtn']")).click();
 
         // waiting until API is saved
         try {
@@ -143,31 +147,22 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         } catch (InterruptedException e) {
             log.warn("Interrupted Exception while saving API " + e);
         }
+
         driver.findElement(By.cssSelector("a.wizard-done > span")).click();
 
-        WebElement endpoint_type = driver.findElement(By.id("endpoint_type"));
-        endpoint_type.sendKeys("HTTP Endpoint");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+        driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
 
-        WebElement endpoint = driver.findElement(By.id("jsonform-0-elt-production_endpoints"));
-        endpoint.sendKeys("/testEndpoint");
-
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
+        driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
+        driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys("/testEndpoint");
         driver.findElement(By.id("go_to_manage")).click();
 
-        // waiting until the manage tab loads
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception Occurred during manage-tab loading " + e);
-        }
-
-        // setting the tier
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@type='button']")));
-        driver.findElement(By.xpath("//button[@type='button']")).click();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//form[@id='manage_form']/fieldset/div[2]/div/div/ul/li[2]/a/label")));
-        driver.findElement(By.xpath("//form[@id='manage_form']/fieldset/div[2]/div/div/ul/li[2]/a/label")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
+        driver.findElement(By.xpath("//button[@type='button']")).click();
+        driver.findElement(By.xpath("//input[@value='Gold']")).click();
         driver.findElement(By.id("publish_api")).click();
-
+        
         // waiting to finish the API state update
         try {
             Thread.sleep(1000);

@@ -8,7 +8,7 @@
             <package name="org.wso2.am.integration.ui.tests.*"/>
         </packages>
         <!--<classes>
-            <class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIRecordedTestCase"/>
         </classes>-->
     </test>
 </suite>
