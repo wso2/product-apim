@@ -79,6 +79,7 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
                 gatewayContext.getContextTenant().getContextUser().getPassword());
 
         APIAccessInfo apiAccessInfo = storeHomePage.doSubscribe(API_NAME + APIMTestConstants.HYPHEN + API_VERSION);
+
         TestAPIPage testAPIPage = storeHomePage.goToRestClient();
         testAPIPage.testAPI(apiAccessInfo.getAccessURL() + API_METHOD, apiAccessInfo.getAccessToken());
         //Test response body
