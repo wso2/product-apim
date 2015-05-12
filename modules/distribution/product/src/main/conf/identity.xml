@@ -117,7 +117,7 @@
                 <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
-               <GrantTypeName>open_keymanager</GrantTypeName>
+               <GrantTypeName>application_token</GrantTypeName>
                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantHandler</GrantTypeHandlerImplClass>
                <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantValidator</GrantTypeValidatorImplClass>
            </SupportedGrantType>
