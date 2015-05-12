@@ -87,7 +87,7 @@ public class TestNameLengthTestCase extends APIMIntegrationUiTestBase {
     @Test(groups = "wso2.apim", description = "adding new api with long name", dependsOnMethods = "testPublishAPI")
     public void testVerifyAPIName() throws InterruptedException {
         WebDriverWait wait = new WebDriverWait(driver, 60);
-        String apiXpath = "//div[2]/div/div[2]/div/ul/li/div/div/a";
+        String apiXpath = /*"//div[2]/div/div[2]/div/ul/li/div/div/a"*/"//a[contains(.,'YoutubeFeeds')]";
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
         driver.findElement(By.linkText("Browse")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(apiXpath)));
