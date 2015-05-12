@@ -26,7 +26,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +48,7 @@ public class APIVersoinStatTestCase extends APIMIntegrationUiTestBase {
         driver.get(getLoginURL());
     }
 
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.PLATFORM})
     @Test(groups = "wso2.am", description = "verify Bam api stats visibility")
     public void testVersionStats() throws Exception {
 
