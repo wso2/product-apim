@@ -189,8 +189,7 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		driver.findElement(By.id("application-add-button")).click();
 		threadWait(5000);
 
-		//go to created API and subscribe
-		driver.findElement(By.linkText("APIs")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("APIs")));
 
 		long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
 		long startTime = System.currentTimeMillis();
