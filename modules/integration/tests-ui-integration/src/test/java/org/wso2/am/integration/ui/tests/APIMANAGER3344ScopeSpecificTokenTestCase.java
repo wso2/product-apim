@@ -184,6 +184,7 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		//go to my applications and add an application
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("My Applications")));
 		driver.findElement(By.linkText("My Applications")).click();
+        threadWait(1000);
 		driver.findElement(By.id("application-name")).clear();
 		driver.findElement(By.id("application-name")).sendKeys("app01");
 		driver.findElement(By.id("application-add-button")).click();
