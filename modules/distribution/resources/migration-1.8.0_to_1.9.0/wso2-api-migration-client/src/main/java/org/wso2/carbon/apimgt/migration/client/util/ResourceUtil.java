@@ -191,7 +191,7 @@ public class ResourceUtil {
      * @param allParameters map containing all the parameters extracted from api-doc
      *                      containing
      *                      resources for swagger 1.1
-     * @param allOperations
+     * @param allOperations all operations
      * @param basePath      base path for the resource
      * @return modified resource for the api
      */
@@ -281,10 +281,10 @@ public class ResourceUtil {
     /**
      * location for the swagger 1.2 resources
      *
-     * @param apiName
-     * @param apiVersion
-     * @param apiProvider
-     * @return
+     * @param apiName     api name
+     * @param apiVersion  api version
+     * @param apiProvider api provider
+     * @return swagger v1.2 location
      */
     public static String getSwagger12ResourceLocation(String apiName, String apiVersion,
                                                       String apiProvider) {
@@ -297,22 +297,20 @@ public class ResourceUtil {
     /**
      * update all the the swagger document in the registry related to an api
      *
-     * @param apiDocJson
-     * @param docResourcePaths
-     * @param re
+     * @param apiDocJson       api doc
+     * @param docResourcePaths doc resource paths
+     * @param registry         registry
      * @throws ParseException
      * @throws RegistryException
      */
     public static void updateAPISwaggerDocs(String apiDocJson, String[] docResourcePaths,
-                                            Registry re) throws ParseException, RegistryException {
+                                            Registry registry) throws ParseException, RegistryException {
 
         JSONParser parser = new JSONParser();
         JSONObject apiDoc11 = (JSONObject) parser.parse(apiDocJson);
 
         Map<String, JSONArray> allParameters = ResourceUtil.getAllParametersForResources(apiDoc11);
-
         Map<String, JSONObject> allOperations = ResourceUtil.getAllOperationsForResources(apiDoc11);
-
         Map<String, JSONObject> apisByPath = ResourceUtil.getAllAPIsByResourcePath(apiDoc11);
 
         //this collection holds description given for each resource against the resource name.
@@ -321,7 +319,6 @@ public class ResourceUtil {
         // api-doc in 1.2 resource folder. following map collects this value from api-doc 1.1 and
         // store it to add to api-doc 1.2
         Map<String, String> descriptionsForResource = new HashMap<String, String>();
-
 
         String basePath = (String) apiDoc11.get(Constants.API_DOC_11_BASE_PATH);
         String resourcePath = (String) apiDoc11.get(Constants.API_DOC_11_RESOURCE_PATH);
@@ -342,7 +339,7 @@ public class ResourceUtil {
                 continue;
             }
 
-            Resource resource = re.get(docResourcePath);
+            Resource resource = registry.get(docResourcePath);
             JSONObject apiDoc =
                     (JSONObject) parser.parse(new String((byte[]) resource.getContent()));
 
@@ -372,35 +369,32 @@ public class ResourceUtil {
                     ResourceUtil.getUpdatedSwagger12Resource(apiDoc, allParameters, allOperations,
                             basePathForResource);
             log.info("\t update " + resourceName.substring(1));
-            Resource res = re.get(docResourcePath);
+            Resource res = registry.get(docResourcePath);
             res.setContent(updatedJson);
             //update the registry
-            re.put(docResourcePath, res);
-
+            registry.put(docResourcePath, res);
         }
 
         //update the api-doc. add the descriptions to each api resource
-        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, re, parser);
-
+        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, registry, parser);
     }
 
 
     /**
      * update the swagger 1.2 api-doc. This method updates the descriptions
      *
-     * @param apidoc12path
-     * @param descriptionsForResource
-     * @param re
-     * @param parser
+     * @param apiDoc12Path            swagger v1.2 doc path
+     * @param descriptionsForResource resource description
+     * @param registry                registry
+     * @param parser                  json parser
      * @throws RegistryException
      * @throws ParseException
      */
-    private static void updateSwagger12APIdoc(String apidoc12path,
+    private static void updateSwagger12APIdoc(String apiDoc12Path,
                                               Map<String, String> descriptionsForResource,
-                                              Registry re, JSONParser parser)
-            throws RegistryException,
-            ParseException {
-        Resource res = re.get(apidoc12path);
+                                              Registry registry, JSONParser parser)
+            throws RegistryException, ParseException {
+        Resource res = registry.get(apiDoc12Path);
         JSONObject api12Doc = (JSONObject) parser.parse(new String((byte[]) res.getContent()));
         JSONArray apis = (JSONArray) api12Doc.get(Constants.API_DOC_12_APIS);
         for (int j = 0; j < apis.size(); j++) {
@@ -416,14 +410,14 @@ public class ResourceUtil {
         log.info("\t update api-doc");
         res.setContent(api12Doc.toJSONString());
         // update the registry
-        re.put(apidoc12path, res);
+        registry.put(apiDoc12Path, res);
     }
 
     /**
      * remove header and body parameters
      *
-     * @param docResourcePaths
-     * @param registry
+     * @param docResourcePaths doc resource paths
+     * @param registry         registry
      * @throws RegistryException
      * @throws ParseException
      */
@@ -475,22 +469,19 @@ public class ResourceUtil {
                     }
                     operation.put("parameters", parametersNew);
                 }
-
-
             }
 
             resource.setContent(resourceDoc.toJSONString());
             //update the registry
             registry.put(docResourcePath, resource);
         }
-
     }
 
     /**
-     * extract the parameters from the url tempate.
+     * extract the parameters from the url template.
      *
-     * @param url
-     * @return
+     * @param url url to get parameters
+     * @return parameter list
      */
     public static List<String> getURLTemplateParams(String url) {
         boolean endVal = false;
@@ -513,7 +504,6 @@ public class ResourceUtil {
                     endVal = false;
                 }
             }
-
         }
         return params;
     }
@@ -563,6 +553,14 @@ public class ResourceUtil {
         return databaseType;
     }
 
+    /**
+     * This method picks the query according to the users database
+     * @param migrateVersion migrate version
+     * @return exact query to execute
+     * @throws SQLException
+     * @throws APIManagementException
+     * @throws IOException
+     */
     public static String pickQueryFromResources(String migrateVersion) throws SQLException, APIManagementException, IOException {
         String databaseType = getDatabaseDriverName();
         String queryTobeExecuted = null;
@@ -606,12 +604,25 @@ public class ResourceUtil {
         return queryTobeExecuted;
     }
 
+    /**
+     * To handle exceptions
+     *
+     * @param msg error message
+     * @throws APIManagementException
+     */
     public static void handleException(String msg) throws APIManagementException {
         log.error(msg);
         throw new APIManagementException(msg);
     }
 
-    public static void copyNewSequenceToExistingSequences(String sequenceDirectoryFilePath, String sequenceName) {
+    /**
+     * To copy a new sequence to existing ones
+     *
+     * @param sequenceDirectoryFilePath sequence directory
+     * @param sequenceName              sequence name
+     * @throws APIManagementException
+     */
+    public static void copyNewSequenceToExistingSequences(String sequenceDirectoryFilePath, String sequenceName) throws APIManagementException {
         try {
             String namespace = "http://ws.apache.org/ns/synapse";
             String filePath = sequenceDirectoryFilePath + sequenceName + ".xml";
@@ -633,17 +644,24 @@ public class ResourceUtil {
             StreamResult result = new StreamResult(new File(filePath));
             transformer.transform(source, result);
         } catch (ParserConfigurationException pce) {
-            pce.printStackTrace();
+            handleException(pce.getMessage());
         } catch (TransformerException tfe) {
-            tfe.printStackTrace();
+            handleException(tfe.getMessage());
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            handleException(ioe.getMessage());
         } catch (SAXException sae) {
-            sae.printStackTrace();
+            handleException(sae.getMessage());
         }
     }
 
-    public static void updateSynapseAPI(File filePath,String implementation){
+    /**
+     * To update synapse API
+     *
+     * @param filePath       file path
+     * @param implementation new impl
+     * @throws APIManagementException
+     */
+    public static void updateSynapseAPI(File filePath, String implementation) throws APIManagementException {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
@@ -663,7 +681,7 @@ public class ResourceUtil {
             property.setAttribute("value", implementation);
             corsHandler.appendChild(property);
             NodeList handlerNodes = doc.getElementsByTagName("handler");
-            for (int i =0 ;i<handlerNodes.getLength();i++){
+            for (int i = 0; i < handlerNodes.getLength(); i++) {
                 Node tempNode = handlerNodes.item(i);
                 if ("org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"
                         .equals(tempNode.getAttributes().getNamedItem("class").getTextContent())) {
@@ -676,14 +694,14 @@ public class ResourceUtil {
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(filePath);
             transformer.transform(source, result);
-    } catch (ParserConfigurationException pce) {
-        pce.printStackTrace();
-    } catch (TransformerException tfe) {
-        tfe.printStackTrace();
-    } catch (IOException ioe) {
-        ioe.printStackTrace();
-    } catch (SAXException sae) {
-        sae.printStackTrace();
-    }
+        } catch (ParserConfigurationException pce) {
+            handleException(pce.getMessage());
+        } catch (TransformerException tfe) {
+            handleException(tfe.getMessage());
+        } catch (IOException ioe) {
+            handleException(ioe.getMessage());
+        } catch (SAXException sae) {
+            handleException(sae.getMessage());
+        }
     }
 }
