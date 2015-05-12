@@ -573,6 +573,9 @@
     <fileSet>
         <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0009/lib</directory>
         <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
+	<excludes>
+               <exclude>**/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
+        </excludes>
     </fileSet>
     <fileSet>
         <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010/lib</directory>
