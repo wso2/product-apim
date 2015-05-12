@@ -100,7 +100,9 @@
             org.wso2.carbon.identity.oauth.tokenprocessor.PlainTextPersistenceProcessor
         </TokenPersistenceProcessor>
         <ClientAuthHandlers>
-            <ClientAuthHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.clientauth.BasicAuthClientAuthHandler</ClientAuthHandlerImplClass>
+            <ClientAuthHandler Class="org.wso2.carbon.identity.oauth2.token.handlers.clientauth.BasicAuthClientAuthHandler">
+                <Property Name="StrictClientCredentialValidation">false</Property>
+            </ClientAuthHandler>
         </ClientAuthHandlers>
         <!--TokenPersistenceProcessor>
                 org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor
