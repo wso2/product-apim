@@ -200,7 +200,9 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 			Thread.sleep(1000);
 			nowTime = System.currentTimeMillis();
 		}
-
+        driver.findElement(By.xpath("//input[@name='query']")).sendKeys("Twitter");
+        driver.findElement(By.xpath("//button[@class='btn btn-primary search-button']")).click();
+        Thread.sleep(1000);
 		//wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Twitter")));
 		driver.findElement(By.linkText("Twitter")).click();
 		new Select(driver.findElement(By.id("application-list"))).selectByVisibleText("app01");
@@ -220,10 +222,9 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		threadWait(1000);
 		driver.findElement(By.id("scopeSelectButtonPop")).click();
 		threadWait(1000);
-		driver.findElement(By.xpath(
-				"//button[@onclick=\"jagg.sessionAwareJS({redirect:'/site/pages/subscriptions.jag'})\"]"))
-		      .click();
-		//wait 5 seconds for token to get generated
+        driver.findElement(By.xpath("//button[@class='app-key-generate-button btn btn-primary btn-generatekeys']")).click();
+
+        //wait 5 seconds for token to get generated
 		threadWait(5000);
 
 		//get the generated scope

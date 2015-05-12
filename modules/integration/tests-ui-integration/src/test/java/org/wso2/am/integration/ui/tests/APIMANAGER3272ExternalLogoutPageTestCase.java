@@ -32,6 +32,8 @@ import org.testng.TestException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
@@ -72,6 +74,7 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiT
 
     }
 
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.PLATFORM})
     @Test(groups = "wso2.am")
     public void loginAndLogoutToStoreCheckForSessionInvalidated() throws Exception {
         log.info("Started Logging into Store...");
