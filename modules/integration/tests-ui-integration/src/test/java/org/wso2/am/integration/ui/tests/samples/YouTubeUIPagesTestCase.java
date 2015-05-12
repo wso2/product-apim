@@ -49,7 +49,7 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
     private static final String API_DESCRIPTION = "Youtube Live Feeds1";
     private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_METHOD = "/most_popular";
-    private static final String RESPONSE_BODY_TEST_STRING = "Twitter";
+    private static final String RESPONSE_BODY_TEST_STRING = "YouTube data API";
     private static final String[] TAG_NAMES = new String[]{"youtube", "gdata", "multimedia"};
 
     @BeforeClass(alwaysRun = true)

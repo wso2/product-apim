@@ -59,10 +59,11 @@ public class PublisherHomePage extends PageHandler {
             throws IOException {
         log.info("Create API : Start :: API Name:" + apiName + "-> API Context:" + apiContext + "-> API Version:" + apiVersion + "-> API URL:" + apiUrl);
         //Go to new API section
-        clickElementByLinkText("Add");
 
-        clickElementById("create-new-api");
-        clickElementById("designNewAPI");
+        clickElementByLinkText("publisher.api.newapi.linktext");
+
+        clickElementById("publisher.api.newapi.create");
+        clickElementById("publisher.api.newapi.designNewAPI");
         //Design phase
         fillTextBoxById("publisher.api.name", apiName);
         fillTextBoxById("publisher.api.context", apiContext);
@@ -72,11 +73,11 @@ public class PublisherHomePage extends PageHandler {
             fillTextBoxByXPath("publisher.api.tagname.bootstrap.tagsinput.xpath", tagName + "\n");
         }
         fillTextBoxById("publisher.api.resource_url_pattern", APIMTestConstants.ASTERISK);
-        fillTextBoxById("publisher.api.resource", APIMTestConstants.DEFAULT);
-        clickElementByXpath("publisher.api.resource_http_method.get");
+        /*fillTextBoxById("publisher.api.resource", APIMTestConstants.DEFAULT);*/
+        clickElementByCssSelector("publisher.api.resource_http_method.get");
         clickElementById("publisher.api.addresource.button.id");
         clickElementById("publisher.api.go_to_implement.button.id");
-        clickElementByXpath("//div[@value='#managed-api']");
+        clickElementByXpath("publisher.api.manage.button.id");
 
         waitUntilElementVisibilityById("publisher.api.go_to_manage.button.id", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
         //Implement phase

@@ -169,7 +169,7 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
         String genButtonText = generateButton.getText();
         if (genButtonText.equalsIgnoreCase("Generate keys")) {
-            generateButton.click();
+            driver.findElement(By.xpath("//button[@class='app-key-generate-button btn btn-primary btn-generatekeys']")).click();
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span.accessTokenDisplayPro.keyValues")));
             accessToken = driver.findElement(By.cssSelector("span.accessTokenDisplayPro.keyValues")).getText();
         } else {
@@ -212,6 +212,13 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.cssSelector("input.input-xxlarge.value")).sendKeys("Bearer  " + accessToken + "\n");
         driver.findElement(By.id("sendBtn")).click();
 
+        // waiting until resource is saved
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            log.warn("Interrupted Exception while saving resource " + e);
+        }
+
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Response Body")));
 
         long startTime = System.currentTimeMillis();
@@ -221,7 +228,7 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
             nowTime = System.currentTimeMillis();
         }
 
-        Assert.assertTrue(driver.findElement(By.id("responseDivContent")).getText().contains("Twitter"), "Twitter");
+        Assert.assertTrue(driver.findElement(By.id("responseDivContent")).getText().contains("YouTube data API"), "Failed response");
         driver.findElement(By.cssSelector("a.link-to-user.dropdown-toggle")).click();
         driver.findElement(By.id("logout-link")).click();
     }

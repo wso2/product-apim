@@ -99,7 +99,7 @@ public class StoreHomePage extends PageHandler {
         clickElementByLinkText("store.mysubscription.linktext");
         String genButtonText = getTextOfElementByXPath("store.mysubscription.generate.button.xpath");
         //Generation of access token
-        if (genButtonText.equals("Generate")) { //if no token was generated.
+        if (genButtonText.equalsIgnoreCase("Generate Keys")) { //if no token was generated.
             clickElementByXpath("store.mysubscription.generate.button.xpath");
             waitUntilElementVisibilityByClassName("store.access.token.classname", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
             accessToken = getTextOfElementByClassName("store.access.token.classname");
