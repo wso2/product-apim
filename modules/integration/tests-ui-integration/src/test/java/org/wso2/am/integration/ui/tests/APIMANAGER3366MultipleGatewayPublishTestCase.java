@@ -99,7 +99,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		driver.findElement(By.xpath("//button[@type='button']")).click();
 		driver.findElement(By.xpath("//input[@value='Gold']")).click();
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(isAPIPublished("publishWithEnvironments1", "1.0.0"),
 		                  "API successfully published api without environment tab selection");
 		driver.findElement(By.id("userMenu")).click();
@@ -155,7 +154,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 			checkBox.click();
 		}
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(isAPIPublished("publishWithEnvironments2", "1.0.0"),
 		                  "API is Successfully published with select environments section");
 		driver.findElement(By.id("userMenu")).click();
@@ -211,7 +209,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 			checkBox.click();
 		}
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(!isAPIPublished("publishWithEnvironments3", "1.0.0"),
 		                  "API is Successfully published with de select environment in environment section");
 		driver.findElement(By.id("userMenu")).click();

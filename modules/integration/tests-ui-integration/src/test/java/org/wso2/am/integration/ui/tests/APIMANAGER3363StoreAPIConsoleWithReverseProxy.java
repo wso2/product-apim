@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.am.integration.ui.pages.tenant.TenantHomePage;
 import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
+import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
@@ -112,10 +113,16 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
         driver.findElement(By.id("summary")).sendKeys("test");
         driver.findElement(By.id("saveDocBtn")).click();
 
-        Thread.sleep(60 * 1000); // waiting to publish API in store
-
         // go to store > API > API Console
         driver.get(getStoreURL() + "?tenant=" + TEST_DATA_TENANT);
+        long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
+        long startTime = System.currentTimeMillis();
+        while ((!driver.getPageSource().contains(TEST_DATA_API_NAME)) && (System.currentTimeMillis() - startTime) < loopMaxTime) {
+            driver.findElement(By.linkText("APIs")).click();
+            Thread.sleep(500);
+            //wait for 0.5 seconds and refresh the store since it will take little time to appear the published APIs in store
+        }
+
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_API_NAME)));
         driver.findElement(By.linkText(TEST_DATA_API_NAME)).click();
 

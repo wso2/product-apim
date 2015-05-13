@@ -38,6 +38,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
     private WebDriver driver;
     private String publisherURL;
     private String storeURL;
+    private WebDriverWait wait;
 
     private static final Log log = LogFactory.getLog(APIMANAGER3154StoreSearchResultDisplay.class);
 
@@ -48,6 +49,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
 
         publisherURL = getPublisherURL();
         storeURL = getStoreURL();
+        wait = new WebDriverWait(driver, 30);
     }
 
     @Test(groups = "wso2.am", description = "verify login to api manager")
@@ -67,11 +69,6 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
             publishAPI("testApi" + i, "context" + i);
         }
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while Doing the API Search " + e);
-        }
 
         // Searching in store
         driver.get(storeURL + "/site/pages/list-apis.jag?tenant=carbon.super");
@@ -80,11 +77,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         driver.findElement(By.className("search-button")).click();
 
         // Waiting for search results
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while Doing the API Search " + e);
-        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".thumbnails>li")));
 
         int searchResultCount = driver.findElements(By.cssSelector(".thumbnails>li")).size();
 
@@ -108,7 +101,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
 
     public void publishAPI(String apiname, String apicontext) {
 
-        WebDriverWait wait = new WebDriverWait(driver, 30);
+
 
         driver.findElement(By.linkText("Add")).click();
 
@@ -132,21 +125,13 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         driver.findElement(By.id("add_resource")).click();
 
         // waiting until resource is saved
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while saving resource " + e);
-        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='resource-path']")));
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@id='saveBtn']")));
         driver.findElement(By.xpath("//button[@id='saveBtn']")).click();
 
         // waiting until API is saved
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while saving API " + e);
-        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("a.wizard-done > span")));
 
         driver.findElement(By.cssSelector("a.wizard-done > span")).click();
 
@@ -164,11 +149,7 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         driver.findElement(By.id("publish_api")).click();
         
         // waiting to finish the API state update
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while changing API state " + e);
-        }
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@href='#lifecycles']")));
     }
 
     @AfterClass(alwaysRun = true)

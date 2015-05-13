@@ -142,24 +142,27 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		new Select(driver.findElement(By.cssSelector("select.input-medium")))
 				.selectByVisibleText("Tweet");
 		driver.findElement(By.xpath("//button[@type='submit']")).click();
-		threadWait(1000);
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("+ Scope")));
 
 		driver.findElement(By.linkText("+ Scope")).click();
 		new Select(driver.findElement(By.cssSelector("select.input-medium")))
 				.selectByVisibleText("Retweet");
 		driver.findElement(By.xpath("//button[@type='submit']")).click();
-		threadWait(1000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//a[contains(text(),'+ Scope')])[2]")));
 
 		driver.findElement(By.xpath("(//a[contains(text(),'+ Scope')])[2]")).click();
 		new Select(driver.findElement(By.cssSelector("select.input-medium")))
 				.selectByVisibleText("Delete");
 		driver.findElement(By.xpath("//button[@type='submit']")).click();
-		threadWait(1000);
+//		threadWait(1000);
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
 		//publish api
 		driver.findElement(By.id("publish_api")).click();
 		//wait 15 seconds for API to get published
-		threadWait(15000);
+//		threadWait(15000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@href='#lifecycles']")));
 
 		// Go to the Tenant store and click Login
 		driver.get(getStoreURL() + "?tenant=" + SUPER_TENANT_DOMAIN_NAME);
@@ -179,16 +182,14 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 
 		// find Login button and click on it.
 		driver.findElement(By.id("loginBtn")).click();
-		threadWait(1000);
 
 		//go to my applications and add an application
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("My Applications")));
 		driver.findElement(By.linkText("My Applications")).click();
-        threadWait(1000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("application-add-button")));
 		driver.findElement(By.id("application-name")).clear();
 		driver.findElement(By.id("application-name")).sendKeys("app01");
 		driver.findElement(By.id("application-add-button")).click();
-		threadWait(5000);
 
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("APIs")));
 
@@ -197,37 +198,36 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		long nowTime = startTime;
 		while ((!driver.getPageSource().contains("Twitter")) && (nowTime - startTime) < loopMaxTime) {
 			driver.findElement(By.linkText("APIs")).click();
-			Thread.sleep(1000);
+            threadWait(500);
 			nowTime = System.currentTimeMillis();
 		}
         driver.findElement(By.xpath("//input[@name='query']")).sendKeys("Twitter");
         driver.findElement(By.xpath("//button[@class='btn btn-primary search-button']")).click();
-        Thread.sleep(1000);
-		//wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Twitter")));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Twitter")));
 		driver.findElement(By.linkText("Twitter")).click();
 		new Select(driver.findElement(By.id("application-list"))).selectByVisibleText("app01");
 		driver.findElement(By.id("subscribe-button")).click();
-		threadWait(1000);
-
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Go to My Subscriptions")));
 		//go to my subscriptions and generate key using defined scopes
 		driver.findElement(By.linkText("Go to My Subscriptions")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Select Scopes")));
 		driver.findElement(By.linkText("Select Scopes")).click();
-		threadWait(1000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("retweetScope")));
 		driver.findElement(By.id("retweetScope")).click();
-		threadWait(1000);
-		driver.findElement(By.id("tweetScope")).click();
-		threadWait(1000);
-		driver.findElement(By.id("deleteScope")).click();
-		threadWait(1000);
-		driver.findElement(By.id("scopeSelectButtonPop")).click();
-		threadWait(1000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("tweetScope")));
+        driver.findElement(By.id("tweetScope")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("deleteScope")));
+        driver.findElement(By.id("deleteScope")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("scopeSelectButtonPop")));
+        driver.findElement(By.id("scopeSelectButtonPop")).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='app-key-generate-button btn btn-primary btn-generatekeys']")));
         driver.findElement(By.xpath("//button[@class='app-key-generate-button btn btn-primary btn-generatekeys']")).click();
 
         //wait 5 seconds for token to get generated
-		threadWait(5000);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("prodAccessScope")));
 
-		//get the generated scope
+
+        //get the generated scope
 		WebElement scope = driver.findElement(By.id("prodAccessScope"));
 		String finalScope = scope.getText();
 
@@ -252,7 +252,6 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 		driver.findElement(By.id("scopeRoles")).sendKeys(roles);
 		driver.findElement(By.id("scope_submit")).click();
 		threadWait(1000);
-
 	}
 
 	private void threadWait(int milliseconds) {

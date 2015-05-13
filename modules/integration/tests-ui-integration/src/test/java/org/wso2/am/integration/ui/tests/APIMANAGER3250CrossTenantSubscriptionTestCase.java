@@ -190,9 +190,13 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
 
         driver.get(getStoreURL() + "?tenant=" + TEST1_TENANT_DOMAIN);
 
-        //wait for few seconds and refresh the store since it will take little time to appear the published APIs in store
-        Thread.sleep(30000);
-        driver.navigate().refresh();
+        long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
+        long startTime = System.currentTimeMillis();
+        while ((!driver.getPageSource().contains(TEST_DATA_API_NAME)) && (System.currentTimeMillis() - startTime) < loopMaxTime) {
+            driver.findElement(By.linkText("APIs")).click();
+			Thread.sleep(500);
+            //wait for 0.5 seconds and refresh the store since it will take little time to appear the published APIs in store
+        }
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector(".title")));
