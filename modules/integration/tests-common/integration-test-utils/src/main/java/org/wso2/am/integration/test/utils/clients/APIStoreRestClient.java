@@ -673,8 +673,9 @@ public class APIStoreRestClient {
 
     public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
         try {
-            return HttpRequestUtil.doGet(backendURL + "/store/?tenant=" + storeTenantDomain, requestHeaders);
-        } catch (IOException ioE) {
+
+            return HttpRequestUtil.doGet(backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+        } catch (Exception ioE) {
             throw new APIManagerIntegrationTestException("Exception when retrieve the API store page as anonymous user", ioE);
         }
 

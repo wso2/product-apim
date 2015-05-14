@@ -31,7 +31,6 @@ import org.wso2.carbon.mediation.configadmin.stub.types.carbon.ConfigurationInfo
 import org.wso2.carbon.mediation.configadmin.stub.types.carbon.ValidationError;
 import org.xml.sax.SAXException;
 
-import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -60,15 +59,12 @@ public class SynapseConfigAdminClient {
     private final String serviceName = "ConfigServiceAdmin";
 
     public SynapseConfigAdminClient(String backEndUrl, String sessionCookie) throws AxisFault {
-
         String endPoint = backEndUrl + serviceName;
         configServiceAdminStub = new ConfigServiceAdminStub(endPoint);
         AuthenticateStub.authenticateStub(sessionCookie, configServiceAdminStub);
     }
 
-    public SynapseConfigAdminClient(String backEndUrl, String userName, String password)
-            throws AxisFault {
-
+    public SynapseConfigAdminClient(String backEndUrl, String userName, String password) throws AxisFault {
         String endPoint = backEndUrl + serviceName;
         configServiceAdminStub = new ConfigServiceAdminStub(endPoint);
         AuthenticateStub.authenticateStub(userName, password, configServiceAdminStub);
@@ -78,7 +74,7 @@ public class SynapseConfigAdminClient {
      * Activating service
      *
      * @param serviceName - service name need to be activated
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the activate() method call in ConfigServiceAdminStub
      */
     public void activateService(String serviceName) throws RemoteException {
         configServiceAdminStub.activate(serviceName);
@@ -88,16 +84,18 @@ public class SynapseConfigAdminClient {
      * Adding more configuration to the existing service
      *
      * @param serviceName - service name
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the addExistingConfiguration() method call in ConfigServiceAdminStub
      */
     public void addExistingConfiguration(String serviceName) throws RemoteException {
         configServiceAdminStub.addExistingConfiguration(serviceName);
     }
 
     /**
+     * Create synapse configuration
+     *
      * @param serviceName - service name
      * @param description - service description
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the create() method call in ConfigServiceAdminStub
      */
     public void create(String serviceName, String description) throws RemoteException {
         configServiceAdminStub.create(serviceName, description);
@@ -107,7 +105,7 @@ public class SynapseConfigAdminClient {
      * Deleting synapse configuration
      *
      * @param serviceName - service name
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the deleteConfiguration() method call in ConfigServiceAdminStub
      */
     public void deleteConfiguration(String serviceName) throws RemoteException {
         configServiceAdminStub.deleteConfiguration(serviceName);
@@ -116,53 +114,60 @@ public class SynapseConfigAdminClient {
     /**
      * Get current synapse configuration
      *
-     * @return synapse configuration
-     * @throws java.rmi.RemoteException throwable exception
+     * @return String - synapse configuration
+     * @throws RemoteException for the getConfiguration() method call in ConfigServiceAdminStub
      */
     public String getConfiguration() throws RemoteException {
         return configServiceAdminStub.getConfiguration();
     }
 
     /**
+     * Get current configuration List
+     *
      * @return configuration list
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the getConfigurationList() method call in ConfigServiceAdminStub
      */
     public ConfigurationInformation[] getConfigurationList() throws RemoteException {
         return configServiceAdminStub.getConfigurationList();
     }
 
     /**
-     * save synapse configuration
+     * Save Synapse configuration
      *
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the saveConfigurationToDisk() method call in ConfigServiceAdminStub
      */
     public void saveConfigurationToDisk() throws RemoteException {
         configServiceAdminStub.saveConfigurationToDisk();
     }
 
     /**
-     * update synapse configuration
+     * Update Synapse configuration using a String that contains the new configuration.
      *
      * @param configuration - synapse configuration
-     * @return configuration update status
-     * @throws java.rmi.RemoteException            throwable exception
-     * @throws javax.servlet.ServletException      throwable exception
-     * @throws javax.xml.stream.XMLStreamException throwable exception
+     * @return boolean - return true if update success else return false.
+     * @throws RemoteException    for the updateConfiguration() method call in ConfigServiceAdminStub
+     * @throws XMLStreamException for the updateConfiguration() method call in ConfigServiceAdminStub
      */
-    public boolean updateConfiguration(String configuration)
-            throws XMLStreamException, ServletException, RemoteException {
+
+    public boolean updateConfiguration(String configuration) throws XMLStreamException, RemoteException {
         return configServiceAdminStub.updateConfiguration(createOMElement(configuration));
     }
 
+
     /**
-     * Uploads synapse config bu using a file
+     * Update Synapse configuration using a File object that contains the new configuration.
      *
-     * @param file -File that contains the synapse configuration
-     * @return
+     * @param file - File that contains the synapse configuration
+     * @return boolean - true if update process success, else  returns false
+     * @throws IOException                  for the updateConfiguration() method call in ConfigServiceAdminStub and
+     *                                      parse() method call in DocumentBuilder
+     * @throws SAXException                 for the parse() method call in DocumentBuilder
+     * @throws ParserConfigurationException for the newDocumentBuilder() method call in DocumentBuilderFactory
+     * @throws TransformerException         for the getStringFromDocument() method call
+     * @throws XMLStreamException           for the updateConfiguration() method call in ConfigServiceAdminStub
      */
-    public boolean updateConfiguration(File file)
-            throws IOException, SAXException, ParserConfigurationException, TransformerException,
-            XMLStreamException, ServletException {
+    public boolean updateConfiguration(File file) throws IOException, SAXException, ParserConfigurationException,
+            TransformerException, XMLStreamException {
         boolean success = false;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = factory.newDocumentBuilder();
@@ -175,39 +180,48 @@ public class SynapseConfigAdminClient {
     }
 
     /**
-     * update synapse configuration
+     * update synapse configuration using a OMElement object that contains the new configuration.
      *
      * @param configuration - synapse configuration
      * @return configuration update status
-     * @throws java.rmi.RemoteException            throwable exception
-     * @throws javax.servlet.ServletException      throwable exception
-     * @throws javax.xml.stream.XMLStreamException throwable exception
+     * @throws RemoteException for the updateConfiguration() method call in ConfigServiceAdminStub
      */
-    public boolean updateConfiguration(OMElement configuration)
-            throws XMLStreamException, ServletException, RemoteException {
+    public boolean updateConfiguration(OMElement configuration) throws RemoteException {
         return configServiceAdminStub.updateConfiguration(configuration);
     }
 
     /**
-     * Validate configuration
+     * Validate synapse configuration using a OMElement
      *
      * @param configuration - synapse configuration
      * @return validation error array
-     * @throws java.rmi.RemoteException throwable exception
+     * @throws RemoteException for the validateConfiguration() method call in ConfigServiceAdminStub
      */
     public ValidationError[] validateConfiguration(OMElement configuration) throws RemoteException {
         return configServiceAdminStub.validateConfiguration(configuration);
     }
 
-    private static OMElement createOMElement(String xml)
-            throws ServletException, XMLStreamException {
+    /**
+     * Create OMElement using String this is in ML format
+     *
+     * @param xml - String that is in XML format to create the OMElement
+     * @return OMElement - newly created OMElement
+     * @throws XMLStreamException - for the newInstance() method call in XMLInputFactory
+     */
+    private static OMElement createOMElement(String xml) throws XMLStreamException {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
         StAXOMBuilder builder = new StAXOMBuilder(reader);
         return builder.getDocumentElement();
 
     }
 
-
+    /**
+     * Get the String value form Document object
+     *
+     * @param doc - Document object the need to  retrieve the string value
+     * @return String -  String value of the Document object provided.
+     * @throws TransformerException for the newTransformer()  and transform() method calls in Transformer
+     */
     private String getStringFromDocument(Document doc) throws TransformerException {
         DOMSource domSource = new DOMSource(doc);
         StringWriter writer = new StringWriter();
@@ -215,7 +229,13 @@ public class SynapseConfigAdminClient {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
         transformer.transform(domSource, result);
-        return writer.toString();
+        String stringFromDoc = writer.toString();
+        try {
+            writer.close();
+        } catch (IOException e) {
+            log.warn("Exception when closing the StringWriter.", e);
+        }
+        return stringFromDoc;
     }
 
 

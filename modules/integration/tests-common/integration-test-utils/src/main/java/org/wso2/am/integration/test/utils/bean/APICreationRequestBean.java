@@ -41,8 +41,8 @@ public class APICreationRequestBean extends AbstractRequest {
     private String visibility = "public";
     private String description = "description";
     private String endpointType = "nonsecured";
-    private String http_checked = "http";
-    private String https_checked = "https";
+    private String httpChecked = "http";
+    private String httpsChecked = "https";
     private String tags = "tags";
     private String tier = "Silver";
     private String thumbUrl = "";
@@ -50,8 +50,8 @@ public class APICreationRequestBean extends AbstractRequest {
     private String resourceCount = "0";
     private String roles = "";
     private String wsdl = "";
-    private String default_version = "";
-    private String default_version_checked = "";
+    private String defaultVersion = "";
+    private String defaultVersionChecked = "";
     private List<APIResourceBean> resourceBeanList;
     private String epUsername = "";
     private String epPassword = "";
@@ -68,12 +68,14 @@ public class APICreationRequestBean extends AbstractRequest {
      * @param context     - API context
      * @param version     - API version
      * @param endpointUrl - Endpoint URL of the API
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
      */
-    public APICreationRequestBean(String apiName, String context, String version, URL endpointUrl) throws APIManagerIntegrationTestException {
+    public APICreationRequestBean(String apiName, String context, String version, String provider, URL endpointUrl)
+            throws APIManagerIntegrationTestException {
         this.name = apiName;
         this.context = context;
         this.version = version;
+        this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
         try {
@@ -82,32 +84,21 @@ public class APICreationRequestBean extends AbstractRequest {
                     + endpointUrl.getProtocol() + "\"}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
-            throw new APIManagerIntegrationTestException(" Error When constructing the edn point url JSON", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
         }
-
-
     }
 
     @Override
-    /**
-     * Set the Action as addAPI
-     */
     public void setAction() {
         setAction("addAPI");
     }
 
-    /**
-     * Set a custom Action
-     *
-     * @param action - custom action
-     */
+    @Override
     public void setAction(String action) {
         super.setAction(action);
     }
 
-    /**
-     * initialize method
-     */
+
     @Override
     public void init() {
 
@@ -123,43 +114,39 @@ public class APICreationRequestBean extends AbstractRequest {
             addParameter("epUsername", epUsername);
             addParameter("epPassword", epPassword);
         }
-        addParameter("http_checked", getHttp_checked());
-        addParameter("https_checked", getHttps_checked());
+        addParameter("http_checked", getHttpChecked());
+        addParameter("https_checked", getHttpsChecked());
         addParameter("tags", getTags());
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());
         addParameter("tiersCollection", getTiersCollection());
 
-        if (resourceBeanList.size() < 2) {
+        if (resourceBeanList.size() < 2) { //TODO
             addParameter("resourceCount", "0");
         } else {
             addParameter("resourceCount", resourceBeanList.size() + "");
         }
-
-
         if (!(inSequence.equals("none") && outSequence.equals("none") && faultSequence.equals("none"))) {
             addParameter("sequence_check", "on");
         }
         addParameter("inSequence", inSequence);
         addParameter("outSequence", outSequence);
         addParameter("faultSequence", faultSequence);
-
-
         int resourceIndex = 0;
+        //add resource in formation to the rest parameter list. if only one resource is there
+        //parameter name ends  with "-0", more than one parameters are there, we have to add them like,
+        //first resource with  parameter ending with "-0", second resource with parameter ending with "-1",
+        //third resource with parameter ending with "-2"etc..
         for (APIResourceBean apiResourceBean : resourceBeanList) {
-
             addParameter("resourceMethod-" + resourceIndex, apiResourceBean.getResourceMethod());
             addParameter("resourceMethodAuthType-" + resourceIndex, apiResourceBean.getResourceMethodAuthType());
-            addParameter("resourceMethodThrottlingTier-" + resourceIndex, apiResourceBean.getResourceMethodThrottlingTier());
+            addParameter("resourceMethodThrottlingTier-" + resourceIndex,
+                    apiResourceBean.getResourceMethodThrottlingTier());
             addParameter("uriTemplate-" + resourceIndex, apiResourceBean.getUriTemplate());
-
-
             resourceIndex++;
         }
-
-
-        addParameter("default_version", getDefault_version());
-        addParameter("default_version_checked", getDefault_version_checked());
+        addParameter("default_version", getDefaultVersion());
+        addParameter("default_version_checked", getDefaultVersionChecked());
         if (roles.length() > 1) {
             addParameter("roles", getRoles());
         }
@@ -169,22 +156,17 @@ public class APICreationRequestBean extends AbstractRequest {
         if (sandbox.length() > 1) {
             addParameter("sandbox", getSandbox());
         }
-
     }
 
-
     public String getEpUsername() {
-
         return epUsername;
     }
 
     public void setEpUsername(String epUsername) {
-
         this.epUsername = epUsername;
     }
 
     public String getEpPassword() {
-
         return epPassword;
     }
 
@@ -223,7 +205,6 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setWsdl(String wsdl) {
         this.wsdl = wsdl;
     }
-
 
     public String getProvider() {
         return provider;
@@ -277,20 +258,20 @@ public class APICreationRequestBean extends AbstractRequest {
         this.endpointType = endpointType;
     }
 
-    public String getHttp_checked() {
-        return http_checked;
+    public String getHttpChecked() {
+        return httpChecked;
     }
 
-    public void setHttp_checked(String http_checked) {
-        this.http_checked = http_checked;
+    public void setHttpChecked(String httpChecked) {
+        this.httpChecked = httpChecked;
     }
 
-    public String getHttps_checked() {
-        return https_checked;
+    public String getHttpsChecked() {
+        return httpsChecked;
     }
 
-    public void setHttps_checked(String https_checked) {
-        this.https_checked = https_checked;
+    public void setHttpsChecked(String httpsChecked) {
+        this.httpsChecked = httpsChecked;
     }
 
     public String getTags() {
@@ -333,20 +314,20 @@ public class APICreationRequestBean extends AbstractRequest {
         this.resourceCount = resourceCount;
     }
 
-    public String getDefault_version() {
-        return default_version;
+    public String getDefaultVersion() {
+        return defaultVersion;
     }
 
-    public void setDefault_version(String default_version) {
-        this.default_version = default_version;
+    public void setDefault_version(String defaultVersion) {
+        this.defaultVersion = defaultVersion;
     }
 
-    public String getDefault_version_checked() {
-        return default_version_checked;
+    public String getDefaultVersionChecked() {
+        return defaultVersionChecked;
     }
 
-    public void setDefault_version_checked(String default_version_checked) {
-        this.default_version_checked = default_version_checked;
+    public void setDefaultVersionChecked(String defaultVersionChecked) {
+        this.defaultVersionChecked = defaultVersionChecked;
     }
 
     public String getInSequence() {

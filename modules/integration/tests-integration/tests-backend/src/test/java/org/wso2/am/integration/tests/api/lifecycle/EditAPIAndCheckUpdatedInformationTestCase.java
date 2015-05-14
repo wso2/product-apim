@@ -30,6 +30,8 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
@@ -40,26 +42,27 @@ import static org.testng.Assert.assertTrue;
  */
 public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "APILifeCycleTestAPI";
+    private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String NEW_API_TAG = "newTag";
+    private static final String NEW_API_DESCRIPTION = API_DESCRIPTION + " New Description";
     private String providerName;
     private APIIdentifier apiIdentifier;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
-    private String newAPITag = "newTag";
-    private String newAPIDescription = API_DESCRIPTION + " New Description";
+
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -79,32 +82,30 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
 
     @Test(groups = {"wso2.am"}, description = "Edit the API Information")
-    public void testEditAPIInformation() throws Exception {
+    public void testEditAPIInformation() throws APIManagerIntegrationTestException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
         //Edit the api
-        String apiNewTags = API_TAGS + ", " + newAPITag;
+        String apiNewTags = API_TAGS + ", " + NEW_API_TAG;
         apiCreationRequestBean.setTags(apiNewTags);
-        apiCreationRequestBean.setDescription(newAPIDescription);
+        apiCreationRequestBean.setDescription(NEW_API_DESCRIPTION);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
-
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                 "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
                         "Response Data:" + updateAPIHTTPResponse.getData());
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Test whether the updated information available in the publisher ",
             dependsOnMethods = "testEditAPIInformation")
-    public void testUpdatedAPIInformationFromAPIPublisher() throws Exception {
+    public void testUpdatedAPIInformationFromAPIPublisher() throws APIManagerIntegrationTestException {
         APIBean apiBeanAfterUpdate =
                 APIMTestCaseUtils.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
                         API_NAME, providerName, API_VERSION_1_0_0));
-        assertEquals(apiBeanAfterUpdate.getDescription(), newAPIDescription, "Updated Description is not available");
-        assertTrue(apiBeanAfterUpdate.getTags().contains(newAPITag), "Newly added Tag is not available");
+        assertEquals(apiBeanAfterUpdate.getDescription(), NEW_API_DESCRIPTION, "Updated Description is not available");
+        assertTrue(apiBeanAfterUpdate.getTags().contains(NEW_API_TAG), "Newly added Tag is not available");
 
     }
 

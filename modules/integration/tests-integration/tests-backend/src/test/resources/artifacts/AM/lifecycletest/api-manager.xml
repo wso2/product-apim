@@ -173,12 +173,12 @@
         <!--
             Enable/Disable token caching at gateway node.
         -->
-        <EnableGatewayKeyCache>true</EnableGatewayKeyCache>
+        <EnableGatewayKeyCache>false</EnableGatewayKeyCache>
 
         <!--
             Enable/Disable API resource caching at gateway node.
         -->
-        <EnableGatewayResourceCache>true</EnableGatewayResourceCache>
+        <EnableGatewayResourceCache>false</EnableGatewayResourceCache>
 
 	<!-- Header name can be configurable, as you preferred. When API invocation is restricted to access only for authorized domains,
 		client request should send his domain, as the value of this header.

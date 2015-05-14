@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,14 +43,13 @@ import java.io.IOException;
  * common variables and t methods.
  */
 public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
-
+    private static final Log log = LogFactory.getLog(APIManagerLifecycleBaseTest.class);
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
-
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
     protected static final String HTTP_RESPONSE_DATA_INVALID_CREDENTIALS =
@@ -57,6 +58,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             "<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
     protected static final int SILVER_INVOCATION_LIMIT_PER_MIN = 5;
+    protected static final String TIER_UNLIMITED = "Unlimited";
     protected static final String TIER_GOLD = "Gold";
     protected static final String TIER_SILVER = "Silver";
     protected static final String MESSAGE_THROTTLED_OUT =
@@ -64,18 +66,13 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    protected static String API_BASE_URL;
+    protected static String GATEWAY_WEB_APP_URL;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         super.init();
-
-
-        API_BASE_URL = gatewayUrls.getWebAppURLNhttp();
-
-
+        GATEWAY_WEB_APP_URL = gatewayUrls.getWebAppURLNhttp();
     }
-
 
     /**
      * Return a String with combining the value of API Name,API Version and API Provider Name as key:value format
@@ -97,12 +94,11 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      *                        API Version and API Provider
      * @param storeRestClient - Instance of APIPublisherRestClient
      * @return HttpResponse - Response of the API subscribe action
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the  method call of subscribe()
-     *                                            in APIStoreRestClient.java
+     * @throws APIManagerIntegrationTestException - Exception throws by the  method call of subscribe() in
+     *                                            APIStoreRestClient.java
      */
     protected HttpResponse subscribeToAPI(APIIdentifier apiIdentifier, String applicationName,
                                           APIStoreRestClient storeRestClient) throws APIManagerIntegrationTestException {
-
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName());
         subscriptionRequest.setVersion(apiIdentifier.getVersion());
@@ -119,33 +115,42 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      *
      * @param storeRestClient - Instance of storeRestClient
      * @param applicationName - Application name
-     * @return String - Access Token as a String.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the  method
-     *                                                                               call of generateApplicationKey()
-     *                                                                               in APIStoreRestClient.java
+     * @return ApplicationKeyBean - ApplicationKeyBean that contains access token, consumer key and consumer secret
+     * @throws APIManagerIntegrationTestException - Exception throws by the  method call of generateApplicationKey()
+     *                                            in APIStoreRestClient.java
      */
-    protected String getAccessToken(APIStoreRestClient storeRestClient, String applicationName)
+
+    protected ApplicationKeyBean generateApplicationKeys(APIStoreRestClient storeRestClient, String applicationName)
             throws APIManagerIntegrationTestException {
+
         try {
+            ApplicationKeyBean applicationKeyBean = new ApplicationKeyBean();
             APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
             String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
             JSONObject response = new JSONObject(responseString);
-            return response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+
+            applicationKeyBean.setAccessToken(response.getJSONObject("data").getJSONObject("key").
+                    get("accessToken").toString());
+            applicationKeyBean.setConsumerKey(response.getJSONObject("data").getJSONObject("key").
+                    get("consumerKey").toString());
+            applicationKeyBean.setConsumerSecret(response.getJSONObject("data").getJSONObject("key").
+                    get("consumerSecret").toString());
+            return applicationKeyBean;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when get access token", e);
         }
 
     }
 
+
     /**
      * Delete a API from API Publisher.
      *
-     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name,
-     *                            API Version and API Provider.
+     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name, API Version and
+     *                            API Provider.
      * @param publisherRestClient - Instance of APIPublisherRestClient.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by the method
-     *                                                                               call of deleteApi()
-     *                                                                               in APIPublisherRestClient.java.
+     * @throws APIManagerIntegrationTestException - Exception throws by the method call of deleteApi() in
+     *                                            APIPublisherRestClient.java.
      */
     protected void deleteAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
@@ -153,15 +158,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             HttpResponse deleteHTTPResponse =
                     publisherRestClient.deleteAPI(apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                             apiIdentifier.getProviderName());
-
             if (!(deleteHTTPResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                     getValueFromJSON(deleteHTTPResponse, "error").equals("false"))) {
-
                 throw new APIManagerIntegrationTestException("Error in API Deletion." +
                         getAPIIdentifierString(apiIdentifier) + " API Context :" + deleteHTTPResponse +
                         "Response Code:" + deleteHTTPResponse.getResponseCode() +
                         " Response Data :" + deleteHTTPResponse.getData());
-
             }
 
         } catch (Exception e) {
@@ -175,11 +177,9 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param httpResponse - Response that containing the JSON object in it response data.
      * @param key          - key of the JSON value the need to retrieve.
      * @return String - The value of provided key as a String
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when
-     *                                                                               resolving the JSON object in the HTTP response
+     * @throws APIManagerIntegrationTestException - Exception throws when resolving the JSON object in the HTTP response
      */
     protected String getValueFromJSON(HttpResponse httpResponse, String key) throws APIManagerIntegrationTestException {
-
         try {
             JSONObject jsonObject = new JSONObject(httpResponse.getData());
             return jsonObject.get(key).toString();
@@ -187,7 +187,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             throw new APIManagerIntegrationTestException("Exception thrown when resolving the JSON object in the HTTP " +
                     "response ", e);
         }
-
     }
 
     /**
@@ -198,58 +197,47 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param oldStatus    - Status of the API before the change
      * @param newStatus    - Status of the API after the change
      * @return boolean - true if the given status change is correct, if not false
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when resolving
-     *                                                                               the JSON object in the HTTP response
+     * @throws APIManagerIntegrationTestException - Exception throws when resolving the JSON object in the HTTP response
      */
     public boolean verifyAPIStatusChange(HttpResponse httpResponse, APILifeCycleState oldStatus,
                                          APILifeCycleState newStatus) throws APIManagerIntegrationTestException {
-
         boolean isStatusChangeCorrect = false;
-
         try {
             JSONObject jsonRootObject = new JSONObject(httpResponse.getData());
-
             JSONArray jsonArray = (JSONArray) jsonRootObject.get("lcs");
             JSONObject latestChange = (JSONObject) jsonArray.get(0);
             // Retrieve the latest API life cycle status change information if  there are more than one
             // lifecycle status change activities  available in the api
             if (jsonArray.length() > 0) {
-
                 for (int index = 1; index < jsonArray.length(); index++) {
                     if (Long.parseLong(((JSONObject) jsonArray.get(index)).get("date").toString()) >
                             Long.parseLong(latestChange.get("date").toString())) {
                         latestChange = (JSONObject) jsonArray.get(index);
                     }
-
                 }
             }
-
             // Check the given status change information is correct in latest lifecycle status change action.
             if (latestChange.get("oldStatus").toString().equals(oldStatus.getState()) &&
                     latestChange.get("newStatus").toString().equals(newStatus.getState())) {
                 isStatusChangeCorrect = true;
             }
-
             return isStatusChangeCorrect;
-
         } catch (JSONException e) {
             throw new APIManagerIntegrationTestException(
                     "Exception thrown when resolving the JSON object in the HTTP response ", e);
         }
-
     }
 
     /**
      * Publish a API.
      *
-     * @param apiIdentifier           - Instance of APIIdentifier object  that include the  API Name,v
+     * @param apiIdentifier           - Instance of APIIdentifier object  that include the  API Name,
      *                                API Version and API Provider
      * @param publisherRestClient     - Instance of APIPublisherRestClient
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
      * @return HttpResponse - Response of the API Publishing activity
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException -  Exception throws by the method
-     *                                                                               call of changeAPILifeCycleStatusToPublish() in
-     *                                                                               APIPublisherRestClient.java.
+     * @throws APIManagerIntegrationTestException -  Exception throws by the method call of
+     *                                            changeAPILifeCycleStatusToPublish() in APIPublisherRestClient.java.
      */
     protected HttpResponse publishAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient,
                                       boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
@@ -269,8 +257,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param apiCreationRequestBean  - Instance of APICreationRequestBean with all needed API information
      * @param publisherRestClient     - Instance of APIPublisherRestClient
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API
-     *                                                                               create and publish activities.
+     * @throws APIManagerIntegrationTestException - Exception throws by API create and publish activities.
      */
     public void createAndPublishAPI(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                     APIPublisherRestClient publisherRestClient,
@@ -279,6 +266,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         HttpResponse createAPIResponse = publisherRestClient.addAPI(apiCreationRequestBean);
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
+            log.debug("API Created :" + getAPIIdentifierString(apiIdentifier));
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
@@ -289,15 +277,13 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                         "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());
             }
-
+            log.debug("API Published :" + getAPIIdentifierString(apiIdentifier));
         } else {
             throw new APIManagerIntegrationTestException("Error in API Creation." +
                     getAPIIdentifierString(apiIdentifier) +
                     "Response Code:" + createAPIResponse.getResponseCode() +
                     " Response Data :" + createAPIResponse.getData());
         }
-
-
     }
 
 
@@ -308,10 +294,10 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      *                               API Version and API Provider
      * @param apiCreationRequestBean - Instance of APICreationRequestBean with all needed API information
      * @param publisherRestClient    - Instance of APIPublisherRestClient
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API create
-     *                                                                               and publish activities.
+     * @throws APIManagerIntegrationTestException - Exception throws by API create  and publish activities.
      */
-    protected void createAndPublishAPIWithoutRequireReSubscription(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
+    protected void createAndPublishAPIWithoutRequireReSubscription(APIIdentifier apiIdentifier,
+                                                                   APICreationRequestBean apiCreationRequestBean,
                                                                    APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
@@ -321,14 +307,11 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     /**
      * Copy and API and create a new version.
      *
-     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name,
-     *                            API Version and API Provider
+     * @param apiIdentifier       - Instance of APIIdentifier object  that include the  API Name, API Version and API Provider
      * @param newAPIVersion       - New API version need to create
      * @param publisherRestClient - Instance of APIPublisherRestClient
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by
-     *                                                                               API copy activities.
+     * @throws APIManagerIntegrationTestException - Exception throws by API copy activities.
      */
-
     protected void copyAPI(APIIdentifier apiIdentifier, String newAPIVersion,
                            APIPublisherRestClient publisherRestClient) throws APIManagerIntegrationTestException {
         try {
@@ -342,13 +325,10 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                         getAPIIdentifierString(apiIdentifier) + "  New API Version :" + newAPIVersion +
                         "Response Code:" + httpResponseCopyAPI.getResponseCode() +
                         " Response Data :" + httpResponseCopyAPI.getData());
-
             }
-
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception thrown when copy a API", e);
         }
-
     }
 
 
@@ -360,8 +340,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param newAPIVersion           - New API version need to create
      * @param publisherRestClient     - Instance of APIPublisherRestClient
      * @param isRequireReSubscription - If publish with re-subscription required option true else false.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException -Exception throws by copyAPI()
-     *                                                                               and publishAPI() method calls
+     * @throws APIManagerIntegrationTestException -Exception throws by copyAPI() and publishAPI() method calls
      */
     protected void copyAndPublishCopiedAPI(APIIdentifier apiIdentifier, String newAPIVersion, APIPublisherRestClient
             publisherRestClient, boolean isRequireReSubscription) throws APIManagerIntegrationTestException {
@@ -382,8 +361,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      * @param publisherRestClient    -  Instance of APIPublisherRestClient
      * @param storeRestClient        - Instance of APIStoreRestClient
      * @param applicationName        - Name of the Application that the API need to subscribe.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws by API create
-     *                                                                               publish and subscribe a API activities.
+     * @throws APIManagerIntegrationTestException - Exception throws by API create publish and subscribe a API activities.
      */
     protected void createPublishAndSubscribeToAPI(APIIdentifier apiIdentifier, APICreationRequestBean apiCreationRequestBean,
                                                   APIPublisherRestClient publisherRestClient,
@@ -397,20 +375,21 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     getAPIIdentifierString(apiIdentifier) +
                     "Response Code:" + httpResponseSubscribeAPI.getResponseCode() +
                     " Response Data :" + httpResponseSubscribeAPI.getData());
-
         }
+        log.debug("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
     }
 
     /**
      * Read the file content and return the content as String.
      *
-     * @param fileLocation - Location of the file.¬
+     * @param fileLocation - Location of the file.
      * @return String - content of the file.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - exception throws when reading the file.
+     * @throws APIManagerIntegrationTestException - exception throws when reading the file.
      */
     protected String readFile(String fileLocation) throws APIManagerIntegrationTestException {
+        BufferedReader bufferedReader = null;
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileLocation)));
+            bufferedReader = new BufferedReader(new FileReader(new File(fileLocation)));
             String line;
             StringBuilder stringBuilder = new StringBuilder();
             while ((line = bufferedReader.readLine()) != null) {
@@ -419,6 +398,15 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             return stringBuilder.toString();
         } catch (IOException ioE) {
             throw new APIManagerIntegrationTestException("IOException when reading the file from:" + fileLocation, ioE);
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    log.warn("Error when closing the buffer reade which used to reed the file:" + fileLocation +
+                            ". Error:" + e.getMessage());
+                }
+            }
         }
     }
 }

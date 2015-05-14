@@ -44,25 +44,20 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     public void startChangeAPIMConfigureXml() throws Exception {
         super.init();
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "configFiles" + File.separator + "lifecycletest" +
-                File.separator;
+        String artifactsLocation =
+                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
+                        "AM" + File.separator + "lifecycletest" + File.separator;
         String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + APIM_CONFIG_XML;
-
+        String apimRepositoryConfigLocation =
+                carbonHome + File.separator + "repository" + File.separator + "conf" + File.separator + APIM_CONFIG_XML;
         File sourceFile = new File(apimConfigArtifactLocation);
         File targetFile = new File(apimRepositoryConfigLocation);
         serverManager = new ServerConfigurationManager(gatewayContext);
-
         // apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
         log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
                 " to :" + apimRepositoryConfigLocation);
-
         serverManager.restartGracefully();
-
 
     }
 
@@ -70,6 +65,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     public void startRestoreAPIMConfigureXml() throws Exception {
         serverManager.restoreToLastConfiguration();
         log.info("Restore the api-manager.xml configuration file");
+        serverManager.restartGracefully();
 
     }
 

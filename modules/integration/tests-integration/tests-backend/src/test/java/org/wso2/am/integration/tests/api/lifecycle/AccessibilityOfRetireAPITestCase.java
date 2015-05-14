@@ -32,22 +32,22 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * "Retire an API and check its accessibility  and visibility in the API Store."
  */
 public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTest {
-
-
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "APILifeCycleTestAPI";
+    private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
@@ -63,11 +63,12 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
     private APIStoreRestClient apiStoreClientUser1;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                        new URL(API_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -86,32 +87,30 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before retire")
-    public void testInvokeAPIBeforeChangeAPILifecycleToRetired() throws Exception {
-
+    public void testInvokeAPIBeforeChangeAPILifecycleToRetired() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean,
                 apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get access token
-        String accessToken = getAccessToken(apiStoreClientUser1, APPLICATION_NAME);
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
-                        requestHeaders);
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                        API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before Retire");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
                 "Response data mismatched when invoke  API  before Retire" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
-
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
             dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToRetired")
-    public void testChangeAPILifecycleToRetired() throws Exception {
+    public void testChangeAPILifecycleToRetired() throws APIManagerIntegrationTestException {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.RETIRED);
@@ -124,30 +123,28 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                 APILifeCycleState.RETIRED), "API status Change is invalid when retire an API :" +
                 getAPIIdentifierString(apiIdentifier) +
                 " Response Code:" + blockAPIActionResponse.getData());
-
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test the availability of retired API in the store",
             dependsOnMethods = "testChangeAPILifecycleToRetired")
-    public void testAvailabilityOfRetiredAPIInStore() throws Exception {
+    public void testAvailabilityOfRetiredAPIInStore() throws APIManagerIntegrationTestException {
         //  Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList = APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                 apiStoreClientUser1.getAPI());
-        assertEquals(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList), false,
+        assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),
                 "Api is  visible in API Store after retire." + getAPIIdentifierString(apiIdentifier));
-
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of the API after retire",
             dependsOnMethods = "testAvailabilityOfRetiredAPIInStore")
-    public void testInvokeAPIAfterChangeAPILifecycleToRetired() throws Exception {
+    public void testInvokeAPIAfterChangeAPILifecycleToRetired() throws APIManagerIntegrationTestException, IOException {
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
-                        requestHeaders);
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                        API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api after retire");
         assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_NOT_FOUND),

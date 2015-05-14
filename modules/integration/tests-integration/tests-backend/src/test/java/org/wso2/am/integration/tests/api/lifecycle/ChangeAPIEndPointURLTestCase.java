@@ -23,8 +23,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -38,24 +36,23 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
- * "Block an API and check its accessibility in the API Store."
+ * Change the API end point URL and  test the invocation.
  */
-public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest {
-
-
+public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "APILifeCycleTestAPI";
     private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API1_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/most_popular";
-    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API1_END_POINT_METHOD = "/most_popular";
+    private static final String API1_RESPONSE_DATA = "<feed";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "AccessibilityOfBlockAPITestCase";
+    private static final String API2_RESPONSE_DATA = "AcceptanceSampling";
+    private static final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
+    private static final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
     private APIIdentifier apiIdentifier;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
@@ -68,7 +65,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API_END_POINT_URL));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API1_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -87,12 +84,11 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
-    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
+    @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
+    public void testAPIInvocationBeforeChangeTheEndPointURL() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                apiStoreClientUser1, APPLICATION_NAME);
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
@@ -100,52 +96,62 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" +
-                        API_VERSION_1_0_0 + API_END_POINT_METHOD, requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when invoke api before block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
-                "Response data mismatched when invoke  API  before block" +
-                        " Response Data:" + oldVersionInvokeResponse.getData());
-    }
-
-
-    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
-            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
-    public void testChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException {
-        //Block the API version 1.0.0
-        APILifeCycleStateRequest blockUpdateRequest =
-                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);
-        blockUpdateRequest.setVersion(API_VERSION_1_0_0);
-        //Change API lifecycle  to Block
-        HttpResponse blockAPIActionResponse =
-                apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
-        assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.PUBLISHED,
-                APILifeCycleState.BLOCKED), "API status Change is invalid when block an API :" +
-                getAPIIdentifierString(apiIdentifier) + " Response Code:" + blockAPIActionResponse.getData());
-    }
-
-
-    @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
-            dependsOnMethods = "testChangeAPILifecycleToBlock")
-    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
-        //Invoke  old version
-        HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
-                "Response code mismatched when invoke api after block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_BLOCK),
-                "Response data mismatched when invoke  API  after block" +
-                        " Response Data:" + oldVersionInvokeResponse.getData());
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api before change the end point URL");
+        assertTrue(oldVersionInvokeResponse.getData().contains(API1_RESPONSE_DATA),
+                "Response data mismatched when invoke  API  before change the end point URL" +
+                        " Response Data:" + oldVersionInvokeResponse.getData() + ". Expected Response Data: " + API1_RESPONSE_DATA);
+
     }
+
+
+    @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
+            dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
+    public void testEditEndPointURL() throws APIManagerIntegrationTestException, MalformedURLException {
+        //Create the API Request with new context
+        APICreationRequestBean apiCreationRequestBeanUpdate =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API2_END_POINT_URL));
+        apiCreationRequestBeanUpdate.setTags(API_TAGS);
+        apiCreationRequestBeanUpdate.setDescription(API_DESCRIPTION);
+        //Update API with Edited information
+        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBeanUpdate);
+
+        assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Update API end point URL Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
+                "Error in API end point URL Update in " + getAPIIdentifierString(apiIdentifier) +
+                        "Response Data:" + updateAPIHTTPResponse.getData());
+    }
+
+
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
+            "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
+    public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws APIManagerIntegrationTestException, IOException {
+        //Invoke  new context
+        HttpResponse oldVersionInvokeResponse =
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0,
+                        requestHeaders);
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke  API  after change the end point URL");
+        assertTrue(oldVersionInvokeResponse.getData().contains(API2_RESPONSE_DATA),
+                "Response data mismatched when invoke  API  after change the end point URL" +
+                        " Response Data:" + oldVersionInvokeResponse.getData() + ". Expected Response Data: " + API2_RESPONSE_DATA);
+        assertFalse(oldVersionInvokeResponse.getData().contains(API1_RESPONSE_DATA),
+                "Response data mismatched when invoke  API  after change the end point URL. It contains the" +
+                        " Old end point URL response data. Response Data:" + oldVersionInvokeResponse.getData() +
+                        ". Expected Response Data: " + API2_RESPONSE_DATA);
+
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+
     }
 
-}
 
+}

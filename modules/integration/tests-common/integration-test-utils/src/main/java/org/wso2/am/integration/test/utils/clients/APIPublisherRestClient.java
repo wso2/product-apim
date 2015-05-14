@@ -19,10 +19,7 @@
 package org.wso2.am.integration.test.utils.clients;
 
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -536,6 +533,25 @@ public class APIPublisherRestClient {
         }
     }
 
+
+//TODO
+    public HttpResponse addDocument(AddDocumentRequestBean addDocRequestBean)
+    throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag")
+                    , "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
+                    addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
+                    addDocRequestBean.getDocName() + "&docType=" + addDocRequestBean.getDocType() + "&sourceType=" +
+                    addDocRequestBean.getDocSourceType() + "&docUrl" + addDocRequestBean.getDocUrl() + "=&summary=" +
+                    addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
+        }
+    }
+
+
+
     /**
      * Retrieve the All APIs available for the user in Publisher. this calls  the action=getAllAPIs in
      * "/publisher/site/blocks/listing/ajax/item-list.jag"
@@ -563,15 +579,15 @@ public class APIPublisherRestClient {
      * @param creationRequestBean - Instance of APICreationRequestBean object with all needed
      *                            information to create the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication()
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
      *                                            method and HttpRequestUtil.doPost() method call
      */
-    public HttpResponse addAPI(APICreationRequestBean creationRequestBean)
-            throws APIManagerIntegrationTestException {
+    public HttpResponse addAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag")
-                    , creationRequestBean.generateRequestParameters(), requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                    creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
                     "for the user in Publisher", e);
@@ -584,15 +600,15 @@ public class APIPublisherRestClient {
      * @param creationRequestBean - Instance of APICreationRequestBean object with all needed
      *                            information to Update the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication()
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
      *                                            method and HttpRequestUtil.doPost() method call
      */
-    public HttpResponse updateAPI(APICreationRequestBean creationRequestBean)
-            throws APIManagerIntegrationTestException {
+    public HttpResponse updateAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL +"/publisher/site/blocks/item-add/ajax/add.jag")
-                    , creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL +"/publisher/site/blocks/item-add/ajax/add.jag"),
+                    creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
                     "for the user in Publisher", e);

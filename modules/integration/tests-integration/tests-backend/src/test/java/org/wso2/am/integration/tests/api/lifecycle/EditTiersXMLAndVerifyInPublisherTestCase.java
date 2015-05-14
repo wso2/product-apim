@@ -31,7 +31,9 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 
@@ -41,13 +43,18 @@ import static org.testng.Assert.*;
  * Change the tiers.xml file  with new tier added and check the new tier availability in publisher.
  */
 public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycleBaseTest {
-
     private static final String API_NAME = "APILifeCycleTestAPI1";
     private static final String API_CONTEXT = "testAPI1";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String TIER_XML_REG_CONFIG_LOCATION =
+            "/_system/governance/apimgt/applicationdata/tiers.xml";
+    private static final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
+    private static final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
+    private static final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
+    private static final String TIER_MANAGE_PAGE_TIER_PLATINUM = "{ \"value\": \"Platinum\", \"text\": \"Platinum\" }";
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
@@ -57,19 +64,15 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private static final String TIER_XML_REG_CONFIG_LOCATION =
-            "/_system/governance/apimgt/applicationdata/tiers.xml";
-    private static final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
-    private static final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
-    private static final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
-    private static final String TIER_MANAGE_PAGE_TIER_PLATINUM = "{ \"value\": \"Platinum\", \"text\": \"Platinum\" }";
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+            RemoteException, ResourceAdminServiceExceptionException, MalformedURLException {
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                        new URL(API_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -85,8 +88,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         artifactsLocation =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                        File.separator + "AM" + File.separator + "configFiles" + File.separator + "lifecycletest" +
-                        File.separator + "tiers.xml";
+                        File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(gatewayContext.getContextUrls().getBackEndUrl(),
                         createSession(gatewayContext));
@@ -133,7 +135,6 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
             ResourceAdminServiceExceptionException, APIManagerIntegrationTestException {
         //Changing the Tier XML
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, newTiersXML);
-
         HttpResponse tierPermissionPageHttpResponse =
                 apiPublisherClientUser1.getTierPermissionsPage();
         assertEquals(tierPermissionPageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -149,8 +150,6 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     @Test(groups = {"wso2.am"}, description = "Test availability of tiers in API Manage Page after change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML")
     public void testAvailabilityOfTiersInAPIManagePageAfterChangeTiersXML() throws APIManagerIntegrationTestException {
-
-
         HttpResponse tierManagePageHttpResponse =
                 apiPublisherClientUser1.getAPIManagePage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(tierManagePageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,

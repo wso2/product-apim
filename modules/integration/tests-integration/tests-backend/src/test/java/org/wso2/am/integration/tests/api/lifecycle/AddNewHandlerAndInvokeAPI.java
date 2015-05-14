@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.mediation.SynapseConfigAdminClient;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -32,11 +33,15 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
 import org.wso2.carbon.utils.ServerConstants;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import static org.testng.Assert.assertEquals;
@@ -46,8 +51,8 @@ import static org.testng.Assert.assertTrue;
  * Configure a new handler and Invoke the API and verify  the  request is going through newly added handler.
  */
 public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "APILifeCycleTestAPI";
+    private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
@@ -57,11 +62,11 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
             "I am at CustomAPIAuthenticationHandler:CustomAuthKey 123456789";
     private final static String API_GET_ENDPOINT_METHOD = "/handler";
     private final static String CUSTOM_AUTHORIZATION = "CustomAuthKey 123456789";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String accessToken;
     private HashMap<String, String> requestHeadersGet;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private APICreationRequestBean apiCreationRequestBean;
     private String providerName;
     private String webAppTargetPath;
     private String customHandlerTargetPath;
@@ -78,13 +83,11 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         super.init();
         synapseConfigArtifactsPath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "configFiles" + File.separator + "lifecycletest" + File.separator +
-                        "synapseconfig.xml";
+                        "AM" + File.separator + "lifecycletest" + File.separator + "synapseconfig.xml";
         newSynapseConfig = readFile(synapseConfigArtifactsPath);
         String webAppSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "configFiles" + File.separator + "lifecycletest" + File.separator +
-                        "jaxrs_basic.war";
+                        "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
         webAppTargetPath =
                 System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
                         "deployment" + File.separator + "server" + File.separator + "webapps";
@@ -92,8 +95,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         FileManager.copyResourceToFileSystem(webAppSourcePath, webAppTargetPath, "jaxrs_basic.war");
         String customHandlerSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
-                        File.separator + "configFiles" + File.separator + "lifecycletest" + File.separator +
-                        "CustomAPIAuthenticationHandler-1.0.0.jar";
+                        File.separator + "lifecycletest" + File.separator + "CustomAPIAuthenticationHandler-1.0.0.jar";
         customHandlerTargetPath =
                 System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
                         "components" + File.separator + "lib";
@@ -101,8 +103,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
                 "CustomAPIAuthenticationHandler-1.0.0.jar");
         String log4jPropertiesFile =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "configFiles" + File.separator + "lifecycletest" + File.separator +
-                        "log4j.properties";
+                        "AM" + File.separator + "lifecycletest" + File.separator + "log4j.properties";
         String log4jPropertiesTargetLocation =
                 System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
                         "conf" + File.separator + "log4j.properties";
@@ -126,20 +127,20 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         gatewaySession = createSession(gatewayContext);
         synapseConfigAdminClient =
                 new SynapseConfigAdminClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice/";
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Invoke the APi and check the  API request is going through the new handler.")
-    public void testAPIInvocationHitsTheNewHandler() throws Exception {
-
+    public void testAPIInvocationHitsTheNewHandler() throws APIManagerIntegrationTestException, IOException,
+            XMLStreamException, LogViewerLogViewerException {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
         //Create publish and subscribe a API
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
         APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, new URL(apiEndPointUrl));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         createPublishAndSubscribeToAPI(
@@ -149,7 +150,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("Content-Type", "text/plain");
         //get the  access token
-        accessToken = getAccessToken(apiStoreClientUser1, APPLICATION_NAME);
+        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersGet.put("CustomAuthorization", CUSTOM_AUTHORIZATION);
         LogViewerClient logViewerClient =
@@ -157,7 +158,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         logViewerClient.clearLogs();
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -170,15 +171,13 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
                 isNewHandlerCalled = true;
                 break;
             }
-
         }
         assertTrue(isNewHandlerCalled, "API Request not went through the new handler");
-
     }
 
-
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, XMLStreamException,
+            RemoteException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //Restore original synapse configuration

@@ -1576,29 +1576,30 @@ public class APIMTestCaseUtils {
         String APIName;
         String APIProvider;
         String APIVersion;
+        if (httpResponse.getData() != null && (!httpResponse.getData().equals(""))) {
+            try {
+                JSONObject jsonRootObject = new JSONObject(httpResponse.getData());
 
-        try {
-            JSONObject jsonRootObject = new JSONObject(httpResponse.getData());
-
-            if (jsonRootObject.has("apis")) {
-                JSONArray jsonArray = jsonRootObject.getJSONArray("apis");
-                for (int index = 0; index < jsonArray.length(); index++) {
-                    JSONObject jsonObject = (JSONObject) jsonArray.get(index);
-                    APIName = jsonObject.getString("name");
-                    APIVersion = jsonObject.getString("version");
-                    APIProvider = jsonObject.getString("provider");
+                if (jsonRootObject.has("apis")) {
+                    JSONArray jsonArray = jsonRootObject.getJSONArray("apis");
+                    for (int index = 0; index < jsonArray.length(); index++) {
+                        JSONObject jsonObject = (JSONObject) jsonArray.get(index);
+                        APIName = jsonObject.getString("name");
+                        APIVersion = jsonObject.getString("version");
+                        APIProvider = jsonObject.getString("provider");
+                        apiIdentifierList.add(new APIIdentifier(APIProvider, APIName, APIVersion));
+                    }
+                } else if (jsonRootObject.has("api")) {
+                    APIName = jsonRootObject.getJSONObject("api").getString("name");
+                    APIVersion = jsonRootObject.getJSONObject("api").getString("version");
+                    APIProvider = jsonRootObject.getJSONObject("api").getString("provider");
                     apiIdentifierList.add(new APIIdentifier(APIProvider, APIName, APIVersion));
                 }
-            } else if (jsonRootObject.has("api")) {
-                APIName = jsonRootObject.getJSONObject("api").getString("name");
-                APIVersion = jsonRootObject.getJSONObject("api").getString("version");
-                APIProvider = jsonRootObject.getJSONObject("api").getString("provider");
-                apiIdentifierList.add(new APIIdentifier(APIProvider, APIName, APIVersion));
-            }
 
-        } catch (JSONException e) {
-            log.error("Error when extraction data from JSON" + e.getMessage());
-            throw new APIManagerIntegrationTestException("Error when extraction data from JSON", e);
+            } catch (JSONException e) {
+                log.error("Error when extraction data from JSON" + e.getMessage());
+                throw new APIManagerIntegrationTestException("Error when extraction data from JSON", e);
+            }
         }
         return apiIdentifierList;
     }

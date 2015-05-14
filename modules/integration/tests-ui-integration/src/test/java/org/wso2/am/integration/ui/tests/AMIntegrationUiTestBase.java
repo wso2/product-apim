@@ -77,7 +77,7 @@ public class AMIntegrationUiTestBase {
 
     protected void init(String domainKey, String userKey) throws Exception {
         apimContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                            APIMIntegrationConstants.AM_1ST_INSTANCE,
+                                            APIMIntegrationConstants.AM_GATEWAY_INSTANCE,//TODO  back
                                             domainKey, userKey);
         loginLogoutClient = new LoginLogoutClient(apimContext);
         sessionCookie = loginLogoutClient.login();

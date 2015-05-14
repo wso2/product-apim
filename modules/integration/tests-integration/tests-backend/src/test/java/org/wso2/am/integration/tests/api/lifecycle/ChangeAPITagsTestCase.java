@@ -28,6 +28,8 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,15 +44,16 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String TEST_TAG = "Tag3";
     private String providerName;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private Map<String, String> apiTagsMapBeforeChange;
     private Map<String, String> apiTagsMapAfterChange;
-    private static final String TEST_TAG = "Tag3";
+
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -70,7 +73,6 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         apiTagsMapBeforeChange.put("APITagTest2", "Tag2, Tag3, Tag4");
         apiTagsMapBeforeChange.put("APITagTest3", "Tag1, Tag3, Tag5");
         apiTagsMapBeforeChange.put("APITagTest4", "Tag1, Tag2");
-
         apiTagsMapAfterChange = new HashMap<String, String>();
         apiTagsMapAfterChange.put("APITagTest1", "Tag1, Tag2");
         apiTagsMapAfterChange.put("APITagTest2", "Tag2, Tag4");
@@ -79,7 +81,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the filter by Tags before changing the Tags")
-    public void testFilterByTagsBeforeTagChange() throws Exception {
+    public void testFilterByTagsBeforeTagChange() throws APIManagerIntegrationTestException, MalformedURLException {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             String apiTags = apiTagEntry.getValue();
@@ -87,16 +89,17 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             APIIdentifier apiIdentifier
                     = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
             APICreationRequestBean apiCreationRequestBean =
-                    new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0,
+                    new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
                             new URL(API_END_POINT_URL));
             apiCreationRequestBean.setTags(apiTags);
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiCreationRequestBean,
                     apiPublisherClientUser1);
         }
-
-        HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags("Tag3");
-        assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "");
+        HttpResponse apiPageFilteredWithTagsResponse =
+                apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
+        assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code wan not" +
+                " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiLinkToTestInPage =
@@ -117,13 +120,14 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test the filter by Tags After changing the Tags",
             dependsOnMethods = "testFilterByTagsBeforeTagChange")
-    public void testUpdateTagsAndFilterByTags() throws Exception {
+    public void testUpdateTagsAndFilterByTags() throws APIManagerIntegrationTestException, MalformedURLException {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapAfterChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             String apiTags = apiTagEntry.getValue();
             String apiContext = apiName.toLowerCase();
             APICreationRequestBean apiCreationRequestBean =
-                    new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, new URL(API_END_POINT_URL));
+                    new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
+                            new URL(API_END_POINT_URL));
             apiCreationRequestBean.setTags(apiTags);
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             //Update API with Edited Tags
@@ -133,14 +137,12 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                     "Error in API Update in API Name:" + apiName +
                             "Response Data:" + updateAPIHTTPResponse.getData());
-
         }
-        HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags("Tag3");
-        assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "");
+        HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
+        assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code wan not" +
+                " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
-
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
-
             String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
                     API_VERSION_1_0_0 + "&provider=" + providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
@@ -152,9 +154,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                 assertFalse(apiPageFilteredWithTagsResponseString.contains(apiLinkToTestInPage),
                         "API is  listed with incorrect tag, API:" + apiTagEntry.getKey() + " Tag:" + TEST_TAG);
             }
-
         }
-
     }
 
     @AfterClass(alwaysRun = true)

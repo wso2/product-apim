@@ -23,8 +23,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -42,11 +40,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
- * "Block an API and check its accessibility in the API Store."
+ * Edit the API context and check its accessibility.
  */
-public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest {
-
-
+public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "APILifeCycleTestAPI";
     private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
@@ -55,20 +51,21 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     private static final String API_END_POINT_METHOD = "/most_popular";
     private static final String API_RESPONSE_DATA = "<feed";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "AccessibilityOfBlockAPITestCase";
-    private APIIdentifier apiIdentifier;
+    private static final String APPLICATION_NAME = "EditAPIContextAndCheckAccessibilityTestCase";
     private String providerName;
-    private APICreationRequestBean apiCreationRequestBean;
+    private APIIdentifier apiIdentifier;
     private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
+    private APICreationRequestBean apiCreationRequestBean;
+    private String newContext;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API_END_POINT_URL));
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                new URL(API_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -76,23 +73,21 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
+        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
+        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
-    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
+    @Test(groups = {"wso2.am"}, description = "Test invoke the API before the context change")
+    public void testInvokeAPIBeforeChangeAPIContext() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                apiStoreClientUser1, APPLICATION_NAME);
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
@@ -100,44 +95,61 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" +
-                        API_VERSION_1_0_0 + API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                        API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Response code mismatched when invoke api before block");
+                "Response code mismatched when invoke api before change the context");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
-                "Response data mismatched when invoke  API  before block" +
+                "Response data mismatched when invoke  API  before change the context" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
-            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
-    public void testChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException {
-        //Block the API version 1.0.0
-        APILifeCycleStateRequest blockUpdateRequest =
-                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);
-        blockUpdateRequest.setVersion(API_VERSION_1_0_0);
-        //Change API lifecycle  to Block
-        HttpResponse blockAPIActionResponse =
-                apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
-        assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.PUBLISHED,
-                APILifeCycleState.BLOCKED), "API status Change is invalid when block an API :" +
-                getAPIIdentifierString(apiIdentifier) + " Response Code:" + blockAPIActionResponse.getData());
+    @Test(groups = {"wso2.am"}, description = "Test changing of the API context",
+            dependsOnMethods = "testInvokeAPIBeforeChangeAPIContext")
+    public void testEditAPIContext() throws APIManagerIntegrationTestException, MalformedURLException {
+        //Create the API Request with new context
+        newContext = "new" + API_CONTEXT;
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, newContext, API_VERSION_1_0_0,
+                providerName, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        //Update API with Edited information
+        HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+        assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
+                "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
+                        "Response Data:" + updateAPIHTTPResponse.getData());
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
-            dependsOnMethods = "testChangeAPILifecycleToBlock")
-    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
-        //Invoke  old version
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using old context after Context change" +
+            " after the API context change", dependsOnMethods = "testEditAPIContext")
+    public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws APIManagerIntegrationTestException, IOException {
+        //Invoke  old context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
-                        requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
-                "Response code mismatched when invoke api after block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_BLOCK),
-                "Response data mismatched when invoke  API  after block" +
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
+                "Response code mismatched when invoke api before changing the context");
+        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_NOT_FOUND),
+                "Response data mismatched when invoke  API  before changing the context" +
+                        " Response Data:" + oldVersionInvokeResponse.getData());
+    }
+
+
+    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
+            dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext")
+    public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws APIManagerIntegrationTestException, IOException {
+        //Invoke  new context
+        HttpResponse oldVersionInvokeResponse =
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + newContext + "/" + API_VERSION_1_0_0 +
+                        API_END_POINT_METHOD, requestHeaders);
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
+                "Response code mismatched when invoke api after changing the context");
+        assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
+                "Response data mismatched when invoke  API  after changing the context" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }
 
@@ -145,7 +157,12 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+
     }
 
+
 }
+
+
+
 
