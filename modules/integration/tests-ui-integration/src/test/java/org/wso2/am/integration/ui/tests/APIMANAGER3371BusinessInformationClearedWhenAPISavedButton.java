@@ -8,10 +8,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
-public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends AMIntegrationUiTestBase {
+public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends APIMIntegrationUiTestBase {
 
 	private WebDriver driver;
 	private static final String API_DESCRIPTION = "Publish into Gateways";
@@ -34,12 +35,19 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 	public void testPublishApiWithOutEnvironmentTabSelection() throws Exception {
 
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+		driver.findElement(By.id("create-new-api")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+		driver.findElement(By.id("designNewAPI")).click();
+
 		driver.findElement(By.id("name")).clear();
 		driver.findElement(By.id("name")).sendKeys("APIMANAGER3371");
 		driver.findElement(By.id("context")).clear();
@@ -50,11 +58,15 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("description")).sendKeys(API_DESCRIPTION);
 		driver.findElement(By.id("resource_url_pattern")).clear();
 		driver.findElement(By.id("resource_url_pattern")).sendKeys("*");
-		driver.findElement(By.id("inputResource")).clear();
-		driver.findElement(By.id("inputResource")).sendKeys("default");
+		/*driver.findElement(By.id("inputResource")).clear();
+		driver.findElement(By.id("inputResource")).sendKeys("default");*/
 		driver.findElement(By.cssSelector("input.http_verb_select")).click();
 		driver.findElement(By.id("add_resource")).click();
 		driver.findElement(By.id("go_to_implement")).click();
+
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+		driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
+
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
 		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
 		driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(API_URL);
@@ -73,7 +85,10 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 		driver.findElement(By.id("techOwnerMail")).sendKeys("tec@tech.com");
 		driver.findElement(By.id("publish_api")).click();
 		driver.findElement(By.linkText("Edit")).click();
-		driver.findElement(By.cssSelector("input.btn.btn-primary")).click();
+		/*wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input.btn.btn-primary")));
+		driver.findElement(By.cssSelector("input.btn.btn-primary")).click();*/
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@id='saveBtn']")));
+		driver.findElement(By.xpath("//button[@id='saveBtn']")).click();
 		driver.findElement(By.cssSelector("a.wizard-done")).click();
 		driver.findElement(By.xpath("//div[@id='item-add']/center/ul/li[3]/a")).click();
 		driver.findElement(By.xpath("//form[@id='manage_form']/fieldset[3]/legend")).click();
@@ -87,6 +102,9 @@ public class APIMANAGER3371BusinessInformationClearedWhenAPISavedButton extends 
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
 		driver.quit();
 	}
 }

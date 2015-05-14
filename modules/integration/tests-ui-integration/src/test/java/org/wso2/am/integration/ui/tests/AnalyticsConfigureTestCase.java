@@ -27,12 +27,9 @@ import org.wso2.am.integration.ui.tests.pages.adminDashboard.AdminDashboardLogin
 import org.wso2.am.integration.ui.tests.pages.adminDashboard.ConfigureAnalyticsPage;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.testng.Assert.assertEquals;
 
-public class AnalyticsConfigureTestCase extends AMIntegrationUiTestBase {
+public class AnalyticsConfigureTestCase extends APIMIntegrationUiTestBase {
 
     private WebDriver driver;
 
@@ -63,7 +60,8 @@ public class AnalyticsConfigureTestCase extends AMIntegrationUiTestBase {
     public void testAdminDashboardAnalyticsPage() throws Exception {
         AdminDashboardLoginPage adminDashboardLoginPage = new AdminDashboardLoginPage(driver);
         ConfigureAnalyticsPage configureAnalyticsPage = adminDashboardLoginPage.
-                getConfigureAnalyticsPage(userInfo.getUserName(), userInfo.getPassword());
+                getConfigureAnalyticsPage(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                        gatewayContext.getContextTenant().getContextUser().getPassword());
         String configSavedMessage = configureAnalyticsPage.addConfigurations(EVENT_RECEIVER_URL, EVENT_RECEIVER_USERNAME,
                 EVENT_RECEIVER_PASSWORD, DATA_ANALYZER_URL, DATA_ANALYZER_USERNAME, DATA_ANALYZER_PASSWORD, STAT_DS_URL,
                 STAT_DS_CLASS_NAME,STAT_DS_USERNAME, STAT_DS_PASSWORD);

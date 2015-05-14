@@ -39,6 +39,11 @@ under the License.
                 <inherited>false</inherited>
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
+                            <!--<argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
+                        -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
+                        -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
+                    </argLine>-->
+                    <skipTests>${skipUiTests}</skipTests>
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -283,5 +288,9 @@ under the License.
             <version>${carbon.automationutils.version}</version>
         </dependency>
     </dependencies>
+
+    <properties>
+        <skipUiTests>true</skipUiTests>
+    </properties>
 
 </project>
