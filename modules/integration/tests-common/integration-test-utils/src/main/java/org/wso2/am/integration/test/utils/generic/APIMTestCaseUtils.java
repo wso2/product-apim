@@ -1562,6 +1562,18 @@ public class APIMTestCaseUtils {
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
     }
+    
+    public static String getDecodedJWTHeader(String serverMessage) throws UnsupportedEncodingException {
+        // result comes as header values
+        String[] headerArray = serverMessage.split("\n");
+        //tokenize  from JWT assertion header
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        //take first part
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        // decode  JWT header
+        byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[0].getBytes("UTF-8"));
+        return new String(jwtByteArray, "UTF-8");
+    }
 
     /**
      * Get the API information from the response  object as Lost of  APIIdentifier
