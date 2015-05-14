@@ -18,10 +18,6 @@
 
 package org.wso2.am.integration.ui.tests.util;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -36,29 +32,42 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+//import org.json.
 
 
 public class TestUtil {
-	
-	public boolean createTenant(String adminUserName, String adminPassword, String serviceUrl) {
-		return true;
-	}
-	
-	/**
-	 * Login to API Store or Publisher
-	 * @param userName
-	 * @param password
-	 * @param URL API Store or Publisher URL
-	 * @return
-	 * @throws Exception
-	 */
-	public static HttpContext login(String userName, String password, String URL) throws Exception {
-		CookieStore cookieStore = new BasicCookieStore();
-		HttpContext httpContext = new BasicHttpContext();
-		httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-		
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(URL + APIMTestConstants.APISTORE_LOGIN_URL);
+
+    public boolean createTenant(String adminUserName, String adminPassword, String serviceUrl) {
+        return true;
+    }
+
+    /**
+     * Login to API Store or Publisher
+     *
+     * @param userName
+     * @param password
+     * @param URL      API Store or Publisher URL
+     * @return
+     * @throws Exception
+     */
+    public static HttpContext login(String userName, String password, String URL) throws Exception {
+        CookieStore cookieStore = new BasicCookieStore();
+        HttpContext httpContext = new BasicHttpContext();
+        httpContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(URL + APIMTestConstants.APISTORE_LOGIN_URL);
         // Request parameters and other properties.
         List<NameValuePair> params = new ArrayList<NameValuePair>(3);
 
@@ -70,64 +79,69 @@ public class TestUtil {
         HttpResponse response = httpclient.execute(httppost, httpContext);
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
-        boolean isError=Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
+        boolean isError = Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
 
         if (isError) {
-            String errorMsg=responseString.split(",")[1].split(":")[1].split("}")[0].trim();
+            String errorMsg = responseString.split(",")[1].split(":")[1].split("}")[0].trim();
             throw new Exception("Error while Login to API Publisher : " + errorMsg);
 
-        } else{
+        } else {
             return httpContext;
         }
 
-	}
-	
-	/**
-	 * Create an API with provided Name and Version
-	 * @param providerName
-	 * @param apiName
-	 * @param apiVersion
-	 * @param httpContext
-	 * @param publisherURL
-	 * @return
-	 * @throws Exception
-	 */
-	public static boolean addAPI(String providerName, String apiName, String apiVersion, HttpContext httpContext, String publisherURL) throws Exception {
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(publisherURL + APIMTestConstants.APIPUBLISHER_ADD_URL);
-		List<NameValuePair> params = getAPICreateParamsList(providerName, apiName, apiVersion, APIMTestConstants.API_ADD_ACTION);
-		httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-		HttpResponse response = httpclient.execute(httppost, httpContext);
-        
-		HttpEntity entity = response.getEntity();
+    }
+
+    /**
+     * Create an API with provided Name and Version
+     *
+     * @param providerName
+     * @param apiName
+     * @param apiVersion
+     * @param httpContext
+     * @param publisherURL
+     * @return
+     * @throws Exception
+     */
+    public static boolean addAPI(String providerName, String apiName, String apiVersion,
+                                 HttpContext httpContext, String publisherURL) throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(publisherURL + APIMTestConstants.APIPUBLISHER_ADD_URL);
+        List<NameValuePair> params = getAPICreateParamsList(providerName, apiName, apiVersion, APIMTestConstants.API_ADD_ACTION);
+        httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        HttpResponse response = httpclient.execute(httppost, httpContext);
+
+        HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
-        boolean isError=Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
+        boolean isError = Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
         File createdTmpFile = new File("tmp/icon");//With multipart file uploading
-        if(createdTmpFile.exists()){
+        if (createdTmpFile.exists()) {
             createdTmpFile.delete();
         }
         if (!isError) { //If API creation success
-        	return true;
-        }else{
-        	String errorMsg=responseString.split(",")[1].split(":")[1].split("}")[0].trim();
-        	throw new Exception("Error while adding the API " + errorMsg );
+            return true;
+        } else {
+            String errorMsg = responseString.split(",")[1].split(":")[1].split("}")[0].trim();
+            throw new Exception("Error while adding the API " + errorMsg);
         }
-	}
-	
-	/**
-	 * Publish the given API
-	 * @param providerName
-	 * @param apiName
-	 * @param apiVersion
-	 * @param httpContext
-	 * @param publisherURL
-	 * @return
-	 * @throws Exception
-	 */
-	public static boolean publishAPI(String providerName, String apiName, String apiVersion, HttpContext httpContext, String publisherURL) throws Exception{
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(publisherURL + APIMTestConstants.APIPUBLISHER_PUBLISH_URL);
-		List<NameValuePair> paramVals = new ArrayList<NameValuePair>();
+    }
+
+    /**
+     * Publish the given API
+     *
+     * @param providerName
+     * @param apiName
+     * @param apiVersion
+     * @param httpContext
+     * @param publisherURL
+     * @return
+     * @throws Exception
+     */
+    public static boolean publishAPI(String providerName, String apiName, String apiVersion,
+                                     HttpContext httpContext, String publisherURL)
+            throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(publisherURL + APIMTestConstants.APIPUBLISHER_PUBLISH_URL);
+        List<NameValuePair> paramVals = new ArrayList<NameValuePair>();
         paramVals.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, APIMTestConstants.API_CHANGE_STATUS_ACTION));
         paramVals.add(new BasicNameValuePair("name", apiName));
         paramVals.add(new BasicNameValuePair("provider", providerName));
@@ -136,35 +150,37 @@ public class TestUtil {
         paramVals.add(new BasicNameValuePair("publishToGateway", "true"));
         paramVals.add(new BasicNameValuePair("deprecateOldVersions", "false"));
         paramVals.add(new BasicNameValuePair("requireResubscription", "false"));
-        
+
         httppost.setEntity(new UrlEncodedFormEntity(paramVals, "UTF-8"));
         //Execute and get the response.
-        HttpResponse response = httpclient.execute(httppost,httpContext);
+        HttpResponse response = httpclient.execute(httppost, httpContext);
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
         boolean isError = Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
         //If API publishing success
-        if (!isError) {  
+        if (!isError) {
             return true;
 
-        }else{
+        } else {
             String errorMsg = responseString.split(",")[1].split(":")[1].split("}")[0].trim();
             throw new Exception("Error while publishing the API- " + errorMsg);
 
         }
-	}
-	
-	/**
-	 * Returns the parameters required to create an API
-	 * @param providerName
-	 * @param apiName
-	 * @param apiVersion
-	 * @param action
-	 * @return
-	 * @throws Exception
-	 */
-	private static List<NameValuePair> getAPICreateParamsList(String providerName, String apiName, String apiVersion, 
-	                                                          String action) throws Exception {
+    }
+
+    /**
+     * Returns the parameters required to create an API
+     *
+     * @param providerName
+     * @param apiName
+     * @param apiVersion
+     * @param action
+     * @return
+     * @throws Exception
+     */
+    private static List<NameValuePair> getAPICreateParamsList(String providerName, String apiName,
+                                                              String apiVersion,
+                                                              String action) throws Exception {
         // Request parameters and other properties.
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, action));
@@ -172,13 +188,13 @@ public class TestUtil {
         params.add(new BasicNameValuePair("version", apiVersion));
         params.add(new BasicNameValuePair("provider", providerName));
         params.add(new BasicNameValuePair("endpoint", "http://localhost:9090/test"));
-        
+
         String endpont = "http://localhost:9090/test";
-        
-        String endpoint_config = "{\"production_endpoints\":{\"url\":\""+ endpont +"\", \"config\":null},\"sandbox_endpoint\":{\"url\":\""
-        							+ endpont +"\",\"config\":null},\"endpoint_type\":\"http\"}";
+
+        String endpoint_config = "{\"production_endpoints\":{\"url\":\"" + endpont + "\", \"config\":null},\"sandbox_endpoint\":{\"url\":\""
+                                 + endpont + "\",\"config\":null},\"endpoint_type\":\"http\"}";
         params.add(new BasicNameValuePair("endpoint_config", endpoint_config));
-        
+
         params.add(new BasicNameValuePair("visibility", "public"));
 
         params.add(new BasicNameValuePair("http_checked", "http"));
@@ -195,128 +211,193 @@ public class TestUtil {
 
         return params;
     }
-	
-	
-	/**
-	 * Adds an API Subscription for given API using given Application and Tier
-	 * @param providerName
-	 * @param apiName
-	 * @param apiVersion
-	 * @param tier
-	 * @param appName
-	 * @param httpContext
-	 * @param storeURL
-	 * @return
-	 * @throws Exception
-	 */
-	public static boolean addSubscription(String providerName, String apiName, String apiVersion,
-	                                      String tier, String appName, HttpContext httpContext, String storeURL) throws Exception{
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(storeURL + APIMTestConstants.ADD_SUBSCRIPTION_URL);
-		
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, APIMTestConstants.ADD_SUBSCRIPTION_ACTION));
+
+
+    /**
+     * Adds an API Subscription for given API using given Application and Tier
+     *
+     * @param providerName
+     * @param apiName
+     * @param apiVersion
+     * @param tier
+     * @param appName
+     * @param httpContext
+     * @param storeURL
+     * @return
+     * @throws Exception
+     */
+    public static boolean addSubscription(String providerName, String apiName, String apiVersion,
+                                          String tier, String appName, HttpContext httpContext,
+                                          String storeURL) throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(storeURL + APIMTestConstants.ADD_SUBSCRIPTION_URL);
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, APIMTestConstants.ADD_SUBSCRIPTION_ACTION));
         params.add(new BasicNameValuePair("name", apiName));
         params.add(new BasicNameValuePair("version", apiVersion));
         params.add(new BasicNameValuePair("provider", replaceEmailDomain(providerName)));
         params.add(new BasicNameValuePair("tier", tier));
         params.add(new BasicNameValuePair("applicationName", appName));
-        
+
         httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         //Execute and get the response.
-        HttpResponse response = httpclient.execute(httppost,httpContext);
+        HttpResponse response = httpclient.execute(httppost, httpContext);
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
         boolean isError = Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
         //If API publishing success
-        if (!isError) {  
+        if (!isError) {
             return true;
 
-        }else{
+        } else {
             String errorMsg = responseString.split(",")[1].split(":")[1].split("}")[0].trim();
             throw new Exception("Error while subscribing to the API- " + errorMsg);
 
         }
-	}
-	
-	/**
-	 * Generate Application tokens using given Application and KeyType
-	 * @param keyType
-	 * @param appName
-	 * @param httpContext
-	 * @param storeURL
-	 * @return
-	 * @throws Exception
-	 */
-	public static boolean generateApplicationtokens(String keyType, String appName, HttpContext httpContext, String storeURL) throws Exception{
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(storeURL + APIMTestConstants.ADD_SUBSCRIPTION_URL);
-		
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, APIMTestConstants.GENERATE_APPLICATION_KEY_ACTION));
+    }
+
+    /**
+     * Generate Application tokens using given Application and KeyType
+     *
+     * @param keyType
+     * @param appName
+     * @param httpContext
+     * @param storeURL
+     * @return
+     * @throws Exception
+     */
+    public static boolean generateApplicationtokens(String keyType, String appName,
+                                                    HttpContext httpContext, String storeURL)
+            throws Exception {
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httppost = new HttpPost(storeURL + APIMTestConstants.ADD_SUBSCRIPTION_URL);
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(APIMTestConstants.API_ACTION, APIMTestConstants.GENERATE_APPLICATION_KEY_ACTION));
         params.add(new BasicNameValuePair("application", appName));
         params.add(new BasicNameValuePair("authorizedDomains", "ALL"));
         params.add(new BasicNameValuePair("callbackUrl", ""));
         params.add(new BasicNameValuePair("keytype", keyType));
         params.add(new BasicNameValuePair("validityTime", "3600"));
-        
+
         httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         //Execute and get the response.
-        HttpResponse response = httpclient.execute(httppost,httpContext);
+        HttpResponse response = httpclient.execute(httppost, httpContext);
         HttpEntity entity = response.getEntity();
         String responseString = EntityUtils.toString(entity, "UTF-8");
         boolean isError = Boolean.parseBoolean(responseString.split(",")[0].split(":")[1].split("}")[0].trim());
         //If API publishing success
-        if (!isError) {  
+        if (!isError) {
             return true;
 
-        }else{
+        } else {
             String errorMsg = responseString.split(",")[1].split(":")[1].split("}")[0].trim();
             throw new Exception("Error while subscribing to the API- " + errorMsg);
 
         }
 
-	}
-	
-	/**
-	 * Replaces the '@' with -AT- in the provided String
-	 * @param input
-	 * @return
-	 */
-	public static String replaceEmailDomain(String input){
-        if(input!=null&& input.contains(APIMTestConstants.EMAIL_DOMAIN_SEPARATOR) ){
-            input=input.replace(APIMTestConstants.EMAIL_DOMAIN_SEPARATOR,APIMTestConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT);
+    }
+
+    /**
+     * Replaces the '@' with -AT- in the provided String
+     *
+     * @param input
+     * @return
+     */
+    public static String replaceEmailDomain(String input) {
+        if (input != null && input.contains(APIMTestConstants.EMAIL_DOMAIN_SEPARATOR)) {
+            input = input.replace(APIMTestConstants.EMAIL_DOMAIN_SEPARATOR, APIMTestConstants.EMAIL_DOMAIN_SEPARATOR_REPLACEMENT);
         }
         return input;
     }
 
-	
-	/**
-	 * Returns the username with tenant domain prefix
-	 * @param userName
-	 * @param tenantDomain
-	 * @return
-	 */
-	public static String getTenantUserName(String userName, String tenantDomain) {
-		return userName + "@" + tenantDomain;		
-	}
-	
-	/**
-	 * Returns the tenant URL of the given url prefix.
-	 * @param productURL
-	 * @param tenantDomain
-	 * @param urlPrefix
-	 * @return
-	 * @throws Exception
-	 */
-	public static String getTenantURL(String productURL, String tenantDomain, String urlPrefix) throws Exception{
-		if(productURL.contains("/carbon")) {
+
+    /**
+     * Returns the username with tenant domain prefix
+     *
+     * @param userName
+     * @param tenantDomain
+     * @return
+     */
+    public static String getTenantUserName(String userName, String tenantDomain) {
+        return userName + "@" + tenantDomain;
+    }
+
+    /**
+     * Returns the tenant URL of the given url prefix.
+     *
+     * @param productURL
+     * @param tenantDomain
+     * @param urlPrefix
+     * @return
+     * @throws Exception
+     */
+    public static String getTenantURL(String productURL, String tenantDomain, String urlPrefix)
+            throws Exception {
+        if (productURL.contains("/carbon")) {
             return productURL.split("carbon")[0] + "t/" + tenantDomain + urlPrefix;
         } else {
-        	throw new Exception("Error while composing Publisher Login URL");
+            throw new Exception("Error while composing Publisher Login URL");
         }
     }
-	
-	
 
+    /**
+     * Cleaning up the API manager by removing all APIs and applications other than default application
+     *
+     * @param userName     - username of the api created tenant
+     * @param passWord     - password of the api created tenant
+     * @param storeUrl     - store url
+     * @param publisherUrl - publisher url
+     * @throws APIManagerIntegrationTestException - occurred when calling the apis
+     * @throws JSONException                      - occurred when reading the json
+     */
+    public static void cleanUp(String userName, String passWord, String storeUrl,
+                               String publisherUrl) throws APIManagerIntegrationTestException,
+                                                              JSONException {
+
+        APIStoreRestClient apiStore = new APIStoreRestClient(storeUrl);
+        apiStore.login(userName, passWord);
+        String subscriptionData = apiStore.getAllSubscriptions().getData();
+
+        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(publisherUrl);
+        publisherRestClient.login(userName, passWord);
+        JSONObject jsonSubscription = new JSONObject(subscriptionData);
+        JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject("subscriptions");
+        JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray("applications");
+
+        //Remove API Subscriptions
+        for (int i = 0; i < jsonApplicationsArray.length(); i++) {
+            JSONObject obj = jsonApplicationsArray.getJSONObject(i);
+            int id = obj.getInt("id");
+            JSONArray objJSONArray = obj.getJSONArray("subscriptions");
+            for (int j = 0; j < objJSONArray.length(); j++) {
+                JSONObject api = objJSONArray.getJSONObject(j);
+                apiStore.removeAPISubscription(api.getString("name"), api.getString("version"),
+                                               api.getString("provider"), String.valueOf(id));
+            }
+        }
+
+        String apiData = apiStore.getAPI().getData();
+        JSONObject jsonAPIData = new JSONObject(apiData);
+        JSONArray jsonArray1 = jsonAPIData.getJSONArray("apis");
+
+        //delete all APIs
+        for (int i = 0; i < jsonArray1.length(); i++) {
+            JSONObject api = jsonArray1.getJSONObject(i);
+            publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), userName);
+        }
+
+        //delete all application other than default application
+        String applicationData = apiStore.getAllApplications().getData();
+        JSONObject jsonApplicationData = new JSONObject(applicationData);
+        JSONArray applicationArray = jsonApplicationData.getJSONArray("applications");
+        for (int i = 0; i < applicationArray.length(); i++) {
+            JSONObject jsonApplication = applicationArray.getJSONObject(i);
+            if (!jsonApplication.getString("name").equals("DefaultApplication")) {
+                apiStore.removeApplication(jsonApplication.getString("name"));
+            }
+        }
+
+    }
 }

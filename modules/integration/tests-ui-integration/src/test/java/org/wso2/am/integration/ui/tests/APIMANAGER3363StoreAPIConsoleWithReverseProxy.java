@@ -67,13 +67,14 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
     public void createTenantAndAPI() throws Exception {
         LoginPage login = new LoginPage(driver);
         login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+                      gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
         String lastName = "admin";
         String email = "admin@apimanager3363.com";
-        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
+        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName,
+                                      TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
         TenantListpage tenantListpage = new TenantListpage(driver);
         tenantListpage.checkOnUplodedTenant(TEST_DATA_TENANT);
 
@@ -136,6 +137,8 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_TENANT_PUBLISHER, TEST_DATA_TENANT_ADMIN_PASSWORD,
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         if (driver != null) {
             driver.quit();
         }

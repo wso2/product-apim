@@ -33,6 +33,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
@@ -194,7 +195,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
         long startTime = System.currentTimeMillis();
         while ((!driver.getPageSource().contains(TEST_DATA_API_NAME)) && (System.currentTimeMillis() - startTime) < loopMaxTime) {
             driver.findElement(By.linkText("APIs")).click();
-			Thread.sleep(500);
+            Thread.sleep(500);
             //wait for 0.5 seconds and refresh the store since it will take little time to appear the published APIs in store
         }
 
@@ -241,6 +242,14 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_ADMIN_USER_NAME + APIMTestConstants.EMAIL_DOMAIN_SEPARATOR
+                         + TEST2_TENANT_DOMAIN, TEST_DATA_PASSWORD, storeUrls.getWebAppURLHttp(),
+                         publisherUrls.getWebAppURLHttp());
+
+        TestUtil.cleanUp(TEST_DATA_ADMIN_USER_NAME + APIMTestConstants.EMAIL_DOMAIN_SEPARATOR
+                         + TEST1_TENANT_DOMAIN, TEST_DATA_PASSWORD, storeUrls.getWebAppURLHttp(),
+                         publisherUrls.getWebAppURLHttp());
+
         if (driver != null) {
             driver.quit();
         }

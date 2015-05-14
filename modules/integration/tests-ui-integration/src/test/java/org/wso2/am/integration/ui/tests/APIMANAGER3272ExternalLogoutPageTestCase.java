@@ -32,6 +32,7 @@ import org.testng.TestException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
@@ -70,7 +71,8 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiT
         driver = BrowserManager.getWebDriver();
 
         apiStoreUrl = getStoreURL();
-        this.logViewerClient = new LogViewerClient(gatewayContext.getContextUrls().getBackEndUrl(), TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
+        this.logViewerClient = new LogViewerClient(gatewayContext.getContextUrls().getBackEndUrl(),
+                                                   TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
 
     }
 
@@ -185,6 +187,9 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiT
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
 
