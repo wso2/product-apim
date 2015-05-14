@@ -165,6 +165,16 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
+        
+        //check the jwt header
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(serverMessage);
+        if(decodedJWTHeaderString != null) {
+        	 log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
+        	 JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
+        	 Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
+        	 Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");   	 
+        	 
+        }
 
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
 

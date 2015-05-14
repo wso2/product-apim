@@ -87,7 +87,7 @@
         <!-- Configure the security measures needs to be done prior to store the token in the database,
           such as hashing, encrypting, etc.-->
         <TokenPersistenceProcessor>
-            org.wso2.carbon.identity.oauth.tokenprocessor.PlainTextPersistenceProcessor
+            org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor
         </TokenPersistenceProcessor>
         <ClientAuthHandlers>
             <ClientAuthHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.clientauth.BasicAuthClientAuthHandler</ClientAuthHandlerImplClass>

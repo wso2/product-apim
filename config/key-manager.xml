@@ -1,7 +1,0 @@
-<KeyManager class="org.wso2.carbon.apimgt.keymgt.AMDefaultKeyManagerImpl" xmlns="http://wso2.org/projects/apimgt/key-manager.xml">
-<Configuration>
-	<AuthorizationServerURL>https://localhost:9443/services/</AuthorizationServerURL>
-	<TokenURL>https://localhost:8243/token</TokenURL>
-	<RevokeURL>https://localhost:8243/revoke</RevokeURL>
-</Configuration>
-</KeyManager>
