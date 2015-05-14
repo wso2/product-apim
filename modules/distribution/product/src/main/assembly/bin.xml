@@ -397,13 +397,6 @@
                   <include>**/patch0001/*.*</include>
              </includes>
         </fileSet-->
-
-        <!--Below directory should contain the landing page of APIM,when it is added to SLive.For the moment this directory keeps as empty and this is for APIMANAGER-1340 -->
-        <fileSet>
-        <directory>src/main/resources/STRATOS_ROOT</directory>
-        <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/STRATOS_ROOT</outputDirectory>
-        <fileMode>755</fileMode>
-        </fileSet>
         <!--copying runtimes-->
         <fileSet>
         <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/lib/runtimes</directory>
