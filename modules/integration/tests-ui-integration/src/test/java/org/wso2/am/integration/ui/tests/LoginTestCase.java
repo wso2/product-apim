@@ -26,7 +26,7 @@ import org.wso2.am.integration.ui.pages.home.HomePage;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
-public class LoginTestCase extends AMIntegrationUiTestBase {
+public class LoginTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
 
     @BeforeClass(alwaysRun = true)
@@ -39,7 +39,8 @@ public class LoginTestCase extends AMIntegrationUiTestBase {
     @Test(groups = "wso2.greg", description = "verify login to governance registry")
     public void testLogin() throws Exception {
         LoginPage test = new LoginPage(driver);
-        HomePage home = test.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        HomePage home = test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
         home.logout();
         driver.close();
         System.out.println("Login test case is completed ");

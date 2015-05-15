@@ -2,4 +2,31 @@
 
 <suite name="APPServer-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
+
+    <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
+        <packages>
+            <package name="org.wso2.am.integration.ui.tests.*"/>
+        </packages>
+        <classes>
+            <!--<class name="org.wso2.am.integration.ui.tests.AnalyticsConfigureTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER2604ApplicationPaginationTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3026DescriptionFieldTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3250CrossTenantSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3272ExternalLogoutPageTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3277SSOLogin"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3344ScopeSpecificTokenTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3363StoreAPIConsoleWithReverseProxy"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3366MultipleGatewayPublishTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3371BusinessInformationClearedWhenAPISavedButton"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER3412DifferentRegistryContextPath"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/>-->
+        </classes>
+    </test>
 </suite>

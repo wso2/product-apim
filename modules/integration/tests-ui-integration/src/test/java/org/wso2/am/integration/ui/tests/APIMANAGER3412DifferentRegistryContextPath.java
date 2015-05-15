@@ -27,12 +27,15 @@ import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.am.integration.ui.pages.tenant.TenantHomePage;
 import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
@@ -44,7 +47,7 @@ import static org.testng.Assert.assertTrue;
     Need to configure LB with APIM 1.8 and run the test case
     note that replace the server urls with LB urls
  */
-public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiTestBase {
+public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationUiTestBase {
     private String TEST_DATA_API_NAME = "APIMANAGER3412";
     private String TEST_DATA_API_VERSION = "1.0.0";
     private String TEST_DATA_TENANT = "apimanager3412.com";
@@ -59,7 +62,7 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
     private String storeURL;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         publisherURL = getPublisherURL();
         storeURL = getStoreURL();
@@ -70,14 +73,17 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
 
     @Test(groups = "wso2.am", description = "Create tenant and api")
     public void createTenantAndAPI() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.get(getLoginURL());
         LoginPage login = new LoginPage(driver);
-        login.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
         String lastName = "admin";
-        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, TEST_DATA_TENANT_PUBLISHER);
+        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER,
+                                      TEST_DATA_TENANT_ADMIN_PASSWORD, TEST_DATA_TENANT_PUBLISHER);
         TenantListpage tenantListpage = new TenantListpage(driver);
         tenantListpage.checkOnUplodedTenant(TEST_DATA_TENANT);
 
@@ -88,6 +94,13 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
         driver.findElement(By.id("pass")).sendKeys(TEST_DATA_TENANT_ADMIN_PASSWORD);
         driver.findElement(By.id("loginButton")).click();
         driver.findElement(By.linkText("Add")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("create-new-api")));
+        driver.findElement(By.id("create-new-api")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("designNewAPI")));
+        driver.findElement(By.id("designNewAPI")).click();
+
         driver.findElement(By.id("name")).clear();
         driver.findElement(By.id("name")).sendKeys(TEST_DATA_API_NAME);
         driver.findElement(By.id("context")).clear();
@@ -101,10 +114,14 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
         driver.findElement(By.id("description")).sendKeys("This is test API");
         driver.findElement(By.id("resource_url_pattern")).clear();
         driver.findElement(By.id("resource_url_pattern")).sendKeys("testapi");
-        driver.findElement(By.cssSelector("input.http_verb_select")).click();
-        driver.findElement(By.xpath("//input[@value='POST']")).click();
+        //driver.findElement(By.cssSelector("input.http_verb_select")).click();
+        driver.findElement(By.xpath("//label[contains(.,'post')]")).click();
         driver.findElement(By.id("add_resource")).click();
         driver.findElement(By.id("go_to_implement")).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@value='#managed-api']")));
+        driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
+
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys("whatever");
         driver.findElement(By.id("go_to_manage")).click();
@@ -136,6 +153,9 @@ public class APIMANAGER3412DifferentRegistryContextPath extends AMIntegrationUiT
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_TENANT_PUBLISHER,
+                         TEST_DATA_TENANT_ADMIN_PASSWORD,
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         if (driver != null) {
             driver.quit();
         }

@@ -10,27 +10,27 @@
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
     </listeners>
 
-    <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
+    <!--<test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
         <classes>
-            <!--to run this test class, it is needed to setup API Manager with IS using SAML SSO-->
-            <!--class name="org.wso2.am.integration.ui.tests.APIMANAGER3272ExternalLogoutPageTestCase"/-->
-            <!--to run this test class, it is needed to create a jdbc mount of API Manager registry db-->
-            <!--class name="org.wso2.am.integration.ui.tests.APIMANAGER3250CrossTenantSubscriptionTestCase"/-->
+            &lt;!&ndash;to run this test class, it is needed to setup API Manager with IS using SAML SSO&ndash;&gt;
+            &lt;!&ndash;class name="org.wso2.am.integration.ui.tests.APIMANAGER3272ExternalLogoutPageTestCase"/&ndash;&gt;
+            &lt;!&ndash;to run this test class, it is needed to create a jdbc mount of API Manager registry db&ndash;&gt;
+            &lt;!&ndash;class name="org.wso2.am.integration.ui.tests.APIMANAGER3250CrossTenantSubscriptionTestCase"/&ndash;&gt;
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3026DescriptionFieldTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER2604ApplicationPaginationTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3366MultipleGatewayPublishTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3371BusinessInformationClearedWhenAPISavedButton"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3412DifferentRegistryContextPath"/>
-            <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>-->
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.APIMANAGER3154StoreSearchResultDisplay"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>&ndash;&gt;
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>&ndash;&gt;
             <class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/>
-            <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER3363StoreAPIConsoleWithReverseProxy" />-->
+            &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.APIMANAGER3363StoreAPIConsoleWithReverseProxy" />&ndash;&gt;
         </classes>
-    </test>
+    </test>-->
 
 </suite>
