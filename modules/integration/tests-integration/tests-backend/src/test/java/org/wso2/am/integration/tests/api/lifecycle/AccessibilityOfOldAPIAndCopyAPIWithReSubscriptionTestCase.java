@@ -64,7 +64,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private APIStoreRestClient apiStoreClientUser2;
+
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
@@ -88,11 +88,6 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
-        apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Store with  User1
-        apiStoreClientUser2.login(
-                storeContext.getContextTenant().getTenantUserList().get(0).getUserName(),
-                storeContext.getContextTenant().getTenantUserList().get(0).getPassword());
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 

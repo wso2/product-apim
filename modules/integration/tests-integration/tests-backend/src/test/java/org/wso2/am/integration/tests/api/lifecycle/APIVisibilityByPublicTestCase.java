@@ -275,7 +275,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();  //TODO
+                log.warn("InterruptedException occurs while sleeping 500 milliseconds", e);
             }
             currentTime = System.currentTimeMillis();
             if (new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser(apiCreatorStoreDomain).getData().

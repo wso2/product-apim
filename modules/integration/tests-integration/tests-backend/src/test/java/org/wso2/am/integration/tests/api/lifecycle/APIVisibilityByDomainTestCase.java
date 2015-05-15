@@ -64,7 +64,6 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     private APIStoreRestClient apiStoreClientCarbonSuperUser1;
     private APIPublisherRestClient apiPublisherClientCarbonSuperAdmin;
     private APIStoreRestClient apiStoreClientCarbonSuperAdmin;
-    private APICreationRequestBean apiCreationRequestBean;
     private String storeURLHttp;
     private String otherDomain;
     private String apiCreatorStoreDomain;
@@ -139,12 +138,14 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForCreatorInPublisher() throws APIManagerIntegrationTestException, MalformedURLException {
         //Create API  with private visibility and publish.
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiCreationRequestBean =
+        APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(API_END_POINT_URL));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiPublisherClientCarbonSuperUser1.addAPI(apiCreationRequestBean);
+        apiCreationRequestBean.setVisibility("private");
+
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         publishAPI(apiIdentifier, apiPublisherClientCarbonSuperUser1, false);
         List<APIIdentifier> apiPublisherAPIIdentifierList =

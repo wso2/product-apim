@@ -55,21 +55,19 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "AddEditRemoveRESTResourceTestCase";
-    private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final static String RESPONSE_POST = "Tom";
-    private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final static String API_POST_ENDPOINT_METHOD = "/customers/name/";
-    private final static String INVALID_URL = "/invalid";
-    private final static String INVALID_URL_INVOKE_RESPONSE =
+    private static final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private static final String RESPONSE_POST = "Tom";
+    private static final String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private static final String API_POST_ENDPOINT_METHOD = "/customers/name/";
+    private static final String INVALID_URL = "/invalid";
+    private static final String INVALID_URL_INVOKE_RESPONSE =
             "No matching resource found in the API for the given request";
     private String apiEndPointUrl;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private APICreationRequestBean apiCreationRequestBean;
     private String providerName;
     private APIIdentifier apiIdentifier;
     private String postEndPointURL;
-    private String accessToken;
     private HashMap<String, String> requestHeadersGet;
     private HashMap<String, String> requestHeadersPost;
 
@@ -88,7 +86,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
         serverConfigurationManager.restartGracefully();
         super.init();
-        apiCreationRequestBean =
+        APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
@@ -125,7 +123,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get the  access token
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request

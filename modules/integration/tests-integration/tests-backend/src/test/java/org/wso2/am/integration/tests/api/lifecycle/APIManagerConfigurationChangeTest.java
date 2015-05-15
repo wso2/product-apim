@@ -53,7 +53,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         File sourceFile = new File(apimConfigArtifactLocation);
         File targetFile = new File(apimRepositoryConfigLocation);
         serverManager = new ServerConfigurationManager(gatewayContext);
-        // apply configuration to  api-manager.xml
+        //apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
         log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
                 " to :" + apimRepositoryConfigLocation);

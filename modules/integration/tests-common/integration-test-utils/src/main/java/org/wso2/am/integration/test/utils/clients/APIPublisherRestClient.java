@@ -388,34 +388,34 @@ public class APIPublisherRestClient {
     }
 
 
-
     /**
      * Change the API Lifecycle status to Publish with the option of Re-subscription is required or not
      *
      * @param apiIdentifier           - Instance of APIIdentifier
      * @param isRequireReSubscription - true if Re-subscription is required else false.
      * @return HttpResponse - Response of the API publish event
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception Throws in checkAuthentication() and when do the REST service calls to do the
-     *                                            lifecycle change.
+     * @throws APIManagerIntegrationTestException - Exception Throws in checkAuthentication() and when do the REST
+     *                                            service calls to do the lifecycle change.
      */
     public HttpResponse changeAPILifeCycleStatusToPublish(APIIdentifier apiIdentifier, boolean isRequireReSubscription)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             APILifeCycleStateRequest publishUpdateRequest =
-                    new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(), APILifeCycleState.PUBLISHED);
+                    new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
+                            APILifeCycleState.PUBLISHED);
             publishUpdateRequest.setVersion(apiIdentifier.getVersion());
             String requestParameters = publishUpdateRequest.generateRequestParameters();
             if (isRequireReSubscription) {
                 requestParameters += "&requireResubscription=true";
             }
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag")
-                    , requestParameters, requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
+                    requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when change he lifecycle to publish", e);
 
         }
-
     }
 
     /**
@@ -425,38 +425,35 @@ public class APIPublisherRestClient {
      * @param provider - Provider Name of the API
      * @param version  - Version of the API
      * @return HttpResponse -  Response of the getAPI request
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception Throws in checkAuthentication() and when do the REST service calls to get the
-     *                                            API information.
+     * @throws APIManagerIntegrationTestException - Exception Throws in checkAuthentication() and when do the REST
+     *                                            service calls to get the API information.
      */
     public HttpResponse getApi(String apiName, String provider, String version)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag")
-                    , "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag"), "action=getAPI&name=" +
+                            apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving a API", e);
-
         }
-
     }
 
     /**
      * Retrieve the Tier Permission Page
      *
      * @return HttpResponse - Response that contains the Tier Permission Page
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HttpRequestUtil.doGet() method call
      */
     public HttpResponse getTierPermissionsPage() throws APIManagerIntegrationTestException {
-
         try {
             checkAuthentication();
             return HttpRequestUtil.doGet(backendURL + "/publisher/site/pages/tiers.jag", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page", e);
         }
-
     }
 
     /**
@@ -466,18 +463,19 @@ public class APIPublisherRestClient {
      * @param provider - Name of the API Provider.
      * @param version  - Version of the API.
      * @return HttpResponse - Response that contains the API Manage Page
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HttpRequestUtil.doGet() method call
      */
-    public HttpResponse getAPIManagePage(String apiName, String provider, String version) throws APIManagerIntegrationTestException {
+    public HttpResponse getAPIManagePage(String apiName, String provider, String version)
+            throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(backendURL + "/publisher/manage?name=" + apiName + "&version=" + version +
-                    "&provider=" + provider, requestHeaders);
+            return HttpRequestUtil.doGet(
+                    backendURL + "/publisher/manage?name=" + apiName + "&version=" + version + "&provider=" + provider,
+                    requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Manage page", e);
         }
-
     }
 
 
@@ -488,19 +486,19 @@ public class APIPublisherRestClient {
      * @param provider - Name of the API Provider.
      * @param version  - Version of the API.
      * @return HttpResponse - Response that contains the API Information Page
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HttpRequestUtil.doGet() method call
      */
     public HttpResponse getAPIInformationPage(String apiName, String provider, String version)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(backendURL + "/publisher/info?name=" + apiName + "&version=" + version +
-                    "&provider=" + provider, requestHeaders);
+            return HttpRequestUtil.doGet(
+                    backendURL + "/publisher/info?name=" + apiName + "&version=" + version + "&provider=" + provider,
+                    requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page", e);
         }
-
     }
 
     /**
@@ -516,7 +514,7 @@ public class APIPublisherRestClient {
      * @param summary     - Document summary
      * @param docLocation - Document Location
      * @return HttpResponse - Response  with Document adding result.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HttpRequestUtil.doPost() method call
      */
     public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
@@ -524,63 +522,66 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag")
-                    , "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
-                    "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl" + docUrl +
-                    "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
+                            "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl" + docUrl +
+                            "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
         }
     }
-
-
-//TODO
-    public HttpResponse addDocument(AddDocumentRequestBean addDocRequestBean)
-    throws APIManagerIntegrationTestException {
-        try {
-            checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag")
-                    , "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
-                    addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
-                    addDocRequestBean.getDocName() + "&docType=" + addDocRequestBean.getDocType() + "&sourceType=" +
-                    addDocRequestBean.getDocSourceType() + "&docUrl" + addDocRequestBean.getDocUrl() + "=&summary=" +
-                    addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation(), requestHeaders);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
-        }
-    }
-
 
 
     /**
-     * Retrieve the All APIs available for the user in Publisher. this calls  the action=getAllAPIs in
-     * "/publisher/site/blocks/listing/ajax/item-list.jag"
+     * Adding a Document to a API using AddDocumentRequestBean
+     *
+     * @param addDocRequestBean - Bean that contains all the values that needed to create a Document.
+     * @return HttpResponse -  Response  with Document adding result.
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
+     */
+    public HttpResponse addDocument(AddDocumentRequestBean addDocRequestBean) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
+                            addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
+                            addDocRequestBean.getDocName() + "&docType=" + addDocRequestBean.getDocType() + "&sourceType=" +
+                            addDocRequestBean.getDocSourceType() + "&docUrl" + addDocRequestBean.getDocUrl() + "=&summary=" +
+                            addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation(), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
+        }
+    }
+
+
+    /**
+     * Retrieve the All APIs available for the user in Publisher.
      *
      * @return HttpResponse - Response that contains all available APIs for the user
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
      *                                            HttpRequestUtil.doGet() method call
      */
     public HttpResponse getAllAPIs() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag?action=getAllAPIs",
-                    requestHeaders);
-
+            return HttpRequestUtil.doGet(
+                    backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag?action=getAllAPIs", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for the user in Publisher", e);
         }
-
     }
 
 
     /**
      * Add a API using APICreationRequestBean object
      *
-     * @param creationRequestBean - Instance of APICreationRequestBean object with all needed
-     *                            information to create the API.
+     * @param creationRequestBean - Instance of APICreationRequestBean object with all needed information to create the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
-     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
-     *                                            method and HttpRequestUtil.doPost() method call
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
      */
     public HttpResponse addAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
@@ -597,24 +598,21 @@ public class APIPublisherRestClient {
     /**
      * Update a API using APICreationRequestBean object
      *
-     * @param creationRequestBean - Instance of APICreationRequestBean object with all needed
-     *                            information to Update the API.
+     * @param creationRequestBean - Instance of APICreationRequestBean object with all needed information to Update the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
-     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
-     *                                            method and HttpRequestUtil.doPost() method call
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
      */
     public HttpResponse updateAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpRequestUtil.doPost(
-                    new URL(backendURL +"/publisher/site/blocks/item-add/ajax/add.jag"),
+                    new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
                     "for the user in Publisher", e);
         }
     }
-
-
 
 }

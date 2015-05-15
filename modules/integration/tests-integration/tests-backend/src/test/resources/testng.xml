@@ -27,31 +27,31 @@
 
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
-            <!--&lt;!&ndash;<class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPI"/>
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPI"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>-->
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>-->
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3378&ndash;&gt;-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
+            <!--Disable the test case because of APIMANAGER-3229-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
+            <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3377&ndash;&gt;-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>-->
+            <!--Disable the test case because of APIMANAGER-3377-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
 
-            <!--&lt;!&ndash;Disable the test case because ofAPIMANAGER-3549&ndash;&gt;-->
+            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because ofAPIMANAGER-3549&ndash;&gt;&ndash;&gt;-->
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>-->
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed&ndash;&gt;-->
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>-->

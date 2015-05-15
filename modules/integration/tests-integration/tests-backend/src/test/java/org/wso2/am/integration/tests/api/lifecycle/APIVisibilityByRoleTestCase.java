@@ -47,7 +47,8 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
     private static final String API_NAME_ADMIN_VISIBILITY = "APIAdminVisibility";
     private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APISubscriberVisibility";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_CONTEXT1 = "testAPI1";
+    private static final String API_CONTEXT2 = "testAPI2";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
@@ -173,7 +174,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                 new APIIdentifier(providerName, API_NAME_SUBSCRIBER_VISIBILITY, API_VERSION_1_0_0);
         //Create API  with public visibility and publish.
         APICreationRequestBean apiCreationReqBeanVisibilityAdmin =
-                new APICreationRequestBean(API_NAME_ADMIN_VISIBILITY, API_CONTEXT, API_VERSION_1_0_0,
+                new APICreationRequestBean(API_NAME_ADMIN_VISIBILITY, API_CONTEXT1, API_VERSION_1_0_0,
                         providerName, new URL(API_END_POINT_URL));
         apiCreationReqBeanVisibilityAdmin.setTags(API_TAGS);
         apiCreationReqBeanVisibilityAdmin.setDescription(API_DESCRIPTION);
@@ -182,7 +183,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         apiPublisherClientCarbonSuperUser1.addAPI(apiCreationReqBeanVisibilityAdmin);
         publishAPI(apiIdentifierAdminVisibility, apiPublisherClientCarbonSuperUser1, false);
         APICreationRequestBean apiCreationReqBeanVisibilityInternalSubscriber =
-                new APICreationRequestBean(API_NAME_SUBSCRIBER_VISIBILITY, API_CONTEXT, API_VERSION_1_0_0,
+                new APICreationRequestBean(API_NAME_SUBSCRIBER_VISIBILITY, API_CONTEXT2, API_VERSION_1_0_0,
                         providerName, new URL(API_END_POINT_URL));
         apiCreationReqBeanVisibilityInternalSubscriber.setTags(API_TAGS);
         apiCreationReqBeanVisibilityInternalSubscriber.setDescription(API_DESCRIPTION);
@@ -212,7 +213,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                 "API with  Role admin  visibility is not visible to creator in API Store." +
                         getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
-                "API  with  Role Internal/subscriber  is not visible to creator in API Store. When Visibility is public. " +
+                "API  with  Role Internal/subscriber  is not visible to creator in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
 
     }
@@ -281,7 +282,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
                 "API  with  Role Internal/subscriber  is not visible to another user with Admin and subscriber role in" +
-                        " same domain in API Store. When Visibility is public. " +
+                        " same domain in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
@@ -317,7 +318,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
                 "API  with  Role Internal/subscriber  is  visible to another user with Admin and subscriber role in other " +
-                        "domain in API Store. When Visibility is public. " +
+                        "domain in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
@@ -354,7 +355,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
                 "API  with  Role Internal/subscriber  is  visible to Admin user with Admin and subscriber role in other " +
-                        "domain in API Store. When Visibility is public. " +
+                        "domain in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
@@ -371,7 +372,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                         "in API Store." + getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
                 "API  with  Role Internal/subscriber  is not visible to another user with subscriber role in same " +
-                        "domain in API Store. When Visibility is public. " +
+                        "domain in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
@@ -388,7 +389,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                         "in API Store." + getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertFalse(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiStoreAPIIdentifierList),
                 "API  with  Role Internal/subscriber  is  visible to another user with subscriber role in same domain " +
-                        "in API Store. When Visibility is public. " +
+                        "in API Store. " +
                         getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 

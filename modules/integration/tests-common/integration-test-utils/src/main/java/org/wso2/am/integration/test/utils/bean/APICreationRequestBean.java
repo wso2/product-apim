@@ -120,8 +120,9 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());
         addParameter("tiersCollection", getTiersCollection());
-
-        if (resourceBeanList.size() < 2) { //TODO
+        //APIM is designed to send 0 as resource count if there is 0 and 1 resources.
+        //From 2 resources it sends the correct count.
+        if (resourceBeanList.size() < 2) {
             addParameter("resourceCount", "0");
         } else {
             addParameter("resourceCount", resourceBeanList.size() + "");

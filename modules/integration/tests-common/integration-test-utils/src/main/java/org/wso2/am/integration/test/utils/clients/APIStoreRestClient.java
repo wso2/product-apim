@@ -625,8 +625,8 @@ public class APIStoreRestClient {
      *
      * @param apiTag - API tag the need ti filter the api.
      * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when check the
-     * Authentication and HttpRequestUtil.sendGetRequest() method call
+     * @throwsAPIManagerIntegrationTestException - Exception throws when check the Authentication and
+     * HttpRequestUtil.sendGetRequest() method call
      */
     public HttpResponse getAPIPageFilteredWithTags(String apiTag) throws APIManagerIntegrationTestException {
         try {
@@ -635,7 +635,6 @@ public class APIStoreRestClient {
         } catch (Exception ex) {
             throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
         }
-
     }
 
     /**
@@ -643,8 +642,8 @@ public class APIStoreRestClient {
      *
      * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
      * @return HttpResponse - Response f the subscription server REST call
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Exception throws when check the Authentication and
-     *                                             HttpRequestUtil.doPost() method call.
+     * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
+     *                                            HttpRequestUtil.doPost() method call.
      */
     public HttpResponse subscribeToAPI(SubscriptionRequest subscriptionRequest) throws APIManagerIntegrationTestException {
         //This method  do the same functionality as subscribe(), except this method  always returns the response object
@@ -656,7 +655,6 @@ public class APIStoreRestClient {
                     "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
                     , subscriptionRequest.generateRequestParameters()
                     , requestHeaders);
-
         } catch (Exception ex) {
             throw new APIManagerIntegrationTestException("Exception when Subscribing to a API", ex);
         }
@@ -668,21 +666,17 @@ public class APIStoreRestClient {
      *
      * @param storeTenantDomain - Tenant domain of store that need to  get the page.
      * @return HttpResponse - Response with API store page of the provided domain.
-     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
+     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
      */
 
     public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
         try {
-
-            return HttpRequestUtil.doGet(backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
         } catch (Exception ioE) {
-            throw new APIManagerIntegrationTestException("Exception when retrieve the API store page as anonymous user", ioE);
+            throw new APIManagerIntegrationTestException(
+                    "Exception when retrieve the API store page as anonymous user", ioE);
         }
-
     }
-
-
-
-
 
 }

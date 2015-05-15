@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -50,27 +51,22 @@ import static org.testng.Assert.assertTrue;
 /**
  * Configure a new handler and Invoke the API and verify  the  request is going through newly added handler.
  */
-public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
+    private static final String API_NAME = "APILifeCycleTestAPIHandler";
+    private static final String API_CONTEXT = "testAPIHandler";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "AddNewHandlerAndInvokeAPI";
-    private final static String RESPONSE_GET = "I was at CustomAPIAuthenticationHandler";
+    private static final String RESPONSE_GET = "I was at CustomAPIAuthenticationHandler";
     private static final String EXPECTED_HANDLER_LOG_OUTPUT =
             "I am at CustomAPIAuthenticationHandler:CustomAuthKey 123456789";
-    private final static String API_GET_ENDPOINT_METHOD = "/handler";
-    private final static String CUSTOM_AUTHORIZATION = "CustomAuthKey 123456789";
+    private static final String API_GET_ENDPOINT_METHOD = "/handler";
+    private static final String CUSTOM_AUTHORIZATION = "CustomAuthKey 123456789";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private String accessToken;
-    private HashMap<String, String> requestHeadersGet;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
-    private String webAppTargetPath;
-    private String customHandlerTargetPath;
-    private String synapseConfigArtifactsPath;
     private String originalSynapseConfig;
     private String newSynapseConfig;
     private APIIdentifier apiIdentifier;
@@ -81,14 +77,14 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        synapseConfigArtifactsPath =
+        String synapseConfigArtifactsPath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "synapseconfig.xml";
         newSynapseConfig = readFile(synapseConfigArtifactsPath);
         String webAppSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
-        webAppTargetPath =
+        String webAppTargetPath =
                 System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
                         "deployment" + File.separator + "server" + File.separator + "webapps";
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
@@ -96,7 +92,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         String customHandlerSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
                         File.separator + "lifecycletest" + File.separator + "CustomAPIAuthenticationHandler-1.0.0.jar";
-        customHandlerTargetPath =
+        String customHandlerTargetPath =
                 System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
                         "components" + File.separator + "lib";
         FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath,
@@ -127,6 +123,7 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         gatewaySession = createSession(gatewayContext);
         synapseConfigAdminClient =
                 new SynapseConfigAdminClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
+        originalSynapseConfig = synapseConfigAdminClient.getConfiguration();
         apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
     }
 
@@ -145,12 +142,11 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-        originalSynapseConfig = synapseConfigAdminClient.getConfiguration();
         synapseConfigAdminClient.updateConfiguration(newSynapseConfig);
-        requestHeadersGet = new HashMap<String, String>();
+        Map<String, String> requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("Content-Type", "text/plain");
         //get the  access token
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersGet.put("CustomAuthorization", CUSTOM_AUTHORIZATION);
         LogViewerClient logViewerClient =
@@ -178,10 +174,11 @@ public class AddNewHandlerAndInvokeAPI extends APIManagerLifecycleBaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException, XMLStreamException,
             RemoteException {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //Restore original synapse configuration
         synapseConfigAdminClient.updateConfiguration(originalSynapseConfig);
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
+
     }
 
 

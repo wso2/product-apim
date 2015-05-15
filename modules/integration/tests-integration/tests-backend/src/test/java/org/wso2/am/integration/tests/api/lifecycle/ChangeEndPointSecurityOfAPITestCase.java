@@ -54,8 +54,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
             "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private String APPLICATION_NAME = "ChangeEndPointSecurityOfAPI";
-    private String accessToken;
+    private static final String APPLICATION_NAME = "ChangeEndPointSecurityOfAPI";
     private HashMap<String, String> requestHeadersGet;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
@@ -118,7 +117,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + "/sec",
@@ -163,11 +162,10 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                 " request for endpoint type secured. Expected value : " + encodedUserNamePassword + " not contains in " +
                 "response data: " + httpResponseGet.getData() + " username:" + endpointUsername + " password:" +
                 endpointPassword);
-
     }
 
 
-    @DataProvider(name = "SymbolCharacters")//TODO
+    @DataProvider(name = "SymbolCharacters")
     public static Object[][] getSymbolCharacters() {
         return new Object[][]{
                 {"!"}, {"@"}, {"#"}, {"$"}, {"%"}, {"^"}, {"&"}, {"*"}, {"("}, {")"}, {"_"}, {"-"}, {"+"}, {"="},

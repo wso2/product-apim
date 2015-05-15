@@ -224,7 +224,9 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             return isStatusChangeCorrect;
         } catch (JSONException e) {
             throw new APIManagerIntegrationTestException(
-                    "Exception thrown when resolving the JSON object in the HTTP response ", e);
+                    "Exception thrown when resolving the JSON object in the HTTP response to verify the status change." +
+                            " HTTP response data: " + httpResponse.getData() + " HTTP response message: " +
+                            httpResponse.getResponseMessage() + " HTTP response code: " + httpResponse.getResponseCode(), e);
         }
     }
 
@@ -268,6 +270,11 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             log.debug("API Created :" + getAPIIdentifierString(apiIdentifier));
             //Publish the API
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();//TODO
+            }
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                     verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED,

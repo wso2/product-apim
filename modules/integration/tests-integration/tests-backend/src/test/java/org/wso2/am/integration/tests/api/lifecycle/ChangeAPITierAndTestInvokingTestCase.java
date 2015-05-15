@@ -56,7 +56,6 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     private String applicationNameGold;
     private String applicationNameSilver;
     private Map<String, String> requestHeadersGoldTier;
-    private Map<String, String> requestHeadersSilverTier;
     private APIIdentifier apiIdentifier;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
@@ -175,7 +174,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, applicationNameSilver).getAccessToken();
         // Create requestHeaders
-        requestHeadersSilverTier = new HashMap<String, String>();
+        Map<String, String> requestHeadersSilverTier = new HashMap<String, String>();
         requestHeadersSilverTier.put("Authorization", "Bearer " + accessToken);
         //millisecond to expire the throttling block
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);

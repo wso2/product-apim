@@ -53,7 +53,6 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
     private String providerName;
     private APIIdentifier apiIdentifier;
     private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
 
 
@@ -68,7 +67,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(
                 publisherContext.getContextTenant().getContextUser().getUserName(),

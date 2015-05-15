@@ -58,12 +58,11 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
-    private String artifactsLocation;
     private String originalTiersXML;
     private String newTiersXML;
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
-    private APIStoreRestClient apiStoreClientUser1;
+
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
@@ -78,7 +77,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
@@ -86,7 +85,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        artifactsLocation =
+        String artifactsLocation =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
                         File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
         resourceAdminServiceClient =
@@ -166,8 +165,6 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //restore the original tiers.xml content.
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, originalTiersXML);
-
-
     }
 
 

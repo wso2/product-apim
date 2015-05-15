@@ -56,8 +56,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private static final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private static final String API_GET_ENDPOINT_METHOD = "/customers/123";
     private String APPLICATION_NAME = "ChangeAuthTypeOfResourceTestCase";
     private APIPublisherRestClient apiPublisherClientUser1;
     private String apiEndPointUrl;
@@ -66,7 +66,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
     private APIIdentifier apiIdentifier;
     private ApplicationKeyBean applicationKeyBean;
     private HashMap<String, String> requestHeadersGet;
-    private HashMap<String, String> requestHeadersPost;
+
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
@@ -95,9 +95,6 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
                 storeContext.getContextTenant().getContextUser().getPassword());
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
-        requestHeadersPost = new HashMap<String, String>();
-        requestHeadersPost.put("accept", "text/plain");
-        requestHeadersPost.put("Content-Type", "text/plain");
     }
 
 
@@ -122,7 +119,6 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         applicationKeyBean = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME);
         String accessToken = applicationKeyBean.getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
-        requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET request
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
@@ -192,7 +188,6 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
                 apiStoreClientUser1.generateUserAccessKey(applicationKeyBean.getConsumerKey(),
                         applicationKeyBean.getConsumerSecret(), requestBody, tokenEndpointURL).getData());
         requestHeadersGet.put("Authorization", "Bearer " + accessTokenGenerationResponse.getString("access_token"));
-        requestHeadersPost.put("Authorization", "Bearer " + accessTokenGenerationResponse.getString("access_token"));
         //Send GET request
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,

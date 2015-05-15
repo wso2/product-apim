@@ -30,7 +30,6 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -51,7 +50,6 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     private static final String APPLICATION_NAME = "UsersAndDocsInAPIOverviewTestCase";
     private String providerName;
     private APIIdentifier apiIdentifier;
-    private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APIStoreRestClient apiStoreClientUser2;
@@ -136,6 +134,7 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         addDocumentRequestBean1.setDocSourceType("inline");
         addDocumentRequestBean1.setDocSummary("test doc 1");
         addDocumentRequestBean1.setDocLocation("");
+        addDocumentRequestBean1.setDocUrl("");
         AddDocumentRequestBean addDocumentRequestBean2 = new AddDocumentRequestBean();
         addDocumentRequestBean2.setApiName(API_NAME);
         addDocumentRequestBean2.setApiVersion(API_VERSION_1_0_0);
@@ -145,6 +144,7 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         addDocumentRequestBean2.setDocSourceType("inline");
         addDocumentRequestBean2.setDocSummary("test doc 2");
         addDocumentRequestBean2.setDocLocation("");
+        addDocumentRequestBean2.setDocUrl("");
         apiPublisherClientUser1.addDocument(addDocumentRequestBean1);
         apiPublisherClientUser1.addDocument(addDocumentRequestBean2);
         HttpResponse publisherOverviewPageResponse =

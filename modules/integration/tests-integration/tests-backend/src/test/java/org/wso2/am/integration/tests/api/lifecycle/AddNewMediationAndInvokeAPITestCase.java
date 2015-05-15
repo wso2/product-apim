@@ -46,7 +46,7 @@ import static org.testng.Assert.*;
 /**
  * Add new Log mediation to the in-flow and check the logs to verify the  added mediation is working.
  */
-public class AddNewMediationAndInvokeAPI extends APIManagerLifecycleBaseTest {
+public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "APILifeCycleTestAPI";
     private static final String API_CONTEXT = "testAPI";
     private static final String API_TAGS = "youtube, video, media";
@@ -222,4 +222,6 @@ public class AddNewMediationAndInvokeAPI extends APIManagerLifecycleBaseTest {
         }
         return isNewMediationCalled;
     }
+
+
 }
