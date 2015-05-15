@@ -30,6 +30,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
@@ -99,7 +100,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		driver.findElement(By.xpath("//button[@type='button']")).click();
 		driver.findElement(By.xpath("//input[@value='Gold']")).click();
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(isAPIPublished("publishWithEnvironments1", "1.0.0"),
 		                  "API successfully published api without environment tab selection");
 		driver.findElement(By.id("userMenu")).click();
@@ -155,7 +155,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 			checkBox.click();
 		}
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(isAPIPublished("publishWithEnvironments2", "1.0.0"),
 		                  "API is Successfully published with select environments section");
 		driver.findElement(By.id("userMenu")).click();
@@ -211,7 +210,6 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 			checkBox.click();
 		}
 		driver.findElement(By.id("publish_api")).click();
-		Thread.sleep(2000);
 		Assert.assertTrue(!isAPIPublished("publishWithEnvironments3", "1.0.0"),
 		                  "API is Successfully published with de select environment in environment section");
 		driver.findElement(By.id("userMenu")).click();
@@ -220,6 +218,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
 		driver.quit();
 	}
 

@@ -42,7 +42,7 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 	}
 
 	@Test(groups = "wso2.am", description = "This method adds and publishes the Test API in carbon.super store")
-	public void testcreateAndPublishAPI() throws Exception {
+	public void testCreateAndPublishAPI() throws Exception {
 		String loginURL = getPublisherURL();
 		HttpContext httpContext =
 		                          TestUtil.login(gatewayContext.getContextTenant().getContextUser().getUserName(),
@@ -57,7 +57,7 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		System.out.println("API Create and Publish test case is completed ");
 	}
 
-	@Test(groups = "wso2.am", description = "verify Logout action after selecting an API", dependsOnMethods = { "testcreateAndPublishAPI" })
+	@Test(groups = "wso2.am", description = "verify Logout action after selecting an API", dependsOnMethods = { "testCreateAndPublishAPI" })
 	public void testLogout() throws Exception {
 
 		// Go to the Tenant store and click Login
@@ -82,11 +82,7 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		driver.findElement(By.id("loginBtn")).click();
 
 		// waiting to finish the login
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			log.warn("Interrupted Exception while changing API state " + e);
-		}
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='link-myapplications']")));
 
 		// select API
 		driver.navigate().to(getStoreURL() + "/apis/info?name=" +
@@ -95,12 +91,6 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		                             SUPER_TENANT_DOMAIN_NAME);
 
 		// waiting till load
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			log.warn("Interrupted Exception while changing API state " + e);
-		}
-
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())));
 		driver.findElement(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())).click();
 

@@ -33,6 +33,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.tests.APIMIntegrationUiTestBase;
 import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 /**
@@ -140,12 +141,6 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
-        // Waiting for logging
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while Doing the API Search " + e);
-        }
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("APIs")));
 
@@ -154,7 +149,7 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         long nowTime = startTime;
         while ((!driver.getPageSource().contains("YoutubeFeeds-1.0.0")) && (nowTime - startTime) < loopMaxTime) {
             driver.findElement(By.linkText("APIs")).click();
-            Thread.sleep(1000);
+            Thread.sleep(500); // Waiting 0.5 second to check API is visible on UI
             nowTime = System.currentTimeMillis();
         }
 
@@ -179,7 +174,7 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
             do {
                 generateButton.click();
-                Thread.sleep(1000);
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("accessTokenDisplayPro")));
                 newValue = driver.findElement(By.className("accessTokenDisplayPro")).getText();
                 nowTime = System.currentTimeMillis();
             } while (currentValue.equals(newValue) && nowTime - startTime < loopMaxTime);
@@ -212,13 +207,6 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.cssSelector("input.input-xxlarge.value")).sendKeys("Bearer  " + accessToken + "\n");
         driver.findElement(By.id("sendBtn")).click();
 
-        // waiting until resource is saved
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            log.warn("Interrupted Exception while saving resource " + e);
-        }
-
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Response Body")));
 
         long startTime = System.currentTimeMillis();
@@ -235,6 +223,9 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
 

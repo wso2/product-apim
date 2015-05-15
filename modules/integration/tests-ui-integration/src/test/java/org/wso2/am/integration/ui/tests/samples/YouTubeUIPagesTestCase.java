@@ -31,6 +31,7 @@ import org.wso2.am.integration.ui.tests.pages.publisher.PublisherLoginPage;
 import org.wso2.am.integration.ui.tests.pages.store.StoreHomePage;
 import org.wso2.am.integration.ui.tests.pages.store.TestAPIPage;
 import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import static org.testng.Assert.assertEquals;
@@ -90,6 +91,9 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
 

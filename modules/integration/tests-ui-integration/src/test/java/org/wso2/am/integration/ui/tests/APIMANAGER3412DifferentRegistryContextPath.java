@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.am.integration.ui.pages.tenant.TenantHomePage;
 import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
@@ -75,12 +76,14 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
         WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.get(getLoginURL());
         LoginPage login = new LoginPage(driver);
-        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(), gatewayContext.getContextTenant().getContextUser().getPassword());
+        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
         String lastName = "admin";
-        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, TEST_DATA_TENANT_PUBLISHER);
+        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER,
+                                      TEST_DATA_TENANT_ADMIN_PASSWORD, TEST_DATA_TENANT_PUBLISHER);
         TenantListpage tenantListpage = new TenantListpage(driver);
         tenantListpage.checkOnUplodedTenant(TEST_DATA_TENANT);
 
@@ -150,6 +153,9 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_TENANT_PUBLISHER,
+                         TEST_DATA_TENANT_ADMIN_PASSWORD,
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         if (driver != null) {
             driver.quit();
         }

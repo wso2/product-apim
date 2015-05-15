@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import static org.testng.Assert.assertEquals;
@@ -87,7 +88,7 @@ public class TestNameLengthTestCase extends APIMIntegrationUiTestBase {
     @Test(groups = "wso2.apim", description = "adding new api with long name", dependsOnMethods = "testPublishAPI")
     public void testVerifyAPIName() throws InterruptedException {
         WebDriverWait wait = new WebDriverWait(driver, 60);
-        String apiXpath = /*"//div[2]/div/div[2]/div/ul/li/div/div/a"*/"//a[contains(.,'"+API_NAME+"')]";
+        String apiXpath = /*"//div[2]/div/div[2]/div/ul/li/div/div/a"*/"//a[contains(.,'" + API_NAME + "')]";
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
         driver.findElement(By.linkText("Browse")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(apiXpath)));
@@ -109,6 +110,9 @@ public class TestNameLengthTestCase extends APIMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
 }

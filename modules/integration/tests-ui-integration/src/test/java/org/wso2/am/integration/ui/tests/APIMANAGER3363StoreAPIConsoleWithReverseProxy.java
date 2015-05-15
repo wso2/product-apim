@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.am.integration.ui.pages.tenant.TenantHomePage;
 import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
+import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
@@ -66,13 +67,14 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
     public void createTenantAndAPI() throws Exception {
         LoginPage login = new LoginPage(driver);
         login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+                      gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
         String lastName = "admin";
         String email = "admin@apimanager3363.com";
-        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
+        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName,
+                                      TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
         TenantListpage tenantListpage = new TenantListpage(driver);
         tenantListpage.checkOnUplodedTenant(TEST_DATA_TENANT);
 
@@ -112,10 +114,16 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
         driver.findElement(By.id("summary")).sendKeys("test");
         driver.findElement(By.id("saveDocBtn")).click();
 
-        Thread.sleep(60 * 1000); // waiting to publish API in store
-
         // go to store > API > API Console
         driver.get(getStoreURL() + "?tenant=" + TEST_DATA_TENANT);
+        long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
+        long startTime = System.currentTimeMillis();
+        while ((!driver.getPageSource().contains(TEST_DATA_API_NAME)) && (System.currentTimeMillis() - startTime) < loopMaxTime) {
+            driver.findElement(By.linkText("APIs")).click();
+            Thread.sleep(500);
+            //wait for 0.5 seconds and refresh the store since it will take little time to appear the published APIs in store
+        }
+
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_API_NAME)));
         driver.findElement(By.linkText(TEST_DATA_API_NAME)).click();
 
@@ -129,6 +137,8 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_TENANT_PUBLISHER, TEST_DATA_TENANT_ADMIN_PASSWORD,
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         if (driver != null) {
             driver.quit();
         }
