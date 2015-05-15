@@ -729,6 +729,11 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <version>${jacoco.agent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -816,7 +821,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.3.1</carbon.automation.version>
+        <carbon.automation.version>4.3.2-SNAPSHOT</carbon.automation.version>
         <carbon.automationutils.version>4.3.0</carbon.automationutils.version>
         <org.apache.cxf.version>2.7.2</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
@@ -825,7 +830,7 @@
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v13</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
-
+        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
 
     </properties>
 
