@@ -1,0 +1,40 @@
+<div id="container-header" class="container">
+	<div class="row">
+		<div class="span12">
+			<div class="navbar">
+				<div class="navbar-inner">
+					<div class="container">
+
+						<a href="{{url ""}}{{meta.landingPage}}"><img style='height:35px;' src='{{url ""}}
+							/extensions/app/am-store-defaults/themes/store/imgs/logo.png'></a>
+						<ul class="nav menu pull-right">
+							{{#if cuser.username}}
+							<!--li class="nav-separator">
+								<a href="{{url "/pages/my-items"}}"><i
+								class="icon-bookmark store-topnav-bookmark"></i> {{t "My Items"}}</a>
+							</li-->
+							<li>
+
+								<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i
+								class="icon-user"></i> {{cuser.username}} <b class="caret"></b></a>
+								<ul class="dropdown-menu dropdown-account" role="menu" aria-labelledby="dLabel">
+									<li>
+									{{signout .}}
+									</li>
+								</ul>
+
+							</li>
+							{{else}}
+							{{authentication .}}
+							{{/if}}
+
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{{>login login}}
+
+{{>register}}
