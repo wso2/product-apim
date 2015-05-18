@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.pages.login.LoginPage;
 import org.wso2.am.integration.ui.pages.tenant.TenantHomePage;
 import org.wso2.am.integration.ui.pages.tenant.TenantListpage;
+import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
@@ -41,7 +42,7 @@ import static org.testng.Assert.assertTrue;
     Need to configure LB with APIM 1.8 and run the test case
     note that replace the server urls with LB urls
  */
-public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegrationUiTestBase {
+public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrationUiTestBase {
     private String TEST_DATA_API_NAME = "APIMANAGER3363";
     private String TEST_DATA_API_VERSION = "1.0.0";
     private String TEST_DATA_TENANT = "apimanager3363.com";
@@ -54,7 +55,7 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
     private String publisherURL;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
         driver.get(getLoginURL());
@@ -65,13 +66,15 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
     @Test(groups = "wso2.am", description = "Create tenant and api")
     public void createTenantAndAPI() throws Exception {
         LoginPage login = new LoginPage(driver);
-        login.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";
         String lastName = "admin";
         String email = "admin@apimanager3363.com";
-        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName, TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
+        addNewTenantHome.addNewTenant(TEST_DATA_TENANT, firstName, lastName,
+                                      TEST_DATA_TENANT_ADMIN_USER, TEST_DATA_TENANT_ADMIN_PASSWORD, email);
         TenantListpage tenantListpage = new TenantListpage(driver);
         tenantListpage.checkOnUplodedTenant(TEST_DATA_TENANT);
 
@@ -111,22 +114,31 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends AMIntegration
         driver.findElement(By.id("summary")).sendKeys("test");
         driver.findElement(By.id("saveDocBtn")).click();
 
-        Thread.sleep(120 * 1000); // waiting to publish API in store
-
         // go to store > API > API Console
         driver.get(getStoreURL() + "?tenant=" + TEST_DATA_TENANT);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_API_NAME)));
+        long loopMaxTime = APIMTestConstants.MAX_LOOP_WAIT_TIME_MILLISECONDS;
+        long startTime = System.currentTimeMillis();
+        while ((!driver.getPageSource().contains(TEST_DATA_API_NAME)) && (System.currentTimeMillis() - startTime) < loopMaxTime) {
+            driver.findElement(By.linkText("APIs")).click();
+            Thread.sleep(500);
+            //wait for 0.5 seconds and refresh the store since it will take little time to appear the published APIs in store
+        }
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(TEST_DATA_API_NAME)));
         driver.findElement(By.linkText(TEST_DATA_API_NAME)).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("API Console")));
         driver.findElement(By.linkText("API Console")).click();
 
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.info_title")));
         // API name is visible if the page loaded successfully
         assertEquals(driver.findElement(By.cssSelector("div.info_title")).getText(), TEST_DATA_API_NAME);
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(TEST_DATA_TENANT_PUBLISHER, TEST_DATA_TENANT_ADMIN_PASSWORD,
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         if (driver != null) {
             driver.quit();
         }
