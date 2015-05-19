@@ -100,7 +100,7 @@
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', base64Encode('$username:$password'))" scope="transport" />
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', '$base64unpw')" scope="transport" />
         #end
         #end
 <send>
