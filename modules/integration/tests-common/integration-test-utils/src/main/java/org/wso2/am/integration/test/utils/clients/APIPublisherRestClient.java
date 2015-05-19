@@ -414,7 +414,6 @@ public class APIPublisherRestClient {
                     requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when change he lifecycle to publish", e);
-
         }
     }
 

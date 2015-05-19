@@ -62,37 +62,31 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
-    private String apiEndPointUrl;
-    private String providerName;
-    private String webAppTargetPath;
-    private String publisherURLHttp;
     private LogViewerClient logViewerClient;
     private APIIdentifier apiIdentifier;
-    private String accessToken;
     private HashMap<String, String> requestHeadersGet;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        String apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String webAppSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator +
                         "jaxrs_basic.war";
-        webAppTargetPath =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
-                        "deployment" + File.separator + "server" + File.separator + "webapps";
+        String webAppTargetPath = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
+                "deployment" + File.separator + "server" + File.separator + "webapps";
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         FileManager.copyResourceToFileSystem(webAppSourcePath, webAppTargetPath, "jaxrs_basic.war");
         serverConfigurationManager.restartGracefully();
         super.init();
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
@@ -127,7 +121,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
         //get the  access token
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         logViewerClient.clearLogs();
         //Send GET Request

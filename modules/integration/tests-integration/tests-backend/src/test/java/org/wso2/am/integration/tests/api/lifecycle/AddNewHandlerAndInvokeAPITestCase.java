@@ -135,31 +135,37 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
         //Create publish and subscribe a API
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
+
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0,
+                providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean,
+                apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+
         synapseConfigAdminClient.updateConfiguration(newSynapseConfig);
         Map<String, String> requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("Content-Type", "text/plain");
         //get the  access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersGet.put("CustomAuthorization", CUSTOM_AUTHORIZATION);
-        LogViewerClient logViewerClient =
-                new LogViewerClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
+
+        LogViewerClient logViewerClient = new LogViewerClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
         logViewerClient.clearLogs();
+
         //Send GET Request
         HttpResponse httpResponse =
                 HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
+
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
                 " Expected value :\"" + RESPONSE_GET + "\" not contains in response data:\"" +
                 httpResponse.getData() + "\"");
+
         LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
         boolean isNewHandlerCalled = false;
         for (LogEvent logEvent : logEvents) {

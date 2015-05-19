@@ -49,8 +49,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String TIER_XML_REG_CONFIG_LOCATION =
-            "/_system/governance/apimgt/applicationdata/tiers.xml";
+    private static final String TIER_XML_REG_CONFIG_LOCATION = "/_system/governance/apimgt/applicationdata/tiers.xml";
     private static final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
     private static final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
     private static final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
@@ -78,12 +77,15 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Login to API Store with  admin
         apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
+
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         String artifactsLocation =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +

@@ -54,8 +54,6 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     private APIStoreRestClient apiStoreClientUser1;
     private APIStoreRestClient apiStoreClientUser2;
     private APICreationRequestBean apiCreationRequestBean;
-    private String applicationDescription = "";
-    private String applicationCallBackUrl = "";
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
@@ -69,13 +67,16 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Login to API Store with  admin
         apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
         apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
+
         apiStoreClientUser2.login(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword());
@@ -85,6 +86,8 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
 
     @Test(groups = {"wso2.am"}, description = "test the user count in API overview is correct")
     public void testNumberOfUsersInAPIOverview() throws APIManagerIntegrationTestException {
+        String applicationDescription = "";
+        String applicationCallBackUrl = "";
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, applicationCallBackUrl, applicationDescription);
         apiStoreClientUser2.addApplication(APPLICATION_NAME, TIER_GOLD, applicationCallBackUrl, applicationDescription);
         //Create publish and subscribe a API by user 1

@@ -80,9 +80,11 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         //Login to API Publisher and Store with CarbonSuper admin
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
         apiPublisherClientUser1.login(
                 publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
@@ -91,19 +93,24 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         apiPublisherClientUser2 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
         providerName = publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName();
+
         apiPublisherClientUser2.login(
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword());
+
         apiStoreClientUser2.login(
                 storeContext.getContextTenant().getTenantUser(USER_KEY_USER2).getUserName(),
                 storeContext.getContextTenant().getTenantUser(USER_KEY_USER2).getPassword());
+
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
         //Login to API Publisher adn Store with CarbonSuper normal user2
         apiStoreClientAnotherUserSameDomain = new APIStoreRestClient(storeURLHttp);
         apiPublisherClientUserAnotherUserSameDomain = new APIPublisherRestClient(publisherURLHttp);
+
         apiStoreClientAnotherUserSameDomain.login(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword());
+
         apiPublisherClientUserAnotherUserSameDomain.login(
                 publisherContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 publisherContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword());
@@ -285,8 +292,6 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
             log.info("API is visible for anonymous user in same domain in store after :" + (currentTime - startTime) +
                     " milliseconds :" + !notFound);
         } while (notFound || currentTime - startTime > maxLookupTime);
-        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser(
-                apiCreatorStoreDomain);
         assertTrue(!notFound, "API is not visible to anonymous user in same domain API Store After" +
                 (currentTime - startTime) + "milliseconds. When Visibility is public.  " +
                 getAPIIdentifierString(apiIdentifier));

@@ -60,19 +60,23 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(
                 publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Login to API Store with  admin
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
+
         apiTagsMapBeforeChange = new HashMap<String, String>();
         apiTagsMapBeforeChange.put("APITagTest1", "Tag1, Tag2, Tag3");
         apiTagsMapBeforeChange.put("APITagTest2", "Tag2, Tag3, Tag4");
         apiTagsMapBeforeChange.put("APITagTest3", "Tag1, Tag3, Tag5");
         apiTagsMapBeforeChange.put("APITagTest4", "Tag1, Tag2");
+
         apiTagsMapAfterChange = new HashMap<String, String>();
         apiTagsMapAfterChange.put("APITagTest1", "Tag1, Tag2");
         apiTagsMapAfterChange.put("APITagTest2", "Tag2, Tag4");

@@ -66,8 +66,5 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         serverManager.restoreToLastConfiguration();
         log.info("Restore the api-manager.xml configuration file");
         serverManager.restartGracefully();
-
     }
-
-
 }

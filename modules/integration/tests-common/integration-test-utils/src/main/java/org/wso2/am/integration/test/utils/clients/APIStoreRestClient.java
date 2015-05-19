@@ -625,14 +625,14 @@ public class APIStoreRestClient {
      *
      * @param apiTag - API tag the need ti filter the api.
      * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
-     * @throwsAPIManagerIntegrationTestException - Exception throws when check the Authentication and
+     * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
      * HttpRequestUtil.sendGetRequest() method call
      */
     public HttpResponse getAPIPageFilteredWithTags(String apiTag) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
             return HttpRequestUtil.sendGetRequest(backendURL + "/store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
         }
     }
@@ -653,8 +653,7 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpRequestUtil.doPost(new URL(backendURL +
                     "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
-                    , subscriptionRequest.generateRequestParameters()
-                    , requestHeaders);
+                    , subscriptionRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception ex) {
             throw new APIManagerIntegrationTestException("Exception when Subscribing to a API", ex);
         }

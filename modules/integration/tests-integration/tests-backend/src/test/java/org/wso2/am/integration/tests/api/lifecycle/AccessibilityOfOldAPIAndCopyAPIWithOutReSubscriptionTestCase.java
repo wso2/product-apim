@@ -171,6 +171,4 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);
     }
-
-
 }

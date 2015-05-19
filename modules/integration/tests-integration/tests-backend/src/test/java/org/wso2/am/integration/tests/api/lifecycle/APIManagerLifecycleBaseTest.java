@@ -268,23 +268,16 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         HttpResponse createAPIResponse = publisherRestClient.addAPI(apiCreationRequestBean);
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
-            log.debug("API Created :" + getAPIIdentifierString(apiIdentifier));
+            log.info("API Created :" + getAPIIdentifierString(apiIdentifier));
             //Publish the API
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();//TODO
-            }
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED,
-                            APILifeCycleState.PUBLISHED))) {
+                    verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED))) {
                 throw new APIManagerIntegrationTestException("Error in API Publishing" +
-                        getAPIIdentifierString(apiIdentifier) +
-                        "Response Code:" + publishAPIResponse.getResponseCode() +
+                        getAPIIdentifierString(apiIdentifier) + "Response Code:" + publishAPIResponse.getResponseCode() +
                         " Response Data :" + publishAPIResponse.getData());
             }
-            log.debug("API Published :" + getAPIIdentifierString(apiIdentifier));
+            log.info("API Published :" + getAPIIdentifierString(apiIdentifier));
         } else {
             throw new APIManagerIntegrationTestException("Error in API Creation." +
                     getAPIIdentifierString(apiIdentifier) +
@@ -321,20 +314,16 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected void copyAPI(APIIdentifier apiIdentifier, String newAPIVersion,
                            APIPublisherRestClient publisherRestClient) throws APIManagerIntegrationTestException {
-        try {
-            //Copy API to version  to newVersion
-            HttpResponse httpResponseCopyAPI =
-                    publisherRestClient.copyAPI(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
-                            apiIdentifier.getVersion(), newAPIVersion, "");
-            if (!(httpResponseCopyAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
-                    getValueFromJSON(httpResponseCopyAPI, "error").equals("false"))) {
-                throw new APIManagerIntegrationTestException("Error in API Copy." +
-                        getAPIIdentifierString(apiIdentifier) + "  New API Version :" + newAPIVersion +
-                        "Response Code:" + httpResponseCopyAPI.getResponseCode() +
-                        " Response Data :" + httpResponseCopyAPI.getData());
-            }
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception thrown when copy a API", e);
+        //Copy API to version  to newVersion
+        HttpResponse httpResponseCopyAPI =
+                publisherRestClient.copyAPI(apiIdentifier.getProviderName(),
+                        apiIdentifier.getApiName(), apiIdentifier.getVersion(), newAPIVersion, "");
+        if (!(httpResponseCopyAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
+                getValueFromJSON(httpResponseCopyAPI, "error").equals("false"))) {
+            throw new APIManagerIntegrationTestException("Error in API Copy." +
+                    getAPIIdentifierString(apiIdentifier) + "  New API Version :" + newAPIVersion +
+                    "Response Code:" + httpResponseCopyAPI.getResponseCode() +
+                    " Response Data :" + httpResponseCopyAPI.getData());
         }
     }
 
@@ -383,7 +372,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "Response Code:" + httpResponseSubscribeAPI.getResponseCode() +
                     " Response Data :" + httpResponseSubscribeAPI.getData());
         }
-        log.debug("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
+        log.info("API Subscribed :" + getAPIIdentifierString(apiIdentifier));
     }
 
     /**

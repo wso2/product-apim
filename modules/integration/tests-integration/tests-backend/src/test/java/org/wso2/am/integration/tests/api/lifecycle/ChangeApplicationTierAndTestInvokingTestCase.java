@@ -80,6 +80,7 @@ public class ChangeApplicationTierAndTestInvokingTestCase extends APIManagerLife
         apiPublisherClientUser1.login(
                 publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Login to API Store with  admin
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),

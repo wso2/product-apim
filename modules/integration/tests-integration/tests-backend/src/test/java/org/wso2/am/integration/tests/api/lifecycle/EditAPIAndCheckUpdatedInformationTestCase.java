@@ -68,10 +68,12 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(
                 publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         //Login to API Store with  admin
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),

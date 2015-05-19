@@ -54,7 +54,6 @@ import java.rmi.RemoteException;
 public class SynapseConfigAdminClient {
 
     private static final Log log = LogFactory.getLog(SynapseConfigAdminClient.class);
-
     private ConfigServiceAdminStub configServiceAdminStub;
     private final String serviceName = "ConfigServiceAdmin";
 
@@ -223,20 +222,24 @@ public class SynapseConfigAdminClient {
      * @throws TransformerException for the newTransformer()  and transform() method calls in Transformer
      */
     private String getStringFromDocument(Document doc) throws TransformerException {
-        DOMSource domSource = new DOMSource(doc);
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        transformer.transform(domSource, result);
-        String stringFromDoc = writer.toString();
+        StringWriter writer = null;
         try {
-            writer.close();
-        } catch (IOException e) {
-            log.warn("Exception when closing the StringWriter.", e);
+            DOMSource domSource = new DOMSource(doc);
+            writer = new StringWriter();
+            StreamResult result = new StreamResult(writer);
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.transform(domSource, result);
+            return writer.toString();
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    log.warn("Exception when closing the StringWriter.", e);
+                }
+            }
         }
-        return stringFromDoc;
     }
-
 
 }
