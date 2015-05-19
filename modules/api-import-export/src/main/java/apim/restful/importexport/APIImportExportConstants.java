@@ -22,6 +22,9 @@ import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
 
+/**
+ * This class contains all constants required for API Import and Export
+ */
 public final class APIImportExportConstants {
 
 	//This is where archive file get generated for exporting API

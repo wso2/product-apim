@@ -21,7 +21,7 @@ package apim.restful.importexport;
 import java.io.IOException;
 
 /**
- * Created by thilinicooray on 4/30/15.
+ * This class is defined for handling exceptions in API export
  */
 public class APIExportException extends Exception {
 
