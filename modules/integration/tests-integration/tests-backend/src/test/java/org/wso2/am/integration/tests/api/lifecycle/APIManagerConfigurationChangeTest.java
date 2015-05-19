@@ -26,7 +26,6 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
 
@@ -43,13 +42,12 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     @BeforeTest(alwaysRun = true)
     public void startChangeAPIMConfigureXml() throws Exception {
         super.init();
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
         String artifactsLocation =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator;
         String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
         String apimRepositoryConfigLocation =
-                carbonHome + File.separator + "repository" + File.separator + "conf" + File.separator + APIM_CONFIG_XML;
+                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + APIM_CONFIG_XML;
         File sourceFile = new File(apimConfigArtifactLocation);
         File targetFile = new File(apimRepositoryConfigLocation);
         serverManager = new ServerConfigurationManager(gatewayContext);

@@ -31,7 +31,6 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;
@@ -68,8 +67,8 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
         String targetPath =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
-                        "deployment" + File.separator + "server" + File.separator + "webapps";
+                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
+                        "server" + File.separator + "webapps";
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
         serverConfigurationManager.restartGracefully();

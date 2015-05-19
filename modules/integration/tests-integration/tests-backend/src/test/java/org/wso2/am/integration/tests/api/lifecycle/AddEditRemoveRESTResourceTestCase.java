@@ -32,7 +32,6 @@ import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,9 +78,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         String sourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
                         File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
-        String targetPath =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator + "deployment" +
-                        File.separator + "server" + File.separator + "webapps";
+        String targetPath = CARBON_HOME + File.separator + "repository" + File.separator + "deployment" +
+                File.separator + "server" + File.separator + "webapps";
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
         serverConfigurationManager.restartGracefully();

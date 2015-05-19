@@ -35,7 +35,6 @@ import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
-import org.wso2.carbon.utils.ServerConstants;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -85,24 +84,22 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
         String webAppTargetPath =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
-                        "deployment" + File.separator + "server" + File.separator + "webapps";
+                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
+                        "server" + File.separator + "webapps";
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         FileManager.copyResourceToFileSystem(webAppSourcePath, webAppTargetPath, "jaxrs_basic.war");
         String customHandlerSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
                         File.separator + "lifecycletest" + File.separator + "CustomAPIAuthenticationHandler-1.0.0.jar";
         String customHandlerTargetPath =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
-                        "components" + File.separator + "lib";
+                CARBON_HOME + File.separator + "repository" + File.separator + "components" + File.separator + "lib";
         FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath,
                 "CustomAPIAuthenticationHandler-1.0.0.jar");
         String log4jPropertiesFile =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "log4j.properties";
         String log4jPropertiesTargetLocation =
-                System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator +
-                        "conf" + File.separator + "log4j.properties";
+                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + "log4j.properties";
         serverConfigurationManager.applyConfigurationWithoutRestart
                 (new File(log4jPropertiesFile), new File(log4jPropertiesTargetLocation), true);
         serverConfigurationManager.restartGracefully();

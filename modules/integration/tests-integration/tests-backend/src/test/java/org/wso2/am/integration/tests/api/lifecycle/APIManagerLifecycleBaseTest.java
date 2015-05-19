@@ -30,6 +30,7 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
@@ -44,6 +45,7 @@ import java.io.IOException;
  */
 public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIManagerLifecycleBaseTest.class);
+    protected static final String CARBON_HOME = FrameworkPathUtil.getCarbonHome();
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
