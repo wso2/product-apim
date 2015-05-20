@@ -16,7 +16,9 @@
 
 package org.wso2.carbon.apimgt.migration;
 
-
+/**
+ * A custom exception handler class to handle all the migration exceptions
+ */
 public class APIMigrationException extends Exception {
 
     public APIMigrationException(String msg) {

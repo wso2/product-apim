@@ -125,6 +125,16 @@ public class MigrateFrom18to19 implements MigrationClient {
         log.info("DB resource migration done for all the tenants");
     }
 
+    /**
+     * This method is used to remove the FK constraint which is unnamed
+     * This finds the name of the constraint and build the query to delete the constaint and execute it
+     *
+     * @param migrateVersion version to be migrated
+     * @param dbType         database type of the user
+     * @throws SQLException
+     * @throws IOException
+     * @throws APIMigrationException
+     */
     private void dropFKConstraint(String migrateVersion, String dbType) throws SQLException, IOException, APIMigrationException {
         String constraintName = null;
         Connection connection;
@@ -543,7 +553,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                 for (GenericArtifact artifact : artifacts) {
                     API api = APIUtil.getAPI(artifact, registry);
                     artifact.addAttribute("overview_contextTemplate", api.getContext() + "/{version}");
-                    artifact.addAttribute("overview_environments", "");//@todo : assume published to all environments
+                    artifact.addAttribute("overview_environments", "");
                     artifact.addAttribute("overview_versionType", "");
 
                     artifactManager.updateGenericArtifact(artifact);
