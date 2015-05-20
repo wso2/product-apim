@@ -324,7 +324,6 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws MalformedURLException
      */
 
-    //@todo: check swagger v2 spec and add mandatory ones
     private static JSONObject generateSwagger2Document(JSONObject swagger12doc,
                                                        Map<String, JSONArray> apiDefPaths, String swagger12BasePath)
             throws ParseException, MalformedURLException {
@@ -528,7 +527,6 @@ public class MigrateFrom18to19 implements MigrationClient {
      *
      * @throws APIMigrationException
      */
-    //@todo : change the default api.rxt as well
     void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager 1.9.0 started.");
         try {
@@ -662,7 +660,6 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws APIMigrationException
      */
 
-    //@todo : read from fs
     void synapseAPIMigration() throws APIMigrationException {
         String repository = CarbonUtils.getCarbonRepository();
         String tenantRepository = CarbonUtils.getCarbonTenantsDirPath();
