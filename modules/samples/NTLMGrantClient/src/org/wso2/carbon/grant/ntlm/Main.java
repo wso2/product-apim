@@ -10,7 +10,6 @@ import waffle.windows.auth.IWindowsCredentialsHandle;
 import waffle.windows.auth.impl.WindowsAccountImpl;
 import waffle.windows.auth.impl.WindowsCredentialsHandleImpl;
 import waffle.windows.auth.impl.WindowsSecurityContextImpl;
-import org.wso2.carbon.grant.ntlm.utils.SimpleContext;
 import org.apache.axiom.util.base64.Base64Utils;
 import org.apache.felix.gogo.command.Base64Encoder;
 import org.apache.http.HttpEntity;
@@ -91,10 +90,10 @@ public class Main {
             System.out.println("Completed NTLM grant client................");
             System.exit(0);
         } catch (IOException e) {
-            log.error("Error has occurred while providing inputs",e);
+            System.out.print("Error has occoured while sending POST request to Gateway " + e.getMessage());
         }
         catch (InterruptedException e) {
-            log.error("Error has occurred while thread sleep" ,e)
+            System.out.print("Error has occurred while thread sleep " + e.getMessage());
         }
 
     }
