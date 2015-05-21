@@ -90,6 +90,24 @@ public class APIStoreRestClient {
 
     }
 
+
+    public HttpResponse regenerateApplicationKey(String oldAccessToken, String clientId, String clientSecret, String application, String keyType)
+            throws Exception {
+        checkAuthentication();
+        HttpResponse response = HttpRequestUtil.doPost(new URL(backEndUrl + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?"+
+                "action=refreshToken&application="+ application +
+                "&keytype=" + keyType + "&callbackUrl=&authorizedDomains=ALL&validityTime=360000&oldAccessToken=" + oldAccessToken + "&clientId=" + clientId +"&clientSecret="+clientSecret),
+                "", requestHeaders);
+
+        if (response.getResponseCode() == 200) {
+            VerificationUtil.checkErrors(response);
+            return response;
+        } else {
+            throw new Exception("generateApplicationKey() failed: " + response.getData());
+        }
+
+    }
+
     public HttpResponse getAPI(String apiName)
             throws Exception {
         checkAuthentication();
