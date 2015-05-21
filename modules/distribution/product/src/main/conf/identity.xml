@@ -131,7 +131,7 @@
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>urn:ietf:params:oauth:grant-type:saml2-bearer</GrantTypeName>
-                <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>iwa:ntlm</GrantTypeName>
