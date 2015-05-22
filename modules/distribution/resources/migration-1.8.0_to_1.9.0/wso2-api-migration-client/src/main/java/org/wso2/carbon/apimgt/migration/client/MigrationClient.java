@@ -35,7 +35,7 @@ public interface MigrationClient {
      *
      * @param migrateVersion version to be migrated
      * @throws APIMigrationException
-     * @throws SQLException
+     * @throws java.sql.SQLException
      */
     public void databaseMigration(String migrateVersion) throws APIMigrationException, SQLException;
 
