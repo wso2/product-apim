@@ -21,12 +21,20 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,88 +45,107 @@ import static org.testng.Assert.assertTrue;
  * "Block an API and check its accessibility in the API Store."
  */
 public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest {
-    private APIIdentifier apiIdentifierAPI1Version1;
 
-    private String applicationName;
 
+    private static final String API_NAME = "APILifeCycleTestAPI";
+    private static final String API_CONTEXT = "testAPI";
+    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_END_POINT_METHOD = "/most_popular";
+    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String APPLICATION_NAME = "AccessibilityOfBlockAPITestCase";
+    private APIIdentifier apiIdentifier;
+    private String providerName;
+    private APICreationRequestBean apiCreationRequestBean;
     private Map<String, String> requestHeaders;
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
-        super.initialize();
-        apiIdentifierAPI1Version1 = new APIIdentifier(API1_PROVIDER_NAME, API1_NAME, API_VERSION1);
-        applicationName =
-                (this.getClass().getName().replace(this.getClass().getPackage().getName(), "")).replace(".", "");
-        apiStoreClientUser1.addApplication(applicationName, "", "", "");
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+        super.init();
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiCreationRequestBean =
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API_END_POINT_URL));
+        apiCreationRequestBean.setTags(API_TAGS);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        //Login to API Publisher with  admin
+        apiPublisherClientUser1.login(
+                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
-    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
-
+    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeAPI(apiIdentifierAPI1Version1, API1_CONTEXT, apiPublisherClientUser1, apiStoreClientUser1, applicationName);
-
-
+        createPublishAndSubscribeToAPI(
+                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get access token
-        String accessToken = getAccessToken(apiStoreClientUser1, applicationName);
-
-
+        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
-
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
-                        requestHeaders);
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" +
+                        API_VERSION_1_0_0 + API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before block");
-        assertTrue(oldVersionInvokeResponse.getData().contains(API1_RESPONSE_DATA),
+        assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
                 "Response data mismatched when invoke  API  before block" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
-
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block", dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
-    public void testChangeAPILifecycleToBlock() throws Exception {
+    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to block",
+            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToBlock")
+    public void testChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
-                new APILifeCycleStateRequest(API1_NAME, API1_PROVIDER_NAME, APILifeCycleState.BLOCKED);
-        blockUpdateRequest.setVersion(API_VERSION1);
+                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.BLOCKED);
+        blockUpdateRequest.setVersion(API_VERSION_1_0_0);
         //Change API lifecycle  to Block
         HttpResponse blockAPIActionResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatus(blockUpdateRequest);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.PUBLISHED,
                 APILifeCycleState.BLOCKED), "API status Change is invalid when block an API :" +
-                getAPIIdentifierString(apiIdentifierAPI1Version1) + " Response Code:" + blockAPIActionResponse.getData());
-
+                getAPIIdentifierString(apiIdentifier) + " Response Code:" + blockAPIActionResponse.getData());
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block", dependsOnMethods = "testChangeAPILifecycleToBlock")
-    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws Exception {
-
+    @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
+            dependsOnMethods = "testChangeAPILifecycleToBlock")
+    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(API_BASE_URL + API1_CONTEXT + "/" + API_VERSION1 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched when invoke api after block");
         assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_BLOCK),
                 "Response data mismatched when invoke  API  after block" +
                         " Response Data:" + oldVersionInvokeResponse.getData());
-
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception {
-        apiStoreClientUser1.removeApplication(applicationName);
-        deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
+    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);
     }
-
 
 }
 
