@@ -33,16 +33,13 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -78,12 +75,27 @@ public class ResourceUtil {
                 + RegistryConstants.PATH_SEPARATOR + "swagger.json";
     }
 
+    /**
+     * location for the rxt of the api
+     *
+     * @param apiName     name of the API
+     * @param apiVersion  version of the API
+     * @param apiProvider provider name of the API
+     * @return rxt location for the api as a string
+     */
+    public static String getRxtResourceLocation(String apiName, String apiVersion, String apiProvider) {
+        return APIConstants.API_ROOT_LOCATION + RegistryConstants.PATH_SEPARATOR + apiProvider
+                + RegistryConstants.PATH_SEPARATOR + apiName + RegistryConstants.PATH_SEPARATOR + apiVersion
+                + RegistryConstants.PATH_SEPARATOR + "api";
+    }
+
+
 
     /**
      * This method is used to get the database driver name
      *
      * @return user database type as a string
-     * @throws SQLException
+     * @throws java.sql.SQLException
      */
     private static String getDatabaseDriverName() throws SQLException {
         Connection connection = APIMgtDBUtil.getConnection();
@@ -109,15 +121,14 @@ public class ResourceUtil {
      *
      * @param migrateVersion migrate version
      * @return exact query to execute
-     * @throws SQLException
+     * @throws java.sql.SQLException
      * @throws APIMigrationException
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public static String pickQueryFromResources(String migrateVersion, String queryType) throws SQLException, APIMigrationException,
             IOException {
 
-        String queryTobeExecuted = null;
-        InputStream inputStream = null;
+        String queryTobeExecuted;
         try {
             String databaseType = MigrationDBCreator.getDatabaseType(APIMgtDBUtil.getConnection());
 
@@ -125,48 +136,28 @@ public class ResourceUtil {
 
             if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_9)) {
                 //pick from 18to19Migration/sql-scripts
-                resourcePath = "/18to19Migration/sql-scripts/";
-
+                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
             } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_8)) {
                 //pick from 17to18Migration/sql-scripts
-                resourcePath = "/17to18Migration/sql-scripts/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.7.0_to_1.8.0/";
             } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_7)) {
                 //pick from 16to17Migration/sql-scripts
-                resourcePath = "/16to17Migration/sql-scripts/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.6.0_to_1.7.0/";
             } else {
                 throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
             }
 
-            if(Constants.CONSTRAINT.equals(queryType)) {
-                resourcePath = CarbonUtils.getCarbonHome() + "/repository/components/dropins/";
-                //inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "query.sql");
-                queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "query.txt")), "UTF-8");
+            if (Constants.CONSTRAINT.equals(queryType)) {
+                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
+                queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
-                inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + databaseType + ".sql");
-                queryTobeExecuted = IOUtils.toString(inputStream);
+                queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
-
-                /*if (databaseType.equalsIgnoreCase("MYSQL")) {
-                    inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "mysql.sql");
-                } else if (databaseType.equalsIgnoreCase("MSSQL")) {
-                    inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "mssql.sql");
-                } else if (databaseType.equalsIgnoreCase("H2")) {
-                    inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "h2.sql");
-                } else if (databaseType.equalsIgnoreCase("ORACLE")) {
-                    inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "oracle.sql");
-                } else {
-                    inputStream = ResourceUtil.class.getResourceAsStream(resourcePath + "postgresql.sql");
-                }*/
 
         } catch (IOException e) {
             throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
         } catch (Exception e) {
             throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-
         }
 
         return queryTobeExecuted;
@@ -190,7 +181,8 @@ public class ResourceUtil {
      * @param sequenceName              sequence name
      * @throws APIMigrationException
      */
-    public static void copyNewSequenceToExistingSequences(String sequenceDirectoryFilePath, String sequenceName) throws APIMigrationException {
+    public static void copyNewSequenceToExistingSequences(String sequenceDirectoryFilePath, String sequenceName)
+            throws APIMigrationException {
         try {
             String namespace = "http://ws.apache.org/ns/synapse";
             String filePath = sequenceDirectoryFilePath + sequenceName + ".xml";
@@ -198,23 +190,33 @@ public class ResourceUtil {
             docFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.parse(filePath);
-            Node sequence = doc.getFirstChild();
-            Element corsHandler = doc.createElementNS(namespace, "sequence");
-            corsHandler.setAttribute("key", "_cors_request_handler");
-           if ("_throttle_out_handler_".equals(sequenceName)){
-               sequence.appendChild(corsHandler);
-           } else if ("_auth_failure_handler_".equals(sequenceName)){
-               sequence.appendChild(corsHandler);
-            }else{
-               sequence.insertBefore(corsHandler, doc.getElementsByTagName("send").item(0));
-           }
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            String outputPath = sequenceDirectoryFilePath + "test_" + sequenceName + ".xml";
-            StreamResult result = new StreamResult(new File(outputPath));
-            transformer.transform(source, result);
+            Node sequence = doc.getElementsByTagName("sequence").item(0);
+            Element corsSequence = doc.createElementNS(namespace, "sequence");
+            corsSequence.setAttribute("key", "_cors_request_handler");
+            boolean available = false;
+            for (int i = 0; i < sequence.getChildNodes().getLength(); i++) {
+                Node tempNode = sequence.getChildNodes().item(i);
+                if (tempNode.getNodeType() == Node.ELEMENT_NODE &&"sequence".equals(tempNode.getLocalName()) &&
+                    "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
+                    available = true;
+                    break;
+                }
+            }
+            if (!available) {
+                if ("_throttle_out_handler_".equals(sequenceName)) {
+                    sequence.appendChild(corsSequence);
+                } else if ("_auth_failure_handler_".equals(sequenceName)) {
+                    sequence.appendChild(corsSequence);
+                } else {
+                    sequence.insertBefore(corsSequence, doc.getElementsByTagName("send").item(0));
+                }
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                DOMSource source = new DOMSource(doc);
+                StreamResult result = new StreamResult(new File(filePath));
+                transformer.transform(source, result);
+            }
         } catch (ParserConfigurationException e) {
             handleException("Could not initiate Document Builder.", e);
         } catch (TransformerConfigurationException e) {
