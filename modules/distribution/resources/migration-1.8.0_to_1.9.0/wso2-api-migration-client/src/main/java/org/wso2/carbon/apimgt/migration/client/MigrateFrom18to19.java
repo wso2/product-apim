@@ -83,7 +83,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      *
      * @param migrateVersion version to be migrated
      * @throws APIMigrationException
-     * @throws java.sql.SQLException
+     * @throws SQLException
      */
     @Override
     public void databaseMigration(String migrateVersion) throws APIMigrationException, SQLException {
@@ -94,12 +94,12 @@ public class MigrateFrom18to19 implements MigrationClient {
             String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.ALTER).trim();
             connection = APIMgtDBUtil.getConnection();
 
-            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
+            String queryArray[] = queryToExecute.split(Constants.DELIMITER);
 
             connection.setAutoCommit(false);
 
             for (String query : queryArray) {
-                preparedStatement = connection.prepareStatement(query);
+                preparedStatement = connection.prepareStatement(query.concat(Constants.DELIMITER));
                 preparedStatement.execute();
                 connection.commit();
                 preparedStatement.close();
@@ -132,27 +132,27 @@ public class MigrateFrom18to19 implements MigrationClient {
      *
      * @param migrateVersion version to be migrated
      * @param dbType         database type of the user
-     * @throws java.sql.SQLException
-     * @throws java.io.IOException
+     * @throws SQLException
+     * @throws IOException
      * @throws APIMigrationException
      */
     private void dropFKConstraint(String migrateVersion, String dbType) throws SQLException, IOException, APIMigrationException {
         String constraintName = null;
         Connection connection;
         String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
-        String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
+        String queryArray[] = queryToExecute.split(Constants.DELIMITER);
 
         connection = APIMgtDBUtil.getConnection();
         connection.setAutoCommit(false);
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(queryArray[0]);
+        ResultSet resultSet = statement.executeQuery(queryArray[0].concat(Constants.DELIMITER));
         while (resultSet.next()) {
             constraintName = resultSet.getString("constraint_name");
         }
 
         if (constraintName != null) {
             queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
-            PreparedStatement preparedStatement = connection.prepareStatement(queryToExecute);
+            PreparedStatement preparedStatement = connection.prepareStatement(queryToExecute.concat(Constants.DELIMITER));
             preparedStatement.execute();
             connection.commit();
             preparedStatement.close();
@@ -185,8 +185,12 @@ public class MigrateFrom18to19 implements MigrationClient {
             for (Tenant tenant : tenantsArray) {
 
                 PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain());
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId());
+                /*Use the super tenant instead of tenant because tenants do not have access to master-datasources.xml
+                If you use tenant details instead of super tenant, you will get javax.naming.NameNotFoundException:
+                Name [jdbc/AM_API] is not bound in this Context. Unable to find [jdbc]*/
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().
+                        setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId())
                         .getRealmConfiguration().getAdminUserName();
@@ -204,10 +208,12 @@ public class MigrateFrom18to19 implements MigrationClient {
                     String apiVersion = apiIdentifier.getVersion();
 
                     if(!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
-                        artifact.setAttribute("overview_context", api.getContext() + RegistryConstants.PATH_SEPARATOR + apiVersion);
+                        artifact.setAttribute("overview_context", api.getContext() +
+                                RegistryConstants.PATH_SEPARATOR + apiVersion);
                     }
 
-                    artifact.addAttribute("overview_contextTemplate", api.getContext() + RegistryConstants.PATH_SEPARATOR + "{version}");
+                    artifact.addAttribute("overview_contextTemplate", api.getContext() +
+                            RegistryConstants.PATH_SEPARATOR + "{version}");
                     artifact.addAttribute("overview_environments", "");
                     artifact.addAttribute("overview_versionType", "");
 
@@ -246,8 +252,10 @@ public class MigrateFrom18to19 implements MigrationClient {
                 }
 
                 PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain());
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId());
+                //Use the super tenant instead of tenant because tenants do not have access to master-datasources.xml
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().
+                        setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(
                         tenant.getId()).getRealmConfiguration().getAdminUserName();
@@ -379,7 +387,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @param swagger12BasePath Location of swagger v1.2 document
      * @return Swagger v2.0 document as a JSON object
      * @throws ParseException
-     * @throws java.net.MalformedURLException
+     * @throws MalformedURLException
      */
 
     private static JSONObject generateSwagger2Document(JSONObject swagger12doc,
@@ -699,7 +707,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             String SequenceFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
                 SequenceFilePath = tenantRepository + "/" + tenant.getId() +
-                                   "/synapse-configs/default/api";
+                        "/synapse-configs/default/api";
             } else {
                 SequenceFilePath = repository + "synapse-configs/default/api";
             }
@@ -708,7 +716,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             for (File synapseFile : synapseFiles){
                 if (tenant.getId() ==  MultitenantConstants.SUPER_TENANT_ID){
                     if (synapseFile.getName().matches("[\\w+][--][\\w+][__v]")){
-                    ResourceUtil.updateSynapseAPI(synapseFile,"ENDPOINT");
+                        ResourceUtil.updateSynapseAPI(synapseFile,"ENDPOINT");
                     }
                 }else{
                     if (synapseFile.getName().matches("[\\w+][-AT-]"+tenant.getDomain()+"[--][\\w+][--v]]")){

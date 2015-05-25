@@ -1,6 +1,6 @@
 {
     "theme" : {
-        "base" : "fancy"
+        "base" : "default"
     },
     "context" : "/store",
     "showPublicStoreURL":true,
