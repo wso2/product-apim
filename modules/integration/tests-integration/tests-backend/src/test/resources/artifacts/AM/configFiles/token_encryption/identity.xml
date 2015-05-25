@@ -118,8 +118,8 @@
             </SupportedGrantType>
             <SupportedGrantType>
                <GrantTypeName>application_token</GrantTypeName>
-               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantHandler</GrantTypeHandlerImplClass>
-               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantValidator</GrantTypeValidatorImplClass>
+               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
+               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
            </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>refresh_token</GrantTypeName>
