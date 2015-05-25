@@ -39,7 +39,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>
+            <!--https://wso2.org/jira/browse/TA-970 -->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
