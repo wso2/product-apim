@@ -303,7 +303,7 @@
 	-Gateway use this parameter to connect key validation thrift service. 
         -->
 
-        <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
+            <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
         <ThriftClientPort>10397</ThriftClientPort>
         <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
         <ThriftServerPort>10397</ThriftServerPort>
