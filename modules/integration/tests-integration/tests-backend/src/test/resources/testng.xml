@@ -39,7 +39,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>
+            <!--https://wso2.org/jira/browse/TA-970 -->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
@@ -59,6 +60,10 @@
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>-->
             <!--&lt;!&ndash;Disable the test case because ofAPIMANAGER-3515&ndash;&gt;-->
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>-->
+            <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
+          <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+          <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
+          <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
 
         </classes>
     </test>
@@ -90,6 +95,7 @@
         <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
         <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
         <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
+        <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
         <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
       <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
       <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
