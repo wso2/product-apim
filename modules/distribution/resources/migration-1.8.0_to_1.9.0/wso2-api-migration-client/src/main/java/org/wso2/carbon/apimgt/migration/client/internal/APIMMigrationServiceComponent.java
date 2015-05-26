@@ -103,6 +103,7 @@ public class APIMMigrationServiceComponent {
             if (migrateVersion != null) {
                 if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
                     log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
+
                     // Create a thread and wait till the APIManager DBUtils is initialized
 
                     MigrationClient migrateFrom18to19 = new MigrateFrom18to19();
@@ -112,7 +113,7 @@ public class APIMMigrationServiceComponent {
                         log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
                         migrateFrom18to19.databaseMigration(migrateVersion);
                         migrateFrom18to19.registryResourceMigration();
-                        //migrateFrom18to19.fileSystemMigration();
+                        migrateFrom18to19.fileSystemMigration();
                     } else {
                         //Only performs database migration
                         if (isDBMigrationNeeded) {
@@ -149,6 +150,8 @@ public class APIMMigrationServiceComponent {
             log.error("User store  exception occurred while migrating " + e.getMessage());
         } catch (SQLException e) {
             log.error("SQL exception occurred while migrating " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error occurred while initializing data source.  " + e.getMessage());
         }
         log.info("WSO2 API Manager migration component successfully activated.");
     }
