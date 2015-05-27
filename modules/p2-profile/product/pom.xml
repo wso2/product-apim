@@ -423,8 +423,8 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.jaxws.webapp.mgt.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.idp.mgt.feature:${identity.core.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.contentsearch.feature:4.2.2</featureArtifactDef>
-			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.bam.message.tracer.handler.feature:${carbon.deployment.version}</featureArtifactDef>
-			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediator.bam.feature:4.2.0</featureArtifactDef>
+			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.bam.message.tracer.handler.feature:4.2.3</featureArtifactDef>
+			                    <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:4.2.5-SNAPSHOT</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.ui.feature:4.2.0</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ndatasource.feature:${carbon.deployment.version}</featureArtifactDef>
@@ -934,7 +934,7 @@
                                 <!--End Stratos API Manager features-->
 			        <feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>4.2.0</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				<feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
@@ -1292,7 +1292,7 @@
                                </feature>
 				<feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>4.2.0</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				<feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
@@ -1646,7 +1646,7 @@
                                </feature>
 				<feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>4.2.0</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				<feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
