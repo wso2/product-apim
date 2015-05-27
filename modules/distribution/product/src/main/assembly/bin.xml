@@ -785,6 +785,12 @@
             	<outputDirectory>wso2am-${pom.version}/repository/conf/etc/</outputDirectory>
             	<fileMode>644</fileMode>
 	</file>
-
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/msg-mgt.properties
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
 </files>
 </assembly>
