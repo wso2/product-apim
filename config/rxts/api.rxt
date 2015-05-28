@@ -27,7 +27,13 @@
             <name>Context</name>
         </field>
         <field type="text" required="true">
+            <name>Context Template</name>
+        </field>
+        <field type="text" required="true">
             <name>Version</name>
+        </field>
+		<field type="text" required="true">
+            <name>Version Type</name>
         </field>
         <field type="options">
             <name label="isDefaultVersion">Is Default Version</name>
