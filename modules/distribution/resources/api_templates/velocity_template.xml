@@ -189,7 +189,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource faultSequence=#print_string_if_exist($faultSequence "fault")>
+<resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     <payloadFactory>
         <format>
@@ -317,4 +317,9 @@
         #if($apiStatus == 'PROTOTYPED')
         #end
         ## end of apiIsBlocked check
+         <handlers>
+      <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
+         <property name="inline" value="INLINE"/>
+      </handler>
+       </handlers>
         </api>
