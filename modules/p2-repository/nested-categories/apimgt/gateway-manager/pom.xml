@@ -295,7 +295,10 @@
                                 <importFeatureDef>
                                     org.jaggeryjs.server:${org.jaggery.version}
                                 </importFeatureDef>
-                            </importFeatures>
+				<importFeatureDef>
+    				    org.wso2.carbon.bam.service.agent:${carbon.deployment.version}
+				</importFeatureDef>
+			    </importFeatures>
                         </configuration>
                     </execution>
                 </executions>

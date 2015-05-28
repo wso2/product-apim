@@ -499,6 +499,10 @@
                                 <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
                                 </featureArtifactDef>
 
+				<featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>	
+			        <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
+        	                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1189,7 +1193,20 @@
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
+				
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
 
+			        <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1646,6 +1663,19 @@
                                 <feature>
                                     <id>org.wso2.es.feature.group</id>
                                     <version>${es.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
                                 </feature>
 
                             </features>
@@ -2104,6 +2134,19 @@
                                 <feature>
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
                                 </feature>
 
                             </features>
@@ -2671,6 +2714,19 @@
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
 
                             </features>
                         </configuration>
@@ -3204,6 +3260,20 @@
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+
 
                             </features>
                         </configuration>
@@ -3693,6 +3763,19 @@
                                 <feature>
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.wso2.carbon.bam.service.agent.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
+                                    <version>${apimgt.oidc.version}</version>
                                 </feature>
 
                             </features>

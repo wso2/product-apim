@@ -792,6 +792,7 @@
         <apimgt.startup.publisher.feature.version>1.2.5-SNAPSHOT
         </apimgt.startup.publisher.feature.version>
         <apimgt.store.feature.version>1.2.5-SNAPSHOT</apimgt.store.feature.version>
+	<apimgt.oidc.version>1.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
         <carbon.registry.version>4.4.2-SNAPSHOT</carbon.registry.version>

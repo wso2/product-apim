@@ -319,6 +319,15 @@
                                 <importFeatureDef>
                                     org.jaggeryjs.server:${org.jaggery.version}
                                 </importFeatureDef>
+				<importFeatureDef>
+     				    org.wso2.carbon.bam.service.agent:${carbon.deployment.version}
+				</importFeatureDef>
+				<importFeatureDef>
+     				    org.wso2.carbon.apimgt.authenticator.oidc:${apimgt.oidc.version}
+				</importFeatureDef>
+				<importFeatureDef>
+     				    org.wso2.carbon.apimgt.hostobjects.oidc:${apimgt.oidc.version}
+				</importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>
