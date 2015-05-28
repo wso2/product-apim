@@ -927,16 +927,16 @@
                                    <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                    <version>4.2.2</version>
                                </feature>
-				<feature>
+				                <feature> 
                                    <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
                                    <version>${carbon.deployment.version}</version>
                                	</feature>
                                 <!--End Stratos API Manager features-->
-			        <feature>
+			                    <feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
                                    <version>4.2.5-SNAPSHOT</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
                                    <version>4.2.0</version>
                                	</feature>
@@ -944,7 +944,7 @@
                                    <id>org.wso2.carbon.idp.mgt.feature.group</id>
                                    <version>${identity.core.version}</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.forum.server.feature.group</id>
                                    <version>${carbon.forum.server.feature.version}</version>
                                	</feature>
@@ -1201,7 +1201,7 @@
                                     <id>org.wso2.carbon.identity.oauth.common.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature-->
-				<feature>
+				                <feature>
                                     <id>org.wso2.carbon.identity.self.registration.server.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature>
@@ -1286,15 +1286,15 @@
                                    <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
                                    <version>${carbon.deployment.version}</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                    <version>4.2.2</version>
                                </feature>
-				<feature>
+				               <feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
                                    <version>4.2.5-SNAPSHOT</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
                                    <version>4.2.0</version>
                                	</feature>
@@ -1471,7 +1471,7 @@
                                     <id>org.wso2.carbon.registry.core.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature>
-				<feature>
+				                <feature>
                                     <id>org.wso2.carbon.registry.core.server.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature>
@@ -1523,10 +1523,10 @@
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
-				<feature>
+				                <feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-				    <version>${stratos.version}</version>
-				</feature>
+				                    <version>${stratos.version}</version>
+				                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>4.2.1</version>
@@ -1595,7 +1595,7 @@
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>4.2.2</version>
                                 </feature>
-				<feature>
+				                <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
                                     <version>4.2.1</version>
                                 </feature>
@@ -1636,19 +1636,19 @@
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>4.2.1</version>
                                 </feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
                                    <version>${carbon.deployment.version}</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                    <version>4.2.2</version>
                                </feature>
-				<feature>
+                				<feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
                                    <version>4.2.5-SNAPSHOT</version>
                                	</feature>
-				<feature>
+				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
                                    <version>4.2.0</version>
                                	</feature>
