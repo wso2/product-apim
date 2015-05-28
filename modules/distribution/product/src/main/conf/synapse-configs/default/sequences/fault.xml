@@ -67,6 +67,6 @@
     <property name="Host" scope="transport" action="remove"/>
     <property name="Accept" scope="transport" action="remove"/>
     <property name="X-JWT-Assertion" scope="transport" action="remove"/>
-    <sequence key="_cors_request_handler"/>
+    <sequence key="_cors_request_handler_"/>
     <send/>
 </sequence>
