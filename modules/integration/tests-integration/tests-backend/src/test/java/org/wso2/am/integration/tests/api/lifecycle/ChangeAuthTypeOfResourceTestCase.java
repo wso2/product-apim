@@ -49,8 +49,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "ChangeAuthTypeAPI1";
+    private static final String API_CONTEXT = "ChangeAuthTypeAPI1";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
