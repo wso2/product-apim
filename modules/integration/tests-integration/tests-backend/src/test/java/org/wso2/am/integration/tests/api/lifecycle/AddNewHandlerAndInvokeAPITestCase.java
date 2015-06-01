@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -51,6 +53,7 @@ import static org.testng.Assert.assertTrue;
  * Configure a new handler and Invoke the API and verify  the  request is going through newly added handler.
  */
 public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
+    private static final Log log = LogFactory.getLog(AddNewHandlerAndInvokeAPITestCase.class);
     private static final String API_NAME = "APILifeCycleTestAPIHandler";
     private static final String API_CONTEXT = "testAPIHandler";
     private static final String API_TAGS = "youtube, video, media";
@@ -66,7 +69,6 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
-    private String originalSynapseConfig;
     private String newSynapseConfig;
     private APIIdentifier apiIdentifier;
     private SynapseConfigAdminClient synapseConfigAdminClient;
@@ -119,8 +121,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 storeContext.getContextTenant().getContextUser().getPassword());
         gatewaySession = createSession(gatewayContext);
         synapseConfigAdminClient =
-                new SynapseConfigAdminClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
-        originalSynapseConfig = synapseConfigAdminClient.getConfiguration();
+                new SynapseConfigAdminClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySession);
         apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
     }
 
@@ -142,6 +143,17 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
 
         synapseConfigAdminClient.updateConfiguration(newSynapseConfig);
+        long startTime=System.currentTimeMillis();
+        long maxWaitTimeForConfigPersist = 60 * 1000;
+        while ((!synapseConfigAdminClient.getConfiguration().
+                contains("<handler class=\"org.test.apim.coustom.handler.CustomAPIAuthenticationHandler\"/>")) &&
+                (System.currentTimeMillis() - startTime) < maxWaitTimeForConfigPersist) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                log.warn("InterruptedException occurs while sleeping 500 milliseconds");
+            }
+        }
         Map<String, String> requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("Content-Type", "text/plain");
         //get the  access token
@@ -177,8 +189,6 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException, XMLStreamException,
             RemoteException {
-        //Restore original synapse configuration
-        synapseConfigAdminClient.updateConfiguration(originalSynapseConfig);
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
 

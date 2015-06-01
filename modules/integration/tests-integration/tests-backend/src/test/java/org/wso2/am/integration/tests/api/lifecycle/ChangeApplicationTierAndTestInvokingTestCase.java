@@ -157,6 +157,8 @@ public class ChangeApplicationTierAndTestInvokingTestCase extends APIManagerLife
                             (currentTime - startTime) + " milliseconds under Gold API and Gold Application level tier");
         }
         currentTime = System.currentTimeMillis();
+        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                API_END_POINT_METHOD, requestHeaders);
         HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE, "Response code mismatched." +
@@ -192,6 +194,8 @@ public class ChangeApplicationTierAndTestInvokingTestCase extends APIManagerLife
                             (currentTime - startTime) + " milliseconds under Gold API and Gold Application level tier");
         }
         currentTime = System.currentTimeMillis();
+        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                API_END_POINT_METHOD, requestHeaders);
         HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE, "Response code mismatched." +

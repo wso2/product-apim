@@ -64,7 +64,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(API_END_POINT_URL));
-
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -93,13 +92,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         //Create publish and subscribe a API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
-
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
@@ -119,12 +115,9 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                     "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API , Gold Application level tier" +
                             "  and Unlimited Resource tier");
-
         }
 
         currentTime = System.currentTimeMillis();
-
-
         HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
@@ -136,7 +129,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API , " +
                         "Gold Application level tier and Unlimited Resource tier.");
 
-
     }
 
 
@@ -145,17 +137,12 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
 
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
+        String swagger= " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
+                "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\""+API_NAME+"\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\""+API_VERSION_1_0_0+"\"}}";
 
-        String swagger = "{\"apiVersion\":\"" + API_VERSION_1_0_0 + "\",\"swaggerVersion\":\"2.0\",\"authorizations\":" +
-                "{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":{\"apiVersion\":\"1.0.0\",\"basePath\":" +
-                "\"" + gatewayUrls.getWebAppURLHttp() + "/" + API_CONTEXT + "/" + API_VERSION_1_0_0 + "\",\"resourcePath\":" +
-                "\"/default\",\"swaggerVersion\":\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"" +
-                "oauth2\"}},\"apis\":[{\"path\":\"/*\",\"operations\":[{\"auth_type\":\"Application \",\"throttling_tier\":" +
-                "\"Silver\",\"method\":\"GET\",\"parameters\":[]}]}],\"info\":{\"termsOfServiceUrl\":\"\"," +
-                "\"title\":\"\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}," +
-                "\"description\":\"\",\"path\":\"/default\"}],\"info\":{\"termsOfServiceUrl\":\"\",\"title\":\"\"," +
-                "\"description\":\"This is test API create by API manager integration test\",\"license\":\"\",\"contact\":" +
-                "\"\",\"licenseUrl\":\"\"}}";
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -176,8 +163,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         }
 
         currentTime = System.currentTimeMillis();
-        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API_END_POINT_METHOD, requestHeaders);
+//        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+//                API_END_POINT_METHOD, requestHeaders);
         HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
@@ -195,16 +182,13 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             "Resource Tier: Gold.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceSilver")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceGold() throws Exception {
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
-        String swagger = "{\"apiVersion\":\"" + API_VERSION_1_0_0 + "\",\"swaggerVersion\":\"1.2\",\"authorizations\":" +
-                "{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":{\"apiVersion\":\"1.0.0\",\"basePath\":" +
-                "\"" + gatewayUrls.getWebAppURLHttp() + "/" + API_CONTEXT + "/" + API_VERSION_1_0_0 + "\",\"resourcePath\":" +
-                "\"/default\",\"swaggerVersion\":\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"" +
-                "oauth2\"}},\"apis\":[{\"path\":\"/*\",\"operations\":[{\"auth_type\":\"Application \",\"throttling_tier\":" +
-                "\"Gold\",\"method\":\"GET\",\"parameters\":[]}]}],\"info\":{\"termsOfServiceUrl\":\"\"," +
-                "\"title\":\"\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}," +
-                "\"description\":\"\",\"path\":\"/default\"}],\"info\":{\"termsOfServiceUrl\":\"\",\"title\":\"\"," +
-                "\"description\":\"This is test API create by API manager integration test\",\"license\":\"\",\"contact\":" +
-                "\"\",\"licenseUrl\":\"\"}}";
+
+        String swagger= " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
+                "\"Gold\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\""+API_NAME+"\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\""+API_VERSION_1_0_0+"\"}}";
+
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
         long startTime = System.currentTimeMillis();
         long currentTime;

@@ -157,7 +157,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
                 "Response code mismatched when invoke new api before subscribe the new version");
-        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_INVALID_CREDENTIALS),
+        assertTrue(oldVersionInvokeResponse.getData().contains(UNCLASSIFIED_AUTHENTICATION_FAILURE),
                 "Response data mismatched when invoke new API version before subscribe the new version." +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }

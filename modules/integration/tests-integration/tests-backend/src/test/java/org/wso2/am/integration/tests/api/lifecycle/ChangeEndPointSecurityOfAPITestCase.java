@@ -36,6 +36,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 import static org.testng.Assert.assertEquals;
@@ -100,7 +101,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
             APIManagerIntegrationTestException, IOException {
         String endpointUsername = "admin1";
         char[] endpointPassword = {'a', 'd', 'm', 'i', 'n', '1', '2', '3'};
-        byte[] userNamePasswordByteArray = (endpointUsername + ":" + endpointPassword).getBytes();
+        byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
         String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
@@ -137,7 +138,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     public void testInvokeGETResourceWithSecuredEndPointComplexPassword(String st) throws Exception {
         String endpointUsername = "user";
         char[] endpointPassword = {'a', 'b', 'c', 'd', st.charAt(0), 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
-        byte[] userNamePasswordByteArray = (endpointUsername + ":" + endpointPassword).getBytes();
+        byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
         String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
@@ -146,7 +147,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         apiCreationRequestBean.setVisibility("public");
         apiCreationRequestBean.setEndpointType("secured");
         apiCreationRequestBean.setEpUsername(endpointUsername);
-        apiCreationRequestBean.setEpPassword(String.valueOf(endpointPassword));
+        apiCreationRequestBean.setEpPassword(URLEncoder.encode(String.valueOf(endpointPassword),"UTF-8"));
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource " +
