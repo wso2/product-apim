@@ -133,6 +133,11 @@
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
+                <GrantTypeName>application_token</GrantTypeName>
+                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
+            </SupportedGrantType>
+            <SupportedGrantType>
                 <GrantTypeName>client_credentials</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
