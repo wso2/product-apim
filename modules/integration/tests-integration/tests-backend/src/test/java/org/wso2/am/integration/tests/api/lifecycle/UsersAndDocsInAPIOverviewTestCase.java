@@ -40,8 +40,8 @@ import static org.testng.Assert.assertTrue;
  * tab should show the correct information about subscribed uses.
  */
 public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "UsersAndDocsAPI1";
+    private static final String API_CONTEXT = "UsersAndDocsAPI1";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

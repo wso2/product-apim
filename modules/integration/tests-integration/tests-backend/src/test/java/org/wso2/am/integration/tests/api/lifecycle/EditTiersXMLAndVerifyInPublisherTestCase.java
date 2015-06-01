@@ -43,8 +43,8 @@ import static org.testng.Assert.*;
  * Change the tiers.xml file  with new tier added and check the new tier availability in publisher.
  */
 public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "EditTiersAPI1";
+    private static final String API_CONTEXT = "EditTiersAPI1";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
