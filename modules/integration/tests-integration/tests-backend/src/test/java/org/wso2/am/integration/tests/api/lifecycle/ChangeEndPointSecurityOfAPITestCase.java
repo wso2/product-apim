@@ -46,8 +46,8 @@ import static org.testng.Assert.assertTrue;
  * the response body.
  */
 public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI1";
-    private static final String API_CONTEXT = "testAPI1";
+    private static final String API_NAME = "ChangeEndpointAPI1";
+    private static final String API_CONTEXT = "ChangeEndpointAPI1";
     private static final String API_TAGS = "security, username, password";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
