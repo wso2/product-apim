@@ -62,6 +62,7 @@
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/repository/components/plugins/*email.verification_4.2.0.jar</exclude>
                 <exclude>**/repository/deployment/server/synapse-configs/**</exclude>
+                <exclude>**/repository/resources/customsequences/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
