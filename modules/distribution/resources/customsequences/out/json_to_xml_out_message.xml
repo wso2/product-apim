@@ -1,0 +1,3 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse"  name="json_to_xml_out_message">      
+    <property name="messageType" value="application/xml" scope="axis2"/>
+</sequence>
