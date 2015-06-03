@@ -243,9 +243,6 @@
                                     <version>${carbon.platform.version}
                                 </feature-->
                                 <importFeatureDef>
-                                    org.wso2.carbon.relay:${carbon.mediation.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
                                     org.wso2.carbon.relay.server:${carbon.mediation.version}
                                 </importFeatureDef>
                                 <!--feature>
@@ -493,6 +490,9 @@
 				<importFeatureDef>
      				    org.wso2.carbon.identity.notification.mgt:${carbon.identity.version}
 				</importFeatureDef>
+				<importFeatureDef>
+                                    org.wso2.carbon.identity.xacml.server:${carbon.identity.version}
+                                </importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>

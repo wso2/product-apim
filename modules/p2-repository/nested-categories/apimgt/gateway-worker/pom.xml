@@ -143,9 +143,7 @@
                                 <importFeatureDef>
                                     org.wso2.carbon.mediators.server:${carbon.mediation.version}
                                 </importFeatureDef>
-                                <importFeatureDef>
-                                    org.wso2.carbon.relay:${carbon.mediation.version}
-                                </importFeatureDef>
+                               
                                 <importFeatureDef>
                                     org.wso2.carbon.relay.server:${carbon.mediation.version}
                                 </importFeatureDef>
@@ -293,6 +291,9 @@
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.jaggeryjs.server:${org.jaggery.version}
+                                </importFeatureDef>
+				<importFeatureDef>
+                                    org.wso2.carbon.identity.xacml.server:${carbon.identity.version}
                                 </importFeatureDef>
                             </importFeatures>
                         </configuration>

@@ -182,10 +182,7 @@
                                 <importFeatureDef>
                                     org.wso2.carbon.mediators.server:${carbon.mediation.version}
                                 </importFeatureDef>
-                                <importFeatureDef>
-                                    org.wso2.carbon.relay:${carbon.mediation.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
+                               	<importFeatureDef>
                                     org.wso2.carbon.relay.server:${carbon.mediation.version}
                                 </importFeatureDef>
 
@@ -382,17 +379,20 @@
 				<importFeatureDef>
      				    org.wso2.carbon.bam.service.agent:${carbon.deployment.version}
 				</importFeatureDef>
-				<importFeatureDef>
+				<!--importFeatureDef>
      				    org.wso2.carbon.apimgt.authenticator.oidc:${apimgt.oidc.version}
 				</importFeatureDef>
 				<importFeatureDef>
      				    org.wso2.carbon.apimgt.hostobjects.oidc:${apimgt.oidc.version}
-				</importFeatureDef>
+				</importFeatureDef-->
 				<importFeatureDef>
                                     org.wso2.carbon.tenant.mgt.common:${carbon.commons.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.identity.notification.mgt:${carbon.identity.version}
+                                </importFeatureDef>
+				<importFeatureDef>
+                                    org.wso2.carbon.identity.xacml.server:${carbon.identity.version}
                                 </importFeatureDef>
                             </importFeatures>
                         </configuration>
