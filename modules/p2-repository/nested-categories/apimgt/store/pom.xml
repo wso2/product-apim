@@ -123,9 +123,9 @@
                                 <importFeatureDef>
                                     org.wso2.carbon.mediation.admin:${carbon.mediation.version}
                                 </importFeatureDef>
-                                <!--ortFeatureDef>
+                                <importFeatureDef>
                                     org.wso2.carbon.inbound.endpoints.server:${carbon.mediation.version}
-                                </importFeatureDef-->
+                                </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.mediation.configadmin:${carbon.mediation.version}
                                 </importFeatureDef>
