@@ -467,7 +467,14 @@
             </includes>
         </fileSet>
 
-
+        <!-- API Custom Sequences -->
+        <fileSet>
+            <directory>../resources/customsequences</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/customsequences</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+            </includes>
+        </fileSet>
 
         <!--End of  API Manager related -->
 
