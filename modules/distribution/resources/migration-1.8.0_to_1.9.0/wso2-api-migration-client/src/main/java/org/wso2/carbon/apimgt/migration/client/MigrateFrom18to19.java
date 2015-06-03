@@ -41,16 +41,15 @@ import org.wso2.carbon.governance.api.util.GovernanceUtils;
 import org.wso2.carbon.registry.core.ActionConstants;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
-import org.wso2.carbon.registry.core.Resource;
-import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.session.UserRegistry;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
+import org.wso2.carbon.registry.api.RegistryException;
+import org.wso2.carbon.registry.api.Resource;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
@@ -91,28 +90,85 @@ public class MigrateFrom18to19 implements MigrationClient {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         try {
-            String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.ALTER).trim();
+            /*String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.ALTER).trim();
             connection = APIMgtDBUtil.getConnection();
 
-            String queryArray[] = queryToExecute.split(Constants.DELIMITER);
+            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
 
             connection.setAutoCommit(false);
 
             for (String query : queryArray) {
-                preparedStatement = connection.prepareStatement(query.concat(Constants.DELIMITER));
+                preparedStatement = connection.prepareStatement(query.trim());
                 preparedStatement.execute();
                 connection.commit();
                 preparedStatement.close();
-            }
+            }*/
 
-            String dbType = MigrationDBCreator.getDatabaseType(connection);
+
+
+
+                connection = APIMgtDBUtil.getConnection();
+                String dbType = MigrationDBCreator.getDatabaseType(connection);
+                String dbScript = ResourceUtil.pickQueryFromResources(migrateVersion, dbType);
+                BufferedReader bufferedReader;
+
+                InputStream is = new FileInputStream(dbScript);
+                bufferedReader = new BufferedReader(new InputStreamReader(is));
+                String sqlQuery;
+                while ((sqlQuery = bufferedReader.readLine()) != null) {
+                    if("oracle".equals(dbType)){
+                        sqlQuery = sqlQuery.replace(";","");
+                    }
+                    sqlQuery = sqlQuery.trim();
+                    if (sqlQuery.startsWith("//") || sqlQuery.startsWith("--")) {
+                        continue;
+                    }
+                    StringTokenizer stringTokenizer = new StringTokenizer(sqlQuery);
+                    if (stringTokenizer.hasMoreTokens()) {
+                        String token = stringTokenizer.nextToken();
+                        if ("REM".equalsIgnoreCase(token)) {
+                            continue;
+                        }
+                    }
+
+                    if (sqlQuery.contains("\\n")) {
+                        sqlQuery = sqlQuery.replace("\\n", "");
+                    }
+
+                    if(sqlQuery.length()>0) {
+                        preparedStatement = connection.prepareStatement(sqlQuery.trim());
+                        preparedStatement.execute();
+                        connection.commit();
+                        preparedStatement.close();
+                    }
+                }
+
+
+            /*APIManagerConfiguration config = ServiceReferenceHolder.getInstance().
+                    getAPIManagerConfigurationService().getAPIManagerConfiguration();
+            String dataSourceName = config.getFirstProperty(Constants.DATA_SOURCE_NAME);
+
+            if (dataSourceName != null) {
+                try {
+                    Context ctx = new InitialContext();
+                    dataSource = (DataSource) ctx.lookup(dataSourceName);
+                } catch (NamingException e) {
+                    throw new APIManagementException("Error while looking up the data " +
+                            "source: " + dataSourceName);
+                }
+            }
+            MigrationDBCreator migrationDBCreator = new MigrationDBCreator(dataSource);
+            migrationDBCreator.createRegistryDatabase();*/
+                //dropFKConstraint(migrateVersion, dbType);
+
+    /*        if (log.isDebugEnabled()) {
+                log.debug("Query " + queryToExecute + " executed ");
+            }*/
+
+            //To drop the foreign key
             dropFKConstraint(migrateVersion, dbType);
 
-            if (log.isDebugEnabled()) {
-                log.debug("Query " + queryToExecute + " executed ");
-            }
-
-        } catch (IOException e) {
+            } catch (IOException e) {
             //ResourceUtil.handleException("Error occurred while finding the query. Please check the file path.", e);
             log.error("Error occurred while migrating databases", e);
         } catch (Exception e) {
@@ -136,23 +192,33 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws IOException
      * @throws APIMigrationException
      */
-    private void dropFKConstraint(String migrateVersion, String dbType) throws SQLException, IOException, APIMigrationException {
+    public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException, IOException, APIMigrationException {
         String constraintName = null;
         Connection connection;
         String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
-        String queryArray[] = queryToExecute.split(Constants.DELIMITER);
+        String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
 
         connection = APIMgtDBUtil.getConnection();
         connection.setAutoCommit(false);
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(queryArray[0].concat(Constants.DELIMITER));
+        if("oracle".equals(dbType)){
+            queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
+        }
+        ResultSet resultSet = statement.executeQuery(queryArray[0]);
         while (resultSet.next()) {
             constraintName = resultSet.getString("constraint_name");
         }
 
         if (constraintName != null) {
             queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
-            PreparedStatement preparedStatement = connection.prepareStatement(queryToExecute.concat(Constants.DELIMITER));
+            if("oracle".equals(dbType)){
+                queryToExecute = queryToExecute.replace(Constants.DELIMITER, "");
+            }
+
+            if (queryToExecute.contains("\\n")) {
+                queryToExecute = queryToExecute.replace("\\n", "");
+            }
+            PreparedStatement preparedStatement = connection.prepareStatement(queryToExecute);
             preparedStatement.execute();
             connection.commit();
             preparedStatement.close();
@@ -168,6 +234,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     @Override
     public void registryResourceMigration() throws APIMigrationException {
+        //copyNewRxtFileToRegistry();
         swaggerResourceMigration();
         rxtMigration();
     }
@@ -181,13 +248,16 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager 1.9.0 started.");
+        boolean isTenantFlowStarted = false;
         try {
             for (Tenant tenant : tenantsArray) {
-
                 PrivilegedCarbonContext.startTenantFlow();
+                isTenantFlowStarted = true;
+
                 /*Use the super tenant instead of tenant because tenants do not have access to master-datasources.xml
                 If you use tenant details instead of super tenant, you will get javax.naming.NameNotFoundException:
                 Name [jdbc/AM_API] is not bound in this Context. Unable to find [jdbc]*/
+
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().
                         setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
@@ -198,9 +268,9 @@ public class MigrateFrom18to19 implements MigrationClient {
                 Registry registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant
                         .getId());
                 GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
-                GenericArtifactManager manager = new GenericArtifactManager(registry, "api");
+                //GenericArtifactManager manager = new GenericArtifactManager(registry, "api");
                 GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
-                GenericArtifact[] artifacts = manager.getAllGenericArtifacts();
+                GenericArtifact[] artifacts = artifactManager.getAllGenericArtifacts();
                 for (GenericArtifact artifact : artifacts) {
                     API api = APIUtil.getAPI(artifact, registry);
 
@@ -218,21 +288,83 @@ public class MigrateFrom18to19 implements MigrationClient {
                     artifact.addAttribute("overview_versionType", "");
 
                     artifactManager.updateGenericArtifact(artifact);
-
-
                 }
+
             }
+            if(isTenantFlowStarted){
+                PrivilegedCarbonContext.endTenantFlow();
+            }
+
         } catch (APIManagementException e) {
             ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
         } catch (RegistryException e) {
             ResourceUtil.handleException("Error occurred while accessing the registry", e);
         } catch (UserStoreException e) {
             ResourceUtil.handleException("Error occurred while reading tenant information", e);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
         }
         if (log.isDebugEnabled()) {
             log.debug("Rxt resource migration done for all the tenants");
+        }
+    }
+
+
+    /**
+     * This method is used to copy new rxt to the registry
+     * This copies rxt from the file system to registry
+     *
+     * @throws APIMigrationException
+     */
+    void copyNewRxtFileToRegistry() throws APIMigrationException {
+        boolean isTenantFlowStarted = false;
+        try {
+            String resourcePath = Constants.GOVERNANCE_COMPONENT_REGISTRY_LOCATION + "/types/api.rxt";
+            File newRxtFile = new File(CarbonUtils.getCarbonHome() + Constants.RXT_PATH);
+            String rxtContent = FileUtils.readFileToString(newRxtFile, "UTF-8");
+
+            for (Tenant tenant : tenantsArray) {
+                int tenantId = tenant.getId();
+                isTenantFlowStarted = true;
+                PrivilegedCarbonContext.startTenantFlow();
+                PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                        .setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                        .setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+
+                String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenantId)
+                        .getRealmConfiguration().getAdminUserName();
+                ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenantId);
+                Registry registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenantId);
+                GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
+
+                Resource resource;
+                if (!registry.resourceExists(resourcePath)) {
+                    resource = registry.newResource();
+                } else {
+                    resource = registry.get(resourcePath);
+                }
+                resource.setContent(rxtContent);
+                resource.setMediaType("application/xml");
+                registry.put(resourcePath, resource);
+
+                ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
+                        .authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
+
+                if (isTenantFlowStarted) {
+                    PrivilegedCarbonContext.endTenantFlow();
+                }
+            }
+            //_system/governance/repository/components/org.wso2.carbon.governance/types/api.rxt
+
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the rxt file from file system.  ", e);
+        } catch (UserStoreException e) {
+            ResourceUtil.handleException("Error occurred while searching for tenant admin. ", e);
+        } catch (RegistryException e) {
+            ResourceUtil.handleException("Error occurred while performing registry operation. ", e);
+        } finally {
+            if (isTenantFlowStarted) {
+                PrivilegedCarbonContext.endTenantFlow();
+            }
         }
     }
 
@@ -245,6 +377,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     void swaggerResourceMigration() throws APIMigrationException {
         log.info("Swagger migration for API Manager 1.9.0 started.");
+        boolean isTenantFlowStarted = false;
         try {
             for (Tenant tenant : tenantsArray) {
                 if (log.isDebugEnabled()) {
@@ -252,6 +385,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 }
 
                 PrivilegedCarbonContext.startTenantFlow();
+                isTenantFlowStarted = true;
+
                 //Use the super tenant instead of tenant because tenants do not have access to master-datasources.xml
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().
                         setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
@@ -304,6 +439,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                                         "_system/governance" + swagger2location, ActionConstants.GET);
                     }
                 }
+
+                PrivilegedCarbonContext.endTenantFlow();
             }
         } catch (MalformedURLException e) {
             ResourceUtil.handleException("Error occurred while creating swagger v2.0 document ", e);
@@ -315,8 +452,6 @@ public class MigrateFrom18to19 implements MigrationClient {
             ResourceUtil.handleException("Error occurred while getting swagger v2.0 document", e);
         } catch (UserStoreException e) {
             ResourceUtil.handleException("Error occurred while reading tenant information", e);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
         }
 
         if (log.isDebugEnabled()) {
@@ -587,10 +722,6 @@ public class MigrateFrom18to19 implements MigrationClient {
     }
 
 
-
-
-
-
     /**
      * This method is used to clean old registry resources.
      * This deletes the old swagger v1.2 resource from the registry
@@ -662,7 +793,7 @@ public class MigrateFrom18to19 implements MigrationClient {
 
     /**
      * This method is used to migrate sequence files
-     * This adds cors_request_handler to sequences
+     * This adds cors_request_handler_ to sequences
      *
      * @throws APIMigrationException
      */
@@ -679,8 +810,8 @@ public class MigrateFrom18to19 implements MigrationClient {
             }
             try {
                 FileUtils.copyInputStreamToFile(MigrateFrom18to19.class.getResourceAsStream(
-                                "/18to19Migration/sequence-scripts/_cors_request_handler.xml"),
-                        new File(SequenceFilePath + "_cors_request_handler.xml"));
+                                "/18to19Migration/sequence-scripts/_cors_request_handler_.xml"),
+                        new File(SequenceFilePath + "_cors_request_handler_.xml"));
                 ResourceUtil.copyNewSequenceToExistingSequences(SequenceFilePath, "_auth_failure_handler_");
                 ResourceUtil.copyNewSequenceToExistingSequences(SequenceFilePath, "_throttle_out_handler_");
                 ResourceUtil.copyNewSequenceToExistingSequences(SequenceFilePath, "_token_fault_");
@@ -713,19 +844,18 @@ public class MigrateFrom18to19 implements MigrationClient {
             }
             File APIFiles = new File(SequenceFilePath);
             File[] synapseFiles = APIFiles.listFiles();
-            for (File synapseFile : synapseFiles){
-                if (tenant.getId() ==  MultitenantConstants.SUPER_TENANT_ID){
-                    if (synapseFile.getName().matches("[\\w+][--][\\w+][__v]")){
-                        ResourceUtil.updateSynapseAPI(synapseFile,"ENDPOINT");
+            for (File synapseFile : synapseFiles) {
+                if (tenant.getId() == MultitenantConstants.SUPER_TENANT_ID) {
+                    if (synapseFile.getName().matches("[\\w+][--][\\w+][__v]")) {
+                        ResourceUtil.updateSynapseAPI(synapseFile, "ENDPOINT");
                     }
-                }else{
-                    if (synapseFile.getName().matches("[\\w+][-AT-]"+tenant.getDomain()+"[--][\\w+][--v]]")){
-                        ResourceUtil.updateSynapseAPI(synapseFile,"ENDPOINT");
+                } else {
+                    if (synapseFile.getName().matches("[\\w+][-AT-]" + tenant.getDomain() + "[--][\\w+][--v]]")) {
+                        ResourceUtil.updateSynapseAPI(synapseFile, "ENDPOINT");
                     }
                 }
 
             }
-
         }
     }
 }
