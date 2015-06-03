@@ -43,8 +43,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(APIVisibilityByPublicTestCase.class);
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "APIVisibilityByPublicTest";
+    private static final String API_CONTEXT = "APIVisibilityByPublic";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

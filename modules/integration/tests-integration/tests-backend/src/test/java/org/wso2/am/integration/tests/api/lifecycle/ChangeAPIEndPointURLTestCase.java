@@ -42,8 +42,8 @@ import static org.testng.Assert.*;
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "ChangeAPIEndPointURLTest";
+    private static final String API_CONTEXT = "ChangeAPIEndPointURLTest";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API1_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

@@ -44,8 +44,8 @@ import static org.testng.Assert.assertTrue;
  * and do a new silver subscription and test invocation under Silver tier.
  */
 public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "ChangeAPITierAndTestInvokingTest";
+    private static final String API_CONTEXT = "ChangeAPITierAndTestInvoking";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

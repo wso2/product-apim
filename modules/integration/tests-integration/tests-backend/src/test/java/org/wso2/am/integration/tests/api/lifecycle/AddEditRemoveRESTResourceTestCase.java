@@ -47,8 +47,8 @@ import static org.testng.Assert.assertTrue;
  * Add , edit and remove rest resource and test the invocation of API
  */
 public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "EditRemoveRESTResourceTest";
+    private static final String API_CONTEXT = "EditRemoveRESTResource";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

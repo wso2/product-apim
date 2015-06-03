@@ -45,8 +45,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME_ADMIN_VISIBILITY = "APIAdminVisibility";
-    private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APISubscriberVisibility";
+    private static final String API_NAME_ADMIN_VISIBILITY = "APIVisibilityByRoleTest";
+    private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APIVisibilityByRole";
     private static final String API_CONTEXT1 = "testAPI1";
     private static final String API_CONTEXT2 = "testAPI2";
     private static final String API_TAGS = "youtube, video, media";

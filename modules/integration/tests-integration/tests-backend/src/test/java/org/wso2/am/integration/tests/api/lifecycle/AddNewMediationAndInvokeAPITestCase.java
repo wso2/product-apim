@@ -46,8 +46,8 @@ import static org.testng.Assert.*;
  * Add new Log mediation to the in-flow and check the logs to verify the  added mediation is working.
  */
 public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "AddNewMediationAndInvokeAPITest";
+    private static final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
@@ -55,7 +55,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     private static final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
     private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
     private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final static String MEDIATION_LOG_OUTPUT1 = "To: /testAPI/1.0.0/customers/123";
+    private final static String MEDIATION_LOG_OUTPUT1 = "To: /"+API_CONTEXT+"/"+API_VERSION_1_0_0+API_GET_ENDPOINT_METHOD;
     private final static String MEDIATION_LOG_OUTPUT2 = "Direction: request, IN_MESSAGE = IN_MESSAGE";
     private final static String MEDIATION_LOGGER = "org.apache.synapse.mediators.builtin.LogMediator";
     private APIPublisherRestClient apiPublisherClientUser1;

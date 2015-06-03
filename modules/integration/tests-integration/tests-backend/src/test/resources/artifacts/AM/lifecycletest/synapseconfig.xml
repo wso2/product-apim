@@ -386,8 +386,8 @@
         </out>
         <description>The default main sequence for API manager - Returns 404 Not Found</description>
     </sequence>
-    <api name="admin--APILifeCycleTestAPIHandler"
-         context="/testAPIHandler/1.0.0"
+    <api name="admin--AddNewHandlerAndInvokeAPITest"
+         context="/AddNewHandlerAndInvokeAPI/1.0.0"
          version="1.0.0"
          version-type="context">
         <resource methods="GET" url-mapping="/*" faultSequence="fault">
@@ -395,7 +395,7 @@
                 <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
                     <then>
                         <send>
-                            <endpoint name="admin--APILifeCycleTestAPI_APIHandlerproductionEndpoint_0">
+                            <endpoint name="admin--AddNewHandlerAndInvokeAPITest_APIHandlerproductionEndpoint_0">
                                 <http uri-template="http://localhost:9763/jaxrs_basic/services/customers/customerservice/"/>
                             </endpoint>
                         </send>

@@ -41,8 +41,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "ChangeResourceTierAndTestInvokingTest";
+    private static final String API_CONTEXT = "ChangeResourceTierAndTestInvoking";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
@@ -164,7 +164,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         currentTime = System.currentTimeMillis();
 //        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-//                API_END_POINT_METHOD, requestHeaders);
+//                API_END_POINT_METHOD, requestHeaders);TODO
         HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,

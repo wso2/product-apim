@@ -49,8 +49,8 @@ import static org.testng.Assert.assertTrue;
  * test invocation of both old and new API versions."
  */
 public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
+    private static final String API_NAME = "DeprecatedAPITest";
+    private static final String API_CONTEXT = "DeprecatedAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";

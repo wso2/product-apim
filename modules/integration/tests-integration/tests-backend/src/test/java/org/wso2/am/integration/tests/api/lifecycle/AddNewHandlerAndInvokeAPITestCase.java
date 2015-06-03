@@ -54,8 +54,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(AddNewHandlerAndInvokeAPITestCase.class);
-    private static final String API_NAME = "APILifeCycleTestAPIHandler";
-    private static final String API_CONTEXT = "testAPIHandler";
+    private static final String API_NAME = "AddNewHandlerAndInvokeAPITest";
+    private static final String API_CONTEXT = "AddNewHandlerAndInvokeAPI";
     private static final String API_TAGS = "youtube, video, media";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
