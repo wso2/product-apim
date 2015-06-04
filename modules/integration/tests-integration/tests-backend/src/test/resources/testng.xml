@@ -30,11 +30,11 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
-            <!--Disable the test case because of APIMANAGER-3374-->
+            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3374&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
-            https://wso2.org/jira/browse/TA-970
+            <!--&lt;!&ndash;https://wso2.org/jira/browse/TA-970&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
@@ -42,7 +42,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
-            Disable the test case because of APIMANAGER-3378
+            <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
@@ -51,61 +51,51 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
             <!--&lt;!&ndash;Disable the test case because ofAPIMANAGER-3515&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
-            <!--Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed-->
+            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
-            <!--Disable the test case because of APIMANAGER-3377-->
+            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3377&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
-            <!--Disable the test case because of APIMANAGER-3229-->
+            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-
-
-
-
-
-
-
-
-
-
         </classes>
     </test>
 
 
-    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+    <!--<test name="apim-integration-tests-samples" preserve-order="true" parallel="false">-->
 
-    <classes>
+    <!--<classes>-->
 
-        <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
-        <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
-        <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
-        <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
-        <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
-        <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
-        <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
-        <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
-        <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
-        <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
-        <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>
-        <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
-        <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
-        <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
-        <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
-      <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
-      <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
-      <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+        <!--<class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.DAOTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>-->
+        <!--&lt;!&ndash;<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>&ndash;&gt;-->
+        <!--<class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>-->
+        <!--<class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>-->
+        <!--&lt;!&ndash; <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>-->
+      <!--<class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>-->
+      <!--<class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>-->
+      <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> &ndash;&gt;-->
 
-    </classes>
-    </test>
+    <!--</classes>-->
+    <!--</test>-->
 
 </suite>

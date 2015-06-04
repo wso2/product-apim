@@ -45,8 +45,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(APIVisibilityByPublicTestCase.class);
     private static final String API_NAME = "APIVisibilityByPublicTest";
     private static final String API_CONTEXT = "APIVisibilityByPublic";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String CARBON_SUPER_TENANT2_KEY = "userKey2";
@@ -54,6 +53,8 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
     private static final String TENANT_DOMAIN_ADMIN_KEY = "admin";
     private static final String USER_KEY_USER2 = "userKey1";
     private static final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private APIStoreRestClient apiStoreClientAnotherUserSameDomain;
     private APIPublisherRestClient apiPublisherClientUserAnotherUserSameDomain;
@@ -74,6 +75,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Creating CarbonSuper context
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
@@ -145,7 +147,7 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(API_END_POINT_URL));
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         //Create API  with public visibility and publish.

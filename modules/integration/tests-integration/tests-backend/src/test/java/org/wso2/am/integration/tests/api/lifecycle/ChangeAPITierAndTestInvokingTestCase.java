@@ -46,13 +46,15 @@ import static org.testng.Assert.assertTrue;
 public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "ChangeAPITierAndTestInvokingTest";
     private static final String API_CONTEXT = "ChangeAPITierAndTestInvoking";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/most_popular";
-    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API_END_POINT_METHOD = "/customers/123";
+    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "ChangeAPITierAndTestInvokingTestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private String applicationNameGold;
     private String applicationNameSilver;
     private Map<String, String> requestHeadersGoldTier;
@@ -65,6 +67,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -87,7 +90,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         apiStoreClientUser1.addApplication(applicationNameGold, TIER_GOLD, "", "");
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(API_END_POINT_URL));
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setTier(TIER_GOLD);
@@ -100,6 +103,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         // Create requestHeaders
         requestHeadersGoldTier = new HashMap<String, String>();
         requestHeadersGoldTier.put("Authorization", "Bearer " + accessToken);
+        requestHeadersGoldTier.put("accept", "text/xml");
         long startTime = System.currentTimeMillis();
         long currentTime;
         for (int invocationCount = 1; invocationCount <= GOLD_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
@@ -147,7 +151,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
             dependsOnMethods = "testInvokingAfterExpireThrottleExpireTime")
     public void testEditAPITierToSilver() throws APIManagerIntegrationTestException, MalformedURLException {
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                new URL(API_END_POINT_URL));
+                new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setTier(TIER_SILVER);
@@ -175,6 +179,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         String accessToken = generateApplicationKeys(apiStoreClientUser1, applicationNameSilver).getAccessToken();
         // Create requestHeaders
         Map<String, String> requestHeadersSilverTier = new HashMap<String, String>();
+        requestHeadersSilverTier.put("accept", "text/xml");
         requestHeadersSilverTier.put("Authorization", "Bearer " + accessToken);
         //millisecond to expire the throttling block
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);

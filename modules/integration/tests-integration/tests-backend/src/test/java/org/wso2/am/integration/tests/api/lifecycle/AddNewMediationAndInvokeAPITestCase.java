@@ -26,16 +26,12 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -48,14 +44,14 @@ import static org.testng.Assert.*;
 public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
     private static final String API_NAME = "AddNewMediationAndInvokeAPITest";
     private static final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
-    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
     private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
     private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final static String MEDIATION_LOG_OUTPUT1 = "To: /"+API_CONTEXT+"/"+API_VERSION_1_0_0+API_GET_ENDPOINT_METHOD;
+    private final static String MEDIATION_LOG_OUTPUT1 = "To: /" + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD;
     private final static String MEDIATION_LOG_OUTPUT2 = "Direction: request, IN_MESSAGE = IN_MESSAGE";
     private final static String MEDIATION_LOGGER = "org.apache.synapse.mediators.builtin.LogMediator";
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -69,17 +65,6 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void initialize() throws Exception {
         super.init();
         String apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        String webAppSourcePath =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "lifecycletest" + File.separator +
-                        "jaxrs_basic.war";
-        String webAppTargetPath =
-                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
-                        "server" + File.separator + "webapps";
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        FileManager.copyResourceToFileSystem(webAppSourcePath, webAppTargetPath, "jaxrs_basic.war");
-        serverConfigurationManager.restartGracefully();
-        super.init();
         String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
@@ -208,9 +193,10 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     private boolean isLogAvailable(LogEvent[] logEventsArray, String expectedLogger, String expectedLog) {
         boolean isNewMediationCalled = false;
         for (LogEvent logEvent : logEventsArray) {
-            if (logEvent.getLogger().equals(expectedLogger) && logEvent.getMessage().contains(expectedLog)) {
+
+            if (logEvent != null && logEvent.getLogger().equals(expectedLogger) &&
+                    logEvent.getMessage().contains(expectedLog)) {
                 isNewMediationCalled = true;
-                System.out.print(logEvent);
                 break;
             }
         }

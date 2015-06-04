@@ -56,7 +56,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private static final Log log = LogFactory.getLog(AddNewHandlerAndInvokeAPITestCase.class);
     private static final String API_NAME = "AddNewHandlerAndInvokeAPITest";
     private static final String API_CONTEXT = "AddNewHandlerAndInvokeAPI";
-    private static final String API_TAGS = "youtube, video, media";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "AddNewHandlerAndInvokeAPI";
@@ -66,6 +66,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private static final String API_GET_ENDPOINT_METHOD = "/handler";
     private static final String CUSTOM_AUTHORIZATION = "CustomAuthKey 123456789";
     private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String CUSTOM_AUTH_HANDLER_JAR = "CustomAPIAuthenticationHandler-1.0.0.jar";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
@@ -74,29 +75,25 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
     private SynapseConfigAdminClient synapseConfigAdminClient;
     private String gatewaySession;
     private String apiEndPointUrl;
+    private ServerConfigurationManager serverConfigurationManager;
+    private String customHandlerTargetPath;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
+
         String synapseConfigArtifactsPath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "synapseconfig.xml";
         newSynapseConfig = readFile(synapseConfigArtifactsPath);
-        String webAppSourcePath =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
-        String webAppTargetPath =
-                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
-                        "server" + File.separator + "webapps";
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        FileManager.copyResourceToFileSystem(webAppSourcePath, webAppTargetPath, "jaxrs_basic.war");
         String customHandlerSourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
                         File.separator + "lifecycletest" + File.separator + "CustomAPIAuthenticationHandler-1.0.0.jar";
-        String customHandlerTargetPath =
+        customHandlerTargetPath =
                 CARBON_HOME + File.separator + "repository" + File.separator + "components" + File.separator + "lib";
-        FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath,
-                "CustomAPIAuthenticationHandler-1.0.0.jar");
+        FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath, CUSTOM_AUTH_HANDLER_JAR);
+
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         String log4jPropertiesFile =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "log4j.properties";
@@ -143,7 +140,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
 
         synapseConfigAdminClient.updateConfiguration(newSynapseConfig);
-        long startTime=System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         long maxWaitTimeForConfigPersist = 60 * 1000;
         while ((!synapseConfigAdminClient.getConfiguration().
                 contains("<handler class=\"org.test.apim.coustom.handler.CustomAPIAuthenticationHandler\"/>")) &&
@@ -191,6 +188,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
             RemoteException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        FileManager.deleteFile(customHandlerTargetPath + File.separator + CUSTOM_AUTH_HANDLER_JAR);
 
     }
 
