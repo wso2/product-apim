@@ -21,17 +21,40 @@
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
 
-
-    <!-- <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
-        <packages>
-            <package name="org.wso2.am.integration.tests.api.lifecycle.*"/>
-        </packages>
-    </test>-->
-
-    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+    <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
 
         <classes>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
+            <!--https://wso2.org/jira/browse/TA-970 -->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
+            <!--Disable the test case because of APIMANAGER-3229-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
+            <!--Disable the test case because of APIMANAGER-3378-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
+            <!--Disable the test case because of APIMANAGER-3377-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
+        </classes>
+    </test>
 
+
+    <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
+        <classes>
             <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
@@ -54,7 +77,7 @@
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>

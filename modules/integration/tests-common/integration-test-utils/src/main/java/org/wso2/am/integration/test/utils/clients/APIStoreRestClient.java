@@ -28,6 +28,7 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class APIStoreRestClient {
      * @param userName - username to login
      * @param password - password to login
      * @return - http response
-     * @throws APIManagerIntegrationTestException - Throws if login to store fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if login to store fails
      */
     public HttpResponse login(String userName, String password)
             throws APIManagerIntegrationTestException {
@@ -81,7 +82,7 @@ public class APIStoreRestClient {
      *
      * @param subscriptionRequest - subscribe api request
      * @return - http response
-     * @throws APIManagerIntegrationTestException - throws if subscription fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if subscription fails
      */
     public HttpResponse subscribe(SubscriptionRequest subscriptionRequest)
             throws APIManagerIntegrationTestException {
@@ -100,7 +101,7 @@ public class APIStoreRestClient {
      *
      * @param generateAppKeyRequest - generate api key request
      * @return - http response
-     * @throws APIManagerIntegrationTestException - throws if application key generation fails.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if application key generation fails.
      */
     public HttpResponse generateApplicationKey(APPKeyRequestGenerator generateAppKeyRequest)
             throws APIManagerIntegrationTestException {
@@ -124,7 +125,7 @@ public class APIStoreRestClient {
      * Get api which are published
      *
      * @return - http response of get API post request
-     * @throws APIManagerIntegrationTestException - throws if API information retrieval fails.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if API information retrieval fails.
      */
     public HttpResponse getAPI() throws APIManagerIntegrationTestException {
         try {
@@ -149,7 +150,7 @@ public class APIStoreRestClient {
     /**
      * Check whether the user is logged in
      *
-     * @throws APIManagerIntegrationTestException - If session cookie not found in the request header
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - If session cookie not found in the request header
      */
     private void checkAuthentication() throws APIManagerIntegrationTestException {
         if (requestHeaders.get("Cookie") == null) {
@@ -165,7 +166,7 @@ public class APIStoreRestClient {
      * @param messageBody      - message body
      * @param tokenEndpointURL - token endpoint url
      * @return - http response of generate access token api call
-     * @throws APIManagerIntegrationTestException - throws if generating APIM access token fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if generating APIM access token fails
      */
     public HttpResponse generateUserAccessKey(String consumeKey, String consumerSecret,
                                               String messageBody, URL tokenEndpointURL)
@@ -191,7 +192,7 @@ public class APIStoreRestClient {
      * Get all published apis
      *
      * @return - http response of get all published apis
-     * @throws APIManagerIntegrationTestException - throws if getting publish APIs fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if getting publish APIs fails
      */
     public HttpResponse getAllPublishedAPIs() throws APIManagerIntegrationTestException {
         try {
@@ -208,7 +209,7 @@ public class APIStoreRestClient {
      * Get all the applications
      *
      * @return - http response of get get all applications
-     * @throws APIManagerIntegrationTestException - throws if get all application fails.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all application fails.
      */
     public HttpResponse getAllApplications() throws APIManagerIntegrationTestException {
         try {
@@ -227,7 +228,7 @@ public class APIStoreRestClient {
      *
      * @param applicationName - application name
      * @return - http response of get application request
-     * @throws APIManagerIntegrationTestException - throws if get application by name fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get application by name fails
      */
     public HttpResponse getPublishedAPIsByApplication(String applicationName)
             throws APIManagerIntegrationTestException {
@@ -254,7 +255,7 @@ public class APIStoreRestClient {
      * @param provider - provider of api
      * @param rating   - api rating
      * @return - http response of add rating request
-     * @throws APIManagerIntegrationTestException - throws if rating of api fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if rating of api fails
      */
     public HttpResponse addRatingToAPI(String apiName, String version, String provider,
                                        String rating) throws APIManagerIntegrationTestException {
@@ -276,7 +277,7 @@ public class APIStoreRestClient {
      * @param version  - api version
      * @param provider - provider of api
      * @return - http response of remove rating request
-     * @throws APIManagerIntegrationTestException - Throws if remove API rating fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if remove API rating fails
      */
     public HttpResponse removeRatingFromAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
@@ -298,7 +299,7 @@ public class APIStoreRestClient {
      * Check if API rating activated
      *
      * @return - http response of rating activated request
-     * @throws APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if rating status cannot be retrieved
      */
     public HttpResponse isRatingActivated() throws APIManagerIntegrationTestException {
         try {
@@ -318,7 +319,7 @@ public class APIStoreRestClient {
      * @param version  - api version
      * @param provider - provider of api
      * @return - http response of get all documentation of APIs
-     * @throws APIManagerIntegrationTestException - throws if retrieval of API documentation fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if retrieval of API documentation fails
      */
     public HttpResponse getAllDocumentationOfAPI(String apiName, String version, String provider)
             throws APIManagerIntegrationTestException {
@@ -343,7 +344,7 @@ public class APIStoreRestClient {
      * @param start  - starting index
      * @param end    - closing  index
      * @return - http response of paginated published APIs
-     * @throws APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if paginated apis cannot be retrieved.
      */
     public HttpResponse getAllPaginatedPublishedAPIs(String tenant, String start, String end)
             throws APIManagerIntegrationTestException {
@@ -363,7 +364,7 @@ public class APIStoreRestClient {
      *
      * @param tenant - tenant name
      * @return - http response of published API
-     * @throws APIManagerIntegrationTestException - throws if published API retrieval fails.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if published API retrieval fails.
      */
     public HttpResponse getAllPublishedAPIs(String tenant)
             throws APIManagerIntegrationTestException {
@@ -387,7 +388,7 @@ public class APIStoreRestClient {
      * @param callbackUrl - callback url
      * @param description - description of app
      * @return - http response of add application
-     * @throws APIManagerIntegrationTestException - if fails to add application
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to add application
      */
     public HttpResponse addApplication(String application, String tier, String callbackUrl,
                                        String description)
@@ -411,7 +412,7 @@ public class APIStoreRestClient {
      * Get application
      *
      * @return - http response of get applications
-     * @throws APIManagerIntegrationTestException - throws if applications cannot be retrieved.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if applications cannot be retrieved.
      */
     public HttpResponse getApplications() throws APIManagerIntegrationTestException {
         try {
@@ -430,7 +431,7 @@ public class APIStoreRestClient {
      *
      * @param application - application name
      * @return - http response of remove application request
-     * @throws APIManagerIntegrationTestException - throws if remove application fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if remove application fails
      */
     public HttpResponse removeApplication(String application)
             throws APIManagerIntegrationTestException {
@@ -454,7 +455,7 @@ public class APIStoreRestClient {
      * @param descriptionNew - updated description
      * @param tier           - access tier
      * @return - http response of update application
-     * @throws APIManagerIntegrationTestException - throws if update application fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if update application fails
      */
     public HttpResponse updateApplication(String applicationOld, String applicationNew,
                                           String callbackUrlNew, String descriptionNew, String tier)
@@ -478,7 +479,7 @@ public class APIStoreRestClient {
      * Get all subscriptions
      *
      * @return - http response of get all subscription request
-     * @throws APIManagerIntegrationTestException - throws if get all subscriptions fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
      */
     public HttpResponse getAllSubscriptions() throws APIManagerIntegrationTestException {
         try {
@@ -500,7 +501,7 @@ public class APIStoreRestClient {
      * @param provider      - provider name
      * @param applicationId - application id
      * @return - http response of unsubscription request
-     * @throws APIManagerIntegrationTestException - Throws if unsubscription fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
      */
     public HttpResponse removeAPISubscription(String API, String version, String provider,
                                               String applicationId)
@@ -521,7 +522,7 @@ public class APIStoreRestClient {
      * Get all API tags
      *
      * @return - http response of get all api tags
-     * @throws APIManagerIntegrationTestException - throws if get all tags fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all tags fails
      */
     public HttpResponse getAllTags() throws APIManagerIntegrationTestException {
         try {
@@ -546,7 +547,7 @@ public class APIStoreRestClient {
      * @param provider - provider name
      * @param comment  - comment to  add
      * @return - http response of add comment
-     * @throws APIManagerIntegrationTestException - throws if add comment fails
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if add comment fails
      */
     public HttpResponse addComment(String apiName, String version, String provider, String comment)
             throws APIManagerIntegrationTestException {
@@ -565,7 +566,7 @@ public class APIStoreRestClient {
      * Check whether commenting is enabled
      *
      * @return - http response of comment status
-     * @throws APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if retrieving comment activation status fails.
      */
     public HttpResponse isCommentActivated() throws APIManagerIntegrationTestException {
         try {
@@ -584,7 +585,7 @@ public class APIStoreRestClient {
      * @param tenant - tenant name
      * @param limit  - limit of result set
      * @return - http response of recently added API request
-     * @throws APIManagerIntegrationTestException - throws if
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if
      */
     public HttpResponse getRecentlyAddedAPIs(String tenant, String limit)
             throws APIManagerIntegrationTestException {
@@ -620,20 +621,19 @@ public class APIStoreRestClient {
     }
 
     /**
-     * Get the  web page with filtered API when click the API Tag link
+     * Get the  web page with filtered API when  click the API Tag link
      *
      * @param apiTag - API tag the need ti filter the api.
      * @return HttpResponse - Response  that contains the web page with filtered API when  click the API Tag link
-     * @throws APIManagerIntegrationTestException - throws when check the Authentication
+     * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
+     * HttpRequestUtil.sendGetRequest() method call
      */
-    public HttpResponse getAPIPageFilteredWithTags(String apiTag)
-            throws APIManagerIntegrationTestException {
+    public HttpResponse getAPIPageFilteredWithTags(String apiTag) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.sendGetRequest(
-                    backendURL + "store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Failed to get API filtered with tags", e);
+            return HttpRequestUtil.sendGetRequest(backendURL + "/store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
+        } catch (IOException ex) {
+            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
         }
     }
 
@@ -642,20 +642,40 @@ public class APIStoreRestClient {
      *
      * @param subscriptionRequest -SubscriptionRequest request instance  with API subscription information.
      * @return HttpResponse - Response f the subscription server REST call
-     * @throws APIManagerIntegrationTestException - throws when  check the Authentication
+     * @throws APIManagerIntegrationTestException - Exception throws when check the Authentication and
+     *                                            HttpRequestUtil.doPost() method call.
      */
-    public HttpResponse subscribeAPI(SubscriptionRequest subscriptionRequest)
-            throws APIManagerIntegrationTestException {
+    public HttpResponse subscribeToAPI(SubscriptionRequest subscriptionRequest) throws APIManagerIntegrationTestException {
         //This method  do the same functionality as subscribe(), except this method  always returns the response object
         //regardless of the response code. But subscribe() returns the response object only if  the response code is
         // 200 or else it will return an Exception.
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
-                    new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
-                    subscriptionRequest.generateRequestParameters(), requestHeaders);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Failed to get API filtered with tags", e);
+            return HttpRequestUtil.doPost(new URL(backendURL +
+                    "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
+                    , subscriptionRequest.generateRequestParameters(), requestHeaders);
+        } catch (Exception ex) {
+            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API", ex);
         }
     }
+
+
+    /**
+     * Retrieve the API store page as anonymous user.
+     *
+     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
+     * @return HttpResponse - Response with API store page of the provided domain.
+     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
+     */
+
+    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
+        try {
+            return HttpRequestUtil.doGet(
+                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+        } catch (Exception ioE) {
+            throw new APIManagerIntegrationTestException(
+                    "Exception when retrieve the API store page as anonymous user", ioE);
+        }
+    }
+
 }

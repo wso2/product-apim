@@ -118,8 +118,8 @@
             </SupportedGrantType>
             <SupportedGrantType>
                <GrantTypeName>application_token</GrantTypeName>
-               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantHandler</GrantTypeHandlerImplClass>
-               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.OpenKeyManagerGrantValidator</GrantTypeValidatorImplClass>
+               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
+               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
            </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>refresh_token</GrantTypeName>
@@ -131,11 +131,12 @@
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>urn:ietf:params:oauth:grant-type:saml2-bearer</GrantTypeName>
-                <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>iwa:ntlm</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeValidatorImplClass>org.wso2.carbon.identity.oauth.common.NTLMAuthenticationValidator</GrantTypeValidatorImplClass>
             </SupportedGrantType>
         </SupportedGrantTypes>
         <OAuthCallbackHandlers>

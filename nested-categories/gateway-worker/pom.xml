@@ -123,7 +123,7 @@
 				<importFeatureDef>org.wso2.carbon.identity.application.authentication.framework.server:4.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.provider.server:4.2.4</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.bam.message.tracer.handler:4.2.3</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.mediator.bam:4.2.0</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.mediator.bam:4.2.5-SNAPSHOT</importFeatureDef>
                             </importFeatures>
                         </configuration>
                     </execution>

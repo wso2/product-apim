@@ -18,7 +18,7 @@
 <product xmlns="http://products.wso2.org/carbon">
     <properties>
        <property name="userforum">http://wso2.org/forum/187</property>
-       <property name="userguide">http://docs.wso2.org/wiki/display/AM180/WSO2+API+Manager+Documentation</property>
+       <property name="userguide">https://docs.wso2.com/display/AM190/WSO2+API+Manager+Documentation</property>
        <property name="mailinglist">http://wso2.org/mail</property>
        <property name="issuetracker">https://wso2.org/jira/browse/APIMANAGER</property>
        <property name="collapsedmenus">region1_configure_menu,region3_registry_menu,region4_monitor_menu,region5_tools_menu</property>
