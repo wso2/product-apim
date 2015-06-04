@@ -232,9 +232,8 @@
     </APIUsageTracking>
 
     <!--
-        API key manager configuration used by API key manager (IS), API store and API gateway.
-        This is used by API store to generate and manage API keys. API gateway uses it to
-        validate and authenticate users against the provided API keys.
+        API key validator configuration used by API key manager (IS), API store and API gateway.
+        API gateway uses it to validate and authenticate users against the provided API keys.
     -->
     <APIKeyValidator>
         <!--
