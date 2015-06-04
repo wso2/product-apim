@@ -47,9 +47,6 @@
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/identity.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
-                <exclude>**/dbscripts/mysql.sql</exclude>
-                <exclude>**/dbscripts/db2.sql</exclude>
-                <exclude>**/dbscripts/mysql_cluster.sql</exclude>
 	        	<exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/bin/ciphertool.bat</exclude>
                 <exclude>**/cipher-text.properties</exclude>
@@ -81,7 +78,7 @@
           <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
 	    <includes>
                 <include>**/httpmime-4.2.5.jar</include>
-		<include>**/encoder-1.1.jar</include>
+		        <include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet>
 	<fileSet>
@@ -122,7 +119,6 @@
         <fileSet>
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security</directory>
           <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
-
           <excludes>
                   <exclude>authenticators.xml</exclude>
                   <exclude>application-authentication.xml</exclude>
@@ -163,15 +159,6 @@
         <!-- Start API Manager related -->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/dbscripts/identity/application-mgt/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/identity/application-mgt</outputDirectory>
-            <includes>
-                <include>**/**.sql</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>
                 ../resources/sql/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
@@ -184,47 +171,47 @@
             <directory>
                 ../resources/migration-1.0.0_to_1.2.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.0.0_to_1.2.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.0.0_to_1.2.0</outputDirectory>
         </fileSet>
 	<fileSet>
             <directory>
                 ../resources/migration-1.2.0_to_1.3.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.2.0_to_1.3.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.2.0_to_1.3.0</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>
                 ../resources/migration-1.3.0_to_1.4.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.3.0_to_1.4.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.3.0_to_1.4.0</outputDirectory>
         </fileSet>
 
         <fileSet>
             <directory>
                 ../resources/migration-1.4.0_to_1.5.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.4.0_to_1.5.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.4.0_to_1.5.0</outputDirectory>
         </fileSet>
 
 	<fileSet>
             <directory>
                 ../resources/migration-1.5.0_to_1.6.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.5.0_to_1.6.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.5.0_to_1.6.0</outputDirectory>
         </fileSet>
 
 	<fileSet>
             <directory>
                 ../resources/migration-1.6.0_to_1.7.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.6.0_to_1.7.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.6.0_to_1.7.0</outputDirectory>
         </fileSet>
 
 	<fileSet>
             <directory>
                 ../resources/migration-1.7.0_to_1.8.0/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.7.0_to_1.8.0</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt/migration-1.7.0_to_1.8.0</outputDirectory>
         </fileSet>
 
 	<!--fileSet>
