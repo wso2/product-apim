@@ -834,7 +834,7 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.3.2-SNAPSHOT</carbon.automation.version>
+        <carbon.automation.version>4.3.1</carbon.automation.version>
         <carbon.automationutils.version>4.3.0</carbon.automationutils.version>
         <org.apache.cxf.version>2.7.2</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>

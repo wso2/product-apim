@@ -20,11 +20,18 @@ package org.wso2.am.integration.tests.version;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -49,19 +56,33 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private String gatewaySessionCookie;
+    private String provider ;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DefaultVersionAPITestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         gatewaySessionCookie = createSession(gatewayContext);
         //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttps());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+
+
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            provider = storeContext.getContextTenant().getContextUser().getUserName();
+        }else {
+            provider = storeContext.getContextTenant().getContextUser().getUserName().replace("@", "-AT-");
+        }
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
+                                              + File.separator + "synapseconfigs" + File.separator + "rest"
+                                              + File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API")
@@ -69,7 +90,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
         //Login to the API Publisher
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
@@ -88,22 +109,22 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                APILifeCycleState.PUBLISHED);
+                                                                              publisherContext.getContextTenant().getContextUser().getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
         //Publish the API
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         //Login to the API Store
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                       storeContext.getContextTenant().getContextUser().getPassword());
 
         //Add an Application in the Store.
         apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
 
+
         //Subscribe the API to the DefaultApplication
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                "DefaultVersionAPP", "Unlimited");
+                                                                          provider,"DefaultVersionAPP", "Unlimited");
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
@@ -114,12 +135,21 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        String directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
+        //https://10.100.5.160:8243/t/wso2.com/response
+        String directBackEndEndpoint,apiInvocationUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
 
-        //Going to access the API without the version in the request url.
-        String apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;
+            //Going to access the API without the version in the request url.
+            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;
+        }else{
+            directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
 
-        HttpResponse directResponse = HttpRequestUtil.doGet(directBackEndEndpoint, null);
+            //Going to access the API without the version in the request url.
+            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +"/"+  apiContext;
+        }
+
+        HttpResponse directResponse = HttpRequestUtil.doGet(directBackEndEndpoint, new HashMap<String, String>());
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
@@ -128,11 +158,19 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
         //Check if accessing the back-end directly and accessing it via the API yield the same responses.
         assertEquals(httpResponse.getData(), directResponse.getData(), "Default version API test failed while " +
-                "invoking the API.");
+                                                                       "invoking the API.");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+//        super.cleanUp();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

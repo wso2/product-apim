@@ -22,6 +22,8 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
@@ -31,6 +33,8 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -51,13 +55,18 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     private String publisherURLHttp;
     private String storeURLHttp;
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public OpenIDTokenAPITestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
 
             publisherURLHttp = publisherUrls.getWebAppURLHttp();;
             storeURLHttp = storeUrls.getWebAppURLHttp();
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+            serverConfigurationManager = new ServerConfigurationManager(new AutomationContext("APIM", "gateway", TestUserMode.SUPER_TENANT_ADMIN));
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator +
                     "configFiles/tokenTest/" +
@@ -150,7 +159,17 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

@@ -20,8 +20,13 @@ package org.wso2.am.integration.test.utils.base;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -281,12 +286,68 @@ public class APIMIntegrationBaseTest {
         }
     }
 
+    public static void cleanup(){
+
+    }
+
     /**
-     * clean up deployed artifacts and other services
+     * Cleaning up the API manager by removing all APIs and applications other than default application
      *
-     * @throws APIManagerIntegrationTestException
+     * @param userName     - username of the api created tenant
+     * @param passWord     - password of the api created tenant
+     * @param storeUrl     - store url
+     * @param publisherUrl - publisher url
+     * @throws APIManagerIntegrationTestException - occurred when calling the apis
+     * @throws org.json.JSONException                      - occurred when reading the json
      */
-    protected void cleanup() throws APIManagerIntegrationTestException {
+    public static void cleanUp(String userName, String passWord, String storeUrl,
+                               String publisherUrl) throws APIManagerIntegrationTestException,
+                                                           JSONException {
+
+        APIStoreRestClient apiStore = new APIStoreRestClient(storeUrl);
+        apiStore.login(userName, passWord);
+        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(publisherUrl);
+        publisherRestClient.login(userName, passWord);
+        String subscriptionData = apiStore.getAllSubscriptions().getData();
+        JSONObject jsonSubscription = new JSONObject(subscriptionData);
+
+        if(jsonSubscription.getString("error").equals("false")) {
+            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject("subscriptions");
+            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray("applications");
+
+            //Remove API Subscriptions
+            for (int i = 0; i < jsonApplicationsArray.length(); i++) {
+                JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
+                int id = appObject.getInt("id");
+                JSONArray subscribedAPIJSONArray = appObject.getJSONArray("subscriptions");
+                for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
+                    JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
+                    apiStore.removeAPISubscription(subscribedAPI.getString("name"), subscribedAPI.getString("version"),
+                                                   subscribedAPI.getString("provider"), String.valueOf(id));
+                }
+            }
+        }
+
+        String apiData = apiStore.getAPI().getData();
+        JSONObject jsonAPIData = new JSONObject(apiData);
+        JSONArray jsonAPIArray = jsonAPIData.getJSONArray("apis");
+
+        //delete all APIs
+        for (int i = 0; i < jsonAPIArray.length(); i++) {
+            JSONObject api = jsonAPIArray.getJSONObject(i);
+            publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), userName);
+        }
+
+        //delete all application other than default application
+        String applicationData = apiStore.getAllApplications().getData();
+        JSONObject jsonApplicationData = new JSONObject(applicationData);
+        JSONArray applicationArray = jsonApplicationData.getJSONArray("applications");
+        for (int i = 0; i < applicationArray.length(); i++) {
+            JSONObject jsonApplication = applicationArray.getJSONObject(i);
+            if (!jsonApplication.getString("name").equals("DefaultApplication")) {
+                apiStore.removeApplication(jsonApplication.getString("name"));
+            }
+        }
 
     }
 

@@ -21,12 +21,15 @@ package org.wso2.am.integration.tests.other;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -43,9 +46,14 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public TagsRatingCommentTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         /*
        This test can point to external API manager deployment without adding any resources to system
         */
@@ -88,6 +96,11 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
+
+        if (!gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            apiContextAddedValue = "t/" + gatewayContext.getContextTenant().getDomain()+"/"+apiContextAddedValue;
+        }
+
         assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
                 apiContextAddedValue, "API context mismatch");
@@ -100,10 +113,18 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
         apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                storeContext.getContextTenant()
-                        .getContextUser()
-                        .getUserName());
+
+        SubscriptionRequest subscriptionRequest ;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()
+                    .getContextUser()
+                    .getUserName());
+        } else {
+            subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()
+                    .getContextUser()
+                    .getUserName().replace("@", "-AT-"));
+        }
+
         subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
@@ -121,12 +142,16 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
+        String gatewayUrl ;
+        if(gatewayContext.getContextTenant().getDomain().equals("carbon.super")){
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/most_popular";
+        }else{
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/commentRating/1.0.0/most_popular";
+        }
+
         Thread.sleep(2000);
         for (int i = 0; i < 19; i++) {
-
-            HttpResponse youTubeResponse = HttpRequestUtil
-                    .doGet(gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/most_popular",
-                            requestHeaders);
+            HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
 
             assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response code mismatched");
@@ -142,8 +167,7 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         //HttpResponse youTubeResponse = HttpRequestUtil.doGet(getApiInvocationURLHttp("commentRating/1.0.0/most_popular"), requestHeaders);
 
         Thread.sleep(60000);
-        HttpResponse youTubeResponse1 = HttpRequestUtil
-                .doGet(gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/most_popular", null);
+        HttpResponse youTubeResponse1 = HttpRequestUtil.doGet(gatewayUrl, new HashMap<String, String>());
         assertEquals(youTubeResponse1.getResponseCode(), 401, "Response code mismatched");
         // URL url1 = new URL(url);
         // HttpResponse youTubeResponse2 = HttpRequestUtil.doPost(url1,"-");
@@ -169,6 +193,16 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("CommentRatingAPI-Application");
-        super.cleanup();
+//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

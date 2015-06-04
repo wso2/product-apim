@@ -21,11 +21,14 @@ package org.wso2.am.integration.tests.samples;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -40,10 +43,16 @@ import static org.testng.Assert.assertTrue;
 public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private String gatewayUrl;
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public YouTubeAPITestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
@@ -51,10 +60,16 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        HttpResponse a = apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                                       publisherContext.getContextTenant().getContextUser().getPassword());
+        HttpResponse b = apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                                   storeContext.getContextTenant().getContextUser().getPassword());
+
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() ;
+        } else {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
+        }
 
     }
 
@@ -70,12 +85,17 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
                 );
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",
-                storeContext.getContextTenant()
-                        .getContextUser()
-                        .getUserName()
-        );
+
+        String provider ;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            provider = storeContext.getContextTenant().getContextUser().getUserName();
+        } else {
+            provider= storeContext.getContextTenant().getContextUser().getUserName().replace("@", "-AT-");
+        }
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",provider);
         subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
+        subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
 
         APPKeyRequestGenerator generateAppKeyRequest =
@@ -92,7 +112,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
                   getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
-                gatewayUrls.getWebAppURLNhttp() + "youtube/1.0.0/most_popular", requestHeaders);
+                gatewayUrl + "youtube/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<feed"),
@@ -107,6 +127,16 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("YoutubeFeeds-Application");
-        super.cleanup();
+//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }
