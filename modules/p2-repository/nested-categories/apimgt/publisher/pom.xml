@@ -338,9 +338,6 @@
                                     org.wso2.carbon.apimgt.publisher:${apimgt.feature.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.store:${apimgt.feature.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
                                     org.wso2.carbon.apimgt.startup.publisher:${apimgt.feature.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
