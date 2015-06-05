@@ -20,11 +20,22 @@ package org.wso2.am.integration.tests.token;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -44,25 +55,41 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public RefreshTokenTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
-        super.init();
+        super.init(userMode);
         /*
           If test run in external distributed deployment you need to copy following resources accordingly.
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
+        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
+                            "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
+                            File.separator + "jaxrs_basic.war";
+
+        String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
+                            "deployment" + File.separator + "server" + File.separator + "webapps";
+
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
-                "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator +
-                "log4j.properties"));
+
+        serverConfigurationManager = new ServerConfigurationManager(
+                new AutomationContext("APIM", "gateway", TestUserMode.SUPER_TENANT_ADMIN));
+        serverConfigurationManager.applyConfigurationWithoutRestart(
+                new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                         "tokenTest" + File.separator + "api-manager.xml"));
+        serverConfigurationManager.applyConfiguration(
+                new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                         "tokenTest" + File.separator + "log4j.properties"));
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -74,14 +101,14 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         String APIName = "RefreshTokenTestAPI";
         String APIContext = "refreshTokenTestAPI";
-        String tags = "youtube, token, media";
-        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String tags = "sample, token, media";
+        String url = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
         String name = publisherContext.getSuperTenant().getContextUser().getUserName();
         String password = publisherContext.getSuperTenant().getContextUser().getPassword();
         String APIVersion = "1.0.0";
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -93,17 +120,19 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                       storeContext.getContextTenant().getContextUser().getPassword());
         apiStore.addApplication("RefreshTokenTestAPI-Application", "Gold", "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                storeContext.getContextTenant()
-                        .getContextUser()
-                        .getUserName());
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()
+                .getContextUser()
+                .getUserName());
+
         subscriptionRequest.setTier("Gold");
         subscriptionRequest.setApplicationName("RefreshTokenTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
-        //Generate production token and invoke with that
+
+        // get Consumer Key and Consumer Secret//Generate production token and invoke with that
         APPKeyRequestGenerator generateAppKeyRequest =
                 new APPKeyRequestGenerator("RefreshTokenTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
@@ -121,7 +150,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                        tokenEndpointURL).getData());
+                                               tokenEndpointURL).getData());
 
         // get Access Token and Refresh Token
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
@@ -130,45 +159,64 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check Access Token
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        requestHeaders.put("accept", "text/xml");
         Thread.sleep(2000);
-        HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrls.getWebAppURLNhttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+
+        String apiUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            apiUrl = gatewayUrls.getWebAppURLNhttp() + "refreshTokenTestAPI/1.0.0/customers/123";
+        } else {
+            apiUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
+                     "/refreshTokenTestAPI/1.0.0/customers/123";
+        }
+
+        HttpResponse httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
         //check JWT headers here
-        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
-        assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
-        assertTrue(youTubeResponse.getData().contains("<category"),
-                "Response data mismatched");
-        assertTrue(youTubeResponse.getData().contains("<entry>"),
-                "Response data mismatched");
+        assertEquals(httpResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        assertTrue(httpResponse.getData().contains("John"), "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<name>"),
+                   "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<Customer>"),
+                   "Response data mismatched");
 
         // get a new access token using refresh token
         String getAccessTokenFromRefreshTokenRequestBody =
                 "grant_type=refresh_token&refresh_token=" + refreshToken + "&scope=PRODUCTION";
         accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                        getAccessTokenFromRefreshTokenRequestBody,
-                        tokenEndpointURL).getData());
+                                               getAccessTokenFromRefreshTokenRequestBody,
+                                               tokenEndpointURL).getData());
         userAccessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
         //Check with new Access Token
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
+        requestHeaders.put("accept", "text/xml");
         Thread.sleep(2000);
-        youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrls.getWebAppURLNhttp() + "refreshTokenTestAPI/1.0.0/most_popular", requestHeaders);
+        httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
         //check JWT headers here
-        assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
-        assertTrue(youTubeResponse.getData().contains("<feed"), "Response data mismatched");
-        assertTrue(youTubeResponse.getData().contains("<category"),
-                "Response data mismatched");
-        assertTrue(youTubeResponse.getData().contains("<entry>"),
-                "Response data mismatched");
+        assertEquals(httpResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatched");
+        assertTrue(httpResponse.getData().contains("John"), "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<name"),
+                   "Response data mismatched");
+        assertTrue(httpResponse.getData().contains("<Customer>"),
+                   "Response data mismatched");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("RefreshTokenTestAPI-Application");
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

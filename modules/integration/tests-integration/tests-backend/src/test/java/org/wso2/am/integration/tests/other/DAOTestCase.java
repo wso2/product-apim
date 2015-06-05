@@ -23,12 +23,15 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -49,15 +52,24 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(DAOTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private String providerName ;
+
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public DAOTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+        super.init(userMode);
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttps());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 
@@ -97,7 +109,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         String tags = "youtube, video, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = "admin";
+
         String APIVersion = "1.0.0";
         String apiContextAddedValue = APIContext + "/" + APIVersion;
 
@@ -115,9 +127,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-        assertEquals(
-                apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                apiContextAddedValue, "API context mismatch");
+        assertTrue(apiBean.getContext().contains(apiContextAddedValue), "API context mismatch");
         assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         assertEquals(apiBean.getId().getProviderName(), providerName,
                 "Provider Name mismatch");
@@ -205,6 +215,16 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("DAOTestAPI-Application");
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

@@ -29,7 +29,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -85,17 +89,17 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
         String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "configFiles" + File.separator
-                + "token_encryption" + File.separator;
+                                   File.separator + "artifacts" + File.separator + "AM" + File.separator +
+                                   "configFiles" + File.separator + "token_encryption" + File.separator;
 
         String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
         String identityConfigArtifactLocation = artifactsLocation + IDENTITY_CONFIG_XML;
 
         String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + APIM_CONFIG_XML;
+                                              File.separator + "conf" + File.separator + APIM_CONFIG_XML;
+
         String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + IDENTITY_CONFIG_XML;
+                                                  File.separator + "conf" + File.separator + IDENTITY_CONFIG_XML;
 
         File apimConfSourceFile = new File(apimConfigArtifactLocation);
         File apimConfTargetFile = new File(apimRepositoryConfigLocation);
@@ -108,12 +112,12 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         // apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
         log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                " to :" + apimRepositoryConfigLocation);
+                 " to :" + apimRepositoryConfigLocation);
 
         // apply configuration to identity.xml
         serverManager.applyConfigurationWithoutRestart(identityConfSourceFile, identityConfTargetFile, true);
         log.info("identity.xml configuration file copy from :" + identityConfigArtifactLocation +
-                " to :" + identityRepositoryConfigLocation);
+                 " to :" + identityRepositoryConfigLocation);
 
         serverManager.restartGracefully();
 
@@ -132,11 +136,11 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         try {
             userManagementClient = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                    publisherContext.getContextTenant().getContextUser().getUserName(),
-                    publisherContext.getContextTenant().getContextUser().getPassword());
+                                                            publisherContext.getContextTenant().getContextUser().getUserName(),
+                                                            publisherContext.getContextTenant().getContextUser().getPassword());
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                    "/permission/admin/manage/api/subscribe"});
+                                                                                       "/permission/admin/manage/api/subscribe"});
 
             //creating user sam
             userManagementClient.addUser(USER_SAM, "sam123", new String[]{SUBSCRIBER_ROLE}, "sam");
@@ -158,14 +162,14 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             Assert.assertTrue(false, e.getMessage());
         } catch (XPathExpressionException e) {
             log.error("Error when getting backend URLs of the publisher to initialize the UserManagementClient"
-                    + e.getMessage());
+                      + e.getMessage());
             //Fail the test case.
             Assert.assertTrue(false, e.getMessage());
         }
 
         // Adding API
         String apiContext = "tokenencapi";
-        String endpointUrl = "http://localhost:8280/response";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -186,7 +190,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         try {
             apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                    publisherContext.getContextTenant().getContextUser().getPassword());
+                               publisherContext.getContextTenant().getContextUser().getPassword());
 
             apiPublisher.addAPI(apiRequest);
 
@@ -200,13 +204,13 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             // admin_scope(used for POST) :- admin
             // user_scope (used for GET) :- admin,subscriber
             String modifiedResource = "{\"paths\":{ \"/*\":{\"put\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                    "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                    "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                    "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
-                    "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
-                    "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"" + API_NAME + "\",\"version\":\"1.0.0\"}," +
-                    "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
-                    "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
+                                      "\"x-throttling-tier\":\"Unlimited\" },\"post\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                                      "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"admin_scope\"},\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                                      "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
+                                      "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
+                                      "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"" + API_NAME + "\",\"version\":\"1.0.0\"}," +
+                                      "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
+                                      "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
 
             apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
 
@@ -228,20 +232,20 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL("https://localhost:8243/token");
+            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
             String requestBody;
             JSONObject accessTokenGenerationResponse;
 
             //Obtain user access token for sam, request scope 'user_scope'
             requestBody = "grant_type=password&username=" + USER_SAM + "&password=sam123&scope=user_scope";
-            accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                    requestBody, tokenEndpointURL)
-                    .getData());
+            accessTokenGenerationResponse = new JSONObject(
+                    apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                                                   requestBody, tokenEndpointURL).getData());
             String receivedScope = accessTokenGenerationResponse.getString("scope");
 
             //Check if we receive the scope we requested for.
             Assert.assertEquals(receivedScope, "user_scope", "Received scope is " + receivedScope +
-                    ", but expected user_scope");
+                                                             ", but expected user_scope");
         } catch (APIManagerIntegrationTestException e) {
             log.error("Error occurred while executing Test", e);
             //Fail the test case
@@ -278,7 +282,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
 
-        super.cleanup();
         serverManager.restoreToLastConfiguration();
         serverManager.restartGracefully();
         log.info("Restored configuration and restarted gracefully...");
