@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-
 WSO2 Inc. licenses this file to you under the Apache License,
 Version 2.0 (the "License"); you may not use this file except
 in compliance with the License.
 You may obtain a copy of the License at
-
 http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing,
 software distributed under the License is distributed on an
 "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -38,10 +35,10 @@ under the License.
                 <inherited>false</inherited>
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-         <!--        <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                        -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                        -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                    </argLine>-->
+                    <!--        <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
+                                   -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
+                                   -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
+                               </argLine>-->
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -73,10 +70,10 @@ under the License.
                             <value>false</value>
                         </property>
                         <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
-                        <!--<emma.home>${basedir}/target/emma</emma.home>-->
+                        <emma.home>${basedir}/target/emma</emma.home>
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
-                        <!--<emma.output>${basedir}/target/emma</emma.output>-->
+                        <emma.output>${basedir}/target/emma</emma.output>
                     </systemProperties>
                     <workingDirectory>${basedir}/target</workingDirectory>
                 </configuration>
@@ -85,20 +82,19 @@ under the License.
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
 
-
                     <execution>
-                        <id>copy-jacoco-dependencies</id>
+                        <id>copy-emma-dependencies</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/jacoco</outputDirectory>
+                            <outputDirectory>${project.build.directory}/emma</outputDirectory>
                             <includeTypes>jar</includeTypes>
-                            <includeArtifactIds>org.jacoco.agent</includeArtifactIds>
+                            <includeArtifactIds>emma
+                            </includeArtifactIds>
                         </configuration>
                     </execution>
-
 
                     <execution>
                         <id>copy-secVerifier</id>
@@ -288,10 +284,6 @@ under the License.
                     <artifactId>slf4j-jdk12</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>org.jacoco.agent</artifactId>
         </dependency>
     </dependencies>
 </project>

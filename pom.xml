@@ -74,18 +74,6 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
-
-            <repository>
-                <id>wso2.releases.stagin</id>
-                <name>WSO2 Releases Repository</name>
-                <url>http://maven.wso2.org/nexus/content/repositories/orgwso2carbonautomation-010/</url>
-                <releases>
-                    <enabled>true</enabled>
-                    <updatePolicy>daily</updatePolicy>
-                    <checksumPolicy>ignore</checksumPolicy>
-                </releases>
-            </repository>
-
     </repositories>
 
     <pluginRepositories>
@@ -730,7 +718,7 @@
                 <artifactId>org.wso2.carbon.rest.api</artifactId>
                 <version>${carbon.rest.api.version}</version>
             </dependency>
-		<dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
                 <version>${carbon.platform.version}</version>
@@ -744,11 +732,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jacoco</groupId>
-                <artifactId>org.jacoco.agent</artifactId>
-                <version>${jacoco.agent.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -847,7 +830,7 @@
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v13</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
-        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
+
 
     </properties>
 
