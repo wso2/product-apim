@@ -48,9 +48,7 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
                 gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
@@ -127,7 +125,6 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
-
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
         Thread.sleep(2000);
 
@@ -141,6 +138,8 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 }

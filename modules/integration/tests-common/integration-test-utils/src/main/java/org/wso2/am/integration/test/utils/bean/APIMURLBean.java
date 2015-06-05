@@ -41,29 +41,39 @@ public class APIMURLBean {
 
     public APIMURLBean(ContextUrls contextUrls) {
 
-        String tempUrl = contextUrls.getBackEndUrl();
-        webAppURLHttp = contextUrls.getWebAppURL() + "/";
 
-        if (tempUrl.endsWith("/services/")) {
+        String tempUrl = contextUrls.getWebAppURL();
+        if (tempUrl.contains("/t/")) {
+            tempUrl = tempUrl.split("/t/")[0];
+        }
+        webAppURLHttp = tempUrl + "/";
+
+        tempUrl = contextUrls.getBackEndUrl();
+        if (tempUrl.contains("/t/")) {
+            tempUrl = tempUrl.split("/t/")[0];
+        }
+        if (tempUrl.contains("/services/")) {
             tempUrl = tempUrl.replace("/services/", "");
         }
 
         webAppURLHttps = tempUrl + "/";
 
         tempUrl = contextUrls.getServiceUrl();
-
-        if (tempUrl.endsWith("/services")) {
+        if (tempUrl.contains("/t/")) {
+            tempUrl = tempUrl.split("/t/")[0];
+        }
+        if (tempUrl.contains("/services")) {
             tempUrl = tempUrl.replace("/services", "");
         }
-
         webAppURLNhttp = tempUrl + "/";
 
         tempUrl = contextUrls.getSecureServiceUrl();
-
-        if (tempUrl.endsWith("/services")) {
+        if (tempUrl.contains("/t/")) {
+            tempUrl = tempUrl.split("/t/")[0];
+        }
+        if (tempUrl.contains("/services")) {
             tempUrl = tempUrl.replace("/services", "");
         }
-
         webAppURLNhttps = tempUrl + "/";
 
 

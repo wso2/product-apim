@@ -55,10 +55,10 @@
                         <carbon.zip>
                             ${basedir}/../../../distribution/product/target/wso2am-${project.version}.zip
                         </carbon.zip>
-                        <emma.home>${basedir}/target/emma</emma.home>
+                        <!--<emma.home>${basedir}/target/emma</emma.home>-->
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
-                        <emma.output>${basedir}/target/emma</emma.output>
+                        <!--<emma.output>${basedir}/target/emma</emma.output>-->
                     </systemProperties>
                     <workingDirectory>${basedir}/target</workingDirectory>
                 </configuration>
@@ -66,19 +66,20 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+
                     <execution>
-                        <id>copy-emma-dependencies</id>
+                        <id>copy-jacoco-dependencies</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/emma</outputDirectory>
+                            <outputDirectory>${project.build.directory}/jacoco</outputDirectory>
                             <includeTypes>jar</includeTypes>
-                            <includeArtifactIds>emma,org.wso2.carbon.automation.core
-                            </includeArtifactIds>
+                            <includeArtifactIds>org.jacoco.agent</includeArtifactIds>
                         </configuration>
                     </execution>
+
                     <execution>
                         <id>copy-secVerifier</id>
                         <phase>compile</phase>

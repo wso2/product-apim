@@ -56,6 +56,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
     private WorkFlowAdminRestClient workflowAdmin;
     private static final Log log = LogFactory.getLog(EmailUserNameLoginTestCase.class);
+    private ServerConfigurationManager serverConfigurationManager ;
 
 
     @BeforeClass(alwaysRun = true)
@@ -87,7 +88,7 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
     private void configureServer(String apiManagerXml, String userMgtXml, String carbonXml) throws Exception {
         try {
-            ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+            serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(userMgtXml));
             serverConfigurationManager.applyConfiguration(new File(carbonXml));
@@ -185,7 +186,10 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        serverConfigurationManager.restoreToLastConfiguration();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
 }

@@ -72,14 +72,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         //enable JWT token generation
         serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator +
-                "configFiles/tokenTest/" +
-                "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator +
-                "configFiles/tokenTest/" +
-                "log4j.properties"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(
+                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator +
+                                                               "configFiles/tokenTest/" + "log4j.properties"));
 
 
         userManagementClient = new UserManagementClient(
@@ -97,7 +94,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
     }
 
@@ -326,7 +325,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restartGracefully();
         super.init();
 
-        String provider = "admin-AT-wso2.com";
+        String provider = "admin@wso2.com";
         String tenantUser = "admin@wso2.com";
         String password = "wso2@123";
         String accessToken;

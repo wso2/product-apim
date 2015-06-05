@@ -44,6 +44,8 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
     private String userName;
+    private String publisherURLHttp;
+    private String storeURLHttp;
 
     @BeforeClass(alwaysRun = true)
     public void deployService() throws Exception {
@@ -56,28 +58,25 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
          configFiles/tokenTest/log4j.properties
          */
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        storeURLHttp = storeUrls.getWebAppURLHttp();
 
         userName = gatewayContext.getContextTenant().getTenantAdmin().getUserName();
 
         serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
+                                                                             + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
+                                                               + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
         super.init();
-
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
 
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
                 gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
 
         tenantManagementServiceClient.addTenant("11wso2.com",
-                gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
-                gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+                                                gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
+                                                gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
     }
 
     @Test(groups = "wso2.am", description = "Check whether refresh token issued in tenant mode")
@@ -90,6 +89,9 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         String description = "This is test API create by API manager integration test";
         String APIVersion = "1.0.0";
 
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+
         apiPublisher.login(userName + "@11wso2.com", userName);
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
@@ -99,11 +101,11 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         apiRequest.setSandbox(url);
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName + "@11wso2.com",
-                APILifeCycleState.PUBLISHED);
+                                                                              APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(userName + "@11wso2.com", storeContext.getContextTenant().getTenantAdmin().getPassword());
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName+"-AT-11wso2.com");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName + "@11wso2.com");
         subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
 
@@ -119,12 +121,12 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "@11wso2.com&password=" +
-                storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
+                             storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
         URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
-                consumerSecret,
-                requestBody,
-                tokenEndpointURL).getData());
+                                                                                                 consumerSecret,
+                                                                                                 requestBody,
+                                                                                                 tokenEndpointURL).getData());
 
         /*
         Response would be like 
@@ -133,6 +135,60 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         */
 
         // get Refresh Token
+        assertNotNull(accessTokenGenerationResponse.getString("refresh_token"), "Refresh Token Can Not Be Null");
+
+    }
+
+    @Test(groups = "wso2.am", description = "Check whether refresh token issued in tenant mode")
+    public void testForSuperTenantRefreshToken() throws Exception {
+
+        String APIName = "SuperTenantTokenRefreshTestAPI";
+        String APIContext = "superTenantTokenRefreshTestAPI";
+        String tags = "youtube, token, media";
+        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+        String description = "This is test API create by API manager integration test";
+        String APIVersion = "1.0.0";
+
+        userName = gatewayContext.getSuperTenant().getTenantAdmin().getUserName();
+
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
+
+        apiPublisher.login(userName, gatewayContext.getSuperTenant().getTenantAdmin().getPassword());
+
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        apiRequest.setTags(tags);
+        apiRequest.setDescription(description);
+        apiRequest.setVersion(APIVersion);
+        apiRequest.setSandbox(url);
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName,
+                                                                              APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        apiStore.login(userName, storeContext.getContextTenant().getTenantAdmin().getPassword());
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName);
+        subscriptionRequest.setTier("Gold");
+        apiStore.subscribe(subscriptionRequest);
+
+        //Generate production token and invoke with that
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultApplication");
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+
+        // get Consumer Key and Consumer Secret
+        String consumerKey = response.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        String consumerSecret = response.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+
+        //Obtain user access token
+        Thread.sleep(2000);
+        String requestBody = "grant_type=password&username=" + userName + "&password=" +
+                             storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
+                                                                                                 consumerSecret,
+                                                                                                 requestBody,
+                                                                                                 tokenEndpointURL).getData());
 
         assertNotNull(accessTokenGenerationResponse.getString("refresh_token"), "Refresh Token Can Not Be Null");
 
@@ -140,7 +196,9 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void unDeployService() throws Exception {
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

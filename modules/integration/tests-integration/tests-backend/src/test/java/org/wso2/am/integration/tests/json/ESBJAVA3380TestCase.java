@@ -55,10 +55,11 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
         serverConfigurationManager = new ServerConfigurationManager(
                 gatewayContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(
+                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
+
+        serverConfigurationManager.applyConfiguration(
+                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
 
         gatewaySessionCookie = createSession(gatewayContext);
 
@@ -80,8 +81,8 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
         try {
             response = HttpRequestUtil.doPost(new URL(
-                    gatewayUrls.getWebAppURLNhttp()+"Weather/1.0.0"), payload,
-                    requestHeaders);
+                                                      gatewayUrls.getWebAppURLNhttp() + "Weather/1.0.0"), payload,
+                                              requestHeaders);
         } catch (Exception e) {
             Assert.assertFalse(
                     e.getLocalizedMessage().contains("Connection error"),
@@ -90,12 +91,14 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
         assert response != null;
         Assert.assertEquals(response.getResponseCode(), 404,
-                "Response code mismatched while Json to XML test case");
+                            "Response code mismatched while Json to XML test case");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

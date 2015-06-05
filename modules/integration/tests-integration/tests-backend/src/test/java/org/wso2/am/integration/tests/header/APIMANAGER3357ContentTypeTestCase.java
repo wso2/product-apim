@@ -50,16 +50,15 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         String session = login.login("admin", "admin", "localhost");
         // Upload the synapse
         String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
-                File.separator + "property" + File.separator +
-                "CONTENT_TYPE_TEST.xml";
+                      File.separator + "property" + File.separator +
+                      "CONTENT_TYPE_TEST.xml";
         OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
         apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
                                                      session);
         Thread.sleep(5000);
-
     }
 
-    @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
     @org.testng.annotations.Test(groups = "wso2.am",
             description = "Test for reading the multipart/form-data Content-Type header in the request")
     public void testTRANSPORT_HEADERSPropertTest() throws Exception {
@@ -67,7 +66,7 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         wireServer.start();
 
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://localhost:8280/ContentTypeAPI");
+        HttpPost httppost = new HttpPost(gatewayUrls.getWebAppURLNhttp() + "ContentTypeAPI");
 
         String relativeFilePath = "/artifacts/AM/synapseconfigs/property/CONTENT_TYPE_TEST.xml";
         relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", File.separator);
@@ -88,13 +87,13 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         String wireResponse = wireServer.getCapturedMessage();
 
         Assert.assertTrue(wireResponse.contains("Content-Type: multipart/form-data"),
-                "Content-Type header have multipart/form-data value properly");
+                          "Content-Type header have multipart/form-data value properly");
 
         // response should be something like multipart/form-data; boundary=9u5f_0bx6sx1lHerRtXmOkKAprCjG0ESSS
         // If it contains something like bellow, that is incorrect
         Assert.assertFalse(wireResponse.contains(
-                        "Content-Type: multipart/form-data; charset=UTF-8; boundary=MIMEBoundary_"),
-                "Content-Type header contains invalid charset and boundary values");
+                                   "Content-Type: multipart/form-data; charset=UTF-8; boundary=MIMEBoundary_"),
+                           "Content-Type header contains invalid charset and boundary values");
 
     }
 

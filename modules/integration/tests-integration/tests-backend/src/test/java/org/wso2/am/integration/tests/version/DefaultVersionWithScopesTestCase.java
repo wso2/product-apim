@@ -21,14 +21,17 @@ package org.wso2.am.integration.tests.version;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -81,9 +84,9 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml", gatewayContext, createSession(gatewayContext));
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
+                                              "synapseconfigs" + File.separator + "rest" + File.separator +
+                                              "dummy_api.xml", gatewayContext, createSession(gatewayContext));
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
@@ -94,10 +97,10 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
         //Add a user called mike and assign him to the subscriber role.
         try {
             userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "admin",
-                    "admin");
+                                                            "admin");
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                    "/permission/admin/manage/api/subscribe"});
+                                                                                       "/permission/admin/manage/api/subscribe"});
 
             //creating user mike
             userManagementClient.addUser(USER_MIKE, "mike123", new String[]{}, USER_MIKE);
@@ -147,31 +150,31 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
             //publishing API
             APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, API_PROVIDER,
-                    APILifeCycleState.PUBLISHED);
+                                                                                  APILifeCycleState.PUBLISHED);
             apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
             //resources are modified using swagger doc.
             String modifiedResource = "{\"apiVersion\":\"1.0.0\",\"swaggerVersion\":\"1.2\"," +
-                    "\"authorizations\":{\"oauth2\":{\"scopes\":[{\"description\":\"\", " +
-                    "\"name\":\"admin_scope\",\"roles\":\"admin\",\"key\":\"admin_scope\"}," +
-                    "{\"description\":\"\",\"name\":\"user_scope\",\"roles\":\"subscriber\"," +
-                    "\"key\":\"user_scope\"}]," +
-                    "\"type\":\"oauth2\"}},\"apis\":[{\"index\":0,\"file\":{\"apiVersion\":\"1.0.0\"," +
-                    "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"index\":0," +
-                    "\"path\":\"/*\",\"operations\":[{\"scope\":\"user_scope\"," +
-                    "\"auth_type\":\"Application User\"," +
-                    "\"throttling_tier\":\"Unlimited\",\"method\":\"GET\",\"parameters\":[]}," +
-                    "{\"scope\":\"\",\"auth_type\":\"Application User\"," +
-                    "\"throttling_tier\":\"Unlimited\"," +
-                    "\"method\":\"POST\",\"parameters\":[]},{\"scope\":\"\",\"auth_type\":\"Application" +
-                    " User\"," +
-                    "\"throttling_tier\":\"Unlimited\",\"method\":\"PUT\",\"parameters\":[]}," +
-                    "{\"auth_type\":\"Application User\",\"throttling_tier\":\"Unlimited\"," +
-                    "\"method\":\"DELETE\"," +
-                    "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
-                    "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
-                    "\"/default\"}],\"info\":{\"title\":\"" + API_NAME + "\",\"termsOfServiceUrl\":\"" +
-                    "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
+                                      "\"authorizations\":{\"oauth2\":{\"scopes\":[{\"description\":\"\", " +
+                                      "\"name\":\"admin_scope\",\"roles\":\"admin\",\"key\":\"admin_scope\"}," +
+                                      "{\"description\":\"\",\"name\":\"user_scope\",\"roles\":\"subscriber\"," +
+                                      "\"key\":\"user_scope\"}]," +
+                                      "\"type\":\"oauth2\"}},\"apis\":[{\"index\":0,\"file\":{\"apiVersion\":\"1.0.0\"," +
+                                      "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"index\":0," +
+                                      "\"path\":\"/*\",\"operations\":[{\"scope\":\"user_scope\"," +
+                                      "\"auth_type\":\"Application User\"," +
+                                      "\"throttling_tier\":\"Unlimited\",\"method\":\"GET\",\"parameters\":[]}," +
+                                      "{\"scope\":\"\",\"auth_type\":\"Application User\"," +
+                                      "\"throttling_tier\":\"Unlimited\"," +
+                                      "\"method\":\"POST\",\"parameters\":[]},{\"scope\":\"\",\"auth_type\":\"Application" +
+                                      " User\"," +
+                                      "\"throttling_tier\":\"Unlimited\",\"method\":\"PUT\",\"parameters\":[]}," +
+                                      "{\"auth_type\":\"Application User\",\"throttling_tier\":\"Unlimited\"," +
+                                      "\"method\":\"DELETE\"," +
+                                      "\"parameters\":[]},{\"auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"," +
+                                      "\"method\":\"OPTIONS\",\"parameters\":[]}]}]},\"description\":\"\",\"path\":" +
+                                      "\"/default\"}],\"info\":{\"title\":\"" + API_NAME + "\",\"termsOfServiceUrl\":\"" +
+                                      "\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}";
 
             apiPublisher.updateResourceOfAPI(API_PROVIDER, API_NAME, API_VERSION, modifiedResource
             );
@@ -193,7 +196,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL("https://localhost:8243/token");
+            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
             String accessToken;
             Map<String, String> requestHeaders;
             HttpResponse response;
@@ -203,8 +206,8 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             //Obtain user access token for sam, request scope 'user_scope'
             requestBody = "grant_type=password&username=" + USER_SAM + "&password=sam123&scope=user_scope";
             accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                    requestBody, tokenEndpointURL)
-                    .getData());
+                                                                                          requestBody, tokenEndpointURL)
+                                                                   .getData());
             accessToken = accessTokenGenerationResponse.getString("access_token");
 
             requestHeaders = new HashMap<String, String>();
@@ -213,14 +216,14 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             //Accessing GET method without the version in the URL using the token sam received
             response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "sam cannot access the GET Method. Response = "
-                            + response.getData());
+                         "sam cannot access the GET Method. Response = "
+                         + response.getData());
 
             //Obtaining user access token for mike, request scope 'user_scope'
             requestBody = "grant_type=password&username=" + USER_MIKE + "&password=mike123&scope=user_scope";
             accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                    requestBody, tokenEndpointURL)
-                    .getData());
+                                                                                          requestBody, tokenEndpointURL)
+                                                                   .getData());
             accessToken = accessTokenGenerationResponse.getString("access_token");
 
             requestHeaders = new HashMap<String, String>();
@@ -229,8 +232,8 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             //Accessing GET method without the version in the URL using the token mike received.
             response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
-                    "Mike should receive an HTTP 403 when trying to access"
-                            + " the GET resource. But the response code was " + response.getResponseCode());
+                         "Mike should receive an HTTP 403 when trying to access"
+                         + " the GET resource. But the response code was " + response.getResponseCode());
         }
         //Catching generic Exception since apiPublisher and apiStore classes throw Exception from their methods.
         catch (Exception e) {
