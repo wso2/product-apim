@@ -83,8 +83,6 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
     @AfterTest(alwaysRun = true)
     public void startRestoreAPIMConfigureXml() throws Exception {
-        super.init();
-        sessionId = createSession(gatewayContext);
         serverManager.restoreToLastConfiguration();
         log.info("Restore the api-manager.xml configuration file");
         FileManager.deleteFile(targetPathInServer);
