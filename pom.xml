@@ -718,7 +718,7 @@
                 <artifactId>org.wso2.carbon.rest.api</artifactId>
                 <version>${carbon.rest.api.version}</version>
             </dependency>
-            <dependency>
+		<dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
                 <version>${carbon.platform.version}</version>
