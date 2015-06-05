@@ -71,17 +71,12 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        String apiManagerXml =
-                getAMResourceLocation() +
-                File.separator +
-                "configFiles/emailusernamejwttest/" +
-                "api-manager.xml";
+        String apiManagerXml = getAMResourceLocation() + File.separator + "configFiles/emailusernamejwttest/" +
+                               "api-manager.xml";
 
-        String userMgtXml =
-                getAMResourceLocation() +
-                File.separator +
-                "configFiles/emailusernamejwttest/" +
-                "user-mgt.xml";
+        String userMgtXml = getAMResourceLocation() + File.separator + "configFiles/emailusernamejwttest/" +
+                            "user-mgt.xml";
+
         serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
         serverConfigurationManager.applyConfiguration(new File(userMgtXml));
@@ -111,8 +106,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
                 .toString();
     }
 
-    @Test(groups = {
-            "wso2.am"}, description = "username JWT-Token Generation test for super tenant")
+    @Test(groups = {"wso2.am"}, description = "username JWT-Token Generation test for super tenant")
     public void userNameInSuperTenantJWTTokenTestCase() throws Exception {
         String requestBody =
                 "grant_type=password&username=" + userName + "&password=" +
@@ -156,8 +150,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {
-            "wso2.am"}, description = "email username JWT-Token Generation test for super tenant",
+    @Test(groups = {"wso2.am"}, description = "email username JWT-Token Generation test for super tenant",
             dependsOnMethods = "userNameInSuperTenantJWTTokenTestCase")
     public void emailUserNameInSuperTenantJWTTokenTestCase() throws Exception {
         String userName = "admin@wso2.com";
@@ -271,8 +264,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {
-            "wso2.am"}, description = "email username JWT-Token Generation test for  tenant")
+    @Test(groups = {"wso2.am"}, description = "email username JWT-Token Generation test for  tenant")
     public void emailUserNameInTenantJWTTokenTestCase() throws Exception {
 
         String userNameWithEmail = "tenant@wso2.com";

@@ -156,6 +156,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
         Thread.sleep(2000);
+
         HttpResponse youTubeResponse = HttpRequestUtil
                 .doGet(gatewayUrls.getWebAppURLHttp() + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");

@@ -69,7 +69,6 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
-
         String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
                             "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                             File.separator + "jaxrs_basic.war";
@@ -168,7 +167,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
             apiUrl = gatewayUrls.getWebAppURLNhttp() + "refreshTokenTestAPI/1.0.0/customers/123";
         } else {
             apiUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
-                         "/refreshTokenTestAPI/1.0.0/customers/123";
+                     "/refreshTokenTestAPI/1.0.0/customers/123";
         }
 
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);

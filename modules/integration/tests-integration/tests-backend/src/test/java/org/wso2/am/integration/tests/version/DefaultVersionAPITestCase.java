@@ -115,7 +115,6 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         //Add an Application in the Store.
         apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
 
-
         //Subscribe the API to the DefaultApplication
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest(apiName, apiVersion, provider, "DefaultVersionAPP", "Unlimited");

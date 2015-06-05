@@ -72,14 +72,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         //enable JWT token generation
         serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator +
-                "configFiles/tokenTest/" +
-                "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator +
-                "configFiles/tokenTest/" +
-                "log4j.properties"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(
+                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator +
+                                                               "configFiles/tokenTest/" + "log4j.properties"));
 
 
         userManagementClient = new UserManagementClient(

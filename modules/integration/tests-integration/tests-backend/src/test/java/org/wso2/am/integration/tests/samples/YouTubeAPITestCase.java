@@ -61,12 +61,12 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
 
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                                       publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                                   storeContext.getContextTenant().getContextUser().getPassword());
+                       storeContext.getContextTenant().getContextUser().getPassword());
 
         if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() ;
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
         }
@@ -76,19 +76,19 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "You Tube other")
     public void testYouTubeApiSample() throws Exception {
         APIRequest apiRequest = new APIRequest("YoutubeFeeds", "youtube",
-                new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
+                                               new URL("http://gdata.youtube.com/feeds/api/standardfeeds"));
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest("YoutubeFeeds", publisherContext
                         .getContextTenant().getContextUser().getUserName(),
-                        APILifeCycleState.PUBLISHED
+                                             APILifeCycleState.PUBLISHED
                 );
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
 
         String provider = storeContext.getContextTenant().getContextUser().getUserName();
 
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",provider);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds", provider);
         subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
         subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
@@ -109,13 +109,13 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(
                 gatewayUrl + "youtube/1.0.0/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched when api invocation");
+                     "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<feed"),
-                "Response data mismatched when api invocation");
+                   "Response data mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<category"),
-                "Response data mismatched when api invocation");
+                   "Response data mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("<entry>"),
-                "Response data mismatched when api invocation");
+                   "Response data mismatched when api invocation");
 
     }
 

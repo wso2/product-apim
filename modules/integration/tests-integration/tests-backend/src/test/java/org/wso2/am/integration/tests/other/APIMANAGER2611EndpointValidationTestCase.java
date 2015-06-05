@@ -43,17 +43,21 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBas
 
     @Test(groups = {"wso2.am"}, description = "Validate endpoint with Http Head not support End point")
     public void checkEndpointValidation() throws Exception {
+
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+
         apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                                      publisherContext.getContextTenant().getContextUser().getPassword());
-        HttpResponse response = apiPublisherRestClient.checkValidEndpoint("http", gatewayUrls.getWebAppURLHttp() + "/oauth2/token");
+
+        HttpResponse response = apiPublisherRestClient.checkValidEndpoint("http", gatewayUrls.getWebAppURLHttp() +
+                                                                                  "/oauth2/token");
         int statusCode = response.getResponseCode();
         if (statusCode == 200) {
             String responseString = response.getData();
             Assert.assertEquals(responseString.contains("success"), true);
         } else {
-            Assert.assertTrue(false,
-                              "Endpoint Validation Fail due to endpoint verification endpoint didn't work" + statusCode);
+            Assert.assertTrue(false, "Endpoint Validation Fail due to endpoint verification endpoint didn't work" +
+                                     statusCode);
         }
 
     }

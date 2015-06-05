@@ -44,7 +44,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
     private String userName;
-    private String publisherURLHttp ;
+    private String publisherURLHttp;
     private String storeURLHttp;
 
     @BeforeClass(alwaysRun = true)
@@ -65,9 +65,9 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
 
         serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
+                                                                             + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
+                                                               + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
         super.init();
 
         // create a tenant
@@ -135,7 +135,6 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         */
 
         // get Refresh Token
-
         assertNotNull(accessTokenGenerationResponse.getString("refresh_token"), "Refresh Token Can Not Be Null");
 
     }
@@ -163,7 +162,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
         apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName ,
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName,
                                                                               APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 

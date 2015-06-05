@@ -69,6 +69,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
+
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 

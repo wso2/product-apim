@@ -83,9 +83,9 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(storeURLHttp);
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                       storeContext.getContextTenant().getContextUser().getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
@@ -93,7 +93,7 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         String APIName = "CommentRatingAPI";
         String APIContext = "commentRating";
         String tags = "youtube, video, media";
-        String url = gatewayUrls.getWebAppURLHttp() +"jaxrs_basic/services/customers/customerservice";
+        String url = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
         String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
@@ -116,15 +116,14 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
 
         if (!gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            apiContextAddedValue = "t/" + gatewayContext.getContextTenant().getDomain()+"/"+apiContextAddedValue;
+            apiContextAddedValue = "t/" + gatewayContext.getContextTenant().getDomain() + "/" + apiContextAddedValue;
         }
 
-        assertEquals(
-                apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                apiContextAddedValue, "API context mismatch");
+        assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
+                     apiContextAddedValue, "API context mismatch");
         assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         assertEquals(apiBean.getId().getProviderName(), providerName,
-                "Provider Name mismatch");
+                     "Provider Name mismatch");
         for (String tag : apiBean.getTags()) {
             assertTrue(tags.contains(tag), "API tag data mismatched");
         }
@@ -133,8 +132,8 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()
-                    .getContextUser()
-                    .getUserName());
+                .getContextUser()
+                .getUserName());
 
         subscriptionRequest.setApplicationName("CommentRatingAPI-Application");
         apiStore.subscribe(subscriptionRequest);
@@ -154,10 +153,10 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
-        String gatewayUrl ;
-        if(gatewayContext.getContextTenant().getDomain().equals("carbon.super")){
+        String gatewayUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/customers/123";
-        }else{
+        } else {
             gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
                          "/commentRating/1.0.0/customers/123";
         }
@@ -167,13 +166,13 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
             HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
 
             assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response code mismatched");
+                         "Response code mismatched");
             assertTrue(youTubeResponse.getData().contains("John"),
-                    "Response data mismatched");
+                       "Response data mismatched");
             assertTrue(youTubeResponse.getData().contains("<name>"),
-                    "Response data mismatched");
+                       "Response data mismatched");
             assertTrue(youTubeResponse.getData().contains("<Customer>"),
-                    "Response data mismatched");
+                       "Response data mismatched");
 
         }
         //Do get,post,put,delete all here

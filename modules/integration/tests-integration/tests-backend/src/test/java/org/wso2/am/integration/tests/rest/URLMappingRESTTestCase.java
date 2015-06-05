@@ -42,7 +42,6 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 	String gatewaySessionCookie;
     String gatewayUrl;
 
-
     @Factory(dataProvider = "userModeDataProvider")
     public URLMappingRESTTestCase(TestUserMode userMode) {
         this.userMode = userMode;

@@ -56,9 +56,6 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Login as invalid user to publisher")
     public void testInvalidLoginAsPublisherTestCase() throws Exception {
 
-        boolean loginFailed = false;
-        String error = "";
-
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         //Try invalid login to publisher
         HttpResponse httpResponse = apiPublisherRestClient.login(
@@ -79,8 +76,6 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
         //Try login to publisher with subscriber user
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        boolean loginFailed = false;
-        String error = "";
 
         if ((userManagementClient != null) &&
             !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser")) {
@@ -105,8 +100,6 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         //Try login to publisher with tenant subscriber user
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-        boolean loginFailed = false;
-        String error = "";
 
         if ((userManagementClient != null) &&
             !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
@@ -136,8 +129,6 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         String APIPublisherUser = "APIPublisherUser";
         String APICreatorUser = "APICreatorUser";
         String password = "password@123";
-        boolean loginFailed = false;
-        String errorString = "";
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
 

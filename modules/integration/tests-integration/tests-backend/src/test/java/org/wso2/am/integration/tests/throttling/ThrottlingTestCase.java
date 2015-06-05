@@ -79,15 +79,12 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         ResourceAdminServiceClient resourceAdminServiceStub =
                 new ResourceAdminServiceClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 
-        resourceAdminServiceStub.addCollection("/_system/config/", "proxy", "",
-                                               "Contains test proxy tests files");
+        resourceAdminServiceStub.addCollection("/_system/config/", "proxy", "", "Contains test proxy tests files");
 
         assertTrue(resourceAdminServiceStub.addResource(
                 "/_system/governance/apimgt/applicationdata/test-tiers.xml", "application/xml",
-                "xml files",
-                new DataHandler(new URL("file:///" + getAMResourceLocation()
-                                        + File.separator + "configFiles/throttling/" +
-                                        "throttle-policy.xml"))
+                "xml files", new DataHandler(new URL("file:///" + getAMResourceLocation() + File.separator +
+                                                     "configFiles/throttling/" + "throttle-policy.xml"))
         )
                 , "Adding Resource failed");
         Thread.sleep(2000);
