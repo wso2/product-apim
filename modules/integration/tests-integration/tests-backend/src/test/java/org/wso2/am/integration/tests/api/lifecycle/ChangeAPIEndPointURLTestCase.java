@@ -42,17 +42,20 @@ import static org.testng.Assert.*;
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API1_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_NAME = "ChangeAPIEndPointURLTest";
+    private static final String API_CONTEXT = "ChangeAPIEndPointURLTest";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API1_END_POINT_METHOD = "/most_popular";
-    private static final String API1_RESPONSE_DATA = "<feed";
+    private static final String API1_END_POINT_METHOD = "/customers/123";
+    private static final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String API2_RESPONSE_DATA = "AcceptanceSampling";
     private static final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
     private static final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String api1EndPointUrl;
+
     private APIIdentifier apiIdentifier;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
@@ -63,9 +66,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
+        api1EndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API1_END_POINT_URL));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api1EndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -93,10 +97,11 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -131,7 +136,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws APIManagerIntegrationTestException, IOException {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");

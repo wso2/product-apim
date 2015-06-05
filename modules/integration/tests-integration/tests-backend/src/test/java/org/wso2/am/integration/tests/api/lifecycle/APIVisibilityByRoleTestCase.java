@@ -45,12 +45,11 @@ import static org.testng.Assert.assertTrue;
  */
 public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME_ADMIN_VISIBILITY = "APIAdminVisibility";
-    private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APISubscriberVisibility";
+    private static final String API_NAME_ADMIN_VISIBILITY = "APIVisibilityByRoleTest";
+    private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APIVisibilityByRole";
     private static final String API_CONTEXT1 = "testAPI1";
     private static final String API_CONTEXT2 = "testAPI2";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String CARBON_SUPER_TENANT2_KEY = "userKey2";
@@ -63,6 +62,8 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     private static final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
     private static final char[] TENANT_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
     private static final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private String providerName;
     private APIPublisherRestClient apiPublisherClientCarbonSuperUser1;
     private APIStoreRestClient apiStoreClientCarbonSuperUser1;
@@ -89,6 +90,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
             UserAdminUserAdminException {
         //Creating CarbonSuper context
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
@@ -190,7 +192,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         //Create API  with public visibility and publish.
         APICreationRequestBean apiCreationReqBeanVisibilityAdmin =
                 new APICreationRequestBean(API_NAME_ADMIN_VISIBILITY, API_CONTEXT1, API_VERSION_1_0_0,
-                        providerName, new URL(API_END_POINT_URL));
+                        providerName, new URL(apiEndPointUrl));
         apiCreationReqBeanVisibilityAdmin.setTags(API_TAGS);
         apiCreationReqBeanVisibilityAdmin.setDescription(API_DESCRIPTION);
         apiCreationReqBeanVisibilityAdmin.setVisibility("restricted");
@@ -199,7 +201,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         publishAPI(apiIdentifierAdminVisibility, apiPublisherClientCarbonSuperUser1, false);
         APICreationRequestBean apiCreationReqBeanVisibilityInternalSubscriber =
                 new APICreationRequestBean(API_NAME_SUBSCRIBER_VISIBILITY, API_CONTEXT2, API_VERSION_1_0_0,
-                        providerName, new URL(API_END_POINT_URL));
+                        providerName, new URL(apiEndPointUrl));
         apiCreationReqBeanVisibilityInternalSubscriber.setTags(API_TAGS);
         apiCreationReqBeanVisibilityInternalSubscriber.setDescription(API_DESCRIPTION);
         apiCreationReqBeanVisibilityInternalSubscriber.setVisibility("restricted");
