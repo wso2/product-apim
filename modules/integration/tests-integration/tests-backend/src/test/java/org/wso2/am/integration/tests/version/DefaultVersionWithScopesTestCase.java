@@ -21,14 +21,17 @@ package org.wso2.am.integration.tests.version;
 import org.apache.axis2.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -193,7 +196,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL("https://localhost:8243/token");
+            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() +"token");
             String accessToken;
             Map<String, String> requestHeaders;
             HttpResponse response;

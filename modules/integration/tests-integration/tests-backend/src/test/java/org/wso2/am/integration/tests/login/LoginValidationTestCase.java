@@ -38,7 +38,6 @@ import static org.testng.Assert.assertTrue;
 public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
 
-
     private String publisherURLHttp;
     private String storeURLHttp;
     private UserManagementClient userManagementClient;
@@ -62,15 +61,15 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         //Try invalid login to publisher
-        HttpResponse httpResponse = apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName()
-                        + "invalid",
+        HttpResponse httpResponse = apiPublisherRestClient.login(
+                publisherContext.getContextTenant().getContextUser().getUserName() + "invalid",
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
         JSONObject response = new JSONObject(httpResponse.getData());
 
-        assertTrue( response.getString("error").toString().equals("true")
-                        && response.getString("message").toString().contains("Please recheck the username and password and try again"),
-                "Invalid user can login to the API publisher");
+        assertTrue(response.getString("error").toString().equals("true") &&
+                   response.getString("message").toString().contains("Please recheck the username and password and try again"),
+                   "Invalid user can login to the API publisher");
 
     }
 
@@ -84,19 +83,19 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         String error = "";
 
         if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser")) {
+            !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser")) {
             userManagementClient.addUser("subscriberUser", "password@123",
-                    new String[]{"Internal/subscriber"}, null);
+                                         new String[]{"Internal/subscriber"}, null);
         }
 
         HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser",
-                "password@123");
+                                                                 "password@123");
 
         JSONObject response = new JSONObject(httpResponse.getData());
 
-        assertTrue( response.getString("error").toString().equals("true")
-                        && response.getString("message").toString().contains("Login failed.Insufficient privileges"),
-                "Invalid subscriber can login to the API publisher");
+        assertTrue(response.getString("error").toString().equals("true")
+                   && response.getString("message").toString().contains("Login failed.Insufficient privileges"),
+                   "Invalid subscriber can login to the API publisher");
     }
 
     @Test(groups = {"wso2.am"}, description = "Login to publisher as subscriber user in tenant ")
@@ -110,20 +109,20 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         String error = "";
 
         if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
+            !userManagementClient.userNameExists("Internal/subscriber", "subscriberUser@wso2.com")) {
             userManagementClient.addUser("subscriberUser@wso2.com", "password@123",
-                    new String[]{"Internal/subscriber"}, null);
+                                         new String[]{"Internal/subscriber"}, null);
         }
 
         HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser@wso2.com",
-                "password@123");
+                                                                 "password@123");
 
         JSONObject response = new JSONObject(httpResponse.getData());
 
-        assertTrue( response.getString("error").toString().equals("true")
-                        && response.getString("message").toString().contains(
-                        "Login failed.Please recheck the username and password and try again"),
-                "Invalid tenant subscriber can login to the API publisher");
+        assertTrue(response.getString("error").toString().equals("true")
+                   && response.getString("message").toString().contains(
+                           "Login failed.Please recheck the username and password and try again"),
+                   "Invalid tenant subscriber can login to the API publisher");
 
     }
 
@@ -151,9 +150,9 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         }
 
         if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists(APICreatorRole, APICreatorUser)) {
+            !userManagementClient.userNameExists(APICreatorRole, APICreatorUser)) {
             userManagementClient.addUser(APICreatorUser, password,
-                    new String[]{APICreatorRole}, null);
+                                         new String[]{APICreatorRole}, null);
         }
 
         String[] publishPermissions = {
@@ -165,26 +164,26 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         }
 
         if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists(APIPublisherRole, APIPublisherUser)) {
+            !userManagementClient.userNameExists(APIPublisherRole, APIPublisherUser)) {
             userManagementClient.addUser(APIPublisherUser, password,
-                    new String[]{APIPublisherRole}, null);
+                                         new String[]{APIPublisherRole}, null);
         }
 
         HttpResponse httpResponse = apiStoreRestClient.login("invaliduser", "invaliduser@123");
 
         JSONObject response = new JSONObject(httpResponse.getData());
 
-        assertTrue( response.getString("error").toString().equals("true")
-                        && response.getString("message").toString().contains(
-                        "Login failed.Please recheck the username and password and try again"),
-                "Invalid user can login to the API store");
+        assertTrue(response.getString("error").toString().equals("true")
+                   && response.getString("message").toString().contains(
+                           "Login failed.Please recheck the username and password and try again"),
+                   "Invalid user can login to the API store");
 
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 }

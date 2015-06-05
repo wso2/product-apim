@@ -139,7 +139,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
                 storeContext.getContextTenant()
                         .getContextUser()
-                        .getUserName().replace("@", "-AT-"));
+                        .getUserName());
         subscriptionRequest.setApplicationName("DAOTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 
@@ -214,9 +214,9 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("DAOTestAPI-Application");
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

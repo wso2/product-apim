@@ -60,9 +60,9 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
 
-        HttpResponse a = apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                                        publisherContext.getContextTenant().getContextUser().getPassword());
-        HttpResponse b = apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                                    storeContext.getContextTenant().getContextUser().getPassword());
 
         if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
@@ -86,12 +86,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         apiStore.addApplication("YoutubeFeeds-Application", "Gold", "", "this-is-test");
 
-        String provider ;
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            provider = storeContext.getContextTenant().getContextUser().getUserName();
-        } else {
-            provider= storeContext.getContextTenant().getContextUser().getUserName().replace("@", "-AT-");
-        }
+        String provider = storeContext.getContextTenant().getContextUser().getUserName();
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest("YoutubeFeeds",provider);
         subscriptionRequest.setApplicationName("YoutubeFeeds-Application");
@@ -127,9 +122,6 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("YoutubeFeeds-Application");
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

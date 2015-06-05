@@ -154,7 +154,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getPassword());
         apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
 
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider.replace("@","-AT-"));
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
         subscriptionRequest.setApplicationName(APP_NAME);
         apiStore.subscribe(subscriptionRequest);
 
@@ -242,9 +242,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteUser(USER_JOHN);
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

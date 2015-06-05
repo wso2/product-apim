@@ -328,7 +328,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         serverConfigurationManager.restartGracefully();
         super.init();
 
-        String provider = "admin-AT-wso2.com";
+        String provider = "admin@wso2.com";
         String tenantUser = "admin@wso2.com";
         String password = "wso2@123";
         String accessToken;

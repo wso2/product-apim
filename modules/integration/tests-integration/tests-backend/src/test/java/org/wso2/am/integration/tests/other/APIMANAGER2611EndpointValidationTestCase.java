@@ -60,9 +60,9 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBas
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

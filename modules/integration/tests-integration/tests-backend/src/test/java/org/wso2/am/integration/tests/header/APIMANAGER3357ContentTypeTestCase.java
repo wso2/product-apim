@@ -67,7 +67,7 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         wireServer.start();
 
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://localhost:8280/ContentTypeAPI");
+        HttpPost httppost = new HttpPost(gatewayUrls.getWebAppURLNhttp() + "ContentTypeAPI");
 
         String relativeFilePath = "/artifacts/AM/synapseconfigs/property/CONTENT_TYPE_TEST.xml";
         relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", File.separator);

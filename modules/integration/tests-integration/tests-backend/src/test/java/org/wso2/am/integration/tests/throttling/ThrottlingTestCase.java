@@ -59,17 +59,16 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         gatewaySessionCookie = createSession(gatewayContext);
 
-        String throttlingSynapseConfFile ;
+        String throttlingSynapseConfFile;
         if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             throttlingSynapseConfFile = "throttling-api-synapse.xml";
-        }else{
+        } else {
             throttlingSynapseConfFile = "throttling-api-synapse-tenant.xml";
         }
 
-        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                              + File.separator + "synapseconfigs" + File.separator +
-                                              "throttling"
-                                              + File.separator + throttlingSynapseConfFile, gatewayContext, gatewaySessionCookie);
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
+                                              "synapseconfigs" + File.separator + "throttling" + File.separator +
+                                              throttlingSynapseConfFile, gatewayContext, gatewaySessionCookie);
 
     }
 
@@ -97,9 +96,10 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "stockquote" + "/test/";
         } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/stockquote" + "/test/";
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
+                         "/stockquote" + "/test/";
         }
-            HttpResponse response = HttpRequestUtil.sendGetRequest(gatewayUrl, null);
+        HttpResponse response = HttpRequestUtil.sendGetRequest(gatewayUrl, null);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
                                                                                      "did not receive 200");
 
@@ -107,9 +107,9 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

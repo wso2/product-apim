@@ -169,7 +169,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         // Adding API
         String apiContext = "tokenencapi";
-        String endpointUrl = "http://localhost:8280/response";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -232,7 +232,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL("https://localhost:8243/token");
+            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
             String requestBody;
             JSONObject accessTokenGenerationResponse;
 
@@ -282,9 +282,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
 
-//        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-//                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-//                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverManager.restoreToLastConfiguration();
         serverManager.restartGracefully();
         log.info("Restored configuration and restarted gracefully...");

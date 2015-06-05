@@ -56,7 +56,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private String gatewaySessionCookie;
-    private String provider ;
+    private String provider;
 
     @Factory(dataProvider = "userModeDataProvider")
     public DefaultVersionAPITestCase(TestUserMode userMode) {
@@ -71,13 +71,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttps());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
-
-
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            provider = storeContext.getContextTenant().getContextUser().getUserName();
-        }else {
-            provider = storeContext.getContextTenant().getContextUser().getUserName().replace("@", "-AT-");
-        }
+        provider = storeContext.getContextTenant().getContextUser().getUserName();
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
@@ -108,9 +102,9 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         //Add the API using the API publisher.
         apiPublisher.addAPI(apiRequest);
 
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                                                                              publisherContext.getContextTenant().getContextUser().getUserName(),
-                                                                              APILifeCycleState.PUBLISHED);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(apiName, publisherContext.getContextTenant().getContextUser().getUserName(),
+                                             APILifeCycleState.PUBLISHED);
         //Publish the API
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
@@ -123,8 +117,8 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
 
         //Subscribe the API to the DefaultApplication
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                                                                          provider,"DefaultVersionAPP", "Unlimited");
+        SubscriptionRequest subscriptionRequest =
+                new SubscriptionRequest(apiName, apiVersion, provider, "DefaultVersionAPP", "Unlimited");
         apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
@@ -135,20 +129,17 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        //https://10.100.5.160:8243/t/wso2.com/response
-        String directBackEndEndpoint,apiInvocationUrl;
+        String directBackEndEndpoint, apiInvocationUrl;
         if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
-
-            //Going to access the API without the version in the request url.
             apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;
-        }else{
+        } else {
             directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
-
-            //Going to access the API without the version in the request url.
-            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +"/"+  apiContext;
+            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "t/" +
+                               gatewayContext.getContextTenant().getDomain() + "/" + apiContext;
         }
 
+        //Going to access the API without the version in the request url.
         HttpResponse directResponse = HttpRequestUtil.doGet(directBackEndEndpoint, new HashMap<String, String>());
 
         Map<String, String> headers = new HashMap<String, String>();
@@ -157,13 +148,15 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiInvocationUrl, headers);
 
         //Check if accessing the back-end directly and accessing it via the API yield the same responses.
-        assertEquals(httpResponse.getData(), directResponse.getData(), "Default version API test failed while " +
-                                                                       "invoking the API.");
+        assertEquals(httpResponse.getData(), directResponse.getData(),
+                     "Default version API test failed while " + "invoking the API.");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-//        super.cleanUp();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

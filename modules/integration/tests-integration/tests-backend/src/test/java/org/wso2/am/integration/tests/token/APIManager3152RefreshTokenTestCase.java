@@ -105,7 +105,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(userName + "@11wso2.com", storeContext.getContextTenant().getTenantAdmin().getPassword());
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName + "-AT-11wso2.com");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, userName + "@11wso2.com");
         subscriptionRequest.setTier("Gold");
         apiStore.subscribe(subscriptionRequest);
 
