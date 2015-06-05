@@ -41,10 +41,12 @@ import static org.testng.Assert.*;
  * Change the API Tags and  check how the API are listed under tags.
  */
 public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String TEST_TAG = "Tag3";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private String providerName;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
@@ -55,6 +57,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -94,7 +97,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                     = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
             APICreationRequestBean apiCreationRequestBean =
                     new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
-                            new URL(API_END_POINT_URL));
+                            new URL(apiEndPointUrl));
             apiCreationRequestBean.setTags(apiTags);
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiCreationRequestBean,
@@ -131,7 +134,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             String apiContext = apiName.toLowerCase();
             APICreationRequestBean apiCreationRequestBean =
                     new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
-                            new URL(API_END_POINT_URL));
+                            new URL(apiEndPointUrl));
             apiCreationRequestBean.setTags(apiTags);
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             //Update API with Edited Tags

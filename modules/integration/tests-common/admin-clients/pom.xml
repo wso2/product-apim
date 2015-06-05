@@ -78,6 +78,10 @@ under the License.
             <artifactId>org.wso2.carbon.priority.executors.stub</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.deployment</groupId>
+            <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api</artifactId>
             <exclusions>

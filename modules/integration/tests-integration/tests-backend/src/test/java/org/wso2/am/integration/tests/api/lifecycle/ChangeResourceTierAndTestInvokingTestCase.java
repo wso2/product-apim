@@ -41,15 +41,16 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_NAME = "ChangeResourceTierAndTestInvokingTest";
+    private static final String API_CONTEXT = "ChangeResourceTierAndTestInvoking";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/most_popular";
-    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API_END_POINT_METHOD = "/customers/123";
+    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "ChangeResourceTierAndTestInvokingTestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private String providerName;
     private APIIdentifier apiIdentifier;
     private Map<String, String> requestHeaders;
@@ -60,11 +61,11 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(API_END_POINT_URL));
-
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -93,15 +94,13 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         //Create publish and subscribe a API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
-
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -109,7 +108,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -119,13 +118,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                     "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API , Gold Application level tier" +
                             "  and Unlimited Resource tier");
-
         }
 
         currentTime = System.currentTimeMillis();
-
-
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
@@ -136,7 +132,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API , " +
                         "Gold Application level tier and Unlimited Resource tier.");
 
-
     }
 
 
@@ -145,17 +140,12 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
 
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
+        String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
+                "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
 
-        String swagger = "{\"apiVersion\":\"" + API_VERSION_1_0_0 + "\",\"swaggerVersion\":\"2.0\",\"authorizations\":" +
-                "{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":{\"apiVersion\":\"1.0.0\",\"basePath\":" +
-                "\"" + gatewayUrls.getWebAppURLHttp() + "/" + API_CONTEXT + "/" + API_VERSION_1_0_0 + "\",\"resourcePath\":" +
-                "\"/default\",\"swaggerVersion\":\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"" +
-                "oauth2\"}},\"apis\":[{\"path\":\"/*\",\"operations\":[{\"auth_type\":\"Application \",\"throttling_tier\":" +
-                "\"Silver\",\"method\":\"GET\",\"parameters\":[]}]}],\"info\":{\"termsOfServiceUrl\":\"\"," +
-                "\"title\":\"\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}," +
-                "\"description\":\"\",\"path\":\"/default\"}],\"info\":{\"termsOfServiceUrl\":\"\",\"title\":\"\"," +
-                "\"description\":\"This is test API create by API manager integration test\",\"license\":\"\",\"contact\":" +
-                "\"\",\"licenseUrl\":\"\"}}";
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -163,7 +153,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -176,9 +166,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         }
 
         currentTime = System.currentTimeMillis();
-        HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API_END_POINT_METHOD, requestHeaders);
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
@@ -195,16 +184,13 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             "Resource Tier: Gold.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceSilver")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceGold() throws Exception {
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
-        String swagger = "{\"apiVersion\":\"" + API_VERSION_1_0_0 + "\",\"swaggerVersion\":\"1.2\",\"authorizations\":" +
-                "{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":{\"apiVersion\":\"1.0.0\",\"basePath\":" +
-                "\"" + gatewayUrls.getWebAppURLHttp() + "/" + API_CONTEXT + "/" + API_VERSION_1_0_0 + "\",\"resourcePath\":" +
-                "\"/default\",\"swaggerVersion\":\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"" +
-                "oauth2\"}},\"apis\":[{\"path\":\"/*\",\"operations\":[{\"auth_type\":\"Application \",\"throttling_tier\":" +
-                "\"Gold\",\"method\":\"GET\",\"parameters\":[]}]}],\"info\":{\"termsOfServiceUrl\":\"\"," +
-                "\"title\":\"\",\"description\":\"\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}," +
-                "\"description\":\"\",\"path\":\"/default\"}],\"info\":{\"termsOfServiceUrl\":\"\",\"title\":\"\"," +
-                "\"description\":\"This is test API create by API manager integration test\",\"license\":\"\",\"contact\":" +
-                "\"\",\"licenseUrl\":\"\"}}";
+
+        String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
+                "\"Gold\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
+
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -212,7 +198,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -224,7 +210,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                             " and Gold Resource tier");
         }
         currentTime = System.currentTimeMillis();
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +

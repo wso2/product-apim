@@ -524,7 +524,11 @@
                 <artifactId>org.wso2.am.integration.ui.pages</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.carbon.deployment</groupId>
+                <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
+                <version>${carbon.deployment.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.wso2.carbon</groupId>

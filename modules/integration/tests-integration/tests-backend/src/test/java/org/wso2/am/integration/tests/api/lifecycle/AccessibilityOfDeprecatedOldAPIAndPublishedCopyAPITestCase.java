@@ -49,16 +49,17 @@ import static org.testng.Assert.assertTrue;
  * test invocation of both old and new API versions."
  */
 public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_NAME = "DeprecatedAPITest";
+    private static final String API_CONTEXT = "DeprecatedAPI";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/most_popular";
-    private static final String API_RESPONSE_DATA = "<feed";
+    private static final String API_END_POINT_METHOD = "/customers/123";
+    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String API_VERSION_2_0_0 = "2.0.0";
     private static final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
+    private String apiEndPointUrl;
     private APIIdentifier apiIdentifierAPI1Version1;
     private APIIdentifier apiIdentifierAPI1Version2;
     private String providerName;
@@ -70,10 +71,11 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0,
-                        providerName, new URL(API_END_POINT_URL));
+                        providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiIdentifierAPI1Version1 = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
@@ -198,16 +200,17 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(),
                 HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
         //Invoke new version
-        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT +
+        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT +
                 "/" + API_VERSION_2_0_0 + API_END_POINT_METHOD, requestHeaders);
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched");
