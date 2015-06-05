@@ -164,7 +164,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
 
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
 
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");

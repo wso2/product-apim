@@ -102,7 +102,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the context");
@@ -136,7 +136,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws APIManagerIntegrationTestException, IOException {
         //Invoke  old context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api before changing the context");
@@ -151,7 +151,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws APIManagerIntegrationTestException, IOException {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + newContext + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + newContext + "/" + API_VERSION_1_0_0 +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api after changing the context");

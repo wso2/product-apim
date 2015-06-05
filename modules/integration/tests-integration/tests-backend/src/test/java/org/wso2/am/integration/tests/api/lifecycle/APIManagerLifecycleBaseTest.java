@@ -68,12 +68,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    protected static String GATEWAY_WEB_APP_URL;
+    protected static String gatewayWebAppUrl;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         super.init();
-        GATEWAY_WEB_APP_URL = gatewayUrls.getWebAppURLNhttp();
+        gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
     }
 
     /**

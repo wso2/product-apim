@@ -108,7 +108,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -121,7 +121,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         }
 
         currentTime = System.currentTimeMillis();
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
@@ -153,7 +153,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -167,7 +167,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         currentTime = System.currentTimeMillis();
 
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
@@ -198,7 +198,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                             API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
@@ -210,7 +210,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                             " and Gold Resource tier");
         }
         currentTime = System.currentTimeMillis();
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                 API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +

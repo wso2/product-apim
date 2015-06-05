@@ -73,7 +73,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
             RemoteException, MalformedURLException {
         super.init();
-        postEndPointURL = GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_POST_ENDPOINT_METHOD;
+        postEndPointURL = gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_POST_ENDPOINT_METHOD;
         apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
@@ -117,7 +117,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -168,7 +168,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET Request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "update the api with  both GET and POST resource");
@@ -176,7 +176,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 " update the api with  both GET and POST resource. Expected value :\"" + RESPONSE_GET + "\" not contains" +
                 " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send POST Request
-        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" +
+        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(gatewayWebAppUrl + API_CONTEXT + "/" +
                 API_VERSION_1_0_0 + API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
 
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -212,7 +212,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET Request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "update the api with  URLPattern");
@@ -221,7 +221,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send GET Request with invalid url
         HttpResponse httpResponseGetInvalidUrl =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD +
                         INVALID_URL, requestHeadersGet);
         assertEquals(httpResponseGetInvalidUrl.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN, "Invocation is not " +
                 "forbidden when try to invoke GET resource  via invalid url pattern");
@@ -230,7 +230,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 RESPONSE_GET + "\" not contains in response data:\"" + httpResponseGetInvalidUrl.getData() + "\"");
         //Send POST Request
         HttpResponse httpResponsePOST =
-                HttpRequestUtil.doPost(new URL(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doPost(new URL(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation of  POST resource fail after" +
                 " update the api with  URLPattern");
@@ -261,7 +261,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "remove the POST resource from api");

@@ -101,7 +101,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -136,7 +136,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws APIManagerIntegrationTestException, IOException {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");

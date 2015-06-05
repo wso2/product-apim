@@ -65,7 +65,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         String sourcePath =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
-                        File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
+                        File.separator + "lifecycletest" + File.separator + WEB_APP_FILE_NAME;
         targetPathInServer =
                 CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
                         "server" + File.separator + "webapps" + File.separator + WEB_APP_FILE_NAME;

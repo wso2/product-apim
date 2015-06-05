@@ -103,7 +103,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" +
                         API_VERSION_1_0_0 + API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before block");
@@ -135,7 +135,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched when invoke api after block");

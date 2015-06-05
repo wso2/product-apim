@@ -112,7 +112,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + "/sec",
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + "/sec",
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "endpoint type secured. username:" + endpointUsername + " password:" + String.valueOf(endpointPassword));
@@ -148,7 +148,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         assertEquals(updateAPIHTTPResponse.getData(), "{\"error\" : false}", "Update APi with new Resource information fail");
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(GATEWAY_WEB_APP_URL + API_CONTEXT + "/" + API_VERSION_1_0_0 + "/sec",
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + "/sec",
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "endpoint type secured. username:" + endpointUsername + " password:" + String.valueOf(endpointPassword));
