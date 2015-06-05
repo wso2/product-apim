@@ -77,7 +77,6 @@ public class WebAppAdminClient {
      * @param webAppType   - Type of the WebApp.
      * @param webAppState  - State of the WebApp.
      * @param pageNo       - Page no of the results.
-     * @return WebappsWrapper - WebappsWrapper  object that contains the Summary of filtered WebApps
      * @throws RemoteException - Exception occurs when retrieving the WebAppSummary from the WebappAdminStub
      */
     public WebappsWrapper getPagedWebAppsSummary(String searchString, String webAppType, String webAppState, int pageNo)
@@ -114,7 +113,6 @@ public class WebAppAdminClient {
      * @param searchString - Search string for get the WebAPP summary.
      * @param webAppType   - Type of the WebApp.
      * @param pageNo       - State of the WebApp.
-     * @return WebappsWrapper - WebappsWrapper  object that contains the Summary of filtered WebApps
      * @throws RemoteException - Exception occurs when retrieving the WebAppSummary from the WebappAdminStub
      */
     public WebappsWrapper getPagedFaultyWebAppsSummary(String searchString, String webAppType, int pageNo)

@@ -43,7 +43,8 @@ public class WebAppDeploymentUtil {
      * @param sessionCookie  - valid session cookie of the server where the web app is host.
      * @param webAppFileName - File name of the web app that want to check for the deployment.
      * @return boolean - if WebAPp is get deployed withing 90 seconds or else return false.
-     * @throws APIManagerIntegrationTestException
+     * @throws APIManagerIntegrationTestException - Exception throws when creating WebAppAdminClient object and calling
+     *                                            methods of WebAppAdminClient class.
      */
     public static boolean isWebApplicationDeployed(String backEndUrl, String sessionCookie, String webAppFileName)
             throws APIManagerIntegrationTestException {
