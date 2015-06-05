@@ -269,7 +269,7 @@
                             <publishArtifactRepository>true</publishArtifactRepository>
                             <featureArtifacts>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.feature:${carbon.platform.version}</featureArtifactDef>
-				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.server.feature:${identity.core.version}</featureArtifactDef>
+				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.application.mgt.feature:${identity.core.version}</featureArtifactDef>
                 		        <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.logging.mgt.feature:4.2.2</featureArtifactDef>
 				                <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.identity.relying.party.server.feature:${identity.core.version}</featureArtifactDef>
@@ -540,7 +540,7 @@
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
                                 <feature>
-                                    <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
+                                    <id>org.wso2.carbon.identity.application.mgt.feature.group</id>
                                     <version>${identity.core.version}</version>
                                 </feature>
 				<feature>
@@ -2568,7 +2568,7 @@
                                     <version>${carbon.platform.version}</version>
                                 </feature>
                                <feature>
-                                    <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
+                                    <id>org.wso2.carbon.identity.application.mgt.feature.group</id>
                                     <version>${identity.core.version}</version>
                                 </feature>
                                 <feature>
