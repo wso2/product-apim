@@ -14,7 +14,8 @@
 *KIND, either express or implied.  See the License for the
 *specific language governing permissions and limitations
 *under the License.
-*/
+*//*
+
 
 package org.wso2.automation.platform.tests.apim.bam;
 
@@ -24,16 +25,18 @@ import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
-import org.wso2.am.integration.test.utils.store.utils.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.automation.platform.tests.apim.is.SingleSignOnTestCase;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+*/
 /*
 
 Note: This test case is not run with default API manager integration tests. To run this test we assume that BAM server
@@ -56,8 +60,9 @@ and do basic API management related operations and usage data will push to BAM. 
 BAM server(ideally user should setup BAM as we described in statistics help document). And all API manager related
 configurations listed on statistics help doc should apply to files available in above mentioned directory
 (/resources/artifacts/AM/configFiles/usagemonitortest)
- */
-public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
+ *//*
+
+public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -67,7 +72,7 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() throws APIManagerIntegrationTestException {
 
         super.init();
 
@@ -79,8 +84,13 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
         ///repository/deployment/server/jaggeryapps/testapp
 
 
-        apiPublisher = new APIPublisherRestClient(getServerURLHttp());
-        apiStore = new APIStoreRestClient(getServerURLHttp());
+        try {
+            apiPublisher = new APIPublisherRestClient(publisherContext.getContextUrls().getBackEndUrl());
+            apiStore = new APIStoreRestClient(storeContext.getContextUrls().getBackEndUrl());
+        } catch (XPathExpressionException e) {
+           log.error(e);
+           throw new APIManagerIntegrationTestException("Error while getting the server url", e);
+        }
     }
 
     @AfterClass(alwaysRun = true)
@@ -91,8 +101,8 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "APIM - BAM Integration API Usage statistics analysis test")
     public void statisticsAnalysisTestCase() throws Exception {
 
-        String providerName = apimContext.getSuperTenant().getContextUser().getUserName();
-        String password = apimContext.getSuperTenant().getContextUser().getPassword();
+        String providerName = publisherContext.getSuperTenant().getContextUser().getUserName();
+        String password = publisherContext.getSuperTenant().getContextUser().getPassword();
 
         String APIName = "UsageTestAPI";
         String APIContext = "UsageTestAPI";
@@ -144,8 +154,10 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
         String descriptionFaultyAPI = "This is test API create by API manager usage integration test";
         String APIVersionFaultyAPI = "1.0.0";
 
-    /*    createAPI(APINameFaultyAPI,APIContextFaultyAPI,tagsFaultyAPI,descriptionFaultyAPI,"admin",
-                APIVersionFaultyAPI,"",urlFaultyAPI,apiPublisher);*/
+    */
+/*    createAPI(APINameFaultyAPI,APIContextFaultyAPI,tagsFaultyAPI,descriptionFaultyAPI,"admin",
+                APIVersionFaultyAPI,"",urlFaultyAPI,apiPublisher);*//*
+
         APIRequest apiRequestFaultyAPI = new APIRequest(APINameFaultyAPI, APIContextFaultyAPI, new URL(urlFaultyAPI));
         apiRequestFaultyAPI.setTags(tagsFaultyAPI);
         apiRequestFaultyAPI.setDescription(descriptionFaultyAPI);
@@ -291,3 +303,4 @@ public class APIUsageBAMIntegrationTestCase extends AMIntegrationBaseTest {
         return true;
     }
 }
+*/

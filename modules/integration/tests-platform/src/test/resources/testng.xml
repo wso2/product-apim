@@ -13,7 +13,7 @@
     <test name="as-integration-tests-server-mgt" preserve-order="true" parallel="false">
         <classes>
         <class name="org.wso2.automation.platform.tests.apim.is.SingleSignOnTestCase"/>
-        <class name="org.wso2.automation.platform.tests.apim.bam.APIUsageBAMIntegrationTestCase"/>
+        <!--<class name="org.wso2.automation.platform.tests.apim.bam.APIUsageBAMIntegrationTestCase"/>-->
 
     </classes>
     </test>
