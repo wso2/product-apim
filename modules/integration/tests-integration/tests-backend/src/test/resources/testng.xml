@@ -20,9 +20,7 @@
 
 <suite name="ApiManager-features-test-suite">
     <parameter name="useDefaultListeners" value="false"/>
-
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
-
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
@@ -51,7 +49,6 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
         </classes>
     </test>
-
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
@@ -82,7 +79,6 @@
           <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
-
         </classes>
     </test>
 
