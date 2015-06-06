@@ -43,10 +43,9 @@ import static org.testng.Assert.*;
  * Change the tiers.xml file  with new tier added and check the new tier availability in publisher.
  */
 public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "EditTiersAPI1";
-    private static final String API_CONTEXT = "EditTiersAPI1";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_NAME = "EditTiersXMLAndVerifyInPublisherTest";
+    private static final String API_CONTEXT = "EditTiersXMLAndVerifyInPublisher";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String TIER_XML_REG_CONFIG_LOCATION = "/_system/governance/apimgt/applicationdata/tiers.xml";
@@ -54,6 +53,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private static final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
     private static final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
     private static final String TIER_MANAGE_PAGE_TIER_PLATINUM = "{ \"value\": \"Platinum\", \"text\": \"Platinum\" }";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
@@ -67,10 +68,11 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
             RemoteException, ResourceAdminServiceExceptionException, MalformedURLException {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(API_END_POINT_URL));
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
