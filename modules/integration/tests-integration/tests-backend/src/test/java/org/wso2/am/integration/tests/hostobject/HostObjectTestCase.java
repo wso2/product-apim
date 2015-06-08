@@ -26,7 +26,12 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APIBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -42,11 +47,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
@@ -68,9 +74,9 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator +
-                "configFiles/hostobjecttest/" +
-                "api-manager.xml"));
+                                                               + File.separator +
+                                                               "configFiles/hostobjecttest/" +
+                                                               "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                 + File.separator +
                 "configFiles/tokenTest/" +
@@ -147,7 +153,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
         assertEquals(
                 apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                APIContext, "API context mismatch");
+                APIContext + "/" + APIVersion, "API context mismatch");
         assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         assertEquals(apiBean.getId().getProviderName(), providerName,
                 "Provider Name mismatch");
@@ -250,174 +256,134 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     }
 
     public static boolean validateStoreResponseArray(String[] array) {
-        //This order is based on the operations of jaggery file operation order
-        //If we edit jaggery file we need to modify this as well
         assertTrue(array[1].contains("true"),
-                "Error while getting status of billing system from API store host object (isBillingEnabled)");
+                   "Error while getting status of billing system from API store host object (isBillingEnabled)");
         assertTrue(array[2].contains("https"),
-                "Error while getting https url from API store host object (getHTTPsURL)");
-        assertTrue(array[4].contains("http"),
-                "Error while getting http url from API store host object (getHTTPURL)");
+                   "Error while getting https url from API store host object (getHTTPsURL)");
         assertTrue(array[3].contains("services"),
-                "Error while getting auth service url from API store host object (getAuthServerURL)");
+                   "Error while getting auth service url from API store host object (getAuthServerURL)");
+        assertTrue(array[4].contains("http"),
+                   "Error while getting http url from API store host object (getHTTPURL)");
         assertTrue(array[5].contains("[{\"tierName\" : \"Gold\"}]"),
-                "Error while getting denied tiers from API store host object (getDeniedTiers)");
+                   "Error while getting denied tiers from API store host object (getDeniedTiers)");
         assertTrue(array[6].contains("tenantdomain1.com"),
-                "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
+                   "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
         assertTrue(array[7].contains("true"),
-                "Error while getting status of self sign in from API store host object (isSelfSignupEnabled)");
+                   "Error while getting status of self sign in from API store host object (isSelfSignupEnabled)");
         assertTrue(array[8].contains("fieldName"),
-                "Error while getting user fields from API store host object (getUserFields)");
+                   "Error while getting user fields from API store host object (getUserFields)");
         assertTrue(array[9].contains("HostObjectTestAPI"),
-                "Error while search Paginated APIs By Type from API store host object (searchPaginatedAPIsByType)");
+                   "Error while search Paginated APIs By Type from API store host object (searchPaginatedAPIsByType)");
         assertTrue(array[10].contains("HostObjectTestAPI"),
-                "Error while search Paginated APIs By Type with pattern * from API store host object (searchPaginatedAPIsByType)");
+                   "Error while search Paginated APIs By Type with pattern * from API store host object (searchPaginatedAPIsByType)");
         assertTrue(array[11].contains("HostObjectTestAPI"),
-                "Error while search API by Type with pattern * from API store host object (searchAPIbyType)");
+                   "Error while getting paginated APIs with tag from API store host object (getPaginatedAPIsWithTag)");
         assertTrue(array[12].contains("HostObjectTestAPI"),
-                "Error while search API by type from API store host object (searchAPIbyType)");
-        assertTrue(array[13].contains("HostObjectTestAPI"),
-                "Error while getting paginated APIs with tag from API store host object (getPaginatedAPIsWithTag)");
-        //14 getPublishedAPIsByProvider
-        //15 getAllSubscriptions
+                   "Error while rating API from API store host object (rateAPI)");
+        assertTrue(array[13].contains("[{\"newRating\" : \"0.0\"}]"),
+                   "Error while removing rating from API store host object (removeAPIRating)");
+        assertTrue(array[14].contains("apis"),
+                   "Error while getting Paginated , published APIs from API store host object (getAllPaginatedPublishedAPIs)");
+        assertTrue(array[15].contains("HostObjectTestAPI"),
+                   "Error while getting APIs With Tag from API store host object (getAPIsWithTag)");
         assertTrue(array[16].contains("HostObjectTestAPI"),
-                "Error while rating API from API store host object (rateAPI)");
-        assertTrue(array[17].contains("[{\"newRating\" : \"0.0\"}]"),
-                "Error while removing rating from API store host object (removeAPIRating)");
-        assertTrue(array[18].contains("apis"),
-                "Error while getting Paginated , published APIs from API store host object (getAllPaginatedPublishedAPIs)");
-        assertTrue(array[19].contains("HostObjectTestAPI"),
-                "Error while getting APIs With Tag from API store host object (getAPIsWithTag)");
-        assertTrue(array[20].contains("HostObjectTestAPI"),
-                "Error while getting all published APIs from API store host object (getAllPublishedAPIs)");
-        //21 getComments
+                   "Error while getting all published APIs from API store host object (getAllPublishedAPIs)");
+        assertTrue(array[17].contains("true"),
+                   "Error while checking user in the system from API store host object (isUserExists)");
+        assertTrue(array[18].contains("HostObjectTestAPI"),
+                   "Error while getting API from API store host object (getAPI)");
+        assertTrue(array[19].contains("true"),
+                   "Error while checking subscription state from API store host object (isSubscribed)");
+        assertTrue(array[20].contains("application"),
+                   "Error while getting subscriptions from API store host object (getSubscriptions)");
+        assertTrue(array[21].contains("true"),
+                   "Error while checking user permission from API store host object (hasUserPermissions)");
         assertTrue(array[22].contains("true"),
-                "Error while checking user in the system from API store host object (isUserExists)");
-        assertTrue(array[23].contains("HostObjectTestAPI"),
-                "Error while getting API from API store host object (getAPI)");
+                   "Error while checking Subscribe Permission from API store host object (hasSubscribePermission)");
+        assertTrue(array[23].contains("true"),
+                   "Error while update Application Tier from API store host object (updateApplicationTier)");
         assertTrue(array[24].contains("true"),
-                "Error while checking subscription state from API store host object (isSubscribed)");
-        assertTrue(array[25].contains("application"),
-                "Error while getting subscriptions from API store host object (getSubscriptions)");
-        //26 getSubscribedAPIs
-        assertTrue(array[27].contains("true"),
-                "Error while checking user permission from API store host object (hasUserPermissions)");
-        //28 getTiers
-        //29 getAPIUsageforSubscriber
-        //30 getDeniedTiers
-        //31 getRecentlyAddedAPIs
-        //32 getTopRatedAPIs
-        assertTrue(array[33].contains("true"),
-                "Error while getting billing status from API store host object (isBillingEnabled)");
-        assertTrue(array[34].contains("true"),
-                "Error while checking Subscribe Permission from API store host object (hasSubscribePermission)");
-        assertTrue(array[35].contains("false"),
-                "Error while getting state of Email Username from API store host object (isEnableEmailUsername)");
-        assertTrue(array[36].contains("true"),
-                "Error while update Application Tier from API store host object (updateApplicationTier)");
-        assertTrue(array[37].contains("true"),
-                "Error while update Application from API store host object (updateApplication)");
-        assertTrue(array[38].contains("200"),
-                "Error while validate WF Permission from API store host object (validateWFPermission)");
-        assertTrue(array[38].contains("200"),
-                "Error while validate WF Permission from API store host object (validateWFPermission)");
-        // log.info("\n\n\n\n\n\n40 : "+array[40]);
-        assertTrue(array[40].contains("HostObjectTestAPI"),
-                "Error while getting all published APIs from API store host object search by context(search)");
-        assertTrue(array[41].contains("HostObjectTestAPI"),
-                "Error while getting all published APIs from API store host object search by version(search)");
-        assertTrue(!array[42].contains("HostObjectTestAPI"),
-                "Error while getting all published APIs from API store host object search by non-existing context (search)");
-        assertTrue(!array[43].contains("HostObjectTestAPI"),
-                "Error while getting all published APIs from API store host object search by non-existing version(search)");
+                   "Error while update Application from API store host object (updateApplication)");
+        assertTrue(array[25].contains("200"),
+                   "Error while validate WF Permission from API store host object (validateWFPermission)");
+        assertTrue(array[26].contains("false"),
+                   "Error while getting state of Email Username from API store host object (isEnableEmailUsername)");
+
 
         return true;
     }
 
     public static boolean validatePublisherResponseArray(String[] array) {
-        //This order is based on the operations of jaggery file operation order
-        //If we edit jaggary file we need to modify this as well
-        /*assertNotNull(array[1],
-                               "Error while getting external api stores from API store host object (getExternalAPIStores)");*/
-        assertTrue(array[2].contains("true"),
-                "Error while validating roles from API store host object (validateRoles)");
-        assertTrue(array[3].contains("success"),
-                "Error while checking url validity from API store host object (isURLValid)");
+
+        assertTrue(array[1].contains("true"),
+                   "Error while validating roles from API store host object (validateRoles)");
+        assertTrue(array[2].contains("success"),
+                   "Error while checking url validity from API store host object (isURLValid)");
+        assertTrue(array[3].contains("HostObjectTestAPI"),
+                   "Error while getting APIs by provider from API store host object (getAPIsByProvider)");
         assertTrue(array[4].contains("HostObjectTestAPI"),
-                "Error while getting APIs by provider from API store host object (getAPIsByProvider)");
+                   "Error while getting subscribed APIs from API store host object (getSubscribedAPIs)");
         assertTrue(array[5].contains("HostObjectTestAPI"),
-                "Error while getting subscribed APIs from API store host object (getSubscribedAPIs)");
-        assertTrue(array[6].contains("HostObjectTestAPI"),
-                "Error while getting API from API store host object (getAPI)");
+                   "Error while getting API from API store host object (getAPI)");
+        assertTrue(array[6].contains("Bronze"),
+                   "Error while getting tier permission from API store host object (getTierPermissions)");
         assertTrue(array[7].contains("Bronze"),
-                "Error while getting tier permission from API store host object (getTierPermissions)");
-        assertTrue(array[8].contains("Bronze"),
-                "Error while getting tiers from API store host object (getTiers)");
+                   "Error while getting tiers from API store host object (getTiers)");
+        assertTrue(array[8].contains("HostObjectTestAPI"),
+                   "Error while getting all APIs By Type from API store host object (getAllAPIs)");
         assertTrue(array[9].contains("HostObjectTestAPI"),
-                "Error while getting all APIs By Type from API store host object (getAllAPIs)");
-        assertTrue(array[10].contains("HostObjectTestAPI"),
-                "Error while getting APIs By provider with pattern * from API store host object (getAPIsByProvider)");
-        assertTrue(array[11].contains("subscribedDate"),
-                "Error while getting subscribers of API from API store host object (getSubscribersOfAPI)");
-        assertTrue(array[12].contains("false"),
-                "Error while checking contexts from API store host object (isContextExist)");
-        assertTrue(array[13].contains("HostObjectTestAPI"),
-                "Error while searching APIs from API store host object (searchAPIs)");
+                   "Error while getting APIs By provider with pattern * from API store host object (getAPIsByProvider)");
+        assertTrue(array[10].contains("subscribedDate"),
+                   "Error while getting subscribers of API from API store host object (getSubscribersOfAPI)");
+        assertTrue(array[11].contains("false"),
+                   "Error while checking contexts from API store host object (isContextExist)");
+        assertTrue(array[12].contains("HostObjectTestAPI"),
+                   "Error while searching APIs from API store host object (searchAPIs)");
+        assertTrue(array[13].contains("true"),
+                   "Error while checking create permission from API store host object (hasCreatePermission)");
         assertTrue(array[14].contains("true"),
-                "Error while checking create permission from API store host object (hasCreatePermission)");
+                   "Error while checking manage tier permission from API store host object (hasManageTierPermission)");
         assertTrue(array[15].contains("true"),
-                "Error while checking manage tier permission from API store host object (hasManageTierPermission)");
+                   "Error while checking user permission from API store host object (hasUserPermissions)");
         assertTrue(array[16].contains("true"),
-                "Error while checking user permission from API store host object (hasUserPermissions)");
-        assertTrue(array[17].contains("true"),
-                "Error while checking publisher permissions (hasPublishPermission)");
-        assertTrue(array[18].contains("services"),
-                "Error while getting auth server url from API store host object (getAuthServerURL)");
-        assertTrue(array[19].contains("[\"log_in_message\"]"),
-                "Error while getting in sequences from API store host object (getCustomInSequences)");
-        assertTrue(array[20].contains("[\"log_out_message\"]"),
-                "Error while getting out sequences from API store host object (getCustomOutSequences)");
-        assertTrue(array[21].contains("https"),
-                "Error while getting https url from API store host object (getHTTPsURL)");
-        assertTrue(array[22].contains("true"),
-                "Error while checking gateway type from API store host object (isSynapseGateway)");
-        assertTrue(array[23].contains("null"),
-                "Error while load Registry Of Tenant API store host object (loadRegistryOfTenant)");
-        /*assertTrue(array[23].contains("true"),
-                            "Error while update Documentation from API store host object (updateDocumentation)");*/
-        /*assertTrue(array[23].contains("null"),
-                            "Error while adding Inline Content from API store host object (addInlineContent)");*/
-        assertTrue(Arrays.toString(array).contains("providerName"),
-                "Error while getting Inline Content from API store host object (getInlineContent)");
-        /*assertTrue(array[24].contains("docName"),
-                            "Error while getting All Documentation from API store host object (getAllDocumentation)");*/
-        assertTrue(array[25].contains("token"),
-                "Error while search Access Tokens from API store host object (searchAccessTokens)");
-        //assertTrue(array[29].contains("true"), "Error while checking user permission from API store host object (getSubscriberCountByAPIs)");
-        //assertTrue(array[30].contains("true"), "Error while checking user permission from API store host object (getSubscriberCountByAPIVersions)");
-        //assertTrue(array[31].contains("null"), "Error while getting External API Stores from API store host object (getExternalAPIStores)");
-        assertTrue(array[28].contains("false"),
-                "Error while checking API Older Versions from API store host object (isAPIOlderVersionExist)");
-        assertTrue(array[29].contains("true"),
-                "Error while update Subscription Status from API store host object (updateSubscriptionStatus)");
-        assertTrue(array[30].contains("true"),
-                "Error while update Tier Permissions from API store host object (updateTierPermissions)");
+                   "Error while checking publisher permissions (hasPublishPermission)");
+        assertTrue(array[17].contains("services"),
+                   "Error while getting auth server url from API store host object (getAuthServerURL)");
+        assertTrue(array[18].contains("[\"log_in_message\"]"),
+                   "Error while getting in sequences from API store host object (getCustomInSequences)");
+        assertTrue(array[19].contains("[\"log_out_message\"]"),
+                   "Error while getting out sequences from API store host object (getCustomOutSequences)");
+        assertTrue(array[20].contains("https"),
+                   "Error while getting https url from API store host object (getHTTPsURL)");
+        assertTrue(array[21].contains("true"),
+                   "Error while checking gateway type from API store host object (isSynapseGateway)");
+        assertTrue(array[22].contains("null"),
+                   "Error while load Registry Of Tenant API store host object (loadRegistryOfTenant)");
+        assertTrue(array[23].contains("token"),
+                   "Error while search Access Tokens from API store host object (searchAccessTokens)");
+        assertTrue(array[24].contains("false"),
+                   "Error while checking API Older Versions from API store host object (isAPIOlderVersionExist)");
+        assertTrue(array[25].contains("true"),
+                   "Error while update Subscription Status from API store host object (updateSubscriptionStatus)");
+        assertTrue(array[26].contains("true"),
+                   "Error while update Tier Permissions from API store host object (updateTierPermissions)");
+        // API visibility test cases
+        assertTrue(array[27].contains("HostObjectTestAPI"),
+                   "Error while searching APIs by Version from API store host object (searchAPIs)");
+        assertTrue(array[28].contains("HostObjectTestAPI"),
+                   "Error while searching APIs by Status from API store host object (searchAPIs)");
+        assertTrue(array[29].contains("HostObjectTestAPI"),
+                   "Error while search API by part of the API name (searchAPIs)");
+        assertTrue(array[30].contains("HostObjectTestAPI"),
+                   "Error while search API by uppercase API name (searchAPIs)");
         assertTrue(array[31].contains("HostObjectTestAPI"),
-                "Error while search API by provider (searchAPIs)");
+                   "Error while search API by lowercase API name (searchAPIs)");
         assertTrue(array[32].contains("HostObjectTestAPI"),
-                "Error while search API by context (searchAPIs)");
+                   "Error while search API by provider (searchAPIs)");
         assertTrue(array[33].contains("HostObjectTestAPI"),
-                "Error while search API by uppercase name (searchAPIs)");
-        assertTrue(array[34].contains("HostObjectTestAPI"),
-                "Error while search API by lower case name (searchAPIs)");
-        assertTrue(array[35].contains("HostObjectTestAPI"),
-                "Error while search API by part of the API name (searchAPIs)");
-        assertTrue(array[36].contains("HostObjectTestAPI"),
-                "Error while search API by part of the provider (searchAPIs)");
-        assertTrue(array[37].contains("HostObjectTestAPI"),
-                "Error while search API by part of the context (searchAPIs)");
-        assertTrue(!array[38].contains("HostObjectTestAPI"),
-                "Error while search API by invalid search key (searchAPIs)");
+                   "Error while search API by part of the provider (searchAPIs)");
+        assertTrue(!array[34].contains("HostObjectTestAPI"),
+                   "Error while search API by invalid search key (searchAPIs)");
 
         return true;
     }
