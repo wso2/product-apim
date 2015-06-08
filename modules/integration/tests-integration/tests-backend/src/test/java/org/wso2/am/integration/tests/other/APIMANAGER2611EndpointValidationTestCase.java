@@ -21,35 +21,59 @@ package org.wso2.am.integration.tests.other;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBaseTest {
-	@BeforeClass(alwaysRun = true)
-	public void setEnvironment() throws Exception {
-		super.init();
-	}
 
-	@Test(groups = { "wso2.am" }, description = "Validate endpoint with Http Head not support End point")
-	public void checkEndpointValidation() throws Exception {
-		APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
-		apiPublisherRestClient.login("admin", "admin");
-		org.wso2.carbon.automation.test.utils.http.client.HttpResponse
-				response = apiPublisherRestClient.checkValidEndpoint("http", "http://localhost:9763/oauth2/token");
-		int statusCode =response.getResponseCode();
-		if (statusCode == 200) {
-			String responseString = response.getData();
-			Assert.assertEquals(responseString.contains("success"), true);
-		} else {
-			Assert.assertTrue(false,
-			                  "Endpoint Validation Fail due to endpoint verification endpoint didn't work" + statusCode);
-		}
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIMANAGER2611EndpointValidationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
-	}
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        super.init(userMode);
+    }
 
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		super.cleanup();
-	}
+    @Test(groups = {"wso2.am"}, description = "Validate endpoint with Http Head not support End point")
+    public void checkEndpointValidation() throws Exception {
+
+        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
+
+        apiPublisherRestClient.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                                     publisherContext.getContextTenant().getContextUser().getPassword());
+
+        HttpResponse response = apiPublisherRestClient.checkValidEndpoint("http", gatewayUrls.getWebAppURLHttp() +
+                                                                                  "/oauth2/token");
+        int statusCode = response.getResponseCode();
+        if (statusCode == 200) {
+            String responseString = response.getData();
+            Assert.assertEquals(responseString.contains("success"), true);
+        } else {
+            Assert.assertTrue(false, "Endpoint Validation Fail due to endpoint verification endpoint didn't work" +
+                                     statusCode);
+        }
+
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
 }
