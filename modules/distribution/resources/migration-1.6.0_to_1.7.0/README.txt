@@ -13,7 +13,7 @@ Super tenant migration
 4. Now point same WSO2 Carbon Database(User Store and Registry) and API Manager Databases of your AM 1.6.0 instance to AM 1.7.0. 
 (Configure AM_1.6.0/repository/datasource/master-datasources.xml to point same databases configured in AM 1.6.0)
 
-5. Move your synapse configurations to APIM_1.7.0. For that, copy and replace APIM_1.6.0/repository/deployment/server/synapse-config/default directory to APIM_1.7.0/repository/deployment/server/synapse-config/default. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory.
+5. Move your synapse configurations to APIM_1.7.0. For that, copy and replace APIM_1.6.0/repository/deployment/server/synapse-configs/default directory to APIM_1.7.0/repository/deployment/server/synapse-configs/default. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory.
 
 6. Copy the <APIM_1.7.0_HOME>/dbscripts/migration-1.6.0_to_1.7.0/api-migration directory to <APIM_1.7.0_HOME>(The new directory path will now be <APIM_1.7.0_HOME>/api-migration).
 

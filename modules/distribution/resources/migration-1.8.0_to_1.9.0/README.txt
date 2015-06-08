@@ -1,20 +1,25 @@
 WSO2 API Migration Tool - Migrate APIManager 1.8.0 to 1.9.0
 ===========================================================
 
-This bundle is used to migrate swagger documents from swagger version 1.2 to 2.0
+This is used to migrate APIs created using different versions of WSO2 API Manager.
+This Client is only supported for APIM 1.8.0 to 1.9.0 Migrations
 
-Follow the steps below.
-- Find the pom.xml inside the swagger-doc-migration directory
-- Run "mvn clean install" command to build the migration client
-- Find the bundle "org.wso2.carbon.apimgt.migration-1.0.0.jar" inside the target directory
-- Copy the bundle to AM 1.8.0 <APIM_HOME>/repository/components/dropins
-- Start the server with -Dmigrate=1.8 to migrate swagger resources
-- This operation will transfer swagger resources from v1.2 to v2.0
+Follow the steps below
+    - Visit https://docs.wso2.com/display/AM190/Upgrading+from+the+Previous+Release
+    - Follow the given instructions
 
-Notes
-- The mysql.sql in the migrate directories should be run against the API_M database.
-- Set apim.home in build.xml of ./migration-1.6.0_to_1.7.0/api-migration/ (check other build.xml files as well)
-- To run the rxt migration script which I shared you need to install the library xmlstarlet. Make sure to mention this in the doc as well. 
-- If you need to get case senstive support in data level (ex: Same Application Name with different cases), please create the API_M database with a case sensitive Collation. 
+This client can be used to,
+    - Database Migrations
+    - Registry Resource Migrations (Swagger, RXT and other docs in the registry)
+    - File System Migrations
+
+How to use,
+    - Start the server with -Dmigrate=<MIGRATE_VERSION> for all the migrations
+            For example -Dmigrate=1.9 for migrate to API Manager 1.9.0
+    - Start the server with -DmigrateDB=true for migrate only the database resources
+    - Start the server with -DmigrateReg=true for migrate only the registry resources
+    - Start the server with -DmigrateFS=true for migrate only the file system resources
+    - Start the server with -Dcleanup=true to cleanup old resources.
+            Make sure you run this command after a successful migration. Otherwise you will lose all of your resources.
 
 
