@@ -10,7 +10,7 @@ Data Migration 1.5.0 to 1.6.0
 4. Now point same WSO2 Carbon Database(User Store and Registry) and API Manager Databases of your AM 1.5.0 instance to AM 1.6.0. 
 (Configure AM_1.5.0/repository/datasource/master-datasources.xml to point same databases configured in AM 1.4.0)
 
-5. Move all your synapse configurations to APIM_1.6.0. For that, copy and replace APIM_1.5.0/repository/deployment/server/synapse-config/default directory to APIM_1.6.0/repository/deployment/server/synapse-config/default
+5. Move all your synapse configurations to APIM_1.6.0. For that, copy and replace APIM_1.5.0/repository/deployment/server/synapse-configs/default directory to APIM_1.6.0/repository/deployment/server/synapse-configs/default
 
 6. Start AM 1.6.0 and Login.
 
