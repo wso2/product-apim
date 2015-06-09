@@ -763,6 +763,12 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>src/main/conf/XMLInputFactory.properties</source>
+            <outputDirectory>wso2am-${pom.version}</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>../../../docs/xdoc/release-notes.xml</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <destName>release-notes.html</destName>
