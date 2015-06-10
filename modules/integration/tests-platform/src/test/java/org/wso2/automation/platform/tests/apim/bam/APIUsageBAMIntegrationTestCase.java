@@ -162,27 +162,6 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         response = apiStore.subscribe(subscriptionRequest);
         checkError(response.getData(), "Error while subscribing fro API " + apiName);
 
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(app1Name);
-        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
-        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
-                                                             + "UsageTestAPI/1.0.0?format=json&action" +
-                                                             "=query&titles=MainPage&prop=revisions&rvprop=content",
-                                                             requestHeaders);
-
-        assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-        //Here will do 20 successful invocations
-        for (int i = 0; i < 10; i++) {
-            youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
-                                                    + "UsageTestAPI/1.0.0?format=json&action=query" +
-                                                    "&titles=MainPage&prop=revisions&rvprop=content",
-                                                    requestHeaders);
-            assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
-        }
-        Thread.sleep(60000);
 
         //Here will do 11 faulty invocations
 
@@ -215,6 +194,58 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         response = apiStore.subscribe(subscriptionRequestFaultyAPI);
         checkError(response.getData(), "Error while subscribing to API " + apiNameFaultyAPI);
 
+        //host object tests
+        String fileName = "testUsageWithBAM.jag";
+        String sourcePath = computeJaggeryResourcePath(fileName);
+        String destinationPath = computeDestinationPath(fileName);
+        copySampleFile(sourcePath, destinationPath);
+
+        //getting api counts before invocation
+        String finalOutputUsageTest;
+        finalOutputUsageTest = HttpRequestUtil.doGet(getTestApplicationUsagePublisherServerURLHttp()
+                , null).getData();
+        assert finalOutputUsageTest != null;
+
+        String[] array = finalOutputUsageTest.split("==");
+        int faultCountBefore = 0;
+        int apiCountByUser = 0;
+
+        if(array != null && array.length > 3) {
+            JSONArray apiCountJsonArray = new JSONArray(array[2]);
+            if(apiCountJsonArray != null && apiCountJsonArray.length() > 0 && !apiCountJsonArray.isNull(0)) {
+                apiCountByUser = apiCountJsonArray.getJSONObject(0).getInt("count");
+            }
+
+            JSONArray faultCountJsonArray = new JSONArray(array[0]);
+            if(faultCountJsonArray != null && faultCountJsonArray.length() > 0 && !faultCountJsonArray.isNull(0)) {
+                faultCountBefore = faultCountJsonArray.getJSONObject(0).getInt("count");
+            }
+        }
+
+
+        //invoking the API UsageTestAPI
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(app1Name);
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject jsonResponse = new JSONObject(responseString);
+        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+                                                             + "UsageTestAPI/1.0.0?format=json&action" +
+                                                             "=query&titles=MainPage&prop=revisions&rvprop=content",
+                                                             requestHeaders);
+
+        assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        //Here will do 20 successful invocations
+        for (int i = 0; i < 10; i++) {
+            youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+                                                    + "UsageTestAPI/1.0.0?format=json&action=query" +
+                                                    "&titles=MainPage&prop=revisions&rvprop=content",
+                                                    requestHeaders);
+            assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        }
+
+        //invoking faulty API UsageTestAPIFaultyAPI
         APPKeyRequestGenerator generateAppKeyRequestFaultyAPI = new APPKeyRequestGenerator(app2Name);
         String responseStringFaultyAPI = apiStore.generateApplicationKey(generateAppKeyRequestFaultyAPI).getData();
         JSONObject responseFaultyAPI = new JSONObject(responseStringFaultyAPI);
@@ -236,20 +267,15 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
             assertEquals(youTubeResponseFaultyAPI.getResponseCode(), 500, "Response code mismatched");
         }
 
-        //host object tests
-        String fileName = "testUsageWithBAM.jag";
-        String sourcePath = computeJaggeryResourcePath(fileName);
-        String destinationPath = computeDestinationPath(fileName);
-        copySampleFile(sourcePath, destinationPath);
+
 
         //sleep toolbox to run and populate the result to database
         Thread.sleep(240000);
-        String finalOutputUsageTest;
         finalOutputUsageTest = HttpRequestUtil.doGet(getTestApplicationUsagePublisherServerURLHttp()
                 , null).getData();
         assert finalOutputUsageTest != null;
 
-        String[] array = finalOutputUsageTest.split("==");
+        array = finalOutputUsageTest.split("==");
 
         log.info(finalOutputUsageTest);
         JSONObject element;
@@ -257,7 +283,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         assertNotNull(array[0], "API Fault Usage for Subscriber from API publisher host object not found" +
                                 " (getAPIResponseFaultCount)");
         element = new JSONArray(array[0]).getJSONObject(0);
-        assertTrue(element.getInt("count") > 0, "No API Fault Requests");
+        assertEquals((element.getInt("count") - faultCountBefore) , 11, "No API Fault Requests count mismatched");
 
         assertNotNull(array[1], "API Usage by ResourcePath from API publisher host object " +
                                 "(getAPIUsageByResourcePath)");
@@ -267,7 +293,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         assertNotNull(array[2], "No API Usage By User Response from API publisher host object " +
                                 "(getAPIUsageByUser)");
         element = new JSONArray(array[2]).getJSONObject(0);
-        assertTrue(element.getInt("count") > 0, "No API Usage count by User");
+        assertEquals((element.getInt("count") - apiCountByUser) , 11, "API Usage count by User mismatched");
 
         assertNotNull(array[3], "No API Usage by Provider from API publisher host object " +
                                 "(getAllAPIUsageByProvider)");
