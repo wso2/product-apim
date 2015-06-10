@@ -184,7 +184,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         }
         Thread.sleep(60000);
 
-        //Here will do 20 faulty invocations
+        //Here will do 11 faulty invocations
 
         String APIContextFaultyAPI = "UsageTestAPIFaultyAPI";
         String tagsFaultyAPI = "youtube, video, media";
@@ -242,6 +242,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         String destinationPath = computeDestinationPath(fileName);
         copySampleFile(sourcePath, destinationPath);
 
+        //sleep toolbox to run and populate the result to database
         Thread.sleep(240000);
         String finalOutputUsageTest;
         finalOutputUsageTest = HttpRequestUtil.doGet(getTestApplicationUsagePublisherServerURLHttp()
@@ -282,7 +283,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         assertNotNull(array[5], "No Service Time Response from API publisher host object " +
                                 "(getProviderAPIServiceTime)");
         element = new JSONArray(array[5]).getJSONObject(0);
-        assertTrue(element.getInt("serviceTime") > 0, "Service Time Not Found in getProviderAPIServiceTime response");
+        assertTrue(element.getDouble("serviceTime") >= 0, "Service Time Not Found in getProviderAPIServiceTime response");
 
         assertNotNull(array[6], "No API Usage By provider Response from API publisher host object " +
                                 "(getProviderAPIUsage)");
@@ -336,8 +337,6 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
                       + deploymentPath);
         }
 
-
-        //serverData.get
         return deploymentPath + File.separator + fileName;
     }
 
