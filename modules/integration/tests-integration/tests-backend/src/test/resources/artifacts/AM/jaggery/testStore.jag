@@ -1,93 +1,110 @@
 <%
 <%
-//Order of these operations are important as we fetch results based on order
- //If you add new test add them to bottom of this file and update validate response method
- //available in host object test class
+// Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+// Order of these operations are important as the results are fetched based on this order.
+// To add new tests first, append at the bottom of this jaggery file.
+// Then add validations to HostObjectTestCase class in the same order.
+// Please add 'print("==");' after each of the tests.
+// The resulting array is split based on this "==".
+
 store = require('apistore');
 var storeHostObj = new store.APIStore("admin");
+
+//0
 print("==");
+//1
 print(storeHostObj.isBillingEnabled());
 print("==");
+//2
 print(storeHostObj.getHTTPsURL("localhost"));
 print("==");
+//3
 print(storeHostObj.getAuthServerURL());
 print("==");
+//4
 print(storeHostObj.getHTTPURL("localhost"));
 print("==");
+//5
 print(storeHostObj.getDeniedTiers());
 print("==");
+//6
 print(storeHostObj.getActiveTenantDomains());
 print("==");
+//7
 print(storeHostObj.isSelfSignupEnabled());
 print("==");
+//8
 print(storeHostObj.getUserFields());
 print("==");
+//9
 print(storeHostObj.searchPaginatedAPIsByType("HostObjectTestAPI","carbon.super","0","10"));
 print("==");
+//10
 print(storeHostObj.searchPaginatedAPIsByType("name:*","carbon.super","0","10"));
 print("==");
-//print(storeHostObj.searchAPIbyType("name:*","carbon.super"));
-print("==");
-//print(storeHostObj.searchAPIbyType("HostObjectTestAPI","carbon.super"));
-print("==");
+//11
 print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
 print("==");
-//print(storeHostObj.getPublishedAPIsByProvider("admin@carbon.super","admin"));
+//12
+print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3")); 
 print("==");
-//print(storeHostObj.getAllSubscriptions("admin@carbon.super"));
-print("==");
-print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3"));
-print("==");
-print(storeHostObj.removeAPIRating("admin","HostObjectTestAPI","1.0.0"));
-print("==");
-print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10"));
-print("==");
-print(storeHostObj.getAPIsWithTag("youtube"));
-print("==");
+//13
+ print(storeHostObj.removeAPIRating("admin","HostObjectTestAPI","1.0.0"));
+ print("=="); 
+//14
+print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10")); 
+print("=="); 
+//15
+print(storeHostObj.getAPIsWithTag("youtube")); 
+print("=="); 
+//16
 print(storeHostObj.getAllPublishedAPIs("carbon.super"));
-print("==");
-print(storeHostObj.getComments("admin","HostObjectTestAPI","1.0.0"));
-print("==");
-print(storeHostObj.isUserExists("admin"));
-print("==");
-print(storeHostObj.getAPI("admin","HostObjectTestAPI","1.0.0","admin"));
-print("==");
+ print("=="); 
+//17
+ print(storeHostObj.isUserExists("admin"));
+ print("==");
+//18
+ print(storeHostObj.getAPI("admin","HostObjectTestAPI","1.0.0","admin"));
+ print("=="); 
+//19
 print(storeHostObj.isSubscribed("admin","HostObjectTestAPI","1.0.0","admin"));
-print("==");
+ print("=="); 
+//20
 print(storeHostObj.getSubscriptions("admin","HostObjectTestAPI","1.0.0","admin"));
-print("==");
-print(storeHostObj.getSubscribedAPIs("3"));
-print("==");
-print(storeHostObj.hasUserPermissions("admin"));
-print("==");
-print(storeHostObj.getTiers("admin"));
-print("==");
-print(storeHostObj.getAPIUsageforSubscriber("admin"));
-print("==");
-print(storeHostObj.getDeniedTiers("admin"));
-print("==");
-print(storeHostObj.getRecentlyAddedAPIs("5","carbon.super"));
-print("==");
-print(storeHostObj.getTopRatedAPIs("5"));
-print("==");
-print(storeHostObj.isBillingEnabled());
-print("==");
-print(storeHostObj.hasSubscribePermission());
-print("==");
-print(storeHostObj.isEnableEmailUsername());
-print("==");
+ print("==");
+//21
+print(storeHostObj.hasUserPermissions("admin")); 
+print("=="); 
+//22
+print(storeHostObj.hasSubscribePermission()); 
+print("=="); 
+//23
 print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin"));
-print("==");
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application"));
-print("==");
+ print("=="); 
+//24
+print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application")); 
+print("=="); 
+//25
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
-print("==");
-print(storeHostObj.getSwaggerDiscoveryUrl("HostObjectTestAPI","1.0.0","admin"));
-print("==");
-//print(storeHostObj.removeSubscriber("admin","HostObjectTestAPI","1.0.0","DefaultApplication","1"));
-//print(storeHostObj.removeSubscription("admin","HostObjectTestAPI","1.0.0","DefaultApplication","1"));
-//print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3"));
-//print("==");
-//print(storeHostObj.getTopRatedAPIs("3"));
+ print("=="); 
+//26
+print(storeHostObj.isEnableEmailUsername()); 
+print("=="); 
+
 %>
 %>
