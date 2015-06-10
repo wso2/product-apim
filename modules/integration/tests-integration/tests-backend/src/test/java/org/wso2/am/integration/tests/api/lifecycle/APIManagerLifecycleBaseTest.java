@@ -54,8 +54,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
-    protected static final String HTTP_RESPONSE_DATA_INVALID_CREDENTIALS =
-            "<ams:message>Invalid Credentials</ams:message>";
+    protected static final String UNCLASSIFIED_AUTHENTICATION_FAILURE =
+            "<ams:message>Unclassified Authentication Failure</ams:message>";
     protected static final String HTTP_RESPONSE_DATA_NOT_FOUND =
             "<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
@@ -68,12 +68,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    protected static String GATEWAY_WEB_APP_URL;
+    protected static String gatewayWebAppUrl;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         super.init();
-        GATEWAY_WEB_APP_URL = gatewayUrls.getWebAppURLNhttp();
+        gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
     }
 
     /**

@@ -41,7 +41,7 @@ import static org.testng.Assert.assertTrue;
  * JIRA : https://wso2.org/jira/browse/APIMANAGER-3125
  *
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.PLATFORM})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class OAuthConsumerAppsTestCase extends APIMIntegrationUiTestBase {
 	
 	private WebDriver driver;

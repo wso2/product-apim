@@ -21,12 +21,15 @@ package org.wso2.am.integration.tests.resources;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -36,25 +39,30 @@ import static org.testng.Assert.assertEquals;
 public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
+    private String APIName = "APIResourceTestAPI";
+    private String APIVersion = "1.0.0";
+    private String providerName = "";
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIResourceModificationTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        super.init(userMode);
+        String publisherURLHttp = publisherUrls.getWebAppURLHttps();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
     }
 
     @Test(groups = {"wso2.am"}, description = "add scope to resource test case")
     public void testSetScopeToResourceTestCase() throws Exception {
 
-        String APIName = "APIResourceTestAPI";
         String APIContext = "testResAPI";
         String tags = "youtube, video, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = "admin";
-        String APIVersion = "1.0.0";
 
         //add all option methods
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
@@ -97,6 +105,16 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

@@ -43,13 +43,14 @@ import static org.testng.Assert.*;
  */
 public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APILifeCycleTestAPI";
-    private static final String API_CONTEXT = "testAPI";
-    private static final String API_TAGS = "youtube, video, media";
-    private static final String API_END_POINT_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final String API_NAME = "APIPublishingAndVisibilityInStoreTest";
+    private static final String API_CONTEXT = "APIPublishingAndVisibilityInStore";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
     private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private static final String API_VERSION_1_0_0 = "1.0.0";
     private static final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
@@ -59,10 +60,11 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(API_END_POINT_URL));
+                        new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
