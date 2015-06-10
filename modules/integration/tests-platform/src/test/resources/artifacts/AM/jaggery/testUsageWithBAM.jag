@@ -3,34 +3,28 @@
 //If you add new test add them to bottom of this file and update validate response method
 //available in host object test class.
 var publisher = require('apipublisher');
+var start="2014-01-01";
+var end = "2015-12-30";
 var publisherHostObj = new publisher.APIProvider("admin");
+print(publisherHostObj.getAPIResponseFaultCount("admin",start , end));
 print("==");
-print(publisherHostObj.getAPIUsageforSubscriber("admin"));
+print(publisherHostObj.getAPIUsageByResourcePath("admin",start , end));
 print("==");
-print(publisherHostObj.getAPIFaultyAnalyzeByTime("admin"));
-print("==");
-var start=new Date();
-start.setFullYear(2014,0,14);
-var end = new Date();
-end.setFullYear(2015,0,14);
-print(publisherHostObj.getAPIResponseFaultCount("admin",start,end));
-print("==");
-print(publisherHostObj.getAPIUsageByResourcePath("admin",start,end));
-print("==");
-print(publisherHostObj.getAPIUsageByUser("admin",start,end));
+print(publisherHostObj.getAPIUsageByUser("admin",start , end));
 print("==");
 print(publisherHostObj.getAllAPIUsageByProvider("admin"));
 print("==");
 print(publisherHostObj.getFirstAccessTime("admin"));
 print("==");
-print(publisherHostObj.getProviderAPIServiceTime("admin",start,end));
+print(publisherHostObj.getProviderAPIServiceTime("admin",start , end));
 print("==");
-print(publisherHostObj.getProviderAPIUsage("admin","UsageTestAPI"));
+print(publisherHostObj.getProviderAPIUsage("admin",start , end));
 print("==");
 print(publisherHostObj.getProviderAPIVersionUsage("admin","UsageTestAPI"));
 print("==");
 print(publisherHostObj.getProviderAPIVersionUserUsage("admin","UsageTestAPI","1.0.0"));
 print("==");
-print(publisherHostObj.getProviderAPIVersionUserLastAccess("admin",start,end));
+print(publisherHostObj.getProviderAPIVersionUserLastAccess("admin",start , end));
 print("==");
+print(publisherHostObj.getAPIFaultyAnalyzeByTime("admin", start, end));
 %>
