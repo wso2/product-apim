@@ -17,6 +17,7 @@
 */
 package org.wso2.am.integration.tests.header;
 
+import org.apache.axiom.om.OMElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,7 +28,9 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
@@ -39,8 +42,15 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
     public void setEnvironment() throws Exception {
         super.init();
 
-        apimTestCaseUtils.loadResource
-                ("/artifacts/AM/synapseconfigs/property/duplicate_transfer_encoding.xml");
+        AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
+        String session = login.login("admin", "admin", "localhost");
+        // Upload the synapse
+        String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
+                      File.separator + "property" + File.separator +
+                      "duplicate_transfer_encoding.xml";
+        OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
+        apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
+                                                     session);
 
         int port = 9785;
         String expectedResponse = "HTTP/1.0 200 OK\r\nServer: testServer\r\n" +
