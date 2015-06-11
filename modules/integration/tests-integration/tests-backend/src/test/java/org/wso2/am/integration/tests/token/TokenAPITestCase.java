@@ -121,6 +121,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
+        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);

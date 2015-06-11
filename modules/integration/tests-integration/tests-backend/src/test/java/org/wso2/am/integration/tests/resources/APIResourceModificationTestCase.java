@@ -73,6 +73,7 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(APIVersion);
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
+        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         //add assertion

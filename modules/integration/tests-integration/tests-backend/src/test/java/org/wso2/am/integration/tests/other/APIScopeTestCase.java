@@ -124,6 +124,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(API_VERSION);
+        apiRequest.setProvider(apiProvider);
         apiPublisher.addAPI(apiRequest);
 
         //publishing API
