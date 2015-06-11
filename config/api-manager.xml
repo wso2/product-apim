@@ -131,7 +131,7 @@
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
-                <Environment type="hybrid">
+                <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
 			<!--
@@ -362,6 +362,10 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
+        <!--
+              Uncomment this to limit the number of APIs in api the API Store
+          -->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
