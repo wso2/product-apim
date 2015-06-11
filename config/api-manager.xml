@@ -293,6 +293,14 @@
         -->
        <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
 
+        <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been white listed internally.
+        -->
+        <!--ScopeWhitelist>
+            <Scope>^device_.*</Scope>
+            <Scope>openid</Scope>
+        </ScopeWhitelist-->
+
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
