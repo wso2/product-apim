@@ -52,6 +52,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private String providerName;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -79,6 +80,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
@@ -135,6 +137,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
+        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);

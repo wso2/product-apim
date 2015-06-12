@@ -112,6 +112,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setVisibility("public");
+        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
