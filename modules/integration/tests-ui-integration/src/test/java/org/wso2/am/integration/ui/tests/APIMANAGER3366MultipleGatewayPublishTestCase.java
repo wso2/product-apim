@@ -249,9 +249,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		driver.findElement(By.id("logout-link")).click();
 		driver.get(getPublisherURL());
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(userInfo.getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(userInfo.getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
 		driver.findElement(By.linkText("Browse")).click();
