@@ -340,6 +340,7 @@
             <excludes>
                 <exclude>**/TwitterSearch/**</exclude>
                 <exclude>**/YahooPlaceFinder/**</exclude>
+		<exclude>**/YoutubeFeeds/**</exclude>
             </excludes>
         </fileSet>
 
