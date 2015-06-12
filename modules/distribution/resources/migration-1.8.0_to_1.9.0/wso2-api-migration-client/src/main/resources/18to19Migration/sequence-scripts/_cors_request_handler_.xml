@@ -1,4 +1,4 @@
-<sequence xmlns="http://ws.apache.org/ns/synapse" name="_cors_request_handler">
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="_cors_request_handler_">
    <filter source="$ctx:CORSConfiguration.Enabled" regex="true">
    <then>
    <property name="Access-Control-Allow-Origin" expression="$ctx:Access-Control-Allow-Origin"  scope="transport" type="STRING"/>
