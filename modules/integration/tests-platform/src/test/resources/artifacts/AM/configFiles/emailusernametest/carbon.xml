@@ -357,7 +357,7 @@
         -->
         <NetworkAuthenticatorConfig>
             <!--
-                Below is a sample configuration for a single authenticator. Please note that
+                Below is a other configuration for a single authenticator. Please note that
                 all child elements are mandatory. Not having some child elements would lead to
                 exceptions at runtime.
             -->

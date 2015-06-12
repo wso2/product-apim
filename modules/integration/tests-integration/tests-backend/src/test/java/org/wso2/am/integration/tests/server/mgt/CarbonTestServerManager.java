@@ -18,9 +18,8 @@
 package org.wso2.am.integration.tests.server.mgt;
 
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
+import org.wso2.carbon.integration.common.extensions.carbonserver.TestServerManager;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.util.HashMap;
 

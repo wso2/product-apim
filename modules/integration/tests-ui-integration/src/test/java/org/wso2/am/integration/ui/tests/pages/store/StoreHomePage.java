@@ -56,11 +56,20 @@ public class StoreHomePage extends PageHandler {
      * @param password Password
      */
     public void loginAs(String userName, CharSequence password) throws IOException {
+        waitUntilElementVisibilityByLinkText("store.login.link", 60);
         clickElementByLinkText("store.login.link");
         fillTextBoxById("store.login.username.id", userName);
         fillTextBoxById("store.login.password.id", password);
         waitUntilElementVisibilityById("store.login.button.id", 60);
         clickElementById("store.login.button.id");
+
+        // waiting until logged in
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            log.warn("Interrupted Exception while saving resource " + e);
+        }
+
         waitUntilElementVisibilityByLinkText("store.menu.apis.link", 60);
         log.info("login as " + userName + " to Store Page");
     }
@@ -98,7 +107,7 @@ public class StoreHomePage extends PageHandler {
         clickElementByLinkText("store.mysubscription.linktext");
         String genButtonText = getTextOfElementByXPath("store.mysubscription.generate.button.xpath");
         //Generation of access token
-        if (genButtonText.equals("Generate")) { //if no token was generated.
+        if (genButtonText.equalsIgnoreCase("Generate Keys")) { //if no token was generated.
             clickElementByXpath("store.mysubscription.generate.button.xpath");
             waitUntilElementVisibilityByClassName("store.access.token.classname", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
             accessToken = getTextOfElementByClassName("store.access.token.classname");
@@ -127,6 +136,8 @@ public class StoreHomePage extends PageHandler {
      * @throws java.io.IOException
      */
     public TestAPIPage goToRestClient() throws IOException {
+
+        waitUntilElementVisibilityByLinkText("home.theme.link", 60);
         clickElementByLinkText("home.theme.link");
         clickElementByXpath("home.theme.light.link");
         clickElementByLinkText("store.menu.tools");

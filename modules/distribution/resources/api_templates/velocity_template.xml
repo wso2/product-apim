@@ -100,7 +100,7 @@
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', base64Encode('$username:$password'))" scope="transport" />
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', '$base64unpw')" scope="transport" />
         #end
         #end
 <send>
@@ -189,7 +189,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource faultSequence=#print_string_if_exist($faultSequence "fault")>
+<resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     <payloadFactory>
         <format>
@@ -243,9 +243,7 @@
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
-        #if($statsEnabled)
         <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
-        #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
@@ -286,9 +284,7 @@
 #end
 </inSequence>
 <outSequence>
-#if($statsEnabled)
 <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"/>
-#end
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>
@@ -315,9 +311,11 @@
         #end
         #end
         #if($apiStatus == 'PROTOTYPED')
-<handlers>
-<handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"/>
-</handlers>
         #end
         ## end of apiIsBlocked check
+         <handlers>
+      <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler">
+         <property name="inline" value="INLINE"/>
+      </handler>
+       </handlers>
         </api>

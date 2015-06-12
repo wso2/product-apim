@@ -122,7 +122,16 @@ public class PageHandler {
         driver.findElement(By.cssSelector(getElementByKey(cssSelector))).click();
     }
 
+    protected void clearTextBoxById(String id) throws IOException {
+        driver.findElement(By.id(getElementByKey(id))).clear();
+    }
 
+
+    protected void waitUntilElementVisibilityByCssSelector(String cssSelector, long seconds)
+            throws IOException {
+        WebDriverWait waitDriver = new WebDriverWait(driver, seconds);
+        waitDriver.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(getElementByKey(cssSelector))));
+    }
     /**
      * Wait until the given element to be visible by element Link Text. Max Waiting time should provide as second parameter.
      *
@@ -184,7 +193,18 @@ public class PageHandler {
      * @param id key of the UI element Id
      * @return value of ".getText()" operation of given element.
      */
-    protected String getTextOfElementById(String id) throws IOException {
+    protected String getTextOfElementById(String id, int seconds) throws IOException {
+
+        WebDriverWait waitDriver = new WebDriverWait(driver, seconds);
+        waitDriver.until(ExpectedConditions.visibilityOfElementLocated(By.id(getElementByKey(id))));
+
+        long startTime = System.currentTimeMillis();
+        long nowTime = startTime;
+
+        while ((driver.findElement(By.id(getElementByKey(id))).getText().isEmpty() && (nowTime - startTime) < (seconds * 1000))) {
+            nowTime = System.currentTimeMillis();
+        }
+
         return driver.findElement(By.id(getElementByKey(id))).getText();
     }
 

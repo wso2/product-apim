@@ -25,7 +25,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.extensions.servers.carbonserver.MultipleServersManager;
+import org.wso2.carbon.integration.common.extensions.carbonserver.MultipleServersManager;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -51,7 +51,7 @@ public class OSGIServerBundleStatusTestCase {
     private PrintStream out;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         // to start the server from a different port offset
         serverPropertyMap.put("-DportOffset", "1");
         // start with OSGI component service

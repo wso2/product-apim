@@ -224,7 +224,7 @@
         This is used by API store to generate and manage API keys. API gateway uses it to
         validate and authenticate users against the provided API keys.
     -->
-    <APIKeyManager>
+    <APIKeyValidator>
         <!--
             Server URL of the API key manager
         -->
@@ -245,7 +245,7 @@
         <EnableJWTCache>false</EnableJWTCache>
 
         <!--
-            Enable/Disable API key validation information caching at key-management server
+            Enable/Disable API key verification information caching at key-management server
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
@@ -267,9 +267,19 @@
         <EnableThriftServer>false</EnableThriftServer>
         <!--
            This parameter is used to specify Thrift server host name. In a distributed deployment we must set this parameter
-           if keymanager running on separate machine. Gateway use this parameter to connect key validation thrift service
+           if keymanager running on separate machine. Gateway use this parameter to connect key verification thrift service
         -->
         <!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
+
+        <!-- 
+        Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens
+        -->
+        <ApplicationTokenScope>am_application_scope</ApplicationTokenScope>
+
+        <!-- 
+        Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a custom KeyValidation Handler
+        -->    
+        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
 
         <!--
             Remove UserName from JWT Token
@@ -284,7 +294,7 @@
         org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionProcessor in the identity.xml -->
         <EncryptPersistedTokens>false</EncryptPersistedTokens>
 
-    </APIKeyManager>
+    </APIKeyValidator>
 
     <!--
         Settings related to managing API access tiers.

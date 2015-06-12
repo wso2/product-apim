@@ -44,7 +44,7 @@ public class APIMgtServerStartupTestCase {
     private static final String MANAGEMENT_CONSOLE_URL = "Mgt Console URL";
 
     @BeforeSuite(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void setEnvironment() throws Exception {
         AutomationContext autoContext = new AutomationContext();
         logViewerClient = new LogViewerClient(autoContext.getContextUrls().getBackEndUrl(),
                                               autoContext.getSuperTenant().getTenantAdmin().getUserName(),

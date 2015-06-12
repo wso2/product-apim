@@ -166,10 +166,10 @@
                          class="org.apache.axis2.format.PlainTextFormatter"/>
 
         <!--JSON Message Formatters-->
-        <messageFormatter contentType="application/json"
-                          class="org.apache.axis2.json.JSONMessageFormatter"/>
-	<!--messageFormatter contentType="application/json"
-                          class="org.apache.axis2.json.JSONStreamFormatter"/-->
+	<messageFormatter contentType="application/json"
+                          class="org.apache.synapse.commons.json.JsonFormatter"/>
+        <!--messageFormatter contentType="application/json"
+                          class="org.apache.synapse.commons.json.JsonStreamFormatter"/-->
         <messageFormatter contentType="application/json/badgerfish"
                           class="org.apache.axis2.json.JSONBadgerfishMessageFormatter"/>
         <messageFormatter contentType="text/javascript"
@@ -228,10 +228,10 @@
                         class="org.apache.axis2.format.PlainTextBuilder"/>
 
         <!--JSON Message Builders-->
-        <messageBuilder contentType="application/json"
-                        class="org.apache.axis2.json.JSONBuilder"/>
-	<!--messageBuilder contentType="application/json"
-                        class="org.apache.axis2.json.JSONStreamBuilder"/-->
+	<messageBuilder contentType="application/json"
+                        class="org.apache.synapse.commons.json.JsonBuilder"/>
+        <!--messageBuilder contentType="application/json"
+                        class="org.apache.synapse.commons.json.JsonStreamBuilder"/-->
         <messageBuilder contentType="application/json/badgerfish"
                         class="org.apache.axis2.json.JSONBadgerfishOMBuilder"/>
         <messageBuilder contentType="text/javascript"

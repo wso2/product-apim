@@ -23,12 +23,15 @@ import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
-import org.wso2.am.integration.test.utils.publisher.utils.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import java.net.URL;
@@ -38,7 +41,7 @@ import java.net.URL;
  * and when we try to edit description of created API, the description was not found.
  * This was fixed and will test by this test case.
  */
-public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER3026DescriptionFieldTestCase extends APIMIntegrationUiTestBase {
 
 	private WebDriver driver;
 	private APIPublisherRestClient apiPublisher;
@@ -50,7 +53,7 @@ public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestB
 	@BeforeClass(alwaysRun = true)
 	public void setUp() throws Exception {
 		super.init();
-		apiPublisher = new APIPublisherRestClient(contextUrls.getWebAppURL());
+		apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
 		driver = BrowserManager.getWebDriver();
 	}
 
@@ -72,6 +75,8 @@ public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestB
 		apiRequest.setSandbox(url);
 		apiPublisher.addAPI(apiRequest);
 
+		WebDriverWait wait = new WebDriverWait(driver, 30);
+
 		driver.get(getPublisherURL());
 
 		driver.findElement(By.id("username")).clear();
@@ -86,6 +91,7 @@ public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestB
 		driver.get(getPublisherURL() + "/design?name=" + APIName + "&version=" + APIVersion +
 		           "&provider=" + userName);
 
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("description")));
 		WebElement descriptionElement = driver.findElement(By.id("description"));
 		String elementVal = descriptionElement.getText();
 		log.info("description value : " + elementVal);
@@ -95,6 +101,9 @@ public class APIMANAGER3026DescriptionFieldTestCase extends AMIntegrationUiTestB
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
 		driver.quit();
 	}
 }

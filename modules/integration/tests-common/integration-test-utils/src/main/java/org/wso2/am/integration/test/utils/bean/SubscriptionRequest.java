@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -19,7 +19,9 @@
 package org.wso2.am.integration.test.utils.bean;
 
 /**
+ * Basic request for subscribe to API
  * action=addAPISubscription&name=apiName&version=1.0.0&provider=provider&tier=Gold&applicationName=DefaultApplication
+ *
  */
 public class SubscriptionRequest extends AbstractRequest {
 
@@ -29,12 +31,28 @@ public class SubscriptionRequest extends AbstractRequest {
     private String applicationName = "DefaultApplication";
     private String tier = "Gold";
 
+    /**
+     * Constructor using default values
+     *
+     * @param apiName  - Name of the API
+     * @param provider - Provider of the API
+     */
     public SubscriptionRequest(String apiName, String provider) {
         this.name = apiName;
         this.provider = provider;
     }
 
-    public SubscriptionRequest(String apiName, String apiVersion, String provider, String appName, String tier){
+    /**
+     * constructor with more configurable params
+     *
+     * @param apiName    - Name of the API
+     * @param apiVersion - Version of the API
+     * @param provider   - API provider
+     * @param appName    - Application name
+     * @param tier       - Tire type
+     */
+    public SubscriptionRequest(String apiName, String apiVersion, String provider,
+                               String appName, String tier) {
         this.name = apiName;
         this.version = apiVersion;
         this.provider = provider;

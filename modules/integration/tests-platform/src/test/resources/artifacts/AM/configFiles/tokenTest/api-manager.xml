@@ -237,7 +237,7 @@
         This is used by API store to generate and manage API keys. API gateway uses it to
         validate and authenticate users against the provided API keys.
     -->
-    <APIKeyManager>
+    <APIKeyValidator>
         <!--
             Server URL of the API key manager
         -->
@@ -258,7 +258,7 @@
         <EnableJWTCache>true</EnableJWTCache>
 
         <!--
-            Enable/Disable API key validation information caching at key-management server
+            Enable/Disable API key verification information caching at key-management server
         -->
 
         <EnableKeyMgtValidationInfoCache>true</EnableKeyMgtValidationInfoCache>
@@ -280,7 +280,7 @@
 	<EnableThriftServer>true</EnableThriftServer>
 	<!--
 	   This parameter is used to specify Thrift server host name. In a distributed deployment we must set this parameter
-	   if keymanager running on separate machine. Gateway use this parameter to connect key validation thrift service
+	   if keymanager running on separate machine. Gateway use this parameter to connect key verification thrift service
 	-->
 	<!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
 
@@ -291,13 +291,21 @@
 
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
+
+        <!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
+         API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
+         In distributed deployment we should configure this property in key manager node by pointing
+         gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
+         Also please note that we should point gateway revoke service to key manager
+    -->
+    <RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
 	
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
 	org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionProcessor in the identity.xml -->
 	<EncryptPersistedTokens>false</EncryptPersistedTokens>
 
-    </APIKeyManager>
+    </APIKeyValidator>
 
     <!--
         Settings related to managing API access tiers.

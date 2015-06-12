@@ -1,51 +1,25 @@
-Data Migration 1.7.0 to 1.8.0
-=============================
+WSO2 API Migration Tool - Migrate APIManager 1.8.0 to 1.9.0
+===========================================================
 
-1. Shutdown AM 1.7.0 if it is running.
+This is used to migrate APIs created using different versions of WSO2 API Manager.
+This Client is only supported for APIM 1.8.0 to 1.9.0 Migrations
 
-2. Backup your API Manager Databases of your AM 1.7.0 instance.
+Follow the steps below
+    - Visit https://docs.wso2.com/display/AM190/Upgrading+from+the+Previous+Release
+    - Follow the given instructions
 
-3. Execute relevant sql script in in here against your API Manager Database.
+This client can be used to,
+    - Database Migrations
+    - Registry Resource Migrations (Swagger, RXT and other docs in the registry)
+    - File System Migrations
 
-4. Now point same WSO2 Carbon Database(User Store and Registry) and API Manager Databases of your AM 1.7.0 instance to AM 1.8.0.
-(Configure AM_1.8.0/repository/datasource/master-datasources.xml to point same databases configured in AM 1.7.0)
-
-5. Move your synapse configurations to APIM_1.8.0. For that, copy and replace APIM_1.7.0/repository/deployment/server/synapse-configs/default directory to APIM_1.8.0/repository/deployment/server/synapse-configs/default. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory
-
-6. Start AM 1.8.0 and Login.
-
-7. Copy the <APIM_1.8.0_HOME>/dbscripts/migration-1.7.0_to_1.8.0/swagger-doc-migration directory to <APIM_1.8.0_HOME>(The new directory path will now be <APIM_1..0_HOME>/swagger-doc-migration).
-
-8. Configure swagger-doc-migration/build.xml with the information for the below properties.
-
-   registry.home= Path to AM pack location   
-   username= Username for the AM server
-   password= Password for the AM server
-   host= IP of running AM server [In a distributed setup, give the host of the Publisher node]   
-   port= Port of running AM server [In a distributed setup, give the port of the Publisher node]   
-   version= Version of AM server
-
-9. Go inside swagger-doc-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message if it ran correctly.
-
-10. To re-index log in to carbon console (ex: http://localhost:9443/carbon) and delete 'lastaccesstime' resource in '/_system/local/repository/components/org.wso2.carbon.registry/indexing' location. For that go to Home-> Resources->Browse and navigate to the above given location. You can delete the 'lastaccesstime' resource by selecting Actions-> Delete
-
-11. shutdown AM 1.8.0 and delete <APIM_1.8.0_HOME>/repository/conf/solr directory and restart the server. 
+How to use,
+    - Start the server with -Dmigrate=<MIGRATE_VERSION> for all the migrations
+            For example -Dmigrate=1.9 for migrate to API Manager 1.9.0
+    - Start the server with -DmigrateDB=true for migrate only the database resources
+    - Start the server with -DmigrateReg=true for migrate only the registry resources
+    - Start the server with -DmigrateFS=true for migrate only the file system resources
+    - Start the server with -Dcleanup=true to cleanup old resources.
+            Make sure you run this command after a successful migration. Otherwise you will lose all of your resources.
 
 
-Tenant Migration (Only needs to be done if you are migrating a multi-tenanted setup)
-====================================================================================
-
-1. Move your tenant synapse configurations to APIM_1.8.0. For that, copy and replace specific folders for tenants(shown as 1,2,...) from APIM_1.7.0/repository/tenants/ to APIM_1.8.0/repository/tenants. Do not replace _TokenAPI_.xml, _RevokeAPI_.xml and _AuthorizeAPI_.xml files in the default/api subdirectory.
-
-2. Start AM 1.8.0.
-
-3. Configure swagger-doc-migration/build.xml with the information for the below properties. (swagger-doc-migration folder should be already copied to <APIM_1.8.0_HOME>)
-
-   registry.home= Path to AM pack location
-   username= Username for the AM server - respective tenant space
-   password= Password for the AM server - respective tenant space
-   host= IP of running AM server [In a distributed setup, give the host of the Publisher node]   
-   port= Port of running AM server [In a distributed setup, give the port of the Publisher node]   
-   version= Version of AM server
-
-4. Go inside swagger-doc-migration/ and execute "ant run". You should get a "BUILD SUCCESSFUL" message if it ran correctly.

@@ -21,6 +21,7 @@ package org.wso2.am.integration.test.utils.bean;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,9 +40,7 @@ public class APIBean extends API {
         this.tags = tags;
         Set<String> stringSet = new HashSet<String>();
         String[] strings =tags.split(",");
-        for (String str :strings){
-          stringSet.add(str);
-        }
+        Collections.addAll(stringSet, strings);
         super.addTags(stringSet);
     }
 }

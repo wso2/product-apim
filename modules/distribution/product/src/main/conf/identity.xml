@@ -117,6 +117,11 @@
                 <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
+               <GrantTypeName>application_token</GrantTypeName>
+               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
+               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
+           </SupportedGrantType>
+            <SupportedGrantType>
                 <GrantTypeName>refresh_token</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
@@ -126,11 +131,12 @@
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>urn:ietf:params:oauth:grant-type:saml2-bearer</GrantTypeName>
-                <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>iwa:ntlm</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeValidatorImplClass>org.wso2.carbon.identity.oauth.common.NTLMAuthenticationValidator</GrantTypeValidatorImplClass>
             </SupportedGrantType>
         </SupportedGrantTypes>
         <OAuthCallbackHandlers>
@@ -175,7 +181,19 @@
     	<SAML2Grant>
 		<!--SAML2TokenHandler></SAML2TokenHandler-->
 	</SAML2Grant>
-
+	<OpenIDConnect>
+              <IDTokenBuilder>org.wso2.carbon.identity.openidconnect.DefaultIDTokenBuilder</IDTokenBuilder>
+              <IDTokenIssuerID>https://localhost:9443/oauth2endpoints/token</IDTokenIssuerID>
+              <IDTokenSubjectClaim>http://wso2.org/claims/givenname</IDTokenSubjectClaim>
+              <IDTokenCustomClaimsCallBackHandler>org.wso2.carbon.identity.openidconnect.SAMLAssertionClaimsCallback</IDTokenCustomClaimsCallBackHandler>
+              <IDTokenExpiration>3600</IDTokenExpiration>
+              <UserInfoEndpointClaimDialect>http://wso2.org/claims</UserInfoEndpointClaimDialect>
+              <UserInfoEndpointClaimRetriever>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoUserStoreClaimRetriever</UserInfoEndpointClaimRetriever>
+              <UserInfoEndpointRequestValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInforRequestDefaultValidator</UserInfoEndpointRequestValidator>
+              <UserInfoEndpointAccessTokenValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoISAccessTokenValidator</UserInfoEndpointAccessTokenValidator>
+              <UserInfoEndpointResponseBuilder>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoJSONResponseBuilder</UserInfoEndpointResponseBuilder>
+              <SkipUserConsent>false</SkipUserConsent>
+         </OpenIDConnect>
 		<!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore, 
 		he should configure this section. Primary login doesn't have a claimUri associated with it. But secondary login, which is a claim attribute,
 		is associated with a claimuri.--> 

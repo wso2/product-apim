@@ -22,7 +22,7 @@ import org.apache.axiom.om.OMElement;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -38,17 +38,18 @@ import java.net.URL;
  * https://wso2.org/jira/browse/ESBJAVA-2686
  */
 
-public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
+public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 
 	public WireMonitorServer wireServer;
+	private String gatewaySessionCookie;
 
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
 		super.init();
-
+		gatewaySessionCookie = createSession(gatewayContext);
 		// Create tenant
 		TenantManagementServiceClient tenantManagementServiceClient =
-				new TenantManagementServiceClient(contextUrls.getBackEndUrl(), sessionCookie);
+				new TenantManagementServiceClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 		tenantManagementServiceClient.addTenant("abc.com", "abc123", "abc", "demo");
 
 		// Upload the synapse
@@ -58,11 +59,11 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 
 		OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
 
-		AuthenticatorClient login = new AuthenticatorClient(contextUrls.getBackEndUrl());
+		AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
 		String session = login.login("abc@abc.com", "abc123", "localhost");
 
-		apimTestCaseUtils.updateAPIMConfiguration(synapseConfig, contextUrls.getBackEndUrl(),
-				session);
+		apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
+                                                     session);
 		Thread.sleep(5000);
 
 		// Start wireserver
@@ -83,7 +84,7 @@ public class ContentLengthHeaderTestCase extends AMIntegrationBaseTest {
 		InputStreamReader isr = new InputStreamReader(fis, "UTF8");
 		Reader inputReader = new BufferedReader(isr);
 
-		URL postEndpoint = new URL(getGatewayServerURLHttp()+"/t/abc.com/stock/1.0.0");
+		URL postEndpoint = new URL(gatewayUrls.getWebAppURLNhttp()+"t/abc.com/stock/1.0.0");
 		//URL postEndpoint = new URL("http://localhost:8280/t/abc.com/helloabc/1.0.0");
 
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("foo.out")));

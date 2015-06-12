@@ -210,18 +210,47 @@
         cluster instance details to be used to platform test execution
         -->
         <productGroup name="APIM" clusteringEnabled="false" default="true">
-
-            <instance name="appServerInstance0001" type="standalone" nonBlockingTransportEnabled="false">
+            <!--configuration of APIM Store instance -->
+            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
                     <port type="http">9763</port>
                     <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
+            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                    <port type="nhttps">8243</port>
+                    <port type="nhttp">8280</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+
         </productGroup>
     </platform>
 

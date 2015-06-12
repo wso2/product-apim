@@ -25,22 +25,23 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.ui.tests.util.APIAccessInfo;
-import org.wso2.am.integration.ui.tests.AMIntegrationUiTestBase;
+import org.wso2.am.integration.ui.tests.APIMIntegrationUiTestBase;
 import org.wso2.am.integration.ui.tests.pages.publisher.PublisherHomePage;
 import org.wso2.am.integration.ui.tests.pages.publisher.PublisherLoginPage;
 import org.wso2.am.integration.ui.tests.pages.store.StoreHomePage;
 import org.wso2.am.integration.ui.tests.pages.store.TestAPIPage;
 import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
- * UI Test case for the Youtube API sample.
+ * UI Test case for the Youtube API other.
  * This test case was created using Page object method.
  */
-public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {
+public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
 
     private static final String API_NAME = "YoutubeFeeds1";
@@ -49,7 +50,7 @@ public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {
     private static final String API_DESCRIPTION = "Youtube Live Feeds1";
     private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private static final String API_METHOD = "/most_popular";
-    private static final String RESPONSE_BODY_TEST_STRING = "Twitter";
+    private static final String RESPONSE_BODY_TEST_STRING = "YouTube data API";
     private static final String[] TAG_NAMES = new String[]{"youtube", "gdata", "multimedia"};
 
     @BeforeClass(alwaysRun = true)
@@ -58,31 +59,41 @@ public class YouTubeUIPagesTestCase extends AMIntegrationUiTestBase {
         driver = BrowserManager.getWebDriver();
         driver.get(getPublisherURL());
 
+
     }
 
     @Test(groups = "wso2.greg", description = "verify YoutubeAPI Sample ")
     public void testYoutubeAPI() throws Exception {
         //Publisher activities
         PublisherLoginPage pubLoginPage = new PublisherLoginPage(driver);
-        PublisherHomePage publisherHomePage = pubLoginPage.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        PublisherHomePage publisherHomePage = pubLoginPage.loginAs(
+                gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
         publisherHomePage.createNewAPI(API_NAME, API_CONTEXT, API_VERSION, API_DESCRIPTION, API_URL, TAG_NAMES);
         //Test Publishing API
         assertEquals(publisherHomePage.getAPIViewText(), API_DESCRIPTION, API_DESCRIPTION + " Should appear in API List");
         publisherHomePage.logOut();
         //Navigate to Store
-        driver.get(getStoreURL());
+        driver.get(getStoreURL() + "/?tenant=carbon.super" );
         StoreHomePage storeHomePage = new StoreHomePage(driver);
-        storeHomePage.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        storeHomePage.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                gatewayContext.getContextTenant().getContextUser().getPassword());
+
         APIAccessInfo apiAccessInfo = storeHomePage.doSubscribe(API_NAME + APIMTestConstants.HYPHEN + API_VERSION);
+
         TestAPIPage testAPIPage = storeHomePage.goToRestClient();
         testAPIPage.testAPI(apiAccessInfo.getAccessURL() + API_METHOD, apiAccessInfo.getAccessToken());
         //Test response body
-        assertTrue(testAPIPage.getTestResponseBody().contains(RESPONSE_BODY_TEST_STRING), RESPONSE_BODY_TEST_STRING + " should be in the respond body");
+        assertTrue(testAPIPage.getTestResponseBody().contains(RESPONSE_BODY_TEST_STRING), RESPONSE_BODY_TEST_STRING +
+                " should be in the respond body");
         storeHomePage.logOut();
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
 

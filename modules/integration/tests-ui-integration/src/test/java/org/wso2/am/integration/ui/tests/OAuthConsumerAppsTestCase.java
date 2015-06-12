@@ -18,8 +18,6 @@
 
 package org.wso2.am.integration.ui.tests;
 
-import static org.testng.Assert.assertTrue;
-
 import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -36,13 +34,15 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 
+import static org.testng.Assert.assertTrue;
+
 /**
  * This Test requires APIM and IS as a key manager setup
  * JIRA : https://wso2.org/jira/browse/APIMANAGER-3125
  *
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.PLATFORM})
-public class OAuthConsumerAppsTestCase extends AMIntegrationUiTestBase {
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+public class OAuthConsumerAppsTestCase extends APIMIntegrationUiTestBase {
 	
 	private WebDriver driver;
 	private UIElementMapper uiElementMapper;
@@ -61,7 +61,7 @@ public class OAuthConsumerAppsTestCase extends AMIntegrationUiTestBase {
 
 	
 	@BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
         super.init();
         driver = BrowserManager.getWebDriver();
         this.uiElementMapper = UIElementMapper.getInstance();
@@ -73,7 +73,8 @@ public class OAuthConsumerAppsTestCase extends AMIntegrationUiTestBase {
     public void testTenantCreation() throws Exception {
 
         LoginPage test = new LoginPage(driver);
-        test.loginAs(userInfo.getUserName(), userInfo.getPassword());
+        test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
+				gatewayContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         addNewTenantHome.addNewTenant(TEST_DATA_TENANT_DOMAIN, TEST_DATA_TENANT_FIRST_NAME, TEST_DATA_TENANT_LAST_NAME, 

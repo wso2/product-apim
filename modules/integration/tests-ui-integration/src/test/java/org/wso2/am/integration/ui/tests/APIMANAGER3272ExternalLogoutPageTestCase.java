@@ -29,8 +29,13 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.TestException;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.ui.tests.util.TestUtil;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
 import org.wso2.carbon.utils.ServerConstants;
@@ -44,7 +49,7 @@ import java.io.*;
  * This test case check whether session already invalidated error get or not when the externalLogoutPage
  * is specified in site.json file
  */
-public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTestBase {
+public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
     private final String TEST_DATA_USERNAME = "admin";
     private final String TEST_DATA_PASSWORD = "admin";
@@ -56,28 +61,27 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
 
 
     @BeforeClass(alwaysRun = true)
-    protected void init() throws Exception {
+    protected void setEnvironment() throws Exception {
         super.init();
         // Remove password from site.json if specified.
         if (!editStoreConfig(externalLogoutPage)) {
             throw new TestException("Failed to edit site.json");
         }
 
-        apiStoreUrl = getStoreURL();
-        byte userId = 0;
-        //FrameworkProperties properties = FrameworkFactory.getFrameworkProperties(ProductConstant.AM_SERVER_NAME);
-        //UserInfo userInfo = UserListCsvReader.getUserInfo(userId);
-        this.logViewerClient = new LogViewerClient(backendURL,
-                TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
+        driver = BrowserManager.getWebDriver();
 
+        apiStoreUrl = getStoreURL();
+        this.logViewerClient = new LogViewerClient(gatewayContext.getContextUrls().getBackEndUrl(),
+                                                   TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
 
     }
 
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.PLATFORM})
     @Test(groups = "wso2.am")
     public void loginAndLogoutToStoreCheckForSessionInvalidated() throws Exception {
         log.info("Started Logging into Store...");
 
-        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebDriverWait wait = new WebDriverWait(driver, 30);
         //login to store
         driver.get(apiStoreUrl + "/site/pages/login.jag");
 
@@ -107,7 +111,7 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
                 if (logEvents[i] != null) {
                     if (logEvents[i].getMessage().contains("ERROR")) {
                         log.error("Server log reports error " + logEvents[i].getMessage());
-                        if (!logEvents[i].getMessage().contains(sessionInvalidatedError)) {
+                        if (logEvents[i].getMessage().contains(sessionInvalidatedError)) {
                             Assert.fail("Session already invalidated...");
                         }
 
@@ -124,37 +128,50 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
     /*
     * Edits site.json by setting keyStorePassword to empty and enabling SSO.
     */
-    private boolean editStoreConfig(String externalLogoutPage) throws IOException {
+    private boolean editStoreConfig(String externalLogoutPage) {
         String serverRoot = System.getProperty(ServerConstants.CARBON_HOME);
         String deploymentPath = serverRoot + getStoreSiteConfPath();
         File file = new File(deploymentPath);
         StringBuilder content = new StringBuilder();
-        if (file.exists()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-            while (reader.ready()) {
-                content.append(reader.readLine() + "\r\n");
-            }
-            reader.close();
-            int ssoConfigIndex = content.indexOf("ssoConfiguration");
+        try {
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                try {
+                    while (reader.ready()) {
+                        content.append(reader.readLine() + "\r\n");
+                    }
+                } finally {
+                    reader.close();
+                }
 
-            if (ssoConfigIndex > -1) {
-                String ssoConfigElement = content.substring(ssoConfigIndex);
-                log.debug("SSO Configuration before editing : " + ssoConfigElement);
-                int originalLength = ssoConfigElement.length();
-                ssoConfigElement = ssoConfigElement.replaceFirst("\"enabled\" : \"false\"",
-                        "\"enabled\" : \"true\"").replaceAll
-                        ("\"keyStorePassword\" : \"[a-zA-Z0-9]*\"", "\"keyStorePassword\" : \"\"");
-                ssoConfigElement.concat("\"externalLogoutPage\" : " + externalLogoutPage);
-                content.replace(ssoConfigIndex, originalLength, ssoConfigElement);
-                String jsonConfig = content.toString();
-                log.debug("SSO Configuration after editing : " + jsonConfig);
+                int ssoConfigIndex = content.indexOf("ssoConfiguration");
 
-                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-                writer.write(jsonConfig);
-                writer.close();
-                return true;
+                if (ssoConfigIndex > -1) {
+                    String ssoConfigElement = content.substring(ssoConfigIndex);
+                    log.debug("SSO Configuration before editing : " + ssoConfigElement);
+                    int originalLength = ssoConfigElement.length();
+                    ssoConfigElement = ssoConfigElement.replaceFirst("\"enabled\" : \"false\"",
+                            "\"enabled\" : \"true\"").replaceAll
+                            ("\"keyStorePassword\" : \"[a-zA-Z0-9]*\"", "\"keyStorePassword\" : \"\"");
+                    ssoConfigElement.concat("\"externalLogoutPage\" : " + externalLogoutPage);
+                    content.replace(ssoConfigIndex, originalLength, ssoConfigElement);
+                    String jsonConfig = content.toString();
+                    log.debug("SSO Configuration after editing : " + jsonConfig);
+
+                    OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+                    try {
+                        writer.write(jsonConfig);
+                    } finally {
+                        writer.close();
+                    }
+                    return true;
+                }
             }
+
+        } catch (IOException ex) {
+            log.error("Exception occurred while file reading or writing " + ex);
         }
+
         return false;
     }
 
@@ -166,6 +183,14 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends AMIntegrationUiTes
      */
     private String getStoreSiteConfPath() {
         return "/repository/deployment/server/jaggeryapps/store/site/conf/site.json";
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void tearDown() throws Exception {
+        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
+                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        driver.quit();
     }
 
 }

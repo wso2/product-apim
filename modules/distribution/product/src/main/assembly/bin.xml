@@ -60,6 +60,11 @@
                 <exclude>**/secret-conf.properties</exclude>
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
+		<exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/store/**</exclude>
+		<exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin-dashboard/**</exclude>
+		<exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/workflow-admin/**</exclude>
+		<exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
+		<exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -226,6 +231,13 @@
             <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.7.0_to_1.8.0</outputDirectory>
         </fileSet>
 
+    <fileSet>
+        <directory>
+            ../resources/migration-1.8.0_to_1.9.0/
+        </directory>
+        <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
+    </fileSet>
+
 	<fileSet>
              <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
@@ -281,11 +293,11 @@
             <directory>../../../modules/styles/service/src/main/resources/web/styles/css</directory>
             <outputDirectory>wso2am-${pom.version}/resources/allthemes/Default/admin</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>../../../config/rxts</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/resources/rxts</outputDirectory>
+	<fileSet>
+       	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/rxts</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/rxts</outputDirectory>
             <includes>
-                <include>**/**.rxt</include>
+                <include>*.rxt</include>
             </includes>
         </fileSet>
 	<!-- Jmeter Intergration Tests -->
@@ -346,6 +358,15 @@
                 <include>**/*.*</include>
             </includes>
         </fileSet>
+ 
+        <!-- API Custom Sequences -->
+	<fileSet>
+            <directory>../resources/customsequences</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/customsequences</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
+            </includes>
+        </fileSet>
 
 	<!--copy web app for OAuth feature-->
         <fileSet>
@@ -357,6 +378,7 @@
                 <include>oauth2.war</include>
             </includes>
         </fileSet>
+
 	<fileSet>
        	    <directory>
 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/rxts/forum
@@ -396,13 +418,6 @@
                   <include>**/patch0001/*.*</include>
              </includes>
         </fileSet-->
-
-        <!--Below directory should contain the landing page of APIM,when it is added to SLive.For the moment this directory keeps as empty and this is for APIMANAGER-1340 -->
-        <fileSet>
-        <directory>src/main/resources/STRATOS_ROOT</directory>
-        <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps/STRATOS_ROOT</outputDirectory>
-        <fileMode>755</fileMode>
-        </fileSet>
         <!--copying runtimes-->
         <fileSet>
         <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/lib/runtimes</directory>
@@ -504,6 +519,22 @@
 
             </excludes>
     	</fileSet>
+	<fileSet>
+             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch0010/*.*</include>
+             </includes>
+    	</fileSet>
+	<fileSet>
+             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0011</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch0011/*.*</include>
+             </includes>
+    	</fileSet>
+
+
     <fileSet>
               <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0001/dbscripts</directory>
               <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
@@ -562,6 +593,13 @@
     </fileSet>
     <fileSet>
         <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0009/lib</directory>
+        <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
+	<excludes>
+               <exclude>**/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
+        </excludes>
+    </fileSet>
+    <fileSet>
+        <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010/lib</directory>
         <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
     </fileSet>
         <!--End of  API Manager related -->
@@ -732,6 +770,12 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>src/main/conf/XMLInputFactory.properties</source>
+            <outputDirectory>wso2am-${pom.version}</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>../../../docs/xdoc/release-notes.xml</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <destName>release-notes.html</destName>
@@ -752,6 +796,12 @@
         <file>
             <source>../../../config/api-manager.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>../../../config/bam.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>

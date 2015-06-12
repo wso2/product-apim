@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -33,7 +33,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import java.io.File;
 import java.io.IOException;
 
-public class JmeterTestCases extends AMIntegrationBaseTest {
+public class JmeterTestCases extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
 

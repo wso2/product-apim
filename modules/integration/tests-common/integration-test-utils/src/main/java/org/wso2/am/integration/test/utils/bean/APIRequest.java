@@ -22,17 +22,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.net.URL;
 
 /**
+ * Class to Provides basic API request.
+ * <p/>
  * action=addAPI&name=YoutubeFeeds&visibility=public&version=1.0.0&description=Youtube Live Feeds&endpointType=nonsecured
  * &http_checked=http&https_checked=https&endpoint=http://gdata.youtube.com/feeds/api/standardfeeds&wsdl=&
  * tags=youtube,gdata,multimedia&tier=Silver&thumbUrl=http://www.10bigideas.com.au/www/573/files/pf-thumbnail-youtube_logo.jpg
  * &context=/youtube&tiersCollection=Gold&resourceCount=0&resourceMethod-0=GET
  * &resourceMethodAuthType-0=Application&resourceMethodThrottlingTier-0=Unlimited&uriTemplate-0=/*
  */
-
 public class APIRequest extends AbstractRequest {
 
     private static final Log log = LogFactory.getLog(APIRequest.class);
@@ -40,7 +42,6 @@ public class APIRequest extends AbstractRequest {
     private String name;
     private String context;
     private JSONObject endpoint;
-
     private String visibility = "public";
     private String version = "1.0.0";
     private String description = "description";
@@ -60,6 +61,8 @@ public class APIRequest extends AbstractRequest {
     private String wsdl = "";
     private String default_version = "";
     private String default_version_checked = "";
+    private String sandbox = "";
+    private String provider = "admin";
 
     public String getSandbox() {
         return sandbox;
@@ -68,8 +71,6 @@ public class APIRequest extends AbstractRequest {
     public void setSandbox(String sandbox) {
         this.sandbox = sandbox;
     }
-
-    private String sandbox = "";
 
     public String getRoles() {
         return roles;
@@ -87,28 +88,25 @@ public class APIRequest extends AbstractRequest {
         this.wsdl = wsdl;
     }
 
-
-
-    private String provider ="admin";
-
     /**
-     * create API request
-     * @param apiName
-     * @param context
-     * @param endpointUrl
-     * @throws JSONException
+     * This method will create API request.
+     *
+     * @param apiName     - Name of the API
+     * @param context     - API context
+     * @param endpointUrl - API endpoint URL
+     * @throws APIManagerIntegrationTestException - Throws if API request cannot be generated.
      */
-
-    public APIRequest(String apiName, String context, URL endpointUrl) throws JSONException {
+    public APIRequest(String apiName, String context, URL endpointUrl) throws APIManagerIntegrationTestException {
         this.name = apiName;
         this.context = context;
         try {
-            this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                                           + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                                           + endpointUrl.getProtocol() + "\"}");
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                                   + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                                   + endpointUrl.getProtocol() + "\"}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
-            throw new JSONException("JSON construct error");
+            throw new APIManagerIntegrationTestException("JSON construct error", e);
         }
 
     }
@@ -131,7 +129,7 @@ public class APIRequest extends AbstractRequest {
         addParameter("name", name);
         addParameter("context", context);
         addParameter("endpoint_config", endpoint.toString());
-        addParameter("provider",getProvider());
+        addParameter("provider", getProvider());
         addParameter("visibility", getVisibility());
         addParameter("version", getVersion());
         addParameter("description", getDescription());
@@ -149,13 +147,13 @@ public class APIRequest extends AbstractRequest {
         addParameter("uriTemplate-0", getUriTemplate());
         addParameter("default_version", getDefault_version());
         addParameter("default_version_checked", getDefault_version_checked());
-        if(roles.length()>1){
-        addParameter("roles", getRoles());
+        if (roles.length() > 1) {
+            addParameter("roles", getRoles());
         }
-        if(wsdl.length()>1) {
-        addParameter("wsdl", getWsdl());
+        if (wsdl.length() > 1) {
+            addParameter("wsdl", getWsdl());
         }
-        if(sandbox.length()>1) {
+        if (sandbox.length() > 1) {
             addParameter("sandbox", getSandbox());
         }
 
