@@ -1,6 +1,4 @@
-WSO2 API Migration Tool - Migrate APIManager 1.8.0 to 1.9.0
-===========================================================
-
+# WSO2 API Migration Client
 This is used to migrate APIs created using different versions of WSO2 API Manager.
 This Client is only supported for APIM 1.8.0 to 1.9.0 Migrations
 
@@ -21,5 +19,3 @@ How to use,
     - Start the server with -DmigrateFS=true for migrate only the file system resources
     - Start the server with -Dcleanup=true to cleanup old resources.
             Make sure you run this command after a successful migration. Otherwise you will lose all of your resources.
-
-

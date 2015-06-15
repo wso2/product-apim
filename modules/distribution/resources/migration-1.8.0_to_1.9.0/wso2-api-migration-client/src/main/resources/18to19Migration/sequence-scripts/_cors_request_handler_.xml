@@ -1,0 +1,9 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="_cors_request_handler_">
+   <filter source="$ctx:CORSConfiguration.Enabled" regex="true">
+   <then>
+   <property name="Access-Control-Allow-Origin" expression="$ctx:Access-Control-Allow-Origin"  scope="transport" type="STRING"/>
+   <property name="Access-Control-Allow-Methods" expression="$ctx:Access-Control-Allow-Methods" scope="transport" type="STRING"/>
+   <property name="Access-Control-Allow-Headers" expression="$ctx:Access-Control-Allow-Headers" scope="transport" type="STRING"/>
+   </then>
+   </filter>
+</sequence>
