@@ -252,7 +252,7 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                    org.wso2.carbon.registry:org.wso2.carbon.registry.community.features.server.feature:${carbon.platform.version}
+                                    org.wso2.carbon.registry:org.wso2.carbon.registry.community.features.server.feature:${carbon.registry.version}
                                 </featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ec2.client.feature:${carbon.platform.version}</featureArtifactDef-->
 
