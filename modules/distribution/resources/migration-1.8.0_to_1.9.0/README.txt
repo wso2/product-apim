@@ -11,7 +11,7 @@ Follow the steps below
 This client can be used to,
     - Database Migrations
     - Registry Resource Migrations (Swagger, RXT and other docs in the registry)
-    - File System Migrations
+    - File System Migrations (Synapse configs, Synapse APIs etc)
 
 How to use,
     - Start the server with -Dmigrate=<MIGRATE_VERSION> for all the migrations
