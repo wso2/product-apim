@@ -88,7 +88,7 @@
                                 <importFeatureDef>org.wso2.carbon.mediation.statistics:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mediation.tracer:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mediators.server:4.2.1</importFeatureDef>
-                                <importFeatureDef>org.wso2.carbon.mediator.bam:4.2.5</importFeatureDef>
+                                <importFeatureDef>org.wso2.carbon.mediator.bam:${bam.feature.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.message.flows:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.mex:${carbon.platform.version}</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.module.mgt.server:${carbon.platform.version}</importFeatureDef>
