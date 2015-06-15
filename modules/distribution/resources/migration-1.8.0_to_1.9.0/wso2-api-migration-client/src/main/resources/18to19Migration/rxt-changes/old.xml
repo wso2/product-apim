@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.wso2.org/governance/metadata">
+    <URITemplate>
+        <urlPattern0>/test</urlPattern0>
+        <authType0>Any</authType0>
+        <httpVerb0>GET</httpVerb0>
+    </URITemplate>
+    <overview>
+        <isLatest>true</isLatest>
+        <endpointPpassword />
+        <wsdl />
+        <visibility>public</visibility>
+        <technicalOwner />
+        <visibleRoles />
+        <tier>Bronze||Unlimited</tier>
+        <destinationStatsEnabled>Disabled</destinationStatsEnabled>
+        <endpointURL />
+        <endpointConfig>{"production_endpoints":{"url":"http://10.100.5.179:9763/services/Version/getVersion","config":null},"sandbox_endpoints":{"url":"http://10.100.5.179:9763/services/Version/getVersion","config":null},"endpoint_type":"http"}</endpointConfig>
+        <version>1.0.0</version>
+        <endpointSecured>false</endpointSecured>
+        <endpointUsername />
+        <subscriptionAvailability>current_tenant</subscriptionAvailability>
+        <visibleTenants />
+        <transports>http,https</transports>
+        <redirectURL />
+        <description>This is a test API</description>
+        <name>TestAPI</name>
+        <outSequence />
+        <inSequence />
+        <apiOwner />
+        <responseCaching>Disabled</responseCaching>
+        <status>PUBLISHED</status>
+        <tenants />
+        <isDefaultVersion>false</isDefaultVersion>
+        <faultSequence />
+        <sandboxURL />
+        <advertiseOnly>false</advertiseOnly>
+        <provider>admin</provider>
+        <businessOwnerEmail />
+        <thumbnail />
+        <technicalOwnerEmail />
+        <wadl />
+        <implementation>endpoint</implementation>
+        <context>/testapi</context>
+        <cacheTimeout>300</cacheTimeout>
+        <businessOwner />
+    </overview>
+</metadata>
