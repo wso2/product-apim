@@ -141,7 +141,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
                 ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
                 "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
                 "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
@@ -186,7 +186,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                "\"Gold\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"securityDefinitions\":{\"apim\"" +
+                "\"Gold\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
                 ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
                 "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
                 "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
