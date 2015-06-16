@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIBean;
@@ -35,9 +37,10 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
 import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -60,9 +63,14 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
+    @Factory(dataProvider = "userModeDataProvider")
+    public HostObjectTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
 
         /*
         If test run in external distributed deployment you need to copy following resources accordingly.
@@ -73,7 +81,10 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         */
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        ServerConfigurationManager serverConfigurationManager =
+                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
+                                                                     TestUserMode.SUPER_TENANT_ADMIN));
+
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
                                                                + File.separator +
                                                                "configFiles/hostobjecttest/" +
@@ -82,15 +93,12 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                                                                + File.separator +
                                                                "configFiles/tokenTest/" +
                                                                "log4j.properties"));
-        super.init();
+        super.init(userMode);
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                       storeContext.getContextTenant().getContextUser().getPassword());
+
     }
 
     private void copySampleFile(String sourcePath, String destPath) {
@@ -122,6 +130,12 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")
     public void testHostObjectTestCase() throws Exception {
+
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
+
         //Tenant Create test cases -  This will create new tenant in the system
         JMeterTest script =
                 new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
@@ -135,16 +149,25 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         String tags = "youtube, video, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = "admin";
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
+
+        String filePublisher, fileStore;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            filePublisher = "testPublisher.jag";
+            fileStore = "testStore.jag";
+        } else {
+            filePublisher = "testPublisherTenant.jag";
+            fileStore = "testStoreTenant.jag";
+        }
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiPublisher.addAPI(apiRequest);
-//        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
-//        apiPublisher.addAPI(apiRequest);
+        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
+        apiPublisher.addAPI(apiRequest);
         APIBean apiBean = APIMTestCaseUtils
                 .getAPIBeanFromHttpResponse(apiPublisher.getAPI(APIName, providerName));
         APILifeCycleStateRequest updateRequest =
@@ -152,9 +175,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
-        assertEquals(
-                apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
-                APIContext + "/" + apiBean.getId().getVersion(), "API context mismatch");
+        assertTrue(apiBean.getContext().contains(APIContext), "API context mismatch");
         assertEquals(apiBean.getId().getVersion(), APIVersion, "API version mismatch");
         assertEquals(apiBean.getId().getProviderName(), providerName,
                      "Provider Name mismatch");
@@ -163,14 +184,12 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
         apiStore.addApplication("HostObjectTestAPI-Application", "Gold", "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
-                                                                          storeContext.getContextTenant()
-                                                                                  .getContextUser()
-                                                                                  .getUserName());
+
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
         subscriptionRequest.setApplicationName("HostObjectTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
-        HttpResponse a = apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
-                                                  "url-no-need", "summary", "");
+        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "In-line",
+                                 "url-no-need", "summary", "");
         APPKeyRequestGenerator generateAppKeyRequest =
                 new APPKeyRequestGenerator("HostObjectTestAPI-Application");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
@@ -181,32 +200,29 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         //host object tests
-        String fileName = "testPublisher.jag";
-        String sourcePath = computeSourcePath(fileName);
-        String destinationPath = computeDestPath(fileName);
+        String sourcePath = computeSourcePath(filePublisher);
+        String destinationPath = computeDestPath(filePublisher);
         copySampleFile(sourcePath, destinationPath);
 
-        fileName = "testStore.jag";
-        sourcePath = computeSourcePath(fileName);
-        destinationPath = computeDestPath(fileName);
+        sourcePath = computeSourcePath(fileStore);
+        destinationPath = computeDestPath(fileStore);
         copySampleFile(sourcePath, destinationPath);
 
-        Thread.sleep(20000);
         String finalOutputPublisher = null;
-        //ClientConnectionUtil.waitForPort(9763, "");
-
         int deploymentDelayInMilliseconds = 90 * 1000;
         long startTime = System.currentTimeMillis();
 
         try {
 
 //            validatePublisherResponseArray(arr);
-            String[] arr = new String[35];
-
+            String[] responseArrayFromPublisher = new String[35];
 
             boolean isPublisherResponse = false;
             while (((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) && !isPublisherResponse) {
-                URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "testapp/testPublisher.jag");
+                Thread.sleep(500);
+                System.out.println("1 : " + " " + ((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) +
+                                   " " + isPublisherResponse +"  "+gatewayContext.getContextTenant().getDomain());
+                URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "testapp/" + filePublisher);
                 URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         jaggeryServerConnection.getInputStream()));
@@ -215,30 +231,31 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                 while ((inputLine = in.readLine()) != null) {
                     finalOutputPublisher = inputLine;
                 }
-                arr = finalOutputPublisher.split("==");
+                if (null != finalOutputPublisher) {
+                    responseArrayFromPublisher = finalOutputPublisher.split("==");
+                    isPublisherResponse = responseArrayFromPublisher[30].contains("HostObjectTestAPI");
+                }
                 log.info(finalOutputPublisher);
-                isPublisherResponse = arr[30].contains("HostObjectTestAPI") ;
                 in.close();
-                Thread.sleep(500);
+
             }
-            validatePublisherResponseArray(arr);
+            validatePublisherResponseArray(responseArrayFromPublisher);
 
         } catch (IOException e) {
             log.error("Error while invoking test application to test publisher host object");
         } finally {
             assertNotNull(finalOutputPublisher, "Result cannot be null");
         }
-
-        deploymentDelayInMilliseconds = 90 * 1000;
         String finalOutputStore = null;
-        //ClientConnectionUtil.waitForPort(9763, "");
         try {
-            String[] arr = new String[27];
-//            validateStoreResponseArray(arr);
-            Thread.sleep(20000);
+            String[] responseArrayFromStore = new String[27];
             boolean isStoreResponse = false;
+            startTime = System.currentTimeMillis();
             while (((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) && !isStoreResponse) {
-                URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "testapp/testStore.jag");
+                Thread.sleep(500);
+                System.out.println("2 : " +" "+((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) +
+                                   " " + isStoreResponse+" "+gatewayContext.getContextTenant().getDomain());
+                URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "testapp/" + fileStore);
                 URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         jaggeryServerConnection.getInputStream()));
@@ -247,13 +264,15 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                 while ((inputLine = in.readLine()) != null) {
                     finalOutputStore = inputLine;
                 }
-                arr = finalOutputStore.split("==");
-                isStoreResponse = arr[9].contains("HostObjectTestAPI");
+                if (null != finalOutputStore) {
+                    responseArrayFromStore = finalOutputStore.split("==");
+                    isStoreResponse = responseArrayFromStore[9].contains("HostObjectTestAPI");
+                }
                 in.close();
-                Thread.sleep(500);
+                log.info(finalOutputStore);
             }
-            validateStoreResponseArray(arr);
-            log.info(finalOutputStore);
+            validateStoreResponseArray(responseArrayFromStore);
+
 
         } catch (IOException e) {
             log.error("Error while invoking test application to test publisher host object");
@@ -319,8 +338,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting API from API store host object (getAPI)");
         assertTrue(array[19].contains("true"),
                    "Error while checking subscription state from API store host object (isSubscribed)");
-  //      assertTrue(array[20].contains("application"),
-  //               "Error while getting subscriptions from API store host object (getSubscriptions)");
+        //      assertTrue(array[20].contains("application"),
+        //               "Error while getting subscriptions from API store host object (getSubscriptions)");
         assertTrue(array[21].contains("true"),
                    "Error while checking user permission from API store host object (hasUserPermissions)");
         assertTrue(array[22].contains("true"),
@@ -411,5 +430,13 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while search API by invalid search key (searchAPIs)");
 
         return true;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

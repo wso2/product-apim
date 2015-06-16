@@ -23,7 +23,7 @@
 // The resulting array is split based on this "==".
 
 store = require('apistore');
-var storeHostObj = new store.APIStore("admin");
+var storeHostObj = new store.APIStore("admin@wso2.com");
 
 //0
 print("==");
@@ -61,10 +61,10 @@ print("==");
 print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
 print("==");
 //12
-print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3")); 
+print(storeHostObj.rateAPI("admin@wso2.com","HostObjectTestAPI","1.0.0","3")); 
 print("==");
 //13
- print(storeHostObj.removeAPIRating("admin","HostObjectTestAPI","1.0.0"));
+ print(storeHostObj.removeAPIRating("admin@wso2.com","HostObjectTestAPI","1.0.0"));
  print("=="); 
 //14
 print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10")); 
@@ -76,29 +76,29 @@ print("=="); 
 print(storeHostObj.getAllPublishedAPIs("carbon.super"));
  print("=="); 
 //17
- print(storeHostObj.isUserExists("admin"));
+ print(storeHostObj.isUserExists("admin@wso2.com"));
  print("==");
 //18
- print(storeHostObj.getAPI("admin","HostObjectTestAPI","1.0.0","admin"));
+ print(storeHostObj.getAPI("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
  print("=="); 
 //19
-print(storeHostObj.isSubscribed("admin","HostObjectTestAPI","1.0.0","admin"));
+print(storeHostObj.isSubscribed("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
  print("=="); 
 //20
-//print(storeHostObj.getSubscriptions("admin","HostObjectTestAPI","1.0.0","admin"));
+//print(storeHostObj.getSubscriptions("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
 print(" "); 
  print("==");
 //21
-print(storeHostObj.hasUserPermissions("admin")); 
+print(storeHostObj.hasUserPermissions("admin@wso2.com")); 
 print("=="); 
 //22
 print(storeHostObj.hasSubscribePermission()); 
 print("=="); 
-//23Test
-print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin"));
+//23
+print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin@wso2.com"));
  print("=="); 
 //24
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application")); 
+print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin@wso2.com","gold","test-url","updated-application")); 
 print("=="); 
 //25
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
