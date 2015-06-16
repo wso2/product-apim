@@ -98,6 +98,7 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection("Unlimited");
         apiRequest.setTier("Unlimited");
+        apiRequest.setProvider(provider);
 
         //Add the API using the API publisher.
         apiPublisher.addAPI(apiRequest);

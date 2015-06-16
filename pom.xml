@@ -775,7 +775,7 @@
         <apimserver.version>1.9.0-SNAPSHOT</apimserver.version>
         <apim.version>1.2.4-SNAPSHOT</apim.version>
         <apim.feature.version>1.2.4.SNAPSHOT</apim.feature.version>
-        <identity.core.version>4.2.6-SNAPSHOT</identity.core.version>
+        <identity.core.version>4.2.6</identity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
@@ -816,6 +816,7 @@
         <carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
+        <bam.feature.version>4.2.6-SNAPSHOT</bam.feature.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 

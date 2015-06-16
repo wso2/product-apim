@@ -67,11 +67,13 @@ import static org.testng.Assert.assertTrue;
  * Test flow includes log-in to API publisher , create & publish API ,Subscription, Token generation & API
  * invocation.
  * <p/>
- * For more details refer : https://docs.wso2.com/display/AM180/Configuring+Single+Sign-on
+ * For more details refer : https://docs.wso2.com/display/AM180/Configuring+Single+Sign-on+with+SAML2
  * <p/>
  * Note:
  * IS server should be up and running with port off-set value '1'
+ * Cretae a service providers for publisher and store in IS
  * APIM server should be up and running with port off-set value '0'
+ * Enable SSO in publisher and store web apps
  * IS and API manager should be configured for SAML SSO authentication
  */
 

@@ -56,13 +56,15 @@ import static org.testng.Assert.assertTrue;
 /*
 
 Note: This test case is not run with default API manager integration tests. To run this test we assume that BAM server
-is  running with port offset 1. If you have changed anything please update api-manager.xml file and master data source
-properties file available in  /resources/artifacts/AM/configFiles/usagemonitortest directory.For this test case we will
-run API manager as a part of integration test and BAM server should up and run by user. In this test we will create API
-and do basic API management related operations and usage data will push to BAM. User should deploy usage tool box inside
-BAM server(ideally user should setup BAM as we described in statistics help document). And all API manager related
-configurations listed on statistics help doc should apply to files available in above mentioned directory
-(/resources/artifacts/AM/configFiles/usagemonitortest)
+is running with port offset 1 and API Manager is running with offset 0. All the servers should be configured properly.
+
+https://docs.wso2.com/display/AM190/Publishing+API+Runtime+Statistics
+
+Configure the WSO2AM_STATS_DB data source in BAM
+Start BAM server with offset 1 and deploy the API_Manager_Analytics.tbox
+
+Enable APIUsageTracking in API manager and start the am server
+
  */
 
 public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
