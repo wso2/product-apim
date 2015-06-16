@@ -526,6 +526,13 @@
                   <include>**/patch0010/*.*</include>
              </includes>
     	</fileSet>
+	<fileSet>
+             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0011</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch0011/*.*</include>
+             </includes>
+    	</fileSet>
 
 
     <fileSet>
@@ -758,6 +765,12 @@
         </file>
         <file>
             <source>../../../INSTALL.txt</source>
+            <outputDirectory>wso2am-${pom.version}</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/XMLInputFactory.properties</source>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
