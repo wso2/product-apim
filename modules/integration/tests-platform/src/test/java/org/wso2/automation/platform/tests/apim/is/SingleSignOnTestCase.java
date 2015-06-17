@@ -18,14 +18,23 @@
 
 package org.wso2.automation.platform.tests.apim.is;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
@@ -33,11 +42,15 @@ import org.json.simple.parser.JSONParser;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.AMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.extensions.ExtensionConstants;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -53,20 +67,23 @@ import static org.testng.Assert.assertTrue;
  * Test flow includes log-in to API publisher , create & publish API ,Subscription, Token generation & API
  * invocation.
  * <p/>
- * For more details refer : https://docs.wso2.com/display/AM180/Configuring+Single+Sign-on
+ * For more details refer : https://docs.wso2.com/display/AM180/Configuring+Single+Sign-on+with+SAML2
  * <p/>
  * Note:
  * IS server should be up and running with port off-set value '1'
+ * Cretae a service providers for publisher and store in IS
  * APIM server should be up and running with port off-set value '0'
+ * Enable SSO in publisher and store web apps
+ * IS and API manager should be configured for SAML SSO authentication
  */
 
-public class SingleSignOnTestCase extends AMIntegrationBaseTest {
+public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
+    private static final Log log = LogFactory.getLog(SingleSignOnTestCase.class);
     private String relayState;
     private String ssoAuthSessionID;
     private String samlRequest;
     private String providerName;
-    private String hostIP;
     private String commonAuthUrl;
     private String httpsStoreUrl;
     private String httpsPublisherUrl;
@@ -77,6 +94,8 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
 
     private HttpResponse response;
     private HttpClient httpClient;
+    private Header commonAuthId;
+    private Header samlssoTokenId;
     private List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
 
     private static JSONParser parser = new JSONParser();
@@ -84,21 +103,49 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
     private final static String SSO_AUTH_SESSION_ID = "SSOAuthSessionID";
     private final static String SAML_REQUEST = "SAMLRequest";
     private final static String RELAY_STATE = "RelayState";
+    //private HttpContext localContext;
     private final static String USER_AGENT = "Apache-HttpClient/4.2.5 (java 1.5)";
-    private final static int IS_SERVER_PORT = Integer.parseInt(ExtensionConstants.SERVER_DEFAULT_HTTPS_PORT) + 1;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() throws APIManagerIntegrationTestException {
 
         super.init(TestUserMode.SUPER_TENANT_ADMIN);
+        HostnameVerifier hostnameVerifier = org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
-        httpClient = new DefaultHttpClient();
-        httpsPublisherUrl = contextUrls.getSecureServiceUrl().replace("services", "publisher");
-        httpsStoreUrl = contextUrls.getSecureServiceUrl().replace("services", "store");
-        hostIP = apimContext.getDefaultInstance().getHosts().get("default");
-        providerName = apimContext.getContextTenant().getContextUser().getUserName();
-        commonAuthUrl = "https://" + hostIP + ":" + IS_SERVER_PORT + "/commonauth";
-        samlSsoEndpointUrl = "https://" + hostIP + ":" + IS_SERVER_PORT + "/samlsso";
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        SchemeRegistry registry = new SchemeRegistry();
+        SSLSocketFactory socketFactory = SSLSocketFactory.getSocketFactory();
+        socketFactory.setHostnameVerifier((X509HostnameVerifier) hostnameVerifier);
+        registry.register(new Scheme("https", socketFactory, 443));
+        SingleClientConnManager mgr = new SingleClientConnManager(client.getParams(), registry);
+
+        httpClient = new DefaultHttpClient(mgr, client.getParams());
+
+        CookieStore cookieStore = new BasicCookieStore();
+
+        // Set verifier
+        HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+
+        AutomationContext isContext;
+        httpsPublisherUrl = publisherUrls.getWebAppURLHttps() + "publisher";
+        httpsStoreUrl = storeUrls.getWebAppURLHttps() + "store";
+        try {
+            providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        } catch (XPathExpressionException e) {
+            log.error(e);
+            throw new APIManagerIntegrationTestException("Error while getting server url", e);
+        }
+
+        try {
+            isContext = new AutomationContext("IS", "SP", TestUserMode.SUPER_TENANT_ADMIN);
+            commonAuthUrl =  isContext.getContextUrls().getBackEndUrl().replaceAll("services/", "") + "commonauth";
+            samlSsoEndpointUrl = isContext.getContextUrls().getBackEndUrl().replaceAll("services/", "") + "samlsso";
+        } catch (XPathExpressionException e) {
+            log.error("Error initializing IS server details", e);
+            throw new APIManagerIntegrationTestException("Error initializing IS server details", e);
+        }
+
     }
 
     @AfterClass(alwaysRun = true)
@@ -106,16 +153,16 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         super.cleanup();
     }
 
-    @Test(description = "Login to publisher for first time create api & publish", groups = "wso2.apim.is")
-    public void singleSignOnWithSAMLPublisherRelatedOperationsTestCase() throws Exception {
+    @Test(description = "Login to publisher using username and password", groups = "wso2.apim.is")
+    public void SSOAuthenticationOnPublisherUsingUsernameAndPasswordTest() throws Exception {
 
         response = sendGetRequest(String.format(httpsPublisherUrl));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
 
         HashMap<String, String> requestParameters = extractDataFromResponse(response, "name=\"SAMLRequest\"",
-                "name=\"RelayState\"", "name=\"SSOAuthSessionID\"", 1);
+                                                                            "name=\"RelayState\"", "name=\"SSOAuthSessionID\"", 1);
 
         relayState = requestParameters.get(RELAY_STATE).replaceAll("\"", "").
                 replaceAll(">", "").replaceAll("/", "");
@@ -130,40 +177,43 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
 
         response = sendPOSTMessage(samlSsoEndpointUrl, urlParameters);
 
-        assertEquals(302, response.getStatusLine().getStatusCode(), "Response mismatch not 302");
+        assertEquals(response.getStatusLine().getStatusCode(), 302, "Response mismatch not 302");
         EntityUtils.consume(response.getEntity());
 
         Header[] headers = response.getAllHeaders();
-        String url = "";
+        String url = null;
         for (Header header : headers) {
             if ("Location".equals(header.getName())) {
                 url = header.getValue();
                 break;
             }
         }
-
+        assertNotNull(url, "Location header not found samlsso response");
         response = sendRedirectRequest(response);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
 
         String sessionKey = extractDataFromResponse(response, "name=\"sessionDataKey\"", 1);
 
         urlParameters.clear();
-        urlParameters.add(new BasicNameValuePair("username", apimContext.getContextTenant().getContextUser().
+        urlParameters.add(new BasicNameValuePair("username", publisherContext.getContextTenant().getContextUser().
                 getUserName()));
-        urlParameters.add(new BasicNameValuePair("password", apimContext.getContextTenant().getContextUser().
+        urlParameters.add(new BasicNameValuePair("password", publisherContext.getContextTenant().getContextUser().
                 getPassword()));
         urlParameters.add(new BasicNameValuePair("sessionDataKey", sessionKey));
 
         response = sendPOSTMessage(commonAuthUrl, urlParameters);
-        assertEquals(302, response.getStatusLine().getStatusCode(), "Response mismatch not 302");
+        assertEquals(response.getStatusLine().getStatusCode(), 302, "Response mismatch not 302");
         EntityUtils.consume(response.getEntity());
+        commonAuthId = response.getFirstHeader("Set-Cookie");
 
         response = sendGetRequest(String.format(samlSsoEndpointUrl + "?" + url.substring(url.lastIndexOf
                 ("sessionDataKey"), url.lastIndexOf("&type"))));
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
+
+        samlssoTokenId = response.getFirstHeader("Set-Cookie");
 
         String samlResponse = extractSAMLRequestFromResponse(response, "name='SAMLResponse'", 1).replaceAll("'", "").
                 replaceAll(">", "");
@@ -172,34 +222,32 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair(RELAY_STATE, relayState));
 
         response = sendPOSTMessage(httpsPublisherUrl + "/jagg/jaggery_acs.jag",
-                urlParameters);
-        assertEquals(302, response.getStatusLine().getStatusCode(), "Response mismatch not 302");
+                                   urlParameters);
+        assertEquals(response.getStatusLine().getStatusCode(), 302, "Response mismatch not 302");
         EntityUtils.consume(response.getEntity());
 
         response = sendGetRequest(String.format(httpsPublisherUrl));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
-        EntityUtils.consume(response.getEntity());
+                     "Response mismatch not 200");
 
-        // API Creation and Publish
-        assertTrue(createAndPublishAPI(), "API creation and change life cycle to publish was unsuccessful");
-
+        String homePage = getResponseBody(response);
+        assertTrue(homePage.contains("<h2>All APIs</h2>"), "Page does not contain All APIs header");
+        assertTrue(homePage.contains("My APIs"), "Page does not contain My APIs Link");
     }
 
 
-    @Test(description = "Verify SSO Login Process , api subscription & invocation of api", groups = "wso2.apim.is",
-            dependsOnMethods = "singleSignOnWithSAMLPublisherRelatedOperationsTestCase")
-    public void singleSignOnWithSAMLStoreRelatedOperationsTestCase() throws Exception {
+    @Test(description = "Verify SSO Login Process by login to Stote", groups = "wso2.apim.is",
+          dependsOnMethods = "SSOAuthenticationOnPublisherUsingUsernameAndPasswordTest")
+    public void singleSignOnLoginOnStoreTest() throws Exception {
 
         // SSO SAML Login to store
-        response = sendGetRequest(httpsStoreUrl + "/site/pages/sso-filter.jag?" +
-                "requestedPage=https%3A%2F%2F" + hostIP + "%3A" + ExtensionConstants.SERVER_DEFAULT_HTTPS_PORT +
-                "%2Fstore%2F%3Ftenant%3D" + apimContext.getSuperTenant().getDomain());
+        // https://localhost:9443/store/site/pages/sso-filter.jag?requestedPage=https%3A%2F%2Flocalhost%3A9443%2Fstore%2F
+        response = sendGetRequest(httpsStoreUrl + "/site/pages/sso-filter.jag?requestedPage=https%3A%2F%2Flocalhost%3A9443%2Fstore%2F");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
 
         HashMap<String, String> requestParameters = extractDataFromResponse(response, "name=\"SAMLRequest\"",
-                "name=\"RelayState\"", "name=\"SSOAuthSessionID\"", 1);
+                                                                            "name=\"RelayState\"", "name=\"SSOAuthSessionID\"", 1);
 
         relayState = requestParameters.get(RELAY_STATE).replaceAll("\"", "").
                 replaceAll(">", "").replaceAll("/", "");
@@ -207,29 +255,29 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
                 replaceAll(">", "").replaceAll("/", "");
         samlRequest = requestParameters.get(SAML_REQUEST).replaceAll("\"", "").
                 replaceAll(">", "").replaceAll("/", "");
-
+        urlParameters.clear();
         urlParameters.add(new BasicNameValuePair(SAML_REQUEST, samlRequest));
         urlParameters.add(new BasicNameValuePair(RELAY_STATE, relayState));
         urlParameters.add(new BasicNameValuePair(SSO_AUTH_SESSION_ID, ssoAuthSessionID));
 
         response = sendPOSTMessage(samlSsoEndpointUrl, urlParameters);
-        assertEquals(302, response.getStatusLine().getStatusCode(), "Response mismatch not 302");
+        assertEquals(response.getStatusLine().getStatusCode(), 302, "Response mismatch not 302");
         EntityUtils.consume(response.getEntity());
 
         Header[] headers = response.getAllHeaders();
-        String url = "";
+        String url = null;
         for (Header header : headers) {
             if ("Location".equals(header.getName())) {
                 url = header.getValue();
                 break;
             }
         }
-
+        assertNotNull(url, "Location header not found samlsso response");
         response = sendGetRequest(commonAuthUrl + "?null&relyingParty=API_STORE&"
-                + url.substring(url.lastIndexOf("sessionDataKey"), url.lastIndexOf("&type"))
-                + "&type=samlsso&commonAuthCallerPath=%2Fsamlsso&forceAuth=false&passiveAuth=false");
+                                  + url.substring(url.lastIndexOf("sessionDataKey"), url.lastIndexOf("&type"))
+                                  + "&type=samlsso&commonAuthCallerPath=%2Fsamlsso&forceAuth=false&passiveAuth=false");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
 
         String samlResponse = extractSAMLRequestFromResponse(response, "name='SAMLResponse'", 1).replaceAll("'", "").
                 replaceAll(">", "");
@@ -239,57 +287,48 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair(RELAY_STATE, relayState));
 
         response = sendPOSTMessage(httpsStoreUrl + "/jagg/jaggery_acs.jag",
-                urlParameters);
-        assertEquals(302, response.getStatusLine().getStatusCode(), "Response mismatch not 302");
+                                   urlParameters);
+        assertEquals(response.getStatusLine().getStatusCode(), 302, "Response mismatch not 302");
         EntityUtils.consume(response.getEntity());
 
-        response = sendGetRequest(String.format(httpsStoreUrl + "/?tenant=" + apimContext.getSuperTenant().getDomain()));
+        response = sendGetRequest(String.format(httpsStoreUrl + "/?tenant=" + storeContext.getSuperTenant().getDomain()));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
 
-        EntityUtils.consume(response.getEntity());
-
-        createApplication();
-
-        String accessToken = subscriptionAndKeyGenerationToAPI();
-
-        HttpGet request = new HttpGet("http://" + apimContext.getDefaultInstance().getHosts().get("default")
-                + ":" + "8280/sso/1.0.0/most_popular");
-        request.addHeader("User-Agent", USER_AGENT);
-        request.addHeader("Authorization", "Bearer " + accessToken);
-
-        response = httpClient.execute(request);
-
-        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatch for api invocation");
-
-        BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-        String line;
-
-        boolean feedUrl = false;
-        boolean category = false;
-        boolean entry = false;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            if (line.contains("<feed")) {
-                feedUrl = true;
-            }
-            if (line.contains("<category")) {
-                category = true;
-            }
-            if (line.contains("<entry>")) {
-                entry = true;
-            }
-        }
-
-        bufferedReader.close();
-
-        assertTrue(feedUrl, "Response data mismatched when api invocation. feedUrl not found.");
-        assertTrue(category, "Response data mismatched when api invocation. category not found");
-        assertTrue(entry, "Response data mismatched when api invocation. entry not found");
+        String storeHomePage = getResponseBody(response);
+        assertTrue(storeHomePage.contains("Logged in as <h4>" + publisherContext.getContextTenant()
+                .getContextUser().getUserName() + "</h4>"), "Not the user logged in page");
 
     }
+
+//TODO
+//    @Test(description = "Verify Logout", groups = "wso2.apim.is",
+//          dependsOnMethods = "singleSignOnLoginOnStoreTest")
+//    public void logoutFromStore() throws Exception{
+//        //https://localhost:9443/store//site/pages/logout.jag
+//
+//        HttpGet logOutRequest = new HttpGet(httpsStoreUrl + "/site/pages/logout.jag");
+////        HttpGet logOutRequest = new HttpGet("http://localhost:9769/store/site/pages/logout.jag");
+//        logOutRequest.addHeader("User-Agent", USER_AGENT);
+//        //logOutRequest.addHeader("Cookie", samlssoTokenId.getValue().split(";")[0] + ";" + commonAuthId.getValue().split(";")[0]);
+//        response = httpClient.execute(logOutRequest);
+//        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
+//                     "Response mismatch not 200");
+//
+//        HashMap<String, String> requestParameters = extractDataFromResponse(response, "name=\"SAMLRequest\"",
+//                                                                            "name=\"RelayState\"", "name=\"SSOAuthSessionID\"", 1);
+//        relayState = requestParameters.get(RELAY_STATE).replaceAll("\"", "").
+//                replaceAll(">", "").replaceAll("/", "");
+//        samlRequest = requestParameters.get(SAML_REQUEST).replaceAll("\"", "").
+//                replaceAll(">", "").replaceAll("/", "");
+//
+//        urlParameters.clear();
+//        urlParameters.add(new BasicNameValuePair(SAML_REQUEST, samlRequest));
+//        urlParameters.add(new BasicNameValuePair(RELAY_STATE, relayState));
+//
+//        response = sendPOSTMessage(samlSsoEndpointUrl, urlParameters);
+//        System.out.println("a");
+//    }
 
     private String subscriptionAndKeyGenerationToAPI() throws Exception {
 
@@ -301,17 +340,17 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("tier", "Unlimited"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/subscription/" +
-                "subscription-add/ajax/subscription-add.jag",
-                urlParameters);
+                                   "subscription-add/ajax/subscription-add.jag",
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response status code mismatch for subscription");
+                     "Response status code mismatch for subscription");
         EntityUtils.consume(response.getEntity());
 
         // generate production keys
         response = sendGetRequest(String.format(httpsStoreUrl + "/site/pages/subscriptions.jag?" +
-                "selectedApp=SSOApplication&tenant=" + apimContext.getSuperTenant().getDomain()));
+                                                "selectedApp=SSOApplication&tenant=" + storeContext.getSuperTenant().getDomain()));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch ststus code not 200 for subscription page navigation");
+                     "Response mismatch ststus code not 200 for subscription page navigation");
         EntityUtils.consume(response.getEntity());
 
         urlParameters.clear();
@@ -322,10 +361,10 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("authorizedDomains", "ALL"));
         urlParameters.add(new BasicNameValuePair("validityTime", "500"));  // 2 minutes
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/subscription/" +
-                "subscription-add/ajax/subscription-add.jag",
-                urlParameters);
+                                   "subscription-add/ajax/subscription-add.jag",
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response status code  mismatch for generating production key");
+                     "Response status code  mismatch for generating production key");
         parser.reset();
 
         BufferedReader bufferedReader = new BufferedReader(
@@ -354,11 +393,11 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
     private Boolean createAndPublishAPI() throws Exception {
 
         String APIDescription = "This is test API create by API manager for demonstration purposes " +
-                "for SSO SAML platform tests";
+                                "for SSO SAML platform tests";
         String APIContext = "sso";
         HttpResponse response = sendGetRequest(String.format(httpsPublisherUrl + "/design"));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         //11.
@@ -373,36 +412,36 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tags", "WSO2,APIM,IS,CrossProduct,PlatformTests"));
         urlParameters.add(new BasicNameValuePair("action", "design"));
         urlParameters.add(new BasicNameValuePair("swagger",                  //
-                "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":\"1.2\"," +
-                        "\"apis\":[{\"path\":\"/default\",\"description\":\"\",\"file\":{\"apiVersion\":" + apiVersion + "," +
-                        "\"swaggerVersion\":\"1.2\",\"basePath\":\"http://localhost:8280/CrossProductsAPI3Context/1.0.0\"," +
-                        "\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":[{\"method\":\"GET\"," +
-                        "\"parameters\":[{\"name\":\"body\",\"description\":\"Request Body\",\"allowMultiple\":false," +
-                        "\"required\":true,\"paramType\":\"body\",\"type\":\"string\"}],\"nickname\":\"get_*\"}," +
-                        "{\"method\":\"POST\",\"parameters\":[{\"name\":\"body\",\"description\":\"Request Body\"," +
-                        "\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\",\"type\":\"string\"}]," +
-                        "\"nickname\":\"post_*\"},{\"method\":\"PUT\",\"parameters\":[{\"name\":\"body\",\"description\":" +
-                        "\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\",\"type\":" +
-                        "\"string\"}],\"nickname\":\"put_*\"},{\"method\":\"DELETE\",\"parameters\":[{\"name\":\"body\"," +
-                        "\"description\":\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\"," +
-                        "\"type\":\"string\"}],\"nickname\":\"delete_*\"},{\"method\":\"OPTIONS\",\"parameters\":[{\"name\":" +
-                        "\"body\",\"description\":\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":" +
-                        "\"body\",\"type\":\"string\"}],\"nickname\":\"options_*\"}]}]}}],\"info\":{\"title\":" +
-                        "" + apiName + ",\"description\":" +
-                        "" + APIDescription + "," + "\"termsOfServiceUrl\":\"\",\"contact\":\"\",\"license\":\"\"," +
-                        "\"licenseUrl\":\"\"}," +
-                        "\"authorizations\":{\"oauth2\":{\"type\":\"oauth2\",\"scopes\":[]}}}"));
+                                                 "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":\"1.2\"," +
+                                                 "\"apis\":[{\"path\":\"/default\",\"description\":\"\",\"file\":{\"apiVersion\":" + apiVersion + "," +
+                                                 "\"swaggerVersion\":\"1.2\",\"basePath\":\"http://localhost:8280/CrossProductsAPI3Context/1.0.0\"," +
+                                                 "\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":[{\"method\":\"GET\"," +
+                                                 "\"parameters\":[{\"name\":\"body\",\"description\":\"Request Body\",\"allowMultiple\":false," +
+                                                 "\"required\":true,\"paramType\":\"body\",\"type\":\"string\"}],\"nickname\":\"get_*\"}," +
+                                                 "{\"method\":\"POST\",\"parameters\":[{\"name\":\"body\",\"description\":\"Request Body\"," +
+                                                 "\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\",\"type\":\"string\"}]," +
+                                                 "\"nickname\":\"post_*\"},{\"method\":\"PUT\",\"parameters\":[{\"name\":\"body\",\"description\":" +
+                                                 "\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\",\"type\":" +
+                                                 "\"string\"}],\"nickname\":\"put_*\"},{\"method\":\"DELETE\",\"parameters\":[{\"name\":\"body\"," +
+                                                 "\"description\":\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":\"body\"," +
+                                                 "\"type\":\"string\"}],\"nickname\":\"delete_*\"},{\"method\":\"OPTIONS\",\"parameters\":[{\"name\":" +
+                                                 "\"body\",\"description\":\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":" +
+                                                 "\"body\",\"type\":\"string\"}],\"nickname\":\"options_*\"}]}]}}],\"info\":{\"title\":" +
+                                                 "" + apiName + ",\"description\":" +
+                                                 "" + APIDescription + "," + "\"termsOfServiceUrl\":\"\",\"contact\":\"\",\"license\":\"\"," +
+                                                 "\"licenseUrl\":\"\"}," +
+                                                 "\"authorizations\":{\"oauth2\":{\"type\":\"oauth2\",\"scopes\":[]}}}"));
 
 
         response = sendPOSTMessage(httpsPublisherUrl + "/site/blocks/item-design/ajax/add.jag?",
-                urlParameters);
+                                   urlParameters);
         EntityUtils.consume(response.getEntity());
 
         // 12.
         response = sendGetRequest(String.format(httpsPublisherUrl + "/implement?name=" +
-                apiName + "&version=" + apiVersion + "&provider=" + providerName));
+                                                apiName + "&version=" + apiVersion + "&provider=" + providerName));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         //14.
@@ -410,9 +449,9 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("implementation_methods", "endpoint"));
         urlParameters.add(new BasicNameValuePair("endpoint_type", "http"));
         urlParameters.add(new BasicNameValuePair("endpoint_config", "{\"production_endpoints\":{\"url\":" +
-                "\"http://gdata.youtube.com/feeds/api/standardfeeds\",\"config\":null},\"endpoint_type\":\"http\"}"));
+                                                                    "\"http://gdata.youtube.com/feeds/api/standardfeeds\",\"config\":null},\"endpoint_type\":\"http\"}"));
         urlParameters.add(new BasicNameValuePair("production_endpoints", "http://gdata.youtube.com/feeds/api/" +
-                "standardfeeds"));
+                                                                         "standardfeeds"));
         urlParameters.add(new BasicNameValuePair("sandbox_endpoints", ""));
         urlParameters.add(new BasicNameValuePair("endpointType", "nonsecured"));
         urlParameters.add(new BasicNameValuePair("epUsername", providerName));
@@ -424,34 +463,34 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("action", "implement"));
         urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":" +
-                "\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\"" +
-                ":{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"" +
-                ",\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"" +
-                "operations\":[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\"" +
-                ":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":" +
-                "\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"post_*\",\"method\":\"POST\",\"parameters\"" +
-                ":[{\"description\":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true," +
-                "\"type\":\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"put_*\",\"method\":\"PUT\"," +
-                "\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false," +
-                "\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"delete_*\"," +
-                "\"method\":\"DELETE\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
-                "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]}," +
-                "{\"nickname\":\"options_*\",\"method\":\"OPTIONS\",\"parameters\":[{\"description\":" +
-                "\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":" +
-                "\"string\",\"paramType\":\"body\"}]}]}]},\"description\":\"\",\"path\":\"/default\"}]," +
-                "\"info\":{\"title\":\"CrossProductsAPI3\",\"termsOfServiceUrl\":\"\",\"description\":" +
-                "\"This is test API create by API manager for demonstration purposes for platform tests\"," +
-                "\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}"));
+                                                            "\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\"" +
+                                                            ":{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"" +
+                                                            ",\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"" +
+                                                            "operations\":[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\"" +
+                                                            ":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":" +
+                                                            "\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"post_*\",\"method\":\"POST\",\"parameters\"" +
+                                                            ":[{\"description\":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true," +
+                                                            "\"type\":\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"put_*\",\"method\":\"PUT\"," +
+                                                            "\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false," +
+                                                            "\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]},{\"nickname\":\"delete_*\"," +
+                                                            "\"method\":\"DELETE\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
+                                                            "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]}," +
+                                                            "{\"nickname\":\"options_*\",\"method\":\"OPTIONS\",\"parameters\":[{\"description\":" +
+                                                            "\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":" +
+                                                            "\"string\",\"paramType\":\"body\"}]}]}]},\"description\":\"\",\"path\":\"/default\"}]," +
+                                                            "\"info\":{\"title\":\"CrossProductsAPI3\",\"termsOfServiceUrl\":\"\",\"description\":" +
+                                                            "\"This is test API create by API manager for demonstration purposes for platform tests\"," +
+                                                            "\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}"));
 
         response = sendPOSTMessage(httpsPublisherUrl + "/site/blocks/item-design/ajax/add.jag?",
-                urlParameters);
+                                   urlParameters);
         EntityUtils.consume(response.getEntity());
 
         //15.
         response = sendGetRequest(String.format(httpsPublisherUrl + "/manage?name=" +
-                apiName + "&version=" + apiVersion + "&provider=" + providerName));
+                                                apiName + "&version=" + apiVersion + "&provider=" + providerName));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         //20.
@@ -476,31 +515,31 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("action", "manage"));
         urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":\"1.2\"," +
-                "\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":" +
-                "{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"," +
-                "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":" +
-                "[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\":\"Request Body\"" +
-                ",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\"" +
-                ":\"body\"}],\"auth_type\":\"Application \n" +
-                "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"post_*\",\"method\":" +
-                "\"POST\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\",\"" +
-                "allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}],\"" +
-                "auth_type\":\"Application : \n" +
-                "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"put_*\",\"method\":" +
-                "\"PUT\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
-                "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":" +
-                "\"body\"}],\"auth_type\":\"Application : \n" +
-                "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"delete_*\",\"" +
-                "method\":\"DELETE\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
-                "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]," +
-                "\"auth_type\":\"Application : \n" +
-                "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"options_*\"," +
-                "\"method\":\"OPTIONS\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
-                "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}],\"" +
-                "auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"}]}]},\"description\":\"\",\"path\":" +
-                "\"/default\"}],\"info\":{\"title\":\"CrossProductsAPI3\",\"termsOfServiceUrl\":\"\",\"" +
-                "description\":\"This is test API create by API manager for demonstration purposes for platform" +
-                " tests\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}"));
+                                                            "\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":" +
+                                                            "{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"," +
+                                                            "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":" +
+                                                            "[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\":\"Request Body\"" +
+                                                            ",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\"" +
+                                                            ":\"body\"}],\"auth_type\":\"Application \n" +
+                                                            "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"post_*\",\"method\":" +
+                                                            "\"POST\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\",\"" +
+                                                            "allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}],\"" +
+                                                            "auth_type\":\"Application : \n" +
+                                                            "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"put_*\",\"method\":" +
+                                                            "\"PUT\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
+                                                            "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":" +
+                                                            "\"body\"}],\"auth_type\":\"Application : \n" +
+                                                            "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"delete_*\",\"" +
+                                                            "method\":\"DELETE\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
+                                                            "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}]," +
+                                                            "\"auth_type\":\"Application : \n" +
+                                                            "\t Application User\",\"throttling_tier\":\"Unlimited\"},{\"nickname\":\"options_*\"," +
+                                                            "\"method\":\"OPTIONS\",\"parameters\":[{\"description\":\"Request Body\",\"name\":\"body\"," +
+                                                            "\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\":\"body\"}],\"" +
+                                                            "auth_type\":\"None\",\"throttling_tier\":\"Unlimited\"}]}]},\"description\":\"\",\"path\":" +
+                                                            "\"/default\"}],\"info\":{\"title\":\"CrossProductsAPI3\",\"termsOfServiceUrl\":\"\",\"" +
+                                                            "description\":\"This is test API create by API manager for demonstration purposes for platform" +
+                                                            " tests\",\"license\":\"\",\"contact\":\"\",\"licenseUrl\":\"\"}}"));
         urlParameters.add(new BasicNameValuePair("faultSeq", "json_fault"));
         urlParameters.add(new BasicNameValuePair("outSeq", "log_out_message"));
         urlParameters.add(new BasicNameValuePair("inSeq", "log_in_message"));
@@ -508,7 +547,7 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
 
 
         response = sendPOSTMessage(httpsPublisherUrl + "/site/blocks/item-design/ajax/add.jag?",
-                urlParameters);
+                                   urlParameters);
         EntityUtils.consume(response.getEntity());
 
 
@@ -522,9 +561,9 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("publishToGateway", "true"));
         urlParameters.add(new BasicNameValuePair("requireResubscription", "true"));
         response = sendPOSTMessage(httpsPublisherUrl + "/site/blocks/life-cycles/ajax/life-cycles.jag",
-                urlParameters);
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         return true;
@@ -534,20 +573,20 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
 
         //1
         HttpResponse response = sendGetRequest(String.format(httpsStoreUrl + "/site/pages" +
-                "/applications.jag?tenant=" + apimContext.getSuperTenant().getDomain()));
+                                                             "/applications.jag?tenant=" + storeContext.getSuperTenant().getDomain()));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         //2
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "getRecentlyAddedAPIs"));
-        urlParameters.add(new BasicNameValuePair("tenant", apimContext.getSuperTenant().getDomain()));
+        urlParameters.add(new BasicNameValuePair("tenant", storeContext.getSuperTenant().getDomain()));
         urlParameters.add(new BasicNameValuePair("limit", "5"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/api/recently-added/ajax/list.jag",
-                urlParameters);
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
 
@@ -555,9 +594,9 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "sessionCheck"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/user/login/ajax/sessionCheck.jag",
-                urlParameters);
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         urlParameters.clear();
@@ -567,10 +606,10 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("description", "This is platform based application"));
         urlParameters.add(new BasicNameValuePair("application", "SSOApplication"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/application/" +
-                "application-add/ajax/application-add.jag",
-                urlParameters);
+                                   "application-add/ajax/application-add.jag",
+                                   urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                "Response mismatch not 200");
+                     "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
 
@@ -582,7 +621,8 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         return httpClient.execute(request);
     }
 
-    private HttpResponse sendPOSTMessage(String url, List<NameValuePair> urlParameters) throws Exception {
+    private HttpResponse sendPOSTMessage(String url, List<NameValuePair> urlParameters)
+            throws Exception {
         HttpPost post = new HttpPost(url);
         post.setHeader("User-Agent", USER_AGENT);
         post.addHeader("Referer", url);
@@ -642,8 +682,24 @@ public class SingleSignOnTestCase extends AMIntegrationBaseTest {
         return value;
     }
 
-    private HashMap<String, String> extractDataFromResponse(HttpResponse response, String samlRequest,
-                                                            String relayState, String ssoAuthSessionID, int token)
+    private String getResponseBody(HttpResponse response)
+            throws IOException {
+        BufferedReader rd = new BufferedReader(
+                new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+        String line;
+        StringBuffer sb = new StringBuffer();
+
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
+        rd.close();
+        return sb.toString();
+    }
+
+    private HashMap<String, String> extractDataFromResponse(HttpResponse response,
+                                                            String samlRequest,
+                                                            String relayState,
+                                                            String ssoAuthSessionID, int token)
             throws IOException {
         BufferedReader rd = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent(), "UTF-8"));

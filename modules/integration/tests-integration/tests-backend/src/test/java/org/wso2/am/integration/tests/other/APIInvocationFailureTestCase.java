@@ -80,6 +80,7 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
         apiRequest.setResourceMethod("GET");
+        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
                 providerName, APILifeCycleState.PUBLISHED);

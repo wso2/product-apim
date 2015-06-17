@@ -95,7 +95,7 @@ public class ResourceUtil {
      * This method is used to get the database driver name
      *
      * @return user database type as a string
-     * @throws java.sql.SQLException
+     * @throws SQLException
      */
     private static String getDatabaseDriverName() throws SQLException {
         Connection connection = APIMgtDBUtil.getConnection();
@@ -121,9 +121,9 @@ public class ResourceUtil {
      *
      * @param migrateVersion migrate version
      * @return exact query to execute
-     * @throws java.sql.SQLException
+     * @throws SQLException
      * @throws APIMigrationException
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static String pickQueryFromResources(String migrateVersion, String queryType) throws SQLException, APIMigrationException,
             IOException {
@@ -149,9 +149,11 @@ public class ResourceUtil {
 
             if (Constants.CONSTRAINT.equals(queryType)) {
                 resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
+                //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
-                queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
+                queryTobeExecuted = resourcePath +  databaseType + ".sql";
+                //queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
 
         } catch (IOException e) {

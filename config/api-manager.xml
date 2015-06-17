@@ -131,7 +131,7 @@
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
-                <Environment type="hybrid">
+                <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
 			<!--
@@ -293,6 +293,14 @@
         -->
        <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
 
+        <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been white listed internally.
+        -->
+        <!--ScopeWhitelist>
+            <Scope>^device_.*</Scope>
+            <Scope>openid</Scope>
+        </ScopeWhitelist-->
+
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
@@ -362,6 +370,10 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
+        <!--
+              Uncomment this to limit the number of APIs in api the API Store
+          -->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
