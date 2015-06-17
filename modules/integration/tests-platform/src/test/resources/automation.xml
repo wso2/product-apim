@@ -29,7 +29,7 @@
         <!--
          Change this to product|platform/cloud to execute test on specific environment
         -->
-        <executionEnvironment>platform</executionEnvironment>
+        <executionEnvironment>standalone</executionEnvironment>
         <!--
          Change this to user/tenant to execute test with user mode or tenant mode
         -->
@@ -37,7 +37,7 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-        <coverage>false</coverage>
+        <coverage>true</coverage>
         <!--
          Change this to true if you want to enable framework dashboard
         -->
@@ -216,56 +216,16 @@
         cluster instance details to be used to platform test execution
         -->
         <productGroup name="APIM" clusteringEnabled="false" default="true">
-            <!--configuration of APIM Store instance -->
-            <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
-                <hosts>
-                    <host type="default">localhost</host>
-                </hosts>
-                <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
-                </ports>
-                <properties>
-                </properties>
-            </instance>
-            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
-                <hosts>
-                    <host type="default">localhost</host>
-                </hosts>
-                <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
-                </ports>
-                <properties>
-                </properties>
-            </instance>
-            <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
-                <hosts>
-                    <host type="default">localhost</host>
-                </hosts>
-                <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
-                </ports>
-                <properties>
-                </properties>
-            </instance>
 
-        </productGroup>
-        <productGroup name="IS" clusteringEnabled="false" default="true">
-            <instance name="SP" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="apim0001" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">9764</port>
-                    <port type="https">9444</port>
+                    <port type="http">9763</port>
+                    <port type="https">9443</port>
+                    <port type="nhttp">8280</port>
+
                 </ports>
                 <properties>
                 </properties>

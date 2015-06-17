@@ -114,7 +114,6 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
-        apiRequest.setProvider(name);
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, name, APILifeCycleState.PUBLISHED);

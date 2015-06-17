@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -443,12 +443,12 @@
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.idp.mgt.feature:${identity.core.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.contentsearch.feature:4.2.2</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.bam.message.tracer.handler.feature:4.2.3</featureArtifactDef>
-			                    <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:${bam.feature.version}</featureArtifactDef>
+			                    <featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:4.2.5-SNAPSHOT</featureArtifactDef>
 			                    <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.ui.feature:4.2.0</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.ndatasource.feature:${carbon.deployment.version}</featureArtifactDef>
-				<featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:1.0.0</featureArtifactDef>
-				<featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:1.0.0</featureArtifactDef>
+				<featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:1.0.0-SNAPSHOT</featureArtifactDef>
+				<featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:1.0.0-SNAPSHOT</featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -953,7 +953,7 @@
                                 <!--End Stratos API Manager features-->
 			                    <feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>${bam.feature.version}</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
@@ -977,11 +977,11 @@
                             </feature>
                             <feature>
                                 <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                <version>1.0.0</version>
+                                <version>1.0.0-SNAPSHOT</version>
                             </feature>
                             <feature>
                                 <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                <version>1.0.0</version>
+                                <version>1.0.0-SNAPSHOT</version>
                             </feature>
 
                             </features>
@@ -1311,7 +1311,7 @@
                                </feature>
 				               <feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>${bam.feature.version}</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
@@ -1331,11 +1331,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1665,7 +1665,7 @@
                                </feature>
                 				<feature>
                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>${bam.feature.version}</version>
+                                   <version>4.2.5-SNAPSHOT</version>
                                	</feature>
 				                <feature>
                                    <id>org.wso2.carbon.sequences.ui.feature.group</id>
@@ -1685,11 +1685,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                </feature>
                             </features>
                         </configuration>
@@ -2122,11 +2122,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                    <version>1.0.0</version>
+                                    <version>1.0.0-SNAPSHOT</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2542,11 +2542,11 @@
                                </feature>
                                <feature>
                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                   <version>1.0.0</version>
+                                   <version>1.0.0-SNAPSHOT</version>
                                </feature>
                                <feature>
                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                   <version>1.0.0</version>
+                                   <version>1.0.0-SNAPSHOT</version>
                                </feature>
                             </features>
                         </configuration>
@@ -2924,11 +2924,11 @@
                                </feature>
                                <feature>
                                    <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
-                                   <version>1.0.0</version>
+                                   <version>1.0.0-SNAPSHOT</version>
                                </feature>
                                <feature>
                                    <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
-                                   <version>1.0.0</version>
+                                   <version>1.0.0-SNAPSHOT</version>
                                </feature>
                             </features>
                         </configuration>
