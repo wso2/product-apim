@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -37,46 +37,6 @@
         <module>publisher</module>
         <module>store</module>
     </modules>
-
-    <repositories>
-        
-        <repository>
-            <id>wso2-maven2-repository</id>
-            <name>WSO2 Maven2 Repository</name>
-            <url>http://dist.wso2.org/maven2/</url>
-        </repository>
-
-        <repository>
-            <id>wso2-maven2-snapshot-repository</id>
-            <name>WSO2 Maven2 Snapshot Repository</name>
-            <url>http://dist.wso2.org/snapshots/maven2/</url>
-        </repository>
-
-        <repository>
-            <id>wso2-nexus</id>
-            <name>WSO2 internal Repository</name>
-            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>wso2-maven2-repository</id>
-            <name>WSO2 Maven2 Repository</name>
-            <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>wso2-maven2-snapshot-repository</id>
-            <name>WSO2 Maven2 Snapshot Repository</name>
-            <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/snapshots/maven2/</url>
-        </snapshotRepository>
-    </distributionManagement>
     <!--<properties>
         <apimserver.version>1.5.0</apimserver.version>
     </properties>-->

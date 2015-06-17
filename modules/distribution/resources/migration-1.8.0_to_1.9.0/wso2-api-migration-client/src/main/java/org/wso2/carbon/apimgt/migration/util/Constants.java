@@ -26,10 +26,6 @@ public class Constants {
     public static final String ALTER = "alter";
     public static final String DELIMITER = ";";
 
-    public static final String GOVERNANCE_COMPONENT_REGISTRY_LOCATION = "/repository/components/org.wso2.carbon" +
-            ".governance";
-    public static final String RXT_PATH = "/repository/resources/rxts/api.rxt";
-    public static final String DATA_SOURCE_NAME = "DataSourceName";
 
     //constants for swagger v2
 

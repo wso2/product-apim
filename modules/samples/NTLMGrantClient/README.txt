@@ -13,8 +13,7 @@ Instructions
    url= The token endpoint url
    auto= The flag to determine whether generate the ntlm token by this client or pass a ntlm token as an input.If you
     want to generate it by this client set value to false. for example auto="false".
-   nToken= NTLM token [Type1 token type]. If you set auto property value to true. You have set nToken property value to
-   false.
+   nToken= NTLM token [Type1 token type]
    key= Consumer key  
    secret= Consumer secret   
    jna.dir= Path to JNA jar dependencies [Point this to full path of the "NTLMGrantClient/jna" sub-directory inside this client directory] 

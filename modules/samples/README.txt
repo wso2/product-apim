@@ -14,10 +14,13 @@ the API Manager binary distribution.
 1. WikipediaAPI -
    A simple REST API based on Wikipedia's web API access to wiki features, data, and meta-data over HTTP.
 
-2. Billing Sample
+2. YoutubeFeeds -
+   A simple Atom API based on Yahoo's GData API
+
+3. Billing Sample
     A sample to generate bill for API usage of consumers. 
 
-3. PizzaShack sample
+4. PizzaShack sample
    A sample to demo use of rest API.
 
 These samples are packaged according to the following file hierarchy under the
@@ -36,7 +39,11 @@ samples
 │   ├── pizza-shack-web
 │   ├── pom.xml
 │   └── README.txt
-└── WikipediaAPI
+├── WikipediaAPI
+│   ├── APIPopulator.bat
+│   ├── APIPopulator.sh
+│   └── README.txt
+└── YoutubeFeeds
     ├── APIPopulator.bat
     ├── APIPopulator.sh
     └── README.txt

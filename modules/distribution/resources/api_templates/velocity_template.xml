@@ -243,7 +243,9 @@
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
+        #if($statsEnabled)
         <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+        #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
@@ -284,7 +286,9 @@
 #end
 </inSequence>
 <outSequence>
+#if($statsEnabled)
 <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"/>
+#end
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>

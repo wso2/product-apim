@@ -117,7 +117,6 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         apiPublisher.addAPI(apiRequest);
