@@ -71,7 +71,7 @@
             </definition>
          </datasource>
 
-        <datasource>
+        <!--datasource>
             <name>WSO2_SOCIAL_DB</name>
             <description>The datasource used for social framework</description>
             <jndiConfig>
@@ -90,7 +90,7 @@
                     <validationInterval>30000</validationInterval>
                 </configuration>
             </definition>
-        </datasource>
+        </datasource-->
 
         <datasource>
             <name>JAGH2</name>
