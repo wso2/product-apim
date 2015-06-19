@@ -804,7 +804,7 @@
         </file>
 	
 	<file>
-		<source>../../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/social-datasources.xml</source>
+		<source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/social-datasources.xml</source>
 		<outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/datasources/</outputDirectory>
 		<filtered>true</filtered>
 		<fileMode>644</fileMode>
