@@ -131,7 +131,7 @@
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
-                <Environment type="hybrid">
+                <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
 			<!--
@@ -232,9 +232,8 @@
     </APIUsageTracking>
 
     <!--
-        API key manager configuration used by API key manager (IS), API store and API gateway.
-        This is used by API store to generate and manage API keys. API gateway uses it to
-        validate and authenticate users against the provided API keys.
+        API key validator configuration used by API key manager (IS), API store and API gateway.
+        API gateway uses it to validate and authenticate users against the provided API keys.
     -->
     <APIKeyValidator>
         <!--
@@ -293,6 +292,14 @@
             Remove UserName from JWT Token
         -->
        <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
+
+        <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been white listed internally.
+        -->
+        <!--ScopeWhitelist>
+            <Scope>^device_.*</Scope>
+            <Scope>openid</Scope>
+        </ScopeWhitelist-->
 
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
@@ -363,6 +370,10 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
+        <!--
+              Uncomment this to limit the number of APIs in api the API Store
+          -->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
