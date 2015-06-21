@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <registry provider="org.wso2.carbon.mediation.registry.WSO2Registry">
+        <parameter name="cachableDuration">15000</parameter>
+    </registry>
+    <proxy name="WorkflowCallbackService"
+           transports="https http"
+           startOnLoad="true"
+           trace="disable">
+        <description/>
+        <target>
+            <inSequence>
+                <property name="messageType"
+                          value="application/x-www-form-urlencoded"
+                          scope="axis2"
+                          type="STRING"/>
+                <send>
+                    <endpoint>
+                        <address uri="https://localhost:9443/store/site/blocks/workflow/workflow-listener/ajax/workflow-listener.jag"
+                                 format="rest"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <property name="messageType" value="text/xml" scope="axis2" type="STRING"/>
+                <send/>
+            </outSequence>
+        </target>
+        <publishWSDL>
+            <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                              xmlns:ns1="http://org.apache.axis2/xsd"
+                              xmlns:ns="http://callback.workflow.apimgt.carbon.wso2.org"
+                              xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                              xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                              xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                              xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+                              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                              xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                              targetNamespace="http://callback.workflow.apimgt.carbon.wso2.org">
+                <wsdl:documentation>WorkflowCallbackService</wsdl:documentation>
+                <wsdl:types>
+                    <xs:schema attributeFormDefault="qualified"
+                               elementFormDefault="qualified"
+                               targetNamespace="http://callback.workflow.apimgt.carbon.wso2.org">
+                        <xs:element name="resumeEvent">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element minOccurs="0"
+                                                name="workflowReference"
+                                                nillable="true"
+                                                type="xs:string"/>
+                                    <xs:element minOccurs="0" name="status" nillable="true" type="xs:string"/>
+                                    <xs:element minOccurs="0"
+                                                name="description"
+                                                nillable="true"
+                                                type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="resumeEventResponse">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element minOccurs="0" name="return" nillable="true" type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:schema>
+                </wsdl:types>
+                <wsdl:message name="resumeEventRequest">
+                    <wsdl:part name="parameters" element="ns:resumeEvent"/>
+                </wsdl:message>
+                <wsdl:message name="resumeEventResponse">
+                    <wsdl:part name="parameters" element="ns:resumeEventResponse"/>
+                </wsdl:message>
+                <wsdl:portType name="WorkflowCallbackServicePortType">
+                    <wsdl:operation name="resumeEvent">
+                        <wsdl:input message="ns:resumeEventRequest" wsaw:Action="urn:resumeEvent"/>
+                        <wsdl:output message="ns:resumeEventResponse" wsaw:Action="urn:resumeEventResponse"/>
+                    </wsdl:operation>
+                </wsdl:portType>
+                <wsdl:binding name="WorkflowCallbackServiceSoap11Binding"
+                              type="ns:WorkflowCallbackServicePortType">
+                    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+                    <wsdl:operation name="resumeEvent">
+                        <soap:operation soapAction="urn:resumeEvent" style="document"/>
+                        <wsdl:input>
+                            <soap:body use="literal"/>
+                        </wsdl:input>
+                        <wsdl:output>
+                            <soap:body use="literal"/>
+                        </wsdl:output>
+                    </wsdl:operation>
+                </wsdl:binding>
+                <wsdl:binding name="WorkflowCallbackServiceSoap12Binding"
+                              type="ns:WorkflowCallbackServicePortType">
+                    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+                    <wsdl:operation name="resumeEvent">
+                        <soap12:operation soapAction="urn:resumeEvent" style="document"/>
+                        <wsdl:input>
+                            <soap12:body use="literal"/>
+                        </wsdl:input>
+                        <wsdl:output>
+                            <soap12:body use="literal"/>
+                        </wsdl:output>
+                    </wsdl:operation>
+                </wsdl:binding>
+                <wsdl:binding name="WorkflowCallbackServiceHttpBinding"
+                              type="ns:WorkflowCallbackServicePortType">
+                    <http:binding verb="POST"/>
+                    <wsdl:operation name="resumeEvent">
+                        <http:operation location="resumeEvent"/>
+                        <wsdl:input>
+                            <mime:content type="text/xml" part="parameters"/>
+                        </wsdl:input>
+                        <wsdl:output>
+                            <mime:content type="text/xml" part="parameters"/>
+                        </wsdl:output>
+                    </wsdl:operation>
+                </wsdl:binding>
+                <wsdl:service name="WorkflowCallbackService">
+                    <wsdl:port name="WorkflowCallbackServiceHttpsSoap11Endpoint"
+                               binding="ns:WorkflowCallbackServiceSoap11Binding">
+                        <soap:address location="https://localhost:8243/services/WorkflowCallbackService.WorkflowCallbackServiceHttpsSoap11Endpoint/"/>
+                    </wsdl:port>
+                    <wsdl:port name="WorkflowCallbackServiceHttpSoap11Endpoint"
+                               binding="ns:WorkflowCallbackServiceSoap11Binding">
+                        <soap:address location="http://localhost:8280/services/WorkflowCallbackService.WorkflowCallbackServiceHttpSoap11Endpoint/"/>
+                    </wsdl:port>
+                    <wsdl:port name="WorkflowCallbackServiceHttpsSoap12Endpoint"
+                               binding="ns:WorkflowCallbackServiceSoap12Binding">
+                        <soap12:address location="https://localhost:8243/services/WorkflowCallbackService.WorkflowCallbackServiceHttpsSoap12Endpoint/"/>
+                    </wsdl:port>
+                    <wsdl:port name="WorkflowCallbackServiceHttpSoap12Endpoint"
+                               binding="ns:WorkflowCallbackServiceSoap12Binding">
+                        <soap12:address location="http://localhost:8280/services/WorkflowCallbackService.WorkflowCallbackServiceHttpSoap12Endpoint/"/>
+                    </wsdl:port>
+                    <wsdl:port name="WorkflowCallbackServiceHttpsEndpoint"
+                               binding="ns:WorkflowCallbackServiceHttpBinding">
+                        <http:address location="https://localhost:8243/services/WorkflowCallbackService.WorkflowCallbackServiceHttpsEndpoint/"/>
+                    </wsdl:port>
+                    <wsdl:port name="WorkflowCallbackServiceHttpEndpoint"
+                               binding="ns:WorkflowCallbackServiceHttpBinding">
+                        <http:address location="http://localhost:8280/services/WorkflowCallbackService.WorkflowCallbackServiceHttpEndpoint/"/>
+                    </wsdl:port>
+                </wsdl:service>
+            </wsdl:definitions>
+        </publishWSDL>
+    </proxy>
+    <sequence name="_production_key_error_">
+        <property name="ERROR_CODE" value="900901"/>
+        <property name="ERROR_MESSAGE"
+                  value="Production key offered to the API with no production endpoint"/>
+        <property name="CUSTOM_HTTP_SC" value="403"/>
+        <sequence key="fault"/>
+    </sequence>
+    <sequence name="_build_">
+        <builder>
+            <messageBuilder contentType="application/xml"
+                            class="org.apache.axis2.builder.ApplicationXMLBuilder"
+                            formatterClass="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
+            <messageBuilder contentType="application/xop+xml"
+                            class="org.apache.axis2.builder.MTOMBuilder"/>
+            <messageBuilder contentType="multipart/related"
+                            class="org.apache.axis2.builder.MIMEBuilder"/>
+            <messageBuilder contentType="application/json"
+                            class="org.apache.axis2.json.JSONBuilder"
+                            formatterClass="org.apache.axis2.json.JSONMessageFormatter"/>
+            <messageBuilder contentType="application/x-www-form-urlencoded"
+                            class="org.apache.axis2.builder.XFormURLEncodedBuilder"
+                            formatterClass="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
+            <messageBuilder contentType="text/xml"
+                            class="org.apache.axis2.builder.SOAPBuilder"
+                            formatterClass="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+            <messageBuilder contentType="application/soap+xml"
+                            class="org.apache.axis2.builder.SOAPBuilder"
+                            formatterClass="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
+        </builder>
+    </sequence>
+    <sequence name="_token_fault_">
+        <log level="custom">
+            <property name="STATUS" value="Executing token 'fault' sequence"/>
+            <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
+            <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+        </log>
+        <payloadFactory media-type="xml">
+            <format>
+                <am:fault xmlns:am="http://wso2.org/apimanager">
+                    <am:code>$1</am:code>
+                    <am:type>Status report</am:type>
+                    <am:message>Runtime Error</am:message>
+                    <am:description>$2</am:description>
+                </am:fault>
+            </format>
+            <args>
+                <arg evaluator="xml" expression="$ctx:ERROR_CODE"/>
+                <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+            </args>
+        </payloadFactory>
+        <filter xpath="$ctx:CUSTOM_HTTP_SC">
+            <then>
+                <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
+            </then>
+            <else>
+                <property name="HTTP_SC" value="500" scope="axis2"/>
+            </else>
+        </filter>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <property name="ContentType" scope="axis2" action="remove"/>
+        <property name="Authorization" scope="transport" action="remove"/>
+        <property name="Host" scope="transport" action="remove"/>
+        <property name="Accept" scope="transport" action="remove"/>
+        <property name="messageType" value="application/xml" scope="axis2"/>
+        <send/>
+        <drop/>
+    </sequence>
+    <sequence name="_resource_mismatch_handler_">
+        <property name="ERROR_CODE" value="403"/>
+        <property name="ERROR_MESSAGE"
+                  value="No matching resource found in the API for the given request"/>
+        <property name="CUSTOM_HTTP_SC" value="403"/>
+        <sequence key="fault"/>
+    </sequence>
+    <sequence name="fault">
+        <log level="custom">
+            <property name="STATUS" value="Executing default 'fault' sequence"/>
+            <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
+            <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+        </log>
+        <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
+            <then>
+                <property name="SOAP_FAULT_CODE" value="Server"/>
+                <makefault version="soap11">
+                    <code expression="$ctx:SOAP_FAULT_CODE"/>
+                    <reason expression="$ctx:ERROR_MESSAGE"/>
+                </makefault>
+            </then>
+            <else>
+                <payloadFactory media-type="xml">
+                    <format>
+                        <am:fault xmlns:am="http://wso2.org/apimanager">
+                            <am:code>$1</am:code>
+                            <am:type>Status report</am:type>
+                            <am:message>Runtime Error</am:message>
+                            <am:description>$2</am:description>
+                        </am:fault>
+                    </format>
+                    <args>
+                        <arg evaluator="xml" expression="$ctx:ERROR_CODE"/>
+                        <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+                    </args>
+                </payloadFactory>
+                <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+                    <property name="messageType" value="application/xml" scope="axis2"/>
+                </filter>
+            </else>
+        </filter>
+        <filter xpath="$ctx:CUSTOM_HTTP_SC">
+            <then>
+                <property name="HTTP_SC" expression="$ctx:CUSTOM_HTTP_SC" scope="axis2"/>
+            </then>
+            <else>
+                <property name="HTTP_SC" value="500" scope="axis2"/>
+            </else>
+        </filter>
+        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler"/>
+        <property name="RESPONSE" value="true"/>
+        <header name="To" action="remove"/>
+        <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+        <property name="ContentType" scope="axis2" action="remove"/>
+        <property name="Authorization" scope="transport" action="remove"/>
+        <property name="Host" scope="transport" action="remove"/>
+        <property name="Accept" scope="transport" action="remove"/>
+        <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+        <send/>
+    </sequence>
+    <sequence name="_auth_failure_handler_">
+        <property name="error_message_type" value="application/xml"/>
+    </sequence>
+    <sequence name="_throttle_out_handler_">
+        <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtThrottleUsageHandler"/>
+    </sequence>
+    <sequence name="_sandbox_key_error_">
+        <property name="ERROR_CODE" value="900901"/>
+        <property name="ERROR_MESSAGE"
+                  value="Sandbox key offered to the API with no sandbox endpoint"/>
+        <property name="CUSTOM_HTTP_SC" value="403"/>
+        <sequence key="fault"/>
+    </sequence>
+    <sequence name="main">
+        <in>
+            <log level="custom">
+                <property name="STATUS"
+                          value="Message dispatched to the main sequence. Invalid URL."/>
+                <property name="RESOURCE" expression="fn:concat('/', $axis2:REST_URL_POSTFIX)"/>
+            </log>
+            <filter source="$ctx:TRANSPORT_DENIED" regex="true">
+                <payloadFactory media-type="xml">
+                    <format>
+                        <am:fault xmlns:am="http://wso2.org/apimanager">
+                            <am:code>403</am:code>
+                            <am:type>Status report</am:type>
+                            <am:message>Forbidden</am:message>
+                            <am:description>Unsupported Transport [ $2 ]. The requested resource (/$1) is not available.</am:description>
+                        </am:fault>
+                    </format>
+                    <args>
+                        <arg evaluator="xml" expression="$axis2:REST_URL_POSTFIX"/>
+                        <arg evaluator="xml" expression="$ctx:IN_TRANSPORT"/>
+                    </args>
+                </payloadFactory>
+                <property name="HTTP_SC" value="403" scope="axis2"/>
+                <property name="RESPONSE" value="true"/>
+                <header name="To" action="remove"/>
+                <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+                <property name="ContentType" scope="axis2" action="remove"/>
+                <property name="Authorization" scope="transport" action="remove"/>
+                <property name="Host" scope="transport" action="remove"/>
+                <property name="Accept" scope="transport" action="remove"/>
+                <send/>
+            </filter>
+            <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
+                <then>
+                    <property name="SOAP_FAULT_CODE" value="Server"/>
+                    <makefault version="soap11">
+                        <code expression="$ctx:SOAP_FAULT_CODE"/>
+                        <reason value="The requested endpoint is not available."/>
+                    </makefault>
+                </then>
+                <else>
+                    <payloadFactory media-type="xml">
+                        <format>
+                            <am:fault xmlns:am="http://wso2.org/apimanager">
+                                <am:code>404</am:code>
+                                <am:type>Status report</am:type>
+                                <am:message>Not Found</am:message>
+                                <am:description>The requested resource (/$1) is not available.</am:description>
+                            </am:fault>
+                        </format>
+                        <args>
+                            <arg evaluator="xml" expression="$axis2:REST_URL_POSTFIX"/>
+                        </args>
+                    </payloadFactory>
+                </else>
+            </filter>
+            <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+                <property name="messageType" value="application/xml" scope="axis2"/>
+            </filter>
+            <property name="HTTP_SC" value="404" scope="axis2"/>
+            <property name="RESPONSE" value="true"/>
+            <header name="To" action="remove"/>
+            <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+            <property name="ContentType" scope="axis2" action="remove"/>
+            <property name="Authorization" scope="transport" action="remove"/>
+            <property name="Host" scope="transport" action="remove"/>
+            <property name="Accept" scope="transport" action="remove"/>
+            <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+            <send/>
+            <drop/>
+        </in>
+        <out>
+            <log level="full">
+                <property name="STATUS" value="Unexpected response message in out flow"/>
+            </log>
+            <drop/>
+        </out>
+        <description>The default main sequence for API manager - Returns 404 Not Found</description>
+    </sequence>
+    <api name="admin--AddNewHandlerAndInvokeAPITest"
+         context="/AddNewHandlerAndInvokeAPI/1.0.0"
+         version="1.0.0"
+         version-type="context">
+        <resource methods="GET" url-mapping="/*" faultSequence="fault">
+            <inSequence>
+                <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
+                    <then>
+                        <send>
+                            <endpoint name="admin--AddNewHandlerAndInvokeAPITest_APIHandlerproductionEndpoint_0">
+                                <http uri-template="http://localhost:9763/jaxrs_basic/services/customers/customerservice/"/>
+                            </endpoint>
+                        </send>
+                    </then>
+                    <else>
+                        <sequence key="_sandbox_key_error_"/>
+                    </else>
+                </filter>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <handlers>
+            <handler class="org.test.apim.coustom.handler.CustomAPIAuthenticationHandler"/>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler"/>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler">
+                <property name="id" value="A"/>
+                <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
+            </handler>
+            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageHandler"/>
+            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler">
+                <property name="configKey" value="gov:/apimgt/statistics/ga-config.xml"/>
+            </handler>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
+        </handlers>
+    </api>
+    <api name="_WSO2AMTokenAPI_" context="/token">
+        <resource methods="POST" url-mapping="/*" faultSequence="_token_fault_">
+            <inSequence>
+                <property name="uri.var.portnum" expression="get-property('keyManager.port')"/>
+                <property name="uri.var.hostname"
+                          expression="get-property('keyManager.hostname')"/>
+                <send>
+                    <endpoint>
+                        <http uri-template="https://{uri.var.hostname}:{uri.var.portnum}/oauth2/token">
+                            <timeout>
+                                <duration>60000</duration>
+                                <responseAction>fault</responseAction>
+                            </timeout>
+                        </http>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <handlers>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerCacheExtensionHandler"/>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
+        </handlers>
+    </api>
+    <api name="_WSO2AMAuthorizeAPI_" context="/authorize">
+        <resource methods="GET" url-mapping="/*" faultSequence="_token_fault_">
+            <inSequence>
+                <property name="uri.var.portnum" expression="get-property('keyManager.port')"/>
+                <property name="uri.var.hostname"
+                          expression="get-property('keyManager.hostname')"/>
+                <send>
+                    <endpoint>
+                        <http uri-template="https://{uri.var.hostname}:{uri.var.portnum}/oauth2/authorize">
+                            <timeout>
+                                <duration>60000</duration>
+                                <responseAction>fault</responseAction>
+                            </timeout>
+                        </http>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <handlers>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
+        </handlers>
+    </api>
+    <api name="_WSO2AMRevokeAPI_" context="/revoke">
+        <resource methods="POST" url-mapping="/*" faultSequence="_token_fault_">
+            <inSequence>
+                <property name="uri.var.portnum" expression="get-property('keyManager.port')"/>
+                <property name="uri.var.hostname"
+                          expression="get-property('keyManager.hostname')"/>
+                <send>
+                    <endpoint>
+                        <http uri-template="https://{uri.var.hostname}:{uri.var.portnum}/oauth2/revoke">
+                            <timeout>
+                                <duration>60000</duration>
+                                <responseAction>fault</responseAction>
+                            </timeout>
+                        </http>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <handlers>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerCacheExtensionHandler"/>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
+        </handlers>
+    </api>
+</definitions>

@@ -13,7 +13,7 @@ Data Migration 1.4.0 to 1.5.0
 5. Now point same WSO2 Carbon Database(User Store and Registry) and API Manager Databases of your AM 1.4.0 instance to AM 1.5.0. 
 (Configure AM_1.5.0/repository/datasource/master-datasources.xml to point same databases configured in AM 1.4.0)
 
-6. Move all your synapse configurations to APIM_1.5.0. For that, copy and replace APIM_1.4.0/repository/deployment/server/synapse-config/default directory to APIM_1.5.0/repository/deployment/server/synapse-config/default
+6. Move all your synapse configurations to APIM_1.5.0. For that, copy and replace APIM_1.4.0/repository/deployment/server/synapse-configs/default directory to APIM_1.5.0/repository/deployment/server/synapse-configs/default
 
 7. Open AM_1.5.0/repository/conf/user-mgt.xml and add the property  
 

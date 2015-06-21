@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v1.8.0 - 24th November 2014</title>
+    <title>WSO2 API Manager v1.9.0 - 15th June 2015</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 1.8.0 Released!</h1>
+<h1>The WSO2 API Manager 1.9.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 1.8.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 1.9.0 of
     the Open Source API Manager.
 </p>
 
@@ -86,702 +86,14 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-<h2>Improvements in 1.8.0</h2>
-<ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-637'>APIMANAGER-637</a>] -         Provide means to search APIs &#39;starting with&#39; / &#39;ending with&#39; certain patterns 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-702'>APIMANAGER-702</a>] -         Time of subscription is not saved
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1347'>APIMANAGER-1347</a>] -         Published APIs shouldn&#39;t show details of proxied web services
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1368'>APIMANAGER-1368</a>] -         API Manager Publisher WSDL for API should change end point to gateway
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2142'>APIMANAGER-2142</a>] -         Better to have option to save the wsdl in registry or keep it as url
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2158'>APIMANAGER-2158</a>] -         Logging error when Single Logout is disabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2552'>APIMANAGER-2552</a>] -         Inactive tenants can still access resources exposed through NIO transport
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2557'>APIMANAGER-2557</a>] -         Configure Audit Log in log4j.properties
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2565'>APIMANAGER-2565</a>] -         Application is allowed to Delete when it is already in the Workflow Approval Process.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2570'>APIMANAGER-2570</a>] -         Publisher&#39;s update API page&#39;s error Messages should be informative
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2593'>APIMANAGER-2593</a>] -         According to the making API changes, Existing WSDL docs on registry should be updated 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2635'>APIMANAGER-2635</a>] -         Case insensitive username comparison for APIM
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2650'>APIMANAGER-2650</a>] -         The publisher URL/API Console does not work out of the box if you set a port offset
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2652'>APIMANAGER-2652</a>] -         RestPeopleTestCase fails
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2694'>APIMANAGER-2694</a>] -         Make recently added API loading asynchronous
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2711'>APIMANAGER-2711</a>] -         Make JWTGenerator Extensible
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2755'>APIMANAGER-2755</a>] -         Migration tool to modify apis to migrate from 1.6 to 1.7
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2785'>APIMANAGER-2785</a>] -         Provide support for self signup for tenants&#39; APIStores
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2788'>APIMANAGER-2788</a>] -         HTTP, HTTPS url redirection for login call in publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2790'>APIMANAGER-2790</a>] -         Improvements for private API fix
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2795'>APIMANAGER-2795</a>] -         AM still using GenericArtifactManager for search function.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2796'>APIMANAGER-2796</a>] -         API Category description and thumbnail images are hard coded.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2836'>APIMANAGER-2836</a>] -         Applying cassandra data purging related modifications to API-M toolbox
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2851'>APIMANAGER-2851</a>] -         Log Http Status code in APIManagerExtensionHandler
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2906'>APIMANAGER-2906</a>] -         tiers - show the tier quota as a tooltip description
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2939'>APIMANAGER-2939</a>] -         Add a help text to describe API document based visibility levels
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2953'>APIMANAGER-2953</a>] -         Allow variable names for http endpoints from Publisher UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2963'>APIMANAGER-2963</a>] -         Make the endpoint &#39;Test&#39; button work for endpoints which doesn&#39;t support HTTP HEAD
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2964'>APIMANAGER-2964</a>] -         Performance improvment on API Store MySubscriptions page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3017'>APIMANAGER-3017</a>] -         Display notification to remove APIs from external stores when API is not in PUBLISHED state
-</li>
-</ul>
-
-    
-<h2>        Bug Fixes
-</h2>
-<ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-753'>APIMANAGER-753</a>] -         Testcases failed in gateway bundle  in APIKeyCacheTest , OAuthAuthenticatorTest  and APIManagerExtensionHandlerTest
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-891'>APIMANAGER-891</a>] -         APISecurityException when load testing: Invalid use of SingleClientConnManager: connection still allocated.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-983'>APIMANAGER-983</a>] -         synapse generating wrong URL when calling API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1260'>APIMANAGER-1260</a>] -         Email ID login does not support in multi tenancy mode
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1747'>APIMANAGER-1747</a>] -         Indicate as &quot;invalid&quot; when validate https endpoint URI&#39;s
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1816'>APIMANAGER-1816</a>] -         publisher login does not redirect to home
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1830'>APIMANAGER-1830</a>] -         Gateway key-cache does not get invalidated with revoke token api call and refresh_token api call-only for tenant mode
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1862'>APIMANAGER-1862</a>] -         User Token is still generated even when an additional character is appended at the end of the base 64 encoded value
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1864'>APIMANAGER-1864</a>] -         Access token generation fails when username and password are similar
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1886'>APIMANAGER-1886</a>] -         API Can be invoked after removing subscription
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1887'>APIMANAGER-1887</a>] -         Can invoke API even after removing the subscription application
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1895'>APIMANAGER-1895</a>] -         javax.net.ssl.SSLException when sending request in http
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1910'>APIMANAGER-1910</a>] -         [Failover endpoint] When production endpoint is down, api invocation fails 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1926'>APIMANAGER-1926</a>] -         WADL url is showing under &quot;show more option&quot; when select the wsdl Endpoint 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1998'>APIMANAGER-1998</a>] -         Search in api store/ doesn&#39;t work when user is not logged in
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2000'>APIMANAGER-2000</a>] -         Using wso2 default Dialect for the User Sign up
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2032'>APIMANAGER-2032</a>] -         API Manager 1.6.0 error on BAM with not autenticated users
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2048'>APIMANAGER-2048</a>] -         Cannot view any sequence in the Main -&gt; Manage -&gt; Sequences page in the Carbon Management Console
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2058'>APIMANAGER-2058</a>] -         [UI] Production Endpoint label says &quot;endpointUi.Production Endpoint&quot;
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2086'>APIMANAGER-2086</a>] -         APIs published to external stores shows incorrect original publisher in Recently added API list
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2103'>APIMANAGER-2103</a>] -         When you click on Edit tab of the api details page in API publisher it does not go to the edit wizard
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2116'>APIMANAGER-2116</a>] -         Error when logging out of SSO enabled Management console
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2173'>APIMANAGER-2173</a>] -         Error in pom.xml
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2194'>APIMANAGER-2194</a>] -         Unable to edit a created API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2231'>APIMANAGER-2231</a>] -         [intermittent] [BAM] Published data does not get written in to database due to constraint violation exception
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2250'>APIMANAGER-2250</a>] -         Error occurs when starting up carbon after a new role is added
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2260'>APIMANAGER-2260</a>] -         Remove JS alerts added to the Publisher/Store UIs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2282'>APIMANAGER-2282</a>] -         Publisher does not work in IE9
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2323'>APIMANAGER-2323</a>] -         Swagger console does not work in IE (10)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2331'>APIMANAGER-2331</a>] -         When login using SSO to APIM, if we have given wrong password for login, it doesn&#39;t give error message, neither from back end side.  
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2350'>APIMANAGER-2350</a>] -         java.lang.IndexOutOfBoundsException returned when searching for a non-existing API through the store UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2414'>APIMANAGER-2414</a>] -         NPE thrown when resubmitting the API to external store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2418'>APIMANAGER-2418</a>] -         Please update the token percister class name to org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in api-manager.xml
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2453'>APIMANAGER-2453</a>] -         Published APIs do not appear on store under &quot;APIs&quot;. Only listed &quot;Recently Added&quot; section in a clustered setup with all nodes fronted by an ELB
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2454'>APIMANAGER-2454</a>] -         &lt;WebContextRoot&gt; not applicable for publisher/store apps
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2464'>APIMANAGER-2464</a>] -         No matching resource found in the API for the given request thrown when invoking the Prototype API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2468'>APIMANAGER-2468</a>] -         WSO2 API Manager: “Try it out” does not work when only HTTPS is selected
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2474'>APIMANAGER-2474</a>] -         WARN - APIConsumerImpl Failed to retrieve recently added API query when accessing tenant&#39;s API store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2481'>APIMANAGER-2481</a>] -         Response content-type cannot be changed - revert back to application/json
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2482'>APIMANAGER-2482</a>] -         URL redirection issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2486'>APIMANAGER-2486</a>] -         Error occurred while running CacheCleanupTask 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2487'>APIMANAGER-2487</a>] -         Sequence edit link directs to dead page and exceptions thrown.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2499'>APIMANAGER-2499</a>] -         Topic content and reply content are not validated for empty content.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2502'>APIMANAGER-2502</a>] -         Replies to forum topics with empty strings get saved.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2503'>APIMANAGER-2503</a>] -         Access token exchange for SAML2 Assertion fails for APIM 1.7.0 + IS 5.0.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2504'>APIMANAGER-2504</a>] -         HTTP and HTTPS transport when creating API in publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2506'>APIMANAGER-2506</a>] -         When changing the type from &#39;Other&#39; to any of the remaining types, mandatory text filed does not get hide so that the API docs cannot be created
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2507'>APIMANAGER-2507</a>] -         Cannot create API docs if changing the type to “File” then to “In-Line” Source
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2509'>APIMANAGER-2509</a>] -         Unable to add Sequences into AM through Management Console
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2510'>APIMANAGER-2510</a>] -         Added Sequences don&#39;t show up in the Add API Wizard
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2512'>APIMANAGER-2512</a>] -         Sample README outdated
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2515'>APIMANAGER-2515</a>] -         Reply text area is visible even when the users are not signed in.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2516'>APIMANAGER-2516</a>] -         API Docs UI issues
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2517'>APIMANAGER-2517</a>] -         [API Store] &quot;APIs&quot; page is broken when &quot;DisplayAllAPIs&quot; is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2518'>APIMANAGER-2518</a>] -         Error 500 when clicking on All Statistics link from Statistics page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2519'>APIMANAGER-2519</a>] -         Typo in Store Statistics Page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2520'>APIMANAGER-2520</a>] -         API Console embedded testing hangs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2524'>APIMANAGER-2524</a>] -         Missing upgrade script for Oracle database 1.6.0 -&gt; 1.70
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2526'>APIMANAGER-2526</a>] -         Admin Dashboard crashes when approving the last task of each page (when pagination is available)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2528'>APIMANAGER-2528</a>] -         Cannot create APIs with wsdl2
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2529'>APIMANAGER-2529</a>] -         [Migration] APIM 1.6.0 to 1.7.0 migration does not work as expected
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2530'>APIMANAGER-2530</a>] -         Issues with Migration scripts [mysql] - Data Migration 1.6.0 to 1.7.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2533'>APIMANAGER-2533</a>] -         [Migration Issues] - Some information of migrated APIs are lost in edit mode
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2535'>APIMANAGER-2535</a>] -         [Migration Issues] - Only the first HTTP verb is shown in migrated APIs.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2536'>APIMANAGER-2536</a>] -         AM_WORKFLOW table stores WF_UPDATED_TIME as &quot;java.text.ParseException: Unparseable date: &quot;&lt;Error - Value &#39;0000-00-00 00:00:00&#39; can not be represented as java.sql.Timestamp&gt;&quot; for entries where WF_STATUS=CREATED 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2541'>APIMANAGER-2541</a>] -         Can create multiple scopes with the same scope key and scope name, in the same API.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2546'>APIMANAGER-2546</a>] -         Cannot set &quot;*&quot; value in &lt;Access-Control-Allow-Origin&gt; under &lt;CORSConfiguration&gt; of api-manager.xml
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2548'>APIMANAGER-2548</a>] -         When updating the docs,if the doc type change,that change is not preserving
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2549'>APIMANAGER-2549</a>] -         Why AM add redundant  prefix before the real endpoint address
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2550'>APIMANAGER-2550</a>] -         Subscription page not loaded when there are large no of APIS for the same application
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2551'>APIMANAGER-2551</a>] -         Validation information cache at gateway side should be validate for each call.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2554'>APIMANAGER-2554</a>] -         Parts of the response is not proper JSON.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2555'>APIMANAGER-2555</a>] -         Make recently added APIs cache configurable.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2558'>APIMANAGER-2558</a>] -         When AM 1.6.0 migrate to 1.7.0,API document search not working to 1.6.0 uploaded docs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2559'>APIMANAGER-2559</a>] -         Issues with swagger migration client from AM 1.6.0 to 1.7.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2561'>APIMANAGER-2561</a>] -         log4j.properties file content includes incorrect references(of ESB).
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2564'>APIMANAGER-2564</a>] -         When unicode characters are used for the application name, the key generation fails in chrome also when unicode used for api name api publication and subscription will fail 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2566'>APIMANAGER-2566</a>] -         no Anonymous access to store when web sso enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2567'>APIMANAGER-2567</a>] -         User claims are not included in JWT token
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2568'>APIMANAGER-2568</a>] -         Delete the scopes when deleting API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2569'>APIMANAGER-2569</a>] -         Composite primary keys mismatch in mysql tables and hive tables in stats script 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2571'>APIMANAGER-2571</a>] -         Oracle RAC script for AM database 1.7
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2573'>APIMANAGER-2573</a>] -         Pizza Sample Update
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2574'>APIMANAGER-2574</a>] -         NPE in ERROR - While trying to access API with email addresses as usernames (tenant-mode)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2576'>APIMANAGER-2576</a>] -         [Intermitten] When Implemeting an API, front end gives a dead page and backend throws an exception.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2578'>APIMANAGER-2578</a>] -          - Invalid token error is returned when a second API is added to an existing subscription.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2580'>APIMANAGER-2580</a>] -         Can&#39;t Create API 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2583'>APIMANAGER-2583</a>] -         Forum HTML sanitizing issue 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2584'>APIMANAGER-2584</a>] -         Not possible to delete tags at publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2585'>APIMANAGER-2585</a>] -         Refresh Token gives issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2586'>APIMANAGER-2586</a>] -         Key cache validation fails
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2587'>APIMANAGER-2587</a>] -         API Designer UI fixes
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2588'>APIMANAGER-2588</a>] -         Postgress sql script is not working
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2589'>APIMANAGER-2589</a>] -         AM apps SSO Single Logout is not working when fronted with AWSELB
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2594'>APIMANAGER-2594</a>] -         &quot;Endpoint Type&quot; drop down content labels on API Add and API Edit pages are different
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2595'>APIMANAGER-2595</a>] -         GET request failed but the POST request succeeded using the same web service in API manager Store REST client Tool
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2596'>APIMANAGER-2596</a>] -         Sequences list disappear if selected once
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2597'>APIMANAGER-2597</a>] -         RemoveUserNameToJWTForApplicationToken set to true yeilds a Security Exception
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2598'>APIMANAGER-2598</a>] -         Getting errors when try to update the &quot;secure service credentials&quot; details on a created API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2601'>APIMANAGER-2601</a>] -         Server Start Time and the System Up Time calculated incorrectly
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2602'>APIMANAGER-2602</a>] -         Unable to save APIs with WSDL endpoints when sandbox details are only specified
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2604'>APIMANAGER-2604</a>] -         &#39;My Applications&#39; page lists only 20 applications. No pagination is provided
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2605'>APIMANAGER-2605</a>] -         Documents of an API are not copied when copying the API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2606'>APIMANAGER-2606</a>] -         Path parameter not accepted in API Manager
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2610'>APIMANAGER-2610</a>] -         Indexing of .docx files failing
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2611'>APIMANAGER-2611</a>] -         Production Endpoint is not properly validated at API creation
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2612'>APIMANAGER-2612</a>] -         Documentataion links should be directed to 1.7.1
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2613'>APIMANAGER-2613</a>] -         Business Owner &amp; Technical Owner fields are missing in APIM 1.7.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2615'>APIMANAGER-2615</a>] -         Once the access token is expired, cannot regenerate the access token in production
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2616'>APIMANAGER-2616</a>] -         Expired access tokens will be generated intermittently when you regenerate the access token for a particular application.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2617'>APIMANAGER-2617</a>] -         If http transport is disabled API WSDL URL would be empty in API edit UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2618'>APIMANAGER-2618</a>] -         [P2 repo] Relying part should not be added when installing key manager feature in Identity Server
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2619'>APIMANAGER-2619</a>] -         Key cache validation failure on Key manager
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2621'>APIMANAGER-2621</a>] -         Throws an error when loading my subscriptions after editing an application name
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2622'>APIMANAGER-2622</a>] -         Intermittent: Error is thrown when executing &quot;Save and Publish&quot; in Manage tab - APIM Store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2623'>APIMANAGER-2623</a>] -         Permissions of API definition document(swagger) are not set when copying the API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2625'>APIMANAGER-2625</a>] -         API Publisher/Store UI does not check session validity before initialized the logout.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2629'>APIMANAGER-2629</a>] -         API Console doesn&#39;t work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2630'>APIMANAGER-2630</a>] -         Token Revocation doesn&#39;t work when with token encryption
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2631'>APIMANAGER-2631</a>] -         Cannot generate tokens or invoke an API once the User Profile feature of IS 5.0.0 is installed to APIM 1.7.1
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2632'>APIMANAGER-2632</a>] -         Visibility Restriction to Roles feature does not work properly
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2634'>APIMANAGER-2634</a>] -         README, release_notes.html files needs to be updated
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2640'>APIMANAGER-2640</a>] -         Issues in Identity related PostgreSQL Scripts
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2642'>APIMANAGER-2642</a>] -         NPE when invoking Authorize API [Cluster specific]
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2643'>APIMANAGER-2643</a>] -         URL redirection issue for store signup
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2644'>APIMANAGER-2644</a>] -         Application token generation time is not considered
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2645'>APIMANAGER-2645</a>] -         There&#39;s a &quot;/&quot; appending to adding uri-templates from APIPublisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2646'>APIMANAGER-2646</a>] -         API Manager Sharing API across multiple tenants does not work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2647'>APIMANAGER-2647</a>] -         Swagger try-it invocation fails when allowed methods are restrcited through the resource definition
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2648'>APIMANAGER-2648</a>] -         Token regeneration fails when the AM server has a port offset
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2653'>APIMANAGER-2653</a>] -         [AM stats] API_REQUEST_SUMMARY stat event ,apiPublisher has to be include username of API publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2654'>APIMANAGER-2654</a>] -         API resource editting related inconsistencies
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2657'>APIMANAGER-2657</a>] -         Cannot copy APIs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2658'>APIMANAGER-2658</a>] -         Add the site.json requestURL parameter usage in AM doc
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2662'>APIMANAGER-2662</a>] -         Migration: APIs published before cannot be invoked after the migration
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2663'>APIMANAGER-2663</a>] -         Public API&#39;s made available to all tenant&#39;s not visible in anonymous mode (with registries mounted).
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2665'>APIMANAGER-2665</a>] -         API Publisher/store traverse links appear when SSO is enabled regardless of the setting
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2666'>APIMANAGER-2666</a>] -         When Logout from API store in 1.7.1, Backend gives an error
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2667'>APIMANAGER-2667</a>] -         [IS as key manager] Cannot add SPs after installing key manager feature in IS 5.0.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2668'>APIMANAGER-2668</a>] -         Error when trying to revert installed key manager feature from IS
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2669'>APIMANAGER-2669</a>] -         [Migration] When AM 1.6.0 migrate to 1.7.0,Resources are not copied correctly in latest pack
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2670'>APIMANAGER-2670</a>] -         Swagger UI based invocation failures
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2671'>APIMANAGER-2671</a>] -         HTTP verbs ommited when adding resources
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2673'>APIMANAGER-2673</a>] -         Unable to revoke the Token when Activity monitory enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2675'>APIMANAGER-2675</a>] -         Recently added API list is not updated with the most recent APIs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2680'>APIMANAGER-2680</a>] -         Empty response body for DELETE  invocations when inline responses are specified instead of a backend service
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2682'>APIMANAGER-2682</a>] -         Blank page displayed when inline script is empty
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2683'>APIMANAGER-2683</a>] -         APIM generate new consumer-secrete key pair even IS has a  pair of consumer-secrete keys.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2684'>APIMANAGER-2684</a>] -         API publishing is allowed when the inline script is uncommented
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2688'>APIMANAGER-2688</a>] -         Forum topic search issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2690'>APIMANAGER-2690</a>] -         Subscription availability option for specific tenants does not work for super tenant
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2698'>APIMANAGER-2698</a>] -         Migration: Cannot create a new version of a migrated API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2699'>APIMANAGER-2699</a>] -         &#39;Rejected&#39; status is not properly handled in Subscription Creation workflow
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2701'>APIMANAGER-2701</a>] -         Impact of Gateway resource caching
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2704'>APIMANAGER-2704</a>] -         Blocked subscriptions can be unblocked by re-subscribing to an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2705'>APIMANAGER-2705</a>] -         Exception when loading APIs on store for a tenant user from a secondary user store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2708'>APIMANAGER-2708</a>] -         EndPointURL log is null in APIManagerExtensionHandler 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2712'>APIMANAGER-2712</a>] -         Multiple version are available under recently added APIs when multiple version display is disabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2713'>APIMANAGER-2713</a>] -         Error when publishing API copies without the option &#39;require re-subscription
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2714'>APIMANAGER-2714</a>] -         Auto subscription of  does not work for new versions of deprecated/retired/blocked APIs 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2719'>APIMANAGER-2719</a>] -         Default versions of APIs can be invoked without subscription
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2720'>APIMANAGER-2720</a>] -         Custom sequences cannot be removed once the API is saved
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2721'>APIMANAGER-2721</a>] -         Custom sequences dissappear when the option is enabled/disabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2729'>APIMANAGER-2729</a>] -         cipher-text.properties &amp; cipher-tool.properties files are missing in AM1.7.1
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2731'>APIMANAGER-2731</a>] -         Gateway cache is not invalidated on token revokation
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2732'>APIMANAGER-2732</a>] -         Tiers cannot be removed once added
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2733'>APIMANAGER-2733</a>] -         Store statistics are not updated when token encryption is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2734'>APIMANAGER-2734</a>] -         When a user attempts to create an api on clicking implementation an exception is thrown
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2735'>APIMANAGER-2735</a>] -         Modifications to migration tool readme in migration-1.6.0_to_1.7.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2736'>APIMANAGER-2736</a>] -         Token regeneration error for an api migrated from 1.6 to 1.7 using H2 DB 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2738'>APIMANAGER-2738</a>] -         IS as Key Manager failure in APIM1.7.1
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2739'>APIMANAGER-2739</a>] -         when unlimited tier permissions are denied for a role thenon subscription page no tiers are listed but on application creation page the tiers are listed
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2740'>APIMANAGER-2740</a>] -         An API which was copied from another shows subscriptions as 100%
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2741'>APIMANAGER-2741</a>] -         Tier of a deleted application is assigned to new applications with the same name
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2742'>APIMANAGER-2742</a>] -         Tier level mix up when adding/deleting applications
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2743'>APIMANAGER-2743</a>] -         Application  throttling tier changes are not immediately applied when gateway cache is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2744'>APIMANAGER-2744</a>] -         Incorrect user registration date/times under active subscriptions of an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2746'>APIMANAGER-2746</a>] -         Cannot copy API&#39;s with documents 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2750'>APIMANAGER-2750</a>] -         Multiple subscription entries for an API for  the same user and application observed intermittently
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2751'>APIMANAGER-2751</a>] -         Tier levels once assigned to an API cannot be removed
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2754'>APIMANAGER-2754</a>] -         UI Issues of WSO2 API Manager 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2757'>APIMANAGER-2757</a>] -         Error when executing APIPopulator.sh for YouTubeFeeds sample 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2758'>APIMANAGER-2758</a>] -         Publisher and Store having problems with IE9 on Windows 7
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2759'>APIMANAGER-2759</a>] -         Pizzashack sample image loading issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2762'>APIMANAGER-2762</a>] -         Billing Data sample does not work as expected
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2763'>APIMANAGER-2763</a>] -         [Intermittent] on some occasions when an api is created Caused by: org.apache.axis2.AxisFault: Exception occurred while trying to invoke service method addApiFromString is thrown on the back end
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2764'>APIMANAGER-2764</a>] -         NPE when invoking admin services
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2765'>APIMANAGER-2765</a>] -         addDocumentation API in the Publisher response with error:false even after an error on the Back-End
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2766'>APIMANAGER-2766</a>] -         Design API UI issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2767'>APIMANAGER-2767</a>] -         domain restriction seems to be broken
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2770'>APIMANAGER-2770</a>] -         on cluster setup the responses for api invokes via API Console does not work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2776'>APIMANAGER-2776</a>] -         Rampart client module not available in APIM
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2778'>APIMANAGER-2778</a>] -         Incorrect capitalization in Visibility options
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2779'>APIMANAGER-2779</a>] -         Bundle Activation Fails when api-manager.xml has invalid xml content
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2781'>APIMANAGER-2781</a>] -         Cannot remove tiers from a freshly created API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2782'>APIMANAGER-2782</a>] -         Error while listing subscriptions in UI after deleting one subscription(selected) from rest API call(using curl)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2797'>APIMANAGER-2797</a>] -         [Failover endpoint] Not getting directed to the fail over endpoint when the prodcution endpoint is down
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2799'>APIMANAGER-2799</a>] -         Migration: Migration does not work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2800'>APIMANAGER-2800</a>] -          Intermittent error on AM management console logout (SSO)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2801'>APIMANAGER-2801</a>] -         [intermitant] &quot;Exception occurred while trying to invoke service method addApiFromString&quot; is thrown when adding an API with advance options selected for endpoints 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2803'>APIMANAGER-2803</a>] -         key manager seems to generates the same 2 tokens all the time
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2804'>APIMANAGER-2804</a>] -         [Store] Issues in recently added section
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2806'>APIMANAGER-2806</a>] -         Cross domain request fail when inline js implementation added as endpoint
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2811'>APIMANAGER-2811</a>] -         when an API does not have response caching enabled when invoking a load balancer end point based API if the end points go down the APIM has to be restarted for successful invocation of the curl command
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2812'>APIMANAGER-2812</a>] -         The workflow admin application creation page does not get updated if the application was deleted prior to approval
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2814'>APIMANAGER-2814</a>] -         when application registration flow is not used even though a subscription request was rejected from admin console the users are allowed to invoke access tokens
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2815'>APIMANAGER-2815</a>] -         startup of the APIM does not show the link for admin dashboard
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2816'>APIMANAGER-2816</a>] -         registration of users to store is not provided for tenant domain
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2817'>APIMANAGER-2817</a>] -         when a tenant admin logs in and access the admin dashboard errors are generated and request does not come for authorization
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2828'>APIMANAGER-2828</a>] -         [intermittent] on some occasions when signing out of API store an error page is generated
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2829'>APIMANAGER-2829</a>] -         Admin users in the carbon.super domain seems to get approval request for workflow of another tenant
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2830'>APIMANAGER-2830</a>] -         HTTP DELETE not working with DISABLE_CHUNKING option
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2832'>APIMANAGER-2832</a>] -         Admin dashboard - Approval status dropdown issue
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2834'>APIMANAGER-2834</a>] -         Cannot invoke a prototyped API using the API console
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2839'>APIMANAGER-2839</a>] -         if two publisher access the same API and one deletes and other views then the viewer is shown a dead page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2840'>APIMANAGER-2840</a>] -         [Distributed setup] Observed an NPE when trying to generate token
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2842'>APIMANAGER-2842</a>] -         if two publishers are updating the same API then the user who deletes a scope record may see that record still existing
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2844'>APIMANAGER-2844</a>] -         [Distributed setup] Error when generating token if there&#39;s no connection made to key manager from publisher node 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2845'>APIMANAGER-2845</a>] -         Error while accessing an api in store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2847'>APIMANAGER-2847</a>] -         system does not inform why a publisher role user without create permisison cant edit an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2849'>APIMANAGER-2849</a>] -         Popup error message for document creating errors
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2850'>APIMANAGER-2850</a>] -         WorkFlows: When the default user is changed, workflows does not work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2856'>APIMANAGER-2856</a>] -         OOM exception crashed the gateway/keymanager node while doing various operations
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2857'>APIMANAGER-2857</a>] -         redirector.jag redirects the user to https without honouring proxy port when prompting the user to login in store 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2858'>APIMANAGER-2858</a>] -         Error when accessing the store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2860'>APIMANAGER-2860</a>] -         Error while accessing an published api in store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2863'>APIMANAGER-2863</a>] -         Server start fails after few server restarts
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2864'>APIMANAGER-2864</a>] -         Why can&#39;t we rollback API creation when an issue occurs while publishing the API?
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2865'>APIMANAGER-2865</a>] -         am_stats_analyzer script packaged in API_Manager_Analytics.tbox with API Manager 1.7 has a typo in one of the queries
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2868'>APIMANAGER-2868</a>] -         mode parameter should validate
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2870'>APIMANAGER-2870</a>] -         &#39;APIs By Provider - Administrator&#39; - Search for users is broken
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2871'>APIMANAGER-2871</a>] -         API resources lost after restarting the Publisher node if default resource is set while creating an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2873'>APIMANAGER-2873</a>] -         Carbon.xml version should be changed to 1.8.0
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2875'>APIMANAGER-2875</a>] -         API Manager 1.8.0: Release docs should be updated
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2876'>APIMANAGER-2876</a>] -         User sign up icon is not visible in store 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2877'>APIMANAGER-2877</a>] -         Complete resource path should delete with API delete
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2879'>APIMANAGER-2879</a>] -         When accessing the freshly created APIs from the Store node, User wso2.anonymous.user is not authorized to read the resource /_system/governance/apimgt/applicationdata/api-docs/API2-1.0.0-Administrator/1.2/api-doc was thrown
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2883'>APIMANAGER-2883</a>] -         Store crashes when loading a visibility restricted API 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2884'>APIMANAGER-2884</a>] -         Cannot use a newly created role as the parameter for &quot;Visible to Roles&quot; when the visibility is set as &quot;Restricted by roles&quot;&quot;
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2887'>APIMANAGER-2887</a>] -         [Store] SQLIntegrityConstraintViolationException when accessing the store for the first time and then did not observe this error
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2888'>APIMANAGER-2888</a>] -         Image does not appear in recently added section
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2889'>APIMANAGER-2889</a>] -         the module that creates API scopes need to show mandatory fields and validate for data when creating
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2891'>APIMANAGER-2891</a>] -         Error on API Manager 1.8 with Resource level Authentication&quot;Application User&quot;
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2893'>APIMANAGER-2893</a>] -         Store UI doesn&#39;t display appropriate error for invalid search queries
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2894'>APIMANAGER-2894</a>] -         Transport selection is not working as expected in publisherUI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2895'>APIMANAGER-2895</a>] -         publisher module does not validate if the user role given within the scope is existent within the user store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2896'>APIMANAGER-2896</a>] -         When a timeout happen in publisher/store app with SSO enabled,it directs to a login popup box instead the SSO login Page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2897'>APIMANAGER-2897</a>] -         Tenant Axis configuration is not created when login to the Publisher and Store when SSO is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2900'>APIMANAGER-2900</a>] -         [Store] [Tenant] Observed WARN {org.wso2.carbon.registry.indexing.ResourceSubmitter} -  An error occurred while submitting the resource for indexing, path: /_system/governance/repository {org.wso2.carbon.registry.indexing.ResourceSubmitter} in store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2901'>APIMANAGER-2901</a>] -         [Intermittentissue] when publishing API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2902'>APIMANAGER-2902</a>] -         Request sent to GW fails with java.lang.RuntimeException: Cannot create tenant ConfigurationContext for tenant sanuthi4.com
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2911'>APIMANAGER-2911</a>] -         even though API manager was started with -Dprofile=api-publisher i was able to login to API store and generate access tokens in API store 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2913'>APIMANAGER-2913</a>] -         Remove build sequence from the axis configuration
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2914'>APIMANAGER-2914</a>] -         API doesn&#39;t get published to Store, when published using lifecycle
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2915'>APIMANAGER-2915</a>] -         Endpoint UI I18n issue at Publisher webapp
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2916'>APIMANAGER-2916</a>] -         [Store] com.hazelcast.nio.serialization.HazelcastSerializationException error observed in store logs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2917'>APIMANAGER-2917</a>] -         [intermittent]  on some occasions when an API is created and published the attached exception is thrown
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2919'>APIMANAGER-2919</a>] -         Single Logout does not work between webapps (fronted by WSO2 ELB)
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2920'>APIMANAGER-2920</a>] -         Remove Edit link for &#39;publish&#39; only users
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2921'>APIMANAGER-2921</a>] -         Token Response Capitalization
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2926'>APIMANAGER-2926</a>] -         APIM - BPS SubscriptionApproval workflow not working
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2929'>APIMANAGER-2929</a>] -         Add headers to stop gateway from sending OPTIONS calls to the back end
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2931'>APIMANAGER-2931</a>] -         [Intermittent issue] EmptyStackException when ending tenant flow when SSO is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2932'>APIMANAGER-2932</a>] -         Getting Errors when trying to create tenants on APIM which pointed to a PostgreSQL database
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2933'>APIMANAGER-2933</a>] -         Sequence edit view is selected by default if there is no any sequences.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2934'>APIMANAGER-2934</a>] -         API Store is not properly handling expired session when SSO is enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2936'>APIMANAGER-2936</a>] -         Error occurs while trying to update docs in publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2940'>APIMANAGER-2940</a>] -         Inline endpoint does not work
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2948'>APIMANAGER-2948</a>] -         [Tenant Mode] Once an API is deleted, cannot add another with the same name until cache expires
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2949'>APIMANAGER-2949</a>] -         An error popup is visible while redirecting to SSO login page after a session timeout in APIM store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2950'>APIMANAGER-2950</a>] -         [Migration Issues] Interactive documentation of the API is missing in the API console after migrating from APIM 1.7 to APIM 1.8
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2951'>APIMANAGER-2951</a>] -         Application developer cannot invoke APIs when the API resource level set to &#39;Application User&#39;
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2965'>APIMANAGER-2965</a>] -         Application Name showed as null in all store statistics pages when token encryption enabled
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2970'>APIMANAGER-2970</a>] -         Save and Publish button enabled for creator only role
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2973'>APIMANAGER-2973</a>] -         BAM configuration error in Publisher / API / Versions
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2975'>APIMANAGER-2975</a>] -         Error while a new user trying to sign up to the Store - Though the user gets added
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2976'>APIMANAGER-2976</a>] -         Navigation gets blocked in the Publisher for a user created inside a tenant, after adding a document with the visibility state &#39;Private&#39;
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2979'>APIMANAGER-2979</a>] -         Regenerate Access Token fails in the Store and Keymanager separated cluster
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2981'>APIMANAGER-2981</a>] -         Erroneous DB scripts  - Some of the tables don&#39;t get created 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2983'>APIMANAGER-2983</a>] -         Workflows: Application Registration and Subscription are returning 404 unauthorized in BPS
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2984'>APIMANAGER-2984</a>] -         HTTP endpoint does not allow dot between path seperators
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2985'>APIMANAGER-2985</a>] -         There should be separate service and port fields for Production WSDL and Sandbox WSDL
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2986'>APIMANAGER-2986</a>] -         If you invoke /token with bad credentials, the carbon home page contents are returned!
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2987'>APIMANAGER-2987</a>] -         Store logout does not redirect to the logged out screen until a browser cache refresh
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2988'>APIMANAGER-2988</a>] -         Tenant API store is broken 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2990'>APIMANAGER-2990</a>] -         Remove &quot;Save &amp; Publish&quot; button and &quot;Deploy as a prototype&quot; button for API creators  who don&#39;t have &#39;publish&#39; permissions
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2991'>APIMANAGER-2991</a>] -         Error when adding .docx files to an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2996'>APIMANAGER-2996</a>] -         In an authentication failure, request payload is returned as the response
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2997'>APIMANAGER-2997</a>] -         Workflows: Can&#39;t invoke an api which was previously rejected and re-subscribed
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3012'>APIMANAGER-3012</a>] -         java.lang.NullPointerException thrown when invoking an API on a clustered setup
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3013'>APIMANAGER-3013</a>] -         APIs suddenly disappeared from the publisher after a small volume test
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3019'>APIMANAGER-3019</a>] -         Publisher login attempt will give a hazelcast exception in the key manager node
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3020'>APIMANAGER-3020</a>] -         Invalid publisher name is displayed in &quot;More APIs from Provider&quot; Area
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3021'>APIMANAGER-3021</a>] -         Fix syntax error in AM_WORKFLOWS table of oracle.sql
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3027'>APIMANAGER-3027</a>] -         Sandbox field became blank in the Store UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3028'>APIMANAGER-3028</a>] -         Regenerate option in the Store UI will revoke the existing access token, but still shows the same token in the UI. API invocations with the revoked token will be successful and unsuccessful through random gatetway nodes
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3034'>APIMANAGER-3034</a>] -         In the API Implementation stage, the Endpoint Test gives Invalid message even for working endpoints
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3042'>APIMANAGER-3042</a>] -         Invalid error codes returned for API invocations when tokens are inactive/expired
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3046'>APIMANAGER-3046</a>] -         If Key Manager i.e.; IS, is not responding at the time of creating a new application key, key generation fails and the Application becomes unusable
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3047'>APIMANAGER-3047</a>] -         Publisher node (turned up in publisher profile) tries to call a Keymanager service endpoint; while trying to update an API; and fails. Issue explicitly occurs when GatewayKeyCache and KeyMgtValidationInfoCache both are disabled in the publisher node
-</li>
-</ul>
+<h3>APIM 1.9.0 includes following New Features, Improvements, Tasks and Bug Fixes.</h3>
 
 
-<h2>Patches for previous release version</h2>
 <ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2241'>APIMANAGER-2241</a>] -         ConcurrentModificationException at server startup
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2532'>APIMANAGER-2532</a>] -         APIM store performance improvements
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2590'>APIMANAGER-2590</a>] -         Response body is getting dropped occasionally after timeout is triggered from TimeoutHandler 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2592'>APIMANAGER-2592</a>] -         APIM store shows internal IP when run behind the Nginx and resources are not properly shown
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2627'>APIMANAGER-2627</a>] -         Cannot invoke when we invoke API with context with multiple back slashes
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2700'>APIMANAGER-2700</a>] -         EndPointURL is logged as null from APIManagerExtensionHandler
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2706'>APIMANAGER-2706</a>] -         API delete leaves some traces of it.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2752'>APIMANAGER-2752</a>] -         Add debug level logs API Manager 1.6.0
-</li>
-</ul>
-
-<h2>All resolved issues</h2>
-<ul>
-    <li>
-        <a href="https://wso2.org/jira/issues/?filter=12066">WSO2 API Manager resolved issues</a>
-    </li>
+<li><a href="https://wso2.org/jira/issues/?filter=12241">New Features</a></li>
+<li><a href="https://wso2.org/jira/issues/?filter=12243">Improvements</a></li>
+<li><a href="https://wso2.org/jira/issues/?filter=12242">Tasks</a></li>
+<li><a href="https://wso2.org/jira/issues/?filter=12240">Bug Fixes</a></li>
 </ul>
 
 <h2>Key Features of WSO2 API Manager</h2>
@@ -790,6 +102,17 @@
     based on the target user group.
 </p>
 <ul>
+
+    <li>Design and Prototype APIs:
+        <ul>
+            <li>Design APIs, gather developer's feedback before implementing (API First Design).</li>
+            <li>Design can be done from the publishing interface or via importing an existing swagger definition</li>
+            <li>Deploy a prototyped API, provide early access to APIs, and get early feedback.</li>
+            <li>Mock API implementation using Javascript.</li>
+            <li>Support publishing SOAP, REST, JSON and XML style services as XML.</li>
+        </ul>
+
+    </li>
     <li>Create a Store of all Available APIs:
         <ul>
             <li>Graphical experience similar to Android Marketplace or Apple App Store.</li>
@@ -815,17 +138,29 @@
             <li>Manage API versions and deployment status by version.</li>
             <li>Govern the API lifecycle (publish, deprecate, retire).</li>
             <li>Attach documentation (files, external URLs) to APIs.</li>
-            <li>Apply Security policies to APIs (authentication, authorization).</li>
-            <li>Associate API available to system defined service tiers.</li>
             <li>Provision and Manage API keys.</li>
             <li>Track consumers per API.</li>
             <li>One-click deployment to API Gateway for immediate publishing.</li>
         </ul>
 
     </li>
-    <li>Route API Traffic:
+
+     <li>Control Access and Enforce Security:
         <ul>
 
+            <li>Apply Security policies to APIs (authentication, authorization).</li>
+            <li>Rely on OAuth2 standard for API access (implicit, authorization code, client, SAML, IWA Grant type).</li>
+            <li>Restrict API access tokens to domains/IPs</li>
+            <li>Block a subscription and restrict a complete application.</li>
+            <li>Associate API available to system defined service tiers.</li>
+            <li>Leverage XACML for entitlements management and fine grained authorization.</li>
+            <li>Configire Single Sign-On (SSO) using SAML 2.0 for easy integartion with existing web apps.</li>
+            <li>Powered by WSO2 Enterprise Service Bus.</li>
+        </ul>
+    </li>
+
+    <li>Route API Traffic:
+        <ul>
             <li>Supports API authentication with OAuth2.</li>
             <li>Extremely high performance pass-through message routing with sub-millisecond latency.</li>
             <li>Enforce rate limiting and throttling policies for APIs by consumer.</li>
@@ -922,7 +257,7 @@
 </p>
 <ul>
     <li>
-        <a href="https://wso2.org/jira/secure/IssueNavigator.jspa?mode=hide&amp;requestId=10810">
+        <a href="https://wso2.org/jira/issues/?filter=12237">
             Known Issues
         </a>
     </li>
