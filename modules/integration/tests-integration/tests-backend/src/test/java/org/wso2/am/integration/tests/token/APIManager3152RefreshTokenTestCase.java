@@ -99,7 +99,6 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
-        apiRequest.setProvider(userName + "@11wso2.com");
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, userName + "@11wso2.com",
                                                                               APILifeCycleState.PUBLISHED);

@@ -233,7 +233,7 @@
 
     <fileSet>
         <directory>
-            ../resources/migration-1.8.0_to_1.9.0/readme/
+            ../resources/migration-1.8.0_to_1.9.0/
         </directory>
         <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
     </fileSet>
@@ -340,7 +340,6 @@
             <excludes>
                 <exclude>**/TwitterSearch/**</exclude>
                 <exclude>**/YahooPlaceFinder/**</exclude>
-		<exclude>**/YoutubeFeeds/**</exclude>
             </excludes>
         </fileSet>
 

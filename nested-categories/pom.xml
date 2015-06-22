@@ -39,7 +39,7 @@
     </modules>
 
     <repositories>
-        
+
         <repository>
             <id>wso2-maven2-repository</id>
             <name>WSO2 Maven2 Repository</name>

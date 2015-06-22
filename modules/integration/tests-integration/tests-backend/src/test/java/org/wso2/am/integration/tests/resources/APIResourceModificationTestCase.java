@@ -73,7 +73,6 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(APIVersion);
         apiRequest.setVisibility("restricted");
         apiRequest.setRoles("admin");
-        apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
         apiPublisher.deleteAPI(APIName, APIVersion, providerName);
         //add assertion
@@ -95,7 +94,7 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
                 "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"},\"options\":{\"responses\":{\"200\":{}}," +
                 "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"}}}," +
                 "\"swagger\":\"2.0\",\"info\":{\"title\":\"APIResourceTestAPI\",\"version\":\"1.0.0\"}," +
-                "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"testscope\",\"description\":\"\",\"key\":\"scopeKey\",\"roles\":\"internal/subscriber\"}]}}}";
+                "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"testscope\",\"description\":\"\",\"key\":\"scopeKey\",\"roles\":\"internal/subscriber\"}]}}}";
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 

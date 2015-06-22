@@ -124,7 +124,6 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setProvider(apiProvider);
         apiPublisher.addAPI(apiRequest);
 
         //publishing API
@@ -142,7 +141,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                                   "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"},\"delete\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application User\"," +
                                   "\"x-throttling-tier\":\"Unlimited\"},\"options\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"None\"," +
                                   "\"x-throttling-tier\":\"Unlimited\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"APIScopeTestAPI\",\"version\":\"1.0.0\"}," +
-                                  "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
+                                  "\"securityDefinitions\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
                                   "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
 
 
