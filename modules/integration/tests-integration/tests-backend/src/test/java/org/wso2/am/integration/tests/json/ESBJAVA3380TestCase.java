@@ -21,8 +21,12 @@ package org.wso2.am.integration.tests.json;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -42,19 +46,25 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
     String gatewaySessionCookie;
 
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public ESBJAVA3380TestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
-        super.init();
-
+        serverConfigurationManager =
+                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
+                                                                     TestUserMode.SUPER_TENANT_ADMIN));
+        super.init(userMode);
         /*
            * If test run in external distributed deployment you need to copy
            * following resources accordingly. configFiles/json_to_xml/axis2.xml
            * configFiles/json_to_xml/synapse.properties
            */
 
-        serverConfigurationManager = new ServerConfigurationManager(
-                gatewayContext);
         serverConfigurationManager.applyConfigurationWithoutRestart(
                 new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
 
@@ -100,6 +110,14 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
                       gatewayContext.getContextTenant().getContextUser().getPassword(),
                       storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         serverConfigurationManager.restoreToLastConfiguration();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 
 }
