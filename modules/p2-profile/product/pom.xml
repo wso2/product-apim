@@ -58,216 +58,6 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-		    <!--Kernal patches -->
-		    <execution>
-                        <id>2-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0001</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>3-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0002</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>4-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0003</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>5-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0004</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>6-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0005</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>7-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0006</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>8-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0007</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>9-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0008</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-					<execution>
-                        <id>10-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0009</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>11-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0010</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-		    <execution>
-                        <id>12-unpack-kernel-patch</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.wso2.carbon</groupId>
-                                    <artifactId>WSO2-CARBON-PATCH-4.2.0</artifactId>
-                                    <version>0011</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -370,7 +160,6 @@
                                     org.wso2.carbon.mediation:org.apache.synapse.transport.nhttp.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
 
-                                <!--<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.mediation.initializer.feature:${carbon.deployment.version}</featureArtifactDef>-->
 
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.task.server.feature:${carbon.mediation.version}
@@ -712,9 +501,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.registry:org.wso2.carbon.registry.task.feature:${carbon.registry.version}
                                 </featureArtifactDef>
-				<featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>	
-			        <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
-        	                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1074,10 +863,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1195,10 +980,6 @@
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
                                 </feature>
-				<feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>1.1.0</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.feature.group</id>
                                     <version>${apimgt.feature.version}</version>
@@ -1284,14 +1065,6 @@
                                                    <version>4.2.3</version>
                                                    </feature-->
                                 <!--End Stratos API Manager features-->
-			                    <feature>
-                                   <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>${bam.feature.version}</version>
-                               	</feature>
-				                <feature>
-                                   <id>org.wso2.carbon.sequences.ui.feature.group</id>
-                                   <version>4.2.0</version>
-                               	</feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediator.bam.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1422,13 +1195,13 @@
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
-				
-				<feature>
+
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
 
-			        <feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.authenticator.oidc.feature.group</id>
                                     <version>${apimgt.oidc.version}</version>
                                 </feature>
@@ -1661,10 +1434,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1897,7 +1666,7 @@
                                     <id>org.wso2.es.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
@@ -2132,10 +1901,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2261,22 +2026,6 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-				                <feature>
-                                   <id>org.wso2.carbon.bam.message.tracer.handler.feature.group</id>
-                                   <version>${carbon.deployment.version}</version>
-                               	</feature>
-				                <feature>
-                                   <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
-                                   <version>4.2.2</version>
-                               </feature>
-                				<feature>
-                                   <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                   <version>${bam.feature.version}</version>
-                               	</feature>
-				                <feature>
-                                   <id>org.wso2.carbon.sequences.ui.feature.group</id>
-                                   <version>4.2.0</version>
-                               	</feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediator.bam.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2388,7 +2137,7 @@
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
@@ -2664,10 +2413,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -2820,11 +2565,6 @@
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-								<feature>
-									<id>org.wso2.carbon.claim.mgt.feature.group</id>
-									<version>4.2.1</version>
-								</feature>
-
                                 <feature>
                                     <id>org.wso2.carbon.claim.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2976,7 +2716,7 @@
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
@@ -3261,10 +3001,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -3356,18 +3092,6 @@
                                      <version>${org.jaggery.version}</version>
                                  </feature>-->
                                 <feature>
-                                    <id>org.jaggeryjs.modules.i18n.feature.group</id>
-                                    <version>${i18n.feature.version}</version>
-                                </feature>
-				<feature>
-                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
-                                    <version>1.1.0</version>
-                                </feature>
-				<feature>
-                                    <id>org.jaggeryjs.modules.process.feature.group</id>
-                                    <version>${process.feature.version}</version>
-                                </feature>
-								<feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
                                     <version>${apim.version}</version>
                                 </feature>
@@ -3407,11 +3131,6 @@
                                     <id>org.wso2.carbon.um.ws.service.client.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-								<feature>
-									<id>org.wso2.carbon.claim.mgt.feature.group</id>
-									<version>4.2.1</version>
-								</feature>
-
                                 <feature>
                                     <id>org.wso2.carbon.claim.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -3543,7 +3262,7 @@
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
@@ -3828,10 +3547,6 @@
                                     <id>org.wso2.carbon.rule.mediation.server.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
-								<feature>
-                                    <id>org.wso2.carbon.relay.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.relay.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -4051,7 +3766,7 @@
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
