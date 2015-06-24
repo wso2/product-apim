@@ -153,5 +153,35 @@
             </inSequence>
         </resource>
     </api>
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="charsetAPI"
+         context="/charset">
+        <resource methods="GET"
+                  url-mapping="/*">
+            <inSequence>
+                <payloadFactory>
+                    <format>
+                        <echo>hello</echo>
+                    </format>
+                </payloadFactory>
+                <property name="messageType" value="text/xml; charset=UTF-8" scope="axis2"/>
+                <property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING"/>
+                <send>
+                    <endpoint name="admin--echo_APIproductionEndpoint_0">
+                        <address uri="http://localhost:1212"
+                                 format="soap11">
+                            <timeout>
+                                <duration>30000</duration>
+                                <responseAction>fault</responseAction>
+                            </timeout>
+                        </address>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
 </definitions>
 
