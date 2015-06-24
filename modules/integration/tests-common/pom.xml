@@ -21,7 +21,7 @@ under the License.
     <parent>
         <artifactId>integration</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>1.9.0</version>
+        <version>1.9.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
