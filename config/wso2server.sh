@@ -292,6 +292,7 @@ do
     -Dorg.terracotta.quartz.skipUpdateCheck=true \
     -Djava.security.egd=file:/dev/./urandom \
     -Dfile.encoding=UTF8 \
+    -Dorg.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING=false \
     -DapplyPatches \
     org.wso2.carbon.bootstrap.Bootstrap $*
     status=$?

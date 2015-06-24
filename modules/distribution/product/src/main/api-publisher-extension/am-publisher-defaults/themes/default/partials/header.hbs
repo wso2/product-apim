@@ -1,0 +1,27 @@
+<!-- header -->
+<header>
+    <div class="row wr-global-header">
+        <div class="col-sm-8 app-logo">
+            <a href='{{url ""}}{{meta.landingPage}}'>
+                <img src="{{url "/themes/default/img/logo.png"}}" />
+                <h2 class="app-title">API Publisher</h2>
+            </a>
+        </div>
+        <div class="col-sm-4 wr-auth-container">
+            <div class="wr-auth pull-right">
+                <a href="#" data-toggle="dropdown" class="">
+                    <div class="auth-img">
+                        <span>{{cuser.username}}</span>&nbsp;&nbsp;<i class="fa fa-user fa-lg"></i>
+                    </div>
+                </a>
+                <div class="dropdown-menu">
+                    <div class="cu-arrow"></div>
+                    <div class="dropdown-menu-content">
+                        <a class="filter-item" onclick="window.location.href='{{url "/logout"}}'" href="#">{{t "Sign out"}}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- /header -->
