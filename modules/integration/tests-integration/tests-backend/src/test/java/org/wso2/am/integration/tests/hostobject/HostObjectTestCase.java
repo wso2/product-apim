@@ -94,11 +94,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                                                                "configFiles/tokenTest/" +
                                                                "log4j.properties"));
         super.init(userMode);
-//
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
-
-
     }
 
     private void copySampleFile(String sourcePath, String destPath) {
@@ -213,14 +210,11 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
 
         try {
 
-//            validatePublisherResponseArray(arr);
             String[] responseArrayFromPublisher = new String[35];
 
             boolean isPublisherResponse = false;
             while (((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) && !isPublisherResponse) {
                 Thread.sleep(500);
-                System.out.println("1 : " + " " + ((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) +
-                                   " " + isPublisherResponse +"  "+gatewayContext.getContextTenant().getDomain());
                 URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp() + "testapp/" + filePublisher);
                 URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -252,8 +246,6 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
             startTime = System.currentTimeMillis();
             while (((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) && !isStoreResponse) {
                 Thread.sleep(500);
-                System.out.println("2 : " +" "+((System.currentTimeMillis() - startTime) < deploymentDelayInMilliseconds) +
-                                   " " + isStoreResponse+" "+gatewayContext.getContextTenant().getDomain());
                 URL jaggeryURL = new URL(storeUrls.getWebAppURLHttp() + "testapp/" + fileStore);
                 URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(
