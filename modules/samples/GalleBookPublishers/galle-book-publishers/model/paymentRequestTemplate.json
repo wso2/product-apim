@@ -1,0 +1,58 @@
+{
+  "id": "",
+  "intent": "sale",
+  "payer": {
+    "email": "",
+    "payment_method": "credit_card",
+    "funding_instruments": [
+      {
+        "credit_card": {
+          "number": "",
+          "type": "",
+          "expire_month": "",
+          "expire_year": "",
+          "cvv2": "",
+          "first_name": "",
+          "last_name": "",
+          "billing_address": {
+            "line1": "",
+            "city": "",
+            "state": "",
+            "postal_code": "",
+            "country_code": ""
+          }
+        }
+      }
+    ]
+  },
+  "shipment": {
+    "shipping_address": {
+      "first_name":"",
+      "last_name":"",
+      "line1": "",
+      "city": "",
+      "state": "",
+      "postal_code": "",
+      "country_code": ""
+    }
+  },
+  "transactions": [
+    {
+      "amount": {
+        "total": "0",
+        "currency": "USD",
+        "details": {
+          "subtotal": "0",
+          "tax": "0",
+          "shipping": "0"
+        }
+      },
+      "order": {
+        "item_number": "BOOK0001",
+        "quantity": "0"
+
+      },
+      "description": "This is the payment transaction description."
+    }
+  ]
+}

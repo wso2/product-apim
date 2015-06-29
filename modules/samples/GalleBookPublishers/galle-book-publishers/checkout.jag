@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Checkout</title>
+
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+
+	</head>
+	<body>
+
+		<div class="form-group">
+  		<label for="paymentPayload">Payment request payload</label>
+			<textarea class="form-control" rows="30" id="paymentPayload"></textarea>
+		</div>
+
+		<button type="button" id="checkoutButton" class="btn btn-primary">
+  		Checkout
+		</button>
+		<button type="button" id="loadSampleButton" class="btn btn-primary">
+  		Load Sample Payload
+		</button>
+
+
+		<script src="js/jquery-2.1.4.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/checkout.js"></script>
+
+	</body>
+</html>

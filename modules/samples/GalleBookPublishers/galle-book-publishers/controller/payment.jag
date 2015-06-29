@@ -1,0 +1,67 @@
+<%
+
+if(!session.get("username")){
+	session.invalidate();
+	response.sendError(401);
+}else{
+
+	response.contentType = 'text/json';
+
+	var verb = request.getMethod();
+	var data = request.getContent();
+
+	var log = new Log();
+
+	if (verb == "POST"){
+		log.info("Connecting to the payment API");
+
+		var paymentRequest = require("../model/paymentRequest.js");
+		var paymentClient = require("../model/paymentClient.js");
+		var settingsManager = require("../model/settingsManager.js");
+
+		paymentRequest.addBillingInfo(data);
+
+		var paymentRequestPayload = paymentRequest.getPaymentRequestInSession();
+		log.info(paymentRequestPayload);
+
+		var paymentApiUrl = settingsManager.getSetting("gatewayUrl")+"/payfriend/v1/payments/payment";
+		var accessToken = getAccessToken();
+
+		var responsePayload = paymentClient.pay(paymentRequestPayload, paymentApiUrl, accessToken, getClientIP(request));
+
+		paymentRequest.clearTransactionInfo();
+
+		session.put("transactionId", responsePayload.id);
+
+		print({status:"successful"});
+	}
+
+}
+
+function getAccessToken(){
+
+	var settingsManager = require("../model/settingsManager.js");
+
+	var tokenEndpoint = settingsManager.getSetting("gatewayUrl") + "/token";
+	var consumerKey = settingsManager.getSetting("consumerKey");
+	var consumerSecret = settingsManager.getSetting("consumerSecret");
+
+	var tokenManager = require("../model/tokenManager.js");
+
+	return tokenManager.getAccessToken(tokenEndpoint, consumerKey, consumerSecret);
+
+}
+
+function getClientIP(request){
+
+	var mockIP = request.getHeader("Fraud-Detection-Mock-Client-IP");
+
+	if(mockIP){
+		return mockIP;
+	}else{
+		return request.getRemoteAddr();
+	}
+
+}
+
+%>

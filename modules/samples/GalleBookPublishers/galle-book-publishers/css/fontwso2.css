@@ -1,0 +1,481 @@
+@font-face {
+	font-family: 'fontwso2';
+	src:url('../fonts/fontwso2.eot?3uii6i');
+	src:url('../fonts/fontwso2.eot?#iefix3uii6i') format('embedded-opentype'),
+		url('../fonts/fontwso2.woff?3uii6i') format('woff'),
+		url('../fonts/fontwso2.ttf?3uii6i') format('truetype'),
+		url('../fonts/fontwso2.svg?3uii6i#fontwso2') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.fw {
+	font-family: 'fontwso2';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.fw-lifecycle:before {
+	content: "\e617";
+}
+
+.fw-globe:before {
+	content: "\e666";
+}
+
+.fw-filter:before {
+	content: "\e65b";
+}
+
+.fw-store:before {
+	content: "\e61b";
+}
+
+.fw-apple:before {
+	content: "\e613";
+}
+
+.fw-android:before {
+	content: "\e653";
+}
+
+.fw-windows:before {
+	content: "\e654";
+}
+
+.fw-monitor:before {
+	content: "\e658";
+}
+
+.fw-laptop:before {
+	content: "\e659";
+}
+
+.fw-computer:before {
+	content: "\e655";
+}
+
+.fw-mobile:before {
+	content: "\e656";
+}
+
+.fw-dots:before {
+	content: "\e615";
+}
+
+.fw-tiles:before {
+	content: "\e60e";
+}
+
+.fw-menu:before {
+	content: "\e60f";
+}
+
+.fw-list:before {
+	content: "\e610";
+}
+
+.fw-grid:before {
+	content: "\e611";
+}
+
+.fw-list2:before {
+	content: "\e667";
+}
+
+.fw-user:before {
+	content: "\e601";
+}
+
+.fw-add-user:before {
+	content: "\e668";
+}
+
+.fw-key:before {
+	content: "\e665";
+}
+
+.fw-star:before {
+	content: "\e65c";
+}
+
+.fw-star-2:before {
+	content: "\e612";
+}
+
+.fw-view:before {
+	content: "\e652";
+}
+
+.fw-edit:before {
+	content: "\e65d";
+}
+
+.fw-register2:before {
+	content: "\e669";
+}
+
+.fw-register:before {
+	content: "\e65f";
+}
+
+.fw-search:before {
+	content: "\e657";
+}
+
+.fw-send:before {
+	content: "\e66a";
+}
+
+.fw-delete:before {
+	content: "\e614";
+}
+
+.fw-settings:before {
+	content: "\e65e";
+}
+
+.fw-share:before {
+	content: "\e65a";
+}
+
+.fw-message:before {
+	content: "\e616";
+}
+
+.fw-bell:before {
+	content: "\e66b";
+}
+
+.fw-lock:before {
+	content: "\e618";
+}
+
+.fw-battery:before {
+	content: "\e619";
+}
+
+.fw-camera:before {
+	content: "\e61a";
+}
+
+.fw-wifi:before {
+	content: "\e606";
+}
+
+.fw-usb-drive:before {
+	content: "\e602";
+}
+
+.fw-hdd:before {
+	content: "\e61c";
+}
+
+.fw-map-location:before {
+	content: "\e61d";
+}
+
+.fw-invitation:before {
+	content: "\e664";
+}
+
+.fw-dial-up:before {
+	content: "\e61f";
+}
+
+.fw-incoming-call:before {
+	content: "\e620";
+}
+
+.fw-clock:before {
+	content: "\e621";
+}
+
+.fw-clean:before {
+	content: "\e622";
+}
+
+.fw-sort:before {
+	content: "\e623";
+}
+
+.fw-list-sort:before {
+	content: "\e624";
+}
+
+.fw-sequence:before {
+	content: "\e625";
+}
+
+.fw-rules:before {
+	content: "\e626";
+}
+
+.fw-padlock:before {
+	content: "\e66c";
+}
+
+.fw-uri:before {
+	content: "\e603";
+}
+
+.fw-pdf:before {
+	content: "\e627";
+}
+
+.fw-ms-document:before {
+	content: "\e629";
+}
+
+.fw-swagger:before {
+	content: "\e62a";
+}
+
+.fw-jquery:before {
+	content: "\e62b";
+}
+
+.fw-java:before {
+	content: "\e62c";
+}
+
+.fw-javaee:before {
+	content: "\e62d";
+}
+
+.fw-javascript:before {
+	content: "\e62e";
+}
+
+.fw-jaggery:before {
+	content: "\e62f";
+}
+
+.fw-uncheck:before {
+	content: "\e630";
+}
+
+.fw-check:before {
+	content: "\e631";
+}
+
+.fw-up-arrow-2:before {
+	content: "\e660";
+}
+
+.fw-down-arrow-2:before {
+	content: "\e661";
+}
+
+.fw-left-arrow-2:before {
+	content: "\e662";
+}
+
+.fw-right-arrow-2:before {
+	content: "\e663";
+}
+
+.fw-up-arrow:before {
+	content: "\e632";
+}
+
+.fw-down-arrow:before {
+	content: "\e63e";
+}
+
+.fw-left-arrow:before {
+	content: "\e633";
+}
+
+.fw-right-arrow:before {
+	content: "\e634";
+}
+
+.fw-cancel:before {
+	content: "\e635";
+}
+
+.fw-add:before {
+	content: "\e636";
+}
+
+.fw-minus:before {
+	content: "\e628";
+}
+
+.fw-refresh:before {
+	content: "\e637";
+}
+
+.fw-ring:before {
+	content: "\e600";
+}
+
+.fw-circle:before {
+	content: "\e638";
+}
+
+.fw-ok:before {
+	content: "\e639";
+}
+
+.fw-error:before {
+	content: "\e63a";
+}
+
+.fw-block:before {
+	content: "\e63b";
+}
+
+.fw-warning:before {
+	content: "\e605";
+}
+
+.fw-deploy:before {
+	content: "\e66d";
+}
+
+.fw-devices:before {
+	content: "\e63c";
+}
+
+.fw-dss:before {
+	content: "\e63d";
+}
+
+.fw-database:before {
+	content: "\e66e";
+}
+
+.fw-computer2:before {
+	content: "\e66f";
+}
+
+.fw-endpoint:before {
+	content: "\e63f";
+}
+
+.fw-bpmn:before {
+	content: "\e640";
+}
+
+.fw-bpel:before {
+	content: "\e641";
+}
+
+.fw-gadget:before {
+	content: "\e642";
+}
+
+.fw-application:before {
+	content: "\e643";
+}
+
+.fw-cloud:before {
+	content: "\e644";
+}
+
+.fw-service:before {
+	content: "\e645";
+}
+
+.fw-rest-service:before {
+	content: "\e646";
+}
+
+.fw-rest-api:before {
+	content: "\e647";
+}
+
+.fw-api:before {
+	content: "\e648";
+}
+
+.fw-service-provider:before {
+	content: "\e649";
+}
+
+.fw-website:before {
+	content: "\e604";
+}
+
+.fw-proxy:before {
+	content: "\e64a";
+}
+
+.fw-policy:before {
+	content: "\e64b";
+}
+
+.fw-security-policy:before {
+	content: "\e64c";
+}
+
+.fw-throttling-policy:before {
+	content: "\e64d";
+}
+
+.fw-blank-document:before {
+	content: "\e64e";
+}
+
+.fw-ebook:before {
+	content: "\e670";
+}
+
+.fw-document:before {
+	content: "\e671";
+}
+
+.fw-text:before {
+	content: "\e64f";
+}
+
+.fw-html:before {
+	content: "\e650";
+}
+
+.fw-wadl:before {
+	content: "\e608";
+}
+
+.fw-wsdl:before {
+	content: "\e609";
+}
+
+.fw-xacml:before {
+	content: "\e60a";
+}
+
+.fw-xsd:before {
+	content: "\e60b";
+}
+
+.fw-xq:before {
+	content: "\e60c";
+}
+
+.fw-xslt:before {
+	content: "\e60d";
+}
+
+.fw-xml:before {
+	content: "\e61e";
+}
+
+.fw-soap:before {
+	content: "\e651";
+}
+
+.fw-wso2:before {
+	content: "\e607";
+}
+

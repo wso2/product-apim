@@ -1,0 +1,50 @@
+<%
+
+response.contentType = 'text/json';
+
+var verb = request.getMethod();
+var data = request.getContent();
+
+var log = new Log();
+
+if (verb == "POST"){
+
+	log.info("User signing in");
+	var username = login(data);
+
+	if(username){
+
+		var paymentRequest = require("../model/paymentRequest.js");
+		var template = require("../model/paymentRequestTemplate.json");
+		var tokenManager = require("../model/tokenManager.js")
+		var settingsManager = require("../model/settingsManager.js");
+
+		paymentRequest.init(template);
+
+
+    var tokenEndpoint = settingsManager.getSetting("gatewayUrl") + "/token";
+    var consumerKey = settingsManager.getSetting("consumerKey");
+    var consumerSecret = settingsManager.getSetting("consumerSecret");
+
+		var tokenResult = tokenManager.getAndStoreUserToken(tokenEndpoint, consumerKey, consumerSecret,
+																									data.username, data.password);
+
+		if(tokenResult.access_token){
+			print({status:"successful", username:username});
+		}else{
+			print({status:"error", errorMessage:tokenResult.error_description});
+		}
+
+
+	}else{
+		response.sendError(400);
+	}
+
+}
+
+function login(credentials){
+	session.put("username", credentials.username);
+	return credentials.username;
+}
+
+%>

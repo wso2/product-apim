@@ -1,0 +1,226 @@
+<%
+
+if(!session.get("username")){
+  session.invalidate();
+  response.sendRedirect("unauthorized.html");
+}else{
+  var paymentRequest = require("model/paymentRequest.js");
+  var transactionInfo = paymentRequest.getTransactionInfo();
+  var username = session.get("username");
+%>
+
+<!--
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+-->
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galle Book Publishers</title>
+
+    <link rel="icon" href="favicon.png" type="image/x-icon" />
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom-common.css" rel="stylesheet">
+    <link href="css/custom-desktop.css" rel="stylesheet">
+    <link href="css/custom-theme.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.jquery.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.custom.css" rel="stylesheet">
+
+	<!--[if lt IE 9]>
+	<script src="js/html5shiv.min.js"></script>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+
+<div class="container-fluid">
+    <!-- header -->
+    <header>
+        <div class="row wr-global-header">
+            <div class="col-xs-8 col-sm-6 col-lg-8 app-logo">
+                <a href="product.jag"><img src="images/logo.png" /><h2 class="app-title">Book Publishers</h2></a>
+            </div>
+            <div class="col-xs-4 col-sm-6 col-lg-4 wr-auth-container">
+                <div class="wr-auth pull-right">
+                    <a href="#" data-toggle="dropdown">
+                        <div class="auth-img">
+                            <%=username%>
+                            <span class="fw-stack-md fw-lg">
+                                <i class="fw fw-user fw-stack-1-5x"></i>
+                            </span>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="cu-arrow"></div>
+                        <div class="dropdown-menu-content">
+                            <a class="filter-item" href="logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- /header -->
+
+    <!-- secondary header - app bar -->
+    <div id="nav" class="row wr-app-bar">
+        <div class="col-md-9 wr-action-container">
+
+
+			<div class="wr-action-btn-bar">
+				<a href="product.jag" class="cu-btn">
+                    <span class="fw-stack">
+                        <i class="fw fw-ring fw-stack-2x"></i>
+                        <i class="fw fw-circle fw-stack-1x"></i>
+                    </span>
+                    Products Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+    <!-- secondary header - app bar -->
+</div>
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-12">
+            <div class="row wr-wizard">
+                <div class="col-md-4 col-xs-4">
+                    <div class="itm-wiz itm-wiz-current"><div class="wiz-no">1</div><div class="wiz-lbl hidden-xs"><span>Select a Product</span></div></div>
+                        <br class="c-both" />
+                    </div>
+
+                    <div class="col-md-4 col-xs-4">
+                            <div class="itm-wiz"><div class="wiz-no">2</div><div class="wiz-lbl hidden-xs"><span>Shipping Details</span></div></div>
+                            <br class="c-both" />
+                    </div>
+                    <div class="col-md-4 col-xs-4">
+                    <div class="itm-wiz"><div class="wiz-no">3</div><div class="wiz-lbl hidden-xs"><span> Billing Details</span></div></div>
+                    <br class="c-both" />
+                </div>
+            </div>
+		</div>
+	</div>
+
+
+	<div class="row wr-form-head">
+		<div class="col-md-8">
+			<h2 class="sec-title">Select Product/Qty<h2>
+		</div>
+		<div class="col-md-4">
+		</div>
+	</div>
+
+	<div class="row wr-form-note">
+		<div class="col-md-12">
+		<p>* Select qty you need from this product.</p>
+		</div>
+	</div>
+
+
+
+	<!-- content/body -->
+	<div class="row">
+        <form id="product-form" method="post">
+		<div class="col-md-3">
+			<img src="images/book01.jpg" />
+		</div>
+
+		<div class="col-md-3 wr-prod-details">
+			<h4 class="prod-title">Fantastic Mr. Fox Paperback -<span>August 16, 2007</span></h4>
+			<h5 class="prod-title"><span>by Roald Dahl and Quentin Blake</span></h5>
+			<label class="prod-price">US $<span class="unit-price">200</span>.00 </label>
+			<div class="row wr-qty">
+				<div class="col-md-5">
+					<label class="input-label">Qty</label>
+					<div class="input-control text" data-role="input-control">
+                            <input id="prod-qty-select" name="prod-qty-select" type="text"
+                                   value="<%=transactionInfo.quantity%>" class="validate[required,custom[onlyNumberNz]]" value="1"/>
+          </div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="col-md-4 col-md-offset-2 wr-order-box">
+			<div class="row ord-product">
+				<div class="col-md-12">
+					<div class="wr-order-box-prod">
+						<h5 class="prod-title">Fantastic Mr. Fox <span>by Roald Dahl and Quentin Blake</span><img src="images/book01.jpg" /></h5>
+					</div>
+				</div>
+			</div>
+      <div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Sub Total (<span class="prod-qty-display"><%=transactionInfo.quantity%></span> item(s)) :</div>
+				<div class="col-md-4 text-right order-val">$<span class="sub-total"><%=transactionInfo.subtotal%></span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Shipping :</div>
+				<div class="col-md-4 text-right order-val">$<span class="shipping-cost">50</span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Tax (2.0%) :</div>
+				<div class="col-md-4 text-right order-val">$<span class="tax-amount"><%=transactionInfo.tax%></span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-tot-lbl">Total :</div>
+				<div class="col-md-4 text-right order-tot-val">$<span class="total"><%=transactionInfo.total%></span>.00</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12 text-right">
+					<a id="checkout-btn" href="#" class="cu-btn-action">Checkout</a>
+				</div>
+			</div>
+        </form>
+		</div>
+
+	</div>
+	<!-- /content/body -->
+
+
+
+    <!-- footer -->
+    <footer class="footer">
+        <p>Galle Book Publishers v.1.0.0 | &copy; <script>document.write(new Date().getFullYear());</script> <a href="http://wso2.com/" target="_blank"><i class="fw fw-wso2"></i> Inc</a>. All Rights Reserved.</p>
+    </footer>
+    <!-- /footer -->
+
+</div>
+
+
+
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/operationsmenu.js"></script>
+<script src="js/common.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine-en.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine.js"></script>
+
+</body>
+</html>
+
+<%
+}
+%>

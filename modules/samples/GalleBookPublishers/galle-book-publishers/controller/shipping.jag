@@ -1,0 +1,31 @@
+<%
+
+if(!session.get("username")){
+	session.invalidate();
+  response.sendError(401);
+}else{
+
+  response.contentType = 'text/json';
+
+  var verb = request.getMethod();
+  var data = request.getContent();
+
+  var log = new Log();
+
+  if (verb == "POST"){
+
+    log.info("Adding shipping details");
+
+    var paymentRequest = require("../model/paymentRequest.js");
+    paymentRequest.addShippingInfo(data);
+
+    log.info(paymentRequest.getPaymentRequestInSession());
+
+    print({status:"successful"});
+  }else{
+    response.sendError(404);
+  }
+
+}
+
+%>

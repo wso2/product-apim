@@ -1,0 +1,30 @@
+<%
+
+var settingsManager = require("../model/settingsManager.js");
+
+response.contentType = 'application/json';
+
+var verb = request.getMethod();
+var data = request.getContent();
+var log = new Log();
+
+var uri = request.getRequestURI();
+uri = uri.substring(request.getContextPath().length);
+
+data = parse(data);
+
+if(verb == "POST") {
+
+  settingsManager.addSetting("gatewayUrl", data.gatewayUrl);
+  settingsManager.addSetting("consumerKey", data.consumerKey);
+  settingsManager.addSetting("consumerSecret", data.consumerSecret);
+
+  settingsManager.printSettings();
+
+	print({status:"success"});
+
+}else{
+	response.sendError(400);
+}
+
+%>

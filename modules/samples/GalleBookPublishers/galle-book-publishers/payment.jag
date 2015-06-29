@@ -1,0 +1,317 @@
+<%
+
+if(!session.get("username")){
+  session.invalidate();
+  response.sendRedirect("unauthorized.html");
+}else{
+  var paymentRequest = require("model/paymentRequest.js");
+  var transactionInfo = paymentRequest.getTransactionInfo();
+  var billingInfo = paymentRequest.getBillingInfo();
+  var username = session.get("username");
+%>
+
+<!--
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+-->
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galle Book Publishers</title>
+
+    <link rel="icon" href="favicon.png" type="image/x-icon" />
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom-common.css" rel="stylesheet">
+    <link href="css/custom-desktop.css" rel="stylesheet">
+    <link href="css/custom-theme.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.jquery.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.custom.css" rel="stylesheet">
+
+	<!--[if lt IE 9]>
+	<script src="js/html5shiv.min.js"></script>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+
+<div class="container-fluid">
+    <!-- header -->
+    <header>
+        <div class="row wr-global-header">
+            <div class="col-xs-8 col-sm-6 col-lg-8 app-logo">
+                <a href="product.jag"><img src="images/logo.png" /><h2 class="app-title">Book Publishers</h2></a>
+            </div>
+            <div class="col-xs-4 col-sm-6 col-lg-4 wr-auth-container">
+                <div class="wr-auth pull-right">
+                    <a href="#" data-toggle="dropdown">
+                        <div class="auth-img">
+                            <%=username%>
+                            <span class="fw-stack-md fw-lg">
+                                <i class="fw fw-user fw-stack-1-5x"></i>
+                            </span>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="cu-arrow"></div>
+                        <div class="dropdown-menu-content">
+                            <a class="filter-item" href="logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- /header -->
+
+    <!-- secondary header - app bar -->
+    <div id="nav" class="row wr-app-bar">
+        <div class="col-md-9 wr-action-container">
+
+
+			<div class="wr-action-btn-bar">
+				<a href="product.jag" class="cu-btn">
+                    <span class="fw-stack">
+                        <i class="fw fw-ring fw-stack-2x"></i>
+                        <i class="fw fw-circle fw-stack-1x"></i>
+                    </span>
+                    Products Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+    <!-- secondary header - app bar -->
+</div>
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-md-12">
+            <div class="row wr-wizard">
+                <div class="col-md-4 col-xs-4">
+                    <div class="itm-wiz"><div class="wiz-no"><a href="product.jag">1</a></div><div class="wiz-lbl hidden-xs"><span>Select a Product</span></div></div>
+                        <br class="c-both" />
+                    </div>
+
+                    <div class="col-md-4 col-xs-4">
+                            <div class="itm-wiz"><div class="wiz-no"><a href="shipping.jag">2</a></div><div class="wiz-lbl hidden-xs"><span>Shipping Details</span></div></div>
+                            <br class="c-both" />
+                    </div>
+                    <div class="col-md-4 col-xs-4">
+                    <div class="itm-wiz itm-wiz-current"><div class="wiz-no">3</div><div class="wiz-lbl hidden-xs"><span> Billing Details</span></div></div>
+                    <br class="c-both" />
+                </div>
+            </div>
+		</div>
+	</div>
+
+
+	<div class="row wr-form-head">
+		<div class="col-md-8">
+			<h2 class="sec-title">Billing Details<h2>
+		</div>
+		<div class="col-md-4">
+		</div>
+	</div>
+
+	<div class="row wr-form-note">
+		<div class="col-md-12">
+		<p>* Provide your credit card details to complete the transaction.</p>
+		</div>
+	</div>
+
+
+
+	<!-- content/body -->
+	<div class="row">
+	<form id="confirm-form" method="post" action="submit.action">
+		<div class="col-md-6">
+
+            <label class="wr-input-label">Credit Card Number</label>
+            <div class="wr-input-control">
+                <input id="ccnumber" name="ccnumber" type="text" value="" placeholder="e.g. 4444XXXXXXXXXXXX" class="validate[required]"/>
+            </div>
+
+            <label class="wr-input-label">Type</label>
+            <div class="wr-input-control">
+				<select id="cctype" name="cctype" class="form-control">
+					<option>VISA</option>
+					<option>Mastercard</option>
+				</select>
+            </div>
+
+            <label class="wr-input-label">Card Expiry</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-3">
+						<select id="expmonth" name="expmonth" class="form-control">
+							<option>Month</option>
+							<option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+              <option>9</option>
+              <option>10</option>
+              <option>11</option>
+              <option>12</option>
+						</select>
+					</div>
+					<div class="col-md-3">
+						<select id="expyear" name="expyear" class="form-control">
+							<option>Year</option>
+							<option>2015</option>
+              <option>2016</option>
+              <option>2017</option>
+              <option>2018</option>
+              <option>2019</option>
+              <option>2020</option>
+						</select>
+					</div>
+				</div>
+            </div>
+
+            <label class="wr-input-label">3 Digit Security Code</label>
+            <div class="wr-input-control">
+                <input id="seccode" name="seccode" type="text" value="" placeholder="e.g. 453" class="validate[required]"/>
+            </div>
+
+            <label class="wr-input-label">Email</label>
+            <div class="wr-input-control">
+                <input id="email" name="email" type="text" value="<%=billingInfo.email%>" placeholder="e.g. johnsmith@jsmith.com" class="validate[required]" />
+            </div>
+
+            <label class="wr-input-label">Billing Address</label>
+            <div class="wr-input-control">
+                <input id="address" name="address" type="text" value="<%=billingInfo.line1%>" placeholder="e.g. 42 E 20th St" class="validate[required]"/>
+            </div>
+
+            <label class="wr-input-label">City</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-5">
+						<input id="city" name="city" type="text" value="<%=billingInfo.city%>" placeholder="e.g. New York" class="validate[required]"/>
+					</div>
+				</div>
+            </div>
+
+            <label class="wr-input-label">State</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-5">
+						<input id="state" name="state" type="text" value="<%=billingInfo.state%>" placeholder="e.g. NY" class="validate[required]"/>
+					</div>
+				</div>
+            </div>
+
+            <label class="wr-input-label">Postal Code</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-5">
+						<input id="postcode" name="postcode" type="text" value="<%=billingInfo.postal_code%>" placeholder="e.g. 10003" class="validate[required]"/>
+					</div>
+				</div>
+            </div>
+
+            <label class="wr-input-label">Country Code</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-5">
+						<input id="countrycode" name="countrycode" type="text" value="<%=billingInfo.country_code%>" placeholder="e.g. USA" class="validate[required]"/>
+					</div>
+				</div>
+            </div>
+
+            <label class="wr-input-label">Mock Client IP</label>
+            <div class="wr-input-control">
+				<div class="row">
+					<div class="col-md-5">
+						<input id="mockClientIP" name="mockClientIP" type="text" value="" placeholder="e.g. 68.175.10.43"/>
+					</div>
+				</div>
+            </div>
+
+		</div>
+
+		<div class="col-md-4 col-md-offset-2 wr-order-box">
+			<div class="row ord-product">
+				<div class="col-md-12">
+					<div class="wr-order-box-prod">
+						<h5 class="prod-title">Fantastic Mr. Fox <span>by Roald Dahl and Quentin Blake</span><img src="images/book01.jpg" /></h5>
+					</div>
+				</div>
+			</div>
+      <div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Sub Total (<span class="prod-qty-display"><%=transactionInfo.quantity%></span> item(s)) :</div>
+				<div class="col-md-4 text-right order-val">$<span class="sub-total"><%=transactionInfo.subtotal%></span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Shipping :</div>
+				<div class="col-md-4 text-right order-val">$<span class="shipping-cost"><%=transactionInfo.shipping%></span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-lbl">Tax (2.0%) :</div>
+				<div class="col-md-4 text-right order-val">$<span class="tax-amount"><%=transactionInfo.tax%></span>.00</div>
+			</div>
+			<div class="row order-line">
+				<div class="col-md-8 text-right order-tot-lbl">Total :</div>
+				<div class="col-md-4 text-right order-tot-val">$<span class="total"><%=transactionInfo.total%></span>.00</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12 text-right">
+					<a id="confirm-btn" href="#" class="cu-btn-action">Confirm and Pay</a>
+				</div>
+			</div>
+		</div>
+	</form>
+	</div>
+	<!-- /content/body -->
+
+
+
+    <!-- footer -->
+    <footer class="footer">
+        <p>Galle Book Publishers v.1.0.0 | &copy; <script>document.write(new Date().getFullYear());</script> <a href="http://wso2.com/" target="_blank"><i class="fw fw-wso2"></i> Inc</a>. All Rights Reserved.</p>
+    </footer>
+    <!-- /footer -->
+
+</div>
+
+
+
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/operationsmenu.js"></script>
+<script src="js/common.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine-en.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine.js"></script>
+
+</body>
+</html>
+
+<%
+}
+%>

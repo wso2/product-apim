@@ -1,0 +1,145 @@
+<%
+
+if(!session.get("username")){
+  session.invalidate();
+  response.sendRedirect("unauthorized.html");
+}else{
+  var transactionId = session.get("transactionId");
+  session.remove("transactionId");
+  var username = session.get("username");
+%>
+
+<!--
+* Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+* WSO2 Inc. licenses this file to you under the Apache License,
+* Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied. See the License for the
+* specific language governing permissions and limitations
+* under the License.
+-->
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galle Book Publishers</title>
+
+    <link rel="icon" href="favicon.png" type="image/x-icon" />
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom-common.css" rel="stylesheet">
+    <link href="css/custom-desktop.css" rel="stylesheet">
+    <link href="css/custom-theme.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.jquery.css" rel="stylesheet">
+    <link href="js/jquery-validationEngine/validationEngine.custom.css" rel="stylesheet">
+
+	<!--[if lt IE 9]>
+	<script src="js/html5shiv.min.js"></script>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+
+<div class="container-fluid">
+    <!-- header -->
+    <header>
+        <div class="row wr-global-header">
+            <div class="col-xs-8 col-sm-6 col-lg-8 app-logo">
+                <a href="product.jag"><img src="images/logo.png" /><h2 class="app-title">Book Publishers</h2></a>
+            </div>
+            <div class="col-xs-4 col-sm-6 col-lg-4 wr-auth-container">
+                <div class="wr-auth pull-right">
+                    <a href="#" data-toggle="dropdown">
+                        <div class="auth-img">
+                            <%=username%>
+                            <span class="fw-stack-md fw-lg">
+                                <i class="fw fw-user fw-stack-1-5x"></i>
+                            </span>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="cu-arrow"></div>
+                        <div class="dropdown-menu-content">
+                            <a class="filter-item" href="logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- /header -->
+
+    <!-- secondary header - app bar -->
+    <div id="nav" class="row wr-app-bar">
+        <div class="col-md-9 wr-action-container">
+
+
+			<div class="wr-action-btn-bar">
+				<a href="product.jag" class="cu-btn">
+                    <span class="fw-stack">
+                        <i class="fw fw-ring fw-stack-2x"></i>
+                        <i class="fw fw-circle fw-stack-1x"></i>
+                    </span>
+                    Products Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+    <!-- secondary header - app bar -->
+</div>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-8 col-sm-12 col-centered">
+            <form id="success-form" method="post">
+                <h1 class="wr-title">Thank You !</h1>
+                <hr />
+                <h4 class="col-md-12 col-sm-12">Your transaction was successful..</h4>
+                <h4 class="col-md-4 col-sm-12">Transaction id :</h4>
+                <h4 class="col-md-8 col-sm-12"><%=transactionId%></h4>
+                <div class="clearfix"></div>
+                <br/>
+                <div class="wr-input-control">
+                    <a id="" href="product.jag" class="btn-login col-md-4 col-sm-12 col-centered">Back to Products..</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+  <!-- footer -->
+  <footer class="footer">
+      <p>Galle Book Publishers | &copy; <script>document.write(new Date().getFullYear());</script> <a href="http://wso2.com/" target="_blank"><i class="fw fw-wso2"></i> Inc</a>. All Rights Reserved.</p>
+  </footer>
+  <!-- /footer -->
+
+</div>
+
+
+
+<script src="js/jquery.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/operationsmenu.js"></script>
+<script src="js/common.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine-en.js"></script>
+<script src="js/jquery-validationEngine/jquery.validationEngine.js"></script>
+
+</body>
+</html>
+
+<%
+}
+%>
