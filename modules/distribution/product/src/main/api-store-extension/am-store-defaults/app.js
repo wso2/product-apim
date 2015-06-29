@@ -20,7 +20,7 @@ app.dependencies = ['default'];
 app.server = function(ctx) {
     return {
         configs: {
-            landingPage: '/asts/api/list',
+            landingPage: '/assets/api/list',
             disabledAssets: ['gadget', 'schema', 'site', 'uri', 'ebook', 'wsdl', 'service', 'policy', 'proxy', 'servicex', 'sequence', 'wadl']
         }
     }
