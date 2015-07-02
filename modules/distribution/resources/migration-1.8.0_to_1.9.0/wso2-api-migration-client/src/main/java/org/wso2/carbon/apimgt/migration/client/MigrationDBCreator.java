@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.dbcreator.DatabaseCreator;
@@ -53,22 +54,6 @@ public class MigrationDBCreator extends DatabaseCreator {
 
     @Override
     public void createRegistryDatabase() throws SQLException, APIMigrationException {
-        /*String databaseType;
-        try {
-            databaseType = DatabaseCreator.getDatabaseType(this.dataSource.getConnection());
-
-            String scriptPath = getDbScriptLocation(databaseType);
-            File scriptFile = new File(scriptPath);
-            if (scriptFile.exists()) {
-                super.createRegistryDatabase();
-            } else {
-                log.error("API Migration client cannot find the database script.");
-            }
-        } catch (Exception e) {
-            ResourceUtil.handleException("Error occurred while accessing the database connection", e);
-        }*/
-
-
         try {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
@@ -94,11 +79,11 @@ public class MigrationDBCreator extends DatabaseCreator {
     private void executeSQLScript() throws Exception {
         String databaseType = DatabaseCreator.getDatabaseType(this.connection);
         boolean keepFormat = false;
-        if ("oracle".equals(databaseType)) {
+        if (Constants.DB_TYPE_ORACLE.equals(databaseType)) {
             delimiter = "/";
-        } else if ("db2".equals(databaseType)) {
+        } else if (Constants.DB_TYPE_DB2.equals(databaseType)) {
             delimiter = "/";
-        } else if ("openedge".equals(databaseType)) {
+        } else if (Constants.DB_TYPE_OPENEDGE.equals(databaseType)) {
             delimiter = "/";
             keepFormat = true;
         }
@@ -151,7 +136,7 @@ public class MigrationDBCreator extends DatabaseCreator {
             throw new Exception("Error occurred while executing SQL script for creating registry database", e);
 
         } finally {
-            if(reader != null){
+            if (reader != null) {
                 reader.close();
             }
         }

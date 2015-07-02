@@ -100,7 +100,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws SQLException
      */
     @Override
-    public void databaseMigration(String migrateVersion) throws APIMigrationException, SQLException {
+    public void databaseMigration(String migrateVersion) throws SQLException {
         log.info("Database migration for API Manager 1.8.0 started");
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -114,7 +114,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             bufferedReader = new BufferedReader(new InputStreamReader(is));
             String sqlQuery;
             while ((sqlQuery = bufferedReader.readLine()) != null) {
-                if ("oracle".equals(dbType)) {
+                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
                     sqlQuery = sqlQuery.replace(";", "");
                 }
                 sqlQuery = sqlQuery.trim();
@@ -137,7 +137,6 @@ public class MigrateFrom18to19 implements MigrationClient {
                     preparedStatement = connection.prepareStatement(sqlQuery.trim());
                     preparedStatement.execute();
                     connection.commit();
-                    preparedStatement.close();
                 }
             }
 
@@ -151,6 +150,9 @@ public class MigrateFrom18to19 implements MigrationClient {
             //ResourceUtil.handleException("Error occurred while finding the query. Please check the file path.", e);
             log.error("Error occurred while migrating databases", e);
         } finally {
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
             if (connection != null) {
                 connection.close();
             }
@@ -160,46 +162,59 @@ public class MigrateFrom18to19 implements MigrationClient {
 
     /**
      * This method is used to remove the FK constraint which is unnamed
-     * This finds the name of the constraint and build the query to delete the constaint and execute it
+     * This finds the name of the constraint and build the query to delete the constraint and execute it
      *
      * @param migrateVersion version to be migrated
      * @param dbType         database type of the user
      * @throws SQLException
      * @throws IOException
-     * @throws APIMigrationException
      */
-    public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException, IOException, APIMigrationException {
+    public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException {
         String constraintName = null;
-        Connection connection;
-        String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
-        String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
+            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
 
-        connection = APIMgtDBUtil.getConnection();
-        connection.setAutoCommit(false);
-        Statement statement = connection.createStatement();
-        if ("oracle".equals(dbType)) {
-            queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
-        }
-        ResultSet resultSet = statement.executeQuery(queryArray[0]);
-        while (resultSet.next()) {
-            constraintName = resultSet.getString("constraint_name");
-        }
-
-        if (constraintName != null) {
-            queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
-            if ("oracle".equals(dbType)) {
-                queryToExecute = queryToExecute.replace(Constants.DELIMITER, "");
+            connection = APIMgtDBUtil.getConnection();
+            connection.setAutoCommit(false);
+            Statement statement = connection.createStatement();
+            if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
+            }
+            ResultSet resultSet = statement.executeQuery(queryArray[0]);
+            while (resultSet.next()) {
+                constraintName = resultSet.getString("constraint_name");
             }
 
-            if (queryToExecute.contains("\\n")) {
-                queryToExecute = queryToExecute.replace("\\n", "");
+            if (constraintName != null) {
+                queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
+                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    queryToExecute = queryToExecute.replace(Constants.DELIMITER, "");
+                }
+
+                if (queryToExecute.contains("\\n")) {
+                    queryToExecute = queryToExecute.replace("\\n", "");
+                }
+                preparedStatement = connection.prepareStatement(queryToExecute);
+                preparedStatement.execute();
+                connection.commit();
             }
-            PreparedStatement preparedStatement = connection.prepareStatement(queryToExecute);
-            preparedStatement.execute();
-            connection.commit();
-            preparedStatement.close();
+        } catch (APIMigrationException e) {
+            log.error("Error occurred while deleting foreign key", e);
+        } catch (IOException e) {
+            log.error("Error occurred while finding the query for execution", e);
+        } finally {
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+
         }
-        connection.close();
+
     }
 
     /**
@@ -253,7 +268,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                     APIIdentifier apiIdentifier = api.getId();
                     String apiVersion = apiIdentifier.getVersion();
 
-                    if(!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
+                    if (!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
                         artifact.setAttribute("overview_context", api.getContext() +
                                 RegistryConstants.PATH_SEPARATOR + apiVersion);
                     }
@@ -267,7 +282,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                 }
 
             }
-            if(isTenantFlowStarted){
+            if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
             }
 
@@ -277,9 +292,8 @@ public class MigrateFrom18to19 implements MigrationClient {
             ResourceUtil.handleException("Error occurred while accessing the registry", e);
         } catch (UserStoreException e) {
             ResourceUtil.handleException("Error occurred while reading tenant information", e);
-        }
-        finally {
-            if(isTenantFlowStarted){
+        } finally {
+            if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
@@ -378,7 +392,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                 ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
                 Registry registry = ServiceHolder.getRegistryService().
                         getGovernanceUserRegistry(adminName, tenant.getId());
-                GenericArtifactManager manager = new GenericArtifactManager(registry, "api");
+                GenericArtifactManager manager = new GenericArtifactManager(registry, Constants.API);
                 GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
                 GenericArtifact[] artifacts = manager.getAllGenericArtifacts();
 
@@ -434,7 +448,7 @@ public class MigrateFrom18to19 implements MigrationClient {
         } catch (UserStoreException e) {
             ResourceUtil.handleException("Error occurred while reading tenant information", e);
         }
-        if(isTenantFlowStarted){
+        if (isTenantFlowStarted) {
             PrivilegedCarbonContext.endTenantFlow();
         }
 
@@ -516,29 +530,29 @@ public class MigrateFrom18to19 implements MigrationClient {
         JSONObject swagger20doc = new JSONObject();
 
         //set swagger version
-        swagger20doc.put("swagger", "2.0");
+        swagger20doc.put(Constants.SWAGGER, Constants.SWAGGER_V2);
 
         //set the info object
         JSONObject info = generateInfoObject(swagger12doc);
         //update info object
-        swagger20doc.put("info", info);
+        swagger20doc.put(Constants.SWAGGER_INFO, info);
 
         //set the paths object
         JSONObject pathObj = generatePathsObj(apiDefPaths);
-        swagger20doc.put("paths", pathObj);
+        swagger20doc.put(Constants.SWAGGER_PATHS, pathObj);
 
         URL url = new URL(swagger12BasePath);
-        swagger20doc.put("host", url.getHost());
-        swagger20doc.put("basePath", url.getPath());
+        swagger20doc.put(Constants.SWAGGER_HOST, url.getHost());
+        swagger20doc.put(Constants.SWAGGER_BASE_PATH, url.getPath());
 
         JSONArray schemes = new JSONArray();
         schemes.add(url.getProtocol());
-        swagger20doc.put("schemes", schemes);
+        swagger20doc.put(Constants.SWAGGER_SCHEMES, schemes);
 
         //securityDefinitions
-        if (swagger12doc.containsKey("authorizations")) {
+        if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
             JSONObject securityDefinitions = generateSecurityDefinitionsObject(swagger12doc);
-            swagger20doc.put("securityDefinitions", securityDefinitions);
+            swagger20doc.put(Constants.SWAGGER_SECURITY_DEFINITIONS, securityDefinitions);
         }
 
         return swagger20doc;
@@ -558,14 +572,14 @@ public class MigrateFrom18to19 implements MigrationClient {
         JSONObject securityDefinitionObject = new JSONObject();
         JSONObject securitySchemeObject = (JSONObject) parser.parse(Constants.DEFAULT_SECURITY_SCHEME);
 
-        JSONObject authorizations = (JSONObject) swagger12doc.get("authorizations");
+        JSONObject authorizations = (JSONObject) swagger12doc.get(Constants.SWAGGER_AUTHORIZATIONS);
         Set authTypes = authorizations.keySet();
 
         for (Object obj : authTypes) {
             JSONObject authObj = (JSONObject) authorizations.get(obj.toString());
-            if (authObj.containsKey("scopes")) {
+            if (authObj.containsKey(Constants.SWAGGER_SCOPES)) {
                 //Put it to custom WSO2 scopes
-                securitySchemeObject.put("x-wso2-scopes", authObj.get("scopes"));
+                securitySchemeObject.put(Constants.SWAGGER_X_WSO2_SCOPES, authObj.get(Constants.SWAGGER_SCOPES));
             }
             securityDefinitionObject.put(obj.toString(), securitySchemeObject);
         }
@@ -591,40 +605,40 @@ public class MigrateFrom18to19 implements MigrationClient {
         String title = (String) infoObj.get("title");
         String version = (String) swagger12doc.get("apiVersion");
 
-        swagger2InfoObj.put("title", title);
-        swagger2InfoObj.put("version", version);
+        swagger2InfoObj.put(Constants.SWAGGER_TITLE, title);
+        swagger2InfoObj.put(Constants.SWAGGER_VER, version);
 
-        if (infoObj.containsKey("description")) {
-            swagger2InfoObj.put("description", infoObj.get("description"));
+        if (infoObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
+            swagger2InfoObj.put(Constants.SWAGGER_DESCRIPTION, infoObj.get("description"));
         }
-        if (infoObj.containsKey("termsOfServiceUrl")) {
-            swagger2InfoObj.put("termsOfService", infoObj.get("termsOfServiceUrl"));
+        if (infoObj.containsKey(Constants.SWAGGER_TERMS_OF_SERVICE_URL)) {
+            swagger2InfoObj.put(Constants.SWAGGER_TERMS_OF_SERVICE, infoObj.get(Constants.SWAGGER_TERMS_OF_SERVICE_URL));
         }
 
         //contact object
-        if (infoObj.containsKey("contact")) {
+        if (infoObj.containsKey(Constants.SWAGGER_CONTACT)) {
             JSONObject contactsObj = new JSONObject();
-            String contact = (String) infoObj.get("contact");
+            String contact = (String) infoObj.get(Constants.SWAGGER_CONTACT);
             if (contact.contains("http")) {
-                contactsObj.put("url", contact);
+                contactsObj.put(Constants.SWAGGER_URL, contact);
             } else if (contact.contains("@")) {
-                contactsObj.put("email", contact);
+                contactsObj.put(Constants.SWAGGER_EMAIL, contact);
             } else {
-                contactsObj.put("name", contact);
+                contactsObj.put(Constants.SWAGGER_NAME, contact);
             }
-            swagger2InfoObj.put("contact", contactsObj);
+            swagger2InfoObj.put(Constants.SWAGGER_CONTACT, contactsObj);
         }
 
         //licence object
         JSONObject licenseObj = new JSONObject();
-        if (infoObj.containsKey("license")) {
-            licenseObj.put("name", infoObj.get("license"));
+        if (infoObj.containsKey(Constants.SWAGGER_LICENCE)) {
+            licenseObj.put(Constants.SWAGGER_NAME, infoObj.get(Constants.SWAGGER_LICENCE));
         }
-        if (infoObj.containsKey("licenseUrl")) {
-            licenseObj.put("url", infoObj.get("licenseUrl"));
+        if (infoObj.containsKey(Constants.SWAGGER_LICENCE_URL)) {
+            licenseObj.put(Constants.SWAGGER_URL, infoObj.get(Constants.SWAGGER_LICENCE_URL));
         }
         if (!licenseObj.isEmpty()) {
-            swagger2InfoObj.put("license", licenseObj);
+            swagger2InfoObj.put(Constants.SWAGGER_LICENCE, licenseObj);
         }
         return swagger2InfoObj;
     }
@@ -655,13 +669,13 @@ public class MigrateFrom18to19 implements MigrationClient {
                 for (Object swagger2ParamObj : swagger2ParamObjects) {
                     JSONObject oldParam = (JSONObject) swagger2ParamObj;
                     JSONObject paramObj = new JSONObject();
-                    paramObj.put("name", oldParam.get("name"));
-                    paramObj.put("in", oldParam.get("paramType"));
-                    paramObj.put("required", oldParam.get("required"));
-                    if (paramObj.containsKey("description")) {
-                        paramObj.put("description", oldParam.get("description"));
+                    paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
+                    paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
+                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
+                    if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
+                        paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
                     } else {
-                        paramObj.put("description", "");
+                        paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
                     }
                     //Skip body parameter of GET and DELETE methods
                     /*if (!("GET".equals(method)) && !("DELETE".equals(method))) {
@@ -675,14 +689,14 @@ public class MigrateFrom18to19 implements MigrationClient {
 
                 //generate the Operation object
                 // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject)
-                swagger2OperationsObj.put("operationId", operationObject.get("nickname"));
+                swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
                 //setting operation level params
-                swagger2OperationsObj.put("parameters", newParameters);
+                swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
                 if (operationObject.containsKey("notes")) {
-                    swagger2OperationsObj.put("description", operationObject.get("notes"));
+                    swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
                 }
-                if (operationObject.containsKey("summary")) {
-                    swagger2OperationsObj.put("summary", operationObject.get("summary"));
+                if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
+                    swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY, operationObject.get(Constants.SWAGGER_SUMMARY));
                 }
 
 
@@ -705,7 +719,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                     //set a default response message since this is required field
                     responseObject = (JSONObject) jsonParser.parse(Constants.DEFAULT_RESPONSE);
                 }
-                swagger2OperationsObj.put("responses", responseObject);
+                swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
             }
             pathsObj.put(key, pathItemObj);
         }
