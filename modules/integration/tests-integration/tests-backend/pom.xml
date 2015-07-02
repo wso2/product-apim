@@ -288,5 +288,11 @@ under the License.
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.github.dblock.waffle.wso2</groupId>
+            <artifactId>waffle-jna</artifactId>
+            <version>1.6.wso2v2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
