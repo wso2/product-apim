@@ -25,8 +25,16 @@ import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.dbcreator.DatabaseCreator;
 
 import javax.sql.DataSource;
-import java.io.*;
-import java.sql.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.StringTokenizer;
 
 public class MigrationDBCreator extends DatabaseCreator {
@@ -66,6 +74,7 @@ public class MigrationDBCreator extends DatabaseCreator {
         } catch (SQLException e) {
             ResourceUtil.handleException("Error occurred while migrating the database", e);
         } catch (Exception e) {
+            /* executeSQLScript throws generic Exception because DatabaseCreator.getDatabaseType superclass throws */
             ResourceUtil.handleException("Error occurred while executing sql script", e);
         } finally {
             if (connection != null) {
@@ -76,6 +85,7 @@ public class MigrationDBCreator extends DatabaseCreator {
     }
 
 
+    //org.wso2.carbon.utils.dbcreator.DatabaseCreator.getDatabaseType throws generic Exception
     private void executeSQLScript() throws Exception {
         String databaseType = DatabaseCreator.getDatabaseType(this.connection);
         boolean keepFormat = false;
@@ -133,7 +143,7 @@ public class MigrationDBCreator extends DatabaseCreator {
             }
         } catch (IOException e) {
             log.error("Error occurred while executing SQL script for creating registry database", e);
-            throw new Exception("Error occurred while executing SQL script for creating registry database", e);
+            throw new APIMigrationException("Error occurred while executing SQL script for creating registry database", e);
 
         } finally {
             if (reader != null) {
@@ -143,7 +153,7 @@ public class MigrationDBCreator extends DatabaseCreator {
     }
 
 
-    private void executeSQL(String sql) throws Exception {
+    private void executeSQL(String sql) throws APIMigrationException {
         // Check and ignore empty statements
         if ("".equals(sql.trim())) {
             return;
@@ -188,7 +198,7 @@ public class MigrationDBCreator extends DatabaseCreator {
                     log.info("Table Already Exists. Hence, skipping table creation");
                 }
             } else {
-                throw new Exception("Error occurred while executing : " + sql, e);
+                throw new APIMigrationException("Error occurred while executing : " + sql, e);
             }
         } finally {
             if (resultSet != null) {
