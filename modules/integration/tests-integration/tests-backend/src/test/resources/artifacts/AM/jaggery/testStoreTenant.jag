@@ -1,0 +1,111 @@
+<%
+<%
+// Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+// Order of these operations are important as the results are fetched based on this order.
+// To add new tests first, append at the bottom of this jaggery file.
+// Then add validations to HostObjectTestCase class in the same order.
+// Please add 'print("==");' after each of the tests.
+// The resulting array is split based on this "==".
+
+store = require('apistore');
+var storeHostObj = new store.APIStore("admin@wso2.com");
+
+//0
+print("==");
+//1
+print(storeHostObj.isBillingEnabled());
+print("==");
+//2
+print(storeHostObj.getHTTPsURL("localhost"));
+print("==");
+//3
+print(storeHostObj.getAuthServerURL());
+print("==");
+//4
+print(storeHostObj.getHTTPURL("localhost"));
+print("==");
+//5
+print(storeHostObj.getDeniedTiers());
+print("==");
+//6
+print(storeHostObj.getActiveTenantDomains());
+print("==");
+//7
+print(storeHostObj.isSelfSignupEnabled());
+print("==");
+//8
+print(storeHostObj.getUserFields());
+print("==");
+//9
+print(storeHostObj.searchPaginatedAPIsByType("HostObjectTestAPI","carbon.super","0","10"));
+print("==");
+//10
+print(storeHostObj.searchPaginatedAPIsByType("name:*","carbon.super","0","10"));
+print("==");
+//11
+print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
+print("==");
+//12
+print(storeHostObj.rateAPI("admin@wso2.com","HostObjectTestAPI","1.0.0","3")); 
+print("==");
+//13
+ print(storeHostObj.removeAPIRating("admin@wso2.com","HostObjectTestAPI","1.0.0"));
+ print("=="); 
+//14
+print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10")); 
+print("=="); 
+//15
+print(storeHostObj.getAPIsWithTag("youtube")); 
+print("=="); 
+//16
+print(storeHostObj.getAllPublishedAPIs("carbon.super"));
+ print("=="); 
+//17
+ print(storeHostObj.isUserExists("admin@wso2.com"));
+ print("==");
+//18
+ print(storeHostObj.getAPI("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
+ print("=="); 
+//19
+print(storeHostObj.isSubscribed("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
+ print("=="); 
+//20
+//print(storeHostObj.getSubscriptions("admin@wso2.com","HostObjectTestAPI","1.0.0","admin@wso2.com"));
+print(" "); 
+ print("==");
+//21
+print(storeHostObj.hasUserPermissions("admin@wso2.com")); 
+print("=="); 
+//22
+print(storeHostObj.hasSubscribePermission()); 
+print("=="); 
+//23
+print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin@wso2.com"));
+ print("=="); 
+//24
+print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin@wso2.com","gold","test-url","updated-application")); 
+print("=="); 
+//25
+print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
+ print("=="); 
+//26
+print(storeHostObj.isEnableEmailUsername()); 
+print("=="); 
+
+%>
+%>
