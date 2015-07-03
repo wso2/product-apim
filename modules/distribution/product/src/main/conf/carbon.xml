@@ -32,7 +32,7 @@
     <!--
        Product Version
     -->
-    <Version>1.9.0</Version>
+    <Version>2.0.0</Version>
 
     <ServerKey>AM</ServerKey>
 
@@ -541,11 +541,11 @@
         In master nodes you need to set both AutoCommit and AutoCheckout to true
         and in  worker nodes set only AutoCheckout to true.
     -->
-    <!--<DeploymentSynchronizer>
-        <Enabled>true</Enabled>
+    <DeploymentSynchronizer>
+        <Enabled>false</Enabled>
         <AutoCommit>false</AutoCommit>
-        <AutoCheckout>true</AutoCheckout>
-    </DeploymentSynchronizer>-->
+        <AutoCheckout>false</AutoCheckout>
+    </DeploymentSynchronizer>
 
     <!-- Mediation persistence configurations. Only valid if mediation features are available i.e. ESB -->
     <!--<MediationConfig>
