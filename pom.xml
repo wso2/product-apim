@@ -425,9 +425,9 @@
                 <version>${apimserver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
+                <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>1.2.3</version>
+                <version>${apimgt.api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jettison.wso2</groupId>
@@ -446,9 +446,9 @@
                 <version>${carbon.platform.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
+                <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-                <version>1.2.2</version>
+                <version>${apimgt.api.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-digester</groupId>
@@ -775,7 +775,7 @@
         <apimserver.version>1.9.1-SNAPSHOT</apimserver.version>
         <apim.version>1.2.5-SNAPSHOT</apim.version>
         <apim.feature.version>1.2.5-SNAPSHOT</apim.feature.version>
-        <identity.core.version>4.2.6</identity.core.version>
+        <identity.core.version>4.2.7-SNAPSHOT</identity.core.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
