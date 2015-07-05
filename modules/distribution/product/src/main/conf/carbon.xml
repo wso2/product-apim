@@ -88,6 +88,20 @@
     -->
     <WebContextRoot>/</WebContextRoot>
 
+    <!--
+    	Proxy context path is a useful parameter to add a proxy path when a Carbon server is fronted by reverse proxy. In addtion
+        to the proxy host and proxy port this parameter allows you add a path component to external URLs. e.g.
+     		URL of the Carbon server -> https://10.100.1.1:9443/carbon
+   		URL of the reverse proxy -> https://prod.abc.com/appserver/carbon
+
+   	appserver - proxy context path. This specially required whenever you are generating URLs to displace in
+   	Carbon UI components.
+    -->
+    <!--
+    	<MgtProxyContextPath></MgtProxyContextPath>
+    	<ProxyContextPath></ProxyContextPath>
+    -->
+
     <!-- In-order to  get the registry http Port from the back-end when the default http transport is not the same-->
     <!--RegistryHttpPort>9763</RegistryHttpPort-->
 
@@ -126,16 +140,8 @@
             <!-- Port which KDC (Kerberos Key Distribution Center) server runs -->
             <KDCServerPort>8000</KDCServerPort>
         </EmbeddedLDAP>
-
-	    <!-- Embedded Qpid broker ports -->
-        <EmbeddedQpid>
-	    <!-- Broker TCP Port -->
-            <BrokerPort>5672</BrokerPort>
-	    <!-- SSL Port -->
-            <BrokerSSLPort>8672</BrokerSSLPort>
-        </EmbeddedQpid>
-
-	<!--
+	
+	<!-- 
              Override datasources JNDIproviderPort defined in bps.xml and datasources.properties files
 	-->
 	<!--<JNDIProviderPort>2199</JNDIProviderPort>-->
@@ -156,9 +162,9 @@
         <!--
              The fully qualified name of the default initial context factory
         -->
-		<!--<DefaultInitialContextFactory>org.apache.naming.java.javaURLContextFactory</DefaultInitialContextFactory>-->
-        <!--
-             The restrictions that are done to various JNDI Contexts in a Multi-tenant environment
+        <DefaultInitialContextFactory>org.wso2.carbon.tomcat.jndi.CarbonJavaURLContextFactory</DefaultInitialContextFactory>
+        <!-- 
+             The restrictions that are done to various JNDI Contexts in a Multi-tenant environment 
         -->
         <Restrictions>
             <!--
@@ -214,10 +220,51 @@
         because the Ghost Deployer works only with the HTTP/S transports. If you are using
         other transports, don't enable Ghost Deployer.
     -->
-    <EnableGhostDeployer>false</EnableGhostDeployer>
+    <GhostDeployment>
+        <Enabled>false</Enabled>
+    </GhostDeployment>
 
-    <!--Enable/Disable POXSecurityHandler -->
-    <EnablePoxSecurity>false</EnablePoxSecurity>
+
+    <!--
+        Eager loading or lazy loading is a design pattern commonly used in computer programming which
+        will initialize an object upon creation or load on-demand. In carbon, lazy loading is used to
+        load tenant when a request is received only. Similarly Eager loading is used to enable load
+        existing tenants after carbon server starts up. Using this feature, you will be able to include
+        or exclude tenants which are to be loaded when server startup.
+
+        We can enable only one LoadingPolicy at a given time.
+
+        1. Tenant Lazy Loading
+           This is the default behaviour and enabled by default. With this policy, tenants are not loaded at
+           server startup, but loaded based on-demand (i.e when a request is received for a tenant).
+           The default tenant idle time is 30 minutes.
+
+        2. Tenant Eager Loading
+           This is by default not enabled. It can be be enabled by un-commenting the <EagerLoading> section.
+           The eager loading configurations supported are as below. These configurations can be given as the
+           value for <Include> element with eager loading.
+                (i)Load all tenants when server startup             -   *
+                (ii)Load all tenants except foo.com & bar.com       -   *,!foo.com,!bar.com
+                (iii)Load only foo.com &  bar.com to be included    -   foo.com,bar.com
+    -->
+    <Tenant>
+        <LoadingPolicy>
+            <LazyLoading>
+                <IdleTime>30</IdleTime>
+            </LazyLoading>
+            <!-- <EagerLoading>
+                   <Include>*,!foo.com,!bar.com</Include>
+            </EagerLoading>-->
+        </LoadingPolicy>
+    </Tenant>
+
+    <!--
+     Caching related configurations
+    -->
+    <Cache>
+        <!-- Default cache timeout in minutes -->
+        <DefaultCacheTimeout>15</DefaultCacheTimeout>
+    </Cache>
 
     <!--
     Axis2 related configurations
@@ -393,24 +440,12 @@
 
 	<!--Option to disable storing of tokens issued by STS-->
 	<DisableTokenStore>false</DisableTokenStore>
+
 	<!--
-	Token Persister configuration for non-volatile storage of SAML tokens issued by STS:
-	1. TokenPersister class
-	2. TokenStorage path
-	3. Maximum number of tokens in volatile storage
-	4. Any other custom properties
+	 Security token store class name. If this is not set, default class will be
+	 org.wso2.carbon.security.util.SecurityTokenStore
 	-->
-	<TokenPersister>
-		<Class>org.apache.rahas.impl.FSBasedRetiredTokenPersister</Class>
-		<StoragePath>${carbon.home}/repository/resources/security/tokenstore</StoragePath>
-		<InMemoryThreshold>500</InMemoryThreshold>
-		<!--Properties>
-			<Property>
-				<Name>propName</Name>
-				<Value>propValue</Value>
-			</Property>
-		</Properties-->
-	</TokenPersister>
+	<!--TokenStoreClassName>org.wso2.carbon.identity.sts.store.DBTokenStore</TokenStoreClassName-->
     </Security>
 
     <!--
@@ -522,12 +557,12 @@
         </Processor>
     </HttpGetRequestProcessors>
 
-    <!-- Deployment Synchronizer Configuration. Uncomment the following section when running with "svn based" dep sync.
+    <!-- Deployment Synchronizer Configuration. t Enabled value to true when running with "svn based" dep sync.
 	In master nodes you need to set both AutoCommit and AutoCheckout to true
 	and in  worker nodes set only AutoCheckout to true.
     -->
-    <!--<DeploymentSynchronizer>
-        <Enabled>true</Enabled>
+    <DeploymentSynchronizer>
+        <Enabled>false</Enabled>
         <AutoCommit>false</AutoCommit>
         <AutoCheckout>true</AutoCheckout>
         <RepositoryType>svn</RepositoryType>
@@ -535,7 +570,7 @@
         <SvnUser>username</SvnUser>
         <SvnPassword>password</SvnPassword>
         <SvnUrlAppendTenantId>true</SvnUrlAppendTenantId>
-    </DeploymentSynchronizer>-->
+    </DeploymentSynchronizer>
 
     <!-- Deployment Synchronizer Configuration. Uncomment the following section when running with "registry based" dep sync.
         In master nodes you need to set both AutoCommit and AutoCheckout to true
@@ -562,7 +597,7 @@
     <ServerInitializers>
         <!--<Initializer></Initializer>-->
     </ServerInitializers>
-
+    
     <!--
     Indicates whether the Carbon Servlet is required by the system, and whether it should be
     registered
@@ -611,30 +646,30 @@
        Default Feature Repository of WSO2 Carbon.
     -->
     <FeatureRepository>
-	<RepositoryName>default repository</RepositoryName>
-	<RepositoryURL>http://dist.wso2.org/p2/carbon/releases/4.2.0/</RepositoryURL>
+	    <RepositoryName>default repository</RepositoryName>
+	    <RepositoryURL>http://dist.wso2.org/p2/carbon/releases/4.4.0-SNAPSHOT</RepositoryURL>
     </FeatureRepository>
 
     <!--
 	Configure API Management
    -->
    <APIManagement>
-
-	<!--Uses the embedded API Manager by default. If you want to use an external
+	
+	<!--Uses the embedded API Manager by default. If you want to use an external 
 	API Manager instance to manage APIs, configure below  externalAPIManager-->
-
-	<Enabled>false</Enabled>
-
-	<!--Uncomment and configure API Gateway and
+	
+	<Enabled>true</Enabled>
+	
+	<!--Uncomment and configure API Gateway and 
 	Publisher URLs to use external API Manager instance-->
-
+	
 	<!--ExternalAPIManager>
 
 		<APIGatewayURL>http://localhost:8281</APIGatewayURL>
 		<APIPublisherURL>http://localhost:8281/publisher</APIPublisherURL>
 
 	</ExternalAPIManager-->
-
+	
 	<LoadAPIContextsInServerStartup>true</LoadAPIContextsInServerStartup>
    </APIManagement>
 </Server>
