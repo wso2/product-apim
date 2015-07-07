@@ -234,10 +234,9 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                     responseArrayFromPublisher = finalOutputPublisher.split("==");
                     isPublisherResponse = responseArrayFromPublisher[30].contains("HostObjectTestAPI");
                 }
-                log.info(finalOutputPublisher);
                 in.close();
-
             }
+            log.info(finalOutputPublisher);
             validatePublisherResponseArray(responseArrayFromPublisher);
 
         } catch (IOException e) {
@@ -266,11 +265,9 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                     isStoreResponse = responseArrayFromStore[9].contains("HostObjectTestAPI");
                 }
                 in.close();
-                log.info(finalOutputStore);
             }
+            log.info(finalOutputStore);
             validateStoreResponseArray(responseArrayFromStore);
-
-
         } catch (IOException e) {
             log.error("Error while invoking test application to test publisher host object");
         } finally {
@@ -305,10 +302,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting auth service url from API store host object (getAuthServerURL)");
         assertTrue(array[4].contains("http"),
                    "Error while getting http url from API store host object (getHTTPURL)");
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            assertTrue(array[5].contains("tierName"),
+        assertTrue(array[5].contains("tierName"),
                        "Error while getting denied tiers from API store host object (getDeniedTiers)");
-        }
         assertTrue(array[6].contains("tenantdomain1.com"),
                    "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
         assertTrue(array[7].contains("false"),
