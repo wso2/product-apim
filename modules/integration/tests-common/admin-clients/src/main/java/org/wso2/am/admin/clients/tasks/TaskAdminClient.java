@@ -85,7 +85,8 @@ public class TaskAdminClient {
 	}
 
 	public OMElement getAllTaskDescriptions() throws RemoteException, TaskManagementException {
-		return taskAdminStub.getAllTaskDescriptions();
+		//TODO:With mediation 4.4.3 released version, getAllTaskDescriptions expects a parameter. Have to fix this properly later. 
+		return taskAdminStub.getAllTaskDescriptions(null);
 	}
 
 	public List<String> getScheduleTaskList() throws RemoteException, TaskManagementException {
