@@ -64,6 +64,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private static boolean isConfigApplied = false;
+    private static ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
@@ -73,6 +74,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        serverConfigurationManager =
+                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",TestUserMode.SUPER_TENANT_ADMIN));
 
         /*
         If test run in external distributed deployment you need to copy following resources accordingly.
@@ -84,11 +87,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        if(!isConfigApplied) {
-            ServerConfigurationManager serverConfigurationManager =
-                    new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
-                                                                         TestUserMode.SUPER_TENANT_ADMIN));
-
+        if (!isConfigApplied) {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                                                                                  + File.separator +
                                                                                  "configFiles/hostobjecttest/" +
@@ -290,6 +289,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("HostObjectTestAPI-Application");
+        serverConfigurationManager.restoreToLastConfiguration();
         super.cleanup();
     }
 
@@ -303,7 +303,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         assertTrue(array[4].contains("http"),
                    "Error while getting http url from API store host object (getHTTPURL)");
         assertTrue(array[5].contains("tierName"),
-                       "Error while getting denied tiers from API store host object (getDeniedTiers)");
+                   "Error while getting denied tiers from API store host object (getDeniedTiers)");
         assertTrue(array[6].contains("tenantdomain1.com"),
                    "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
         assertTrue(array[7].contains("false"),
