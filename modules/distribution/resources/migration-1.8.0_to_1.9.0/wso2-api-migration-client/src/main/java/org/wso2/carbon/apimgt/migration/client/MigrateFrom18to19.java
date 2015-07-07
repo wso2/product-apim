@@ -203,9 +203,12 @@ public class MigrateFrom18to19 implements MigrationClient {
                 connection.commit();
             }
         } catch (APIMigrationException e) {
+            //Foriegn key might be already deleted, log the error and let it continue
             log.error("Error occurred while deleting foreign key", e);
         } catch (IOException e) {
-            log.error("Error occurred while finding the query for execution", e);
+            //If user does not add the file migration will continue and migrate the db without deleting
+            // the foriegn key reference
+            log.error("Error occurred while finding the foriegn key deletion query for execution", e);
         } finally {
             if (preparedStatement != null) {
                 preparedStatement.close();
