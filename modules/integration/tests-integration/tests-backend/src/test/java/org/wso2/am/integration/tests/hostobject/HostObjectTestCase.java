@@ -45,6 +45,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +63,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private static boolean isConfigApplied = false;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
@@ -81,19 +83,23 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         */
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        ServerConfigurationManager serverConfigurationManager =
-                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
-                                                                     TestUserMode.SUPER_TENANT_ADMIN));
 
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                                                               + File.separator +
-                                                               "configFiles/hostobjecttest/" +
-                                                               "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                                                               + File.separator +
-                                                               "configFiles/tokenTest/" +
-                                                               "log4j.properties"));
-        super.init(userMode);
+        if(!isConfigApplied) {
+            ServerConfigurationManager serverConfigurationManager =
+                    new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
+                                                                         TestUserMode.SUPER_TENANT_ADMIN));
+
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                                                                                 + File.separator +
+                                                                                 "configFiles/hostobjecttest/" +
+                                                                                 "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                                                                   + File.separator +
+                                                                   "configFiles/tokenTest/" +
+                                                                   "log4j.properties"));
+            super.init(userMode);
+            isConfigApplied = true;
+        }
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
     }
@@ -290,7 +296,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         super.cleanup();
     }
 
-    public static boolean validateStoreResponseArray(String[] array) {
+    public boolean validateStoreResponseArray(String[] array) throws XPathExpressionException {
         assertTrue(array[1].contains("true"),
                    "Error while getting status of billing system from API store host object (isBillingEnabled)");
         assertTrue(array[2].contains("https"),
@@ -299,8 +305,10 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting auth service url from API store host object (getAuthServerURL)");
         assertTrue(array[4].contains("http"),
                    "Error while getting http url from API store host object (getHTTPURL)");
-        assertTrue(array[5].contains("tierName"),
-                   "Error while getting denied tiers from API store host object (getDeniedTiers)");
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            assertTrue(array[5].contains("tierName"),
+                       "Error while getting denied tiers from API store host object (getDeniedTiers)");
+        }
         assertTrue(array[6].contains("tenantdomain1.com"),
                    "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
         assertTrue(array[7].contains("false"),
@@ -348,7 +356,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         return true;
     }
 
-    public static boolean validatePublisherResponseArray(String[] array) {
+    public boolean validatePublisherResponseArray(String[] array) {
 
         assertTrue(array[1].contains("true"),
                    "Error while validating roles from API store host object (validateRoles)");
