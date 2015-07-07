@@ -98,7 +98,7 @@ print("=="); 
 print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin"));
  print("=="); 
 //24
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application")); 
+print(storeHostObj.updateApplication("DefaultApplication","DefaultApplication","admin","gold","test-url","updated-application")); 
 print("=="); 
 //25
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
