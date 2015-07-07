@@ -19,13 +19,22 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.dbcreator.DatabaseCreator;
 
 import javax.sql.DataSource;
-import java.io.*;
-import java.sql.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.StringTokenizer;
 
 public class MigrationDBCreator extends DatabaseCreator {
@@ -53,22 +62,6 @@ public class MigrationDBCreator extends DatabaseCreator {
 
     @Override
     public void createRegistryDatabase() throws SQLException, APIMigrationException {
-        /*String databaseType;
-        try {
-            databaseType = DatabaseCreator.getDatabaseType(this.dataSource.getConnection());
-
-            String scriptPath = getDbScriptLocation(databaseType);
-            File scriptFile = new File(scriptPath);
-            if (scriptFile.exists()) {
-                super.createRegistryDatabase();
-            } else {
-                log.error("API Migration client cannot find the database script.");
-            }
-        } catch (Exception e) {
-            ResourceUtil.handleException("Error occurred while accessing the database connection", e);
-        }*/
-
-
         try {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
@@ -81,6 +74,7 @@ public class MigrationDBCreator extends DatabaseCreator {
         } catch (SQLException e) {
             ResourceUtil.handleException("Error occurred while migrating the database", e);
         } catch (Exception e) {
+            /* executeSQLScript throws generic Exception because DatabaseCreator.getDatabaseType superclass throws */
             ResourceUtil.handleException("Error occurred while executing sql script", e);
         } finally {
             if (connection != null) {
@@ -91,14 +85,15 @@ public class MigrationDBCreator extends DatabaseCreator {
     }
 
 
+    //org.wso2.carbon.utils.dbcreator.DatabaseCreator.getDatabaseType throws generic Exception
     private void executeSQLScript() throws Exception {
         String databaseType = DatabaseCreator.getDatabaseType(this.connection);
         boolean keepFormat = false;
-        if ("oracle".equals(databaseType)) {
+        if (Constants.DB_TYPE_ORACLE.equals(databaseType)) {
             delimiter = "/";
-        } else if ("db2".equals(databaseType)) {
+        } else if (Constants.DB_TYPE_DB2.equals(databaseType)) {
             delimiter = "/";
-        } else if ("openedge".equals(databaseType)) {
+        } else if (Constants.DB_TYPE_OPENEDGE.equals(databaseType)) {
             delimiter = "/";
             keepFormat = true;
         }
@@ -148,17 +143,17 @@ public class MigrationDBCreator extends DatabaseCreator {
             }
         } catch (IOException e) {
             log.error("Error occurred while executing SQL script for creating registry database", e);
-            throw new Exception("Error occurred while executing SQL script for creating registry database", e);
+            throw new APIMigrationException("Error occurred while executing SQL script for creating registry database", e);
 
         } finally {
-            if(reader != null){
+            if (reader != null) {
                 reader.close();
             }
         }
     }
 
 
-    private void executeSQL(String sql) throws Exception {
+    private void executeSQL(String sql) throws APIMigrationException {
         // Check and ignore empty statements
         if ("".equals(sql.trim())) {
             return;
@@ -203,7 +198,7 @@ public class MigrationDBCreator extends DatabaseCreator {
                     log.info("Table Already Exists. Hence, skipping table creation");
                 }
             } else {
-                throw new Exception("Error occurred while executing : " + sql, e);
+                throw new APIMigrationException("Error occurred while executing : " + sql, e);
             }
         } finally {
             if (resultSet != null) {
