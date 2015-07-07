@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -262,6 +261,7 @@ public class ResourceUtil {
                 }
                 handlers.insertBefore(corsHandler, handlerNodes.item(0));
             }
+            updateSynapseAPIWithMediation(doc);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
@@ -277,6 +277,52 @@ public class ResourceUtil {
             handleException("SAX exception occurred while parsing the file.", e);
         } catch (IOException e) {
             handleException("IO Exception occurred. Please check the file.", e);
+        }
+    }
+
+    public static void updateSynapseAPIWithMediation(Document doc) {
+        NodeList resourceNodes = doc.getElementsByTagName("resource");
+        for (int i = 0; i < resourceNodes.getLength(); i++) {
+            Node resource = resourceNodes.item(i);
+            NodeList sequences = resource.getChildNodes();
+            for (int j = 0; j < sequences.getLength(); j++) {
+                Node sequence = sequences.item(j);
+                if ("inSequence".equals(sequences.item(j).getLocalName())) {
+                    boolean available = false;
+                    for (int k = 0; k < sequence.getChildNodes().getLength(); k++) {
+                        Node tempNode = sequence.getChildNodes().item(i);
+                        if (tempNode.getNodeType() == Node.ELEMENT_NODE && "property".equals(tempNode.getLocalName()) &&
+                            "api.ut.backendRequestTime"
+                                    .equals(tempNode.getAttributes().getNamedItem("name").getTextContent())) {
+                            available = true;
+                            break;
+                        }
+                    }
+                    if (!available) {
+                        Element propertyNode = doc.createElement("property");
+                        propertyNode.setAttribute("name", "api.ut.backendRequestTime");
+                        propertyNode.setAttribute("expression", "get-property('SYSTEM_TIME')");
+                        sequence.insertBefore(propertyNode, sequence.getFirstChild());
+                    }
+                } else if ("outSequence".equals(sequences.item(j).getLocalName())) {
+                    boolean available = false;
+                    for (int k = 0; k < sequence.getChildNodes().getLength(); k++) {
+                        Node tempNode = sequence.getChildNodes().item(i);
+                        if (tempNode.getNodeType() == Node.ELEMENT_NODE && "class".equals(tempNode.getLocalName()) &&
+                            "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"
+                                    .equals(tempNode.getAttributes().getNamedItem("name").getTextContent())) {
+                            available = true;
+                            break;
+                        }
+                    }
+                    if (!available) {
+                        Element propertyNode = doc.createElement("class");
+                        propertyNode
+                                .setAttribute("name", "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler");
+                        sequence.insertBefore(propertyNode, sequence.getFirstChild());
+                    }
+                }
+            }
         }
     }
 }
