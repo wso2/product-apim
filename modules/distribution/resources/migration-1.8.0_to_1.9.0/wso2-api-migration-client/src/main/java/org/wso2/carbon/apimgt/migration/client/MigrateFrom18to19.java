@@ -844,14 +844,14 @@ public class MigrateFrom18to19 implements MigrationClient {
         String tenantRepository = CarbonUtils.getCarbonTenantsDirPath();
         for (Tenant tenant : tenantsArray) {
 
-            String SequenceFilePath;
+            String sequenceFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
-                SequenceFilePath = tenantRepository + "/" + tenant.getId() +
+                sequenceFilePath = tenantRepository + "/" + tenant.getId() +
                         "/synapse-configs/default/api";
             } else {
-                SequenceFilePath = repository + "synapse-configs/default/api";
+                sequenceFilePath = repository + "synapse-configs/default/api";
             }
-            File APIFiles = new File(SequenceFilePath);
+            File APIFiles = new File(sequenceFilePath);
             File[] synapseFiles = APIFiles.listFiles();
             for (File synapseFile : synapseFiles) {
                 if (tenant.getId() == MultitenantConstants.SUPER_TENANT_ID) {
