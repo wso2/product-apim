@@ -490,7 +490,7 @@ public class MigrateFrom18to19 implements MigrationClient {
 
             String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf("/"));
             //skip if api-doc file
-            if (resourceName.equals(APIConstants.API_DOC_1_2_RESOURCE_NAME)) {
+            if (APIConstants.API_DOC_1_2_RESOURCE_NAME.equals(resourceName)) {
                 continue;
             }
 
