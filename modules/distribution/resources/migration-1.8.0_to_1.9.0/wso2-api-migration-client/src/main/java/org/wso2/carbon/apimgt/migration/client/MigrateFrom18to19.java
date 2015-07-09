@@ -301,9 +301,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Rxt resource migration done for all the tenants");
-        }
+
+        log.info("Rxt resource migration done for all the tenants");
     }
 
 
@@ -456,9 +455,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             PrivilegedCarbonContext.endTenantFlow();
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Swagger resource migration done for all the tenants");
-        }
+        log.info("Swagger resource migration done for all the tenants.");
 
     }
 
