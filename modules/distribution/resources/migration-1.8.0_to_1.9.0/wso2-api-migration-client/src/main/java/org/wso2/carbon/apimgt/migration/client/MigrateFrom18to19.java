@@ -253,9 +253,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 If you use tenant details instead of super tenant, you will get javax.naming.NameNotFoundException:
                 Name [jdbc/AM_API] is not bound in this Context. Unable to find [jdbc]*/
 
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().
-                        setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId())
                         .getRealmConfiguration().getAdminUserName();
@@ -323,10 +322,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 int tenantId = tenant.getId();
                 isTenantFlowStarted = true;
                 PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                        .setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, true);
-                PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                        .setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenantId)
                         .getRealmConfiguration().getAdminUserName();
