@@ -90,30 +90,6 @@ public class ResourceUtil {
     }
 
 
-    /**
-     * This method is used to get the database driver name
-     *
-     * @return user database type as a string
-     * @throws SQLException
-     */
-    private static String getDatabaseDriverName() throws SQLException {
-        Connection connection = APIMgtDBUtil.getConnection();
-        String databaseType;
-
-        if (connection.getMetaData().getDriverName().contains("MySQL")) {
-            databaseType = "MYSQL";
-        } else if (connection.getMetaData().getDriverName().contains("MS SQL") ||
-                connection.getMetaData().getDriverName().contains("Microsoft")) {
-            databaseType = "MSSQL";
-        } else if (connection.getMetaData().getDriverName().contains("H2")) {
-            databaseType = "H2";
-        } else if (connection.getMetaData().getDriverName().contains("PostgreSQL")) {
-            databaseType = "POSTGRESQL";
-        } else {
-            databaseType = "ORACLE";
-        }
-        return databaseType;
-    }
 
     /**
      * This method picks the query according to the users database
