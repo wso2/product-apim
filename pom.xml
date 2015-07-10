@@ -824,7 +824,7 @@
 	<carbon.analytics.version>1.0.1</carbon.analytics.version>
 
 	<!--jaggery-->
-	<org.jaggery.version>0.10.1</org.jaggery.version>
+	<org.jaggery.version>0.10.2</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.4.1</carbon.multitenancy.version>
