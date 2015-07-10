@@ -111,7 +111,7 @@ print("==");
 var tierData = {};
 tierData["tierName"] = "Gold";
 tierData["permissiontype"] = "Deny";
-tierData["roles"] = "admin@wso2.com";
+tierData["roles"] = "admin";
 //26
 print(publisherHostObj.updateTierPermissions(tierData));
 print("==");
