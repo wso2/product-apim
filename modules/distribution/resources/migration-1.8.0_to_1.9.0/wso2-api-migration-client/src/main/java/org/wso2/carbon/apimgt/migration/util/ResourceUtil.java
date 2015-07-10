@@ -90,7 +90,6 @@ public class ResourceUtil {
     }
 
 
-
     /**
      * This method is used to get the database driver name
      *
@@ -152,14 +151,15 @@ public class ResourceUtil {
                 //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
-                queryTobeExecuted = resourcePath +  databaseType + ".sql";
+                queryTobeExecuted = resourcePath + databaseType + ".sql";
                 //queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
 
         } catch (IOException e) {
             throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
         } catch (Exception e) {
-            throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
+            //getDatabaseType inherited from DBCreator, which throws generic exception
+            throw new APIMigrationException("Error occurred while searching for database type " + e);
         }
 
         return queryTobeExecuted;
@@ -198,8 +198,8 @@ public class ResourceUtil {
             boolean available = false;
             for (int i = 0; i < sequence.getChildNodes().getLength(); i++) {
                 Node tempNode = sequence.getChildNodes().item(i);
-                if (tempNode.getNodeType() == Node.ELEMENT_NODE &&"sequence".equals(tempNode.getLocalName()) &&
-                    "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
+                if (tempNode.getNodeType() == Node.ELEMENT_NODE && "sequence".equals(tempNode.getLocalName()) &&
+                        "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
                     available = true;
                     break;
                 }

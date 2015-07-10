@@ -72,6 +72,7 @@ public class APIMMigrationServiceComponent {
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
+            //APIMgtDBUtil.initialize() throws generic exception
             log.error("Error occurred while initializing DB Util " + e.getMessage());
         }
 
@@ -150,8 +151,6 @@ public class APIMMigrationServiceComponent {
             log.error("User store  exception occurred while migrating " + e.getMessage());
         } catch (SQLException e) {
             log.error("SQL exception occurred while migrating " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Error occurred while initializing data source.  " + e.getMessage());
         }
         log.info("WSO2 API Manager migration component successfully activated.");
     }

@@ -144,11 +144,11 @@ public class MigrateFrom18to19 implements MigrationClient {
             dropFKConstraint(migrateVersion, dbType);
 
         } catch (IOException e) {
-            //ResourceUtil.handleException("Error occurred while finding the query. Please check the file path.", e);
+            //Errors logged to let user know the state of the db migration and continue other resource migrations
             log.error("Error occurred while migrating databases", e);
         } catch (Exception e) {
-            /*MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
-            method getDatabaseType throws generic Exception*/
+            /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
+            method getDatabaseType throws generic Exception */
             log.error("Error occurred while migrating databases", e);
         } finally {
             if (preparedStatement != null) {
