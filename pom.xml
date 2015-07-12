@@ -795,7 +795,7 @@
 	    <apimgt.oidc.version>2.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.4-SNAPSHOT</carbon.registry.version>
+        <carbon.registry.version>4.4.5-SNAPSHOT</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
