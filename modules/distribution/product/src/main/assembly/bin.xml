@@ -489,6 +489,10 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/store</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-social</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/social</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>src/main/conf/</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/security/</outputDirectory>
             <includes>
@@ -806,6 +810,12 @@
 	<file>
 		<source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/social-datasources.xml</source>
 		<outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/datasources/</outputDirectory>
+		<filtered>true</filtered>
+		<fileMode>644</fileMode>
+	</file>
+        <file>
+		<source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/social.xml</source>
+		<outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/</outputDirectory>
 		<filtered>true</filtered>
 		<fileMode>644</fileMode>
 	</file>
