@@ -92,31 +92,6 @@ public class ResourceUtil {
 
 
     /**
-     * This method is used to get the database driver name
-     *
-     * @return user database type as a string
-     * @throws SQLException
-     */
-    private static String getDatabaseDriverName() throws SQLException {
-        Connection connection = APIMgtDBUtil.getConnection();
-        String databaseType;
-
-        if (connection.getMetaData().getDriverName().contains("MySQL")) {
-            databaseType = "MYSQL";
-        } else if (connection.getMetaData().getDriverName().contains("MS SQL") ||
-                connection.getMetaData().getDriverName().contains("Microsoft")) {
-            databaseType = "MSSQL";
-        } else if (connection.getMetaData().getDriverName().contains("H2")) {
-            databaseType = "H2";
-        } else if (connection.getMetaData().getDriverName().contains("PostgreSQL")) {
-            databaseType = "POSTGRESQL";
-        } else {
-            databaseType = "ORACLE";
-        }
-        return databaseType;
-    }
-
-    /**
      * This method picks the query according to the users database
      *
      * @param migrateVersion migrate version
@@ -134,7 +109,7 @@ public class ResourceUtil {
 
             String resourcePath;
 
-            if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_9)) {
+            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
                 //pick from 18to19Migration/sql-scripts
                 resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
             } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_8)) {
@@ -152,14 +127,15 @@ public class ResourceUtil {
                 //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
-                queryTobeExecuted = resourcePath +  databaseType + ".sql";
+                queryTobeExecuted = resourcePath + databaseType + ".sql";
                 //queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
 
         } catch (IOException e) {
             throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
         } catch (Exception e) {
-            throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
+            //getDatabaseType inherited from DBCreator, which throws generic exception
+            throw new APIMigrationException("Error occurred while searching for database type " + e);
         }
 
         return queryTobeExecuted;
@@ -198,8 +174,8 @@ public class ResourceUtil {
             boolean available = false;
             for (int i = 0; i < sequence.getChildNodes().getLength(); i++) {
                 Node tempNode = sequence.getChildNodes().item(i);
-                if (tempNode.getNodeType() == Node.ELEMENT_NODE &&"sequence".equals(tempNode.getLocalName()) &&
-                    "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
+                if (tempNode.getNodeType() == Node.ELEMENT_NODE && "sequence".equals(tempNode.getLocalName()) &&
+                        "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
                     available = true;
                     break;
                 }

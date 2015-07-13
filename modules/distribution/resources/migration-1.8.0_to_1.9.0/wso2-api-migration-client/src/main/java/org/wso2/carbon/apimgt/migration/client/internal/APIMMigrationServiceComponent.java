@@ -72,7 +72,8 @@ public class APIMMigrationServiceComponent {
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
-            log.error("Error occurred while initializing DB Util " + e.getMessage());
+            //APIMgtDBUtil.initialize() throws generic exception
+            log.error("Error occurred while initializing DB Util ", e);
         }
 
         Map<String, String> argsMap = new HashMap<String, String>();
@@ -145,13 +146,11 @@ public class APIMMigrationServiceComponent {
                 }
             }
         } catch (APIMigrationException e) {
-            log.error("API Management  exception occurred while migrating " + e.getMessage());
+            log.error("API Management exception occurred while migrating api files", e);
         } catch (UserStoreException e) {
-            log.error("User store  exception occurred while migrating " + e.getMessage());
+            log.error("Error occurred while migrating registry resources.", e);
         } catch (SQLException e) {
-            log.error("SQL exception occurred while migrating " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Error occurred while initializing data source.  " + e.getMessage());
+            log.error("Error occurred while migrating  databases", e);
         }
         log.info("WSO2 API Manager migration component successfully activated.");
     }
