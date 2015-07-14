@@ -58,8 +58,8 @@
     <parameter name="ModulesDirectory">axis2modules</parameter>
 
     <!-- User agent and the server details to be used in the http communication -->
-    <parameter name="userAgent" locked="true">WSO2 AM 1.9.0</parameter>
-    <parameter name="server" locked="true">WSO2 AM 1.9.0</parameter>
+    <parameter name="userAgent" locked="true">WSO2 AM 1.10.0</parameter>
+    <parameter name="server" locked="true">WSO2 AM 1.10.0</parameter>
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
@@ -302,7 +302,7 @@
         <parameter name="non-blocking" locked="false">true</parameter>
         <!--parameter name="bind-address" locked="false">hostname or IP address</parameter-->
         <!--parameter name="WSDLEPRPrefix" locked="false">https://apachehost:port/somepath</parameter-->
-        <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor</parameter>
+       <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor</parameter>
         <parameter name="keystore" locked="false">
             <KeyStore>
                 <Location>repository/resources/security/wso2carbon.jks</Location>
@@ -768,10 +768,10 @@
 	</phase>
 	<phase name="Validation"/>
         <phase name="Transport">
-            <!--handler name="TenantActiveCheckDispatcher"
+            <handler name="TenantActiveCheckDispatcher"
                      class="org.wso2.carbon.tenant.dispatcher.TenantActiveCheckDispatcher">
                 <order phase="Transport"/>
-            </handler-->
+            </handler>
             <handler name="RequestURIBasedDispatcher"
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher">
                 <order phase="Transport"/>
@@ -786,8 +786,8 @@
                      class="org.wso2.carbon.core.transports.smtp.SMTPFaultHandler">
                 <order phase="Transport"/>
             </handler-->
-            <!--handler name="CacheMessageBuilderDispatchandler"
-                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/-->
+            <handler name="CacheMessageBuilderDispatchandler"
+                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/>
             <handler name="CarbonContentConfigurator"
                      class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
         </phase>

@@ -28,7 +28,6 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>wso2stratos-am-features</artifactId>
-    <version>2.2.0</version>
     <packaging>pom</packaging>
     <name>WSO2 Stratos  API Manager - Features Aggregator Module</name>
     <url>http://wso2.org</url>
