@@ -867,7 +867,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                     DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
                     Document doc = docBuilder.parse(synapseFile);
 
-                    //doc.getDocumentElement().normalize();
+                    doc.getDocumentElement().normalize();
 
                     Element rootElement = doc.getDocumentElement();
 
