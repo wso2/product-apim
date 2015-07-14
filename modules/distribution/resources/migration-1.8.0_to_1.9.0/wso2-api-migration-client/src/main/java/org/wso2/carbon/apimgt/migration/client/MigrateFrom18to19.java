@@ -148,11 +148,11 @@ public class MigrateFrom18to19 implements MigrationClient {
             bufferedReader.close();
 
         } catch (IOException e) {
-            //ResourceUtil.handleException("Error occurred while finding the query. Please check the file path.", e);
+            //Errors logged to let user know the state of the db migration and continue other resource migrations
             log.error("Error occurred while migrating databases", e);
         } catch (Exception e) {
-            /*MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
-            method getDatabaseType throws generic Exception*/
+            /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
+            method getDatabaseType throws generic Exception */
             log.error("Error occurred while migrating databases", e);
         } finally {
             if (preparedStatement != null) {
@@ -258,9 +258,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 If you use tenant details instead of super tenant, you will get javax.naming.NameNotFoundException:
                 Name [jdbc/AM_API] is not bound in this Context. Unable to find [jdbc]*/
 
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().
-                        setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId())
                         .getRealmConfiguration().getAdminUserName();
@@ -306,9 +305,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Rxt resource migration done for all the tenants");
-        }
+
+        log.info("Rxt resource migration done for all the tenants");
     }
 
 
@@ -329,10 +327,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 int tenantId = tenant.getId();
                 isTenantFlowStarted = true;
                 PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                        .setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME, true);
-                PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                        .setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
 
                 String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenantId)
                         .getRealmConfiguration().getAdminUserName();
@@ -461,9 +457,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             PrivilegedCarbonContext.endTenantFlow();
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Swagger resource migration done for all the tenants");
-        }
+        log.info("Swagger resource migration done for all the tenants.");
 
     }
 
@@ -856,14 +850,14 @@ public class MigrateFrom18to19 implements MigrationClient {
         String tenantRepository = CarbonUtils.getCarbonTenantsDirPath();
         for (Tenant tenant : tenantsArray) {
 
-            String SequenceFilePath;
+            String sequenceFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
-                SequenceFilePath = tenantRepository + "/" + tenant.getId() +
+                sequenceFilePath = tenantRepository + "/" + tenant.getId() +
                         "/synapse-configs/default/api";
             } else {
-                SequenceFilePath = repository + "synapse-configs/default/api";
+                sequenceFilePath = repository + "synapse-configs/default/api";
             }
-            File APIFiles = new File(SequenceFilePath);
+            File APIFiles = new File(sequenceFilePath);
             File[] synapseFiles = APIFiles.listFiles();
             for (File synapseFile : synapseFiles) {
                 DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();

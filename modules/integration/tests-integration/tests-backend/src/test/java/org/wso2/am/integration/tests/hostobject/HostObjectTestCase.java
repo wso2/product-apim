@@ -45,6 +45,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +63,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private static boolean isConfigApplied = false;
+    private static ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
@@ -71,6 +74,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        serverConfigurationManager =
+                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",TestUserMode.SUPER_TENANT_ADMIN));
 
         /*
         If test run in external distributed deployment you need to copy following resources accordingly.
@@ -81,19 +86,19 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         */
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-        ServerConfigurationManager serverConfigurationManager =
-                new ServerConfigurationManager(new AutomationContext("APIM", "gateway",
-                                                                     TestUserMode.SUPER_TENANT_ADMIN));
 
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                                                               + File.separator +
-                                                               "configFiles/hostobjecttest/" +
-                                                               "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                                                               + File.separator +
-                                                               "configFiles/tokenTest/" +
-                                                               "log4j.properties"));
-        super.init(userMode);
+        if (!isConfigApplied) {
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                                                                                 + File.separator +
+                                                                                 "configFiles/hostobjecttest/" +
+                                                                                 "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                                                                   + File.separator +
+                                                                   "configFiles/tokenTest/" +
+                                                                   "log4j.properties"));
+            super.init(userMode);
+            isConfigApplied = true;
+        }
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
     }
@@ -228,10 +233,9 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                     responseArrayFromPublisher = finalOutputPublisher.split("==");
                     isPublisherResponse = responseArrayFromPublisher[30].contains("HostObjectTestAPI");
                 }
-                log.info(finalOutputPublisher);
                 in.close();
-
             }
+            log.info(finalOutputPublisher);
             validatePublisherResponseArray(responseArrayFromPublisher);
 
         } catch (IOException e) {
@@ -260,11 +264,9 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                     isStoreResponse = responseArrayFromStore[9].contains("HostObjectTestAPI");
                 }
                 in.close();
-                log.info(finalOutputStore);
             }
+            log.info(finalOutputStore);
             validateStoreResponseArray(responseArrayFromStore);
-
-
         } catch (IOException e) {
             log.error("Error while invoking test application to test publisher host object");
         } finally {
@@ -287,10 +289,11 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("HostObjectTestAPI-Application");
+        serverConfigurationManager.restoreToLastConfiguration();
         super.cleanup();
     }
 
-    public static boolean validateStoreResponseArray(String[] array) {
+    public boolean validateStoreResponseArray(String[] array) throws XPathExpressionException {
         assertTrue(array[1].contains("true"),
                    "Error while getting status of billing system from API store host object (isBillingEnabled)");
         assertTrue(array[2].contains("https"),
@@ -348,7 +351,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         return true;
     }
 
-    public static boolean validatePublisherResponseArray(String[] array) {
+    public boolean validatePublisherResponseArray(String[] array) {
 
         assertTrue(array[1].contains("true"),
                    "Error while validating roles from API store host object (validateRoles)");

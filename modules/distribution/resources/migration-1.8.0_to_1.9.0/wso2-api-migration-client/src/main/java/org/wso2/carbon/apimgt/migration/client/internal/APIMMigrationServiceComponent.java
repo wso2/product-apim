@@ -68,7 +68,8 @@ public class APIMMigrationServiceComponent {
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
-            log.error("Error occurred while initializing DB Util " + e.getMessage());
+            //APIMgtDBUtil.initialize() throws generic exception
+            log.error("Error occurred while initializing DB Util ", e);
         }
 
         String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
