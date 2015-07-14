@@ -109,21 +109,15 @@ public class ResourceUtil {
 
             String resourcePath;
 
-            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
+            if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_9)) {
                 //pick from 18to19Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
-            } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_8)) {
-                //pick from 17to18Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.7.0_to_1.8.0/";
-            } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_7)) {
-                //pick from 16to17Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.6.0_to_1.7.0/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/18-19-migration/";
             } else {
                 throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
             }
 
             if (Constants.CONSTRAINT.equals(queryType)) {
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/18-19-migration/";
                 //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
@@ -170,12 +164,12 @@ public class ResourceUtil {
             Document doc = docBuilder.parse(filePath);
             Node sequence = doc.getElementsByTagName("sequence").item(0);
             Element corsSequence = doc.createElementNS(namespace, "sequence");
-            corsSequence.setAttribute("key", "_cors_request_handler");
+            corsSequence.setAttribute("key", "_cors_request_handler_");
             boolean available = false;
             for (int i = 0; i < sequence.getChildNodes().getLength(); i++) {
                 Node tempNode = sequence.getChildNodes().item(i);
-                if (tempNode.getNodeType() == Node.ELEMENT_NODE && "sequence".equals(tempNode.getLocalName()) &&
-                        "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
+                if (tempNode.getNodeType() == Node.ELEMENT_NODE &&"sequence".equals(tempNode.getLocalName()) &&
+                    "_cors_request_handler_".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
                     available = true;
                     break;
                 }
