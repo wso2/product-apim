@@ -109,7 +109,7 @@ public class ResourceUtil {
 
             String resourcePath;
 
-            if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_9)) {
+            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
                 //pick from 18to19Migration/sql-scripts
                 resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/18-19-migration/";
             } else {
