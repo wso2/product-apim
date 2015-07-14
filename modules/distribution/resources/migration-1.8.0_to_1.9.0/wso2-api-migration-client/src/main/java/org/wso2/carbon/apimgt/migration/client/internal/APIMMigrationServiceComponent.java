@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.migration.client.internal;
 
+import com.sun.tools.jxc.apt.Const;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
@@ -25,6 +26,7 @@ import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -63,45 +65,22 @@ public class APIMMigrationServiceComponent {
      * @param context OSGi component context.
      */
     protected void activate(ComponentContext context) {
-        String migrateVersion = null;
-        boolean cleanupNeeded = false;
-        boolean isDBMigrationNeeded = false;
-        boolean isRegistryMigrationNeeded = false;
-        boolean isFileSystemMigrationNeeded = false;
-
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
             log.error("Error occurred while initializing DB Util " + e.getMessage());
         }
 
-        Map<String, String> argsMap = new HashMap<String, String>();
-        argsMap.put("migrateVersion", System.getProperty("migrate"));
-        argsMap.put("isCleanUpNeeded", System.getProperty("cleanup"));
-        argsMap.put("isDBMigrationNeeded", System.getProperty("migrateDB"));
-        argsMap.put("isRegMigrationNeeded", System.getProperty("migrateReg"));
-        argsMap.put("isFileSysMigrationNeeded", System.getProperty("migrateFS"));
-
-
-        if (!argsMap.isEmpty()) {
-            migrateVersion = argsMap.get("migrateVersion");
-            if (argsMap.get("isCleanUpNeeded") != null) {
-                cleanupNeeded = Boolean.parseBoolean(argsMap.get("isCleanUpNeeded"));
-            }
-            if (argsMap.get("isDBMigrationNeeded") != null) {
-                isDBMigrationNeeded = Boolean.parseBoolean(argsMap.get("isDBMigrationNeeded"));
-            }
-            if (argsMap.get("isRegMigrationNeeded") != null) {
-                isRegistryMigrationNeeded = Boolean.parseBoolean(argsMap.get("isRegMigrationNeeded"));
-            }
-            if (argsMap.get("isFileSysMigrationNeeded") != null) {
-                isFileSystemMigrationNeeded = Boolean.parseBoolean(argsMap.get("isFileSysMigrationNeeded"));
-            }
-        }
+        String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
+        boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
+        boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
+        boolean isDBMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
+        boolean isRegistryMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_REG));
+        boolean isFileSystemMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_FILE_SYSTEM));
 
         try {
-            if (migrateVersion != null) {
-                if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
+            if (migrateToVersion != null) {
+                if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
                     log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
@@ -109,16 +88,16 @@ public class APIMMigrationServiceComponent {
                     MigrationClient migrateFrom18to19 = new MigrateFrom18to19();
 
                     //Default operation will migrate all three types of resources
-                    if (argsMap.get("isDBMigrationNeeded") == null && argsMap.get("isRegMigrationNeeded") == null && argsMap.get("isFileSysMigrationNeeded") == null) {
+                    if (migrateAll) {
                         log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
-                        migrateFrom18to19.databaseMigration(migrateVersion);
+                        migrateFrom18to19.databaseMigration(migrateToVersion);
                         migrateFrom18to19.registryResourceMigration();
                         migrateFrom18to19.fileSystemMigration();
                     } else {
                         //Only performs database migration
                         if (isDBMigrationNeeded) {
                             log.info("Migrating WSO2 API Manager 1.8.0 databases to WSO2 API Manager 1.9.0");
-                            migrateFrom18to19.databaseMigration(migrateVersion);
+                            migrateFrom18to19.databaseMigration(migrateToVersion);
                         }
                         //Only performs registry migration
                         if (isRegistryMigrationNeeded) {
@@ -141,17 +120,21 @@ public class APIMMigrationServiceComponent {
                         log.debug("API Manager 1.8.0 to 1.9.0 migration successfully completed");
                     }
                 } else {
-                    log.error("The given migrate version " + migrateVersion + " is not supported. Please check the version and try again.");
+                    log.error("The given migrate version " + migrateToVersion + " is not supported. Please check the version and try again.");
+
+                }
+            }
+            else {
+                if (migrateAll || cleanupNeeded || isDBMigrationNeeded || isRegistryMigrationNeeded || isFileSystemMigrationNeeded) {
+                    log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
                 }
             }
         } catch (APIMigrationException e) {
-            log.error("API Management  exception occurred while migrating " + e.getMessage());
+            log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
-            log.error("User store  exception occurred while migrating " + e.getMessage());
+            log.error("User store  exception occurred while migrating", e);
         } catch (SQLException e) {
-            log.error("SQL exception occurred while migrating " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Error occurred while initializing data source.  " + e.getMessage());
+            log.error("SQL exception occurred while migrating", e);
         }
         log.info("WSO2 API Manager migration component successfully activated.");
     }

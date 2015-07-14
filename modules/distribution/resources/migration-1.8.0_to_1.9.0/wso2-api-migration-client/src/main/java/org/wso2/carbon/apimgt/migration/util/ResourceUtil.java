@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.apimgt.migration.util;
 
+import com.sun.tools.jxc.apt.Const;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -234,95 +235,147 @@ public class ResourceUtil {
     /**
      * To update synapse API
      *
-     * @param filePath       file path
-     * @param implementation new impl
+     * @param document       XML document object
+     * @param file       synapse file
      * @throws APIMigrationException
      */
-    public static void updateSynapseAPI(File filePath, String implementation) throws APIMigrationException {
+    public static void updateSynapseAPI(Document document, File file) throws APIMigrationException {
         try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            docFactory.setNamespaceAware(true);
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = null;
-            doc = docBuilder.parse(filePath.getAbsolutePath());
-            Node handlers = doc.getElementsByTagName("handlers").item(0);
-            Element corsHandler = doc.createElement("handler");
-            corsHandler.setAttribute("class", "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler");
-            Element property = doc.createElement("property");
-            property.setAttribute("name", "inline");
-            property.setAttribute("value", implementation);
-            corsHandler.appendChild(property);
-            NodeList handlerNodes = doc.getElementsByTagName("handler");
-            for (int i = 0; i < handlerNodes.getLength(); i++) {
-                Node tempNode = handlerNodes.item(i);
-                if ("org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"
-                        .equals(tempNode.getAttributes().getNamedItem("class").getTextContent())) {
-                    handlers.removeChild(tempNode);
-                }
-                handlers.insertBefore(corsHandler, handlerNodes.item(0));
-            }
-            updateSynapseAPIWithMediation(doc);
+            updateHandlers(document, file);
+            updateResources(document, file);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(filePath);
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(file);
             transformer.transform(source, result);
-        } catch (ParserConfigurationException e) {
-            handleException("Could not initiate Document Builder.", e);
         } catch (TransformerConfigurationException e) {
             handleException("Could not initiate TransformerFactory Builder.", e);
         } catch (TransformerException e) {
             handleException("Could not transform the source.", e);
-        } catch (SAXException e) {
-            handleException("SAX exception occurred while parsing the file.", e);
-        } catch (IOException e) {
-            handleException("IO Exception occurred. Please check the file.", e);
         }
     }
 
-    public static void updateSynapseAPIWithMediation(Document doc) {
-        NodeList resourceNodes = doc.getElementsByTagName("resource");
+    private static void updateHandlers(Document document, File file) {
+        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
+
+        NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
+
+        for (int i = 0; i < handlerNodes.getLength(); ++i) {
+            Element handler = (Element) handlerNodes.item(i);
+
+            String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
+
+            if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
+                handlersElement.removeChild(handler);
+                break;
+            }
+        }
+
+        // Find the inSequence
+        Element inSequenceElement = (Element) document.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+
+        NodeList sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
+
+        Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLER);
+        corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
+        Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+        property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
+
+        if (0 < sendElements.getLength()) {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
+        }
+        else {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
+        }
+
+        corsHandler.appendChild(property);
+
+        handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
+
+    }
+
+    private static void updateResources(Document document, File file) throws APIMigrationException {
+        NodeList resourceNodes = document.getElementsByTagName("resource");
         for (int i = 0; i < resourceNodes.getLength(); i++) {
-            Node resource = resourceNodes.item(i);
-            NodeList sequences = resource.getChildNodes();
-            for (int j = 0; j < sequences.getLength(); j++) {
-                Node sequence = sequences.item(j);
-                if ("inSequence".equals(sequences.item(j).getLocalName())) {
-                    boolean available = false;
-                    for (int k = 0; k < sequence.getChildNodes().getLength(); k++) {
-                        Node tempNode = sequence.getChildNodes().item(i);
-                        if (tempNode.getNodeType() == Node.ELEMENT_NODE && "property".equals(tempNode.getLocalName()) &&
-                            "api.ut.backendRequestTime"
-                                    .equals(tempNode.getAttributes().getNamedItem("name").getTextContent())) {
-                            available = true;
-                            break;
-                        }
-                    }
-                    if (!available) {
-                        Element propertyNode = doc.createElement("property");
-                        propertyNode.setAttribute("name", "api.ut.backendRequestTime");
-                        propertyNode.setAttribute("expression", "get-property('SYSTEM_TIME')");
-                        sequence.insertBefore(propertyNode, sequence.getFirstChild());
-                    }
-                } else if ("outSequence".equals(sequences.item(j).getLocalName())) {
-                    boolean available = false;
-                    for (int k = 0; k < sequence.getChildNodes().getLength(); k++) {
-                        Node tempNode = sequence.getChildNodes().item(i);
-                        if (tempNode.getNodeType() == Node.ELEMENT_NODE && "class".equals(tempNode.getLocalName()) &&
-                            "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"
-                                    .equals(tempNode.getAttributes().getNamedItem("name").getTextContent())) {
-                            available = true;
-                            break;
-                        }
-                    }
-                    if (!available) {
-                        Element propertyNode = doc.createElement("class");
-                        propertyNode
-                                .setAttribute("name", "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler");
-                        sequence.insertBefore(propertyNode, sequence.getFirstChild());
-                    }
+            Element resourceElement = (Element) resourceNodes.item(i);
+
+            updateInSequence(resourceElement, document);
+
+            updateOutSequence(resourceElement, document);
+        }
+    }
+
+    private static void updateInSequence(Element resourceElement, Document doc) {
+        // Find the inSequence
+        Element inSequenceElement = (Element) resourceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+
+        // Find the property element in the inSequence
+        NodeList properties = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+
+        boolean isBackEndRequestTimeSet = false;
+
+        for (int i = 0; i < properties.getLength(); ++i) {
+            Element propertyElement = (Element) properties.item(i);
+
+            if (propertyElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME)) {
+                if (Constants.SYNAPSE_API_VALUE_BACKEND_REQUEST_TIME.equals(propertyElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                    isBackEndRequestTimeSet = true;
+                    break;
                 }
             }
+        }
+
+        if (!isBackEndRequestTimeSet) {
+            NodeList filters = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_FILTER);
+
+            for (int j = 0; j < filters.getLength(); ++j) {
+                Element filterElement = (Element) filters.item(j);
+
+                if (Constants.SYNAPSE_API_VALUE_AM_KEY_TYPE.equals(filterElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_SOURCE))) {
+                    // Only one <then> element can exist in filter mediator
+                    Element thenElement = (Element) filterElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_THEN).item(0);
+
+                    // At least one <send> element must exist as a child of <then> element
+                    Element sendElement = (Element) thenElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+
+                    Element propertyElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+                    propertyElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_BACKEND_REQUEST_TIME);
+                    propertyElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_EXPRESSION, Constants.SYNAPSE_API_VALUE_EXPRESSION);
+
+                    thenElement.insertBefore(propertyElement, sendElement);
+                }
+            }
+        }
+    }
+
+
+    private static void updateOutSequence(Element resourceElement, Document doc) {
+        // Find the outSequence
+        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
+
+        NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
+
+        boolean isResponseHandlerSet = false;
+
+        for (int i = 0; i < classNodes.getLength(); ++i) {
+            Element classElement = (Element) classNodes.item(i);
+
+            if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                isResponseHandlerSet = true;
+                break;
+            }
+        }
+
+        if (!isResponseHandlerSet) {
+            // There must be at least one <send> element for an outSequence
+            Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+
+            Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
+            classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
+            classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
+
+            outSequenceElement.insertBefore(classElement, sendElement);
         }
     }
 }

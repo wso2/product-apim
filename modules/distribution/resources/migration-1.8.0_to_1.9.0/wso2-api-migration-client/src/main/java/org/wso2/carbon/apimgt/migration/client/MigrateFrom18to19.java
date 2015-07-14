@@ -23,6 +23,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -48,13 +50,13 @@ import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.api.Resource;
+import org.wso2.carbon.utils.DBUtils;
+import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
@@ -104,14 +106,14 @@ public class MigrateFrom18to19 implements MigrationClient {
         log.info("Database migration for API Manager 1.8.0 started");
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        BufferedReader bufferedReader = null;
         try {
             connection = APIMgtDBUtil.getConnection();
             String dbType = MigrationDBCreator.getDatabaseType(connection);
             String dbScript = ResourceUtil.pickQueryFromResources(migrateVersion, dbType);
-            BufferedReader bufferedReader;
 
             InputStream is = new FileInputStream(dbScript);
-            bufferedReader = new BufferedReader(new InputStreamReader(is));
+            bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
             String sqlQuery;
             while ((sqlQuery = bufferedReader.readLine()) != null) {
                 if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
@@ -143,6 +145,8 @@ public class MigrateFrom18to19 implements MigrationClient {
             //To drop the foreign key
             dropFKConstraint(migrateVersion, dbType);
 
+            bufferedReader.close();
+
         } catch (IOException e) {
             //ResourceUtil.handleException("Error occurred while finding the query. Please check the file path.", e);
             log.error("Error occurred while migrating databases", e);
@@ -171,20 +175,23 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws IOException
      */
     public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException {
-        String constraintName = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Statement statement = null;
         try {
             String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
             String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
 
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(false);
-            Statement statement = connection.createStatement();
+            statement = connection.createStatement();
             if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
                 queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
             }
-            ResultSet resultSet = statement.executeQuery(queryArray[0]);
+            resultSet = statement.executeQuery(queryArray[0]);
+            String constraintName = null;
+
             while (resultSet.next()) {
                 constraintName = resultSet.getString("constraint_name");
             }
@@ -210,13 +217,11 @@ public class MigrateFrom18to19 implements MigrationClient {
             // the foriegn key reference
             log.error("Error occurred while finding the foriegn key deletion query for execution", e);
         } finally {
-            if (preparedStatement != null) {
-                preparedStatement.close();
-            }
-            if (connection != null) {
-                connection.close();
+            if (statement != null) {
+                statement.close();
             }
 
+            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
         }
 
     }
@@ -480,39 +485,46 @@ public class MigrateFrom18to19 implements MigrationClient {
         String swagger12BasePath = null;
 
         Resource swaggerRes = registry.get(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
-        JSONObject swagger12doc = (JSONObject) parser.parse(new String((byte[]) swaggerRes.getContent()));
 
-        Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
-        Resource swagger12Res = registry.get(swagger12location);
+        try {
+            JSONObject swagger12doc = (JSONObject) parser.parse(new String((byte[]) swaggerRes.getContent(), "UTF8"));
 
-        //get all the resources inside the 1.2 resource location
-        String[] apiDefinitions = (String[]) swagger12Res.getContent();
+            Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
+            Resource swagger12Res = registry.get(swagger12location);
 
-        //get each resource in the 1.2 folder except the api-doc resource
-        for (String apiDefinition : apiDefinitions) {
+            //get all the resources inside the 1.2 resource location
+            String[] apiDefinitions = (String[]) swagger12Res.getContent();
 
-            String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf("/"));
-            //skip if api-doc file
-            if (resourceName.equals(APIConstants.API_DOC_1_2_RESOURCE_NAME)) {
-                continue;
+            //get each resource in the 1.2 folder except the api-doc resource
+            for (String apiDefinition : apiDefinitions) {
+
+                String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf("/"));
+                //skip if api-doc file
+                if (resourceName.equals(APIConstants.API_DOC_1_2_RESOURCE_NAME)) {
+                    continue;
+                }
+
+                Resource resource = registry.get(apiDefinition);
+                JSONObject apiDef =
+                        (JSONObject) parser.parse(new String((byte[]) resource.getContent(), "UTF8"));
+                //get the base path. this is same for all api definitions.
+                swagger12BasePath = (String) apiDef.get("basePath");
+                JSONArray apiArray = (JSONArray) apiDef.get("apis");
+                for (Object anApiArray : apiArray) {
+                    JSONObject api = (JSONObject) anApiArray;
+                    String path = (String) api.get("path");
+                    JSONArray operations = (JSONArray) api.get("operations");
+                    //set the operations object inside each api definition and set it in a map against its resource path
+                    apiDefPaths.put(path, operations);
+                }
             }
-
-            Resource resource = registry.get(apiDefinition);
-            JSONObject apiDef =
-                    (JSONObject) parser.parse(new String((byte[]) resource.getContent()));
-            //get the base path. this is same for all api definitions.
-            swagger12BasePath = (String) apiDef.get("basePath");
-            JSONArray apiArray = (JSONArray) apiDef.get("apis");
-            for (Object anApiArray : apiArray) {
-                JSONObject api = (JSONObject) anApiArray;
-                String path = (String) api.get("path");
-                JSONArray operations = (JSONArray) api.get("operations");
-                //set the operations object inside each api definition and set it in a map against its resource path
-                apiDefPaths.put(path, operations);
-            }
+            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath);
+            return swagger2Doc.toJSONString();
+        } catch (UnsupportedEncodingException e) {
+            log.error("Error while reading swagger resource", e);
         }
-        JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath);
-        return swagger2Doc.toJSONString();
+
+        return null;
     }
 
 
@@ -854,16 +866,30 @@ public class MigrateFrom18to19 implements MigrationClient {
             File APIFiles = new File(SequenceFilePath);
             File[] synapseFiles = APIFiles.listFiles();
             for (File synapseFile : synapseFiles) {
-                if (tenant.getId() == MultitenantConstants.SUPER_TENANT_ID) {
-                    if (synapseFile.getName().matches("[\\w+][--][\\w+][__v]")) {
-                        ResourceUtil.updateSynapseAPI(synapseFile, "ENDPOINT");
-                    }
-                } else {
-                    if (synapseFile.getName().matches("[\\w+][-AT-]" + tenant.getDomain() + "[--][\\w+][--v]]")) {
-                        ResourceUtil.updateSynapseAPI(synapseFile, "ENDPOINT");
-                    }
-                }
+                DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+                docFactory.setNamespaceAware(true);
 
+                try {
+                    DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+                    Document doc = docBuilder.parse(synapseFile);
+
+                    //doc.getDocumentElement().normalize();
+
+                    Element rootElement = doc.getDocumentElement();
+
+                    if (Constants.SYNAPSE_API_ROOT_ELEMENT.equals(rootElement.getNodeName()) &&
+                            rootElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION)) {
+                        ResourceUtil.updateSynapseAPI(doc, synapseFile);
+                    }
+
+
+                } catch (ParserConfigurationException e) {
+                    ResourceUtil.handleException("Parsing exception encountered for " + synapseFile.getAbsolutePath(), e);
+                } catch (SAXException e) {
+                    ResourceUtil.handleException("SAX exception encountered for " + synapseFile.getAbsolutePath(), e);
+                } catch (IOException e) {
+                    ResourceUtil.handleException("IO exception encountered for " + synapseFile.getAbsolutePath(), e);
+                }
             }
         }
     }

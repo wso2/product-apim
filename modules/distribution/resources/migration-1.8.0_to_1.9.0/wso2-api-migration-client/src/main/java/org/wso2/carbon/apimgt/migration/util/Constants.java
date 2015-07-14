@@ -32,6 +32,42 @@ public class Constants {
     public static final String RXT_PATH = "/repository/resources/rxts/api.rxt";
     public static final String DATA_SOURCE_NAME = "DataSourceName";
 
+    // Migration client argument property names
+    public static final String ARG_MIGRATE_TO_VERSION = "migrateToVersion";
+    public static final String ARG_MIGRATE_ALL = "migrate";
+    public static final String ARG_CLEANUP = "cleanup";
+    public static final String ARG_MIGRATE_DB = "migrateDB";
+    public static final String ARG_MIGRATE_REG = "migrateReg";
+    public static final String ARG_MIGRATE_FILE_SYSTEM = "migrateFS";
+
+    // Synapse configuration related
+    public static final String SYNAPSE_API_ROOT_ELEMENT = "api";
+    public static final String SYNAPSE_API_ATTRIBUTE_VERSION = "version";
+    public static final String SYNAPSE_API_ATTRIBUTE_SOURCE = "source";
+    public static final String SYNAPSE_API_ATTRIBUTE_NAME = "name";
+    public static final String SYNAPSE_API_ATTRIBUTE_EXPRESSION = "expression";
+    public static final String SYNAPSE_API_ATTRIBUTE_CLASS = "class";
+    public static final String SYNAPSE_API_ATTRIBUTE_VALUE = "value";
+    public static final String SYNAPSE_API_ATTRIBUTE_XMLNS = "xmlns";
+    public static final String SYNAPSE_API_ELEMENT_PROPERTY = "property";
+    public static final String SYNAPSE_API_ELEMENT_FILTER = "filter";
+    public static final String SYNAPSE_API_ELEMENT_CLASS = "class";
+    public static final String SYNAPSE_API_ELEMENT_INSEQUENCE = "inSequence";
+    public static final String SYNAPSE_API_ELEMENT_OUTSEQUENCE = "outSequence";
+    public static final String SYNAPSE_API_ELEMENT_HANDLERS = "handlers";
+    public static final String SYNAPSE_API_ELEMENT_HANDLER = "handler";
+    public static final String SYNAPSE_API_ELEMENT_THEN = "then";
+    public static final String SYNAPSE_API_ELEMENT_SEND = "send";
+    public static final String SYNAPSE_API_VALUE_BACKEND_REQUEST_TIME = "api.ut.backendRequestTime";
+    public static final String SYNAPSE_API_VALUE_AM_KEY_TYPE = "$ctx:AM_KEY_TYPE";
+    public static final String SYNAPSE_API_VALUE_EXPRESSION = "get-property('SYSTEM_TIME')";
+    public static final String SYNAPSE_API_VALUE_RESPONSE_HANDLER = "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler";
+    public static final String SYNAPSE_API_VALUE_CORS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler";
+    public static final String SYNAPSE_API_VALUE_INLINE = "inline";
+    public static final String SYNAPSE_API_VALUE_INLINE_UPPERCASE = "INLINE";
+    public static final String SYNAPSE_API_VALUE_ENPOINT = "ENDPOINT";
+    public static final String SYNAPSE_API_XMLNS = "http://ws.apache.org/ns/synapse";
+
 
     //Swagger v2.0 constants
     public static final String SWAGGER_X_SCOPE = "x-scope";
