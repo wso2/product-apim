@@ -104,20 +104,20 @@
                                     <id>org.wso2.carbon.throttle.feature.group</id>
                                     <version>4.2.1>
                                 </feature-->
-                                <importFeatureDef>
+                                <!--importFeatureDef>
                                     org.apache.synapse.wso2.:${carbon.mediation.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
+                                </importFeatureDef-->
+                                <!--importFeatureDef>
                                     org.apache.synapse.transport.nhttp:${carbon.mediation.version}
-                                </importFeatureDef>
+                                </importFeatureDef-->
                                 <!--feature>
                                    <id>org.wso2.carbon.datasource.server.feature.group</id>
                                    <version>4.2.1>
                                </feature-->
-                                <importFeatureDef>
+                                <!--importFeatureDef>
                                     org.wso2.carbon.task.server:${carbon.mediation.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
+                                </importFeatureDef-->
+                                <!--importFeatureDef>
                                     org.wso2.carbon.mediation.initializer:${carbon.mediation.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
@@ -134,16 +134,16 @@
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.mediation.tracer:${carbon.mediation.version}
-                                </importFeatureDef>
+                                </importFeatureDef-->
                                 <importFeatureDef>
                                     org.wso2.carbon.application.mgt.server:${carbon.commons.version}
                                 </importFeatureDef>
-                                <importFeatureDef>
+                                <!--importFeatureDef>
                                     org.wso2.carbon.application.mgt.synapse.server:${carbon.mediation.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.application.deployer.synapse:${carbon.mediation.version}
-                                </importFeatureDef>
+                                </importFeatureDef-->
                                 <importFeatureDef>
                                     org.wso2.carbon.system.statistics:${carbon.commons.version}
                                 </importFeatureDef>
@@ -179,12 +179,12 @@
                                 <importFeatureDef>
                                     org.wso2.carbon.registry.resource.properties:${carbon.registry.version}
                                 </importFeatureDef>
-                                <importFeatureDef>
+                                <!--importFeatureDef>
                                     org.wso2.carbon.mediators.server:${carbon.mediation.version}
                                 </importFeatureDef>
                                	<importFeatureDef>
                                     org.wso2.carbon.relay.server:${carbon.mediation.version}
-                                </importFeatureDef>
+                                </importFeatureDef-->
 
                                 <importFeatureDef>
                                     org.wso2.carbon.event.server:${carbon.commons.version}
