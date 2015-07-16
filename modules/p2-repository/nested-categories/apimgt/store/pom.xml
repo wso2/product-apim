@@ -244,9 +244,7 @@
                                 <importFeatureDef>
                                     org.jaggeryjs.modules.i18n:${i18n.feature.version}
                                 </importFeatureDef>
-                                <importFeatureDef>
-                                    org.wso2.carbon.apimgt.gateway:${apim.version}
-                                </importFeatureDef>
+         
                                 <importFeatureDef>
                                     org.wso2.carbon.apimgt.core:${apimgt.feature.version}
                                 </importFeatureDef>
