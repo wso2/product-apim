@@ -32,24 +32,18 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
-import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceStub;
-import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * This test case evaluates whether the WSDL file of provided SOAP endpoint
@@ -60,11 +54,20 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
     private ServerConfigurationManager configManagerDB, configManagerMasterDatasource, configManagerReg;
     private WebDriver driver;
     private WebDriverWait wait;
+    private final String SUPER_TENANT_DOMAIN_NAME = "carbon.super";
+    private final String SUPER_TENANT_USERNAME = "admin";
+    private final String SUPER_TENANT_PASSWORD = "admin";
+    private final String TENANT_DOMAIN_NAME = "wso2.com";
+    private final String TENANT_USERNAME = "testuser11";
+    private final String TENANT_PASSWORD = "testuser11";
+    private final String TEST_API_NAME = "AZ176";
+
     private static final Log log = LogFactory.getLog(APIWsdlDownloadTestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         init();
+
         //create gateway server instance based on configuration given at automation.xml
         gatewayContext =
             new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
@@ -110,44 +113,45 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
     @Test(groups = "wso2.am", priority = 1, description = "Download WSDL from publisher in super tenant mode")
     public void testDownloadWSDLFromPublisherSuperTenantUser()
         throws InterruptedException, IOException {
-        createAPIWithWSDLEndpoint("AZ176", "admin", "admin", MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-        downloadWSDLFromPublisher("admin", "carbon.super", "AZ176");
+        createAPIWithWSDLEndpoint(TEST_API_NAME, SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD,
+            MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+        downloadWSDLFromPublisher(SUPER_TENANT_USERNAME, SUPER_TENANT_DOMAIN_NAME, TEST_API_NAME);
     }
 
     @Test(groups = "wso2.am", priority = 2, description = "Download WSDL from store in super tenant mode",
         dependsOnMethods = { "testDownloadWSDLFromPublisherSuperTenantUser" })
     public void testDownloadWSDLFromStoreSuperTenantUser() throws IOException, InterruptedException {
-        downloadWSDLFromStore("admin", "admin", "carbon.super", "AZ176");
+        downloadWSDLFromStore(SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD, SUPER_TENANT_DOMAIN_NAME, TEST_API_NAME);
     }
 
     @Test(groups = "wso2.am", priority = 3, description = "Download WSDL from publisher in tenant mode",
         dependsOnMethods = { "testDownloadWSDLFromStoreSuperTenantUser" })
     public void testDownloadFromPublisherTenantUser()
-            throws TenantMgtAdminServiceExceptionException, InterruptedException, IOException,
-            XPathExpressionException {
-        boolean isTenantCreationSuccessful =
-            createTenantWithEmailUserName("user1", "wso2carbon", "az176.com",
-                gatewayContext.getContextUrls().getBackEndUrl());
-        if (isTenantCreationSuccessful) {
-            createAPIWithWSDLEndpoint("AZ176", "user1", "wso2carbon", "az176.com");
-            downloadWSDLFromPublisher("user1", "az176.com", "AZ176");
-        }
+        throws TenantMgtAdminServiceExceptionException, InterruptedException, IOException,
+        XPathExpressionException {
+        createAPIWithWSDLEndpoint(TEST_API_NAME, TENANT_USERNAME, TENANT_PASSWORD, TENANT_DOMAIN_NAME);
+        downloadWSDLFromPublisher(TENANT_USERNAME, TENANT_DOMAIN_NAME, TEST_API_NAME);
     }
 
     @Test(groups = "wso2.am", priority = 4, description = "Download WSDL from store in tenant mode",
         dependsOnMethods = { "testDownloadFromPublisherTenantUser" })
     public void testDownloadFromStoreTenantUser() throws IOException, InterruptedException {
-        downloadWSDLFromStore("user1", "wso2carbon", "az176.com", "AZ176");
+        downloadWSDLFromStore(TENANT_USERNAME, TENANT_PASSWORD, TENANT_DOMAIN_NAME, TEST_API_NAME);
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
         driver.quit();
+        //remove added APIs from all tenants
+        super.cleanUp(SUPER_TENANT_USERNAME, SUPER_TENANT_PASSWORD, storeUrls.getWebAppURLHttp(),
+            publisherUrls.getWebAppURLHttp());
+        super.cleanUp(TENANT_USERNAME + APIMTestConstants.EMAIL_DOMAIN_SEPARATOR + TENANT_DOMAIN_NAME, TENANT_PASSWORD,
+            storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        //restore modified configurations to previous status
         configManagerReg.restoreToLastConfiguration();
         configManagerMasterDatasource.restoreToLastConfiguration();
         FileManager.deleteFile(System.getProperty("carbon.home") + File.separator + "repository" + File.separator +
             "database" + File.separator + "WSO2REG_DB.h2.db");
-        super.cleanup();
     }
 
     /**
@@ -158,7 +162,7 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
      * @param password password of the user
      * @param domain   domain of the user
      */
-    public void createAPIWithWSDLEndpoint(String apiName, String username, String password, String domain)
+    private void createAPIWithWSDLEndpoint(String apiName, String username, String password, String domain)
         throws InterruptedException {
         try {
             driver.get(getPublisherURL());
@@ -167,7 +171,8 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
         }
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginButton")));
         if (!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(domain)) {
-            driver.findElement(By.id("username")).sendKeys(username + "@" + domain);
+            driver.findElement(By.id("username")).
+                sendKeys(username + APIMTestConstants.EMAIL_DOMAIN_SEPARATOR + domain);
         } else {
             driver.findElement(By.id("username")).sendKeys(username);
         }
@@ -180,7 +185,7 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.xpath("(//input[@name='create-api'])[2]")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("startFromExistingSOAPEndpoint")));
         driver.findElement(By.id("wsdl-url")).clear();
-        driver.findElement(By.id("wsdl-url")).sendKeys("http://www.webservicex.net/geoipservice.asmx?WSDL");
+        driver.findElement(By.id("wsdl-url")).sendKeys("http://www.webservicex.com/globalweather.asmx?WSDL");
         driver.findElement(By.id("startFromExistingSOAPEndpoint")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_implement")));
         driver.findElement(By.id("name")).clear();
@@ -195,9 +200,9 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.xpath("//div[@value='#managed-api']")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_manage")));
         driver.findElement(By.id("jsonform-0-elt-production_endpoints")).clear();
-        driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys("http://appserver/resource");
+        driver.findElement(By.id("jsonform-0-elt-production_endpoints")).sendKeys(storeUrls.getWebAppURLHttp());
         driver.findElement(By.id("jsonform-0-elt-sandbox_endpoints")).clear();
-        driver.findElement(By.id("jsonform-0-elt-sandbox_endpoints")).sendKeys("http://appserver/resource");
+        driver.findElement(By.id("jsonform-0-elt-sandbox_endpoints")).sendKeys(storeUrls.getWebAppURLHttp());
         driver.findElement(By.id("go_to_manage")).click();
         log.info("After API manage");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("publish_api")));
@@ -322,8 +327,8 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Download WSDL")));
         driver.findElement(By.linkText("Download WSDL")).click();
         File file = new File(
-                System.getProperty("download.location") + File.separator + tenantUnawareUsername + "--" + apiName +
-                        "1.0.0.wsdl");
+            System.getProperty("download.location") + File.separator + tenantUnawareUsername + "--" + apiName +
+                "1.0.0.wsdl");
         while (!file.exists()) {
             Thread.sleep(1000);
         }
@@ -343,66 +348,4 @@ public class APIWsdlDownloadTestCase extends APIMIntegrationUiTestBase {
         driver.findElement(By.id("logout-link")).click();
         log.info("After store logout");
     }
-
-    /**
-     * Create tenant with the provided email
-     *
-     * @param userName   username to domain admin
-     * @param password   password of domain admin
-     * @param domain     domain name
-     * @param backendUrl backendUrl of the server
-     * @return if tenant created successfully returns true else false
-     * @throws org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException
-     * If an error occurs while creating tenant
-     */
-    private boolean createTenantWithEmailUserName(String userName, String password, String domain, String backendUrl)
-            throws TenantMgtAdminServiceExceptionException {
-        boolean isSuccess = false;
-        try {
-            String endPoint = backendUrl + "TenantMgtAdminService";
-            TenantMgtAdminServiceStub tenantMgtAdminServiceStub = new TenantMgtAdminServiceStub(endPoint);
-            AuthenticateStub.authenticateStub("admin", "admin", tenantMgtAdminServiceStub);
-
-            Date date = new Date();
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(date);
-
-            TenantInfoBean tenantInfoBean = new TenantInfoBean();
-            tenantInfoBean.setActive(true);
-            tenantInfoBean.setEmail("tenant@wso2.com");
-            tenantInfoBean.setAdminPassword(password);
-            tenantInfoBean.setAdmin(userName);
-            tenantInfoBean.setTenantDomain(domain);
-            tenantInfoBean.setCreatedDate(calendar);
-            tenantInfoBean.setFirstname("admin");
-            tenantInfoBean.setLastname("admin" + "wso2automation");
-            tenantInfoBean.setSuccessKey("true");
-            tenantInfoBean.setUsagePlan("demo");
-            TenantInfoBean tenantInfoBeanGet;
-            tenantInfoBeanGet = tenantMgtAdminServiceStub.getTenant(domain);
-
-            if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
-                tenantMgtAdminServiceStub.activateTenant(domain);
-                log.info("Tenant domain " + domain + " Activated successfully");
-
-            } else if (!tenantInfoBeanGet.getActive()) {
-                tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
-                tenantMgtAdminServiceStub.activateTenant(domain);
-                log.info("Tenant domain " + domain + " created and activated successfully");
-                isSuccess = true;
-            } else {
-                log.info("Tenant domain " + domain + " already registered");
-            }
-        } catch (RemoteException e) {
-            //exception doesn't need to be thrown because if exception occurred test cases will automatically fail.
-            log.error("RemoteException thrown while adding user/tenants : ", e);
-
-        } catch (TenantMgtAdminServiceExceptionException e) {
-            //exception doesn't need to be thrown because if exception occurred test cases will automatically fail.
-            log.error("Error connecting to the TenantMgtAdminService : ", e);
-        }
-
-        return isSuccess;
-    }
-
 }
