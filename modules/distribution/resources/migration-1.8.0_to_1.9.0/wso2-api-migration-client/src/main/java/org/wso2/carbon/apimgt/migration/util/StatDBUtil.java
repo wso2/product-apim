@@ -83,7 +83,7 @@ public class StatDBUtil {
             connection = dataSource.getConnection();
             statement = connection.createStatement();
             connection.setAutoCommit(false);
-            statement.executeQuery(sql);
+            statement.execute(sql);
             connection.commit();
 
         } catch (SQLException e) {
