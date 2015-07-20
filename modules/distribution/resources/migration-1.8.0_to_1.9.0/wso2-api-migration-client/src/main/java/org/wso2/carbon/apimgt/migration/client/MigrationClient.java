@@ -65,4 +65,12 @@ public interface MigrationClient {
      */
     public void cleanOldResources() throws APIMigrationException;
 
+    /**
+     * This method is used to migrate API stats database.
+     * Database schema changes and data modifications as required will  be carried out.
+     *
+     * @throws APIMigrationException
+     */
+    public void statsMigration() throws APIMigrationException;
+
 }

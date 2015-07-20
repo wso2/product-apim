@@ -272,6 +272,7 @@
         <send/>
         #else
         #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
+        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
         #draw_endpoint( "sandbox" $endpoint_config )
         #elseif($endpoint_config.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
