@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon.apimgt.migration.util;
 
-import com.sun.tools.jxc.apt.Const;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +39,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ResourceUtil {
@@ -211,6 +209,7 @@ public class ResourceUtil {
      */
     public static void updateSynapseAPI(Document document, File file) throws APIMigrationException {
         try {
+            updateAPIAttributes(document, file);
             updateHandlers(document, file);
             updateResources(document, file);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -225,6 +224,22 @@ public class ResourceUtil {
             handleException("Could not transform the source.", e);
         }
     }
+
+    private static void updateAPIAttributes(Document document, File file) {
+        Element apiElement = document.getDocumentElement();
+
+        String versionType = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE);
+
+        if (versionType.equals(Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL)) {
+            String context = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT);
+            String version = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION);
+
+            context = context + "/" + version;
+            apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT, context);
+            apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE, Constants.SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT);
+        }
+    }
+
 
     private static void updateHandlers(Document document, File file) {
         Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);

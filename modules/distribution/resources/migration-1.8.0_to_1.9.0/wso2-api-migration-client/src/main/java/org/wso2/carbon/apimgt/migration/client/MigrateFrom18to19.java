@@ -35,6 +35,7 @@ import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
+import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
@@ -249,8 +250,8 @@ public class MigrateFrom18to19 implements MigrationClient {
     void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager 1.9.0 started.");
         boolean isTenantFlowStarted = false;
-        try {
-            for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : tenantsArray) {
+            try {
                 PrivilegedCarbonContext.startTenantFlow();
                 isTenantFlowStarted = true;
 
@@ -290,19 +291,20 @@ public class MigrateFrom18to19 implements MigrationClient {
                 }
 
             }
-            if (isTenantFlowStarted) {
-                PrivilegedCarbonContext.endTenantFlow();
-            }
+            //if (isTenantFlowStarted) {
+            //    PrivilegedCarbonContext.endTenantFlow();
+            //}
 
-        } catch (APIManagementException e) {
-            ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
-        } catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while accessing the registry", e);
-        } catch (UserStoreException e) {
-            ResourceUtil.handleException("Error occurred while reading tenant information", e);
-        } finally {
-            if (isTenantFlowStarted) {
-                PrivilegedCarbonContext.endTenantFlow();
+            catch (APIManagementException e) {
+                ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
+            } catch (RegistryException e) {
+                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+            } catch (UserStoreException e) {
+                ResourceUtil.handleException("Error occurred while reading tenant information", e);
+            } finally {
+                if (isTenantFlowStarted) {
+                    PrivilegedCarbonContext.endTenantFlow();
+                }
             }
         }
 
@@ -378,8 +380,9 @@ public class MigrateFrom18to19 implements MigrationClient {
     void swaggerResourceMigration() throws APIMigrationException {
         log.info("Swagger migration for API Manager 1.9.0 started.");
         boolean isTenantFlowStarted = false;
-        try {
-            for (Tenant tenant : tenantsArray) {
+
+        for (Tenant tenant : tenantsArray) {
+            try {
                 if (log.isDebugEnabled()) {
                     log.debug("Swagger migration for tenant " + tenant.getDomain() + "[" + tenant.getId() + "]" + " ");
                 }
@@ -440,21 +443,22 @@ public class MigrateFrom18to19 implements MigrationClient {
                     }
                 }
 
-                PrivilegedCarbonContext.endTenantFlow();
+                //PrivilegedCarbonContext.endTenantFlow();
+            } catch (MalformedURLException e) {
+                ResourceUtil.handleException("Error occurred while creating swagger v2.0 document ", e);
+            } catch (APIManagementException e) {
+                ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
+            } catch (RegistryException e) {
+                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+            } catch (ParseException e) {
+                ResourceUtil.handleException("Error occurred while getting swagger v2.0 document", e);
+            } catch (UserStoreException e) {
+                ResourceUtil.handleException("Error occurred while reading tenant information", e);
+            } finally {
+                if (isTenantFlowStarted) {
+                    PrivilegedCarbonContext.endTenantFlow();
+                }
             }
-        } catch (MalformedURLException e) {
-            ResourceUtil.handleException("Error occurred while creating swagger v2.0 document ", e);
-        } catch (APIManagementException e) {
-            ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
-        } catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while accessing the registry", e);
-        } catch (ParseException e) {
-            ResourceUtil.handleException("Error occurred while getting swagger v2.0 document", e);
-        } catch (UserStoreException e) {
-            ResourceUtil.handleException("Error occurred while reading tenant information", e);
-        }
-        if (isTenantFlowStarted) {
-            PrivilegedCarbonContext.endTenantFlow();
         }
 
         log.info("Swagger resource migration done for all the tenants.");
@@ -792,6 +796,17 @@ public class MigrateFrom18to19 implements MigrationClient {
         if (log.isDebugEnabled()) {
             log.debug("old resources cleaned up.");
         }
+    }
+
+    /**
+     * This method is used to migrate API stats database.
+     * Database schema changes and data modifications as required will  be carried out.
+     *
+     * @throws APIMigrationException
+     */
+    @Override
+    public void statsMigration() throws APIMigrationException {
+        StatDBUtil.updateContext();
     }
 
     /**

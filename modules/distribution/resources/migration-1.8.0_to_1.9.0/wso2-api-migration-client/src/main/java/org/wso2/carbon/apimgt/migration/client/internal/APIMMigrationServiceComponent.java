@@ -27,6 +27,7 @@ import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
+import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -75,9 +76,10 @@ public class APIMMigrationServiceComponent {
         String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
-        boolean isDBMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
-        boolean isRegistryMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_REG));
-        boolean isFileSystemMigrationNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_FILE_SYSTEM));
+        boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
+        boolean isRegistryMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_REG));
+        boolean isFileSystemMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_FILE_SYSTEM));
+        boolean isStatMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_STATS));
 
         try {
             if (migrateToVersion != null) {
@@ -96,17 +98,17 @@ public class APIMMigrationServiceComponent {
                         migrateFrom18to19.fileSystemMigration();
                     } else {
                         //Only performs database migration
-                        if (isDBMigrationNeeded) {
+                        if (isDBMigration) {
                             log.info("Migrating WSO2 API Manager 1.8.0 databases to WSO2 API Manager 1.9.0");
                             migrateFrom18to19.databaseMigration(migrateToVersion);
                         }
                         //Only performs registry migration
-                        if (isRegistryMigrationNeeded) {
+                        if (isRegistryMigration) {
                             log.info("Migrating WSO2 API Manager 1.8.0 registry resources to WSO2 API Manager 1.9.0");
                             migrateFrom18to19.registryResourceMigration();
                         }
                         //Only performs file system migration
-                        if (isFileSystemMigrationNeeded) {
+                        if (isFileSystemMigration) {
                             log.info("Migrating WSO2 API Manager 1.8.0 file system resources to WSO2 API Manager 1.9.0");
                             migrateFrom18to19.fileSystemMigration();
                         }
@@ -115,6 +117,12 @@ public class APIMMigrationServiceComponent {
                     if (cleanupNeeded) {
                         migrateFrom18to19.cleanOldResources();
                         log.info("Old resources cleaned up.");
+                    }
+
+                    if (isStatMigration) {
+                        StatDBUtil.initialize();
+                        migrateFrom18to19.statsMigration();
+                        log.info("Stat migration completed");
                     }
 
                     if (log.isDebugEnabled()) {
@@ -126,7 +134,7 @@ public class APIMMigrationServiceComponent {
                 }
             }
             else {
-                if (migrateAll || cleanupNeeded || isDBMigrationNeeded || isRegistryMigrationNeeded || isFileSystemMigrationNeeded) {
+                if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
                     log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
                 }
             }

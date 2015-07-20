@@ -39,10 +39,13 @@ public class Constants {
     public static final String ARG_MIGRATE_DB = "migrateDB";
     public static final String ARG_MIGRATE_REG = "migrateReg";
     public static final String ARG_MIGRATE_FILE_SYSTEM = "migrateFS";
+    public static final String ARG_MIGRATE_STATS = "migrateStats";
 
     // Synapse configuration related
     public static final String SYNAPSE_API_ROOT_ELEMENT = "api";
+    public static final String SYNAPSE_API_ATTRIBUTE_CONTEXT = "context";
     public static final String SYNAPSE_API_ATTRIBUTE_VERSION = "version";
+    public static final String SYNAPSE_API_ATTRIBUTE_VERSION_TYPE = "version-type";
     public static final String SYNAPSE_API_ATTRIBUTE_SOURCE = "source";
     public static final String SYNAPSE_API_ATTRIBUTE_NAME = "name";
     public static final String SYNAPSE_API_ATTRIBUTE_EXPRESSION = "expression";
@@ -66,6 +69,8 @@ public class Constants {
     public static final String SYNAPSE_API_VALUE_INLINE = "inline";
     public static final String SYNAPSE_API_VALUE_INLINE_UPPERCASE = "INLINE";
     public static final String SYNAPSE_API_VALUE_ENPOINT = "ENDPOINT";
+    public static final String SYNAPSE_API_VALUE_VERSION_TYPE_URL = "url";
+    public static final String SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT = "context";
     public static final String SYNAPSE_API_XMLNS = "http://ws.apache.org/ns/synapse";
 
 
