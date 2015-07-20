@@ -105,7 +105,7 @@ public class MigrationDBCreator extends DatabaseCreator {
 
         try {
             InputStream is = new FileInputStream(dbscriptName);
-            reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is, "UTF8"));
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();

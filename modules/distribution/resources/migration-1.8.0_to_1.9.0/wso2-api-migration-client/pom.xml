@@ -6,7 +6,7 @@
 
     <groupId>org.wso2.carbon</groupId>
     <artifactId>org.wso2.carbon.apimgt.migrate.client</artifactId>
-    <version>1.9.1-SNAPSHOT</version>
+    <version>1.9.X</version>
     <packaging>bundle</packaging>
 
     <repositories>
@@ -149,12 +149,12 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-            <version>[1.2.1,1.2.4]</version>
+            <version>[1.2.0,1.3.0)</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>[1.2.1,1.2.4]</version>
+            <version>[1.2.0,1.3.0)</version>
         </dependency>
     </dependencies>
 
