@@ -129,11 +129,10 @@ You can go to the script editor in BAM by accessing, Main > Analytics > Add in B
 drop table APIRequestData;
 drop table APIRequestSummaryData;
 drop table APIVersionUsageSummaryData;
-drop table APIVersionUsageSummaryData;
+drop table APIResourcePathUsageSummaryData;
 drop table APIResponseData;
 drop table APIResponseSummaryData;
-drop table APIRequestData;
-drop table APIRequestSummaryData;
-drop table APIVersionUsageSummaryData;
-drop table APIResponseData;
-drop table APIResponseSummaryData;
+drop table APIFaultData;
+drop table APIFaultSummaryData;
+drop table APIDestinationData;
+drop table APIDestinationDataSummaryData;
