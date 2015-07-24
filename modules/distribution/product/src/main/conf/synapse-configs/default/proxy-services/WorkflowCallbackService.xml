@@ -19,7 +19,7 @@
          </send>
       </inSequence>
       <outSequence>
-         <property name="messageType" value="text/xml" scope="axis2" type="STRING"/>
+         <property name="messageType" value="application/json" scope="axis2" type="STRING"/>
          <send/>
       </outSequence>
    </target>
