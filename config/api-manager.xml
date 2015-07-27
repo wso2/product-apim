@@ -373,7 +373,7 @@
         <!--
               Uncomment this to limit the number of APIs in api the API Store
           -->
-        <!--APIsPerPage>5</APIsPerPage-->
+        <!--APIsPerPage>30</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
