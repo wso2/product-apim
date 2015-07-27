@@ -142,8 +142,14 @@ public class AuthenticatorUtil {
         if (usernameAndPassword != null) {
             //Split username and password tokens
             final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
-            username = tokenizer.nextToken();
-            password = tokenizer.nextToken();
+
+            if (tokenizer.hasMoreTokens()) {
+                username = tokenizer.nextToken();
+            }
+
+            if (tokenizer.hasMoreTokens()) {
+                password = tokenizer.nextToken();
+            }
 
             if (username != null && password != null) {
                 return true;
