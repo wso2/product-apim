@@ -109,6 +109,14 @@
                 <include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet-->
+    <fileSet>
+            <directory>src/main/conf/</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity/</outputDirectory>
+            <includes>
+                <include>**/sso-idp-config.xml</include>
+                <include>**/application-authentication.xml</include>
+            </includes>
+    </fileSet>
 	<fileSet>
             <directory>../../distribution/product/target/repository/database</directory>
             <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
@@ -492,13 +500,6 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-social</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/social</outputDirectory>
         </fileSet>
-        <!--fileSet>
-            <directory>src/main/conf/</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity/</outputDirectory>
-            <includes>
-                <include>**/sso-idp-config.xml</include>
-            </includes>
-        </fileSet-->
         <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/security/
@@ -506,6 +507,15 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/security/</outputDirectory>
             <includes>
                 <include>**/sso_redirect.html</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/identity/
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/identity/</outputDirectory>
+            <includes>
+                <include>**/samlsso_response.html</include>
             </includes>
         </fileSet>
 
@@ -738,11 +748,6 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
-            <fileMode>644</fileMode>
-        </file>
-        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/thrift-agent-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/data-bridge/</outputDirectory>
             <fileMode>644</fileMode>
@@ -764,12 +769,12 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/publisher/config</outputDirectory>
             <filtered>true</filtered>
         </file>
-        <file>
+        <!--file>
             <source>src/main/conf/sso-idp-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
             <destName>sso-idp-config.xml</destName>
             <filtered>true</filtered>
-        </file>
+        </file-->
 	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
