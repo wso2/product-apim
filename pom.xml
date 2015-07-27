@@ -908,6 +908,8 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
+        <identity.core.version>4.2.6</identity.core.version>
+        <bam.feature.version>4.2.6</bam.feature.version>
 
     </properties>
 
