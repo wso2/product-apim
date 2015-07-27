@@ -30,7 +30,6 @@
     <artifactId>wso2-apim-feature-repository-generation</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 Carbon - APIM Feature Repository Generation</name>
-
     <url>http://wso2.org</url>
 
     <build>
@@ -301,7 +300,6 @@
                                     </features>
                                 </category>
                             </categories>
-
                         </configuration>
                     </execution>
                 </executions>
