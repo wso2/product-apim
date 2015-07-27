@@ -114,6 +114,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity/</outputDirectory>
             <includes>
                 <include>**/sso-idp-config.xml</include>
+                <include>**/application-authentication.xml</include>
             </includes>
     </fileSet>
 	<fileSet>
@@ -744,11 +745,6 @@
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading-environments.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
         <file>

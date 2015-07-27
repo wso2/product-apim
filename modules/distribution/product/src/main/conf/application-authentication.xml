@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- ~ Copyright (c) 2005-2014, WSO2 Inc. (http://www.wso2.org) All Rights
+	Reserved. ~ ~ WSO2 Inc. licenses this file to you under the Apache License,
+	~ Version 2.0 (the "License"); you may not use this file except ~ in compliance
+	with the License. ~ You may obtain a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0
+	~ ~ Unless required by applicable law or agreed to in writing, ~ software
+	distributed under the License is distributed on an ~ "AS IS" BASIS, WITHOUT
+	WARRANTIES OR CONDITIONS OF ANY ~ KIND, either express or implied. See the
+	License for the ~ specific language governing permissions and limitations
+	~ under the License. -->
+
+<ApplicationAuthentication xmlns="http://wso2.org/projects/carbon/application-authentication.xml">
+
+    <JDBCPersistenceManager>
+        <DataSource>
+            <!-- Include a data source name (jndiConfigName) from the set of data
+                sources defined in master-datasources.xml -->
+            <!--Name>jdbc/WSO2_IDP_DB</Name-->
+            <Name>jdbc/WSO2CarbonDB</Name>
+        </DataSource>
+    </JDBCPersistenceManager>
+
+    <!--
+        ProxyMode allows framework to operate in either 'smart' mode
+        or 'dumb' mode.
+        smart = both local and federated authentication is supported
+        dumb = only federated authentication is supported
+    -->
+    <ProxyMode>smart</ProxyMode>
+
+    <!--
+        AuthenticationEndpointURL is location of the web app containing
+        the authentication related pages
+    -->
+    <AuthenticationEndpointURL>/sso/login</AuthenticationEndpointURL>
+
+    <!--
+        Extensions allow extending the default behaviour of the authentication
+        process.
+    -->
+    <Extensions>
+        <RequestCoordinator>org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.DefaultRequestCoordinator</RequestCoordinator>
+        <AuthenticationRequestHandler>org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.DefaultAuthenticationRequestHandler</AuthenticationRequestHandler>
+        <LogoutRequestHandler>org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.DefaultLogoutRequestHandler</LogoutRequestHandler>
+        <StepBasedSequenceHandler>org.wso2.carbon.identity.application.authentication.framework.handler.sequence.impl.DefaultStepBasedSequenceHandler</StepBasedSequenceHandler>
+        <RequestPathBasedSequenceHandler>org.wso2.carbon.identity.application.authentication.framework.handler.sequence.impl.DefaultRequestPathBasedSequenceHandler</RequestPathBasedSequenceHandler>
+        <StepHandler>org.wso2.carbon.identity.application.authentication.framework.handler.step.impl.DefaultStepHandler</StepHandler>
+        <HomeRealmDiscoverer>org.wso2.carbon.identity.application.authentication.framework.handler.hrd.impl.DefaultHomeRealmDiscoverer</HomeRealmDiscoverer>
+        <ClaimHandler>org.wso2.carbon.identity.application.authentication.framework.handler.claims.impl.DefaultClaimHandler</ClaimHandler>
+        <ProvisioningHandler>org.wso2.carbon.identity.application.authentication.framework.handler.provisioning.impl.DefaultProvisioningHandler</ProvisioningHandler>
+    </Extensions>
+
+    <!--
+        AuthenticatorNameMappings allow specifying an authenticator
+        against a pre-defined alias (which will be used by other components.
+        E.g. Application Mgt component). This enables the usage of a custom
+        authenticator in place of an authenticator that gets packed with the
+        distribution.
+    -->
+    <AuthenticatorNameMappings>
+        <AuthenticatorNameMapping name="BasicAuthenticator" alias="basic" />
+        <AuthenticatorNameMapping name="OAuthRequestPathAuthenticator" alias="oauth-bearer" />
+        <AuthenticatorNameMapping name="BasicAuthRequestPathAuthenticator" alias="basic-auth" />
+        <AuthenticatorNameMapping name="IWAAuthenticator" alias="iwa" />
+        <AuthenticatorNameMapping name="SAMLSSOAuthenticator" alias="samlsso" />
+        <AuthenticatorNameMapping name="OpenIDConnectAuthenticator" alias="openidconnect" />
+        <AuthenticatorNameMapping name="OpenIDAuthenticator" alias="openid" />
+        <AuthenticatorNameMapping name="PassiveSTSAuthenticator" alias="passive-sts" />
+    </AuthenticatorNameMappings>
+
+    <!--
+		AuthenticatorConfigs allow specifying various configurations needed
+		by the authenticators by using any number of \'Parameter\' elements
+		E.g.
+		<AuthenticatorConfig name="CustomAuthenticator" enabled="true" />
+			<Parameter name="paramName1">paramValue</Parameter>
+			<Parameter name="paramName2">paramValue</Parameter>
+		</AuthenticatorConfig>
+    -->
+    <AuthenticatorConfigs>
+        <AuthenticatorConfig name="BasicAuthenticator" enabled="true" />
+        <AuthenticatorConfig name="OAuthRequestPathAuthenticator" enabled="true" />
+        <AuthenticatorConfig name="BasicAuthRequestPathAuthenticator" enabled="true" />
+        <AuthenticatorConfig name="SAMLSSOAuthenticator" enabled="true">
+            <!--Parameter name="SAMLSSOManager">org.wso2.carbon.identity.application.authenticator.samlsso.manager.DefaultSAMLSSOManager</Parameter-->
+        </AuthenticatorConfig>
+        <AuthenticatorConfig name="OpenIDConnectAuthenticator" enabled="true">
+            <!--Parameter name="IDTokenHandler">org.wso2.carbon.identity.application.authenticator.oidc.DefaultIDTokenHandler</Parameter-->
+            <!--Parameter name="ClaimsRetriever">org.wso2.carbon.identity.application.authenticator.oidc.OIDCUserInfoClaimsRetriever</Parameter-->
+        </AuthenticatorConfig>
+        <AuthenticatorConfig name="OpenIDAuthenticator" enabled="true">
+            <Parameter name="LoginPage">/authenticationendpoint/login.do</Parameter>
+            <Parameter name="TrustStorePath">/repository/resources/security/client-truststore.jks</Parameter>
+            <Parameter name="TrustStorePassword">wso2carbon</Parameter>
+            <!--Parameter name="OpenIDManager">org.wso2.carbon.identity.application.authenticator.openid.manager.DefaultOpenIDManager</Parameter>
+            <Parameter name="AttributesRequestor">org.wso2.carbon.identity.application.authenticator.openid.manager.SampleAttributesRequestor</Parameter-->
+        </AuthenticatorConfig>
+    </AuthenticatorConfigs>
+
+    <!--
+		Sequences allow specifying authentication flows for different
+		registered applications. \'default\' sequence is taken if an
+		application specific sequence doesn't exist in this file or
+		in the Application Mgt module.
+    -->
+    <Sequences>
+        <!-- Default Sequence. This is mandatory -->
+        <Sequence appId="default">
+            <Step order="1">
+                <Authenticator name="BasicAuthenticator"/>
+            </Step>
+        </Sequence>
+    </Sequences>
+
+    <ServiceProvidersManagement>
+        <ApplicationDAO>org.wso2.carbon.identity.application.mgt.dao.impl.ApplicationDAOImpl</ApplicationDAO>
+        <OAuthOIDCClientDAO>org.wso2.carbon.identity.application.mgt.dao.impl.OAuthApplicationDAOImpl</OAuthOIDCClientDAO>
+        <SAMLClientDAO>org.wso2.carbon.identity.application.mgt.dao.impl.SAMLApplicationDAOImpl</SAMLClientDAO>
+        <SystemIDPDAO>org.wso2.carbon.identity.application.mgt.dao.impl.IdentityProviderDAOImpl</SystemIDPDAO>
+        <ClaimDialect>http://wso2.org/claims</ClaimDialect>
+    </ServiceProvidersManagement>
+
+</ApplicationAuthentication>
