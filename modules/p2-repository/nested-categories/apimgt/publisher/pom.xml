@@ -64,7 +64,7 @@
                                     org.wso2.carbon.core.common:${carbon.platform.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.user.mgt:${carbon.commons.version}
+                                    org.wso2.carbon.user.mgt:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.identity.user.profile:${carbon.identity.version}
@@ -351,7 +351,7 @@
                                     org.wso2.carbon.governance.lifecycle.management:${carbon.governance.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.user.mgt:${carbon.commons.version}
+                                    org.wso2.carbon.user.mgt:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.identity.core:${carbon.identity.version}
