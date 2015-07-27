@@ -109,6 +109,13 @@
                 <include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet-->
+    <fileSet>
+            <directory>src/main/conf/</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity/</outputDirectory>
+            <includes>
+                <include>**/sso-idp-config.xml</include>
+            </includes>
+    </fileSet>
 	<fileSet>
             <directory>../../distribution/product/target/repository/database</directory>
             <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
@@ -491,13 +498,6 @@
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-social</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/social</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/conf/</directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity/</outputDirectory>
-            <includes>
-                <include>**/sso-idp-config.xml</include>
-            </includes>
         </fileSet>
         <fileSet>
             <directory>
