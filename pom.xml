@@ -801,7 +801,7 @@
 
 	<!-- Carbon Governance -->
         <carbon.governance.version>4.5.1</carbon.governance.version>
-        <carbon.governance.ext.version>4.4.0</carbon.governance.ext.version>
+        <carbon.governance.ext.version>4.4.1-SNAPSHOT</carbon.governance.ext.version>
 	
 	<!--carbon versions-->
         <carbon.kernel.version>4.4.0</carbon.kernel.version>
@@ -815,7 +815,7 @@
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.1</carbon.identity.version>
+	<carbon.identity.version>4.5.2</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
@@ -908,6 +908,8 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
+        <identity.core.version>4.2.6</identity.core.version>
+        <bam.feature.version>4.2.6</bam.feature.version>
 
     </properties>
 
