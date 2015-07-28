@@ -53,7 +53,7 @@
         <!--module>modules/jaggery-apps/api-provider-web</module>
         <module>modules/jaggery-apps/api-store-web</module-->
         <module>modules/distribution</module>
-        <module>modules/p2-repository</module>
+        <!--<module>modules/p2-repository</module>-->
         <!--module>modules/integration</module-->
     </modules>
 
