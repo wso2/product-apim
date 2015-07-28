@@ -19,14 +19,6 @@
 
 <Server xmlns="http://wso2.org/projects/carbon/carbon.xml">
 
-    <OpenIDServerUrl>https://localhost:9443/openidserver</OpenIDServerUrl>
-
-    <OpenIDUserPattern>https://localhost:9443/openid/</OpenIDUserPattern>
-    <!-- If the users must be prompted for approval -->
-    <OpenIDSkipUserConsent>false</OpenIDSkipUserConsent>
-    <!-- Expiry time of the OpenID RememberMe token in minutes -->
-    <OpenIDRememberMeExpiry>7200</OpenIDRememberMeExpiry>
-
     <JDBCPersistenceManager>
         <DataSource>
             <!-- Include a data source name (jndiConfigName) from the set of data sources defined in master-datasources.xml -->
@@ -68,6 +60,24 @@
         </System>
     </Identity>
 
+    <OpenID>
+        <OpenIDServerUrl>https://localhost:9443/openidserver</OpenIDServerUrl>
+        <OpenIDUserPattern>https://localhost:9443/openid/</OpenIDUserPattern>
+        <!-- If the users must be prompted for approval -->
+        <OpenIDSkipUserConsent>false</OpenIDSkipUserConsent>
+        <!-- Expiry time of the OpenID RememberMe token in minutes -->
+        <OpenIDRememberMeExpiry>7200</OpenIDRememberMeExpiry>
+        <!-- Multifactor Authentication configuration -->
+        <UseMultifactorAuthentication>false</UseMultifactorAuthentication>
+        <!-- To enable or disable openid dumb mode -->
+        <DisableOpenIDDumbMode>false</DisableOpenIDDumbMode>
+        <!-- remember me session timeout in seconds -->
+        <SessionTimeout>36000</SessionTimeout>
+        <!-- skips authentication if valid SAML2 Web SSO browser session available -->
+        <AcceptSAMLSSOLogin>false</AcceptSAMLSSOLogin>
+        <ClaimsRetrieverImplClass>org.wso2.carbon.identity.provider.openid.claims.DefaultClaimsRetriever</ClaimsRetrieverImplClass>
+    </OpenID>
+
     <OAuth>
         <RequestTokenUrl>https://localhost:9443/oauth/request-token</RequestTokenUrl>
         <AccessTokenUrl>https://localhost:9443/oauth/access-token</AccessTokenUrl>
@@ -90,11 +100,13 @@
             org.wso2.carbon.identity.oauth.tokenprocessor.PlainTextPersistenceProcessor
         </TokenPersistenceProcessor>
         <ClientAuthHandlers>
-            <ClientAuthHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.clientauth.BasicAuthClientAuthHandler</ClientAuthHandlerImplClass>
+            <ClientAuthHandler Class="org.wso2.carbon.identity.oauth2.token.handlers.clientauth.BasicAuthClientAuthHandler">
+                <Property Name="StrictClientCredentialValidation">false</Property>
+            </ClientAuthHandler>
         </ClientAuthHandlers>
-	<!--TokenPersistenceProcessor>
-            org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor
-        </TokenPersistenceProcessor-->
+        <!--TokenPersistenceProcessor>
+                org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor
+            </TokenPersistenceProcessor-->
         <!-- Supported Response Types -->
         <SupportedResponseTypes>
             <SupportedResponseType>
@@ -117,13 +129,13 @@
                 <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</GrantTypeHandlerImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
-               <GrantTypeName>application_token</GrantTypeName>
-               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
-               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
-           </SupportedGrantType>
-            <SupportedGrantType>
                 <GrantTypeName>refresh_token</GrantTypeName>
                 <GrantTypeHandlerImplClass>org.wso2.carbon.identity.oauth2.token.handlers.grant.RefreshGrantHandler</GrantTypeHandlerImplClass>
+            </SupportedGrantType>
+            <SupportedGrantType>
+                <GrantTypeName>application_token</GrantTypeName>
+                <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
+                <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
             </SupportedGrantType>
             <SupportedGrantType>
                 <GrantTypeName>client_credentials</GrantTypeName>
@@ -150,63 +162,61 @@
             <ClaimUri>http://wso2.org/claims/gender</ClaimUri>
         </RequiredRespHeaderClaimUris>-->
 
-        <!-- Enable/Disable OAuth Caching-->
-        <!--<EnableCache>true</EnableCache>-->
 
-	<!-- Assertions can be used to embedd parameters into access token.-->
-	<EnableAssertions>
-		<UserName>false</UserName>
-	</EnableAssertions>
+        <!-- Assertions can be used to embedd parameters into access token.-->
+        <EnableAssertions>
+            <UserName>false</UserName>
+        </EnableAssertions>
 
-	<!-- This should be set to true when using multiple user stores and keys should saved 
-			into different tables according to the user store. By default all the application keys are saved in to the same table.
-			UserName Assertion should be 'true' to use this.-->
-	<EnableAccessTokenPartitioning>false</EnableAccessTokenPartitioning>
+        <!-- This should be set to true when using multiple user stores and keys should saved
+                into different tables according to the user store. By default all the application keys are saved in to the same table.
+                UserName Assertion should be 'true' to use this.-->
+        <EnableAccessTokenPartitioning>false</EnableAccessTokenPartitioning>
 
-	<!-- user store domain names and mappings to new table names.
-				eg: if you provide 'A:foo.com', foo.com should be the user store domain name and 'A' represent the relavant mapping of 
-				token storing table, i.e. tokens relevant to the users comming from foo.com user store will be added to a table called
-				IDN_OAUTH2_ACCESS_TOKEN_A. --> 
-	<AccessTokenPartitioningDomains><!-- A:foo.com, B:bar.com --></AccessTokenPartitioningDomains>
+        <!-- user store domain names and mappings to new table names.
+                    eg: if you provide 'A:foo.com', foo.com should be the user store domain name and 'A' represent the relavant mapping of
+                    token storing table, i.e. tokens relevant to the users comming from foo.com user store will be added to a table called
+                    IDN_OAUTH2_ACCESS_TOKEN_A. -->
+        <AccessTokenPartitioningDomains><!-- A:foo.com, B:bar.com --></AccessTokenPartitioningDomains>
 
-	<AuthorizationContextTokenGeneration>		
-		<Enabled>false</Enabled>
-		<TokenGeneratorImplClass>org.wso2.carbon.identity.oauth2.authcontext.JWTTokenGenerator</TokenGeneratorImplClass>
-		<ClaimsRetrieverImplClass>org.wso2.carbon.identity.oauth2.authcontext.DefaultClaimsRetriever</ClaimsRetrieverImplClass>
-		<ConsumerDialectURI>http://wso2.org/claims</ConsumerDialectURI>
-		<SignatureAlgorithm>SHA256withRSA</SignatureAlgorithm>
-		<AuthorizationContextTTL>15</AuthorizationContextTTL>
-	</AuthorizationContextTokenGeneration>
+        <AuthorizationContextTokenGeneration>
+            <Enabled>false</Enabled>
+            <TokenGeneratorImplClass>org.wso2.carbon.identity.oauth2.authcontext.JWTTokenGenerator</TokenGeneratorImplClass>
+            <ClaimsRetrieverImplClass>org.wso2.carbon.identity.oauth2.authcontext.DefaultClaimsRetriever</ClaimsRetrieverImplClass>
+            <ConsumerDialectURI>http://wso2.org/claims</ConsumerDialectURI>
+            <SignatureAlgorithm>SHA256withRSA</SignatureAlgorithm>
+            <AuthorizationContextTTL>15</AuthorizationContextTTL>
+        </AuthorizationContextTokenGeneration>
 
-    	<SAML2Grant>
-		<!--SAML2TokenHandler></SAML2TokenHandler-->
-	</SAML2Grant>
-	<OpenIDConnect>
-              <IDTokenBuilder>org.wso2.carbon.identity.openidconnect.DefaultIDTokenBuilder</IDTokenBuilder>
-              <IDTokenIssuerID>https://localhost:9443/oauth2endpoints/token</IDTokenIssuerID>
-              <IDTokenSubjectClaim>http://wso2.org/claims/givenname</IDTokenSubjectClaim>
-              <IDTokenCustomClaimsCallBackHandler>org.wso2.carbon.identity.openidconnect.SAMLAssertionClaimsCallback</IDTokenCustomClaimsCallBackHandler>
-              <IDTokenExpiration>3600</IDTokenExpiration>
-              <UserInfoEndpointClaimDialect>http://wso2.org/claims</UserInfoEndpointClaimDialect>
-              <UserInfoEndpointClaimRetriever>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoUserStoreClaimRetriever</UserInfoEndpointClaimRetriever>
-              <UserInfoEndpointRequestValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInforRequestDefaultValidator</UserInfoEndpointRequestValidator>
-              <UserInfoEndpointAccessTokenValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoISAccessTokenValidator</UserInfoEndpointAccessTokenValidator>
-              <UserInfoEndpointResponseBuilder>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoJSONResponseBuilder</UserInfoEndpointResponseBuilder>
-              <SkipUserConsent>false</SkipUserConsent>
-         </OpenIDConnect>
-		<!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore, 
-		he should configure this section. Primary login doesn't have a claimUri associated with it. But secondary login, which is a claim attribute,
-		is associated with a claimuri.--> 
-			<!-- <LoginConfig>
-					<UserIdLogin  primary="true">
-				<ClaimUri></ClaimUri>
-				</UserIdLogin>
-				<EmailLogin  primary="false">
-					<ClaimUri>http://wso2.org/claims/emailaddress</ClaimUri>
-				</EmailLogin>
-			</LoginConfig>--> 
+        <SAML2Grant>
+            <!--SAML2TokenHandler></SAML2TokenHandler-->
+        </SAML2Grant>
+        <OpenIDConnect>
+            <IDTokenBuilder>org.wso2.carbon.identity.openidconnect.DefaultIDTokenBuilder</IDTokenBuilder>
+            <IDTokenIssuerID>https://localhost:9443/oauth2endpoints/token</IDTokenIssuerID>
+            <IDTokenSubjectClaim>http://wso2.org/claims/fullname</IDTokenSubjectClaim>
+            <IDTokenCustomClaimsCallBackHandler>org.wso2.carbon.identity.openidconnect.SAMLAssertionClaimsCallback</IDTokenCustomClaimsCallBackHandler>
+            <IDTokenExpiration>3600</IDTokenExpiration>
+            <UserInfoEndpointClaimDialect>http://wso2.org/claims</UserInfoEndpointClaimDialect>
+            <UserInfoEndpointClaimRetriever>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoUserStoreClaimRetriever</UserInfoEndpointClaimRetriever>
+            <UserInfoEndpointRequestValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInforRequestDefaultValidator</UserInfoEndpointRequestValidator>
+            <UserInfoEndpointAccessTokenValidator>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoISAccessTokenValidator</UserInfoEndpointAccessTokenValidator>
+            <UserInfoEndpointResponseBuilder>org.wso2.carbon.identity.oauth.endpoint.user.impl.UserInfoJSONResponseBuilder</UserInfoEndpointResponseBuilder>
+            <SkipUserConsent>false</SkipUserConsent>
+        </OpenIDConnect>
+
+        <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
+        he should configure this section. Primary login doesn't have a claimUri associated with it. But secondary login, which is a claim attribute,
+        is associated with a claimuri.-->
+        <!-- <LoginConfig>
+                <UserIdLogin  primary="true">
+            <ClaimUri></ClaimUri>
+            </UserIdLogin>
+            <EmailLogin  primary="false">
+                <ClaimUri>http://wso2.org/claims/emailaddress</ClaimUri>
+            </EmailLogin>
+        </LoginConfig>-->
     </OAuth>
-
     <MultifactorAuthentication>
         <XMPPSettings>
             <XMPPConfig>
@@ -222,6 +232,19 @@
 
     <SSOService>
         <IdentityProviderURL>https://localhost:9443/samlsso</IdentityProviderURL>
+        <SingleLogoutRetryCount>5</SingleLogoutRetryCount>
+        <SingleLogoutRetryInterval>60000</SingleLogoutRetryInterval> <!-- in milli seconds -->
+        <TenantPartitioningEnabled>false</TenantPartitioningEnabled>
+        <SessionTimeout>36000</SessionTimeout> <!-- remember me session timeout in seconds -->
+        <!-- skips authentication if valid SAML2 Web SSO browser session available -->
+        <AttributeStatementBuilder>org.wso2.carbon.identity.sso.saml.attributes.UserAttributeStatementBuilder</AttributeStatementBuilder>
+        <AttributesClaimDialect>http://wso2.org/claims</AttributesClaimDialect>
+        <AcceptOpenIDLogin>false</AcceptOpenIDLogin>
+        <ClaimsRetrieverImplClass>org.wso2.carbon.identity.sso.saml.builders.claims.DefaultClaimsRetriever</ClaimsRetrieverImplClass>
+        <!-- SAML Token validity period in minutes -->
+        <SAMLResponseValidityPeriod>5</SAMLResponseValidityPeriod>
+        <SAMLSSOSigner>org.wso2.carbon.identity.sso.saml.builders.signature.DefaultSSOSigner</SAMLSSOSigner>
+        <UseAuthenticatedUserDomainCrypto>true</UseAuthenticatedUserDomainCrypto>
     </SSOService>
 
     <EntitlementSettings>
@@ -248,6 +271,16 @@
         </ThirftBasedEntitlementConfig>
     </EntitlementSettings>
 
-    <!--To do OSGI invocations to OAuth2Service,when the entire server is in one JVM -->
-    <SeparateBackEnd>false</SeparateBackEnd>
+    <SCIMAuthenticators>
+        <Authenticator class="org.wso2.carbon.identity.scim.provider.auth.BasicAuthHandler">
+            <Property name="Priority">5</Property>
+        </Authenticator>
+        <Authenticator class="org.wso2.carbon.identity.scim.provider.auth.OAuthHandler">
+            <Property name="Priority">10</Property>
+            <Property name="AuthorizationServer">local://services</Property>
+            <!--Property name="AuthorizationServer">https://localhost:9443/services</Property>
+            <Property name="UserName">admin</Property>
+            <Property name="Password">admin</Property-->
+        </Authenticator>
+    </SCIMAuthenticators>
 </Server>

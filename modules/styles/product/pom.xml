@@ -62,7 +62,7 @@
                         <Import-Package>
                             org.osgi.framework,
                             org.osgi.service.http,
-                            org.wso2.carbon.ui,
+                            org.wso2.carbon.ui;version="${carbon.kernel.imp.pkg.version}",
                             javax.servlet.*;version="2.4.0",
                             *;resolution:=optional
                         </Import-Package>
