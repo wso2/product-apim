@@ -778,8 +778,8 @@
         <apimgt.startup.publisher.version>1.3.0-SNAPSHOT</apimgt.startup.publisher.version>
         <apimgt.usage.client>1.3.0-SNAPSHOT</apimgt.usage.client>
         <apimgt.usage.publisher>1.3.0-SNAPSHOT</apimgt.usage.publisher>
-        <apimgt.keymgt.stub.version>4.2.5-SNAPSHOT</apimgt.keymgt.stub.version>
-        <apimgt.handlers.security.stub>4.2.5-SNAPSHOT</apimgt.handlers.security.stub>
+        <apimgt.keymgt.stub.version>4.3.0-SNAPSHOT</apimgt.keymgt.stub.version>
+        <apimgt.handlers.security.stub>4.3.0-SNAPSHOT</apimgt.handlers.security.stub>
         <carbon.forum.version>1.3.0-SNAPSHOT</carbon.forum.version>
         <carbon.forum.feature.version>1.3.0-SNAPSHOT</carbon.forum.feature.version>
         <carbon.forum.server.feature.version>1.3.0-SNAPSHOT</carbon.forum.server.feature.version>
@@ -793,7 +793,7 @@
         </apimgt.startup.publisher.feature.version>
         <apimgt.store.feature.version>1.3.0-SNAPSHOT</apimgt.store.feature.version>
 	    <apimgt.oidc.version>1.3.0-SNAPSHOT</apimgt.oidc.version>
-
+	
 	<!-- Carbon Registry -->
         <carbon.registry.version>4.4.3</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>

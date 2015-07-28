@@ -768,10 +768,11 @@
 	</phase>
 	<phase name="Validation"/>
         <phase name="Transport">
-            <handler name="TenantActiveCheckDispatcher"
+            <!--TEMPORALY-->
+            <!--handler name="TenantActiveCheckDispatcher"
                      class="org.wso2.carbon.tenant.dispatcher.TenantActiveCheckDispatcher">
                 <order phase="Transport"/>
-            </handler>
+            </handler-->
             <handler name="RequestURIBasedDispatcher"
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher">
                 <order phase="Transport"/>
@@ -786,8 +787,9 @@
                      class="org.wso2.carbon.core.transports.smtp.SMTPFaultHandler">
                 <order phase="Transport"/>
             </handler-->
-            <handler name="CacheMessageBuilderDispatchandler"
-                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/>
+            <!-- TEMPORALY-->
+            <!--handler name="CacheMessageBuilderDispatchandler"
+                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/-->
             <handler name="CarbonContentConfigurator"
                      class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
         </phase>
