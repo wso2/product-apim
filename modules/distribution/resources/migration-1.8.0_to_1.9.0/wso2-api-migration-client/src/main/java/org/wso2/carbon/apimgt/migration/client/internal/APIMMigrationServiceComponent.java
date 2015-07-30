@@ -16,7 +16,6 @@
 
 package org.wso2.carbon.apimgt.migration.client.internal;
 
-import com.sun.tools.jxc.apt.Const;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
@@ -26,7 +25,6 @@ import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
-import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
@@ -34,8 +32,6 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -74,6 +70,7 @@ public class APIMMigrationServiceComponent {
         }
 
         String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
+        String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
         boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
@@ -84,11 +81,11 @@ public class APIMMigrationServiceComponent {
         try {
             if (migrateToVersion != null) {
                 if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
-                    log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
+                    log.info("Migrating WSO2 API Manager 1.8.0 to WSO2 API Manager 1.9.0");
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19();
+                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants);
 
                     //Default operation will migrate all three types of resources
                     if (migrateAll) {
@@ -133,9 +130,13 @@ public class APIMMigrationServiceComponent {
 
                 }
             }
-            else {
+            else { // Migration version not specified
                 if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
                     log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
+                }
+                else {
+                    log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION +
+                            " and a mandatory migration option have not been specified . Please specify these properties and try again.");
                 }
             }
         } catch (APIMigrationException e) {
@@ -144,6 +145,10 @@ public class APIMMigrationServiceComponent {
             log.error("User store  exception occurred while migrating", e);
         } catch (SQLException e) {
             log.error("SQL exception occurred while migrating", e);
+        } catch (Exception e) {
+            log.error("Generic exception occurred while migrating", e);
+        } catch (Throwable t) {
+            log.error("Throwable error", t);
         }
         log.info("WSO2 API Manager migration component successfully activated.");
     }
