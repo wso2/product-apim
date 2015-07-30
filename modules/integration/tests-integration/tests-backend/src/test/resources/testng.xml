@@ -95,6 +95,7 @@
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.ReadOnlySecondaryUserStoreAPITokenGenerationTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->

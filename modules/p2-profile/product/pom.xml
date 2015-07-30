@@ -393,7 +393,7 @@
 				<featureArtifactDef>org.jaggeryjs.modules:ws.feature:1.1.0</featureArtifactDef>
 
                                 <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${apimgt.feature.version}</featureArtifactDef>
-								<featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${stratos.version}</featureArtifactDef>
+								<featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${apimgt.stratos.version}</featureArtifactDef>
 
                                 <!-- Registry Features -->
                                 <featureArtifactDef>org.wso2.carbon:org.wso2.carbon.registry.extensions.feature:4.2.1</featureArtifactDef>
@@ -765,7 +765,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-									<version>${stratos.version}</version>
+									<version>${apimgt.stratos.version}</version>
 								</feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1190,7 +1190,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-									<version>${stratos.version}</version>
+									<version>${apimgt.stratos.version}</version>
 								</feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1544,7 +1544,7 @@
                                 </feature>
 				                <feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-				                    <version>${stratos.version}</version>
+				                    <version>${apimgt.stratos.version}</version>
 				                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -1935,7 +1935,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-									<version>${stratos.version}</version>
+									<version>${apimgt.stratos.version}</version>
 								</feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2365,7 +2365,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-									<version>${stratos.version}</version>
+									<version>${apimgt.stratos.version}</version>
 								</feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
@@ -2787,7 +2787,7 @@
                                 </feature>
 								<feature>
                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-									<version>${stratos.version}</version>
+									<version>${apimgt.stratos.version}</version>
 								</feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
