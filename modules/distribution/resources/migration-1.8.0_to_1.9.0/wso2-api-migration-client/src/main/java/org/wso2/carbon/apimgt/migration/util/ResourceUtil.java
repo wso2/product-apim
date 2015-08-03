@@ -156,6 +156,14 @@ public class ResourceUtil {
         try {
             String namespace = "http://ws.apache.org/ns/synapse";
             String filePath = sequenceDirectoryFilePath + sequenceName + ".xml";
+
+            File sequenceFile = new File(filePath);
+
+            if (!sequenceFile.exists()) {
+                log.debug("Sequence file " + sequenceName + ".xml does not exist");
+                return;
+            }
+
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();

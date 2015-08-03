@@ -12,32 +12,6 @@
   <!-- This parameter is used to enable the securevault support when try to publish endpoint secured APIs. Values should be "true" or "false".
   By default secure vault is disabled.-->
 	<EnableSecureVault>false</EnableSecureVault>
-    <!--
-        Database configuration used by API publisher, API store and API key manager.
-        When these components are deployed separately, each of them should have
-        separate database configurations pointing to the same physical database.
-    -->
-    <!--Database-->
-        <!--
-            JDBC connection string for the database.
-        -->
-        <!--<URL>jdbc:h2:repository/database/WSO2AM_DB</URL> -->
-
-        <!--
-            JDBC username for the database.
-        -->
-        <!--<Username>wso2carbon</Username>-->
-
-        <!--
-            JDBC password for the database.
-        -->
-        <!--<Password>wso2carbon</Password>
-
-
-            JDBC driver for the database.
-        -->
-        <!--<Driver>org.h2.Driver</Driver>
-    </Database>-->
 
     <!--
         Authentication manager configuration for API publisher and API store. This is
@@ -373,7 +347,7 @@
         <!--
               Uncomment this to limit the number of APIs in api the API Store
           -->
-        <!--APIsPerPage>5</APIsPerPage-->
+        <!--APIsPerPage>30</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.

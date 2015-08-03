@@ -107,7 +107,7 @@
 				<importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.webapp.mgt:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${stratos.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${apimgt.stratos.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.registry.contentsearch:4.2.2</importFeatureDef>
 				<importFeatureDef>org.apache.synapse.wso2:2.1.2-wso2v6</importFeatureDef>
 				<importFeatureDef>org.apache.synapse.transport.nhttp:2.1.2-wso2v6</importFeatureDef>
