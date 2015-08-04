@@ -94,4 +94,35 @@ CREATE EXTERNAL TABLE IF NOT EXISTS APIDestinationDataSummaryData (api STRING, v
 
 insert overwrite table APIDestinationDataSummaryData select api,version,apiPublisher, context,destination, sum(request) as total_request_count,hostName, year(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as year, month(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as month,day(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as day,concat(substring(from_unixtime(cast(requestTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16),':00') as time from APIDestinationData where context is not NULL group by api,version,apiPublisher,context,destination,hostName,year(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )), month(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),day(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),hour(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),minute(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),substring(from_unixtime(cast(requestTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,16);
 
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS APIRequestDataMinimal (key STRING,
+	api STRING,api_version STRING, context STRING, apiPublisher STRING,applicationName STRING,tenantDomain STRING,requestTime BIGINT,request INT) STORED BY
+	'org.apache.hadoop.hive.cassandra.CassandraStorageHandler' WITH SERDEPROPERTIES ('wso2.carbon.datasource.name'='WSO2BAM_CASSANDRA_DATASOURCE',
+	"cassandra.cf.name" = "org_wso2_apimgt_statistics_request",
+	"cassandra.columns.mapping" = ":key,payload_api,payload_api_version,payload_context,payload_apiPublisher,payload_applicationName,payload_tenantDomain,payload_requestTime,payload_request" );
+
+CREATE EXTERNAL TABLE IF NOT EXISTS APIRequestSummaryDataMinimal (api STRING,api_version STRING, context STRING, apiPublisher STRING,applicationName STRING,tenantDomain STRING,year SMALLINT,month SMALLINT,day SMALLINT, week INT, time STRING,success_request_count INT) STORED BY 
+	'org.wso2.carbon.hadoop.hive.jdbc.storage.JDBCStorageHandler' TBLPROPERTIES ( 'wso2.carbon.datasource.name'='WSO2AM_STATS_DB',
+	'hive.jdbc.update.on.duplicate' = 'true',
+	'hive.jdbc.primary.key.fields'='api,api_version,context,apiPublisher,applicationName,tenantDomain,time',
+	'hive.jdbc.table.create.query' = 'CREATE TABLE API_THROTTLED_OUT_SUMMARY ( api VARCHAR(100), api_version VARCHAR(100),context VARCHAR(100),apiPublisher VARCHAR(100), applicationName VARCHAR(100), tenantDomain VARCHAR(100), year SMALLINT, month SMALLINT, day SMALLINT, week INT, time VARCHAR(30), success_request_count INT , throttleout_count INT, PRIMARY KEY(api,api_version,context,apiPublisher,applicationName,tenantDomain,time))' );
                                     
+insert overwrite table APIRequestSummaryDataMinimal select api,api_version,context,apiPublisher,applicationName,tenantDomain, year(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as year, month(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as month,day(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as day,cast(requestTime/(1000 * 60 * 60 *24 * 7) as INT) as week,concat(substring(from_unixtime(cast(requestTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,13),':00:00') as time,sum(request) as success_request_count from APIRequestDataMinimal where context is not NULL group by api,api_version,context,apiPublisher,applicationName,tenantDomain,year(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )), month(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),day(from_unixtime(cast(requestTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),cast(requestTime/(1000 * 60 * 60 *24 * 7) as INT),substring(from_unixtime(cast(requestTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,13);
+
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS APIThrottleData (key STRING,
+	api STRING,api_version STRING, context STRING, apiPublisher STRING,applicationName STRING,tenantDomain STRING,throttledTime BIGINT) STORED BY
+	'org.apache.hadoop.hive.cassandra.CassandraStorageHandler' WITH SERDEPROPERTIES ('wso2.carbon.datasource.name'='WSO2BAM_CASSANDRA_DATASOURCE',
+	"cassandra.cf.name" = "org_wso2_apimgt_statistics_throttle",
+	"cassandra.columns.mapping" = ":key,payload_api,payload_api_version,payload_context,payload_apiPublisher,payload_applicationName,payload_tenantDomain,payload_throttledTime" );
+
+
+CREATE EXTERNAL TABLE IF NOT EXISTS APIThrottleSummaryData (api STRING,api_version STRING, context STRING, apiPublisher STRING,applicationName STRING,tenantDomain STRING,year SMALLINT,month SMALLINT,day SMALLINT,week INT, time STRING,throttleout_count INT) STORED BY 
+	'org.wso2.carbon.hadoop.hive.jdbc.storage.JDBCStorageHandler' TBLPROPERTIES ( 'wso2.carbon.datasource.name'='WSO2AM_STATS_DB',
+	'hive.jdbc.update.on.duplicate' = 'true',
+	'hive.jdbc.primary.key.fields'='api,api_version,context,apiPublisher,applicationName,tenantDomain,time',
+	'hive.jdbc.table.create.query' = 'CREATE TABLE API_THROTTLED_OUT_SUMMARY ( api VARCHAR(100), api_version VARCHAR(100),context VARCHAR(100),apiPublisher VARCHAR(100), applicationName VARCHAR(100), tenantDomain VARCHAR(100), year SMALLINT, month SMALLINT, day SMALLINT,week INT, time VARCHAR(30), success_request_count INT , throttleout_count INT, PRIMARY KEY(api,api_version,context,apiPublisher,applicationName,tenantDomain,time))' );
+
+insert overwrite table APIThrottleSummaryData select api,api_version,context,apiPublisher,applicationName,tenantDomain, year(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as year, month(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as month,day(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )) as day, cast(throttledTime/(1000 * 60 * 60 *24 * 7) as INT) as week, concat(substring(from_unixtime(cast(throttledTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,13),':00:00') as time,count(apiPublisher) as throttleout_count from APIThrottleData where context is not NULL group by api,api_version,context,apiPublisher,applicationName,tenantDomain,year(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )), month(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),day(from_unixtime(cast(throttledTime/1000 as BIGINT),'yyyy-MM-dd HH:mm:ss.SSS' )),cast(throttledTime/(1000 * 60 * 60 *24 * 7) as INT),substring(from_unixtime(cast(throttledTime/1000 as BIGINT), 'yyyy-MM-dd HH:mm:ss'),0,13);
