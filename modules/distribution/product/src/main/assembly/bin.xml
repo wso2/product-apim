@@ -534,6 +534,13 @@
                   <include>**/patch0011/*.*</include>
              </includes>
     	</fileSet>
+    <fileSet>
+             <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0012</directory>
+             <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
+             <includes>
+                  <include>**/patch0011/*.*</include>
+             </includes>
+    </fileSet>
 
 
     <fileSet>
@@ -602,6 +609,10 @@
     <fileSet>
         <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0010/lib</directory>
         <outputDirectory>wso2am-${pom.version}/lib/</outputDirectory>
+    </fileSet>
+    <fileSet>
+              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0012/dbscripts</directory>
+              <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
     </fileSet>
         <!--End of  API Manager related -->
 
