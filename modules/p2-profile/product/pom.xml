@@ -269,7 +269,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>12-unpack-kernel-patch</id>
+                        <id>13-unpack-kernel-patch</id>
                         <phase>test</phase>
                         <goals>
                             <goal>unpack</goal>

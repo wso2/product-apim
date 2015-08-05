@@ -538,7 +538,7 @@
              <directory>../../p2-profile/product/target/WSO2-CARBON-PATCH-4.2.0-0012</directory>
              <outputDirectory>wso2am-${pom.version}/repository/components/patches/</outputDirectory>
              <includes>
-                  <include>**/patch0011/*.*</include>
+                  <include>**/patch0012/*.*</include>
              </includes>
     </fileSet>
 
