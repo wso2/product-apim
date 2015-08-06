@@ -29,6 +29,7 @@ import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
@@ -41,6 +42,8 @@ import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
+import org.wso2.carbon.registry.api.RegistryException;
+import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.ActionConstants;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
@@ -49,8 +52,6 @@ import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
-import org.wso2.carbon.registry.api.RegistryException;
-import org.wso2.carbon.registry.api.Resource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -59,18 +60,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -311,27 +302,38 @@ public class MigrateFrom18to19 implements MigrationClient {
                 Registry registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant
                         .getId());
                 GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
-                GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
-                GenericArtifact[] artifacts = artifactManager.getAllGenericArtifacts();
-                for (GenericArtifact artifact : artifacts) {
-                    API api = APIUtil.getAPI(artifact, registry);
 
-                    APIIdentifier apiIdentifier = api.getId();
-                    String apiVersion = apiIdentifier.getVersion();
+                if (artifactManager != null) {
+                    GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
+                    GenericArtifact[] artifacts = artifactManager.getAllGenericArtifacts();
+                    for (GenericArtifact artifact : artifacts) {
+                        API api = APIUtil.getAPI(artifact, registry);
 
-                    if (!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
-                        artifact.setAttribute("overview_context", api.getContext() +
-                                RegistryConstants.PATH_SEPARATOR + apiVersion);
+                        if (api == null) {
+                            log.error("Cannot find corresponding api for registry artifact "+ artifact.getAttribute("overview_name") + "-" + artifact.getAttribute("overview_version") + "-" + artifact.getAttribute("overview_provider") +
+                                    " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ") in AM_DB");
+                            continue;
+                        }
+
+                        APIIdentifier apiIdentifier = api.getId();
+                        String apiVersion = apiIdentifier.getVersion();
+
+                        if (!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
+                            artifact.setAttribute("overview_context", api.getContext() +
+                                    RegistryConstants.PATH_SEPARATOR + apiVersion);
+                        }
+
+                        artifact.addAttribute("overview_contextTemplate", api.getContext() +
+                                RegistryConstants.PATH_SEPARATOR + "{version}");
+                        artifact.addAttribute("overview_environments", "");
+                        artifact.addAttribute("overview_versionType", "");
+
+                        artifactManager.updateGenericArtifact(artifact);
                     }
-
-                    artifact.addAttribute("overview_contextTemplate", api.getContext() +
-                            RegistryConstants.PATH_SEPARATOR + "{version}");
-                    artifact.addAttribute("overview_environments", "");
-                    artifact.addAttribute("overview_versionType", "");
-
-                    artifactManager.updateGenericArtifact(artifact);
                 }
-
+                else {
+                    log.debug("No api artifacts found in registry for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                }
             }
 
             catch (APIManagementException e) {
@@ -497,12 +499,12 @@ public class MigrateFrom18to19 implements MigrationClient {
         return artifacts;
     }
 
-    private API getAPI(GenericArtifact artifact, Registry registry) {
+    private API getAPI(GenericArtifact artifact) {
         log.debug("Calling getAPI");
         API api = null;
 
         try {
-            api = APIUtil.getAPI(artifact, registry);
+            api = APIUtil.getAPI(artifact);
         } catch (APIManagementException e) {
             log.error("Error when getting api artifact " + artifact.getId() + " from registry", e);
         }
@@ -513,7 +515,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     private void updateSwaggerResources(GenericArtifact[] artifacts, Registry registry, Tenant tenant) throws APIMigrationException {
         log.debug("Calling updateSwaggerResources");
         for (GenericArtifact artifact : artifacts) {
-            API api = getAPI(artifact, registry);
+            API api = getAPI(artifact);
 
             if (api != null) {
                 APIIdentifier apiIdentifier = api.getId();
@@ -521,36 +523,40 @@ public class MigrateFrom18to19 implements MigrationClient {
                 String apiVersion = apiIdentifier.getVersion();
                 String apiProviderName = apiIdentifier.getProviderName();
                 try {
-                    String swagger12location = ResourceUtil.getSwagger12ResourceLocation(apiName,
-                            apiVersion, apiProviderName);
+                    String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
+
+                    // Create swagger 2.0 doc only if it does not exist
+                    if (registry.resourceExists(swagger2location)) {
+                        continue;
+                    }
+
+                    String swagger12location = ResourceUtil.getSwagger12ResourceLocation(apiName, apiVersion, apiProviderName);
+
+                    String swagger2Document;
 
                     if (!registry.resourceExists(swagger12location)) {
-                        log.error("Swagger Resource migration has not happen yet for " +
-                                apiName + "-" + apiVersion + "-"
-                                + apiProviderName);
+                        log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
 
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Creating swagger v2.0 resource for : " + apiName + "-" + apiVersion + "-"
-                                    + apiProviderName);
-                        }
-                        //get swagger v2 doc
-                        String swagger2doc = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location);
+                        APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
 
-                        //create location in registry and add this
-                        String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion,
-                                apiProviderName);
-
-                        Resource docContent = registry.newResource();
-                        docContent.setContent(swagger2doc);
-                        docContent.setMediaType("application/json");
-                        registry.put(swagger2location, docContent);
-
-                        //Currently set to ANONYMOUS_ROLE, need to set to visible roles
-                        ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
-                                .authorizeRole(APIConstants.ANONYMOUS_ROLE,
-                                        "_system/governance" + swagger2location, ActionConstants.GET);
+                        swagger2Document = definitionFromSwagger20.generateAPIDefinition(api);
                     }
+                    else {
+                        log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
+                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location);
+                    }
+
+                    Resource docContent = registry.newResource();
+                    docContent.setContent(swagger2Document);
+                    docContent.setMediaType("application/json");
+                    registry.put(swagger2location, docContent);
+
+                    ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
+                            .authorizeRole(APIConstants.ANONYMOUS_ROLE,
+                                    "_system/governance" + swagger2location, ActionConstants.GET);
+                    ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
+                            .authorizeRole(APIConstants.EVERYONE_ROLE,
+                                    "_system/governance" + swagger2location, ActionConstants.GET);
                 } catch (RegistryException e) {
                     log.error("Registry error encountered for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 } catch (ParseException e) {
@@ -558,6 +564,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 } catch (UserStoreException e) {
                     log.error("Error occurred while setting permissions of swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 } catch (MalformedURLException e) {
+                    log.error("Error occurred while creating swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                } catch (APIManagementException e) {
                     log.error("Error occurred while creating swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 }
             }
@@ -675,17 +683,16 @@ public class MigrateFrom18to19 implements MigrationClient {
             JSONArray schemes = new JSONArray();
             schemes.add(url.getProtocol());
             swagger20doc.put(Constants.SWAGGER_SCHEMES, schemes);
-
-            //securityDefinitions
-            if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
-                JSONObject securityDefinitions = generateSecurityDefinitionsObject(swagger12doc);
-                swagger20doc.put(Constants.SWAGGER_SECURITY_DEFINITIONS, securityDefinitions);
-            }
         }
         else {
             log.debug("swagger12BasePath is null");
         }
 
+        //securityDefinitions
+        if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
+            JSONObject securityDefinitions = generateSecurityDefinitionsObject(swagger12doc);
+            swagger20doc.put(Constants.SWAGGER_SECURITY_DEFINITIONS, securityDefinitions);
+        }
 
         return swagger20doc;
     }
@@ -1007,7 +1014,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             File[] synapseFiles = APIFiles.listFiles();
 
             if (synapseFiles == null) {
-                log.debug("No api folder exists for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                log.debug("No api folder " + apiFilePath + " exists for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
                 continue;
             }
 

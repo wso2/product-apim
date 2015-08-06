@@ -134,10 +134,6 @@ public class APIMMigrationServiceComponent {
                 if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
                     log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
                 }
-                else {
-                    log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION +
-                            " and a mandatory migration option have not been specified . Please specify these properties and try again.");
-                }
             }
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
