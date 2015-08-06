@@ -716,6 +716,7 @@
 	<file>
             <source>../../../config/wso2server.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
+            <lineEnding>unix</lineEnding>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
