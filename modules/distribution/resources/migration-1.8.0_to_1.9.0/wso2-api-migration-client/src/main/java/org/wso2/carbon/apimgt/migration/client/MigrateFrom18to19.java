@@ -28,6 +28,8 @@ import org.w3c.dom.Element;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.apimgt.api.model.Scope;
+import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
@@ -59,7 +61,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
@@ -543,7 +544,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                     }
                     else {
                         log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
-                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location);
+                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location, api);
                     }
 
                     Resource docContent = registry.newResource();
@@ -584,7 +585,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws org.wso2.carbon.registry.core.exceptions.RegistryException
      */
 
-    private String getSwagger2docUsingSwagger12RegistryResources(Registry registry, String swagger12location)
+    private String getSwagger2docUsingSwagger12RegistryResources(Registry registry, String swagger12location, API api)
             throws MalformedURLException, ParseException, RegistryException {
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
         JSONParser parser = new JSONParser();
@@ -628,14 +629,14 @@ public class MigrateFrom18to19 implements MigrationClient {
                 swagger12BasePath = (String) apiDef.get("basePath");
                 JSONArray apiArray = (JSONArray) apiDef.get("apis");
                 for (Object anApiArray : apiArray) {
-                    JSONObject api = (JSONObject) anApiArray;
-                    String path = (String) api.get("path");
-                    JSONArray operations = (JSONArray) api.get("operations");
+                    JSONObject apiObject = (JSONObject) anApiArray;
+                    String path = (String) apiObject.get("path");
+                    JSONArray operations = (JSONArray) apiObject.get("operations");
                     //set the operations object inside each api definition and set it in a map against its resource path
                     apiDefPaths.put(path, operations);
                 }
             }
-            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath);
+            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath, api);
             return swagger2Doc.toJSONString();
         } catch (UnsupportedEncodingException e) {
             log.error("Error while reading swagger resource", e);
@@ -657,9 +658,10 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
 
     private static JSONObject generateSwagger2Document(JSONObject swagger12doc,
-                                                       Map<String, JSONArray> apiDefPaths, String swagger12BasePath)
+                                                       Map<String, JSONArray> apiDefPaths, String swagger12BasePath, API api)
             throws ParseException, MalformedURLException {
         log.debug("Calling generateSwagger2Document");
+
         //create swagger 2.0 doc
         JSONObject swagger20doc = new JSONObject();
 
@@ -672,28 +674,15 @@ public class MigrateFrom18to19 implements MigrationClient {
         swagger20doc.put(Constants.SWAGGER_INFO, info);
 
         //set the paths object
-        JSONObject pathObj = generatePathsObj(apiDefPaths);
+        JSONObject pathObj = generatePathsObj(api);
         swagger20doc.put(Constants.SWAGGER_PATHS, pathObj);
 
-        if (swagger12BasePath != null) {
-            URL url = new URL(swagger12BasePath);
-            swagger20doc.put(Constants.SWAGGER_HOST, url.getHost());
-            swagger20doc.put(Constants.SWAGGER_BASE_PATH, url.getPath());
-
-            JSONArray schemes = new JSONArray();
-            schemes.add(url.getProtocol());
-            swagger20doc.put(Constants.SWAGGER_SCHEMES, schemes);
-        }
-        else {
-            log.debug("swagger12BasePath is null");
-        }
 
         //securityDefinitions
         if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
-            JSONObject securityDefinitions = generateSecurityDefinitionsObject(swagger12doc);
+            JSONObject securityDefinitions = generateSecurityDefinitionsObject(api);
             swagger20doc.put(Constants.SWAGGER_SECURITY_DEFINITIONS, securityDefinitions);
         }
-
         return swagger20doc;
     }
 
@@ -702,27 +691,33 @@ public class MigrateFrom18to19 implements MigrationClient {
      * See <a href="https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#securityDefinitionsObject">
      * Swagger v2 definition object</a>
      *
-     * @param swagger12doc Old Swagger Document
+     * @param api api object to extract the scopes
      * @return security definition object
      * @throws ParseException
      */
-    private static JSONObject generateSecurityDefinitionsObject(JSONObject swagger12doc) throws ParseException {
+    private static JSONObject generateSecurityDefinitionsObject(API api) throws ParseException {
         log.debug("Calling generateSecurityDefinitionsObject");
-        JSONParser parser = new JSONParser();
         JSONObject securityDefinitionObject = new JSONObject();
-        JSONObject securitySchemeObject = (JSONObject) parser.parse(Constants.DEFAULT_SECURITY_SCHEME);
+        JSONObject scopesObject = new JSONObject();
 
-        JSONObject authorizations = (JSONObject) swagger12doc.get(Constants.SWAGGER_AUTHORIZATIONS);
-        Set authTypes = authorizations.keySet();
+        JSONArray xWso2ScopesArray = new JSONArray();
+        JSONObject xWso2ScopesObject;
+        Set<Scope> scopes = api.getScopes();
+        if (scopes != null) {
+            for (Scope scope : scopes) {
+                xWso2ScopesObject = new JSONObject();
+                xWso2ScopesObject.put(APIConstants.SWAGGER_SCOPE_KEY, scope.getKey());
+                xWso2ScopesObject.put(APIConstants.SWAGGER_NAME, scope.getName());
 
-        for (Object obj : authTypes) {
-            JSONObject authObj = (JSONObject) authorizations.get(obj.toString());
-            if (authObj.containsKey(Constants.SWAGGER_SCOPES)) {
-                //Put it to custom WSO2 scopes
-                securitySchemeObject.put(Constants.SWAGGER_X_WSO2_SCOPES, authObj.get(Constants.SWAGGER_SCOPES));
+
+                xWso2ScopesObject.put(APIConstants.SWAGGER_ROLES, scope.getRoles());
+                xWso2ScopesObject.put(APIConstants.SWAGGER_DESCRIPTION, scope.getDescription());
+
+                xWso2ScopesArray.add(xWso2ScopesObject);
             }
-            securityDefinitionObject.put(obj.toString(), securitySchemeObject);
         }
+        scopesObject.put(APIConstants.SWAGGER_X_WSO2_SCOPES, xWso2ScopesArray);
+        securityDefinitionObject.put(APIConstants.SWAGGER_OBJECT_NAME_APIM, scopesObject);
         return securityDefinitionObject;
     }
 
@@ -784,86 +779,48 @@ public class MigrateFrom18to19 implements MigrationClient {
     }
 
     /**
+     *
      * Generate Swagger v2 paths object from swagger v1.2 document
      * See <a href="https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#paths-object">Swagger v2
      * paths object</a>
      *
-     * @param apiDefinitionPaths API definition paths
+     * @param api api object to create the PathsObject
      * @return swagger v2 paths object
      * @throws ParseException
      */
-    private static JSONObject generatePathsObj(Map<String, JSONArray> apiDefinitionPaths) throws ParseException {
-        JSONObject pathsObj = new JSONObject();
-        JSONParser jsonParser = new JSONParser();
+    private static JSONObject generatePathsObj(API api) throws ParseException {
 
-        for (Map.Entry<String, JSONArray> entry : apiDefinitionPaths.entrySet()) {
-            String key = entry.getKey();
-            JSONArray operations = entry.getValue();
-            JSONObject pathItemObj = new JSONObject();
-            for (Object operation : operations) {
-                JSONObject operationObject = (JSONObject) operation;
-                String method = (String) operationObject.get("method");
-                JSONArray swagger2ParamObjects = (JSONArray) operationObject.get("parameters");
-                JSONObject swagger2OperationsObj = new JSONObject();
-                JSONArray newParameters = new JSONArray();
-                for (Object swagger2ParamObj : swagger2ParamObjects) {
-                    JSONObject oldParam = (JSONObject) swagger2ParamObj;
-                    JSONObject paramObj = new JSONObject();
-                    paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
-                    paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
-                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
-                    if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
-                        paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
-                    } else {
-                        paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
-                    }
-                    //Skip body parameter of GET and DELETE methods
-                    /*if (!("GET".equals(method)) && !("DELETE".equals(method))) {
-                        newParameters.add(paramObj);
-                    } else {
-                        if (!("body".equals(oldParam.get("paramType")))) {
-                            newParameters.add(paramObj);
-                        }
-                    }*/
-                }
+        Set<URITemplate> uriTemplates = api.getUriTemplates();
 
-                //generate the Operation object
-                // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject)
-                swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
-                //setting operation level params
-                swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
-                if (operationObject.containsKey("notes")) {
-                    swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
-                }
-                if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
-                    swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY, operationObject.get(Constants.SWAGGER_SUMMARY));
-                }
+        JSONObject pathsObject = new JSONObject();
+        JSONObject pathItemObject = null;
+        JSONObject operationObject;
+        JSONObject responseObject = new JSONObject();
 
+        //add default response
+        JSONObject status200 = new JSONObject();
+        status200.put(APIConstants.SWAGGER_DESCRIPTION, "OK");
+        responseObject.put(APIConstants.SWAGGER_RESPONSE_200, status200);
 
-                //set pathItem object for the resource
-                //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject)
-                pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
-
-                //set the responseObject
-                //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject)
-                JSONObject responseObject = null;
-                if (operationObject.containsKey("responseMessages")) {
-                    responseObject = new JSONObject();
-                    JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
-                    for (Object responseMessage : responseMessages) {
-                        JSONObject errorObj = (JSONObject) responseMessage;
-                        responseObject.put(errorObj.get("code"), errorObj.get("message"));
-                    }
-                }
-                if (responseObject == null) {
-                    //set a default response message since this is required field
-                    responseObject = (JSONObject) jsonParser.parse(Constants.DEFAULT_RESPONSE);
-                }
-                swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
+        for (URITemplate uriTemplate : uriTemplates) {
+            String pathName = uriTemplate.getUriTemplate();
+            if (pathsObject.get(pathName) == null) {
+                pathsObject.put(pathName, "{}");
+                pathItemObject = new JSONObject();
             }
-            pathsObj.put(key, pathItemObj);
+
+            String httpVerb = uriTemplate.getHTTPVerb();
+            if (pathItemObject != null) {
+                operationObject = new JSONObject();
+                operationObject.put(APIConstants.SWAGGER_X_AUTH_TYPE, uriTemplate.getAuthType());
+                operationObject.put(APIConstants.SWAGGER_X_THROTTLING_TIER, uriTemplate.getThrottlingTier());
+                operationObject.put(APIConstants.SWAGGER_RESPONSES, responseObject);
+                pathItemObject.put(httpVerb.toLowerCase(), operationObject);
+            }
+            pathsObject.put(pathName, pathItemObject);
         }
-        return pathsObj;
+
+        return pathsObject;
     }
 
 
