@@ -107,15 +107,15 @@ public class ResourceUtil {
 
             String resourcePath;
 
-            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
+            if (Constants.VERSION_1_7.equalsIgnoreCase(migrateVersion)) {
                 //pick from 18to19Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/18-19-migration/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/16-17-migration/";
             } else {
                 throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
             }
 
             if (Constants.CONSTRAINT.equals(queryType)) {
-                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/18-19-migration/";
+                resourcePath = CarbonUtils.getCarbonHome() + "/migration-scripts/16-17-migration/";
                 //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {

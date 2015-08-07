@@ -22,7 +22,7 @@ import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
+import org.wso2.carbon.apimgt.migration.client.MigrateFrom16to17;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
@@ -80,12 +80,12 @@ public class APIMMigrationServiceComponent {
 
         try {
             if (migrateToVersion != null) {
-                if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
+                if (Constants.VERSION_1_7.equalsIgnoreCase(migrateToVersion)) {
                     log.info("Migrating WSO2 API Manager 1.8.0 to WSO2 API Manager 1.9.0");
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants);
+                    MigrationClient migrateFrom18to19 = new MigrateFrom16to17(tenants);
 
                     //Default operation will migrate all three types of resources
                     if (migrateAll) {

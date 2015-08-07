@@ -36,7 +36,6 @@ import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
-import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
@@ -178,8 +177,6 @@ public class MigrateFrom16to17 implements MigrationClient {
                 }
             }
 
-            //To drop the foreign key
-            dropFKConstraint(migrateVersion, dbType);
 
             bufferedReader.close();
 
@@ -201,66 +198,6 @@ public class MigrateFrom16to17 implements MigrationClient {
         log.info("DB resource migration done for all the tenants");
     }
 
-    /**
-     * This method is used to remove the FK constraint which is unnamed
-     * This finds the name of the constraint and build the query to delete the constraint and execute it
-     *
-     * @param migrateVersion version to be migrated
-     * @param dbType         database type of the user
-     * @throws SQLException
-     * @throws IOException
-     */
-    public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        Statement statement = null;
-        try {
-            String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
-            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
-
-            connection = APIMgtDBUtil.getConnection();
-            connection.setAutoCommit(false);
-            statement = connection.createStatement();
-            if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
-            }
-            resultSet = statement.executeQuery(queryArray[0]);
-            String constraintName = null;
-
-            while (resultSet.next()) {
-                constraintName = resultSet.getString("constraint_name");
-            }
-
-            if (constraintName != null) {
-                queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
-                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    queryToExecute = queryToExecute.replace(Constants.DELIMITER, "");
-                }
-
-                if (queryToExecute.contains("\\n")) {
-                    queryToExecute = queryToExecute.replace("\\n", "");
-                }
-                preparedStatement = connection.prepareStatement(queryToExecute);
-                preparedStatement.execute();
-                connection.commit();
-            }
-        } catch (APIMigrationException e) {
-            //Foriegn key might be already deleted, log the error and let it continue
-            log.error("Error occurred while deleting foreign key", e);
-        } catch (IOException e) {
-            //If user does not add the file migration will continue and migrate the db without deleting
-            // the foriegn key reference
-            log.error("Error occurred while finding the foriegn key deletion query for execution", e);
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-
-            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
-        }
-
-    }
 
     /**
      * This method is used to migrate all registry resources
@@ -351,65 +288,6 @@ public class MigrateFrom16to17 implements MigrationClient {
         }
 
         log.info("Rxt resource migration done for all the tenants");
-    }
-
-
-    /**
-     * This method is used to copy new rxt to the registry
-     * This copies rxt from the file system to registry
-     *
-     * @throws APIMigrationException
-     */
-    void copyNewRxtFileToRegistry() throws APIMigrationException {
-        boolean isTenantFlowStarted = false;
-        try {
-            String resourcePath = Constants.GOVERNANCE_COMPONENT_REGISTRY_LOCATION + "/types/api.rxt";
-            File newRxtFile = new File(CarbonUtils.getCarbonHome() + Constants.RXT_PATH);
-            String rxtContent = FileUtils.readFileToString(newRxtFile, "UTF-8");
-
-            for (Tenant tenant : tenantsArray) {
-                int tenantId = tenant.getId();
-                isTenantFlowStarted = true;
-                PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
-
-                String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenantId)
-                        .getRealmConfiguration().getAdminUserName();
-                ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenantId);
-                Registry registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenantId);
-                GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
-
-                Resource resource;
-                if (!registry.resourceExists(resourcePath)) {
-                    resource = registry.newResource();
-                } else {
-                    resource = registry.get(resourcePath);
-                }
-                resource.setContent(rxtContent);
-                resource.setMediaType("application/xml");
-                registry.put(resourcePath, resource);
-
-                ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
-                        .authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
-
-                if (isTenantFlowStarted) {
-                    PrivilegedCarbonContext.endTenantFlow();
-                }
-            }
-            //_system/governance/repository/components/org.wso2.carbon.governance/types/api.rxt
-
-        } catch (IOException e) {
-            ResourceUtil.handleException("Error occurred while reading the rxt file from file system.  ", e);
-        } catch (UserStoreException e) {
-            ResourceUtil.handleException("Error occurred while searching for tenant admin. ", e);
-        } catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while performing registry operation. ", e);
-        } finally {
-            if (isTenantFlowStarted) {
-                PrivilegedCarbonContext.endTenantFlow();
-            }
-        }
     }
 
 
@@ -924,16 +802,6 @@ public class MigrateFrom16to17 implements MigrationClient {
         }
     }
 
-    /**
-     * This method is used to migrate API stats database.
-     * Database schema changes and data modifications as required will  be carried out.
-     *
-     * @throws APIMigrationException
-     */
-    @Override
-    public void statsMigration() throws APIMigrationException {
-        StatDBUtil.updateContext();
-    }
 
     /**
      * This method is used to migrate all the file system components
