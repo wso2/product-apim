@@ -59,7 +59,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
@@ -79,7 +78,7 @@ public class MigrateFrom18to19 implements MigrationClient {
         TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
-            tenantArguments = tenantArguments.replaceAll("\\s",""); // Remove spaces and tabs
+            tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
             tenantsArray = new ArrayList();
 
@@ -91,8 +90,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                         populateTenants(tenantManager, tenantsArray, parts[i]);
                     }
                 }
-            }
-            else { // Only single argument provided
+            } else { // Only single argument provided
                 populateTenants(tenantManager, tenantsArray, tenantArguments);
             }
         } else {  // Load all tenants
@@ -112,18 +110,15 @@ public class MigrateFrom18to19 implements MigrationClient {
 
             if (tenantID != -1) {
                 tenantList.add(tenantManager.getTenant(tenantID));
-            }
-            else {
+            } else {
                 log.error("Tenant does not exist for username " + argument);
             }
-        }
-        else { // Domain name provided as argument
+        } else { // Domain name provided as argument
             Tenant[] tenants = tenantManager.getAllTenantsForTenantDomainStr(argument);
 
             if (tenants.length > 0) {
                 tenantList.addAll(Arrays.asList(tenants));
-            }
-            else {
+            } else {
                 log.error("Tenant does not exist for domain " + argument);
             }
         }
@@ -310,7 +305,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                         API api = APIUtil.getAPI(artifact, registry);
 
                         if (api == null) {
-                            log.error("Cannot find corresponding api for registry artifact "+ artifact.getAttribute("overview_name") + "-" + artifact.getAttribute("overview_version") + "-" + artifact.getAttribute("overview_provider") +
+                            log.error("Cannot find corresponding api for registry artifact " + artifact.getAttribute("overview_name") + "-" + artifact.getAttribute("overview_version") + "-" + artifact.getAttribute("overview_provider") +
                                     " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ") in AM_DB");
                             continue;
                         }
@@ -330,13 +325,10 @@ public class MigrateFrom18to19 implements MigrationClient {
 
                         artifactManager.updateGenericArtifact(artifact);
                     }
-                }
-                else {
+                } else {
                     log.debug("No api artifacts found in registry for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
                 }
-            }
-
-            catch (APIManagementException e) {
+            } catch (APIManagementException e) {
                 ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
             } catch (RegistryException e) {
                 ResourceUtil.handleException("Error occurred while accessing the registry", e);
@@ -444,8 +436,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                         updateSwaggerResources(artifacts, registry, tenant);
                     }
                 }
-            }
-            finally {
+            } finally {
                 if (isTenantFlowStarted) {
                     PrivilegedCarbonContext.endTenantFlow();
                 }
@@ -487,8 +478,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                 artifacts = manager.getAllGenericArtifacts();
 
                 log.debug("Total number of api artifacts : " + artifacts.length);
-            }
-            else {
+            } else {
                 log.debug("API artifacts do not exist in registry");
             }
 
@@ -526,9 +516,9 @@ public class MigrateFrom18to19 implements MigrationClient {
                     String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
 
                     // Create swagger 2.0 doc only if it does not exist
-                    if (registry.resourceExists(swagger2location)) {
+                    /*if (registry.resourceExists(swagger2location)) {
                         continue;
-                    }
+                    }*/
 
                     String swagger12location = ResourceUtil.getSwagger12ResourceLocation(apiName, apiVersion, apiProviderName);
 
@@ -540,10 +530,9 @@ public class MigrateFrom18to19 implements MigrationClient {
                         APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
 
                         swagger2Document = definitionFromSwagger20.generateAPIDefinition(api);
-                    }
-                    else {
+                    } else {
                         log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
-                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location);
+                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location, api);
                     }
 
                     Resource docContent = registry.newResource();
@@ -584,7 +573,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws org.wso2.carbon.registry.core.exceptions.RegistryException
      */
 
-    private String getSwagger2docUsingSwagger12RegistryResources(Registry registry, String swagger12location)
+    private String getSwagger2docUsingSwagger12RegistryResources(Registry registry, String swagger12location, API api)
             throws MalformedURLException, ParseException, RegistryException {
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
         JSONParser parser = new JSONParser();
@@ -615,9 +604,8 @@ public class MigrateFrom18to19 implements MigrationClient {
                 String swaggerDocContent;
 
                 if (resource.getContent() instanceof String[]) {
-                    swaggerDocContent = Arrays.toString((String[])resource.getContent());
-                }
-                else {
+                    swaggerDocContent = Arrays.toString((String[]) resource.getContent());
+                } else {
                     swaggerDocContent = new String((byte[]) resource.getContent(), "UTF8");
                 }
 
@@ -628,14 +616,14 @@ public class MigrateFrom18to19 implements MigrationClient {
                 swagger12BasePath = (String) apiDef.get("basePath");
                 JSONArray apiArray = (JSONArray) apiDef.get("apis");
                 for (Object anApiArray : apiArray) {
-                    JSONObject api = (JSONObject) anApiArray;
-                    String path = (String) api.get("path");
-                    JSONArray operations = (JSONArray) api.get("operations");
+                    JSONObject apiObject = (JSONObject) anApiArray;
+                    String path = (String) apiObject.get("path");
+                    JSONArray operations = (JSONArray) apiObject.get("operations");
                     //set the operations object inside each api definition and set it in a map against its resource path
                     apiDefPaths.put(path, operations);
                 }
             }
-            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath);
+            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath, api);
             return swagger2Doc.toJSONString();
         } catch (UnsupportedEncodingException e) {
             log.error("Error while reading swagger resource", e);
@@ -657,9 +645,10 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
 
     private static JSONObject generateSwagger2Document(JSONObject swagger12doc,
-                                                       Map<String, JSONArray> apiDefPaths, String swagger12BasePath)
+                                                       Map<String, JSONArray> apiDefPaths, String swagger12BasePath, API api)
             throws ParseException, MalformedURLException {
         log.debug("Calling generateSwagger2Document");
+
         //create swagger 2.0 doc
         JSONObject swagger20doc = new JSONObject();
 
@@ -673,9 +662,11 @@ public class MigrateFrom18to19 implements MigrationClient {
 
         //set the paths object
         JSONObject pathObj = generatePathsObj(apiDefPaths);
+        //JSONObject pathObj = generatePathsObj(api);
         swagger20doc.put(Constants.SWAGGER_PATHS, pathObj);
 
-        if (swagger12BasePath != null) {
+        //Base path and host is not needed for swagger v2.0
+        /*if (swagger12BasePath != null) {
             URL url = new URL(swagger12BasePath);
             swagger20doc.put(Constants.SWAGGER_HOST, url.getHost());
             swagger20doc.put(Constants.SWAGGER_BASE_PATH, url.getPath());
@@ -686,13 +677,19 @@ public class MigrateFrom18to19 implements MigrationClient {
         }
         else {
             log.debug("swagger12BasePath is null");
-        }
+        }*/
 
         //securityDefinitions
         if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
             JSONObject securityDefinitions = generateSecurityDefinitionsObject(swagger12doc);
-            swagger20doc.put(Constants.SWAGGER_SECURITY_DEFINITIONS, securityDefinitions);
+            swagger20doc.put(Constants.SWAGGER_X_WSO2_SECURITY, securityDefinitions);
         }
+
+        //Add a sample definition
+        JSONObject sampleDefinitionObject = new JSONObject();
+        JSONObject sampleItemObject = new JSONObject();
+        sampleDefinitionObject.put(Constants.SWAGGER_SAMPLE_DEFINITION, sampleItemObject);
+        swagger20doc.put(Constants.SWAGGER_DEFINITIONS, sampleDefinitionObject);
 
         return swagger20doc;
     }
@@ -721,7 +718,7 @@ public class MigrateFrom18to19 implements MigrationClient {
                 //Put it to custom WSO2 scopes
                 securitySchemeObject.put(Constants.SWAGGER_X_WSO2_SCOPES, authObj.get(Constants.SWAGGER_SCOPES));
             }
-            securityDefinitionObject.put(obj.toString(), securitySchemeObject);
+            securityDefinitionObject.put(Constants.SWAGGER_OBJECT_NAME_APIM, securitySchemeObject);
         }
         return securityDefinitionObject;
     }
@@ -794,7 +791,14 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     private static JSONObject generatePathsObj(Map<String, JSONArray> apiDefinitionPaths) throws ParseException {
         JSONObject pathsObj = new JSONObject();
-        JSONParser jsonParser = new JSONParser();
+
+        boolean defaultRequired = false;
+        String defaultType = "string";
+        //add default response
+        JSONObject responseObject = new JSONObject();
+        JSONObject status200 = new JSONObject();
+        status200.put(Constants.SWAGGER_DESCRIPTION, "OK");
+        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
 
         for (Map.Entry<String, JSONArray> entry : apiDefinitionPaths.entrySet()) {
             String key = entry.getKey();
@@ -810,13 +814,31 @@ public class MigrateFrom18to19 implements MigrationClient {
                     JSONObject oldParam = (JSONObject) swagger2ParamObj;
                     JSONObject paramObj = new JSONObject();
                     paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
+
                     paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
-                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
+                    if (Constants.SWAGGER_PARAM_TYPE_BODY.equals(oldParam.get("paramType"))) {
+                        JSONObject refObject = new JSONObject();
+                        refObject.put(Constants.SWAGGER_REF, "#/definitions/sampleItem");
+                        paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
+                    } else {
+                        if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
+                            paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
+                        } else {
+                            paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                        }
+                    }
+
+                    if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
+                        paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
+                    } else {
+                        paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, defaultRequired);
+                    }
                     if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
                         paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
                     } else {
                         paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
                     }
+                    newParameters.add(paramObj);
                     //Skip body parameter of GET and DELETE methods
                     /*if (!("GET".equals(method)) && !("DELETE".equals(method))) {
                         newParameters.add(paramObj);
@@ -832,6 +854,15 @@ public class MigrateFrom18to19 implements MigrationClient {
                 swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
                 //setting operation level params
                 swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
+
+                //Add auth_type and throttling_tier
+                if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
+                    swagger2OperationsObj.put(Constants.SWAGGER_X_AUTH_TYPE, operationObject.get(Constants.SWAGGER_AUTH_TYPE));
+                }
+                if (operationObject.containsKey(Constants.SWAGGER_THROTTLING_TIER)) {
+                    swagger2OperationsObj.put(Constants.SWAGGER_X_THROTTLING_TIER, operationObject.get(Constants.SWAGGER_THROTTLING_TIER));
+                }
+
                 if (operationObject.containsKey("notes")) {
                     swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
                 }
@@ -846,7 +877,6 @@ public class MigrateFrom18to19 implements MigrationClient {
 
                 //set the responseObject
                 //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject)
-                JSONObject responseObject = null;
                 if (operationObject.containsKey("responseMessages")) {
                     responseObject = new JSONObject();
                     JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
@@ -854,10 +884,6 @@ public class MigrateFrom18to19 implements MigrationClient {
                         JSONObject errorObj = (JSONObject) responseMessage;
                         responseObject.put(errorObj.get("code"), errorObj.get("message"));
                     }
-                }
-                if (responseObject == null) {
-                    //set a default response message since this is required field
-                    responseObject = (JSONObject) jsonParser.parse(Constants.DEFAULT_RESPONSE);
                 }
                 swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
             }
