@@ -137,3 +137,7 @@ drop table APIRequestSummaryData;
 drop table APIVersionUsageSummaryData;
 drop table APIResponseData;
 drop table APIResponseSummaryData;
+drop table APIRequestDataMinimal;
+drop table APIRequestSummaryDataMinimal;
+drop table APIThrottleData;
+drop table APIThrottleSummaryData;

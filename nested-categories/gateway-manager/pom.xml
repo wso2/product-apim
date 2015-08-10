@@ -124,7 +124,7 @@
                                 <importFeatureDef>org.wso2.carbon.um.ws.service.server:4.2.2</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.user.mgt:4.2.3</importFeatureDef>
                                 <importFeatureDef>org.wso2.carbon.xfer:${carbon.platform.version}</importFeatureDef>
-                                <importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${stratos.version}</importFeatureDef>
+                                <importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${apimgt.stratos.version}</importFeatureDef>
 				                <importFeatureDef>org.wso2.carbon.bam.message.tracer.handler:4.2.3</importFeatureDef>
                             </importFeatures>
                         </configuration>

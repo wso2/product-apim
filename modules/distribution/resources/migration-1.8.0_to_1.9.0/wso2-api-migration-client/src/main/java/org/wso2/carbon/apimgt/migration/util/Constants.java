@@ -34,6 +34,7 @@ public class Constants {
 
     // Migration client argument property names
     public static final String ARG_MIGRATE_TO_VERSION = "migrateToVersion";
+    public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_ALL = "migrate";
     public static final String ARG_CLEANUP = "cleanup";
     public static final String ARG_MIGRATE_DB = "migrateDB";
@@ -78,6 +79,8 @@ public class Constants {
     public static final String SWAGGER_X_SCOPE = "x-scope";
     public static final String SWAGGER_X_AUTH_TYPE = "x-auth-type";
     public static final String SWAGGER_X_THROTTLING_TIER = "x-throttling-tier";
+    public static final String SWAGGER_AUTH_TYPE = "auth_type";
+    public static final String SWAGGER_THROTTLING_TIER = "throttling_tier";
     public static final String SWAGGER_X_MEDIATION_SCRIPT = "x-mediation-script";
     public static final String SWAGGER_X_WSO2_SECURITY = "x-wso2-security";
     public static final String SWAGGER_X_WSO2_SCOPES = "x-wso2-scopes";
@@ -111,12 +114,22 @@ public class Constants {
     public static final String SWAGGER_OPERATION_ID = "operationId";
     public static final String SWAGGER_PARAMETERS = "parameters";
     public static final String SWAGGER_SUMMARY = "summary";
+    public static final String SWAGGER_RESPONSE_200 = "200";
+    public static final String SWAGGER_PARAM_TYPE = "type";
+    public static final String SWAGGER_PARAM_TYPE_BODY = "body";
+    public static final String SWAGGER_BODY_SCHEMA = "schema";
+    public static final String SWAGGER_DEFINITIONS = "definitions";
+    public static final String SWAGGER_REF = "$ref";
+    public static final String SWAGGER_SAMPLE_DEFINITION = "sampleItem";
+
+
+
 
 
     //database types
     public static final String DB_TYPE_ORACLE = "oracle";
     public static final String DB_TYPE_DB2 = "db2";
-    public static final String DB_TYPE_MYSQL= "mysql";
+    public static final String DB_TYPE_MYSQL = "mysql";
     public static final String DB_TYPE_MSSQL = "mssql";
     public static final String DB_TYPE_POSTGRE = "postgre";
     public static final String DB_TYPE_OPENEDGE = "openedge";

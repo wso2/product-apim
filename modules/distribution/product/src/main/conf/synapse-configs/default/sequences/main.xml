@@ -86,6 +86,7 @@
         <property name="Host" scope="transport" action="remove"/>
         <property name="Accept" scope="transport" action="remove"/>
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>
+        <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
         <send/>
         <drop/>
     </in>

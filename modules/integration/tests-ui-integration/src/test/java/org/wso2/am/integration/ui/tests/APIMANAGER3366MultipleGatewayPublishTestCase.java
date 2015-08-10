@@ -1,5 +1,3 @@
-
-
 /*
 *
 * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
@@ -21,6 +19,8 @@
 */
 package org.wso2.am.integration.ui.tests;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -35,6 +35,7 @@ import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -44,7 +45,8 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 	private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
 	private static final String API_METHOD = "/most_popular";
 	private String accessHTTPURL;
-	WebDriverWait wait;
+    private static final Log log = LogFactory.getLog(APIMANAGER3366MultipleGatewayPublishTestCase.class);
+    WebDriverWait wait;
 	String carbonLogFilePath = CarbonUtils.getCarbonLogsPath() + "/wso2carbon.log";
 
 	@BeforeClass(alwaysRun = true)
@@ -224,18 +226,36 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		driver.quit();
 	}
 
-	private boolean isAPIPublished(String apiName, String version) throws IOException {
-		BufferedReader input = new BufferedReader(new FileReader(carbonLogFilePath));
-		String lastLine = null, line;
+    private boolean isAPIPublished(String apiName, String version) {
+        BufferedReader input = null;
+        boolean status = false;
+        try {
+            input = new BufferedReader(new FileReader(carbonLogFilePath));
+            String lastLine = null, line;
 
-		while ((line = input.readLine()) != null) {
-			lastLine = line;
-		}
-		input.close();
-		if (lastLine != null && (lastLine.contains("INFO {org.apache.synapse.rest.API}"))) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+            while ((line = input.readLine()) != null) {
+                lastLine = line;
+            }
+            if (lastLine != null && (lastLine.contains("INFO {org.apache.synapse.rest.API}"))) {
+                status = true;
+            } else {
+                status = false;
+            }
+        } catch (FileNotFoundException e) {
+            String msg = "Couldn't find the " + carbonLogFilePath;
+            log.error(msg, e);
+        } catch (IOException e) {
+            String msg = "Couldn't Read the " + carbonLogFilePath;
+            log.error(msg, e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    //Ignore
+                }
+            }
+        }
+        return status;
+    }
 }

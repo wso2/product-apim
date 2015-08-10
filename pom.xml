@@ -804,7 +804,7 @@
         <jibx.version>1.2.1.wso2v1</jibx.version>
         <axis2.jaxb.version>1.6.1.wso2v10</axis2.jaxb.version>
         <jaxb.version>2.2.5.wso2v1</jaxb.version>
-        <stratos.version>2.2.0</stratos.version>
+        <apimgt.stratos.version>2.2.1-SNAPSHOT</apimgt.stratos.version>
         <bcprov.jdk13.version>140</bcprov.jdk13.version>
         <bcprov.jdk15.version>132</bcprov.jdk15.version>
         <version.javax.servlet.jsp>2.2.0.v201112011158</version.javax.servlet.jsp>
