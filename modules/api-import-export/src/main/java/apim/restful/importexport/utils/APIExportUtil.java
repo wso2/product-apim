@@ -503,7 +503,7 @@ public class APIExportUtil {
         } catch (RegistryException e) {
             log.error("Error while retrieving sequence from the registry " + e.getMessage());
             throw new APIExportException("Error while retrieving sequence from the registry", e);
-        } catch (Exception e) {
+        } catch (Exception e ) { //APIUtil.buildOMElement() throws a generic exception
             log.error("Error while reading sequence content " + e.getMessage());
             throw new APIExportException("Error while reading sequence content", e);
         }
