@@ -52,6 +52,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.io.File;
@@ -63,6 +64,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,7 +201,7 @@ public class APIExportUtil {
         }
 
         //export sequences
-        exportSequences(apiToReturn, apiID, tenantId);
+        exportSequences(apiToReturn, apiID, tenantId, registry);
 
         //set API status to created
         apiToReturn.setStatus(APIStatus.CREATED);
@@ -402,9 +404,11 @@ public class APIExportUtil {
      *
      * @param api           exporting API
      * @param apiIdentifier ID of the requesting API
-     * @throws APIExportException If an error occurs while retrieving sequences from registry
+     * @param registry      current tenant registry
+     * @throws APIExportException If an error occurs while exporting sequences
      */
-    public static void exportSequences(API api, APIIdentifier apiIdentifier, int tenantId) throws APIExportException {
+    public static void exportSequences(API api, APIIdentifier apiIdentifier, int tenantId, Registry registry)
+        throws APIExportException {
 
         Map<String, String> sequences = new HashMap<String, String>();
 
@@ -425,66 +429,115 @@ public class APIExportUtil {
                     apiIdentifier.getVersion());
             createDirectory(archivePath + File.separator + "Sequences");
 
-            try {
-                String sequenceName;
-                String direction;
-                OMElement sequenceConfig;
-                for (Map.Entry<String, String> sequence : sequences.entrySet()) {
-                    sequenceName = sequence.getValue();
-                    direction = sequence.getKey();
-                    if (sequenceName != null) {
-                        if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN);
-                            writeSequenceToFile(sequenceConfig, sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                                    apiIdentifier);
-                        } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT);
-                            writeSequenceToFile(sequenceConfig, sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                                    apiIdentifier);
-                        } else {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT);
-                            writeSequenceToFile(sequenceConfig, sequenceName,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, apiIdentifier);
-                        }
+            String sequenceName;
+            String direction;
+            for (Map.Entry<String, String> sequence : sequences.entrySet()) {
+                sequenceName = sequence.getValue();
+                direction = sequence.getKey();
+                AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
+                if (sequenceName != null) {
+                    if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
+                        sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                            registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                            apiIdentifier);
+                    } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
+                        sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                            registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                            apiIdentifier);
+                    } else {
+                        sequenceDetails = getCustomSequence(sequenceName,
+                            APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
+                            apiIdentifier);
                     }
                 }
-            } catch (APIManagementException e) {
-                log.error("Error while retrieving custom sequence" + e.getMessage());
-                throw new APIExportException("Error while retrieving custom sequence", e);
-
             }
         }
     }
 
     /**
+     * Retrieve custom sequence details from the registry
+     *
+     * @param sequenceName Name of the sequence
+     * @param type         Sequence type
+     * @param registry     Current tenant registry
+     * @return Registry resource name of the sequence and its content
+     * @throws APIExportException If an error occurs while retrieving registry elements
+     */
+    private static AbstractMap.SimpleEntry<String, OMElement> getCustomSequence(String sequenceName,
+        String type, Registry registry) throws APIExportException {
+        AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
+
+        org.wso2.carbon.registry.api.Collection seqCollection = null;
+
+        try {
+            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equals(type)) {
+                seqCollection =
+                    (org.wso2.carbon.registry.api.Collection) registry.get(APIConstants.API_CUSTOM_INSEQUENCE_LOCATION);
+            }
+            else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equals(type)) {
+                seqCollection =
+                    (org.wso2.carbon.registry.api.Collection) registry.get(APIConstants.API_CUSTOM_OUTSEQUENCE_LOCATION);
+            }
+            else if(APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
+                seqCollection =
+                    (org.wso2.carbon.registry.api.Collection) registry.get(APIConstants.API_CUSTOM_FAULTSEQUENCE_LOCATION);
+            }
+
+            if (seqCollection != null) {
+                String[] childPaths = seqCollection.getChildren();
+
+                for (int i = 0; i < childPaths.length; i++) {
+                    Resource sequence = registry.get(childPaths[i]);
+                    OMElement seqElment = APIUtil.buildOMElement(sequence.getContentStream());
+                    if (sequenceName.equals(seqElment.getAttributeValue(new QName("name")))) {
+                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().lastIndexOf('/'));
+                        sequenceDetails = new AbstractMap.SimpleEntry<String, OMElement>(sequenceFileName, seqElment);
+                        return sequenceDetails;
+                    }
+                }
+            }
+
+        } catch (RegistryException e) {
+            log.error("Error while retrieving sequence from the registry " + e.getMessage());
+            throw new APIExportException("Error while retrieving sequence from the registry", e);
+        } catch (Exception e) {
+            log.error("Error while reading sequence content " + e.getMessage());
+            throw new APIExportException("Error while reading sequence content", e);
+        }
+
+        return null;
+
+    }
+
+    /**
      * Store custom sequences in the archive directory
      *
-     * @param sequenceConfig Sequence configuration
-     * @param sequenceName   Sequence name
+     * @param sequenceDetails   Details of the sequence
      * @param direction      Direction of the sequence "in", "out" or "fault"
      * @param apiIdentifier  ID of the requesting API
      * @throws APIExportException If an error occurs while serializing XML stream or storing in
      *                            archive directory
      */
-    public static void writeSequenceToFile(OMElement sequenceConfig, String sequenceName, String direction,
-            APIIdentifier apiIdentifier) throws APIExportException {
+    private static void writeSequenceToFile(AbstractMap.SimpleEntry<String, OMElement> sequenceDetails, String direction,
+        APIIdentifier apiIdentifier) throws APIExportException {
         OutputStream outputStream = null;
         String archivePath = archiveBasePath.concat(File.separator + apiIdentifier.getApiName() + "-" +
                 apiIdentifier.getVersion()) + File.separator + "Sequences" + File.separator;
 
         String pathToExportedSequence = archivePath + direction + "-sequence" + File.separator;
-
-        String exportedSequenceFile = pathToExportedSequence + sequenceName + ".xml";
+        String sequenceFileName = sequenceDetails.getKey();
+        OMElement sequenceConfig = sequenceDetails.getValue();
+        String exportedSequenceFile = pathToExportedSequence + sequenceFileName;
         try {
             createDirectory(pathToExportedSequence);
             outputStream = new FileOutputStream(exportedSequenceFile);
             sequenceConfig.serialize(outputStream);
 
             if (log.isDebugEnabled()) {
-                log.debug(sequenceName + " retrieved successfully");
+                log.debug("Sequence retrieved successfully");
             }
 
         } catch (FileNotFoundException e) {

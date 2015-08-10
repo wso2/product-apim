@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.axiom.om.OMElement;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,8 +48,10 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 
 import org.wso2.carbon.registry.api.Registry;
+import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.Resource;
 
+import javax.xml.namespace.QName;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,7 +70,6 @@ import java.util.Enumeration;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 /**
  * This class provides the functions utilized to import an API from an API archive.
@@ -392,34 +394,61 @@ public final class APIImportUtil {
     private static void addAPISequences(String pathToArchive, API importedApi, String currentUser) {
 
         Registry registry = APIExportUtil.getRegistry(currentUser);
-        String inSequenceFileName = importedApi.getInSequence() + APIImportExportConstants.XML_EXTENSION;
-        String inSequenceFileLocation = pathToArchive + APIImportExportConstants.IN_SEQUENCE_LOCATION
-                + inSequenceFileName;
-
         //Adding in-sequence, if any
-        if (checkFileExistence(inSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                    inSequenceFileName, inSequenceFileLocation);
+        String inSequenceName = importedApi.getInSequence();
+        if (inSequenceName != null && !inSequenceName.isEmpty()) {
+            importAPISequence(inSequenceName, registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,pathToArchive,
+                APIImportExportConstants.IN_SEQUENCE_LOCATION);
         }
-
-        String outSequenceFileName = importedApi.getOutSequence() + APIImportExportConstants.XML_EXTENSION;
-        String outSequenceFileLocation = pathToArchive + APIImportExportConstants.OUT_SEQUENCE_LOCATION
-                + outSequenceFileName;
 
         //Adding out-sequence, if any
-        if (checkFileExistence(outSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                    outSequenceFileName, outSequenceFileLocation);
+        String outSequenceName = importedApi.getOutSequence();
+        if (outSequenceName != null && !outSequenceName.isEmpty()) {
+            importAPISequence(outSequenceName, registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,pathToArchive,
+                APIImportExportConstants.OUT_SEQUENCE_LOCATION);
         }
 
-        String faultSequenceFileName = importedApi.getFaultSequence() + APIImportExportConstants.XML_EXTENSION;
-        String faultSequenceFileLocation = pathToArchive + APIImportExportConstants.FAULT_SEQUENCE_LOCATION
-                + faultSequenceFileName;
-
         //Adding fault-sequence, if any
-        if (checkFileExistence(faultSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
-                    faultSequenceFileName, faultSequenceFileLocation);
+        String faultSequenceName = importedApi.getFaultSequence();
+        if (faultSequenceName != null && !faultSequenceName.isEmpty()) {
+            importAPISequence(faultSequenceName, registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, pathToArchive,
+                APIImportExportConstants.FAULT_SEQUENCE_LOCATION);
+        }
+    }
+
+    /**
+     * Import custom sequences
+     *
+     * @param sequenceName  Name of the sequence
+     * @param registry  Tenant registry
+     * @param direction  Direction of the sequence
+     * @param pathToArchive Location of the extracted folder of the imported APi archive
+     */
+    private static void importAPISequence(String sequenceName, Registry registry, String direction,
+            String pathToArchive, String sequenceLocation)
+    {
+        String sequenceFileLocation = pathToArchive + sequenceLocation;
+        File sequenceFileFolder = new File(sequenceFileLocation);
+        File[] fileList = sequenceFileFolder.listFiles();
+        String sequenceFileName;
+        InputStream fileInputStream = null;
+        for (final File fileEntry : fileList) {
+            if (fileEntry.isFile()) {
+                try {
+                    fileInputStream = new FileInputStream(fileEntry);
+                    OMElement seqElement = APIUtil.buildOMElement(fileInputStream);
+                    if (sequenceName.equals(seqElement.getAttributeValue(new QName("name")))) {
+                        sequenceFileName = FilenameUtils.getName(fileEntry.getName());
+                        addSequenceToRegistry(registry, direction, sequenceFileName,
+                                sequenceFileLocation + sequenceFileName);
+                    }
+                } catch (Exception e) {
+                    //this error is logged and ignored because sequences are optional in an API
+                    log.error("Failed to retrieve Sequence of imported API.", e);
+                } finally {
+                    IOUtils.closeQuietly(fileInputStream);
+                }
+            }
         }
     }
 
@@ -434,8 +463,8 @@ public final class APIImportUtil {
     private static void addSequenceToRegistry(Registry registry, String customSequenceType, String sequenceFileName,
                                               String sequenceFileLocation) {
 
-        String regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_LOCATION + File.separator + customSequenceType
-                + File.separator + sequenceFileName;
+        String regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_LOCATION + RegistryConstants.PATH_SEPARATOR +
+             customSequenceType + RegistryConstants.PATH_SEPARATOR + sequenceFileName;
         InputStream inSeqStream = null;
         try {
             if (registry.resourceExists(regResourcePath)) {
