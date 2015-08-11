@@ -74,7 +74,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     private static final Log log = LogFactory.getLog(MigrateFrom18to19.class);
     private List<Tenant> tenantsArray;
 
-    public MigrateFrom18to19(String tenantArguments) throws UserStoreException {
+    public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments) throws UserStoreException {
         TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
@@ -82,17 +82,35 @@ public class MigrateFrom18to19 implements MigrationClient {
 
             tenantsArray = new ArrayList();
 
-            if (tenantArguments.contains(",")) { // Multiple arguments specified
-                String[] parts = tenantArguments.split(",");
+            buildTenantList(tenantManager, tenantsArray, tenantArguments);
+        } else if (blackListTenantArguments != null) {
+            blackListTenantArguments = blackListTenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
-                for (int i = 0; i < parts.length; ++i) {
-                    if (parts[i].length() > 0) {
-                        populateTenants(tenantManager, tenantsArray, parts[i]);
+            List<Tenant> blackListTenants = new ArrayList();
+            buildTenantList(tenantManager, blackListTenants, blackListTenantArguments);
+
+            List<Tenant> allTenants = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
+            Tenant superTenant = new Tenant();
+            superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+            superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
+            allTenants.add(superTenant);
+
+            tenantsArray = new ArrayList();
+
+            for (Tenant tenant : allTenants) {
+                boolean isBlackListed = false;
+                for (Tenant blackListTenant : blackListTenants) {
+                    if (blackListTenant.getId() == tenant.getId()) {
+                        isBlackListed = true;
+                        break;
                     }
                 }
-            } else { // Only single argument provided
-                populateTenants(tenantManager, tenantsArray, tenantArguments);
+
+                if (!isBlackListed) {
+                    tenantsArray.add(tenant);
+                }
             }
+
         } else {  // Load all tenants
             tenantsArray = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
             Tenant superTenant = new Tenant();
@@ -101,6 +119,22 @@ public class MigrateFrom18to19 implements MigrationClient {
             tenantsArray.add(superTenant);
         }
     }
+
+
+    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments) throws UserStoreException {
+        if (tenantArguments.contains(",")) { // Multiple arguments specified
+            String[] parts = tenantArguments.split(",");
+
+            for (int i = 0; i < parts.length; ++i) {
+                if (parts[i].length() > 0) {
+                    populateTenants(tenantManager, tenantList, parts[i]);
+                }
+            }
+        } else { // Only single argument provided
+            populateTenants(tenantManager, tenantList, tenantArguments);
+        }
+    }
+
 
     private void populateTenants(TenantManager tenantManager, List<Tenant> tenantList, String argument) throws UserStoreException {
         log.debug("Argument provided : " + argument);

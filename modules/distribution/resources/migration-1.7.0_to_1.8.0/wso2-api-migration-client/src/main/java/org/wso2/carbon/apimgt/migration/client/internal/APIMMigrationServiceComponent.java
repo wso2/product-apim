@@ -19,18 +19,26 @@ package org.wso2.carbon.apimgt.migration.client.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
-import org.wso2.carbon.apimgt.migration.client.MigrationClient;
+import org.wso2.carbon.apimgt.migration.client.MigrateFrom17to18;
 import org.wso2.carbon.apimgt.migration.util.Constants;
-import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.utils.CarbonUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -62,6 +70,7 @@ public class APIMMigrationServiceComponent {
      * @param context OSGi component context.
      */
     protected void activate(ComponentContext context) {
+        boolean isCorrectProductVersion = false;
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
@@ -69,79 +78,71 @@ public class APIMMigrationServiceComponent {
             log.error("Error occurred while initializing DB Util ", e);
         }
 
-        String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
-        String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
-        String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
-        boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
-        boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
-        boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
-        boolean isRegistryMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_REG));
-        boolean isFileSystemMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_FILE_SYSTEM));
-        boolean isStatMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_STATS));
+        // Product and version validation
+        File carbonXmlConfig = new File(CarbonUtils.getServerXml());
+
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 
         try {
-            if (migrateToVersion != null) {
-                if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
-                    log.info("Migrating WSO2 API Manager 1.8.0 to WSO2 API Manager 1.9.0");
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.parse(carbonXmlConfig);
 
-                    // Create a thread and wait till the APIManager DBUtils is initialized
+            doc.getDocumentElement().normalize();
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants);
+            NodeList nameNodes = doc.getElementsByTagName("Name");
 
-                    //Default operation will migrate all three types of resources
-                    if (migrateAll) {
-                        log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
-                        migrateFrom18to19.databaseMigration(migrateToVersion);
-                        migrateFrom18to19.registryResourceMigration();
-                        migrateFrom18to19.fileSystemMigration();
-                    } else {
-                        //Only performs database migration
-                        if (isDBMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 databases to WSO2 API Manager 1.9.0");
-                            migrateFrom18to19.databaseMigration(migrateToVersion);
-                        }
-                        //Only performs registry migration
-                        if (isRegistryMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 registry resources to WSO2 API Manager 1.9.0");
-                            migrateFrom18to19.registryResourceMigration();
-                        }
-                        //Only performs file system migration
-                        if (isFileSystemMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 file system resources to WSO2 API Manager 1.9.0");
-                            migrateFrom18to19.fileSystemMigration();
+            if (nameNodes.getLength() > 0) {
+                Element name = (Element) nameNodes.item(0);
+                if (Constants.APIM_PRODUCT_NAME.equals(name.getTextContent())) {
+                    NodeList versionNodes = doc.getElementsByTagName("Version");
+
+                    if (versionNodes.getLength() > 0) {
+                        Element version = (Element) versionNodes.item(0);
+                        if (Constants.VERSION_1_8.equals(version.getTextContent())) {
+                            isCorrectProductVersion = true;
                         }
                     }
-                    //Old resource cleanup
-                    if (cleanupNeeded) {
-                        migrateFrom18to19.cleanOldResources();
-                        log.info("Old resources cleaned up.");
-                    }
-
-                    if (isStatMigration) {
-                        StatDBUtil.initialize();
-                        migrateFrom18to19.statsMigration();
-                        log.info("Stat migration completed");
-                    }
-
-                    if (log.isDebugEnabled()) {
-                        log.debug("API Manager 1.8.0 to 1.9.0 migration successfully completed");
-                    }
-                } else {
-                    log.error("The given migrate version " + migrateToVersion + " is not supported. Please check the version and try again.");
-
                 }
             }
-            else { // Migration version not specified
-                if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
-                    log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
+        } catch (ParserConfigurationException e) {
+            log.error("ParserConfigurationException when processing carbon.xml", e);
+        } catch (SAXException e) {
+            log.error("SAXException when processing carbon.xml", e);
+        } catch (IOException e) {
+            log.error("IOException when processing carbon.xml", e);
+        }
+
+        String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
+        boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
+
+        try {
+            if (isCorrectProductVersion) {
+                log.info("Migrating WSO2 API Manager " + Constants.PREVIOUS_VERSION + " to WSO2 API Manager " + Constants.VERSION_1_8);
+
+                // Create a thread and wait till the APIManager DBUtils is initialized
+
+                MigrateFrom17to18 migrateFrom17to18 = new MigrateFrom17to18(tenants);
+
+                boolean isArgumentValid = false;
+
+                //Default operation will migrate all three types of resources
+                if (migrateAll) {
+                    log.info("Migrating WSO2 API Manager  " + Constants.PREVIOUS_VERSION + " resources to WSO2 API Manager " + Constants.VERSION_1_8);
+                    migrateFrom17to18.registryResourceMigration();
+                    isArgumentValid = true;
                 }
+
+                if (isArgumentValid) {
+                    log.info("API Manager " + Constants.PREVIOUS_VERSION + "  to  " + Constants.VERSION_1_8 + " migration successfully completed");
+                }
+            } else {
+                log.error("Migration client installed in incompatible product version. This migration client is only compatible with " +
+                        Constants.APIM_PRODUCT_NAME + " " + Constants.VERSION_1_8 + ". Please verify the product/version in use.");
             }
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
             log.error("User store  exception occurred while migrating", e);
-        } catch (SQLException e) {
-            log.error("SQL exception occurred while migrating", e);
         } catch (Exception e) {
             log.error("Generic exception occurred while migrating", e);
         } catch (Throwable t) {
