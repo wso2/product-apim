@@ -31,6 +31,7 @@ import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.utils.CarbonUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,19 +45,6 @@ import java.util.Map;
 public class ResourceUtil {
 
     private static final Log log = LogFactory.getLog(ResourceUtil.class);
-
-    /**
-     * location for the swagger 1.1 resources
-     *
-     * @param apiName     api name
-     * @param apiVersion  api version
-     * @return swagger v1.1 location
-     */
-    public static String getSwagger11ResourceLocation(String apiName, String apiVersion) {
-        return APIConstants.API_DOC_LOCATION + RegistryConstants.PATH_SEPARATOR +
-                apiName +"-"  + apiVersion + RegistryConstants.PATH_SEPARATOR + APIConstants.API_DOC_RESOURCE_NAME;
-    }
-
 
     /**
      * location for the swagger 1.2 resources
@@ -148,25 +136,18 @@ public class ResourceUtil {
             String path = (String) apiInfo.get(Constants.API_DOC_11_PATH);
             JSONArray operations = (JSONArray) apiInfo.get(Constants.API_DOC_11_OPERATIONS);
 
-            if (resourcePathPrefix.length() > path.length()) {
-                log.error("Cannot obtain key prefix because swagger resourcePathPrefix : " + resourcePathPrefix + " is incompatible with path : " + path);
-               continue;
-            }
-
-            // get the key by removing the "apiVersion" and "resourcePath"
-            // from the "path" variable
-            // and concat the http method
-            String keyPrefix = path.substring(resourcePathPrefix.length());
-            if (keyPrefix.isEmpty()) {
-                keyPrefix = "/*";
-            }
-
-
             for (int j = 0; j < operations.size(); j++) {
                 JSONObject operation = (JSONObject) operations.get(j);
                 String httpMethod = (String) operation.get(Constants.API_DOC_11_METHOD);
                 JSONArray parameterArray = (JSONArray) operation.get(Constants.API_DOC_11_PARAMETERS);
 
+                // get the key by removing the "apiVersion" and "resourcePath"
+                // from the "path" variable
+                // and concat the http method
+                String keyPrefix = path.substring(resourcePathPrefix.length());
+                if (keyPrefix.isEmpty()) {
+                    keyPrefix = "/*";
+                }
                 key = keyPrefix + "_" + httpMethod.toLowerCase();
 
                 parameters.put(key, parameterArray);
@@ -202,24 +183,18 @@ public class ResourceUtil {
             String path = (String) apiInfo.get(Constants.API_DOC_11_PATH);
             JSONArray operations = (JSONArray) apiInfo.get(Constants.API_DOC_11_OPERATIONS);
 
-            if (resourcePathPrefix.length() > path.length()) {
-                log.error("Cannot obtain key prefix because swagger resourcePathPrefix : " + resourcePathPrefix + " is incompatible with path : " + path);
-                continue;
-            }
-
-            // get the key by removing the "apiVersion" and "resourcePath"
-            // from the "path" variable
-            // and concat the http method
-            String keyPrefix = path.substring(resourcePathPrefix.length());
-            if (keyPrefix.isEmpty()) {
-                keyPrefix = "/*";
-            }
-
             for (int j = 0; j < operations.size(); j++) {
                 JSONObject operation = (JSONObject) operations.get(j);
                 String httpMethod = (String) operation.get(Constants.API_DOC_11_METHOD);
                 JSONArray parameterArray = (JSONArray) operation.get(Constants.API_DOC_11_PARAMETERS);
 
+                // get the key by removing the "apiVersion" and "resourcePath"
+                // from the "path" variable
+                // and concat the http method
+                String keyPrefix = path.substring(resourcePathPrefix.length());
+                if (keyPrefix.isEmpty()) {
+                    keyPrefix = "/*";
+                }
                 key = keyPrefix + "_" + httpMethod.toLowerCase();
 
                 parameters.put(key, operation);

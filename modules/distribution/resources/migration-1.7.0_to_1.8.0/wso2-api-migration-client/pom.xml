@@ -6,7 +6,7 @@
 
     <groupId>org.wso2.carbon</groupId>
     <artifactId>org.wso2.carbon.apimgt.migrate.client</artifactId>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <packaging>bundle</packaging>
 
     <repositories>
@@ -109,8 +109,11 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
+
+
 
     <dependencies>
         <dependency>
@@ -136,12 +139,12 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
     </dependencies>
 
@@ -156,5 +159,6 @@
         <org.wso2.carbon.registry.core.version>4.2.0</org.wso2.carbon.registry.core.version>
         <org.wso2.carbon.registry.core.import.version>1.0.1</org.wso2.carbon.registry.core.import.version>
     </properties>
+
 
 </project>

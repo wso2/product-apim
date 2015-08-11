@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.MigrateFrom16to17;
+import org.wso2.carbon.apimgt.migration.client.MigrateFrom17to18;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
@@ -99,7 +99,7 @@ public class APIMMigrationServiceComponent {
 
                     if (versionNodes.getLength() > 0) {
                         Element version = (Element) versionNodes.item(0);
-                        if (Constants.VERSION_1_7.equals(version.getLocalName())) {
+                        if (Constants.VERSION_1_8.equals(version.getLocalName())) {
                             isCorrectProductVersion = true;
                         }
                     }
@@ -115,46 +115,30 @@ public class APIMMigrationServiceComponent {
 
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
-        boolean isRegistryMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_REG));
-        boolean isFileSystemMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_FILE_SYSTEM));
 
         try {
             if (isCorrectProductVersion) {
-                log.info("Migrating WSO2 API Manager " + Constants.PREVIOUS_VERSION + " to WSO2 API Manager " + Constants.VERSION_1_7);
+                log.info("Migrating WSO2 API Manager " + Constants.PREVIOUS_VERSION + " to WSO2 API Manager " + Constants.VERSION_1_8);
 
                 // Create a thread and wait till the APIManager DBUtils is initialized
 
-                MigrateFrom16to17 migrateFrom16to17 = new MigrateFrom16to17(tenants);
+                MigrateFrom17to18 migrateFrom17to18 = new MigrateFrom17to18(tenants);
 
                 boolean isArgumentValid = false;
 
                 //Default operation will migrate all three types of resources
                 if (migrateAll) {
-                    log.info("Migrating WSO2 API Manager  " + Constants.PREVIOUS_VERSION + " resources to WSO2 API Manager " + Constants.VERSION_1_7);
-                    migrateFrom16to17.registryResourceMigration();
-                    migrateFrom16to17.fileSystemMigration();
+                    log.info("Migrating WSO2 API Manager  " + Constants.PREVIOUS_VERSION + " resources to WSO2 API Manager " + Constants.VERSION_1_8);
+                    migrateFrom17to18.registryResourceMigration();
                     isArgumentValid = true;
-                } else {
-                    //Only performs registry migration
-                    if (isRegistryMigration) {
-                        log.info("Migrating WSO2 API Manager " + Constants.PREVIOUS_VERSION + "  registry resources to WSO2 API Manager " + Constants.VERSION_1_7);
-                        migrateFrom16to17.registryResourceMigration();
-                        isArgumentValid = true;
-                    }
-                    //Only performs file system migration
-                    if (isFileSystemMigration) {
-                        log.info("Migrating WSO2 API Manager " + Constants.PREVIOUS_VERSION + "  file system resources to WSO2 API Manager " + Constants.VERSION_1_7);
-                        migrateFrom16to17.fileSystemMigration();
-                        isArgumentValid = true;
-                    }
                 }
 
                 if (isArgumentValid) {
-                    log.info("API Manager " + Constants.PREVIOUS_VERSION + "  to  " + Constants.VERSION_1_7 + " migration successfully completed");
+                    log.info("API Manager " + Constants.PREVIOUS_VERSION + "  to  " + Constants.VERSION_1_8 + " migration successfully completed");
                 }
             } else {
                 log.error("Migration client installed in incompatible product version. This migration client is only compatible with " +
-                        Constants.APIM_PRODUCT_NAME + " " + Constants.VERSION_1_7 + ". Please verify the product/version in use.");
+                        Constants.APIM_PRODUCT_NAME + " " + Constants.VERSION_1_8 + ". Please verify the product/version in use.");
             }
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);

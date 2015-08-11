@@ -7,9 +7,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -21,38 +18,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 public class SynapseMigration {
     private static final Log log = LogFactory.getLog(SynapseMigration.class);
-    /**
-     * modify the apis in the sysnpase-config folder
-     *
-     * @param configPath
-     *            path to synapse-config api foldermodifySuperUserAPIs
-     * @throws Exception
-     */
-    public void modifySynapseConfigs(String configPath) {
-        File configFolder = new File(configPath);
-        if (configFolder.isDirectory()) {
-            File[] apis = configFolder.listFiles();
-            for (int i = 0; i < apis.length; i++) {
-                // take only the apis created by the user
-                if (apis[i].getName().contains("_v")) {
-                    try {
-                        modifyGoogleAnalyticsTrackingHandler(apis[i]);
-                    } catch (IOException e) {
-                        log.error("Error while accessing api configuration file.", e);
-                    } catch (Exception e) {
-                        log.error("Error while migrating.", e);
-                    }
-                }
-            }
-        } else {
-            log.error("Provided synapse api path " + configPath + " is not a valid directory");
-        }
-    }
 
     /**
      * method to add property element to the existing google analytics tracking
@@ -64,17 +33,9 @@ public class SynapseMigration {
      * @throws XPathExpressionException
      * @throws TransformerException
      */
-    private void modifyGoogleAnalyticsTrackingHandler(File api)
-            throws ParserConfigurationException, SAXException, IOException,
-            XPathExpressionException, TransformerException {
-
-        FileInputStream file = new FileInputStream(api);
-        DocumentBuilderFactory builderFactory = DocumentBuilderFactory
-                .newInstance();
-        DocumentBuilder builder = builderFactory.newDocumentBuilder();
-
-        Document xmlDocument = builder.parse(file);
-
+    public static void modifyGoogleAnalyticsTrackingHandler(File api, Document xmlDocument)
+            throws
+            TransformerException, XPathExpressionException {
         // current handler element
         String expression = "//handler[@class='org.wso2.carbon.apimgt.usage.publisher."
                 + "APIMgtGoogleAnalyticsTrackingHandler']";
@@ -119,7 +80,7 @@ public class SynapseMigration {
             DOMSource source = new DOMSource(xmlDocument);
             StreamResult result = new StreamResult(api);
             transformer.transform(source, result);
-            System.out.println("Updated api: " + api.getName());
+            log.debug("Updated api: " + api.getName());
         }
 
     }

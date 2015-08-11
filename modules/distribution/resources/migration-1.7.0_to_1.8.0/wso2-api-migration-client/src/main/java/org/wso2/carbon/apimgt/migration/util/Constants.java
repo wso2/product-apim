@@ -18,8 +18,8 @@ package org.wso2.carbon.apimgt.migration.util;
 
 public class Constants {
     public static final String APIM_PRODUCT_NAME = "WSO2 API Manager";
-    public static final String PREVIOUS_VERSION = "1.6.0";
-    public static final String VERSION_1_7 = "1.7.0";
+    public static final String PREVIOUS_VERSION = "1.7.0";
+    public static final String VERSION_1_8 = "1.8.0";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String API = "api";
@@ -29,8 +29,6 @@ public class Constants {
     public static final String ARG_MIGRATE_TO_VERSION = "migrateToVersion";
     public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_ALL = "migrate";
-    public static final String ARG_MIGRATE_REG = "migrateReg";
-    public static final String ARG_MIGRATE_FILE_SYSTEM = "migrateFS";
 
     // Synapse configuration related
     public static final String SYNAPSE_API_ROOT_ELEMENT = "api";
