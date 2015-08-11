@@ -29,6 +29,7 @@ import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -275,6 +276,8 @@ public class RegistryMigration {
                     log.error("RegistryException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 } catch (UnsupportedEncodingException e) {
                     log.error("UnsupportedEncodingException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                } catch (APIMigrationException e) {
+                    log.error("APIMigrationException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 }
             }
         }
@@ -501,11 +504,16 @@ public class RegistryMigration {
      * @throws RegistryException
      */
     private static void updateSwagger12ResourcesUsingSwagger11Doc(APIIdentifier apiIdentfier, Registry registry)
-            throws APIManagementException, RegistryException, UnsupportedEncodingException {
+            throws APIManagementException, RegistryException, UnsupportedEncodingException, APIMigrationException {
 
         String apiDef11Path =
                 ResourceUtil.getSwagger11ResourceLocation(apiIdentfier.getApiName(),
                         apiIdentfier.getVersion());
+
+        if (!registry.resourceExists(apiDef11Path)) {
+            throw new APIMigrationException("Swagger 1.1 document at " + apiDef11Path + " does not exist");
+        }
+
         Resource apiDef11 = registry.get(apiDef11Path);
 
         String apiDef11Json = new String((byte[]) apiDef11.getContent(), "UTF8");
@@ -514,6 +522,11 @@ public class RegistryMigration {
                 ResourceUtil.getSwagger12ResourceLocation(apiIdentfier.getApiName(),
                         apiIdentfier.getVersion(),
                         apiIdentfier.getProviderName());
+
+        if (!registry.resourceExists(swagger12location)) {
+            throw new APIMigrationException("Swagger 1.2 document at " + swagger12location + " does not exist");
+        }
+
         Resource swagger12Res = registry.get(swagger12location);
         String[] resourcePaths = (String[]) swagger12Res.getContent();
 

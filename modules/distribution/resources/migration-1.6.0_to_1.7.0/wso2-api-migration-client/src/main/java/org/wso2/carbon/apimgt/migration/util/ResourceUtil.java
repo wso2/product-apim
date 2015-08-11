@@ -371,12 +371,12 @@ public class ResourceUtil {
      * update all the the swagger document in the registry related to an api
      * @param apiDocJson
      * @param docResourcePaths
-     * @param re
+     * @param registry
      * @throws ParseException
      * @throws RegistryException
      */
     public static void updateAPISwaggerDocs(String apiDocJson, String[] docResourcePaths,
-                                            Registry re) throws ParseException, RegistryException, UnsupportedEncodingException {
+                                            Registry registry) throws ParseException, RegistryException, UnsupportedEncodingException, APIMigrationException {
 
         JSONParser parser = new JSONParser();
         JSONObject apiDoc11 = (JSONObject) parser.parse(apiDocJson);
@@ -400,6 +400,18 @@ public class ResourceUtil {
         String resourcePath = (String) apiDoc11.get(Constants.API_DOC_11_RESOURCE_PATH);
         String apiVersion = (String) apiDoc11.get(Constants.API_DOC_11_API_VERSION);
 
+        if (basePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_BASE_PATH);
+        }
+
+        if (resourcePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_RESOURCE_PATH);
+        }
+
+        if (apiVersion == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_API_VERSION);
+        }
+
         resourcePath = resourcePath.endsWith("/") ? resourcePath : resourcePath + "/";
         String basePathForResource = basePath + resourcePath + apiVersion;
 
@@ -415,15 +427,31 @@ public class ResourceUtil {
                 continue;
             }
 
-            Resource resource = re.get(docResourcePath);
+            if (!registry.resourceExists(docResourcePath)) {
+                log.error("Doc resource path at : " + docResourcePath + " does not exist");
+                continue;
+            }
+
+            Resource resource = registry.get(docResourcePath);
             JSONObject apiDoc = (JSONObject) parser.parse(new String((byte[]) resource.getContent(), "UTF8"));
 
 
             String description = "";
             //generate the key to query the descriptionsForResource map
             JSONArray apisInResource = (JSONArray) apiDoc.get(Constants.API_DOC_12_APIS);
+
+            if (apisInResource == null) {
+                log.error("Could not find " + Constants.API_DOC_12_APIS + " in document resource path");
+                continue;
+            }
+
             JSONObject apiTemp = (JSONObject) apisInResource.get(0);
             String path = (String) apiTemp.get(Constants.API_DOC_12_PATH);
+
+            if (path == null) {
+                log.error("Could not find " + Constants.API_DOC_12_PATH + " in document resource path");
+                continue;
+            }
 
             String key = "";
             if (path.equals("/*")) {
@@ -444,15 +472,15 @@ public class ResourceUtil {
                     ResourceUtil.getUpdatedSwagger12Resource(apiDoc, allParameters, allOperations,
                             basePathForResource);
             log.info("\t update " + resourceName.substring(1));
-            Resource res = re.get(docResourcePath);
+            Resource res = registry.get(docResourcePath);
             res.setContent(updatedJson);
             //update the registry
-            re.put(docResourcePath, res);
+            registry.put(docResourcePath, res);
 
         }
 
         //update the api-doc. add the descriptions to each api resource
-        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, re, parser);
+        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, registry, parser);
 
     }
 
@@ -462,17 +490,20 @@ public class ResourceUtil {
      * update the swagger 1.2 api-doc. This method updates the descriptions
      * @param apidoc12path
      * @param descriptionsForResource
-     * @param re
+     * @param registry
      * @param parser
      * @throws RegistryException
      * @throws ParseException
      */
     private static void updateSwagger12APIdoc(String apidoc12path,
                                               Map<String, String> descriptionsForResource,
-                                              Registry re, JSONParser parser)
+                                              Registry registry, JSONParser parser)
             throws RegistryException,
-            ParseException, UnsupportedEncodingException {
-        Resource res = re.get(apidoc12path);
+            ParseException, UnsupportedEncodingException, APIMigrationException {
+        if (!registry.resourceExists(apidoc12path)) {
+            throw new APIMigrationException("Swagger 1.2 doc does not exist");
+        }
+        Resource res = registry.get(apidoc12path);
         JSONObject api12Doc = (JSONObject) parser.parse(new String((byte[]) res.getContent(), "UTF8"));
         JSONArray apis = (JSONArray) api12Doc.get(Constants.API_DOC_12_APIS);
         for (int j = 0; j < apis.size(); j++) {
@@ -488,7 +519,7 @@ public class ResourceUtil {
         log.info("\t update api-doc");
         res.setContent(api12Doc.toJSONString());
         // update the registry
-        re.put(apidoc12path, res);
+        registry.put(apidoc12path, res);
     }
 
     /**
