@@ -70,7 +70,7 @@ public class APIMMigrationServiceComponent {
      * @param context OSGi component context.
      */
     protected void activate(ComponentContext context) {
-        boolean isCorrectProductVersion = true;
+        boolean isCorrectProductVersion = false;
         try {
             APIMgtDBUtil.initialize();
         } catch (Exception e) {
@@ -79,10 +79,9 @@ public class APIMMigrationServiceComponent {
         }
 
         // Product and version validation
-        File carbonXmlConfig = new File(CarbonUtils.getCarbonConfigDirPath(), "carbon.xml");
+        File carbonXmlConfig = new File(CarbonUtils.getServerXml());
 
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        docFactory.setNamespaceAware(true);
 
         try {
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -94,12 +93,12 @@ public class APIMMigrationServiceComponent {
 
             if (nameNodes.getLength() > 0) {
                 Element name = (Element) nameNodes.item(0);
-                if (Constants.APIM_PRODUCT_NAME.equals(name.getLocalName())) {
+                if (Constants.APIM_PRODUCT_NAME.equals(name.getTextContent())) {
                     NodeList versionNodes = doc.getElementsByTagName("Version");
 
                     if (versionNodes.getLength() > 0) {
                         Element version = (Element) versionNodes.item(0);
-                        if (Constants.VERSION_1_8.equals(version.getLocalName())) {
+                        if (Constants.VERSION_1_8.equals(version.getTextContent())) {
                             isCorrectProductVersion = true;
                         }
                     }
