@@ -35,6 +35,7 @@ public class Constants {
     // Migration client argument property names
     public static final String ARG_MIGRATE_TO_VERSION = "migrateToVersion";
     public static final String ARG_MIGRATE_TENANTS = "tenants";
+    public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
     public static final String ARG_MIGRATE_ALL = "migrate";
     public static final String ARG_CLEANUP = "cleanup";
     public static final String ARG_MIGRATE_DB = "migrateDB";

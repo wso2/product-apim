@@ -71,6 +71,7 @@ public class APIMMigrationServiceComponent {
 
         String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
+        String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
         boolean cleanupNeeded = Boolean.parseBoolean(System.getProperty(Constants.ARG_CLEANUP));
         boolean isDBMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_DB));
@@ -85,7 +86,7 @@ public class APIMMigrationServiceComponent {
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants);
+                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants);
 
                     //Default operation will migrate all three types of resources
                     if (migrateAll) {
