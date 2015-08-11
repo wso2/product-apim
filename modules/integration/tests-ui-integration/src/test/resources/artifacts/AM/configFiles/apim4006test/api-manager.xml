@@ -12,6 +12,32 @@
   <!-- This parameter is used to enable the securevault support when try to publish endpoint secured APIs. Values should be "true" or "false".
   By default secure vault is disabled.-->
 	<EnableSecureVault>false</EnableSecureVault>
+    <!--
+        Database configuration used by API publisher, API store and API key manager.
+        When these components are deployed separately, each of them should have
+        separate database configurations pointing to the same physical database.
+    -->
+    <!--Database-->
+        <!--
+            JDBC connection string for the database.
+        -->
+        <!--<URL>jdbc:h2:repository/database/WSO2AM_DB</URL> -->
+
+        <!--
+            JDBC username for the database.
+        -->
+        <!--<Username>wso2carbon</Username>-->
+
+        <!--
+            JDBC password for the database.
+        -->
+        <!--<Password>wso2carbon</Password>
+
+
+            JDBC driver for the database.
+        -->
+        <!--<Driver>org.h2.Driver</Driver>
+    </Database>-->
 
     <!--
         Authentication manager configuration for API publisher and API store. This is
@@ -155,8 +181,6 @@
     -->
     <APIUsageTracking>
 
-        <Enabled>false</Enabled>
-
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true.
@@ -167,30 +191,6 @@
             API Usage Data Publisher.
         -->
         <PublisherClass>org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher</PublisherClass>
-
-
-        <!--
-            Server URL of the remote BAM/CEP server used to collect statistics. Must
-            be specified in protocol://hostname:port/ format.
-
-            An event can also be published to multiple Receiver Groups each having 1 or more receivers. Receiver
-            Groups are delimited by curly braces whereas receivers are delimited by commas.
-        Ex - Multiple Receivers within a single group
-         tcp://localhost:7612/,tcp://localhost:7613/,tcp://localhost:7614/
-        Ex - Multiple Receiver Groups with two receivers each
-                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/}
-        -->
-        <BAMServerURL>{tcp://localhost:7612/}</BAMServerURL>
-
-        <!--
-            Administrator username to login to the remote BAM server.
-        -->
-        <BAMUsername>admin</BAMUsername>
-
-        <!--
-            Administrator password to login to the remote BAM server.
-        -->
-        <BAMPassword>admin</BAMPassword>
 
         <!--
             If below property set to true,then the response message size will be calculated and publish 
@@ -343,7 +343,7 @@
             Enable the providers to expose their APIs over the special 'Unlimited' tier which
             basically disables tier based throttling for the specified APIs.
         -->
-        <EnableUnlimitedTier>true</EnableUnlimitedTier>
+        <EnableUnlimitedTier>false</EnableUnlimitedTier>
     </TierManagement>
 
 
@@ -373,7 +373,7 @@
         <!--
               Uncomment this to limit the number of APIs in api the API Store
           -->
-        <!--APIsPerPage>30</APIsPerPage-->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
