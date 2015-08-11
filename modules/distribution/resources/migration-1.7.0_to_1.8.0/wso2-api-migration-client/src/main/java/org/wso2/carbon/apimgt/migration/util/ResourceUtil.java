@@ -120,42 +120,75 @@ public class ResourceUtil {
      *         resource. the key for
      *         the map is resourcepath_httpmethod
      */
-    public static Map<String, JSONArray> getAllParametersForResources(JSONObject resource) {
+    public static Map<String, JSONArray> getAllParametersForResources(JSONObject resource) throws APIMigrationException {
         Map<String, JSONArray> parameters = new HashMap<String, JSONArray>();
 
         String resourcePath = (String) resource.get(Constants.API_DOC_11_RESOURCE_PATH);
         String apiVersion = (String) resource.get(Constants.API_DOC_11_API_VERSION);
+
+        if (resourcePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_RESOURCE_PATH);
+        }
+
+        if (apiVersion == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_API_VERSION);
+        }
+
         String resourcePathPrefix = resourcePath + "/" + apiVersion;
 
-        String key;
-
         JSONArray apis = (JSONArray) resource.get(Constants.API_DOC_11_APIS);
-        for (int i = 0; i < apis.size(); i++) {
 
+        if (apis == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_APIS);
+        }
+
+        for (int i = 0; i < apis.size(); i++) {
             JSONObject apiInfo = (JSONObject) apis.get(i);
             String path = (String) apiInfo.get(Constants.API_DOC_11_PATH);
             JSONArray operations = (JSONArray) apiInfo.get(Constants.API_DOC_11_OPERATIONS);
+
+            if (path == null) {
+                throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_PATH);
+            }
+
+            if (operations == null) {
+                throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_OPERATIONS);
+            }
+
+            if (resourcePathPrefix.length() > path.length()) {
+                throw new APIMigrationException("Cannot obtain key prefix from swagger 1.1 document because  resourcePathPrefix : " +
+                                                        resourcePathPrefix + " is incompatible with path : " + path);
+            }
+
+            // get the key by removing the "apiVersion" and "resourcePath"
+            // from the "path" variable
+            // and concat the http method
+            String keyPrefix = path.substring(resourcePathPrefix.length());
+            if (keyPrefix.isEmpty()) {
+                keyPrefix = "/*";
+            }
 
             for (int j = 0; j < operations.size(); j++) {
                 JSONObject operation = (JSONObject) operations.get(j);
                 String httpMethod = (String) operation.get(Constants.API_DOC_11_METHOD);
                 JSONArray parameterArray = (JSONArray) operation.get(Constants.API_DOC_11_PARAMETERS);
 
-                // get the key by removing the "apiVersion" and "resourcePath"
-                // from the "path" variable
-                // and concat the http method
-                String keyPrefix = path.substring(resourcePathPrefix.length());
-                if (keyPrefix.isEmpty()) {
-                    keyPrefix = "/*";
+                if (httpMethod == null) {
+                    throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_METHOD);
                 }
-                key = keyPrefix + "_" + httpMethod.toLowerCase();
+
+                if (parameterArray == null) {
+                    throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_PARAMETERS);
+                }
+
+
+                String key = keyPrefix + "_" + httpMethod.toLowerCase();
 
                 parameters.put(key, parameterArray);
             }
         }
 
         return parameters;
-
     }
 
     /**
@@ -167,35 +200,63 @@ public class ResourceUtil {
      *         resource. the key for
      *         the map is resourcepath_httpmethod
      */
-    private static Map<String, JSONObject> getAllOperationsForResources(JSONObject resource) {
+    private static Map<String, JSONObject> getAllOperationsForResources(JSONObject resource) throws APIMigrationException {
         Map<String, JSONObject> parameters = new HashMap<String, JSONObject>();
 
         String resourcePath = (String) resource.get(Constants.API_DOC_11_RESOURCE_PATH);
         String apiVersion = (String) resource.get(Constants.API_DOC_11_API_VERSION);
+
+        if (resourcePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_RESOURCE_PATH);
+        }
+
+        if (apiVersion == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_API_VERSION);
+        }
+
         String resourcePathPrefix = resourcePath + "/" + apiVersion;
 
-        String key;
-
         JSONArray apis = (JSONArray) resource.get(Constants.API_DOC_11_APIS);
-        for (int i = 0; i < apis.size(); i++) {
 
+        if (apis == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_APIS);
+        }
+
+        for (int i = 0; i < apis.size(); i++) {
             JSONObject apiInfo = (JSONObject) apis.get(i);
             String path = (String) apiInfo.get(Constants.API_DOC_11_PATH);
             JSONArray operations = (JSONArray) apiInfo.get(Constants.API_DOC_11_OPERATIONS);
 
+            if (path == null) {
+                throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_PATH);
+            }
+
+            if (operations == null) {
+                throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_OPERATIONS);
+            }
+
+            if (resourcePathPrefix.length() > path.length()) {
+                throw new APIMigrationException("Cannot obtain key prefix from swagger 1.1 document because  resourcePathPrefix : " +
+                        resourcePathPrefix + " is incompatible with path : " + path);
+            }
+
+            // get the key by removing the "apiVersion" and "resourcePath"
+            // from the "path" variable
+            // and concat the http method
+            String keyPrefix = path.substring(resourcePathPrefix.length());
+            if (keyPrefix.isEmpty()) {
+                keyPrefix = "/*";
+            }
+
             for (int j = 0; j < operations.size(); j++) {
                 JSONObject operation = (JSONObject) operations.get(j);
                 String httpMethod = (String) operation.get(Constants.API_DOC_11_METHOD);
-                JSONArray parameterArray = (JSONArray) operation.get(Constants.API_DOC_11_PARAMETERS);
 
-                // get the key by removing the "apiVersion" and "resourcePath"
-                // from the "path" variable
-                // and concat the http method
-                String keyPrefix = path.substring(resourcePathPrefix.length());
-                if (keyPrefix.isEmpty()) {
-                    keyPrefix = "/*";
+                if (httpMethod == null) {
+                    throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_METHOD);
                 }
-                key = keyPrefix + "_" + httpMethod.toLowerCase();
+
+                String key = keyPrefix + "_" + httpMethod.toLowerCase();
 
                 parameters.put(key, operation);
             }
@@ -211,18 +272,30 @@ public class ResourceUtil {
      *            api-doc which contains swagger 1.1 info
      * @return map of apis in the swagger 1.1 doc. key is the full resource path for that resource
      */
-    public static Map<String, JSONObject> getAllAPIsByResourcePath(JSONObject resource) {
+    public static Map<String, JSONObject> getAllAPIsByResourcePath(JSONObject resource) throws APIMigrationException {
         Map<String, JSONObject> parameters = new HashMap<String, JSONObject>();
 
         String basePath = (String) resource.get(Constants.API_DOC_11_BASE_PATH);
-        String key = null;
+
+        if (basePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_BASE_PATH);
+        }
 
         JSONArray apis = (JSONArray) resource.get(Constants.API_DOC_11_APIS);
-        for (int i = 0; i < apis.size(); i++) {
 
+        if (apis == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_APIS);
+        }
+
+        for (int i = 0; i < apis.size(); i++) {
             JSONObject apiInfo = (JSONObject) apis.get(i);
             String path = (String) apiInfo.get(Constants.API_DOC_11_PATH);
-            key = basePath + path;
+
+            if (path == null) {
+                throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_PATH);
+            }
+
+            String key = basePath + path;
             parameters.put(key, apiInfo);
         }
 
@@ -261,17 +334,37 @@ public class ResourceUtil {
      */
     public static String getUpdatedSwagger12Resource(JSONObject resource,
                                                      Map<String, JSONArray> allParameters,
-                                                     Map<String, JSONObject> allOperations, String basePath) {
+                                                     Map<String, JSONObject> allOperations, String basePath) throws APIMigrationException {
 
         JSONArray apis = (JSONArray) resource.get(Constants.API_DOC_12_APIS);
+
+        if (apis == null) {
+            throw new APIMigrationException("Swagger 1.2 document does not contain required field: " + Constants.API_DOC_12_APIS);
+        }
+
         for (int i = 0; i < apis.size(); i++) {
             JSONObject apiInfo = (JSONObject) apis.get(i);
             String path = (String) apiInfo.get(Constants.API_DOC_12_PATH);
             JSONArray operations = (JSONArray) apiInfo.get(Constants.API_DOC_12_OPERATIONS);
 
+            if (path == null) {
+                log.error("Swagger 1.2 document does not contain required field: " + Constants.API_DOC_12_PATH);
+                continue;
+            }
+
+            if (operations == null) {
+                log.error("Swagger 1.2 document does not contain required field: " + Constants.API_DOC_12_OPERATIONS);
+                continue;
+            }
+
             for (int j = 0; j < operations.size(); j++) {
                 JSONObject operation = (JSONObject) operations.get(j);
                 String method = (String) operation.get(Constants.API_DOC_12_METHOD);
+
+                if (method == null) {
+                    log.error("Swagger 1.2 document does not contain required field: " + Constants.API_DOC_12_METHOD);
+                    continue;
+                }
 
                 // nickname is method name + "_" + path without starting "/"
                 // symbol
@@ -298,27 +391,30 @@ public class ResourceUtil {
                 }
                 //if there are parameters already in this
                 JSONArray existingParams = (JSONArray) operation.get(Constants.API_DOC_12_PARAMETERS);
-                if(existingParams.isEmpty()) {
-                    JSONParser parser = new JSONParser();
-                    if(path.contains("{")) {
-                        List<String> urlParams = ResourceUtil.getURLTempateParams(path);
-                        for(String p: urlParams){
-                            try {
-                                JSONObject paramObj = (JSONObject) parser.parse(Constants.DEFAULT_PARAM_FOR_URL_TEMPLATE);
-                                paramObj.put("name", p);
-                                parameters.add(paramObj);
-                            } catch (ParseException e) {
-                                log.error("ParseException when getting swagger default Parameters from URI template", e);
+
+                if (existingParams != null) {
+                    if (existingParams.isEmpty()) {
+                        JSONParser parser = new JSONParser();
+                        if (path.contains("{")) {
+                            List<String> urlParams = ResourceUtil.getURLTempateParams(path);
+                            for (String p : urlParams) {
+                                try {
+                                    JSONObject paramObj = (JSONObject) parser.parse(Constants.DEFAULT_PARAM_FOR_URL_TEMPLATE);
+                                    paramObj.put("name", p);
+                                    parameters.add(paramObj);
+                                } catch (ParseException e) {
+                                    log.error("ParseException when getting swagger default Parameters from URI template", e);
+                                }
                             }
                         }
+                        // add parameters array
+                        operation.put(Constants.API_DOC_12_PARAMETERS, parameters);
+                    } else {
+                        for (int k = 0; k < existingParams.size(); k++) {
+                            parameters.add(existingParams.get(k));
+                        }
+                        operation.put(Constants.API_DOC_12_PARAMETERS, parameters);
                     }
-                    // add parameters array
-                    operation.put(Constants.API_DOC_12_PARAMETERS, parameters);
-                } else {
-                    for(int k = 0; k < existingParams.size(); k ++ ) {
-                        parameters.add(existingParams.get(k));
-                    }
-                    operation.put(Constants.API_DOC_12_PARAMETERS, parameters);
                 }
 
                 //updating the resource description and nickname using values in the swagger 1.1 doc
@@ -346,12 +442,12 @@ public class ResourceUtil {
      * update all the the swagger document in the registry related to an api
      * @param apiDocJson
      * @param docResourcePaths
-     * @param re
+     * @param registry
      * @throws ParseException
      * @throws RegistryException
      */
     public static void updateAPISwaggerDocs(String apiDocJson, String[] docResourcePaths,
-                                            Registry re) throws ParseException, RegistryException, UnsupportedEncodingException {
+                                            Registry registry) throws ParseException, RegistryException, UnsupportedEncodingException, APIMigrationException {
 
         JSONParser parser = new JSONParser();
         JSONObject apiDoc11 = (JSONObject) parser.parse(apiDocJson);
@@ -369,11 +465,21 @@ public class ResourceUtil {
         // store it to add to api-doc 1.2
         Map<String, String> descriptionsForResource = new HashMap<String, String>();
 
-
-
         String basePath = (String) apiDoc11.get(Constants.API_DOC_11_BASE_PATH);
         String resourcePath = (String) apiDoc11.get(Constants.API_DOC_11_RESOURCE_PATH);
         String apiVersion = (String) apiDoc11.get(Constants.API_DOC_11_API_VERSION);
+
+        if (basePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_BASE_PATH);
+        }
+
+        if (resourcePath == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_RESOURCE_PATH);
+        }
+
+        if (apiVersion == null) {
+            throw new APIMigrationException("Swagger 1.1 document does not contain required field: " + Constants.API_DOC_11_API_VERSION);
+        }
 
         resourcePath = resourcePath.endsWith("/") ? resourcePath : resourcePath + "/";
         String basePathForResource = basePath + resourcePath + apiVersion;
@@ -390,15 +496,31 @@ public class ResourceUtil {
                 continue;
             }
 
-            Resource resource = re.get(docResourcePath);
+            if (!registry.resourceExists(docResourcePath)) {
+                log.error("Doc resource path at : " + docResourcePath + " does not exist");
+                continue;
+            }
+
+            Resource resource = registry.get(docResourcePath);
             JSONObject apiDoc = (JSONObject) parser.parse(new String((byte[]) resource.getContent(), "UTF8"));
 
 
             String description = "";
             //generate the key to query the descriptionsForResource map
             JSONArray apisInResource = (JSONArray) apiDoc.get(Constants.API_DOC_12_APIS);
+
+            if (apisInResource == null) {
+                log.error("Could not find " + Constants.API_DOC_12_APIS + " in document resource path");
+                continue;
+            }
+
             JSONObject apiTemp = (JSONObject) apisInResource.get(0);
             String path = (String) apiTemp.get(Constants.API_DOC_12_PATH);
+
+            if (path == null) {
+                log.error("Could not find " + Constants.API_DOC_12_PATH + " in document resource path");
+                continue;
+            }
 
             String key = "";
             if (path.equals("/*")) {
@@ -419,15 +541,15 @@ public class ResourceUtil {
                     ResourceUtil.getUpdatedSwagger12Resource(apiDoc, allParameters, allOperations,
                             basePathForResource);
             log.info("\t update " + resourceName.substring(1));
-            Resource res = re.get(docResourcePath);
+            Resource res = registry.get(docResourcePath);
             res.setContent(updatedJson);
             //update the registry
-            re.put(docResourcePath, res);
+            registry.put(docResourcePath, res);
 
         }
 
         //update the api-doc. add the descriptions to each api resource
-        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, re, parser);
+        ResourceUtil.updateSwagger12APIdoc(apidoc12path, descriptionsForResource, registry, parser);
 
     }
 
@@ -437,17 +559,21 @@ public class ResourceUtil {
      * update the swagger 1.2 api-doc. This method updates the descriptions
      * @param apidoc12path
      * @param descriptionsForResource
-     * @param re
+     * @param registry
      * @param parser
      * @throws RegistryException
      * @throws ParseException
      */
     private static void updateSwagger12APIdoc(String apidoc12path,
                                               Map<String, String> descriptionsForResource,
-                                              Registry re, JSONParser parser)
+                                              Registry registry, JSONParser parser)
             throws RegistryException,
-            ParseException, UnsupportedEncodingException {
-        Resource res = re.get(apidoc12path);
+            ParseException, UnsupportedEncodingException, APIMigrationException {
+        if (!registry.resourceExists(apidoc12path)) {
+            throw new APIMigrationException("Swagger 1.2 doc does not exist");
+        }
+
+        Resource res = registry.get(apidoc12path);
         JSONObject api12Doc = (JSONObject) parser.parse(new String((byte[]) res.getContent(), "UTF8"));
         JSONArray apis = (JSONArray) api12Doc.get(Constants.API_DOC_12_APIS);
         for (int j = 0; j < apis.size(); j++) {
@@ -463,7 +589,7 @@ public class ResourceUtil {
         log.info("\t update api-doc");
         res.setContent(api12Doc.toJSONString());
         // update the registry
-        re.put(apidoc12path, res);
+        registry.put(apidoc12path, res);
     }
 
     /**
@@ -474,7 +600,7 @@ public class ResourceUtil {
      * @throws ParseException
      */
     public static void updateSwagger12ResourcesForAM18(String[] docResourcePaths,
-                                                       Registry registry) throws RegistryException, ParseException, UnsupportedEncodingException {
+                                                       Registry registry) throws RegistryException, ParseException, UnsupportedEncodingException, APIMigrationException {
         JSONParser parser = new JSONParser();
         for (String docResourcePath : docResourcePaths) {
 
@@ -485,9 +611,18 @@ public class ResourceUtil {
                 continue;
             }
 
+            if (!registry.resourceExists(docResourcePath)) {
+                throw new APIMigrationException("Doc resource does not exist in swagger 1.2");
+            }
+
             Resource resource = registry.get(docResourcePath);
             JSONObject resourceDoc = (JSONObject) parser.parse(new String((byte[]) resource.getContent(), "UTF8"));
             JSONArray apis = (JSONArray) resourceDoc.get(Constants.API_DOC_12_APIS);
+
+            if (apis == null) {
+                throw new APIMigrationException("Swagger 1.2 doc does not contain required field : " + Constants.API_DOC_12_APIS);
+            }
+
             for (int j = 0; j < apis.size(); j++) {
                 JSONObject api = (JSONObject) apis.get(j);
                 JSONArray operations = (JSONArray) api.get("operations");

@@ -104,7 +104,7 @@
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptor>src/assembly/dist.xml</descriptor>
-                            <finalName>wso2-api-migration-client</finalName>
+                            <finalName>wso2-api-migration-client-${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>

@@ -20,12 +20,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
-import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
@@ -37,14 +35,9 @@ import org.wso2.carbon.registry.core.session.UserRegistry;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
 
 /**

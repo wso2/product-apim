@@ -29,6 +29,7 @@ import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -57,6 +58,13 @@ public class RegistryMigration {
                     String apiDef11Path = APIUtil.getAPIDefinitionFilePath(apiIdentifier.getApiName(),
                             apiIdentifier.getVersion(),
                             apiIdentifier.getProviderName());
+
+                    if (!registry.resourceExists(apiDef11Path)) {
+                        log.error("Swagger 1.1 document does not exist for api " +
+                                apiIdentifier.getApiName() + "-" + apiIdentifier.getVersion() + "-" + apiIdentifier.getProviderName() +
+                                " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                        continue;
+                    }
 
                     Resource apiDef11 = registry.get(apiDef11Path);
 
@@ -98,6 +106,8 @@ public class RegistryMigration {
                     log.error("RegistryException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 } catch (UnsupportedEncodingException e) {
                     log.error("UnsupportedEncodingException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                } catch (APIMigrationException e) {
+                    log.error("APIMigrationException thrown when migrating swagger for api " + api.getId().getApiName() + "-" + api.getId().getVersion() + "-" + api.getId().getProviderName() + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
                 }
             }
         }
