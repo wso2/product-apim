@@ -118,7 +118,8 @@ public class APIMANAGER4006SampleApiDeploymentTestCase extends APIMIntegrationUi
     private void deploySampleAPI(String username, String password, String domain) {
         try {
             driver.get(getPublisherURL());
-        } catch (Exception e) {
+        } catch (Exception e) { //This exception doesn't need to be thrown since the test case gets failed
+            // if an exception occurs.
             log.error("couldn't retrieve publisher url", e);
         }
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginButton")));
