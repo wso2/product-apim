@@ -168,7 +168,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     @Override
     public void databaseMigration(String migrateVersion) throws SQLException {
-        log.info("Database migration for API Manager 1.8.0 started");
+        log.info("Database migration for API Manager " + Constants.VERSION_1_9 + " started");
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         BufferedReader bufferedReader = null;
@@ -312,7 +312,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws APIMigrationException
      */
     void rxtMigration() throws APIMigrationException {
-        log.info("Rxt migration for API Manager 1.9.0 started.");
+        log.info("Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
         for (Tenant tenant : tenantsArray) {
             log.debug("Start rxtMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
@@ -446,7 +446,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      * @throws APIMigrationException
      */
     void swaggerResourceMigration() throws APIMigrationException {
-        log.info("Swagger migration for API Manager 1.9.0 started.");
+        log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
 
         for (Tenant tenant : tenantsArray) {
@@ -944,7 +944,7 @@ public class MigrateFrom18to19 implements MigrationClient {
      */
     @Override
     public void cleanOldResources() throws APIMigrationException {
-        log.info("Resource cleanup started for API Manager 1.9.0");
+        log.info("Resource cleanup started for API Manager " + Constants.VERSION_1_9);
         try {
             for (Tenant tenant : tenantsArray) {
                 PrivilegedCarbonContext.startTenantFlow();
