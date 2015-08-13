@@ -107,6 +107,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         apiCreationRequestBean.setTier(TIER_UNLIMITED);
         apiCreationRequestBean.setTiersCollection(TIER_UNLIMITED);
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+        apiIdentifier.setTier(TIER_UNLIMITED);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();

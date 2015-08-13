@@ -188,7 +188,7 @@ public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIn
         String responseStringProduction =
                 apiStore.generateApplicationKey(generateAppKeyRequestProduction).getData();
         JSONObject responseProduction = new JSONObject(responseStringProduction);
-        Assert.assertEquals(responseSandBox.getJSONObject("data").equals(null), false,
+        Assert.assertEquals(responseProduction.getJSONObject("data").equals(null), false,
                 "Generating production key failed");
 
         String productionAccessToken =
