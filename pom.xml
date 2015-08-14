@@ -767,6 +767,8 @@
         <carbon.apimgt.version>2.0.0-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[2.0.0, 3.0.0)</carbon.apimgt.imp.pkg.version>
 
+        <axis2-transports.wso2.version>1.1.0-wso2v12</axis2-transports.wso2.version>
+
         <apimgt.api.version>2.0.0-SNAPSHOT</apimgt.api.version>
         <apimgt.impl.version>2.0.0-SNAPSHOT</apimgt.impl.version>
         <apimgt.core.version>2.0.0-SNAPSHOT</apimgt.core.version>
@@ -795,12 +797,12 @@
 	    <apimgt.oidc.version>2.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.5-SNAPSHOT</carbon.registry.version>
+        <carbon.registry.version>4.4.6-SNAPSHOT</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.2-SNAPSHOT</carbon.governance.version>
+        <carbon.governance.version>4.5.3-SNAPSHOT</carbon.governance.version>
         <carbon.governance.ext.version>4.4.1-SNAPSHOT</carbon.governance.ext.version>        
 	
 	<!--carbon versions-->
@@ -808,14 +810,14 @@
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <apim.version>2.0.0-SNAPSHOT</apim.version>
 
-	 <carbon.commons.version>4.4.3</carbon.commons.version>
+	 <carbon.commons.version>4.4.4</carbon.commons.version>
 	 <carbon.kernel.imp.pkg.version>[4.4.0, 4.5.0)</carbon.kernel.imp.pkg.version>
 
 	<!-- carbon mediation -->
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.3</carbon.identity.version>
+	<carbon.identity.version>4.5.4</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
