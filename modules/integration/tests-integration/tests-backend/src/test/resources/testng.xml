@@ -47,6 +47,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because ofAPIMANAGER-3549&ndash;&gt;&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
@@ -83,15 +84,20 @@
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
+            <!-- Connection refused while connecting through telnet, hence commented temporally
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
+            -->
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.ReadOnlySecondaryUserStoreAPITokenGenerationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER4033CheckAuthTypeTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->

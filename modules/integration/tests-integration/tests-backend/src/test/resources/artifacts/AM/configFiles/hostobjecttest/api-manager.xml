@@ -468,8 +468,8 @@
         <ExternalAPIStore id="Store1" type="wso2">
             <DisplayName>Store1</DisplayName>
             <Endpoint>http://localhost:9763/store</Endpoint>
-            <Username>admin@wso2.com</Username>
-            <Password>admin</Password>
+            <Username>user1@tenantdomain1.com</Username>
+            <Password>test123</Password>
         </ExternalAPIStore>
     </ExternalAPIStores>
 

@@ -183,6 +183,14 @@
         #end
         #end
 
+
+#macro ( handle_query_params $type $endpoint_config )
+#set($endpoints = $endpoint_config.get("${type}_endpoints"))
+#if ( $endpoints.get("url").contains("?") )
+<property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
+#end	
+#end
+
         ######################## End of Macros ######################################
 
 
@@ -245,8 +253,10 @@
         #end
         <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
+	    #handle_query_params( "sandbox" $endpoint_config )
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
+	    #handle_query_params( "production" $endpoint_config )
         #draw_endpoint( "production" $endpoint_config )
         #end
         #if($apiStatus != 'PROTOTYPED')
@@ -272,6 +282,8 @@
         <send/>
         #else
         #if($endpoint_config.get("production_endpoints") && $endpoint_config.get("sandbox_endpoints"))
+        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+	    #handle_query_params( "sandbox" $endpoint_config )
         #draw_endpoint( "sandbox" $endpoint_config )
         #elseif($endpoint_config.get("production_endpoints"))
         <sequence key="_sandbox_key_error_"/>
