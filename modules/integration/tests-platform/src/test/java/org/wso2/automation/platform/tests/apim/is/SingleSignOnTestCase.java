@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -91,6 +92,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
     private String apiName = "SingleSignOnAPI";
     private String apiVersion = "1.0.0";
     private String callbackUrl = "www.youtube.com";
+    private String testApplicationName = "SSOTestApplication";
 
     private HttpResponse response;
     private HttpClient httpClient;
@@ -151,6 +153,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanup();
+        deleteApplication();
     }
 
     @Test(description = "Login to publisher using username and password", groups = "wso2.apim.is")
@@ -569,13 +572,15 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         return true;
     }
 
-    private void createApplication() throws Exception {
+    @Test(description = "Create an application Using API", groups = "wso2.apim.is")
+    public void createApplicationTest() throws Exception {
 
         //1
         HttpResponse response = sendGetRequest(String.format(httpsStoreUrl + "/site/pages" +
-                                                             "/applications.jag?tenant=" + storeContext.getSuperTenant().getDomain()));
+                "/applications.jag?tenant=" + storeContext.getSuperTenant().getDomain()));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                     "Response mismatch not 200");
+                "Response mismatch not 200");
+        String csrf = response.getLastHeader("Set-Cookie").getElements()[0].getValue();
         EntityUtils.consume(response.getEntity());
 
         //2
@@ -584,9 +589,9 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tenant", storeContext.getSuperTenant().getDomain()));
         urlParameters.add(new BasicNameValuePair("limit", "5"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/api/recently-added/ajax/list.jag",
-                                   urlParameters);
+                urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                     "Response mismatch not 200");
+                "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
 
@@ -594,9 +599,9 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "sessionCheck"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/user/login/ajax/sessionCheck.jag",
-                                   urlParameters);
+                urlParameters);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                     "Response mismatch not 200");
+                "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
 
         urlParameters.clear();
@@ -604,14 +609,53 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tier", "Unlimited"));
         urlParameters.add(new BasicNameValuePair("callbackUrl", callbackUrl));
         urlParameters.add(new BasicNameValuePair("description", "This is platform based application"));
-        urlParameters.add(new BasicNameValuePair("application", "SSOApplication"));
-        response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/application/" +
-                                   "application-add/ajax/application-add.jag",
-                                   urlParameters);
+        urlParameters.add(new BasicNameValuePair("application", testApplicationName));
+        response = sendPOSTMessageWithCSRF(httpsStoreUrl + "/site/blocks/application/" +
+                "application-add/ajax/application-add.jag", urlParameters, csrf);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
-                     "Response mismatch not 200");
+                "Response mismatch not 200");
+        boolean errorOccur = getResponseBody(response).contains("\"error\" : true");
+        assertFalse(errorOccur, "Error when Application Creation");
         EntityUtils.consume(response.getEntity());
 
+        response = sendGetRequest(httpsStoreUrl + "/site/blocks/application/"
+                + "application-list/ajax/application-list.jag?action=getApplications");
+        boolean appExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
+        assertTrue(appExist, "Application Creattion not succesful");
+        EntityUtils.consume(response.getEntity());
+    }
+
+    private void deleteApplication() throws Exception {
+        HttpResponse response = sendGetRequest(String.format(httpsStoreUrl + "/site/pages" +
+                "/applications.jag?tenant=" + storeContext.getSuperTenant().getDomain()));
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
+                "Response mismatch not 200");
+        String csrf = response.getLastHeader("Set-Cookie").getElements()[0].getValue();
+        EntityUtils.consume(response.getEntity());
+
+        urlParameters.clear();
+        urlParameters.add(new BasicNameValuePair("action", "removeApplication"));
+        urlParameters.add(new BasicNameValuePair("application", testApplicationName));
+        response = sendPOSTMessageWithCSRF(httpsStoreUrl + "/site/blocks/application/" +
+                "application-remove/ajax/application-remove.jag", urlParameters, csrf);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
+                "Response mismatch not 200");
+        boolean errorOccur = getResponseBody(response).contains("\"error\" : true");
+        assertTrue(!errorOccur, "Error on Application deletion");
+        EntityUtils.consume(response.getEntity());
+
+        urlParameters.clear();
+        urlParameters.add(new BasicNameValuePair("action", "sessionCheck"));
+        response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/user/login/ajax/sessionCheck.jag", urlParameters);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
+                "Response mismatch not 200");
+        EntityUtils.consume(response.getEntity());
+
+        response = sendGetRequest(httpsStoreUrl + "/site/blocks/application/"
+                + "application-list/ajax/application-list.jag?action=getApplications");
+        boolean appExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
+        assertFalse(appExist, "Application Deletion not successfull");
+        EntityUtils.consume(response.getEntity());
 
     }
 
@@ -630,6 +674,15 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         return httpClient.execute(post);
     }
 
+    private HttpResponse sendPOSTMessageWithCSRF(String url, List<NameValuePair> urlParameters, String csrf)
+            throws Exception {
+        HttpPost post = new HttpPost(url);
+        post.setHeader("User-Agent", USER_AGENT);
+        post.addHeader("Referer", url);
+        post.addHeader("X-CSRFToken", csrf);
+        post.setEntity(new UrlEncodedFormEntity(urlParameters));
+        return httpClient.execute(post);
+    }
 
     private HttpResponse sendRedirectRequest(HttpResponse response) throws IOException {
         Header[] headers = response.getAllHeaders();
