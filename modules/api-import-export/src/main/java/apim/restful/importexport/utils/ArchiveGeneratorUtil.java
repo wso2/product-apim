@@ -19,6 +19,7 @@
 package apim.restful.importexport.utils;
 
 import apim.restful.importexport.APIExportException;
+import apim.restful.importexport.APIImportExportConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -127,6 +128,8 @@ public class ArchiveGeneratorUtil {
             // Get relative path from archive directory to the specific file
             String zipFilePath = file.getCanonicalPath()
                     .substring(directoryToZip.getCanonicalPath().length() + 1, file.getCanonicalPath().length());
+            if (File.separatorChar != '/')
+                zipFilePath = zipFilePath.replace(File.separatorChar, APIImportExportConstants.ARCHIVE_PATH_SEPARATOR);
             ZipEntry zipEntry = new ZipEntry(zipFilePath);
             zipOutputStream.putNextEntry(zipEntry);
 

@@ -35,6 +35,8 @@ public final class APIImportExportConstants {
     public static final String TEMP_DIR = "java.io.tmpdir";
     //name of the uploaded zip file
     public static final String UPLOAD_FILE_NAME = "APIArchive.zip";
+    //Always use '/' as archive path separator despite the OS dependent path separator
+    public static final char ARCHIVE_PATH_SEPARATOR = '/';
     //location of the api JSON file
     public static final String JSON_FILE_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" + DIRECTORY_SEPARATOR +
             "api.json";
