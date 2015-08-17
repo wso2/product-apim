@@ -152,8 +152,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
         deleteApplication();
+        super.cleanup();
     }
 
     @Test(description = "Login to publisher using username and password", groups = "wso2.apim.is")
@@ -614,14 +614,14 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
                 "application-add/ajax/application-add.jag", urlParameters, csrf);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
                 "Response mismatch not 200");
-        boolean errorOccur = getResponseBody(response).contains("\"error\" : true");
-        assertFalse(errorOccur, "Error when Application Creation");
+        boolean isError = getResponseBody(response).contains("\"error\" : true");
+        assertFalse(isError, "Error when Application Creation");
         EntityUtils.consume(response.getEntity());
 
         response = sendGetRequest(httpsStoreUrl + "/site/blocks/application/"
                 + "application-list/ajax/application-list.jag?action=getApplications");
-        boolean appExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
-        assertTrue(appExist, "Application Creattion not succesful");
+        boolean isAppExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
+        assertTrue(isAppExist, "Application Creattion not succesful");
         EntityUtils.consume(response.getEntity());
     }
 
@@ -640,8 +640,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
                 "application-remove/ajax/application-remove.jag", urlParameters, csrf);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
                 "Response mismatch not 200");
-        boolean errorOccur = getResponseBody(response).contains("\"error\" : true");
-        assertTrue(!errorOccur, "Error on Application deletion");
+        boolean isError = getResponseBody(response).contains("\"error\" : true");
+        assertFalse(isError, "Error on Application deletion");
         EntityUtils.consume(response.getEntity());
 
         urlParameters.clear();
@@ -653,8 +653,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
         response = sendGetRequest(httpsStoreUrl + "/site/blocks/application/"
                 + "application-list/ajax/application-list.jag?action=getApplications");
-        boolean appExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
-        assertFalse(appExist, "Application Deletion not successfull");
+        boolean isAppExist = getResponseBody(response).contains("\"name\" : \"" + testApplicationName + "\"");
+        assertFalse(isAppExist, "Application Deletion not successfull");
         EntityUtils.consume(response.getEntity());
 
     }
