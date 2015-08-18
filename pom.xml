@@ -795,12 +795,12 @@
 	    <apimgt.oidc.version>2.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.5-SNAPSHOT</carbon.registry.version>
+        <carbon.registry.version>4.4.6-SNAPSHOT</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.2-SNAPSHOT</carbon.governance.version>
+        <carbon.governance.version>4.5.3-SNAPSHOT</carbon.governance.version>
         <carbon.governance.ext.version>4.4.1-SNAPSHOT</carbon.governance.ext.version>        
 	
 	<!--carbon versions-->
@@ -815,7 +815,7 @@
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.3</carbon.identity.version>
+	<carbon.identity.version>4.5.4</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
