@@ -93,7 +93,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
 
     }
 
