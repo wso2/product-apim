@@ -155,7 +155,15 @@
     -->
     <APIUsageTracking>
 
-        <Enabled>false</Enabled>
+        <!--
+            Below property is used to enable API Manager analytics configuration via api-manager.xml
+            Enabling analytics via a configuration file can be useful in scenarios such as automated deployments where
+            UI integration is inconvenient.
+
+            If you uncomment this property, analytics configurations added via admin-dashboard UI will
+            get overwritten by tha configuration details provided below when you restart the server.
+        -->
+        <!--Enabled>false</Enabled-->
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
