@@ -25,6 +25,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -52,11 +54,15 @@ import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.sql.*;
@@ -302,6 +308,101 @@ public class MigrateFrom18to19 implements MigrationClient {
         //copyNewRxtFileToRegistry();
         swaggerResourceMigration();
         rxtMigration();
+        externalStoreMigration();
+    }
+
+    void externalStoreMigration() throws APIMigrationException {
+        log.info("External API store migration for API Manager " + Constants.VERSION_1_9 + " started.");
+        boolean isTenantFlowStarted = false;
+        for (Tenant tenant : tenantsArray) {
+            log.debug("Start API store migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            Registry registry = null;
+            try {
+                PrivilegedCarbonContext.startTenantFlow();
+                isTenantFlowStarted = true;
+
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
+
+                String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId())
+                        .getRealmConfiguration().getAdminUserName();
+                ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
+                registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant
+                        .getId());
+
+                Resource externalStoreResource = registry.get(APIConstants.EXTERNAL_API_STORES_LOCATION);
+
+                String modifiedConfig = modifyExternalStores(externalStoreResource);
+                externalStoreResource.setContent(modifiedConfig);
+                registry.put(APIConstants.EXTERNAL_API_STORES_LOCATION, externalStoreResource);
+
+
+            } catch (RegistryException e) {
+                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+                try {
+                    if (registry != null) {
+                        registry.rollbackTransaction();
+                    }
+                } catch (org.wso2.carbon.registry.core.exceptions.RegistryException ex) {
+                    ResourceUtil.handleException("Error occurred while accessing the registry", ex);
+                }
+            } catch (UserStoreException e) {
+                ResourceUtil.handleException("Error occurred while reading tenant information", e);
+            } finally {
+                if (isTenantFlowStarted) {
+                    PrivilegedCarbonContext.endTenantFlow();
+                }
+            }
+            log.debug("End API store migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+        }
+    }
+
+    String modifyExternalStores(Resource resource) throws APIMigrationException {
+        String xmlContent;
+        Writer stringWriter = new StringWriter();
+        try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            docFactory.setNamespaceAware(true);
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            xmlContent = new String((byte[]) resource.getContent(), "UTF8");
+            Document doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes())));
+
+            NodeList externalAPIStores = doc.getElementsByTagName(Constants.EXTERNAL_API_STORE);
+
+            for (int i = 0; i < externalAPIStores.getLength(); i++) {
+                Element externalStoreElement = (Element) externalAPIStores.item(i);
+                NamedNodeMap attributes =  externalStoreElement.getAttributes();
+                boolean isAttribExists = false;
+
+                for (int j = 0; j < attributes.getLength(); j++) {
+                    if(attributes.item(j).getNodeName().equals(Constants.ATTRIBUTE_CLASSNAME)) {
+                        isAttribExists = true;
+                    }
+                }
+                if(!isAttribExists) {
+                    externalStoreElement.setAttribute(Constants.ATTRIBUTE_CLASSNAME, Constants.API_PUBLISHER_CLASSNAME);
+                }
+            }
+
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
+
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the xml document. " +
+                    "Please check for external API config file in the registry", e);
+        } catch (ParserConfigurationException e) {
+            ResourceUtil.handleException("Error occurred while trying to build the xml document", e);
+        } catch (TransformerException e) {
+            ResourceUtil.handleException("Error occurred while saving modified the xml document", e);
+        } catch (RegistryException e) {
+            ResourceUtil.handleException("Error occurred while reading the content from registry resource", e);
+        }
+
+        return stringWriter.toString();
     }
 
 
