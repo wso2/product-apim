@@ -281,7 +281,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security/application-authentication.xml</file>
+                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/application-authentication.xml</file>
                     <replacements>
                         <replacement>
                             <xpath>/ApplicationAuthentication/JDBCPersistenceManager/DataSource/Name</xpath>

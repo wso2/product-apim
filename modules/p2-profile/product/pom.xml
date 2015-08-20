@@ -494,9 +494,6 @@
                                 <featureArtifactDef>org.wso2.carbon.store:utils.feature:${es.feature.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.store:org.wso2.es.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.wso2.carbon.store:org.wso2.carbon.social.feature:${carbon.social.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
@@ -1187,10 +1184,6 @@
                                     <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.es.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.jaggeryjs.server.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
@@ -1673,10 +1666,6 @@
                                     <id>org.wso2.store.modules.account-management.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.es.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
 				<feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
@@ -2142,10 +2131,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.store.modules.account-management.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.es.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
@@ -2716,10 +2701,6 @@
                                     <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.es.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
@@ -3266,10 +3247,6 @@
                                     <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.es.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.social.feature.group</id>
                                     <version>${carbon.social.version}</version>
                                 </feature>
@@ -3783,10 +3760,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.store.modules.account-management.feature.group</id>
-                                    <version>${es.feature.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.es.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
