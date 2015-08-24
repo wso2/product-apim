@@ -264,6 +264,10 @@
        <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/extensions</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions</outputDirectory>
+	     <excludes>
+                <exclude>**/MobileAppLifeCycle.xml</exclude>
+                <exclude>**/SampleLifeCycle.xml</exclude>
+            </excludes>
        </fileSet>
         <fileSet>
             <directory>src/main/api-publisher-extension/am-publisher-defaults</directory>
@@ -272,8 +276,8 @@
         <fileSet>
             <directory>src/main/api-publisher-extension/am-publisher-common</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions/app/am-publisher-common</outputDirectory>
-        </fileSet>
-	<!--  copying modules xml -->
+	</fileSet>
+      <!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/modules</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/modules/</outputDirectory>
@@ -487,6 +491,11 @@
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-publisher</directory>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
+		<excludes>
+                <exclude>**/MobileAppLifeCycle.xml</exclude>
+                <exclude>**/SampleLifeCycle.xml</exclude>
+            </excludes>
+
         </fileSet>
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/es-sso</directory>
