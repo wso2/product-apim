@@ -303,9 +303,6 @@
                                     org.wso2.store.modules.account-management:${es.feature.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.es:${es.feature.version}
-                                </importFeatureDef>
-                                <importFeatureDef>
                                     org.wso2.carbon.social:${carbon.social.version}
                                 </importFeatureDef>
                                 <importFeatureDef>

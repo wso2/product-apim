@@ -462,9 +462,6 @@
                                 <featureArtifactDef>org.wso2.carbon.store:utils.feature:${es.feature.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.store:org.wso2.es.feature:${es.feature.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.wso2.carbon.store:org.wso2.carbon.social.feature:${carbon.social.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs:org.jaggeryjs.server.feature:${org.jaggery.version}
