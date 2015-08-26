@@ -98,6 +98,7 @@
             <class name="org.wso2.am.integration.tests.other.ReadOnlySecondaryUserStoreAPITokenGenerationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4033CheckAuthTypeTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.TierRetrievalTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
           <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
           <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
