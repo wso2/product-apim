@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v1.9.0 - 15th June 2015</title>
+    <title>WSO2 API Manager v1.9.1 - 26th August 2015</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 1.9.0 Released!</h1>
+<h1>The WSO2 API Manager 1.9.1 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 1.9.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 1.9.1 of
     the Open Source API Manager.
 </p>
 
@@ -86,67 +86,40 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-<h2>Improvements in 1.9.0</h2>
+<h2>        Improvements in 1.9.1
+</h2>
 <ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-637'>APIMANAGER-637</a>] -         Provide means to search APIs &#39;starting with&#39; / &#39;ending with&#39; certain patterns
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2854'>APIMANAGER-2854</a>] -         Remove message logging from APIManagerExtensionHandler
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-702'>APIMANAGER-702</a>] -         Time of subscription is not saved
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3394'>APIMANAGER-3394</a>] -         New API - List of all available tiers in API-M deployment
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1347'>APIMANAGER-1347</a>] -         Published APIs shouldn&#39;t show details of proxied web services
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3504'>APIMANAGER-3504</a>] -         Taking time to change the icon on 2nd time. Its better not to taking much time for the changers
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1368'>APIMANAGER-1368</a>] -         API Manager Publisher WSDL for API should change end point to gateway
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3735'>APIMANAGER-3735</a>] -         Admin user credentials should be parameterised in sign-up-config.xml
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2142'>APIMANAGER-2142</a>] -         Better to have option to save the wsdl in registry or keep it as url
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3945'>APIMANAGER-3945</a>] -         Get subscriptions for API
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2158'>APIMANAGER-2158</a>] -         Logging error when Single Logout is disabled
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3960'>APIMANAGER-3960</a>] -         Admin user is unable to delete API with active subscriptions created by other user within API manager
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2552'>APIMANAGER-2552</a>] -         Inactive tenants can still access resources exposed through NIO transport
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3964'>APIMANAGER-3964</a>] -         Remove active subscriptions when Retiring an API
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2557'>APIMANAGER-2557</a>] -         Configure Audit Log in log4j.properties
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3974'>APIMANAGER-3974</a>] -         MySQL NDB-Script for API Manager
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2565'>APIMANAGER-2565</a>] -         Application is allowed to Delete when it is already in the Workflow Approval Process.
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3975'>APIMANAGER-3975</a>] -         Improvements that required for API export-import tool
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2570'>APIMANAGER-2570</a>] -         Publisher&#39;s update API page&#39;s error Messages should be informative
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3983'>APIMANAGER-3983</a>] -         Potential performance improvement in APIConsumerImpl#searchPaginatedAPIs
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2593'>APIMANAGER-2593</a>] -         According to the making API changes, Existing WSDL docs on registry should be updated
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3988'>APIMANAGER-3988</a>] -         Upgrade to HazelCast 3.5
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2635'>APIMANAGER-2635</a>] -         Case insensitive username comparison for APIM
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4007'>APIMANAGER-4007</a>] -         Need to add a body parameter with an empty schema for POST method in API Designer.
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2650'>APIMANAGER-2650</a>] -         The publisher URL/API Console does not work out of the box if you set a port offset
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4018'>APIMANAGER-4018</a>] -         Throttling out request summarization and visualization graphs
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2652'>APIMANAGER-2652</a>] -         RestPeopleTestCase fails
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4024'>APIMANAGER-4024</a>] -         Remove &quot;RelayUtils.buildMessage(axis2MC)&quot; in authentication failure flow
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2694'>APIMANAGER-2694</a>] -         Make recently added API loading asynchronous
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4028'>APIMANAGER-4028</a>] -         ToolTip informations not aligned properly.
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2711'>APIMANAGER-2711</a>] -         Make JWTGenerator Extensible
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2755'>APIMANAGER-2755</a>] -         Migration tool to modify apis to migrate from 1.6 to 1.7
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2785'>APIMANAGER-2785</a>] -         Provide support for self signup for tenants&#39; APIStores
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2788'>APIMANAGER-2788</a>] -         HTTP, HTTPS url redirection for login call in publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2790'>APIMANAGER-2790</a>] -         Improvements for private API fix
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2795'>APIMANAGER-2795</a>] -         AM still using GenericArtifactManager for search function.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2796'>APIMANAGER-2796</a>] -         API Category description and thumbnail images are hard coded.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2836'>APIMANAGER-2836</a>] -         Applying cassandra data purging related modifications to API-M toolbox
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2851'>APIMANAGER-2851</a>] -         Log Http Status code in APIManagerExtensionHandler
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2906'>APIMANAGER-2906</a>] -         tiers - show the tier quota as a tooltip description
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2939'>APIMANAGER-2939</a>] -         Add a help text to describe API document based visibility levels
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2953'>APIMANAGER-2953</a>] -         Allow variable names for http endpoints from Publisher UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2963'>APIMANAGER-2963</a>] -         Make the endpoint &#39;Test&#39; button work for endpoints which doesn&#39;t support HTTP HEAD
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2964'>APIMANAGER-2964</a>] -         Performance improvment on API Store MySubscriptions page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3017'>APIMANAGER-3017</a>] -         Display notification to remove APIs from external stores when API is not in PUBLISHED state
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4041'>APIMANAGER-4041</a>] -         Fix the following grammetical mistakes as suggested by doc team
 </li>
 </ul>
 
@@ -154,7 +127,7 @@
 <h2>Resolved Issues</h2>
 <ul>
     <li>
-        <a href="https://wso2.org/jira/issues/?filter=12092">WSO2 API Manager V1.9.0 resolved issues</a>
+        <a href="https://wso2.org/jira/browse/APIMANAGER-4002?filter=12369">WSO2 API Manager V1.9.1 resolved issues</a>
     </li>
 </ul>
 
@@ -296,7 +269,7 @@
 </p>
 <ul>
     <li>
-        <a href="https://wso2.org/jira/secure/IssueNavigator.jspa?mode=hide&amp;requestId=10810">
+        <a href="https://wso2.org/jira/browse/APIMANAGER-2241?filter=12370">
             Known Issues
         </a>
     </li>
