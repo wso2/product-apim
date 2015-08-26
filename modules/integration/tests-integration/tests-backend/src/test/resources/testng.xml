@@ -91,7 +91,7 @@
             <!-- Connection refused while connecting through telnet, hence commented temporally
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             -->
-            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
