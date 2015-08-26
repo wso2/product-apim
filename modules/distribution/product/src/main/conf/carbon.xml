@@ -32,7 +32,7 @@
     <!--
        Product Version
     -->
-    <Version>1.9.1-SNAPSHOT</Version>
+    <Version>1.9.1</Version>
 
     <ServerKey>AM</ServerKey>
 
