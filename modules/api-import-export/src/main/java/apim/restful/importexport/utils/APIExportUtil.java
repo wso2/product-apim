@@ -32,10 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
-import org.wso2.carbon.apimgt.api.model.API;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.api.model.APIStatus;
-import org.wso2.carbon.apimgt.api.model.Documentation;
+import org.wso2.carbon.apimgt.api.model.*;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
@@ -64,10 +61,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This is the util class which consists of all the functions for exporting API
@@ -582,6 +576,8 @@ public class APIExportUtil {
                 apiToReturn.getId().getVersion());
 
         createDirectory(archivePath + File.separator + "Meta-information");
+        //Remove unnecessary data from exported Api
+        cleanApiDataToExport(apiToReturn);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String apiInJson = gson.toJson(apiToReturn);
@@ -603,6 +599,20 @@ public class APIExportUtil {
             log.error("Error while retrieving Swagger definition" + e.getMessage());
             throw new APIExportException("Error while retrieving Swagger definition", e);
         }
+    }
+
+    /**
+     * Clean api by removing unnecessary details
+     *
+     * @param api api to be exported
+     */
+    private static void cleanApiDataToExport(API api) {
+        // Thumbnail will be set according to the importing environment. Therefore current URL is removed
+        api.setThumbnailUrl(null);
+        // Swagger.json contains complete details about scopes and URI templates. Therefore scope and URI template
+        // details are removed from api.json
+        api.setScopes(new TreeSet<Scope>());
+        api.setUriTemplates(new TreeSet<URITemplate>());
     }
 
     /**

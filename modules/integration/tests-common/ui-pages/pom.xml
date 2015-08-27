@@ -22,7 +22,7 @@ under the License.
     <parent>
         <artifactId>tests-common</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>1.9.1-SNAPSHOT</version>
+        <version>1.9.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

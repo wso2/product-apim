@@ -18,8 +18,6 @@ package org.wso2.carbon.apimgt.migration.util;
 
 public class Constants {
 
-    public static final String VERSION_1_7 = "1.7";
-    public static final String VERSION_1_8 = "1.8";
     public static final String VERSION_1_9 = "1.9";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
@@ -158,4 +156,12 @@ public class Constants {
             "\"title\" : \"\", " +
             "\"version\" : \"\"" +
             "}";
+
+
+    public static final String EXTERNAL_API_STORE = "ExternalAPIStore";
+    public static final String ATTRIBUTE_CLASSNAME = "className";
+    public static final String API_PUBLISHER_CLASSNAME = "org.wso2.carbon.apimgt.impl.publishers.WSO2APIPublisher";
+
+
+
 }

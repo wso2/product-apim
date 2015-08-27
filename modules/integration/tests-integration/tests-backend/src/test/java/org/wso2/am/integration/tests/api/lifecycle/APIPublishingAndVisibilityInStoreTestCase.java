@@ -76,7 +76,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
         //Login to API Store with  admin
         apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 

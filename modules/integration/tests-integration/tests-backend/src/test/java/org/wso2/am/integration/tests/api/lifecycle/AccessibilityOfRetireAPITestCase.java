@@ -83,7 +83,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
         //Login to API Store with  admin
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiStoreRestClient.addApplication(APPLICATION_NAME, "", "", "");
+        apiStoreRestClient.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 

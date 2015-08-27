@@ -107,7 +107,7 @@
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
                 <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
-                    <Description> Description of environment</Description>
+                    <Description>Default Gateway Environment</Description>
 			<!--
             			Server URL of the API gateway.
         		-->
@@ -155,7 +155,15 @@
     -->
     <APIUsageTracking>
 
-        <Enabled>false</Enabled>
+        <!--
+            Below property is used to enable API Manager analytics configuration via api-manager.xml
+            Enabling analytics via a configuration file can be useful in scenarios such as automated deployments where
+            UI integration is inconvenient.
+
+            If you uncomment this property, analytics configurations added via admin-dashboard UI will
+            get overwritten by tha configuration details provided below when you restart the server.
+        -->
+        <!--Enabled>false</Enabled-->
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
@@ -502,7 +510,7 @@
 	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,OPTIONS</Access-Control-Allow-Methods>
 
 	<!--Configure Access-Control-Allow-Headers-->
-	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
+	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction</Access-Control-Allow-Headers>
 
     </CORSConfiguration>
    <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.

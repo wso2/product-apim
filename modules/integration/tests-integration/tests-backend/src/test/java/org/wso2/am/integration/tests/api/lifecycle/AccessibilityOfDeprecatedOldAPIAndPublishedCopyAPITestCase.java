@@ -93,7 +93,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
         apiStoreClientUser2.login(
                 storeContext.getContextTenant().getTenantUserList().get(0).getUserName(),
                 storeContext.getContextTenant().getTenantUserList().get(0).getPassword());
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 

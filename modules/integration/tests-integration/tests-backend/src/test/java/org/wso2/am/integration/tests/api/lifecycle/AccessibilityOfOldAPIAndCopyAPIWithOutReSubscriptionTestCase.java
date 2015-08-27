@@ -86,6 +86,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
         //Login to API Publisher with  admin
         apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
+
         apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }

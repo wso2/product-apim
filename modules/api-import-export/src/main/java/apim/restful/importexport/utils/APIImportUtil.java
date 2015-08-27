@@ -36,15 +36,14 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.FaultGatewaysException;
-import org.wso2.carbon.apimgt.api.model.API;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.api.model.Documentation;
-import org.wso2.carbon.apimgt.api.model.Icon;
-import org.wso2.carbon.apimgt.api.model.Tier;
+import org.wso2.carbon.apimgt.api.model.*;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
+import org.wso2.carbon.apimgt.impl.handlers.ScopesIssuer;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 
 import org.wso2.carbon.registry.api.Registry;
@@ -146,7 +145,8 @@ public final class APIImportUtil {
 
                 //This index variable is used to get the extracted folder name; that is root directory
                 if (index == 0) {
-                    archiveName = currentEntry.substring(0, currentEntry.indexOf(File.separatorChar));
+                    archiveName =
+                        currentEntry.substring(0, currentEntry.indexOf(APIImportExportConstants.ARCHIVE_PATH_SEPARATOR));
                     --index;
                 }
 
@@ -255,14 +255,14 @@ public final class APIImportUtil {
         }
 
         try{
+            int tenantId = APIUtil.getTenantId(currentUser);
             provider.addAPI(importedApi);
-            addSwaggerDefinition(importedApi.getId(), pathToArchive);
+            addSwaggerDefinition(importedApi, pathToArchive, tenantId);
         } catch (APIManagementException e){
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
             log.error("Error in adding API to the provider. ", e);
             throw new APIImportException("Error in adding API to the provider. " + e.getMessage());
         }
-
         //Since Image, documents, sequences and WSDL are optional, exceptions are logged and ignored in implementation
         addAPIImage(pathToArchive, importedApi);
         addAPIDocuments(pathToArchive, importedApi);
@@ -528,25 +528,68 @@ public final class APIImportUtil {
     /**
      * This method adds Swagger API definition to registry
      *
-     * @param apiId       Identifier of the imported API
+     * @param importedApi Imported API
      * @param archivePath File path where API archive stored
+     * @param tenantId Id of the current tenant
      * @throws APIImportException if there is an error occurs when adding Swagger definition
      */
-    private static void addSwaggerDefinition(APIIdentifier apiId, String archivePath)
+    private static void addSwaggerDefinition(API importedApi, String archivePath, int tenantId)
             throws APIImportException {
 
         try {
             String swaggerContent = FileUtils.readFileToString(
                     new File(archivePath + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
-            provider.saveSwagger20Definition(apiId, swaggerContent);
+
+            updateApiResourcesFromSwagger(importedApi, swaggerContent, tenantId);
+            provider.updateAPI(importedApi);
+            provider.saveSwagger20Definition(importedApi.getId(), swaggerContent);
         } catch (APIManagementException e) {
             log.error("Error in adding Swagger definition for the API. ", e);
             throw new APIImportException("Error in adding Swagger definition for the API. " + e.getMessage());
         } catch (IOException e) {
             log.error("Error in importing Swagger definition for the API. ", e);
             throw new APIImportException("Error in importing Swagger definition for the API. " + e.getMessage());
+        } catch (FaultGatewaysException e) {
+            log.error("Failed to update API after adding resources and scopes. ", e);
+            throw new APIImportException("Failed to update API after adding resources and scopes. " + e.getMessage());
         }
     }
+
+    /**
+     * Add URI templates and scopes retrieved from swagger.json to the imported API
+     * @param importedApi Imported API
+     * @param swaggerContent  Content of swagger.json
+     * @param tenantId  Current tenant ID
+     * @throws APIManagementException If an error occurs while adding resources to the imported api
+     */
+    private static void updateApiResourcesFromSwagger(API importedApi, String swaggerContent, int tenantId)
+        throws APIManagementException {
+
+        APIDefinition definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+        //retrieve URI templates
+        Set<URITemplate> uriTemplates = definitionFromSwagger20.getURITemplates(importedApi, swaggerContent);
+
+        //retrieve scopes
+        Set<Scope> scopes = definitionFromSwagger20.getScopes(String.valueOf(swaggerContent));
+
+        //Check whether scopes of importing api are already assigned by another API
+        //If so, import process gets halted by throwing an exception
+        for (Scope scope : scopes) {
+            if (scope != null && !(ScopesIssuer.getInstance().isWhiteListedScope(scope.getKey()))) {
+                if (provider.isScopeKeyExist(scope.getKey(), tenantId)) {
+                    log.error("Unable to assign scope! " + scope.getKey() + " is already assigned by another API");
+                    provider.deleteAPI(importedApi.getId());
+                    throw new APIManagementException("Unable to assign scope! " + scope.getKey() +
+                        " is already assigned by another API");
+                }
+            }
+        }
+
+        //set URI templates and scopes to the imported API
+        importedApi.setUriTemplates(uriTemplates);
+        importedApi.setScopes(scopes);
+    }
+
 
     /**
      * This method checks whether a given file exists in a given location
