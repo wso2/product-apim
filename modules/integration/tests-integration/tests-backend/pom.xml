@@ -38,10 +38,10 @@ under the License.
                 <inherited>false</inherited>
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
-         <!--        <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m
-                        -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE
-                        -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006
-                    </argLine>-->
+                    <!--<argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m-->
+                    <!---XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE-->
+                    <!---Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006-->
+                    <!--</argLine>-->
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
@@ -128,7 +128,7 @@ under the License.
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${basedir}/target/tobeCopied/</outputDirectory>
-                                    <includes>**/*.jks,**/*.mar,**/axis2_client.xml</includes>
+                                    <includes>**/*.mar,**/axis2_client.xml</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -151,27 +151,28 @@ under the License.
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
                 <executions>
-                    <execution>
-                        <id>copy-resources-jks</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/src/test/resources/keystores/products
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>
-                                        ${basedir}/target/tobeCopied/wso2am-${project.version}/repository/resources/security/
-                                    </directory>
-                                    <includes>
-                                        <include>**/*.jks</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
+                    <!--<execution>-->
+                    <!--<id>copy-resources-jks</id>-->
+                    <!--<phase>compile</phase>-->
+                    <!---->
+                    <!--<goals>-->
+                    <!--<goal>copy-resources</goal>-->
+                    <!--</goals>-->
+                    <!--<configuration>-->
+                    <!--<outputDirectory>${basedir}/src/test/resources/keystores/products-->
+                    <!--</outputDirectory>-->
+                    <!--<resources>-->
+                    <!--<resource>-->
+                    <!--<directory>-->
+                    <!--${basedir}/target/tobeCopied/wso2am-${project.version}/repository/resources/security/-->
+                    <!--</directory>-->
+                    <!--<includes>-->
+                    <!--<include>**/*.jks</include>-->
+                    <!--</includes>-->
+                    <!--</resource>-->
+                    <!--</resources>-->
+                    <!--</configuration>-->
+                    <!--</execution>-->
                     <execution>
                         <id>copy-stratos-jks</id>
                         <phase>compile</phase>

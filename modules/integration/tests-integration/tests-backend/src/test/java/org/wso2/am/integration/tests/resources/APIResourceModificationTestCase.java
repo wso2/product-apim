@@ -48,12 +48,20 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         this.userMode = userMode;
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttps();
+        String publisherURLHttp = getPublisherURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        providerName = user.getUserName();
     }
 
     @Test(groups = {"wso2.am"}, description = "add scope to resource test case")
@@ -65,8 +73,8 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         String description = "This is test API create by API manager integration test";
 
         //add all option methods
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(user.getUserName(),
+                user.getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -106,16 +114,5 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 }

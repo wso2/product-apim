@@ -20,10 +20,12 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -31,18 +33,10 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-
-import org.json.JSONObject;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import javax.xml.xpath.XPathExpressionException;
+
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,124 +54,93 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        String gatewaySessionCookie = createSession(gatewayContext);
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContext, gatewaySessionCookie);
+                                              + File.separator + "synapseconfigs" + File.separator + "rest"
+                                              + File.separator + "dummy_api_relative_url_loc_header.xml"
+                , gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the API for relative URL location header")
     public void testAPIWithRelativeUrlLocationHeader() throws Exception {
 
-        try {
-            apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                    publisherContext.getContextTenant().getContextUser().getPassword());
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage());
-            Assert.assertTrue(false);
-        } catch (XPathExpressionException e) {
-            log.error("XPathExpressionException " + e.getMessage());
-            Assert.assertTrue(false);
-        }
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "RelativeUrlLocationHeaderAPI";
         String apiVersion = "1.0.0";
         String apiContext = "/relative";
-        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response/1.0.0";
+        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response/1.0.0";
 
         String appName = "RelativeLocHeaderAPP";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
-        try {
-            apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("Error creating APIRequest " + e.getMessage());
-            Assert.assertTrue(false);
-        } catch (MalformedURLException e) {
-            log.error("Invalid URL " + gatewayUrls.getWebAppURLNhttp() + "response", e);
-            Assert.assertTrue(false);
-        }
+        apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
 
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection("Unlimited");
         apiRequest.setTier("Unlimited");
 
         //Add the API using the API publisher.
-        try {
-            apiPublisher.addAPI(apiRequest);
+        apiPublisher.addAPI(apiRequest);
 
-            APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
-                    publisherContext.getContextTenant().getContextUser().getUserName(),
-                    APILifeCycleState.PUBLISHED);
-            //Publish the API
-            apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName,
+                                                                              publisherContext.getContextTenant().getContextUser().getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
+        //Publish the API
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-            //Login to the API Store
-            apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                    storeContext.getContextTenant().getContextUser().getPassword());
+        //Login to the API Store
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
 
-            //Add an Application in the Store.
-            apiStore.addApplication(appName, "Unlimited", "", "");
+        //Add an Application in the Store.
+        apiStore.addApplication(appName, "Unlimited", "", "");
 
-            //Subscribe the API to the application
-            SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
-                    storeContext.getContextTenant().getContextUser().getUserName(),
-                    appName, "Unlimited");
-            apiStore.subscribe(subscriptionRequest);
+        //Subscribe the API to the application
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
+                                                                          storeContext.getContextTenant().getContextUser().getUserName(),
+                                                                          appName, "Unlimited");
+        apiStore.subscribe(subscriptionRequest);
 
-            APPKeyRequestGenerator generateAppKeyRequestProduction = new APPKeyRequestGenerator(appName);
-            generateAppKeyRequestProduction.setKeyType("PRODUCTION");
+        APPKeyRequestGenerator generateAppKeyRequestProduction = new APPKeyRequestGenerator(appName);
+        generateAppKeyRequestProduction.setKeyType("PRODUCTION");
 
-            String responseString =
-                    apiStore.generateApplicationKey(generateAppKeyRequestProduction).getData();
-            JSONObject responseProduction = new JSONObject(responseString);
-            Assert.assertEquals(responseProduction.getJSONObject("data").equals(null), false,
-                    "Generating production key failed");
+        String responseString =
+                apiStore.generateApplicationKey(generateAppKeyRequestProduction).getData();
+        JSONObject responseProduction = new JSONObject(responseString);
+        Assert.assertEquals(responseProduction.getJSONObject("data").equals(null), false,
+                            "Generating production key failed");
 
-            String accessToken =
-                    responseProduction.getJSONObject("data").getJSONObject("key").get("accessToken")
-                            .toString();
-            Assert.assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
+        String accessToken =
+                responseProduction.getJSONObject("data").getJSONObject("key").get("accessToken")
+                        .toString();
+        Assert.assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
 
-            //Send GET Request
+        //Send GET Request
 
-            Map<String, String> requestHeadersGet = new HashMap<String, String>();
-            requestHeadersGet.put("accept", "text/xml");
+        Map<String, String> requestHeadersGet = new HashMap<String, String>();
+        requestHeadersGet.put("accept", "text/xml");
 
-            requestHeadersGet.put("Authorization", "Bearer " + accessToken);
+        requestHeadersGet.put("Authorization", "Bearer " + accessToken);
 
-            HttpResponse httpResponse = HttpRequestUtil.doGet(endpointUrl + "/" + apiVersion, requestHeadersGet);
+        HttpResponse httpResponse = HttpRequestUtil.doGet(endpointUrl + "/" + apiVersion, requestHeadersGet);
 
-            Assert.assertEquals(httpResponse.getResponseCode(), 201, "Response Code Mismatched");
+        Assert.assertEquals(httpResponse.getResponseCode(), 201, "Response Code Mismatched");
 
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (JSONException e) {
-            log.error("Error parsing JSON to get access token " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (XPathExpressionException e) {
-            log.error("XPathExpressionException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (IOException e) {
-            log.error("IOException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        }
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         //removing APIs and Applications
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword(),
-                storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
 
         log.info("Cleaned up API Manager");
     }

@@ -29,7 +29,8 @@
         <!--
          Change this to product|platform/cloud to execute test on specific environment
         -->
-        <executionEnvironment>standalone</executionEnvironment>
+        <executionEnvironment>platform</executionEnvironment>
+        <!--<executionEnvironment>standalone</executionEnvironment>-->
         <!--
          Change this to user/tenant to execute test with user mode or tenant mode
         -->
@@ -37,7 +38,7 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-        <coverage>true</coverage>
+        <coverage>false</coverage>
         <!--
          Change this to true if you want to enable framework dashboard
         -->
@@ -149,7 +150,7 @@
                 <admin>
                     <user key="admin">
                         <userName>admin</userName>
-                            <password>admin</password>
+                        <password>admin</password>
                     </user>
                 </admin>
                 <users>
@@ -164,40 +165,40 @@
                 </users>
             </tenant>
             <!--<tenant domain="abc.com" key="abcDomainKey">-->
-                <!--<admin>-->
-                    <!--<user key="admin">-->
-                        <!--<userName>admin</userName>-->
-                        <!--<password>admin</password>-->
-                    <!--</user>-->
-                <!--</admin>-->
-                <!--<users>-->
-                    <!--<user key="user1">-->
-                        <!--<userName>testuser11</userName>-->
-                        <!--<password>testuser11</password>-->
-                    <!--</user>-->
-                    <!--<user key="user2">-->
-                        <!--<userName>testuser21</userName>-->
-                        <!--<password>testuser21</password>-->
-                    <!--</user>-->
-                <!--</users>-->
+            <!--<admin>-->
+            <!--<user key="admin">-->
+            <!--<userName>admin</userName>-->
+            <!--<password>admin</password>-->
+            <!--</user>-->
+            <!--</admin>-->
+            <!--<users>-->
+            <!--<user key="user1">-->
+            <!--<userName>testuser11</userName>-->
+            <!--<password>testuser11</password>-->
+            <!--</user>-->
+            <!--<user key="user2">-->
+            <!--<userName>testuser21</userName>-->
+            <!--<password>testuser21</password>-->
+            <!--</user>-->
+            <!--</users>-->
             <!--</tenant>-->
             <!--<tenant domain="malintha.com" key="malinthaDomainKey">-->
-                <!--<admin>-->
-                    <!--<user key="admin">-->
-                        <!--<userName>admin</userName>-->
-                        <!--<password>admin</password>-->
-                    <!--</user>-->
-                <!--</admin>-->
-                <!--<users>-->
-                    <!--<user key="userm1">-->
-                        <!--<userName>testuse11</userName>-->
-                        <!--<password>testuse11</password>-->
-                    <!--</user>-->
-                    <!--<user key="userm2">-->
-                        <!--<userName>testuse21</userName>-->
-                        <!--<password>testuse21</password>-->
-                    <!--</user>-->
-                <!--</users>-->
+            <!--<admin>-->
+            <!--<user key="admin">-->
+            <!--<userName>admin</userName>-->
+            <!--<password>admin</password>-->
+            <!--</user>-->
+            <!--</admin>-->
+            <!--<users>-->
+            <!--<user key="userm1">-->
+            <!--<userName>testuse11</userName>-->
+            <!--<password>testuse11</password>-->
+            <!--</user>-->
+            <!--<user key="userm2">-->
+            <!--<userName>testuse21</userName>-->
+            <!--<password>testuse21</password>-->
+            <!--</user>-->
+            <!--</users>-->
             <!--</tenant>-->
         </tenants>
         <roles>
@@ -226,47 +227,87 @@
         cluster instance details to be used to platform test execution
         -->
         <productGroup name="APIM" clusteringEnabled="false" default="true">
+
             <!--configuration of APIM Store instance -->
             <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">localhost</host>
+                    <!--<host type="default">localhost</host>-->
+                    <!--<host type="default">192.168.19.36</host>-->
+                    <host type="default">store.am.wso2.com</host>
                 </hosts>
                 <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
-                </ports>
-                <properties>
-                </properties>
-            </instance>
-            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="true">
-                <hosts>
-                    <host type="default">localhost</host>
-                </hosts>
-                <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
+                    <port type="http">80</port>
+                    <port type="https">443</port>
+                    <!--<port type="http">9763</port>-->
+                    <!--<port type="https">9443</port>-->
                 </ports>
                 <properties>
                 </properties>
             </instance>
             <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">localhost</host>
+                    <!--<host type="default">localhost</host>-->
+                    <!--<host type="default">192.168.19.35</host>-->
+                    <host type="default">pub.am.wso2.com</host>
                 </hosts>
                 <ports>
-                    <port type="http">9763</port>
-                    <port type="https">9443</port>
+                    <port type="http">80</port>
+                    <port type="https">443</port>
+                    <!--<port type="http">9763</port>-->
+                    <!--<port type="https">9443</port>-->
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+
+            <instance name="keyManager" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <!--<host type="default">localhost</host>-->
+                    <!--<host type="default">192.168.19.33</host>-->
+                    <host type="default">keymanager.am.wso2.com</host>
+                </hosts>
+                <ports>
+                    <port type="http">80</port>
+                    <port type="https">443</port>
+                    <!--<port type="http">9763</port>-->
+                    <!--<port type="https">9443</port>-->
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+
+            <instance name="gateway-mgt" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <!--<host type="default">localhost</host>-->
+                    <!--<host type="default">192.168.19.34</host>-->
+                    <host type="default">mgt.gateway.am.wso2.com</host>
+                </hosts>
+                <ports>
+                    <port type="http">80</port>
+                    <port type="https">443</port>
+                    <!--<port type="http">9763</port>-->
+                    <!--<port type="https">9443</port>-->
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="gateway-wrk" type="standalone" nonBlockingTransportEnabled="true">
+                <hosts>
+                    <!--<host type="default">localhost</host>-->
+                    <!--<host type="default">192.168.19.34</host>-->
+                    <host type="default">gateway.am.wso2.com</host>
+                </hosts>
+                <ports>
+                    <port type="http">80</port>
+                    <port type="https">443</port>
+                    <!--<port type="http">9763</port>&ndash;&gt;-->
+                    <!--<port type="https">9443</port>-->
                     <port type="nhttps">8243</port>
                     <port type="nhttp">8280</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
-
         </productGroup>
     </platform>
 

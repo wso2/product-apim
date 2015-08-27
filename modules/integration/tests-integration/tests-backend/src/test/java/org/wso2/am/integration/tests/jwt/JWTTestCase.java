@@ -34,6 +34,8 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -50,7 +52,7 @@ import java.util.Map;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class JWTTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
@@ -60,7 +62,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     private String publisherURLHttp;
     private String storeURLHttp;
     private WireMonitorServer server;
-    int hostPort = 9988;
+    private int hostPort = 9988;
 
     private String apiName = "JWTTokenTestAPI";
     private String apiContext = "tokenTest";
@@ -76,11 +78,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init();
 
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
 
         //enable JWT token generation
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart(
                 new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
 
@@ -89,29 +91,27 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
 
         userManagementClient = new UserManagementClient(
-                gatewayContext.getContextUrls().getBackEndUrl(),
-                gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                keyManagerContext.getContextTenant().getContextUser().getPassword());
 
-        URL url = new URL(gatewayUrls.getWebAppURLHttp());
+        URL url = new URL(gatewayUrlsWrk.getWebAppURLHttp());
         wireMonitorURL = "http://" + url.getHost() + ":" + hostPort;
 
         server = new WireMonitorServer(hostPort);
         server.setReadTimeOut(300);
         server.start();
 
-        String gatewaySessionCookie = createSession(gatewayContext);
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath(
                 "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest" +
-                        File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
+                        File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 
@@ -143,11 +143,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
                 new RemoteUserStoreManagerServiceClient(
-                        gatewayContext.getContextUrls().getBackEndUrl(),
-                        gatewayContext.getContextTenant().getContextUser().getUserName(),
-                        gatewayContext.getContextTenant().getContextUser().getPassword());
+                        keyManagerContext.getContextUrls().getBackEndUrl(),
+                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                        keyManagerContext.getContextTenant().getContextUser().getPassword());
 
-        String username = gatewayContext.getContextTenant().getContextUser().getUserName();
+        String username = keyManagerContext.getContextTenant().getContextUser().getUserName();
         String profile = "default";
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(
@@ -178,7 +178,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrls.getWebAppURLNhttp() + "tokenTest/1.0.0";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "tokenTest/1.0.0";
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -236,7 +236,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String apiContext = "JWTTokenCacheTestAPI";
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
-        String endpointURL = gatewayUrls.getWebAppURLNhttp() + "response";
+        String endpointURL = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
         String apiTier = "Gold";
         String tags = "token,jwt,cache";
         int waitingSecs = 900;
@@ -258,7 +258,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrls.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
@@ -333,9 +333,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
                 new RemoteUserStoreManagerServiceClient(
-                        gatewayContext.getContextUrls().getBackEndUrl(),
-                        gatewayContext.getContextTenant().getContextUser().getUserName(),
-                        gatewayContext.getContextTenant().getContextUser().getPassword());
+                        keyManagerContext.getContextUrls().getBackEndUrl(),
+                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                        keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         String profile = "default";
 
@@ -365,7 +365,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrls.getWebAppURLNhttp() + "tokenTest/1.0.0/";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "tokenTest/1.0.0/";
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -439,7 +439,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrls.getWebAppURLNhttp() + "t/wso2.com/tokenTest/1.0.0/";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "t/wso2.com/tokenTest/1.0.0/";
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 

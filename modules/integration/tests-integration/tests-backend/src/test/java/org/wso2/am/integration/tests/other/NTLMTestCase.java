@@ -97,7 +97,7 @@ public class NTLMTestCase extends APIMIntegrationBaseTest {
         HttpClient httpclient = new DefaultHttpClient();
         byte[] userKey = (consumerKey + ":" + consumerSecret).getBytes();
         String encoding = Base64Utils.encode(userKey);
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         HttpPost httppost = new HttpPost(String.valueOf(tokenEndpointURL));
         httppost.setHeader("Authorization", "Basic " + encoding);
         List<NameValuePair> paramVals = new ArrayList<NameValuePair>();
@@ -115,8 +115,6 @@ public class NTLMTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword(),
-                storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
     }
 }

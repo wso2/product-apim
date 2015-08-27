@@ -43,16 +43,16 @@ import static org.testng.Assert.assertTrue;
  * Edit the API context and check its accessibility.
  */
 public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "EditAPIContextAndCheckAccessibilityTest";
-    private static final String API_CONTEXT = "EditAPIContextAndCheckAccessibility";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_NAME = "EditAPIContextAndCheckAccessibilityTest";
+    private final String API_CONTEXT = "EditAPIContextAndCheckAccessibility";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
 
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/customers/123";
-    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "EditAPIContextAndCheckAccessibilityTestCase";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_END_POINT_METHOD = "customers/123";
+    private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String APPLICATION_NAME = "EditAPIContextAndCheckAccessibilityTestCase";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIIdentifier apiIdentifier;
@@ -65,8 +65,8 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                 new URL(apiEndPointUrl));
 
@@ -78,19 +78,17 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invoke the API before the context change")
-    public void testInvokeAPIBeforeChangeAPIContext() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeAPIBeforeChangeAPIContext() throws Exception {
         //Create and publish  and subscribe API version 1.0.0
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
                 apiStoreClientUser1, APPLICATION_NAME);
@@ -102,7 +100,7 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the context");
@@ -133,10 +131,10 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using old context after Context change" +
             " after the API context change", dependsOnMethods = "testEditAPIContext")
-    public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
         //Invoke  old context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND,
                 "Response code mismatched when invoke api before changing the context");
@@ -148,10 +146,10 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new context after Context change",
             dependsOnMethods = "testInvokeAPIAfterChangeAPIContextWithOldContext")
-    public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeAPIAfterChangeAPIContextWithNewContext() throws Exception {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + newContext + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(newContext, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api after changing the context");

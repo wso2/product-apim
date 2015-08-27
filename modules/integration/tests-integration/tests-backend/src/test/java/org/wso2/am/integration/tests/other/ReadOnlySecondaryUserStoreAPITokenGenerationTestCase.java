@@ -33,6 +33,8 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -43,7 +45,8 @@ import java.net.URL;
 /*
 * This class test the token generation for the APIs subscribed from an ReadOnly External Store
 * */
-public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIntegrationBaseTest {
+
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE}) public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(ReadOnlySecondaryUserStoreAPITokenGenerationTestCase.class);
 
@@ -72,18 +75,18 @@ public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIn
         super.init();
         //change the user-mgt.xml configuration
         String userMgtXml = getAMResourceLocation() + File.separator + "configFiles/externalstore/user-mgt.xml";
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfiguration(new File(userMgtXml));
     }
 
     @Test(groups = "wso2.am", description = "Read only External Store Token Generation")
     public void addUserIntoJDBCUserStore() throws Exception {
 
-        gatewaySessionCookie = createSession(gatewayContext);
-        backendURL = gatewayContext.getContextUrls().getBackEndUrl();
+        gatewaySessionCookie = createSession(gatewayContextWrk);
+        backendURL = keyManagerContext.getContextUrls().getBackEndUrl();
 
         userMgtClient = new UserManagementClient(backendURL, gatewaySessionCookie);
-        authenticatorClient = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
+        authenticatorClient = new AuthenticatorClient(gatewayContextWrk.getContextUrls().getBackEndUrl());
 
         //add Role
         userMgtClient.addRole(newUserRole, null, new String[]{"/permission/admin/login"
@@ -103,15 +106,15 @@ public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIn
                 + "configFiles/externalstore/user-mgt-readonly.xml";
         String targetReadOnlyXML = serverConfigurationManager.getCarbonHome() + "/repository/conf/user-mgt.xml";
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfiguration(new File(userMgtReadOnlyXml), new File(targetReadOnlyXML));
 
         //create a new gateway session cookie since server is restarted
-        String newGatewaySessionCookie = createSession(gatewayContext);
+        String newGatewaySessionCookie = createSession(gatewayContextWrk);
 
         //check for AxisFault when adding roles to the read only user store
         testUserMgtClient = new UserManagementClient(backendURL, newGatewaySessionCookie);
-        AuthenticatorClient testAuthenticatorClient = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
+        //AuthenticatorClient testAuthenticatorClient = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
 
         try{
             testUserMgtClient.addRole("CAT.COM/testRole", null, new String[]{"/permission/admin/login"
@@ -126,12 +129,12 @@ public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIn
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml", gatewayContext, newGatewaySessionCookie);
+                + File.separator + "dummy_api.xml", gatewayContextMgt, newGatewaySessionCookie);
 
         //add an API
         String apiContext = "test";
         String tags = "testing";
-        String url = gatewayUrls.getWebAppURLNhttp() + "response";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
@@ -201,9 +204,7 @@ public class ReadOnlySecondaryUserStoreAPITokenGenerationTestCase extends APIMIn
     public void destroy() throws Exception {
 
         //removing APIs and Applications
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword(),
-                storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
 
         //restore configuration
         serverConfigurationManager.restoreToLastConfiguration();

@@ -43,13 +43,13 @@ import static org.testng.Assert.*;
  */
 public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APIPublishingAndVisibilityInStoreTest";
-    private static final String API_CONTEXT = "APIPublishingAndVisibilityInStore";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "APIPublishingAndVisibilityInStoreTest";
+    private final String API_CONTEXT = "APIPublishingAndVisibilityInStore";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String APPLICATION_NAME = "APIPublishingAndVisibilityInStoreTestCase";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private String providerName;
@@ -60,25 +60,21 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
     }
