@@ -125,6 +125,6 @@ public class TierRetrievalTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
     }
 }
