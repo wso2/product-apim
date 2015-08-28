@@ -36,7 +36,6 @@ import static org.testng.Assert.assertFalse;
 /**
  * This class verifies errors on server startup console
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIMgtServerStartupTestCase {
 
     private LogViewerClient logViewerClient;
@@ -53,6 +52,7 @@ public class APIMgtServerStartupTestCase {
     }
 
     @Test(groups = "wso2.all", description = "verify server startup errors")
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     public void testVerifyLogs() throws RemoteException, LogViewerLogViewerException {
         boolean status = false;
         int startLine = 0;

@@ -63,43 +63,33 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         this.userMode = userMode;
     }
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
-    }
-
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        gatewaySessionCookie = createSession(gatewayContextMgt);
+        gatewaySessionCookie = createSession(gatewayContext);
         //Initialize publisher and store.
-        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
-        apiStore = new APIStoreRestClient(getStoreURLHttp());
-        provider = user.getUserName();
+        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttps());
+        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+        provider = storeContext.getContextTenant().getContextUser().getUserName();
 
         //Load the back-end dummy API
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                                              + File.separator + "synapseconfigs" + File.separator + "rest"
+                                              + File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API")
     public void testDefaultVersionAPI() throws Exception {
 
         //Login to the API Publisher
-        apiPublisher.login(user.getUserName(),
-                           user.getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "DefaultVersionAPI";
         String apiVersion = "1.0.0";
         String apiContext = "defaultversion";
-        String endpointUrl = getGatewayURLNhttp() + "response";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
@@ -111,39 +101,46 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider(provider);
 
         //Add the API using the API publisher.
-        HttpResponse response = apiPublisher.addAPI(apiRequest);
+        apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(apiName, user.getUserName(),
+                new APILifeCycleStateRequest(apiName, publisherContext.getContextTenant().getContextUser().getUserName(),
                                              APILifeCycleState.PUBLISHED);
         //Publish the API
-        response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         //Login to the API Store
-        apiStore.login(user.getUserName(), user.getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
 
         //Add an Application in the Store.
-        response = apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
-        verifyResponse(response);
+        apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
 
         //Subscribe the API to the DefaultApplication
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest(apiName, apiVersion, provider, "DefaultVersionAPP", "Unlimited");
-        response = apiStore.subscribe(subscriptionRequest);
+        apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("DefaultVersionAPP");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject jsonResponse = new JSONObject(responseString);
+        JSONObject response = new JSONObject(responseString);
 
         //Get the accessToken which was generated.
-        String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").getString("accessToken");
+        String accessToken = response.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        String  apiInvocationUrl = getAPIInvocationURLHttp(apiContext);
-
+        String directBackEndEndpoint, apiInvocationUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
+            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext;
+        } else {
+            directBackEndEndpoint = gatewayUrls.getWebAppURLNhttp() + "response";
+            apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "t/" +
+                               gatewayContext.getContextTenant().getDomain() + "/" + apiContext;
+        }
 
         //Going to access the API without the version in the request url.
-        HttpResponse directResponse = HttpRequestUtil.doGet(endpointUrl, new HashMap<String, String>());
+        HttpResponse directResponse = HttpRequestUtil.doGet(directBackEndEndpoint, new HashMap<String, String>());
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
@@ -157,7 +154,16 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
 }

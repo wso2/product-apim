@@ -76,11 +76,11 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
 
-        apiProvider = user.getUserName();
+        apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
-        String publisherURLHttp = getPublisherURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
-        String storeURLHttp = getStoreURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
@@ -91,9 +91,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                                                        keyManagerContext.getContextTenant().getContextUser().getPassword());
+        userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(),
+                                                        gatewayContext.getContextTenant().getContextUser().getUserName(),
+                                                        gatewayContext.getContextTenant().getContextUser().getPassword());
 
         // adding new role subscriber
         userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
@@ -102,12 +102,12 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         // crating user john
         String userJohn;
         String gatewayUrl;
-        if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
             userJohn = USER_JOHN;
         } else {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
-            userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
+            userJohn = USER_JOHN + "@" + gatewayContext.getContextTenant().getDomain();
         }
         userManagementClient.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
 
@@ -167,7 +167,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
@@ -180,9 +180,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                       "&password=" + storeContext.getContextTenant().getContextUser().getPassword() +
                       "&scope=admin_scope user_scope";
 
-        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                  requestBody, tokenEndpointURL);
-        accessTokenGenerationResponse = new JSONObject(response.getData());
+        accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                                                                                      requestBody, tokenEndpointURL).getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
@@ -243,7 +242,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteUser(USER_JOHN);
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
-        super.cleanUp();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
     @DataProvider

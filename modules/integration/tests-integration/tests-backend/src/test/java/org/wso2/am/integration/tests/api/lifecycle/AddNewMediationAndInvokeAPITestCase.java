@@ -26,38 +26,34 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
 import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Add new Log mediation to the in-flow and check the logs to verify the  added mediation is working.
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "AddNewMediationAndInvokeAPITest";
-    private final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
-    private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final String MEDIATION_LOG_OUTPUT1 = "To: /" + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD;
-    private final String MEDIATION_LOG_OUTPUT2 = "Direction: request, IN_MESSAGE = IN_MESSAGE";
-    private final String MEDIATION_LOGGER = "org.apache.synapse.mediators.builtin.LogMediator";
+    private static final String API_NAME = "AddNewMediationAndInvokeAPITest";
+    private static final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+    private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private final static String MEDIATION_LOG_OUTPUT1 = "To: /" + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD;
+    private final static String MEDIATION_LOG_OUTPUT2 = "Direction: request, IN_MESSAGE = IN_MESSAGE";
+    private final static String MEDIATION_LOGGER = "org.apache.synapse.mediators.builtin.LogMediator";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
@@ -68,23 +64,27 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        String apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        String providerName = user.getUserName();
+        String apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        apiPublisherClientUser1.login(
+                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiStoreClientUser1.login(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         logViewerClient = new LogViewerClient(
-                gatewayContextWrk.getContextUrls().getBackEndUrl(), createSession(gatewayContextWrk));
+                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
         APICreationRequestBean apiCreationRequestBean =
@@ -96,7 +96,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API before adding the log mediation")
-    public void testAPIInvocationBeforeAddingNewMediation() throws Exception,
+    public void testAPIInvocationBeforeAddingNewMediation() throws APIManagerIntegrationTestException, IOException,
             LogViewerLogViewerException {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
@@ -111,7 +111,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         logViewerClient.clearLogs();
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -129,14 +129,15 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the log mediation",
             dependsOnMethods = "testAPIInvocationBeforeAddingNewMediation")
-    public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
+    public void testAPIInvocationAfterAddingNewMediation() throws APIManagerIntegrationTestException, IOException,
+            LogViewerLogViewerException {
         logViewerClient.clearLogs();
         apiCreationRequestBean.setInSequence("log_in_message");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         logViewerClient.clearLogs();
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -153,14 +154,15 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
     @Test(groups = {"wso2.am"}, description = "IInvoke the API after removing the log mediation",
             dependsOnMethods = "testAPIInvocationAfterAddingNewMediation")
-    public void testAPIInvocationBeforeRemovingNewMediation() throws Exception {
+    public void testAPIInvocationBeforeRemovingNewMediation() throws APIManagerIntegrationTestException, IOException,
+            LogViewerLogViewerException {
         logViewerClient.clearLogs();
         apiCreationRequestBean.setInSequence("");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  +
-                                      API_GET_ENDPOINT_METHOD, requestHeadersGet);
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                        API_GET_ENDPOINT_METHOD, requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
                 " Expected value :\"" + RESPONSE_GET + "\" not contains in response data:\"" +

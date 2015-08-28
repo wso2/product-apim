@@ -37,10 +37,10 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTest;
+import org.wso2.carbon.automation.extensions.jmeter.JMeterTestManager;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
@@ -59,24 +59,16 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private  ServerConfigurationManager serverConfigurationManager;
+    private static boolean isConfigApplied = false;
+    private static ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
         this.userMode = userMode;
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-               new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-               new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -95,6 +87,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
+        if (!isConfigApplied) {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                                                                                  + File.separator +
                                                                                  "configFiles/hostobjecttest/" +
@@ -104,27 +97,65 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                                                                    "configFiles/tokenTest/" +
                                                                    "log4j.properties"));
             super.init(userMode);
-
+            isConfigApplied = true;
+        }
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
+    }
+
+    private void copySampleFile(String sourcePath, String destPath) {
+        File sourceFile = new File(sourcePath);
+        File destFile = new File(destPath);
+        try {
+            FileManipulator.copyFile(sourceFile, destFile);
+        } catch (IOException e) {
+            log.error("Error while copying the other into Jaggery server", e);
+        }
+    }
+
+    private String computeDestPath(String fileName) {
+        String serverRoot = System.getProperty(ServerConstants.CARBON_HOME);
+        String deploymentPath = serverRoot + "/repository/deployment/server/jaggeryapps/testapp";
+        File depFile = new File(deploymentPath);
+        if (!depFile.exists() && !depFile.mkdir()) {
+            log.error("Error while creating the deployment folder : "
+                      + deploymentPath);
+        }
+        return deploymentPath + File.separator + fileName;
+    }
+
+    private String computeSourcePath(String fileName) {
+
+        return getAMResourceLocation()
+               + File.separator + "jaggery/" + fileName;
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")
     public void testHostObjectTestCase() throws Exception {
 
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
+
+        //Tenant Create test cases -  This will create new tenant in the system
+        JMeterTest script =
+                new JMeterTest(new File(getAMResourceLocation() + File.separator + "scripts"
+                                        + File.separator + "tenant_create.jmx"));
+        JMeterTestManager manager = new JMeterTestManager();
+        manager.runTest(script);
+        //End of tenant creation
 
         String APIName = "HostObjectTestAPI";
         String APIContext = "HostObjectTestAPIAPIContext";
         String tags = "youtube, video, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = user.getUserName();
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
 
         String filePublisher, fileStore;
-        if (publisherContext.getContextTenant().getDomain().equals("carbon.super")) {
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             filePublisher = "testPublisher.jag";
             fileStore = "testStore.jag";
         } else {
@@ -259,10 +290,10 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication("HostObjectTestAPI-Application");
         serverConfigurationManager.restoreToLastConfiguration();
-        super.cleanUp();
+        super.cleanup();
     }
 
-    private boolean validateStoreResponseArray(String[] array) throws XPathExpressionException {
+    public boolean validateStoreResponseArray(String[] array) throws XPathExpressionException {
         assertTrue(array[1].contains("true"),
                    "Error while getting status of billing system from API store host object (isBillingEnabled)");
         assertTrue(array[2].contains("https"),
@@ -273,7 +304,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting http url from API store host object (getHTTPURL)");
         assertTrue(array[5].contains("tierName"),
                    "Error while getting denied tiers from API store host object (getDeniedTiers)");
-        assertTrue(array[6].contains("wso2.com"),
+        assertTrue(array[6].contains("tenantdomain1.com"),
                    "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
         assertTrue(array[7].contains("false"),
                    "Error while getting status of self sign in from API store host object (isSelfSignupEnabled)");
@@ -320,7 +351,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         return true;
     }
 
-    private boolean validatePublisherResponseArray(String[] array) {
+    public boolean validatePublisherResponseArray(String[] array) {
 
         assertTrue(array[1].contains("true"),
                    "Error while validating roles from API store host object (validateRoles)");
@@ -395,30 +426,11 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         return true;
     }
 
-    private void copySampleFile(String sourcePath, String destPath) {
-        File sourceFile = new File(sourcePath);
-        File destFile = new File(destPath);
-        try {
-            FileManipulator.copyFile(sourceFile, destFile);
-        } catch (IOException e) {
-            log.error("Error while copying the other into Jaggery server", e);
-        }
-    }
-
-    private String computeDestPath(String fileName) {
-        String serverRoot = System.getProperty(ServerConstants.CARBON_HOME);
-        String deploymentPath = serverRoot + "/repository/deployment/server/jaggeryapps/testapp";
-        File depFile = new File(deploymentPath);
-        if (!depFile.exists() && !depFile.mkdir()) {
-            log.error("Error while creating the deployment folder : "
-                      + deploymentPath);
-        }
-        return deploymentPath + File.separator + fileName;
-    }
-
-    private String computeSourcePath(String fileName) {
-
-        return getAMResourceLocation()
-               + File.separator + "jaggery/" + fileName;
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

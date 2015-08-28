@@ -23,7 +23,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -47,10 +46,10 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 	@BeforeClass(alwaysRun = true)
 	public void setEnvironment() throws Exception {
 		super.init();
-		gatewaySessionCookie = createSession(gatewayContextMgt);
+		gatewaySessionCookie = createSession(gatewayContext);
 		// Create tenant
 		TenantManagementServiceClient tenantManagementServiceClient =
-				new TenantManagementServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
+				new TenantManagementServiceClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 		tenantManagementServiceClient.addTenant("abc.com", "abc123", "abc", "demo");
 
 		// Upload the synapse
@@ -58,12 +57,12 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 		              File.separator + "property" + File.separator +
 		              "FORCE_HTTP_CONTENT_LENGTH.xml";
 
-		OMElement synapseConfig = APIMTestCaseUtils.loadResource(file);
+		OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
 
-		AuthenticatorClient login = new AuthenticatorClient(gatewayContextWrk.getContextUrls().getBackEndUrl());
+		AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
 		String session = login.login("abc@abc.com", "abc123", "localhost");
 
-        APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextWrk.getContextUrls().getBackEndUrl(),
+		apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
                                                      session);
 		Thread.sleep(5000);
 
@@ -85,7 +84,7 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 		InputStreamReader isr = new InputStreamReader(fis, "UTF8");
 		Reader inputReader = new BufferedReader(isr);
 
-		URL postEndpoint = new URL(gatewayUrlsWrk.getWebAppURLNhttp()+"t/abc.com/stock/1.0.0");
+		URL postEndpoint = new URL(gatewayUrls.getWebAppURLNhttp()+"t/abc.com/stock/1.0.0");
 		//URL postEndpoint = new URL("http://localhost:8280/t/abc.com/helloabc/1.0.0");
 
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("foo.out")));
@@ -100,7 +99,7 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 
 	@AfterClass(alwaysRun = true)
 	public void stop() throws Exception {
-		cleanUp();
+		cleanup();
 	}
 }
 

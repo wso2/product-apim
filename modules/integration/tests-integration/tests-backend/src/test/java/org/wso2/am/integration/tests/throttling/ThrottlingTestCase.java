@@ -26,9 +26,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.carbon.automation.engine.FrameworkConstants;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -41,22 +38,13 @@ import java.net.URL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 
-    private String gatewaySessionCookie;
+    String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
     public ThrottlingTestCase(TestUserMode userMode) {
         this.userMode = userMode;
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -69,10 +57,10 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         /_system/governance/apimgt/applicationdata/test-tiers.xml
          */
         super.init(userMode);
-        gatewaySessionCookie = createSession(gatewayContextMgt);
+        gatewaySessionCookie = createSession(gatewayContext);
 
         String throttlingSynapseConfFile;
-        if (gatewayContextMgt.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
             throttlingSynapseConfFile = "throttling-api-synapse.xml";
         } else {
             throttlingSynapseConfFile = "throttling-api-synapse-tenant.xml";
@@ -80,7 +68,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
                                               "synapseconfigs" + File.separator + "throttling" + File.separator +
-                                              throttlingSynapseConfFile, gatewayContextMgt, gatewaySessionCookie);
+                                              throttlingSynapseConfFile, gatewayContext, gatewaySessionCookie);
 
     }
 
@@ -89,7 +77,7 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
         //APIProviderHostObject test=new APIProviderHostObject("admin");
         //add client IP to tiers xml
         ResourceAdminServiceClient resourceAdminServiceStub =
-                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
+                new ResourceAdminServiceClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 
         resourceAdminServiceStub.addCollection("/_system/config/", "proxy", "", "Contains test proxy tests files");
 
@@ -101,8 +89,13 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
                 , "Adding Resource failed");
         Thread.sleep(2000);
 
-        String gatewayUrl = getAPIInvocationURLHttp("stockquote/test/");
-
+        String gatewayUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "stockquote" + "/test/";
+        } else {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
+                         "/stockquote" + "/test/";
+        }
         HttpResponse response = HttpRequestUtil.sendGetRequest(gatewayUrl, null);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch " +
                                                                                      "did not receive 200");
@@ -111,7 +104,16 @@ public class ThrottlingTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
 }

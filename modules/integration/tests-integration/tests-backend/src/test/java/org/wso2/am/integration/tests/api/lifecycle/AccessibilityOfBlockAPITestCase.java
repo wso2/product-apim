@@ -47,15 +47,15 @@ import static org.testng.Assert.assertTrue;
 public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest {
 
 
-    private final String API_NAME = "BlockAPITest";
-    private final String API_CONTEXT = "BlockAPI";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API_END_POINT_METHOD = "/customers/123";
-    private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "AccessibilityOfBlockAPITestCase";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String API_NAME = "BlockAPITest";
+    private static final String API_CONTEXT = "BlockAPI";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_END_POINT_METHOD = "/customers/123";
+    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String APPLICATION_NAME = "AccessibilityOfBlockAPITestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private String providerName;
@@ -67,27 +67,31 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        apiPublisherClientUser1.login(
+                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiStoreClientUser1.login(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of the APi before block")
-    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws Exception {
+    public void testInvokeAPIBeforeChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
@@ -99,8 +103,8 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp( API_CONTEXT,
-                        API_VERSION_1_0_0) + API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" +
+                        API_VERSION_1_0_0 + API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before block");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
@@ -128,10 +132,10 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
 
     @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
             dependsOnMethods = "testChangeAPILifecycleToBlock")
-    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws Exception {
+    public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws APIManagerIntegrationTestException, IOException {
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + API_END_POINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched when invoke api after block");

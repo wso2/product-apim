@@ -46,19 +46,19 @@ import static org.testng.Assert.assertTrue;
  * Add , edit and remove rest resource and test the invocation of API
  */
 public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "EditRemoveRESTResourceTest";
-    private final String API_CONTEXT = "EditRemoveRESTResource";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "AddEditRemoveRESTResourceTestCase";
-    private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final String RESPONSE_POST = "Tom";
-    private final String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final String API_POST_ENDPOINT_METHOD = "/customers/name/";
-    private final String INVALID_URL = "/invalid";
-    private final String INVALID_URL_INVOKE_RESPONSE =
+    private static final String API_NAME = "EditRemoveRESTResourceTest";
+    private static final String API_CONTEXT = "EditRemoveRESTResource";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String APPLICATION_NAME = "AddEditRemoveRESTResourceTestCase";
+    private static final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private static final String RESPONSE_POST = "Tom";
+    private static final String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private static final String API_POST_ENDPOINT_METHOD = "/customers/name/";
+    private static final String INVALID_URL = "/invalid";
+    private static final String INVALID_URL_INVOKE_RESPONSE =
             "No matching resource found in the API for the given request";
     private String apiEndPointUrl;
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -73,21 +73,23 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
             RemoteException, MalformedURLException {
         super.init();
-        postEndPointURL = getAPIInvocationURLHttp(API_CONTEXT,  API_VERSION_1_0_0) + API_POST_ENDPOINT_METHOD;
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        postEndPointURL = gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_POST_ENDPOINT_METHOD;
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        providerName = user.getUserName();
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
         requestHeadersPost = new HashMap<String, String>();
@@ -97,7 +99,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of GET resource")
-    public void testInvokeGETResource() throws Exception {
+    public void testInvokeGETResource() throws APIManagerIntegrationTestException, IOException {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
         //Create publish and subscribe a API
@@ -115,7 +117,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +  API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -166,7 +168,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET Request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +  API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "update the api with  both GET and POST resource");
@@ -174,8 +176,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 " update the api with  both GET and POST resource. Expected value :\"" + RESPONSE_GET + "\" not contains" +
                 " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send POST Request
-        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT ,
-                API_VERSION_1_0_0) +  API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
+        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(gatewayWebAppUrl + API_CONTEXT + "/" +
+                API_VERSION_1_0_0 + API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
 
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Invocation of  POST resource fail after update the api with  both GET and POST resource");
@@ -210,7 +212,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET Request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "update the api with  URLPattern");
@@ -219,7 +221,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send GET Request with invalid url
         HttpResponse httpResponseGetInvalidUrl =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + API_GET_ENDPOINT_METHOD +
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD +
                         INVALID_URL, requestHeadersGet);
         assertEquals(httpResponseGetInvalidUrl.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN, "Invocation is not " +
                 "forbidden when try to invoke GET resource  via invalid url pattern");
@@ -228,7 +230,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 RESPONSE_GET + "\" not contains in response data:\"" + httpResponseGetInvalidUrl.getData() + "\"");
         //Send POST Request
         HttpResponse httpResponsePOST =
-                HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  +
+                HttpRequestUtil.doPost(new URL(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
                         API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation of  POST resource fail after" +
                 " update the api with  URLPattern");
@@ -241,7 +243,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of POST and GET resource, after Remove POST resource",
             dependsOnMethods = "testInvokePOSTAndGetResourceAfterAddingURLPattern")
-    public void testInvokeGETAndPOSTResourceAfterRemovePOSTResource() throws Exception {
+    public void testInvokeGETAndPOSTResourceAfterRemovePOSTResource() throws APIManagerIntegrationTestException, IOException {
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
@@ -259,7 +261,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 "Update APi with new Resource information fail");
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  +  API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                 "remove the POST resource from api");
