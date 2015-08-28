@@ -36,8 +36,6 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -50,7 +48,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(TokenEncryptionScopeTestCase.class);
@@ -110,7 +107,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         File identityConfSourceFile = new File(identityConfigArtifactLocation);
         File identityConfTargetFile = new File(identityRepositoryConfigLocation);
 
-        serverManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverManager = new ServerConfigurationManager(gatewayContext);
 
         // apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
@@ -172,7 +169,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         // Adding API
         String apiContext = "tokenencapi";
-        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
+        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -235,7 +232,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
+            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
             String requestBody;
             JSONObject accessTokenGenerationResponse;
 

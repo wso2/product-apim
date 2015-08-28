@@ -29,9 +29,6 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.carbon.automation.engine.FrameworkConstants;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
@@ -50,7 +47,6 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
@@ -60,14 +56,6 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
     @Factory(dataProvider = "userModeDataProvider")
     public TagsRatingCommentTestCase(TestUserMode userMode) {
         this.userMode = userMode;
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -88,14 +76,16 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
         serverConfigurationManager.restartGracefully();
 
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore.login(user.getUserName(), user.getPassword());
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                           publisherContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
+                       storeContext.getContextTenant().getContextUser().getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Comment Rating Test case")
@@ -103,9 +93,9 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         String APIName = "CommentRatingAPI";
         String APIContext = "commentRating";
         String tags = "youtube, video, media";
-        String url = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
+        String url = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
-        String providerName = user.getUserName();
+        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
 
         // This is because with the new context version strategy, if the context does not have the {version} param ,
@@ -126,8 +116,8 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         //Test API properties
         assertEquals(apiBean.getId().getApiName(), APIName, "API Name mismatch");
 
-        if (!gatewayContextMgt.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
-            apiContextAddedValue = "t/" + gatewayContextWrk.getContextTenant().getDomain() + "/" + apiContextAddedValue;
+        if (!gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            apiContextAddedValue = "t/" + gatewayContext.getContextTenant().getDomain() + "/" + apiContextAddedValue;
         }
 
         assertEquals(apiBean.getContext().trim().substring(apiBean.getContext().indexOf("/") + 1),
@@ -164,7 +154,13 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
-        String gatewayUrl = getAPIInvocationURLHttp("commentRating/1.0.0/customers/123");
+        String gatewayUrl;
+        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "commentRating/1.0.0/customers/123";
+        } else {
+            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
+                         "/commentRating/1.0.0/customers/123";
+        }
 
         Thread.sleep(2000);
         for (int i = 0; i < 19; i++) {
@@ -210,6 +206,16 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("CommentRatingAPI-Application");
-        super.cleanUp();
+        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
+                      gatewayContext.getContextTenant().getContextUser().getPassword(),
+                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 }

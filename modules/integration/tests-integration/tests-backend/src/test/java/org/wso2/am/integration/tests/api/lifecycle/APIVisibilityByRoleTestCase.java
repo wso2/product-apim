@@ -45,24 +45,24 @@ import static org.testng.Assert.assertTrue;
  */
 public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
-    private final String API_NAME_ADMIN_VISIBILITY = "APIVisibilityByRoleTest";
-    private final String API_NAME_SUBSCRIBER_VISIBILITY = "APIVisibilityByRole";
-    private final String API_CONTEXT1 = "testAPI1";
-    private final String API_CONTEXT2 = "testAPI2";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String CARBON_SUPER_TENANT2_KEY = "userKey2";
-    private final String TENANT_DOMAIN_KEY = "wso2.com";
-    private final String TENANT_DOMAIN_ADMIN_KEY = "admin";
-    private final String USER_KEY_USER2 = "userKey1";
-    private final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
-    private final String CARBON_SUPER_SUBSCRIBER_USERNAME = "subscriberUser1";
-    private final char[] CARBON_SUPER_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
-    private final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
-    private final char[] TENANT_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
-    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String API_NAME_ADMIN_VISIBILITY = "APIVisibilityByRoleTest";
+    private static final String API_NAME_SUBSCRIBER_VISIBILITY = "APIVisibilityByRole";
+    private static final String API_CONTEXT1 = "testAPI1";
+    private static final String API_CONTEXT2 = "testAPI2";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String CARBON_SUPER_TENANT2_KEY = "userKey2";
+    private static final String TENANT_DOMAIN_KEY = "wso2.com";
+    private static final String TENANT_DOMAIN_ADMIN_KEY = "admin";
+    private static final String USER_KEY_USER2 = "userKey1";
+    private static final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
+    private static final String CARBON_SUPER_SUBSCRIBER_USERNAME = "subscriberUser1";
+    private static final char[] CARBON_SUPER_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
+    private static final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
+    private static final char[] TENANT_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
+    private static final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIPublisherRestClient apiPublisherClientCarbonSuperUser1;
@@ -86,19 +86,24 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     private String otherDomain;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws Exception {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, RemoteException,
+            UserAdminUserAdminException {
         //Creating CarbonSuper context
         super.init();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        String publisherURLHttp = getPublisherURLHttp();
-        storeURLHttp = getStoreURLHttp();
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        storeURLHttp = storeUrls.getWebAppURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
         apiPublisherClientCarbonSuperAdmin = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientCarbonSuperAdmin = new APIStoreRestClient(publisherURLHttp);
 
-        apiPublisherClientCarbonSuperAdmin.login(user.getUserName(), user.getPassword());
+        apiPublisherClientCarbonSuperAdmin.login(
+                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
-        apiStoreClientCarbonSuperAdmin.login(user.getUserName(), user.getPassword());
+        apiStoreClientCarbonSuperAdmin.login(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
         apiPublisherClientCarbonSuperUser1 = new APIPublisherRestClient(publisherURLHttp);
@@ -138,7 +143,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         apiStoreClientSubscriberUserSameDomain.login(
                 CARBON_SUPER_SUBSCRIBER_USERNAME, String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD));
         //Creating Tenant contexts
-        init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
+        init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY, "publisher", "store", "gateway");
         otherDomain = storeContext.getContextTenant().getDomain();
         //Login to the API Publisher adn Store as Tenant user
         apiStoreClientAnotherUserOtherDomain = new APIStoreRestClient(publisherURLHttp);
@@ -163,10 +168,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         // create new user in tenant with only subscriber role and login to the Store
         userManagementClient2 = new UserManagementClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
-        if(userManagementClient2.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
-            userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
-        }
+                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
 
         userManagementClient2.addInternalRole(INTERNAL_ROLE_SUBSCRIBER,
                 new String[]{}, new String[]{"/permission/admin/login", "/permission/admin/manage/api/subscribe"});
@@ -412,7 +414,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in other domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAnotherUserWithSubscriberRoleInOtherDomainInStore")
     public void testVisibilityForAnonymousUserInOtherDomainInStore() throws APIManagerIntegrationTestException {
-        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIListFromStoreAsAnonymousUser
+        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser
                 (apiCreatorStoreDomain);
         assertFalse(httpResponse.getData().contains(API_NAME_ADMIN_VISIBILITY), "API with  Role admin  visibility " +
                 " is  visible to anonymous user in other domain API Store." +
@@ -426,7 +428,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in Same domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAnonymousUserInOtherDomainInStore")
     public void testVisibilityForAnonymousUserInSameDomainInStore() throws APIManagerIntegrationTestException {
-        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIListFromStoreAsAnonymousUser(
+        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser(
                 otherDomain);
         assertFalse(httpResponse.getData().contains(API_NAME_ADMIN_VISIBILITY), "API with  Role admin  " +
                 "visibility  is not visible to anonymous user in same domain API Store." +

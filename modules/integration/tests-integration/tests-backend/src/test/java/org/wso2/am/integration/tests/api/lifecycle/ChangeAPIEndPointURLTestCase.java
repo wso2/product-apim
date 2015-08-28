@@ -30,31 +30,30 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 /**
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "ChangeAPIEndPointURLTest";
-    private final String API_CONTEXT = "ChangeAPIEndPointURLTest";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private static final String API_NAME = "ChangeAPIEndPointURLTest";
+    private static final String API_CONTEXT = "ChangeAPIEndPointURLTest";
+    private static final String API_TAGS = "testTag1, testTag2, testTag3";
 
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API1_END_POINT_METHOD = "customers/123";
-    private final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String API2_RESPONSE_DATA = "AcceptanceSampling";
-    private final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
-    private final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private static final String API1_END_POINT_METHOD = "/customers/123";
+    private static final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private static final String API_VERSION_1_0_0 = "1.0.0";
+    private static final String API2_RESPONSE_DATA = "AcceptanceSampling";
+    private static final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
+    private static final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
+    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String api1EndPointUrl;
 
     private APIIdentifier apiIdentifier;
@@ -67,26 +66,30 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        api1EndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
+        api1EndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api1EndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        apiPublisherClientUser1.login(
+                publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiStoreClientUser1.login(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
     @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
-    public void testAPIInvocationBeforeChangeTheEndPointURL() throws Exception {
+    public void testAPIInvocationBeforeChangeTheEndPointURL() throws APIManagerIntegrationTestException, IOException {
         //Create and publish  and subscribe API version 1.0.0
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
                 apiStoreClientUser1, APPLICATION_NAME);
@@ -98,7 +101,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,  API_VERSION_1_0_0)  + "/" + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -130,10 +133,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
             "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
-    public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
+    public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws APIManagerIntegrationTestException, IOException {
         //Invoke  new context
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0),
+                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");

@@ -64,7 +64,7 @@ public class APIMANAGER4033CheckAuthTypeTestCase extends APIManagerLifecycleBase
             XPathExpressionException, URISyntaxException, SAXException, XMLStreamException,
             LoginAuthenticationExceptionException {
         super.init();
-        apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
     }
