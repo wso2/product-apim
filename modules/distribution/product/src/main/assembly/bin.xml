@@ -260,6 +260,40 @@
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/admin-dashboard/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-dashboard</outputDirectory>
         </fileSet>
+
+
+
+
+
+
+
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/store/extensions</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/api-store-extension/am-store-defaults</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/store/extensions/app/am-store-defaults</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/publisher/extensions</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions</outputDirectory>
+            <excludes>
+                <exclude>**/MobileAppLifeCycle.xml</exclude>
+                <exclude>**/SampleLifeCycle.xml</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/api-publisher-extension/am-publisher-defaults</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions/app/am-publisher-defaults</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/api-publisher-extension/am-publisher-common</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher/extensions/app/am-publisher-common</outputDirectory>
+        </fileSet>
+
+
+
 	<!--  copying modules xml -->
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/modules</directory>
@@ -704,12 +738,35 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/thrift-authentication.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+        </file>
+
+        <file>
+            <source>src/main/publisher/publisher-tenant.json</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaggeryapps/publisher/config</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+
 	 <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/msg-mgt.properties
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+
+
 	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
