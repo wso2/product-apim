@@ -65,8 +65,7 @@
 				<importFeatureDef>org.wso2.carbon.apimgt.core:1.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.apimgt.store:1.2.3</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.application.mgt.synapse.server:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.application.deployer.synapse:4.2.2</importFeatureDef>
+				
 				<importFeatureDef>org.wso2.carbon.system.statistics:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
@@ -110,8 +109,7 @@
 				<importFeatureDef>org.wso2.stratos.apimgt.dashboard.ui:${apimgt.stratos.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.registry.contentsearch:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.identity.oauth.common:4.2.3</importFeatureDef>
-				<importFeatureDef>org.apache.synapse.wso2:2.1.2-wso2v6</importFeatureDef>
-				<importFeatureDef>org.apache.synapse.transport.nhttp:2.1.2-wso2v6</importFeatureDef>
+				
 				<importFeatureDef>org.wso2.carbon.soaptracer:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.transport.mgt:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.transport.mail:${carbon.platform.version}</importFeatureDef>
