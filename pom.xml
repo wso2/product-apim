@@ -817,7 +817,7 @@
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.4</carbon.identity.version>
+	<carbon.identity.version>4.5.5</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
