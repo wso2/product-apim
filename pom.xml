@@ -808,14 +808,14 @@
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <apim.version>1.3.0-SNAPSHOT</apim.version>
 
-	 <carbon.commons.version>4.4.3</carbon.commons.version>
+	 <carbon.commons.version>4.4.4</carbon.commons.version>
 	 <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
 	<!-- carbon mediation -->
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.4</carbon.identity.version>
+	<carbon.identity.version>4.5.5</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
@@ -908,7 +908,7 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
-        <identity.core.version>4.2.6</identity.core.version>
+        <identity.core.version>4.2.7</identity.core.version>
         <bam.feature.version>4.2.6</bam.feature.version>
 
     </properties>
