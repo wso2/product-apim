@@ -1013,7 +1013,6 @@
                                     <id>org.wso2.carbon.reporting.feature.group</id>
                                     <version>${carbon.patch.version.401}</version>
                                 </feature>-->
-
 								<feature>
 									<id>org.wso2.carbon.registry.ws.feature.group</id>
 									<version>${carbon.registry.version}</version>f0
@@ -1938,7 +1937,7 @@
                                 </feature-->
 								<!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
-                                    <version>4.2.3</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
@@ -2482,6 +2481,7 @@
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
 								<!--feature>
+
                                     <id>org.wso2.carbon.mex.feature.group</id>
                                     <version>${carbon.platform.version}</version>
                                 </feature-->
@@ -3008,6 +3008,10 @@
 								<!--feature>
                                     <id>org.wso2.carbon.proxyadmin.server.feature.group</id>
                                     <version>4.2.2</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.mediation.security.server.feature.group</id>
+                                    <version>${carbon.platform.version}</version>
                                 </feature-->
 								<!--feature>
                                                     <id>org.wso2.carbon.mediation.security.server.feature.group</id>
@@ -3082,7 +3086,7 @@
                                 </feature-->
 								<!--feature>
                                     <id>org.wso2.carbon.transport.nhttp.feature.group</id>
-                                    <version>4.2.3</version>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.jms.feature.group</id>
@@ -3307,6 +3311,7 @@
                                     <id>org.wso2.carbon.stratos.deployment.feature.group</id>
                                     <version>2.2.1</version>
                                 </feature-->
+
 								<feature>
 									<id>
 										org.wso2.carbon.identity.authenticator.saml2.sso.server.feature.group
@@ -3708,6 +3713,7 @@
 									<version>${carbon.registry.version}</version>
 								</feature>
 								<!--feature>
+
                                     <id>org.wso2.carbon.localentry.server.feature.group</id>
                                     <version>4.2.1</version>
                                 </feature-->
@@ -3838,6 +3844,7 @@
 								</feature>
 
 								<!--ture>
+
                                     <id>org.wso2.carbon.stratos.common.feature.group</id>
                                     <version>2.3.0</version>
                                 </feature>
@@ -4011,5 +4018,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
