@@ -489,6 +489,9 @@
                                 <featureArtifactDef>org.wso2.carbon.store:rxt.feature:${es.feature.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.store:org.wso2.carbon.es.feature:${es.feature.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.store:lifecycle.feature:${es.feature.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.store:utils.feature:${es.feature.version}
@@ -1148,6 +1151,10 @@
                                     <version>${es.feature.version}</version>
                                 </feature-->
                                 <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.store.modules.login.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
@@ -1635,6 +1642,10 @@
                                     <version>${i18n.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.store.modules.event.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
@@ -2100,6 +2111,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.store.modules.event.feature.group</id>
@@ -2669,6 +2684,10 @@
                                     <version>${i18n.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.store.modules.event.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
@@ -3215,6 +3234,10 @@
                                     <version>${i18n.feature.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.store.modules.event.feature.group</id>
                                     <version>${es.feature.version}</version>
                                 </feature>
@@ -3729,6 +3752,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.es.feature.group</id>
+                                    <version>${es.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.store.modules.event.feature.group</id>
