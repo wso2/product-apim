@@ -74,7 +74,7 @@
                 <updatePolicy>daily</updatePolicy>
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
-        </repository>
+        </repository>       
     </repositories>
 
     <pluginRepositories>
@@ -802,8 +802,8 @@
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.5</carbon.governance.version>
-        <carbon.governance.ext.version>4.4.3</carbon.governance.ext.version>        
+        <carbon.governance.version>4.5.6</carbon.governance.version>
+        <carbon.governance.ext.version>4.4.4</carbon.governance.ext.version>
 	
 	<!--carbon versions-->
         <carbon.kernel.version>4.4.1</carbon.kernel.version>
@@ -895,8 +895,8 @@
         <carbon.feature.version>1.4.0</carbon.feature.version>
         <uuid.feature.version>1.4.0</uuid.feature.version>
         <sso.feature.version>1.4.0</sso.feature.version>
-        <es.feature.version>2.3.3</es.feature.version>
-        <carbon.social.version>2.3.3</carbon.social.version>
+        <es.feature.version>2.3.4</es.feature.version>
+        <carbon.social.version>2.3.4</carbon.social.version>
         <i18n.feature.version>1.4.0</i18n.feature.version>
         <!--<event.feature.version>1.0.0</event.feature.version>-->
         <!--<login.feature.version>1.0.0</login.feature.version>-->
