@@ -797,13 +797,13 @@
 	    <apimgt.oidc.version>2.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.6-SNAPSHOT</carbon.registry.version>
+        <carbon.registry.version>4.4.7</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.3-SNAPSHOT</carbon.governance.version>
-        <carbon.governance.ext.version>4.4.1-SNAPSHOT</carbon.governance.ext.version>        
+        <carbon.governance.version>4.5.5</carbon.governance.version>
+        <carbon.governance.ext.version>4.4.3</carbon.governance.ext.version>        
 	
 	<!--carbon versions-->
         <carbon.kernel.version>4.4.1</carbon.kernel.version>
@@ -895,8 +895,8 @@
         <carbon.feature.version>1.4.0</carbon.feature.version>
         <uuid.feature.version>1.4.0</uuid.feature.version>
         <sso.feature.version>1.4.0</sso.feature.version>
-        <es.feature.version>2.3.2-SNAPSHOT</es.feature.version>
-        <carbon.social.version>2.3.2-SNAPSHOT</carbon.social.version>
+        <es.feature.version>2.3.3</es.feature.version>
+        <carbon.social.version>2.3.3</carbon.social.version>
         <i18n.feature.version>1.4.0</i18n.feature.version>
         <!--<event.feature.version>1.0.0</event.feature.version>-->
         <!--<login.feature.version>1.0.0</login.feature.version>-->
