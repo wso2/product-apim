@@ -148,6 +148,17 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
                     "Unexpected Location header. Expected to end with "
                             + "/abc/domain but received " + locationHeader);
 
+            // Test 201 response with location header
+            HttpUriRequest createdRequest = new HttpGet(apiInvocationUrl + "?" + "response" + "=" + 201);
+            createdRequest.addHeader(new BasicHeader("Authorization", "Bearer " + accessToken));
+
+            httpclient = new DefaultHttpClient();
+            httpResponse = httpclient.execute(createdRequest);
+            locationHeader  = httpResponse.getFirstHeader("Location");
+
+            Assert.assertEquals(locationHeader.getValue().equalsIgnoreCase("http://google.lk/abc/domain"), true,
+                    "Location header has been modified for " + 201 + " response");
+
         } catch (APIManagerIntegrationTestException e) {
             log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
             Assert.assertTrue(false);
