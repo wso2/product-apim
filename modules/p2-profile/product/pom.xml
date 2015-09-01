@@ -87,6 +87,9 @@
                                     org.wso2.carbon.identity:org.wso2.carbon.identity.application.mgt.server.feature:${carbon.identity.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.apache.axis2.transport:org.apache.axis2.transport.mail.feature:${axis2-transports.wso2.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -290,6 +293,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.governance:org.wso2.carbon.registry.extensions.feature:${carbon.governance.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.governance:org.wso2.carbon.registry.extensions.server.feature:${carbon.governance.version}
+                                </featureArtifactDef>
 
 
                                 <featureArtifactDef>
@@ -311,7 +317,7 @@
                                     org.wso2.carbon.governance:org.wso2.carbon.governance.metadata.feature:${carbon.governance.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.governance:org.wso2.carbon.governance.lifecycle.management.feature:4.4.1
+                                    org.wso2.carbon.governance:org.wso2.carbon.governance.lifecycle.management.feature:${carbon.governance.version}
                                 </featureArtifactDef>
 
                                 <!-- Cloud API Manager related features -->
@@ -641,6 +647,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.feature.group</id>
                                     <version>${carbon.commons.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -986,6 +996,10 @@
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
 
                                 <!---->
                                 <!--Governance Feature-->
@@ -997,7 +1011,7 @@
 
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
 
                                 <!--<feature>-->
@@ -1121,6 +1135,10 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
                                     <version>${carbon.platform.version}</version>
@@ -1379,12 +1397,16 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -1421,6 +1443,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <!--feature>
@@ -1491,6 +1517,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -1761,12 +1791,16 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -1870,6 +1904,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -2223,6 +2261,10 @@
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
 
                                 <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
@@ -2230,7 +2272,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -2337,6 +2379,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -2695,12 +2741,16 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -2806,6 +2856,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
                                     <version>${carbon.kernel.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.apache.axis2.transport.mail.feature.group</id>
+                                    <version>${axis2-transports.wso2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
@@ -3121,12 +3175,16 @@
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.governance.metadata.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.governance.lifecycle.management.feature.group</id>
-                                    <version>4.4.1</version>
+                                    <version>${carbon.governance.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -3171,6 +3229,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.registry.extensions.feature.group</id>
+                                    <version>${carbon.governance.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.registry.extensions.server.feature.group</id>
                                     <version>${carbon.governance.version}</version>
                                 </feature>
                                 <!--feature>
