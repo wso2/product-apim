@@ -403,6 +403,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.mediation:org.wso2.carbon.mediation.ui.feature:${carbon.mediation.version}
+                                </featureArtifactDef>
                                 <!--featureArtifactDef>org.wso2.carbon.mediation:org.wso2.carbon.sequences.ui.feature:${carbon.mediation.version}</featureArtifactDef-->
 
                                 <!--8 Carbon-MultiTenancy-->
