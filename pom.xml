@@ -357,7 +357,7 @@
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>2.2</version>
+                <version>${google.code.gson.version}</version>
             </dependency>
 
             <dependency>
@@ -887,6 +887,7 @@
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v13</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
+        <google.code.gson.version>2.3.1</google.code.gson.version>
 
         <!-- Store -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
