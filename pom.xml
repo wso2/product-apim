@@ -797,13 +797,13 @@
 	    <apimgt.oidc.version>2.0.0-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.7</carbon.registry.version>
+        <carbon.registry.version>4.4.8</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.6</carbon.governance.version>
-        <carbon.governance.ext.version>4.4.4</carbon.governance.ext.version>
+        <carbon.governance.version>4.5.8</carbon.governance.version>
+        <carbon.governance.ext.version>4.4.6</carbon.governance.ext.version>
 	
 	<!--carbon versions-->
         <carbon.kernel.version>4.4.1</carbon.kernel.version>
@@ -817,7 +817,7 @@
         <carbon.mediation.version>4.4.2</carbon.mediation.version>
 
 	<!-- carbon identity -->
-	<carbon.identity.version>4.5.5</carbon.identity.version>
+	<carbon.identity.version>4.5.6</carbon.identity.version>
 
 	<!-- carbon deployment -->
 	<carbon.deployment.version>4.4.1</carbon.deployment.version>
@@ -884,7 +884,7 @@
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
-        <rampart.wso2.version>1.6.1-wso2v13</rampart.wso2.version>
+        <rampart.wso2.version>1.6.1.wso2v16</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
 
         <!-- Store -->
@@ -909,7 +909,7 @@
 
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
-        <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
+        <ws.seccurity.version>1.5.11.wso2v11</ws.seccurity.version>
 
     </properties>
 
