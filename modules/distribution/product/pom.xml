@@ -169,34 +169,62 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <!--<execution>-->
+                        <!--<id>create-API-manager-database</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<tasks>-->
+                                <!--<path id="h2.classpath">-->
+                                    <!--<path refid="maven.compile.classpath"/>-->
+                                <!--</path>-->
+                                <!--<echo-->
+                                        <!--message="########### Creating API Manager Database ##############"/>-->
+                                <!--<sql-->
+                                        <!--driver="org.h2.Driver"-->
+                                        <!--url="jdbc:h2:${basedir}/target/repository/database/WSO2AM_DB"-->
+                                        <!--userid="wso2carbon" password="wso2carbon" autocommit="true"-->
+                                        <!--onerror="continue">-->
+                                    <!--<classpath>-->
+                                        <!--<path refid="h2.classpath"/>-->
+                                    <!--</classpath>-->
+                                    <!--&lt;!&ndash;<fileset file="${basedir}/../resources/sql/h2.sql"/>&ndash;&gt;-->
+                                <!--</sql>-->
+                                <!--<echo-->
+                                        <!--message="##################### END ########################"/>-->
+                            <!--</tasks>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
                     <execution>
-                        <id>create-API-manager-database</id>
+                        <!-- Creating API Management schema -->
+                        <id>create-api-mgt-schema</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <tasks>
-                                <path id="h2.classpath">
-                                    <path refid="maven.compile.classpath"/>
-                                </path>
-                                <echo
-                                        message="########### Creating API Manager Database ##############"/>
-                                <sql
-                                        driver="org.h2.Driver"
-                                        url="jdbc:h2:${basedir}/target/repository/database/WSO2AM_DB"
-                                        userid="wso2carbon" password="wso2carbon" autocommit="true"
-                                        onerror="continue">
-                                    <classpath>
-                                        <path refid="h2.classpath"/>
-                                    </classpath>
-                                    <fileset file="${basedir}/../resources/sql/h2.sql"/>
+                                <echo message="########### Create API Management H2 Schema ###########" />
+
+                                <property name="db.dir" value="target/wso2carbon-core-${carbon.kernel.version}/repository/database" />
+                                <property name="userid" value="wso2carbon" />
+                                <property name="password" value="wso2carbon" />
+                                <property name="dbURL" value="jdbc:h2:file:${basedir}/${db.dir}/WSO2AM_DB;DB_CLOSE_ON_EXIT=FALSE" />
+
+                                <sql driver="org.h2.Driver" url="${dbURL}" userid="${userid}" password="${password}" autocommit="true" onerror="continue">
+                                    <classpath refid="maven.dependency.classpath" />
+                                    <classpath refid="maven.compile.classpath" />
+                                    <classpath refid="maven.runtime.classpath" />
+
+                                    <fileset file="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/h2.sql" />
                                 </sql>
-                                <echo
-                                        message="##################### END ########################"/>
+                                <echo message="##################### END ####################" />
                             </tasks>
                         </configuration>
                     </execution>
+
                 </executions>
             </plugin>
 
