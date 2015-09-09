@@ -472,7 +472,7 @@
 
 	<!--The value of the Access-Control-Allow-Origin header. Default values are 
 	    API Store addresses, which is needed for swagger to function.-->
-	<Access-Control-Allow-Origin>https://localhost:9443,http://localhost:9763</Access-Control-Allow-Origin>
+	<Access-Control-Allow-Origin>https://localhost:9943,http://localhost:10263</Access-Control-Allow-Origin>
 
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>

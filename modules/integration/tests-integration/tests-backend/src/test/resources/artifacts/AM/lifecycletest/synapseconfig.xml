@@ -396,7 +396,7 @@
                     <then>
                         <send>
                             <endpoint name="admin--AddNewHandlerAndInvokeAPITest_APIHandlerproductionEndpoint_0">
-                                <http uri-template="http://localhost:9763/jaxrs_basic/services/customers/customerservice/"/>
+                                <http uri-template="http://localhost:10263/jaxrs_basic/services/customers/customerservice/"/>
                             </endpoint>
                         </send>
                     </then>

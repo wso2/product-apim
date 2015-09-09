@@ -163,7 +163,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         String sourcePath = computeSourcePath(fileName);
         String destinationPath = computeDestPath(fileName);
         copySampleFile(sourcePath, destinationPath);
-        ClientConnectionUtil.waitForPort(9763, "");
+        ClientConnectionUtil.waitForPort(10263, "");
 
         String finalOutput = null;
 
@@ -189,7 +189,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Test application operations")
     public void testApplicationOperations() {
-        ClientConnectionUtil.waitForPort(9763, "");
+        ClientConnectionUtil.waitForPort(10263, "");
 
         String finalOutput = null;
 

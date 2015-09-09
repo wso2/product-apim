@@ -781,6 +781,11 @@
                 <artifactId>synapse-core</artifactId>
                 <version>${synapse.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <version>${jacoco.agent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -900,8 +905,9 @@
 
         <orbit.version.h2.engine>1.2.140.wso2v3</orbit.version.h2.engine>
 
-        <carbon.automation.version>4.3.1</carbon.automation.version>
-        <carbon.automationutils.version>4.3.0</carbon.automationutils.version>
+        <carbon.automation.version>4.4.2</carbon.automation.version>
+        <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
+        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <org.apache.cxf.version>2.7.2</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
