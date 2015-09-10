@@ -98,7 +98,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 String APIName = "PaginationTestAPI" + Integer.toString(i);
                 String APIContext = "paginationTest" + Integer.toString(i);
                 String tags = "pagination";
-                String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+                String url = "https://localhost:9443/test";
                 String description = "This is test API create by API manager integration test";
                 String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
                         + "@" + tenantDomain;
