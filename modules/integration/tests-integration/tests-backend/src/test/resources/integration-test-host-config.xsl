@@ -11,7 +11,7 @@
     <xsl:template match="xs:executionEnvironment/text()">standalone</xsl:template>
 
     <!--setting coverage true-->
-    <!--<xsl:template match="xs:coverage/text()">true</xsl:template>-->
+    <xsl:template match="xs:coverage/text()">true</xsl:template>
 
     <!--setting host names-->
     <xsl:template match="xs:instance[@name='store']/xs:hosts/xs:host/text()">localhost</xsl:template>
