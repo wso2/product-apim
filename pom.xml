@@ -594,7 +594,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.deployment</groupId>
                 <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.deployment.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.mediation</groupId>
