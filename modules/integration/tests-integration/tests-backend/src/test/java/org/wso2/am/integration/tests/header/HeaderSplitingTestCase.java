@@ -49,8 +49,6 @@ import java.util.Map;
 public class HeaderSplitingTestCase extends APIMIntegrationBaseTest {
 
 
-    public WireMonitorServer wireServer;
-
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
@@ -63,7 +61,7 @@ public class HeaderSplitingTestCase extends APIMIntegrationBaseTest {
 
         // We only need to access the gateway to see if header splitting is happening no need to invoke
         // and API
-        String apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "/SampleAPI";
+        String apiInvocationUrl = getAPIInvocationURLHttp("SampleAPI");
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("SplitHeader", "Sample");
@@ -81,7 +79,7 @@ public class HeaderSplitingTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
     }
 
     private static HttpResponse doGet(String endpoint, Map<String, String> headers) throws
