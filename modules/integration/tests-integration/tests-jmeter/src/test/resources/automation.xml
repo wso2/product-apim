@@ -239,6 +239,7 @@
                 <properties>
                 </properties>
             </instance>
+            <!--configuration of APIM Store instance -->
             <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
@@ -261,13 +262,51 @@
                 <properties>
                 </properties>
             </instance>
-            <instance name="gateway" type="standalone" nonBlockingTransportEnabled="false">
+            <instance name="keyManager" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">8780</port>
-                    <port type="https">8743</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="gateway-mgt" type="standalone" nonBlockingTransportEnabled="false">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <instance name="gateway-wrk" type="standalone" nonBlockingTransportEnabled="true">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
+                    <port type="nhttps">8743</port>
+                    <port type="nhttp">8780</port>
+                </ports>
+                <properties>
+                </properties>
+            </instance>
+            <!--Backend server where the actual services deployed-->
+            <instance name="backend-server" type="standalone" nonBlockingTransportEnabled="true">
+                <hosts>
+                    <host type="default">localhost</host>
+                </hosts>
+                <ports>
+                    <port type="http">8080</port>
+                    <port type="https">8082</port>
+                    <!--<port type="nhttps">8780</port>-->
+                    <!--<port type="nhttp">8743</port>-->
                 </ports>
                 <properties>
                 </properties>
