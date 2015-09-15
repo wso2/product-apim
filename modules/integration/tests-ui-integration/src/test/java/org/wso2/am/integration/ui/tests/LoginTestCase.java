@@ -39,8 +39,8 @@ public class LoginTestCase extends APIMIntegrationUiTestBase {
     @Test(groups = "wso2.greg", description = "verify login to governance registry")
     public void testLogin() throws Exception {
         LoginPage test = new LoginPage(driver);
-        HomePage home = test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+        HomePage home = test.loginAs(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         home.logout();
         driver.close();
         System.out.println("Login test case is completed ");

@@ -63,8 +63,8 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
         driver.get(publisherURL + "/site/pages/login.jag");
         WebElement userNameField = driver.findElement(By.id("username"));
         WebElement passwordField = driver.findElement(By.id("pass"));
-        userNameField.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
-        passwordField.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        userNameField.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
+        passwordField.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.id("loginButton")).click();
 
         //add api details
@@ -175,13 +175,13 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
         // Find and fill Username
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
         WebElement usernameEle = driver.findElement(By.id("username"));
-        usernameEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+        usernameEle.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
 
         // Find and fill Password
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("password")));
 
         WebElement passwordEle = driver.findElement(By.id("password"));
-        passwordEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        passwordEle.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
 
         // find Login button and click on it.
         driver.findElement(By.id("loginBtn")).click();
@@ -268,8 +268,8 @@ public class APIMANAGER3344ScopeSpecificTokenTestCase extends APIMIntegrationUiT
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }
