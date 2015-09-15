@@ -335,19 +335,20 @@ public class APIMIntegrationBaseTest {
         verifyResponse(subscriptionDataResponse);
         JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
 
-        if(jsonSubscription.getString("error").equals("false")) {
-            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject("subscriptions");
-            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray("applications");
+        if(jsonSubscription.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR).equals("false")) {
+            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
+            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
 
             //Remove API Subscriptions
             for (int i = 0; i < jsonApplicationsArray.length(); i++) {
                 JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
                 int id = appObject.getInt("id");
-                JSONArray subscribedAPIJSONArray = appObject.getJSONArray("subscriptions");
+                JSONArray subscribedAPIJSONArray = appObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
                 for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
                     JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
-                    verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString("name"), subscribedAPI.getString("version"),
-                                                   subscribedAPI.getString("provider"), String.valueOf(id)));
+                    verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
+                            , subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION),
+                                                   subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
                 }
             }
         }
@@ -355,23 +356,24 @@ public class APIMIntegrationBaseTest {
         //delete all application other than default application
         String applicationData = apiStore.getAllApplications().getData();
         JSONObject jsonApplicationData = new JSONObject(applicationData);
-        JSONArray applicationArray = jsonApplicationData.getJSONArray("applications");
+        JSONArray applicationArray = jsonApplicationData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
         for (int i = 0; i < applicationArray.length(); i++) {
             JSONObject jsonApplication = applicationArray.getJSONObject(i);
-            if (!jsonApplication.getString("name").equals("DefaultApplication")) {
-                verifyResponse(apiStore.removeApplication(jsonApplication.getString("name")));
+            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals("DefaultApplication")) {
+                verifyResponse(apiStore.removeApplication(jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)));
             }
         }
 
         String apiData = apiStore.getAPI().getData();
         JSONObject jsonAPIData = new JSONObject(apiData);
-        JSONArray jsonAPIArray = jsonAPIData.getJSONArray("apis");
+        JSONArray jsonAPIArray = jsonAPIData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APIS);
 
         //delete all APIs
         for (int i = 0; i < jsonAPIArray.length(); i++) {
             JSONObject api = jsonAPIArray.getJSONObject(i);
 //            verifyResponse(publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName()));
-            publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName());
+            publisherRestClient.deleteAPI(api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
+                    , api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION), user.getUserName());
         }
     }
 
@@ -381,7 +383,7 @@ public class APIMIntegrationBaseTest {
         log.info("Response Message : " + httpResponse.getData());
         Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
         JSONObject responseData = new JSONObject(httpResponse.getData());
-        Assert.assertFalse(responseData.getBoolean("error"), "Error message received " + httpResponse.getData());
+        Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR), "Error message received " + httpResponse.getData());
 
     }
 
