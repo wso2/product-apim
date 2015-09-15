@@ -781,6 +781,11 @@
                 <artifactId>synapse-core</artifactId>
                 <version>${synapse.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>org.jacoco.agent</artifactId>
+                <version>${jacoco.agent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -936,6 +941,8 @@
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
         <identity.core.version>4.2.7</identity.core.version>
         <bam.feature.version>4.2.6</bam.feature.version>
+        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
+
 
     </properties>
 
