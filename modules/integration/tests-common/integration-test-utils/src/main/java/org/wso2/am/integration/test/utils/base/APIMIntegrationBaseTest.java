@@ -335,14 +335,14 @@ public class APIMIntegrationBaseTest {
         verifyResponse(subscriptionDataResponse);
         JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
 
-        if(jsonSubscription.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR).equals("false")) {
+        if(!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
             JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
             JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
 
             //Remove API Subscriptions
             for (int i = 0; i < jsonApplicationsArray.length(); i++) {
                 JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
-                int id = appObject.getInt("id");
+                int id = appObject.getInt(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ID);
                 JSONArray subscribedAPIJSONArray = appObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
                 for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
                     JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
@@ -359,7 +359,7 @@ public class APIMIntegrationBaseTest {
         JSONArray applicationArray = jsonApplicationData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
         for (int i = 0; i < applicationArray.length(); i++) {
             JSONObject jsonApplication = applicationArray.getJSONObject(i);
-            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals("DefaultApplication")) {
+            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals(APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME)) {
                 verifyResponse(apiStore.removeApplication(jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)));
             }
         }

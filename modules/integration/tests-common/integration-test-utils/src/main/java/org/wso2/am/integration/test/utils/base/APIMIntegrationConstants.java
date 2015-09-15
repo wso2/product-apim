@@ -21,6 +21,8 @@ package org.wso2.am.integration.test.utils.base;
  * define constants that are used in APIM integration tests
  */
 public class APIMIntegrationConstants {
+
+    //instance names
     public static final String AM_PRODUCT_GROUP_NAME = "APIM";
     public static final String AM_STORE_INSTANCE = "store";
     public static final String AM_PUBLISHER_INSTANCE = "publisher";
@@ -29,6 +31,7 @@ public class APIMIntegrationConstants {
     public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
     public static final String BACKEND_SERVER_INSTANCE = "backend-server";
 
+    //Response element names
     public static final String API_RESPONSE_ELEMENT_NAME_ERROR = "error";
     public static final String API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION = "subscriptions";
     public static final String API_RESPONSE_ELEMENT_NAME_APPLICATIONS = "applications";
@@ -36,4 +39,7 @@ public class APIMIntegrationConstants {
     public static final String API_RESPONSE_ELEMENT_NAME_API_VERSION = "version";
     public static final String API_RESPONSE_ELEMENT_NAME_API_PROVIDER = "provider";
     public static final String API_RESPONSE_ELEMENT_NAME_APIS = "apis";
+    public static final String API_RESPONSE_ELEMENT_NAME_ID = "id";
+
+    public static final String OAUTH_DEFAULT_APPLICATION_NAME = "DefaultApplication";
 }
