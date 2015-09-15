@@ -293,6 +293,10 @@ under the License.
             <groupId>org.jacoco</groupId>
             <artifactId>org.jacoco.agent</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
     </dependencies>
 
     <properties>
