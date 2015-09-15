@@ -40,14 +40,14 @@ import static org.testng.Assert.assertTrue;
  * tab should show the correct information about subscribed uses.
  */
 public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "UsersAndDocsInAPIOverviewTest";
-    private static final String API_CONTEXT = "UsersAndDocsInAPIOverview";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String USER_KEY_USER2 = "userKey1";
-    private static final String APPLICATION_NAME = "UsersAndDocsInAPIOverviewTestCase";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "UsersAndDocsInAPIOverviewTest";
+    private final String API_CONTEXT = "UsersAndDocsInAPIOverview";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String USER_KEY_USER2 = "userKey1";
+    private final String APPLICATION_NAME = "UsersAndDocsInAPIOverviewTestCase";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIIdentifier apiIdentifier;
@@ -59,24 +59,22 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                 new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
 
         apiStoreClientUser2.login(

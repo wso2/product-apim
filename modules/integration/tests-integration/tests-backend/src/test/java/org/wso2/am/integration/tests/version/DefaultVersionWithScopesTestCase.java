@@ -86,7 +86,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator +
                                               "synapseconfigs" + File.separator + "rest" + File.separator +
-                                              "dummy_api.xml", gatewayContext, createSession(gatewayContext));
+                                              "dummy_api.xml", gatewayContextMgt, createSession(gatewayContextMgt));
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the default version API with scopes")
@@ -96,7 +96,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
         //Add a user called mike and assign him to the subscriber role.
         try {
-            userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "admin",
+            userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "admin",
                                                             "admin");
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
@@ -196,7 +196,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
             String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-            URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
+            URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
             String accessToken;
             Map<String, String> requestHeaders;
             HttpResponse response;
@@ -214,7 +214,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token sam received
-            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                          "sam cannot access the GET Method. Response = "
                          + response.getData());
@@ -230,7 +230,7 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             requestHeaders.put("Authorization", "Bearer " + accessToken);
 
             //Accessing GET method without the version in the URL using the token mike received.
-            response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
+            response = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "defaultversionscope", requestHeaders);
             assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                          "Mike should receive an HTTP 403 when trying to access"
                          + " the GET resource. But the response code was " + response.getResponseCode());
@@ -260,6 +260,6 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
 
-        super.cleanup();
+        super.cleanUp();
     }
 }

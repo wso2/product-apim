@@ -26,6 +26,8 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
@@ -38,6 +40,7 @@ import static org.testng.Assert.assertNotNull;
  In this test case, It will check refresh token is present in the token response with grant type as password in
  tenant mode.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
@@ -58,12 +61,12 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
          configFiles/tokenTest/log4j.properties
          */
 
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
 
-        userName = gatewayContext.getContextTenant().getTenantAdmin().getUserName();
+        userName = user.getUserName();
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                                                                              + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
@@ -72,11 +75,11 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
 
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
+                publisherContext.getContextUrls().getBackEndUrl(), createSession(publisherContext));
 
         tenantManagementServiceClient.addTenant("11wso2.com",
-                                                gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
-                                                gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+                                                publisherContext.getContextTenant().getTenantAdmin().getPassword(),
+                                                publisherContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
     }
 
     @Test(groups = "wso2.am", description = "Check whether refresh token issued in tenant mode")
@@ -123,7 +126,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "@11wso2.com&password=" +
                              storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                                                                                                  consumerSecret,
                                                                                                  requestBody,
@@ -150,12 +153,12 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         String description = "This is test API create by API manager integration test";
         String APIVersion = "1.0.0";
 
-        userName = gatewayContext.getSuperTenant().getTenantAdmin().getUserName();
+        userName = storeContext.getSuperTenant().getTenantAdmin().getUserName();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
 
-        apiPublisher.login(userName, gatewayContext.getSuperTenant().getTenantAdmin().getPassword());
+        apiPublisher.login(userName, storeContext.getSuperTenant().getTenantAdmin().getPassword());
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
@@ -185,7 +188,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + userName + "&password=" +
                              storeContext.getContextTenant().getTenantAdmin().getPassword() + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(getAPIInvocationURLHttp("token"));
         JSONObject accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                                                                                                  consumerSecret,
                                                                                                  requestBody,
@@ -197,9 +200,7 @@ public class APIManager3152RefreshTokenTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void unDeployService() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

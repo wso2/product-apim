@@ -90,7 +90,7 @@ print("==");
 print(publisherHostObj.isSynapseGateway());
 print("==");
 //22
-print(publisherHostObj.loadRegistryOfTenant("carbon.super"));
+print(publisherHostObj.loadRegistryOfTenant("wso2.com"));
 print("==");
 //23
 print(publisherHostObj.searchAccessTokens("*:*"));

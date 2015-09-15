@@ -24,5 +24,8 @@ public class APIMIntegrationConstants {
     public static final String AM_PRODUCT_GROUP_NAME = "APIM";
     public static final String AM_STORE_INSTANCE = "store";
     public static final String AM_PUBLISHER_INSTANCE = "publisher";
-    public static final String AM_GATEWAY_INSTANCE = "gateway";
+    public static final String AM_GATEWAY_MGT_INSTANCE = "gateway-mgt";
+    public static final String AM_GATEWAY_WRK_INSTANCE = "gateway-wrk";
+    public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
+    public static final String BACKEND_SERVER_INSTANCE = "backend-server";
 }
