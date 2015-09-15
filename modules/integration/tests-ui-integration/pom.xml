@@ -273,6 +273,12 @@ under the License.
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
             <version>${apimserver.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
