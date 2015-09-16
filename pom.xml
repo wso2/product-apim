@@ -479,6 +479,29 @@
                 <version>2.1</version>
             </dependency>
 
+            <!-- MT dashboard -->
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.ui.menu.stratos</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wso2.carbon</groupId>
+                        <artifactId>org.wso2.carbon.statistics.ui</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>2.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.registry.core</artifactId>
+                <version>4.4.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+
             <!--Test framework dependencies -->
             <dependency>
                 <groupId>org.wso2.carbon.automation</groupId>
