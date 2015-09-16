@@ -289,7 +289,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${apimgt.feature.version}
                                 </featureArtifactDef>
-                                <!--featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${stratos.version}</featureArtifactDef-->
+                                <featureArtifactDef>
+                                    org.wso2.am:org.wso2.am.multitenancy.dashboard.ui.feature:${apimserver.version}
+                                </featureArtifactDef>
 
                                 <!-- Registry Features -->
 
@@ -882,6 +884,10 @@
                                     <version>${stratos.version}</version>
                                 </feature-->
                                 <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -1331,10 +1337,10 @@
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
-                                <!--feature>
-                                    <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-                                    <version>${stratos.version}</version>
-                                </feature-->
+                                <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1725,10 +1731,10 @@
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
-                                <!--feature>
-                                     <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-                                    <version>${stratos.version}</version>
-                                </feature-->
+                                <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -2149,10 +2155,10 @@
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
-                                <!--feature>
-                                    <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-                                    <version>${stratos.version}</version>
-                                </feature-->
+                                <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -2633,10 +2639,10 @@
                                     <id>org.wso2.am.styles.feature.group</id>
                                     <version>${apimserver.version}</version>
                                 </feature>
-                                <!--feature>
-                                    <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-                                    <version>${stratos.version}</version>
-                                </feature-->
+                                <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -3113,10 +3119,10 @@
                                     <id>org.wso2.carbon.identity.provider.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <!--feature>
-                                    <id>org.wso2.stratos.apimgt.dashboard.ui.feature.group</id>
-                                    <version>${stratos.version}</version>
-                                </feature-->
+                                <feature>
+                                    <id>org.wso2.am.multitenancy.dashboard.ui.feature.group</id>
+                                    <version>${apimserver.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
