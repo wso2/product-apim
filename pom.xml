@@ -45,6 +45,7 @@
 
     <modules>
         <module>modules/styles</module>
+        <module>modules/org.wso2.am.multitenancy.dashboard.ui</module>
         <module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
         <module>modules/org.wso2.stratos.apimgt.login.ui</module>
         <module>modules/features</module>

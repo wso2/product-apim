@@ -39,7 +39,7 @@
                 <artifactId>carbon-p2-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>p2-feature-generation</id>
+                        <id>4-p2-feature-generation</id>
                         <phase>package</phase>
                         <goals>
                             <goal>p2-feature-gen</goal>
