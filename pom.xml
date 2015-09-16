@@ -856,6 +856,7 @@
         <carbon.kernel.version>4.4.1</carbon.kernel.version>
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <apim.version>4.3.0-SNAPSHOT</apim.version>
+        <ws.feature.version>1.4.2</ws.feature.version>
 
         <carbon.commons.version>4.4.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
@@ -873,7 +874,7 @@
         <carbon.analytics.version>1.0.1</carbon.analytics.version>
 
         <!--jaggery-->
-        <org.jaggery.version>0.10.1</org.jaggery.version>
+        <org.jaggery.version>0.11.0</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.4.1</carbon.multitenancy.version>
