@@ -31,6 +31,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -98,7 +99,7 @@ public class APICreationInvocationTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Sample Application Creation", dependsOnMethods = "testAPIPublishing")
     public void testApplicationCreation() throws Exception {
-        HttpResponse serviceResponse = apiStore.addApplication(appName, "Gold", "", "this-is-test");
+        HttpResponse serviceResponse = apiStore.addApplication(appName, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
         verifyResponse(serviceResponse);
 
     }
