@@ -490,12 +490,12 @@
                         <artifactId>org.wso2.carbon.statistics.ui</artifactId>
                     </exclusion>
                 </exclusions>
-                <version>2.2.0</version>
+                <version>${stratos.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.registry.core</artifactId>
-                <version>4.4.1</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.am</groupId>
