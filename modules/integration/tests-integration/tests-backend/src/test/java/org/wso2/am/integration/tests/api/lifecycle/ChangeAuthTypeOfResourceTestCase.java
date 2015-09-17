@@ -80,13 +80,13 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
                 storeContext.getContextTenant().getContextUser().getPassword());
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
+        //Create application
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke a resource with auth type Application And Application User")
     public void testInvokeResourceWithAuthTypeApplicationAndApplicationUser() throws Exception {
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);

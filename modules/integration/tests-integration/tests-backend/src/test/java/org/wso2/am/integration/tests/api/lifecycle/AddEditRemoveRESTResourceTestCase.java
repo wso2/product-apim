@@ -136,8 +136,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (Exception e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("java.io.IOException: Server returned HTTP response code:" +
-                    " 403 for URL: " + postEndPointURL), "Not Return IOException " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code:" +
+                    " 403 for URL: " + postEndPointURL), "Not Returned exception " +
                     "with 403 when accessing a POST resource which is not define yet");
         }
 
@@ -276,8 +276,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (Exception e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("java.io.IOException: Server returned HTTP response code:" +
-                    " 403 for URL: " + postEndPointURL), "Not Return IOException " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code:" +
+                    " 403 for URL: " + postEndPointURL), "Not Returned exception " +
                     "with 403 when accessing a POST resource after deleting the POST resource from API.");
         }
     }

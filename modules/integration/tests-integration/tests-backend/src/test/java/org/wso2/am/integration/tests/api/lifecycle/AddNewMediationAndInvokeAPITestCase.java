@@ -92,14 +92,14 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        //Create application
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API before adding the log mediation")
     public void testAPIInvocationBeforeAddingNewMediation() throws APIManagerIntegrationTestException, IOException,
             LogViewerLogViewerException {
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
         //Create publish and subscribe a API
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
