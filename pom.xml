@@ -810,15 +810,12 @@
                 <artifactId>org.jacoco.agent</artifactId>
                 <version>${jacoco.agent.version}</version>
             </dependency>
-<<<<<<< HEAD
-=======
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${google.guava.version}</version>
                 <scope>test</scope>
             </dependency>
->>>>>>> upstream/1.10.x
         </dependencies>
     </dependencyManagement>
 
