@@ -34,7 +34,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -49,16 +48,16 @@ import static org.testng.Assert.assertTrue;
  * test invocation of both old and new API versions."
  */
 public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "DeprecatedAPITest";
-    private static final String API_CONTEXT = "DeprecatedAPI";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/customers/123";
-    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String API_VERSION_2_0_0 = "2.0.0";
-    private static final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
+    private final String API_NAME = "DeprecatedAPITest";
+    private final String API_CONTEXT = "DeprecatedAPI";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_END_POINT_METHOD = "/customers/123";
+    private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String API_VERSION_2_0_0 = "2.0.0";
+    private final String APPLICATION_NAME = "AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase";
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifierAPI1Version1;
     private APIIdentifier apiIdentifierAPI1Version2;
@@ -71,8 +70,8 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0,
                         providerName, new URL(apiEndPointUrl));
@@ -80,23 +79,21 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiIdentifierAPI1Version1 = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifierAPI1Version2 = new APIIdentifier(providerName, API_NAME, API_VERSION_2_0_0);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+
         apiStoreClientUser2 = new APIStoreRestClient(storeURLHttp);
         //Login to API Store with  User2
         apiStoreClientUser2.login(
                 storeContext.getContextTenant().getTenantUserList().get(0).getUserName(),
                 storeContext.getContextTenant().getTenantUserList().get(0).getPassword());
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 
@@ -194,8 +191,7 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of both deprecated old and  " +
             "publish new API versions", dependsOnMethods = "testSubscribeOldVersionAfterDeprecate")
-    public void testAccessibilityOfDeprecateOldAPIAndPublishedCopyAPI() throws APIManagerIntegrationTestException,
-            IOException {
+    public void testAccessibilityOfDeprecateOldAPIAndPublishedCopyAPI() throws Exception {
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
@@ -204,14 +200,14 @@ public class AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase extends 
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(),
                 HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
         //Invoke new version
-        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT +
-                "/" + API_VERSION_2_0_0 + API_END_POINT_METHOD, requestHeaders);
+        HttpResponse newVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,
+                 API_VERSION_2_0_0 ) + API_END_POINT_METHOD, requestHeaders);
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched");
         assertTrue(newVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");

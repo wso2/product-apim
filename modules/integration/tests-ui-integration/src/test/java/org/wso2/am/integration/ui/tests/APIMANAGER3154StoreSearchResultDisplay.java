@@ -61,8 +61,8 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
         WebElement userNameField = driver.findElement(By.id("username"));
         WebElement passwordField = driver.findElement(By.id("pass"));
 
-        userNameField.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
-        passwordField.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        userNameField.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
+        passwordField.sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.id("loginButton")).click();
 
         // Adding 13 APIS
@@ -155,8 +155,8 @@ public class APIMANAGER3154StoreSearchResultDisplay extends APIMIntegrationUiTes
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }

@@ -44,7 +44,7 @@ public class JmeterTestCases extends APIMIntegrationBaseTest {
 
         init();
 
-        serverConfigurationManager = new ServerConfigurationManager(apimContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
 
         File axis2xmlFile = new File(carbonHome + File.separator + "repository" + File.separator + "conf"

@@ -60,9 +60,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 	public void testPublishApiWithOutEnvironmentTabSelection() throws Exception {
 
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -110,9 +110,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 	@Test(groups = "wso2.am", description = "published with select environments section", enabled = false)
 	public void testPublishApiWithEnvironmentTabSelection() throws Exception {
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -164,9 +164,9 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 	@Test(groups = "wso2.am", description = "published with deselect environment")
 	public void testPublishApiWithDeSelectEnvironment() throws Exception {
 		driver.findElement(By.id("username")).clear();
-		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		driver.findElement(By.id("username")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
 		driver.findElement(By.id("pass")).clear();
-		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+		driver.findElement(By.id("pass")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
 		driver.findElement(By.id("loginButton")).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
 		driver.findElement(By.linkText("Add")).click();
@@ -218,8 +218,8 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
 		driver.quit();
 	}

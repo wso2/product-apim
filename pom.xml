@@ -45,6 +45,7 @@
 
     <modules>
         <module>modules/styles</module>
+        <module>modules/org.wso2.am.multitenancy.dashboard.ui</module>
         <module>modules/org.wso2.stratos.apimgt.dashboard.ui</module>
         <module>modules/org.wso2.stratos.apimgt.login.ui</module>
         <module>modules/features</module>
@@ -479,6 +480,29 @@
                 <version>2.1</version>
             </dependency>
 
+            <!-- MT dashboard -->
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.ui.menu.stratos</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wso2.carbon</groupId>
+                        <artifactId>org.wso2.carbon.statistics.ui</artifactId>
+                    </exclusion>
+                </exclusions>
+                <version>${stratos.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.registry.core</artifactId>
+                <version>${carbon.kernel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.am.multitenancy.dashboard.ui</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+
             <!--Test framework dependencies -->
             <dependency>
                 <groupId>org.wso2.carbon.automation</groupId>
@@ -594,7 +618,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.deployment</groupId>
                 <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.deployment.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.mediation</groupId>
@@ -786,6 +810,15 @@
                 <artifactId>org.jacoco.agent</artifactId>
                 <version>${jacoco.agent.version}</version>
             </dependency>
+<<<<<<< HEAD
+=======
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${google.guava.version}</version>
+                <scope>test</scope>
+            </dependency>
+>>>>>>> upstream/1.10.x
         </dependencies>
     </dependencyManagement>
 
@@ -825,18 +858,19 @@
         <apimgt.oidc.version>4.3.0-SNAPSHOT</apimgt.oidc.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.4.6</carbon.registry.version>
-        <carbon.registry.package.import.version.range>[4.4.1, 4.5.0)</carbon.registry.package.import.version.range>
+        <carbon.registry.version>4.4.8</carbon.registry.version>
+        <carbon.registry.package.import.version.range>[4.4.8, 4.5.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.5.3</carbon.governance.version>
-        <carbon.governance.ext.version>4.4.1-SNAPSHOT</carbon.governance.ext.version>
+        <carbon.governance.version>4.5.8</carbon.governance.version>
+        <carbon.governance.ext.version>4.4.8</carbon.governance.ext.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.1</carbon.kernel.version>
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <apim.version>4.3.0-SNAPSHOT</apim.version>
+        <ws.feature.version>1.4.2</ws.feature.version>
 
         <carbon.commons.version>4.4.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
@@ -854,7 +888,7 @@
         <carbon.analytics.version>1.0.1</carbon.analytics.version>
 
         <!--jaggery-->
-        <org.jaggery.version>0.10.1</org.jaggery.version>
+        <org.jaggery.version>0.11.0</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.4.1</carbon.multitenancy.version>
@@ -907,7 +941,6 @@
 
         <carbon.automation.version>4.4.2</carbon.automation.version>
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
-        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <org.apache.cxf.version>2.7.2</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
@@ -942,6 +975,9 @@
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
         <identity.core.version>4.2.7</identity.core.version>
         <bam.feature.version>4.2.6</bam.feature.version>
+        <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
+        <google.guava.version>16.0.1</google.guava.version>
+
 
     </properties>
 

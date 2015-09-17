@@ -63,12 +63,12 @@ public class SubscriptionAvailabilityTestCase extends APIMIntegrationUiTestBase 
 	@Test(groups = "wso2.am", description = "This method adds and publishes the Test API in carbon.super store")
     public void testcreateAndPublishAPI() throws Exception {
 		String loginURL = getPublisherURL();
-		HttpContext httpContext = TestUtil.login(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword(), loginURL);
+		HttpContext httpContext = TestUtil.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword(), loginURL);
 	
-		assertTrue(TestUtil.addAPI(gatewayContext.getContextTenant().getContextUser().getUserName(),
+		assertTrue(TestUtil.addAPI(publisherContext.getContextTenant().getContextUser().getUserName(),
                 TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
-		assertTrue(TestUtil.publishAPI(gatewayContext.getContextTenant().getContextUser().getUserName(),
+		assertTrue(TestUtil.publishAPI(publisherContext.getContextTenant().getContextUser().getUserName(),
                 TEST_DATA_API_NAME, TEST_DATA_API_VERSION, httpContext, loginURL));
 		
         System.out.println("API Create and Publish test case is completed ");
@@ -82,8 +82,8 @@ public class SubscriptionAvailabilityTestCase extends APIMIntegrationUiTestBase 
     public void testTenantCreation() throws Exception {
 
         LoginPage test = new LoginPage(driver);
-        test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+        test.loginAs(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         addNewTenantHome.addNewTenant(TEST_DATA_TENANT_DOMAIN, TEST_DATA_TENANT_FIRST_NAME, TEST_DATA_TENANT_LAST_NAME, 
@@ -128,11 +128,11 @@ public class SubscriptionAvailabilityTestCase extends APIMIntegrationUiTestBase 
         //select API
         driver.navigate().to(getStoreURL() + "/apis/info?name=" + TEST_DATA_API_NAME
                              + "&version=" + TEST_DATA_API_VERSION + "&provider=" +
-                gatewayContext.getContextTenant().getContextUser().getUserName() + "&tenant=" + SUPER_TENANT_DOMAIN_NAME);
+                storeContext.getContextTenant().getContextUser().getUserName() + "&tenant=" + SUPER_TENANT_DOMAIN_NAME);
         
       
         assertFalse(driver.getPageSource().contains("subscribe-button"), "Subscription availability of " +
-                gatewayContext.getContextTenant().getContextUser().getUserName() + "-"
+                storeContext.getContextTenant().getContextUser().getUserName() + "-"
         				+ TEST_DATA_API_NAME + "-" + TEST_DATA_API_VERSION + " is \'Available to current Tenant only\'. " +
         						"Hence Subscribe option shouldn't be visible to Tenant " + TEST_DATA_TENANT_DOMAIN);
         driver.close();

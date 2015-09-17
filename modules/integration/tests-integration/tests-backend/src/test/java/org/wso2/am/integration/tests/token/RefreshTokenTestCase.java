@@ -24,6 +24,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -31,6 +32,8 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
@@ -49,15 +52,25 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
+    private static String backEndEndpointUrl;
 
     @Factory(dataProvider = "userModeDataProvider")
     public RefreshTokenTestCase(TestUserMode userMode) {
         this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -69,27 +82,30 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
-        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
-                            "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
-                            File.separator + "jaxrs_basic.war";
 
-        String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
-                            "deployment" + File.separator + "server" + File.separator + "webapps";
+            String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
+                                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
+                                File.separator + "jaxrs_basic.war";
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
-        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
+            String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
+                                "deployment" + File.separator + "server" + File.separator + "webapps";
+
+            //serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
+            backEndEndpointUrl = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
+
+            serverConfigurationManager = new ServerConfigurationManager(
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                          APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                             "tokenTest" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                             "tokenTest" + File.separator + "log4j.properties"));
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
-
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext("APIM", "gateway", TestUserMode.SUPER_TENANT_ADMIN));
-        serverConfigurationManager.applyConfigurationWithoutRestart(
-                new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-                         "tokenTest" + File.separator + "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(
-                new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-                         "tokenTest" + File.separator + "log4j.properties"));
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -102,22 +118,21 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         String APIName = "RefreshTokenTestAPI";
         String APIContext = "refreshTokenTestAPI";
         String tags = "sample, token, media";
-        String url = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
-        String name = publisherContext.getSuperTenant().getContextUser().getUserName();
-        String password = publisherContext.getSuperTenant().getContextUser().getPassword();
+        //String name = publisherContext.getSuperTenant().getContextUser().getUserName();
+        //String password = publisherContext.getSuperTenant().getContextUser().getPassword();
         String APIVersion = "1.0.0";
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                            publisherContext.getContextTenant().getContextUser().getPassword());
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(backEndEndpointUrl));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
-        apiRequest.setSandbox(url);
-        apiRequest.setProvider(name);
+        apiRequest.setSandbox(backEndEndpointUrl);
+        apiRequest.setProvider(user.getUserName());
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
-                new APILifeCycleStateRequest(APIName, name, APILifeCycleState.PUBLISHED);
+                new APILifeCycleStateRequest(APIName, user.getUserName(), APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
@@ -147,8 +162,8 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
 
         //Obtain user access token
         Thread.sleep(2000);
-        String requestBody = "grant_type=password&username=" + name + "&password=" + password + "&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=" + user.getPassword() + "&scope=PRODUCTION";
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                                                tokenEndpointURL).getData());
@@ -163,13 +178,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("accept", "text/xml");
         Thread.sleep(2000);
 
-        String apiUrl;
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            apiUrl = gatewayUrls.getWebAppURLNhttp() + "refreshTokenTestAPI/1.0.0/customers/123";
-        } else {
-            apiUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() +
-                     "/refreshTokenTestAPI/1.0.0/customers/123";
-        }
+        String apiUrl = getAPIInvocationURLHttp("refreshTokenTestAPI/1.0.0/customers/123");
 
         HttpResponse httpResponse = HttpRequestUtil.doGet(apiUrl, requestHeaders);
         //check JWT headers here
@@ -207,17 +216,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("RefreshTokenTestAPI-Application");
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 }
