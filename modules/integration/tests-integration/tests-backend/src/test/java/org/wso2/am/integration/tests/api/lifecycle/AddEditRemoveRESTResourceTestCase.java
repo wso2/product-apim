@@ -137,7 +137,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
             exceptionMessage = e.getMessage();
         } finally {
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 403"), "Not Return IOException with 403 when accessing a " +
-                                                                  "POST resource after deleting the POST resource from API. "
+                                                                  "POST resource which is not define yet. "
                                                                   + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }

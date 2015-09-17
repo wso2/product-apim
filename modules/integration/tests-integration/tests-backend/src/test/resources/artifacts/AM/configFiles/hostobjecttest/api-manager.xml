@@ -452,7 +452,7 @@
         <APIs>
             <API>
                 <Context>/resource</Context>
-                <Endpoint>http://localhost:9764/resource</Endpoint>
+                <Endpoint>http://localhost:10264/resource</Endpoint>
                 <Provider>admin</Provider>
                 <Version>1.0.0</Version>
                 <IconPath>none</IconPath>

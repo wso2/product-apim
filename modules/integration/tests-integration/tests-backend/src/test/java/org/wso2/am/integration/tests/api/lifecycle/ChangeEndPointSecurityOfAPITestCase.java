@@ -79,6 +79,8 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         requestHeadersGet.put("accept", "text/plain");
         requestHeadersGet.put("Content-Type", "text/plain");
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+        //Create application
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 
@@ -89,8 +91,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         char[] endpointPassword = {'a', 'd', 'm', 'i', 'n', '1', '2', '3'};
         byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
         String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
+
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));

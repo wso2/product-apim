@@ -88,7 +88,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         apiPublisherRestClient.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
-        apiStoreRestClient.addApplication(APPLICATION_NAME, "Unlimited", "", "");
+        apiStoreRestClient.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
 
     }
 
