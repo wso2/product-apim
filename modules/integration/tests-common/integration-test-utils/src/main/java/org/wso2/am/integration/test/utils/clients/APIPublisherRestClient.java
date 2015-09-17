@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.test.utils.clients;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class APIPublisherRestClient {
+    private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
     private String backendURL;
     private static final String URL_SUFFIX = "publisher/site/blocks";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
@@ -56,6 +59,7 @@ public class APIPublisherRestClient {
     public HttpResponse login(String userName, String password)
             throws APIManagerIntegrationTestException {
         HttpResponse response;
+        log.info("Login to Publisher " + backendURL + " as the user " + userName);
         try {
             response =
                     HttpRequestUtil.doPost(

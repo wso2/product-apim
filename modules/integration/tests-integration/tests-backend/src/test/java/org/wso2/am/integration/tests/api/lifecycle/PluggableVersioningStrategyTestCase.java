@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -42,14 +41,14 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
     private static final Log log = LogFactory.getLog(PluggableVersioningStrategyTestCase.class);
 
-    private static final String API_NAME = "PluggableVersionTestAPI";
-    private static final String API_CONTEXT = "{version}/PluggableVersionTestAPI";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/PluggableVersionTestAPI";
-    private static final String API_TAGS = "Pluggable, Version, testTag3";
-    private static final String API_DESCRIPTION = "This is test API to test pluggable version strategy";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String APPLICATION_NAME = "PluggableVersionTestApp";
+    private final String API_NAME = "PluggableVersionTestAPI";
+    private final String API_CONTEXT = "{version}/PluggableVersionTestAPI";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/PluggableVersionTestAPI";
+    private final String API_TAGS = "Pluggable, Version, testTag3";
+    private final String API_DESCRIPTION = "This is test API to test pluggable version strategy";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String APPLICATION_NAME = "PluggableVersionTestApp";
     private String providerName;
     private APIIdentifier apiIdentifier;
     private APIPublisherRestClient apiPublisherClientUser;
@@ -62,18 +61,16 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        String apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
 
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
@@ -85,7 +82,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
     }
 
     @Test(groups = {"wso2.am"}, description = "This test method tests the pluggable versioning stratergy")
-    public void testPluggableVersioningStratergy() throws APIManagerIntegrationTestException,
+    public void testPluggableVersioningStratergy() throws Exception,
             IOException, LogViewerLogViewerException {
 
         //Create an application with gold tier
@@ -107,7 +104,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + INVOKABLE_API_CONTEXT + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +

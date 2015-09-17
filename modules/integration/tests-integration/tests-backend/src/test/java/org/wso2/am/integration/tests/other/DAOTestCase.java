@@ -31,11 +31,14 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.servers.utils.ClientConnectionUtil;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -48,11 +51,14 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class DAOTestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(DAOTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private String providerName ;
+    private int port;
+
 
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -60,18 +66,27 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         this.userMode = userMode;
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttps());
-        apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        port = Integer.parseInt(publisherContext.getDefaultInstance().getPorts().get("http"));
+        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
+        apiStore = new APIStoreRestClient(getStoreURLHttp());
+        providerName = user.getUserName();
 
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(user.getUserName(),
+                user.getPassword());
 
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStore.login(user.getUserName(),
+                user.getPassword());
 
     }
 
@@ -158,17 +173,17 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Test application object")
-    public void testApplication() {
+    public void testApplication() throws XPathExpressionException {
         String fileName = "testPublisher.jag";
         String sourcePath = computeSourcePath(fileName);
         String destinationPath = computeDestPath(fileName);
         copySampleFile(sourcePath, destinationPath);
-        ClientConnectionUtil.waitForPort(9763, "");
+        ClientConnectionUtil.waitForPort(port, "");
 
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(getPublisherURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -180,7 +195,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
 
             in.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
         } finally {
             //    assertNotNull(finalOutput, "Result cannot be null");
         }
@@ -188,13 +203,13 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Test application operations")
-    public void testApplicationOperations() {
-        ClientConnectionUtil.waitForPort(9763, "");
+    public void testApplicationOperations() throws XPathExpressionException {
+        ClientConnectionUtil.waitForPort(port, "");
 
         String finalOutput = null;
 
         try {
-            URL jaggeryURL = new URL(publisherUrls.getWebAppURLHttp()+"testapp/testPublisher.jag");
+            URL jaggeryURL = new URL(getPublisherURLHttp()+"/testapp/testPublisher.jag");
             URLConnection jaggeryServerConnection = jaggeryURL.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     jaggeryServerConnection.getInputStream()));
@@ -206,7 +221,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
 
             in.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
         } finally {
             //   assertEquals(finalOutput, "test jaggery application value");
         }
@@ -216,16 +231,6 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("DAOTestAPI-Application");
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
-    }
 }

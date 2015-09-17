@@ -67,8 +67,8 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
         //Publisher activities
         PublisherLoginPage pubLoginPage = new PublisherLoginPage(driver);
         PublisherHomePage publisherHomePage = pubLoginPage.loginAs(
-                gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+                gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         publisherHomePage.createNewAPI(API_NAME, API_CONTEXT, API_VERSION, API_DESCRIPTION, API_URL, TAG_NAMES);
         //Test Publishing API
         assertEquals(publisherHomePage.getAPIViewText(), API_DESCRIPTION, API_DESCRIPTION + " Should appear in API List");
@@ -76,8 +76,8 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
         //Navigate to Store
         driver.get(getStoreURL() + "/?tenant=carbon.super" );
         StoreHomePage storeHomePage = new StoreHomePage(driver);
-        storeHomePage.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword());
+        storeHomePage.loginAs(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                gatewayContextMgt.getContextTenant().getContextUser().getPassword());
 
         APIAccessInfo apiAccessInfo = storeHomePage.doSubscribe(API_NAME + APIMTestConstants.HYPHEN + API_VERSION);
 
@@ -91,8 +91,8 @@ public class YouTubeUIPagesTestCase extends APIMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }

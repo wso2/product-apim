@@ -116,7 +116,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         httpResponse = apiPublisher.deleteAPI(apiNameFaultyAPI, "1.0.0"
                 , publisherContext.getSuperTenant().getContextUser().getUserName());
         checkError(httpResponse.getData(), "Error deleting API " + apiNameFaultyAPI);
-        super.cleanup();
+        super.cleanUp();
     }
 
     @Test(groups = {"wso2.am"}, description = "APIM - BAM Integration API Usage statistics analysis test")
@@ -232,7 +232,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
                                                              + "UsageTestAPI/1.0.0?format=json&action" +
                                                              "=query&titles=MainPage&prop=revisions&rvprop=content",
                                                              requestHeaders);
@@ -240,7 +240,7 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
         assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
         //Here will do 20 successful invocations
         for (int i = 0; i < 10; i++) {
-            youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+            youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
                                                     + "UsageTestAPI/1.0.0?format=json&action=query" +
                                                     "&titles=MainPage&prop=revisions&rvprop=content",
                                                     requestHeaders);
@@ -255,14 +255,14 @@ public class APIUsageBAMIntegrationTestCase extends APIMIntegrationBaseTest {
                 get("accessToken").toString();
         Map<String, String> requestHeadersFaultyAPI = new HashMap<String, String>();
         requestHeadersFaultyAPI.put("Authorization", "Bearer " + accessTokenFaultyAPI);
-        HttpResponse youTubeResponseFaultyAPI = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+        HttpResponse youTubeResponseFaultyAPI = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
                                                                       + "UsageTestAPIFaultyAPI/1.0.0" +
                                                                       "?format=json&action=query&titles=MainPage" +
                                                                       "&prop=revisions&rvprop=content"
                 , requestHeadersFaultyAPI);
         assertEquals(youTubeResponseFaultyAPI.getResponseCode(), 500, "Response code mismatched");
         for (int i = 0; i < 10; i++) {
-            youTubeResponseFaultyAPI = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp()
+            youTubeResponseFaultyAPI = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
                                                              + "UsageTestAPIFaultyAPI/1.0.0?format=json" +
                                                              "&action=query&titles=MainPage&prop=revisions&rvprop=content"
                     , requestHeadersFaultyAPI);

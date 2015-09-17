@@ -29,6 +29,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -46,14 +47,14 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         super.init();
         wireServer = new WireMonitorServer(8991);
 
-        AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
+        AuthenticatorClient login = new AuthenticatorClient(gatewayContextMgt.getContextUrls().getBackEndUrl());
         String session = login.login("admin", "admin", "localhost");
         // Upload the synapse
         String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
                       File.separator + "property" + File.separator +
                       "CONTENT_TYPE_TEST.xml";
-        OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
-        apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
+        OMElement synapseConfig = APIMTestCaseUtils.loadResource(file);
+        APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                      session);
         Thread.sleep(5000);
     }
@@ -66,7 +67,7 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
         wireServer.start();
 
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(gatewayUrls.getWebAppURLNhttp() + "ContentTypeAPI");
+        HttpPost httppost = new HttpPost(gatewayUrlsWrk.getWebAppURLNhttp() + "ContentTypeAPI");
 
         String relativeFilePath = "/artifacts/AM/synapseconfigs/property/CONTENT_TYPE_TEST.xml";
         relativeFilePath = relativeFilePath.replaceAll("[\\\\/]", File.separator);
@@ -98,7 +99,7 @@ public class APIMANAGER3357ContentTypeTestCase extends APIMIntegrationBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void stop() throws APIManagerIntegrationTestException {
-        cleanup();
+    public void stop() throws Exception {
+        cleanUp();
     }
 }

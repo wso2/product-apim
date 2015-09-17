@@ -19,6 +19,8 @@
 package org.wso2.am.integration.test.utils.clients;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,10 +35,13 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.testng.Assert.assertFalse;
+
 /**
  * Provides set of method to invoke publisher API
  */
 public class APIStoreRestClient {
+    private static final Log log = LogFactory.getLog(APIStoreRestClient.class);
     private String backendURL;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
 
@@ -58,6 +63,7 @@ public class APIStoreRestClient {
     public HttpResponse login(String userName, String password)
             throws APIManagerIntegrationTestException {
         HttpResponse response;
+        log.info("Login to Store " + backendURL + " as the user " + userName );
         try {
             response = HttpRequestUtil.doPost(
                     new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
@@ -660,21 +666,40 @@ public class APIStoreRestClient {
     }
 
 
-    /**
-     * Retrieve the API store page as anonymous user.
-     *
-     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
-     * @return HttpResponse - Response with API store page of the provided domain.
-     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
-     */
+//    /**
+//     * Retrieve the API store page as anonymous user.
+//     *
+//     * @param storeTenantDomain - Tenant domain of store that need to  get the page.
+//     * @return HttpResponse - Response with API store page of the provided domain.
+//     * @throws APIManagerIntegrationTestException - IOException throws from HttpRequestUtil.doGet() method call
+//     */
+//
+//    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
+//        try {
+//            return HttpRequestUtil.doGet(
+//                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
+//        } catch (Exception ioE) {
+//            throw new APIManagerIntegrationTestException(
+//                    "Exception when retrieve the API store page as anonymous user", ioE);
+//        }
+//    }
 
-    public HttpResponse getAPIStorePageAsAnonymousUser(String storeTenantDomain) throws APIManagerIntegrationTestException {
+    public HttpResponse getAPIListFromStoreAsAnonymousUser(String tenantDomain) throws APIManagerIntegrationTestException {
         try {
-            return HttpRequestUtil.doGet(
-                    backendURL + "store/?tenant=" + storeTenantDomain, requestHeaders);
-        } catch (Exception ioE) {
+            HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(backendURL + "store/site/blocks/api/recently-added/ajax/list.jag"
+                    , "action=getRecentlyAddedAPIs&tenant=" + tenantDomain);
+
+            if(new JSONObject(httpResponse.getData()).getBoolean("error")){
+                throw new APIManagerIntegrationTestException("Error when getting API list as AsAnonymousUser");
+            }
+
+            return httpResponse;
+        } catch (IOException ioE) {
             throw new APIManagerIntegrationTestException(
-                    "Exception when retrieve the API store page as anonymous user", ioE);
+                    "Exception when retrieve the API list as anonymous user", ioE);
+
+        } catch (JSONException e) {
+            throw new APIManagerIntegrationTestException("Response message is not JSON Response");
         }
     }
 

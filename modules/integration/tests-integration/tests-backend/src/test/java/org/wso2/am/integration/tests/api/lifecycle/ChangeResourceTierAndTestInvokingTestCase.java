@@ -41,15 +41,15 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "ChangeResourceTierAndTestInvokingTest";
-    private static final String API_CONTEXT = "ChangeResourceTierAndTestInvoking";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_END_POINT_METHOD = "/customers/123";
-    private static final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "ChangeResourceTierAndTestInvokingTestCase";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "ChangeResourceTierAndTestInvokingTest";
+    private final String API_CONTEXT = "ChangeResourceTierAndTestInvoking";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_END_POINT_METHOD = "customers/123";
+    private final String API_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String APPLICATION_NAME = "ChangeResourceTierAndTestInvokingTestCase";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIIdentifier apiIdentifier;
@@ -61,8 +61,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp()+ API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
@@ -74,14 +74,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
@@ -108,8 +104,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                            API_END_POINT_METHOD, requestHeaders);
+                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT ,API_VERSION_1_0_0) + "/" +
+                                          API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API , Gold Application level tier" +
@@ -121,8 +117,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         }
 
         currentTime = System.currentTimeMillis();
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API_END_POINT_METHOD, requestHeaders);
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
+        API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API , " +
@@ -153,8 +149,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                            API_END_POINT_METHOD, requestHeaders);
+                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
+                                          API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
@@ -167,8 +163,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         currentTime = System.currentTimeMillis();
 
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API_END_POINT_METHOD, requestHeaders);
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)+ "/" +
+        API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
@@ -198,8 +194,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
-                    HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                            API_END_POINT_METHOD, requestHeaders);
+                    HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
+                                          API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
                             (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
@@ -210,8 +206,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                             " and Gold Resource tier");
         }
         currentTime = System.currentTimeMillis();
-        HttpResponse invokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                API_END_POINT_METHOD, requestHeaders);
+        HttpResponse invokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
+                                                            API_END_POINT_METHOD, requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE,
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +

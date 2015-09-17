@@ -28,6 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -35,6 +36,8 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
@@ -53,6 +56,7 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
@@ -64,6 +68,14 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     @Factory(dataProvider = "userModeDataProvider")
     public TokenAPITestCase(TestUserMode userMode) {
         this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+//                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -84,24 +96,20 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-
         serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext("APIM", "gateway", TestUserMode.SUPER_TENANT_ADMIN));
+                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
 
         serverConfigurationManager.applyConfigurationWithoutRestart(
                 new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
         serverConfigurationManager.applyConfiguration(
                 new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
 
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
+        apiStore = new APIStoreRestClient(getStoreURLHttp());
 
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                       storeContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(user.getUserName(), user.getPassword());
+        apiStore.login(user.getUserName(), user.getPassword());
 
     }
 
@@ -111,7 +119,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String APIName = "TokenTestAPI";
         String APIContext = "tokenTestAPI";
         String tags = "youtube, token, media";
-        String url = gatewayUrls.getWebAppURLHttp() + "jaxrs_basic/services/customers/customerservice";
+        String url = getGatewayURLHttp()+ "jaxrs_basic/services/customers/customerservice";
         String description = "This is test API create by API manager integration test";
         String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
@@ -121,18 +129,13 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
-        apiRequest.setProvider(publisherContext.getContextTenant().getContextUser().getUserName());
+        apiRequest.setProvider(user.getUserName());
         apiPublisher.addAPI(apiRequest);
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(APIName, providerName, APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-        String gatewayUrl;
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
-        } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
-        }
+        String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
 
         // Create application
         apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
@@ -157,7 +160,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
         requestHeadersSandBox.put("Authorization", "Bearer " + SANDbOXAccessToken);
         HttpResponse youTubeResponseSandBox = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123",
+                .doGet(gatewayUrl,
                        requestHeadersSandBox);
         log.info("Response " + youTubeResponseSandBox);
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
@@ -181,7 +184,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                                                tokenEndpointURL).getData()
@@ -200,7 +203,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123", requestHeaders);
+                .doGet(gatewayUrl, requestHeaders);
         //check JWT headers here
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched");
@@ -215,7 +218,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         requestHeaders.put("accept", "text/xml");
         HttpResponse youTubeResponseWithApplicationToken = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123", requestHeaders);
+                .doGet(gatewayUrl, requestHeaders);
         assertEquals(youTubeResponseWithApplicationToken.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched");
         assertTrue(youTubeResponseWithApplicationToken.getData().contains("John"),
@@ -227,14 +230,14 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         //Invoke Https end point
         HttpResponse youTubeResponseWithApplicationTokenHttps = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123", requestHeaders);
+                .doGet(gatewayUrl, requestHeaders);
         log.info("Response " + youTubeResponseWithApplicationTokenHttps);
         assertEquals(youTubeResponseWithApplicationTokenHttps.getResponseCode(), 200, "Response code mismatched");
 
         HttpResponse errorResponse = null;
         for (int i = 0; i < 40; i++) {
             errorResponse = HttpRequestUtil
-                    .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123",
+                    .doGet(gatewayUrl,
                            requestHeaders);
         }
 
@@ -243,7 +246,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                      "Response code mismatched while token API test case");
         Thread.sleep(60000);
         errorResponse = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123", requestHeaders);
+                .doGet(gatewayUrl, requestHeaders);
         log.info("Error response " + errorResponse);
 
         apiPublisher.revokeAccessToken(accessToken, consumerKey, providerName);
@@ -251,7 +254,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + "this-is-incorrect-token");
         requestHeaders.put("accept", "text/xml");
         errorResponse = HttpRequestUtil
-                .doGet(gatewayUrl + "tokenTestAPI/1.0.0/customers/123", requestHeaders);
+                .doGet(gatewayUrl, requestHeaders);
         assertEquals(errorResponse.getResponseCode(), 401,
                      "Response code mismatched while token API test case");
         //TODO handle this in automation core level
@@ -265,7 +268,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                     .append("<GetMyName xmlns=\"http://tempuri.org/\"><name>Sam</name></GetMyName>");
             soapRequest.append("</soap:Body></soap:Envelope>");
             errorResponse = HttpRequestUtil
-                    .doPost(new URL(gatewayUrl + "tokenTestAPI/1.0.0/most_popular"),
+                    .doPost(new URL(getAPIInvocationURLHttp("tokenTestAPI/1.0.0/most_popular")),
                             soapRequest.toString(), requestHeaders);
             log.info("Error Response " + errorResponse);
         } catch (Exception e) {
@@ -278,17 +281,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("TokenTestAPI-Application");
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 }
