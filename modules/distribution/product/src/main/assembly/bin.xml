@@ -56,6 +56,19 @@
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v9.jar</exclude>
                 <exclude>**/repository/components/plugins/nimbus-jose-jwt_2.26.1.wso2v2.jar</exclude>
+                <exclude>**/repository/components/plugins/net.minidev.json-smart_1.2.0.jar</exclude>
+                <!--<exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v10.jar</exclude>-->
+                <exclude>**/repository/components/plugins/rampart-trust_1.6.1.wso2v14.jar</exclude>
+                <exclude>**/repository/components/plugins/rampart-policy_1.6.1.wso2v14.jar</exclude>
+                <exclude>**/repository/components/plugins/rampart-core_1.6.1.wso2v14.jar</exclude>
+                <exclude>**/repository/components/plugins/commons-io_2.0.0.wso2v2.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.gson_2.1.0.jar</exclude>
+                <exclude>**/repository/components/plugins/com.google.gson_2.2.4.jar</exclude>
+                <!--<exclude>**/repository/components/plugins/org.wso2.carbon.captcha.mgt_4.2.0.jar</exclude>-->
+                <exclude>**/repository/components/plugins/guava_12.0.0.wso2v1.jar</exclude>
+                <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
+                <!--<exclude>**/repository/components/plugins/compass_2.0.1.wso2v2.jar</exclude>-->
+                <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
