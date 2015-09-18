@@ -46,9 +46,6 @@
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/identity.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
-                <exclude>**/dbscripts/mysql.sql</exclude>
-                <exclude>**/dbscripts/db2.sql</exclude>
-                <exclude>**/dbscripts/mysql_cluster.sql</exclude>
         	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
                 <exclude>**/secret-conf.properties</exclude>

@@ -68,12 +68,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    protected static String gatewayWebAppUrl;
+    //protected static String gatewayWebAppUrl;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws APIManagerIntegrationTestException {
         super.init();
-        gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
+        //gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
     }
 
     /**
@@ -156,7 +156,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected void deleteAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
-        try {
+
             HttpResponse deleteHTTPResponse =
                     publisherRestClient.deleteAPI(apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                             apiIdentifier.getProviderName());
@@ -167,10 +167,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                         "Response Code:" + deleteHTTPResponse.getResponseCode() +
                         " Response Data :" + deleteHTTPResponse.getData());
             }
-
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when delete a API", e);
-        }
     }
 
     /**

@@ -66,8 +66,8 @@ public class APIMANAGER3363StoreAPIConsoleWithReverseProxy extends APIMIntegrati
     @Test(groups = "wso2.am", description = "Create tenant and api")
     public void createTenantAndAPI() throws Exception {
         LoginPage login = new LoginPage(driver);
-        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword());
+        login.loginAs(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                      gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";

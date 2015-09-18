@@ -35,17 +35,18 @@ import java.io.File;
 /**
  * Change the api-manager.xml file before start the test suit and  restore it after  all test executions are finished.
  */
+//@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
 
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
     private ServerConfigurationManager serverManager;
-    private static final String APIM_CONFIG_XML = "api-manager.xml";
-    private static final String WEB_APP_NAME = "jaxrs_basic";
-    private static final String WEB_APP_FILE_NAME = "jaxrs_basic.war";
+    private final String APIM_CONFIG_XML = "api-manager.xml";
+    private final String WEB_APP_NAME = "jaxrs_basic";
+    private final String WEB_APP_FILE_NAME = "jaxrs_basic.war";
     private String targetPathInServer;
     private String sessionId;
 
-    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+
     @BeforeTest(alwaysRun = true)
     public void startChangeAPIMConfigureXml() throws Exception {
         super.init();
@@ -57,9 +58,9 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + APIM_CONFIG_XML;
         File sourceFile = new File(apimConfigArtifactLocation);
         File targetFile = new File(apimRepositoryConfigLocation);
-        serverManager = new ServerConfigurationManager(gatewayContext);
+        serverManager = new ServerConfigurationManager(gatewayContextWrk);
         //apply configuration to  api-manager.xml
-        serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
+       serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
         log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
                 " to :" + apimRepositoryConfigLocation);
 
@@ -70,18 +71,18 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                 CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
                         "server" + File.separator + "webapps" + File.separator + WEB_APP_FILE_NAME;
 
-        sessionId = createSession(gatewayContext);
+        sessionId = createSession(gatewayContextMgt);
         WebAppAdminClient webAppAdminClient =
-                new WebAppAdminClient(gatewayContext.getContextUrls().getBackEndUrl(), sessionId);
+                new WebAppAdminClient(gatewayContextMgt.getContextUrls().getBackEndUrl(), sessionId);
         webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContext.getContextUrls().getBackEndUrl(),
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                 sessionId, WEB_APP_NAME);
         serverManager.restartGracefully();
 
 
     }
 
-    @AfterTest(alwaysRun = true)
+   @AfterTest(alwaysRun = true)
     public void startRestoreAPIMConfigureXml() throws Exception {
         serverManager.restoreToLastConfiguration();
         log.info("Restore the api-manager.xml configuration file");

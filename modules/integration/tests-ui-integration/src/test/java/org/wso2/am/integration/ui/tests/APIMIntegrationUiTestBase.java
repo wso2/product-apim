@@ -38,10 +38,10 @@ public class APIMIntegrationUiTestBase extends APIMIntegrationBaseTest {
     }
 
     protected String getAdminDashboardURL() throws Exception{
-        return gatewayUrls.getWebAppURLHttps() + "admin-dashboard";
+        return publisherUrls.getWebAppURLHttps() + "admin-dashboard";
     }
 
     protected String getLoginURL() throws XPathExpressionException {
-        return UrlGenerationUtil.getLoginURL(gatewayContext.getInstance());
+        return UrlGenerationUtil.getLoginURL(publisherContext.getInstance());
     }
 }

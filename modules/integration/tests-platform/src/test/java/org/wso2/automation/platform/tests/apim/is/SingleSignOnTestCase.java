@@ -150,7 +150,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
     }
 
     @Test(description = "Login to publisher using username and password", groups = "wso2.apim.is")

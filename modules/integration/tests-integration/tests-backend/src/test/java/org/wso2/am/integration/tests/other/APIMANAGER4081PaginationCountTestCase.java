@@ -18,9 +18,8 @@
 
 package org.wso2.am.integration.tests.other;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -64,10 +63,10 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
             // create a tenant
             TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                    gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
+                    keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
             tenantManagementServiceClient.addTenant(tenantDomain,
-                    gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
-                    gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+                    keyManagerContext.getContextTenant().getTenantAdmin().getPassword(),
+                    keyManagerContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
 
         } catch (XPathExpressionException e) {
             assertTrue(false, "Error occurred while retrieving context. Pagination count test case failed.");
@@ -82,7 +81,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
 
     @Test(groups = {"wso2.am"}, description = "Pagination test case")
-    public void testPagination() {
+    public void testPagination() throws Exception {
 
         int numberOfAPIs = 24;
         boolean isLoginSuccess = false;
@@ -174,7 +173,8 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
      * @param offset offset from the starting index of the API list
      * @return number of APIs in each page
      */
-    private int getPaginationElementsCount(String storeUrl, String loginResponseCookie, int start, int offset){
+    private int getPaginationElementsCount(String storeUrl, String loginResponseCookie, int start, int offset)
+            throws JSONException {
 
         String paginationUrl = storeUrl + "store/site/blocks/api/listing/ajax/list.jag?" +
                 "action=getAllPaginatedPublishedAPIs&" +
@@ -198,22 +198,19 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             dataText = paginationFetchResponse.getData();
         }
 
-        JsonElement paginationDataElement = new JsonParser().parse(dataText);
-        JsonObject paginationDataObject = paginationDataElement.getAsJsonObject();
+        JSONObject paginationDataObject = new JSONObject(dataText);
 
         // the data in response is evaluated further only if the response indicates successful API retrieval
         // that is response for the "error" tag should be "false"
         if ("false".equals(paginationDataObject.get("error").toString())) {
-            numberOfAPIsInCurrentPage = paginationDataObject.get("apis").getAsJsonArray().size();
+            numberOfAPIsInCurrentPage = paginationDataObject.getJSONArray("apis").length();
         }
         return  numberOfAPIsInCurrentPage;
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                gatewayContext.getContextTenant().getContextUser().getPassword(),
-                storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
     }
 
 }

@@ -26,6 +26,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -33,6 +34,8 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -48,6 +51,7 @@ import java.util.Map;
  * This test will cover OpenId based access token generation and validation for users
  * Here we will retrieve access tokens with open id scope and use it for user info API
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -68,7 +72,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
         serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext("APIM", "gateway", TestUserMode.SUPER_TENANT_ADMIN));
+                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
 
         serverConfigurationManager.applyConfigurationWithoutRestart(
                 new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
@@ -123,7 +128,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         String SANDbOXAccessToken = responseSandBOX.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Map<String, String> requestHeadersSandBox = new HashMap<String, String>();
         requestHeadersSandBox.put("Authorization", "Bearer " + SANDbOXAccessToken);
-        HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() +
+        HttpResponse youTubeResponseSandBox = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() +
                                                                     "OpenIDTokenTestAPI/1.0.0/most_popular", requestHeadersSandBox);
         //Assert.assertEquals(youTubeResponseSandBox.getResponseCode(), 202, "Response code mismatched");
 
@@ -141,7 +146,7 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=admin&password=admin&scope=openid";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttps() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttps() + "token");
         JSONObject accessTokenGenerationResponse =
                 new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
                                                               tokenEndpointURL).getData());
@@ -158,15 +163,13 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
 
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrls.getWebAppURLHttp() + "oauth2/userinfo?schema=openid", requestHeaders);
+                .doGet(gatewayUrlsWrk.getWebAppURLHttp() + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -27,31 +28,33 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Create a API with domain visibility and check the visibility in Publisher Store.
  */
 public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "APIVisibilityByDomainTest";
-    private static final String API_CONTEXT = "APIVisibilityByDomain";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String CARBON_SUPER_TENANT2_KEY = "userKey2";
-    private static final String TENANT_DOMAIN_KEY = "wso2.com";
-    private static final String TENANT_DOMAIN_ADMIN_KEY = "admin";
-    private static final String USER_KEY_USER2 = "userKey1";
-    private static final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "APIVisibilityByDomainTest";
+    private final String API_CONTEXT = "APIVisibilityByDomain";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String CARBON_SUPER_TENANT2_KEY = "userKey2";
+    private final String TENANT_DOMAIN_KEY = "wso2.com";
+    private final String TENANT_DOMAIN_ADMIN_KEY = "admin";
+    private final String USER_KEY_USER2 = "userKey1";
+    private final String OTHER_DOMAIN_TENANT_USER_KEY = "user1";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private APIIdentifier apiIdentifier;
     private APIStoreRestClient apiStoreClientCarbonSuperUser2;
@@ -70,24 +73,19 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     private String apiCreatorStoreDomain;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void initialize() throws Exception {
         //Creating CarbonSuper context
-        super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
+        super.init(TestUserMode.SUPER_TENANT_ADMIN);
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
-        apiPublisherClientCarbonSuperAdmin = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherClientCarbonSuperAdmin = new APIPublisherRestClient(getPublisherURLHttp());
         apiStoreClientCarbonSuperAdmin = new APIStoreRestClient(storeURLHttp);
-        apiPublisherClientCarbonSuperAdmin.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
-        apiStoreClientCarbonSuperAdmin.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientCarbonSuperAdmin.login(user.getUserName(),user.getPassword());
+        apiStoreClientCarbonSuperAdmin.login(user.getUserName(), user.getPassword());
 
         //Login to API Publisher adn Store with CarbonSuper normal user1
-        apiPublisherClientCarbonSuperUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherClientCarbonSuperUser1 = new APIPublisherRestClient(getPublisherURLHttp());
         apiStoreClientCarbonSuperUser1 = new APIStoreRestClient(storeURLHttp);
         apiCreatorStoreDomain = storeContext.getContextTenant().getDomain();
         providerName =
@@ -101,7 +99,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to API Publisher adn Store with CarbonSuper normal user2
         apiStoreClientCarbonSuperUser2 = new APIStoreRestClient(storeURLHttp);
-        apiPublisherClientCarbonSuperUser2 = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherClientCarbonSuperUser2 = new APIPublisherRestClient(getPublisherURLHttp());
         apiStoreClientCarbonSuperUser2.login(
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword());
@@ -110,12 +108,12 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                 publisherContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getPassword());
 
         //Creating Tenant contexts
-        init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY, "publisher", "store", "gateway");
+        init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
         otherDomain = storeContext.getContextTenant().getDomain();
 
         //Login to the API Publisher adn Store as Tenant user
         apiStoreClientAnotherUserOtherDomain = new APIStoreRestClient(storeURLHttp);
-        apiPublisherClientAnotherUserOtherDomain = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherClientAnotherUserOtherDomain = new APIPublisherRestClient(getPublisherURLHttp());
         apiStoreClientAnotherUserOtherDomain.login(
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getUserName(),
                 storeContext.getContextTenant().getTenantUser(OTHER_DOMAIN_TENANT_USER_KEY).getPassword());
@@ -125,7 +123,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         //Login to the API Publisher adn Store as Tenant admin
         apiStoreClientAdminOtherDomain = new APIStoreRestClient(storeURLHttp);
-        apiPublisherClientAdminOtherDomain = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherClientAdminOtherDomain = new APIPublisherRestClient(getPublisherURLHttp());
         apiStoreClientAdminOtherDomain.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
@@ -136,7 +134,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for API creator ")
-    public void testVisibilityForCreatorInPublisher() throws APIManagerIntegrationTestException, MalformedURLException {
+    public void testVisibilityForCreatorInPublisher() throws Exception {
         //Create API  with private visibility and publish.
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         APICreationRequestBean apiCreationRequestBean =
@@ -144,8 +142,8 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        apiPublisherClientCarbonSuperUser1.addAPI(apiCreationRequestBean);
         apiCreationRequestBean.setVisibility("private");
+        apiPublisherClientCarbonSuperUser1.addAPI(apiCreationRequestBean);
 
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         publishAPI(apiIdentifier, apiPublisherClientCarbonSuperUser1, false);
@@ -259,25 +257,27 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifier));
     }
 
-
+    //https://wso2.org/jira/browse/APIMANAGER-4080
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in Same domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAdminInOtherDomainInStore")
-    public void testVisibilityForAnonymousUserInSameDomainInStore() throws APIManagerIntegrationTestException {
-        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser(
-                apiCreatorStoreDomain);
+    public void testVisibilityForAnonymousUserInSameDomainInStore() throws Exception {
+        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store/site/blocks/api/recently-added/ajax/list.jag"
+                , "action=getRecentlyAddedAPIs&tenant=" + apiCreatorStoreDomain);
+        assertFalse(new JSONObject(httpResponse.getData()).getBoolean("error"), "Error while getting api list");
         assertFalse(httpResponse.getData().contains(API_NAME), "API  visible to anonymous user in same domain API Store." +
-                " When Visibility is private.  " + getAPIIdentifierString(apiIdentifier));
+                                                                    " When Visibility is private.  " + getAPIIdentifierString(apiIdentifier));
 
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility for API in other domainStore for anonymous user",
             dependsOnMethods = "testVisibilityForAnonymousUserInSameDomainInStore")
-    public void testVisibilityForAnonymousUserInOtherDomainInStore() throws APIManagerIntegrationTestException {
-        HttpResponse httpResponse = new APIStoreRestClient(storeURLHttp).getAPIStorePageAsAnonymousUser
-                (otherDomain);
-        assertEquals(httpResponse.getData().contains(API_NAME), false, "API is  visible to anonymous user in other " +
-                "domain API Store. When Visibility is private. " + getAPIIdentifierString(apiIdentifier));
+    public void testVisibilityForAnonymousUserInOtherDomainInStore() throws Exception {
+        HttpResponse httpResponse = HttpRequestUtil.sendGetRequest(storeURLHttp + "store/site/blocks/api/recently-added/ajax/list.jag"
+                , "action=getRecentlyAddedAPIs&tenant=" + otherDomain);
+        assertFalse(new JSONObject(httpResponse.getData()).getBoolean("error"), "Error while getting api list");
+        assertFalse(httpResponse.getData().contains(API_NAME), "API is visible to anonymous user in other " +
+                                                               "domain API Store. When Visibility is private. " + getAPIIdentifierString(apiIdentifier));
     }
 
 
@@ -285,6 +285,5 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
         deleteAPI(apiIdentifier, apiPublisherClientCarbonSuperAdmin);
     }
-
 
 }
