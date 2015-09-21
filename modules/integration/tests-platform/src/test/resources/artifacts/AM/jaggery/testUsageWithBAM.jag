@@ -26,5 +26,5 @@ print(publisherHostObj.getProviderAPIVersionUserUsage("admin","UsageTestAPI","1.
 print("==");
 print(publisherHostObj.getProviderAPIVersionUserLastAccess("admin",start , end));
 print("==");
-print(publisherHostObj.getAPIFaultyAnalyzeByTime("admin", start, end));
+//print(publisherHostObj.getAPIFaultyAnalyzeByTime("admin", start, end));
 %>
