@@ -18,7 +18,6 @@
 
 package org.wso2.am.integration.tests.json;
 
-import com.sun.jna.platform.mac.MacFileUtils;
 import org.apache.axiom.om.util.AXIOMUtil;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -28,7 +27,6 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
