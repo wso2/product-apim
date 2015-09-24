@@ -60,9 +60,68 @@ public class APICreationRequestBean extends AbstractRequest {
     private String inSequence = "none";
     private String outSequence = "none";
     private String faultSequence = "none";
+    private String bizOwner = "";
+    private String bizOwnerMail = "";
+    private String techOwner = "";
+    private String techOwnerMail = "";
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public JSONObject getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(JSONObject endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public void setDefaultVersion(String defaultVersion) {
+        this.defaultVersion = defaultVersion;
+    }
+
+    public String getBizOwner() {
+        return bizOwner;
+    }
+
+    public void setBizOwner(String bizOwner) {
+        this.bizOwner = bizOwner;
+    }
+
+    public String getBizOwnerMail() {
+        return bizOwnerMail;
+    }
+
+    public void setBizOwnerMail(String bizOwnerMail) {
+        this.bizOwnerMail = bizOwnerMail;
+    }
+
+    public String getTechOwner() {
+        return techOwner;
+    }
+
+    public void setTechOwner(String techOwner) {
+        this.techOwner = techOwner;
+    }
+
+    public String getTechOwnerMail() {
+        return techOwnerMail;
+    }
+
+    public void setTechOwnerMail(String techOwnerMail) {
+        this.techOwnerMail = techOwnerMail;
+    }
+
+
+
 
     /**
-     * constructor of the APICreationRequestBean class
+     * constructor of the APICreationRequestBean class only with production url
      *
      * @param apiName     - Name of the APi
      * @param context     - API context
@@ -78,10 +137,53 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
-        try {
-            this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                    + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                    + endpointUrl.getProtocol() + "\"}");
+        if(endpointUrl != null) {
+            try {
+                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
+                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                        + endpointUrl.getProtocol() + "\"}");
+            } catch (JSONException e) {
+                log.error("JSON construct error", e);
+                throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+            }
+        }
+    }
+
+
+    /**
+     * constructor of the APICreationRequestBean class with production url & sand box url
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @param endpointUrl - Production Endpoint URL of the API
+     * @param sandboxUrl  - Sandbox Endpoint URL of the API
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+
+    public APICreationRequestBean(String apiName, String context, String version, String provider,
+                                  URL endpointUrl, URL sandboxUrl)
+            throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        try{
+
+            this.endpoint = new JSONObject();
+            if(endpointUrl != null) {
+                this.endpoint.put("production_endpoints", new JSONObject("{\"url\":" + "\""
+                        + endpointUrl + "\",\"config\":null}"));
+                this.endpoint.put("endpoint_type", endpointUrl.getProtocol());
+            }
+            if(sandboxUrl != null) {
+                this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
+                        + sandboxUrl + "\",\"config\":null}"));
+                this.endpoint.put("endpoint_type", sandboxUrl.getProtocol());
+            }
+
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -104,7 +206,9 @@ public class APICreationRequestBean extends AbstractRequest {
 
         addParameter("name", name);
         addParameter("context", context);
-        addParameter("endpoint_config", endpoint.toString());
+        if(endpoint !=  null) {
+            addParameter("endpoint_config", endpoint.toString());
+        }
         addParameter("provider", provider);
         addParameter("visibility", visibility);
         addParameter("version", version);
@@ -154,9 +258,11 @@ public class APICreationRequestBean extends AbstractRequest {
         if (wsdl.length() > 1) {
             addParameter("wsdl", getWsdl());
         }
-        if (sandbox.length() > 1) {
-            addParameter("sandbox", getSandbox());
-        }
+        addParameter("bizOwner",bizOwner);
+        addParameter("bizOwnerMail",bizOwnerMail);
+        addParameter("techOwner",techOwner);
+        addParameter("techOwnerMail",techOwnerMail);
+
     }
 
     public String getEpUsername() {
