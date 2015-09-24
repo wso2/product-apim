@@ -267,29 +267,48 @@
                 </executions>
             </plugin>
 
-            <!-- Replace datasource used in application-authentication.xml -->
+            <!-- Replace datasource used in identity.xml -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <version>1.5.2</version>
                 <executions>
                     <execution>
+                        <id>replace-for-identity</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>replace</goal>
                         </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>replace-for-thrift</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/thrift-authentication.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</file>
-                    <replacements>
-                        <replacement>
-                            <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
-                            <token>(jdbc/WSO2CarbonDB)</token>
-                            <value>jdbc/WSO2AM_DB</value>
-                        </replacement>
-                    </replacements>
-                </configuration>
+                
             </plugin>
 
 	    <!-- Skip deploying the product zip to nexus -->
