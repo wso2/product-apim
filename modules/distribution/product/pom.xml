@@ -281,10 +281,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/application-authentication.xml</file>
+                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</file>
                     <replacements>
                         <replacement>
-                            <xpath>/ApplicationAuthentication/JDBCPersistenceManager/DataSource/Name</xpath>
+                            <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
                             <token>(jdbc/WSO2CarbonDB)</token>
                             <value>jdbc/WSO2AM_DB</value>
                         </replacement>
