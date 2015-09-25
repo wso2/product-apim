@@ -1,0 +1,12 @@
+<processor>
+   <!-- Remove the scope validator from the identity.xml if it exists. Otherwise running the build several times
+   causes several scope validator elements to be added--> 	
+   <remove>
+        <name>//s:Server/s:OAuth/s:OAuthScopeValidator</name>
+   </remove>	   
+   <!-- Add the scope validator config element -->
+   <add> 
+      <after>//s:Server/s:OAuth/s:OAuthCallbackHandlers</after>
+      <value><![CDATA[<OAuthScopeValidator class="org.wso2.carbon.identity.oauth2.validators.JDBCScopeValidator"/>]]></value>
+   </add>
+</processor>
