@@ -267,12 +267,12 @@
                 </executions>
             </plugin>
 
-            <!-- Replace datasource used in identity.xml -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <version>1.5.2</version>
-                <executions>
+		<executions>
+            	    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
                     <execution>
                         <id>replace-for-identity</id>
                         <phase>prepare-package</phase>
@@ -286,10 +286,37 @@
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
                                     <token>(jdbc/WSO2CarbonDB)</token>
                                     <value>jdbc/WSO2AM_DB</value>
-                                </replacement>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.AuthorizationCodeGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.PasswordGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCredentialsGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+				    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
+				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>	
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
+				    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
+			    	    <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
+			        </replacement>
+
                             </replacements>
                         </configuration>
-                    </execution>
+		    </execution>
+		    <!-- Replace the Datasource in the thrift-authentication.xml file -->	
                     <execution>
                         <id>replace-for-thrift</id>
                         <phase>prepare-package</phase>
@@ -308,8 +335,36 @@
                         </configuration>
                     </execution>
                 </executions>
-                
-            </plugin>
+	    </plugin>
+
+	    <!-- Add the scope validator to the identity.xml file -->
+            <plugin>
+                <groupId>com.google.code.maven-config-processor-plugin</groupId>
+                <artifactId>config-processor-maven-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>add-scope-validator</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+			<configuration>
+			    <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                   <transformation>    
+                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</input>
+					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</output>
+                                        <config>identity_config_change.xml</config>
+                                    </transformation>
+			    </transformations>
+			    <namespaceContexts>
+				<s>http://wso2.org/projects/carbon/carbon.xml</s>
+        		    </namespaceContexts>
+                        </configuration>
+                    </execution>
+                </executions>
+             </plugin>
 
 	    <!-- Skip deploying the product zip to nexus -->
 	    <plugin>
