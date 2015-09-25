@@ -706,6 +706,13 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
+        <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/lifecycles/APILifeCycle.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/lifecycles</outputDirectory>
+            <filtered>true</filtered>
+        </file>
         <!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.4.1/conf/tenant-mgt.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
