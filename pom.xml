@@ -880,7 +880,7 @@
         <carbon.identity.version>4.6.0-M2</carbon.identity.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.5.0</carbon.deployment.version>
+        <carbon.deployment.version>4.5.3</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.0.1</carbon.analytics.version>
