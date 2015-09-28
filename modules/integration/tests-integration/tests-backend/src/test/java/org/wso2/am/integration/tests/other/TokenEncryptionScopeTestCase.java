@@ -102,7 +102,8 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
                                               File.separator + "conf" + File.separator + APIM_CONFIG_XML;
 
         String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                                                  File.separator + "conf" + File.separator + IDENTITY_CONFIG_XML;
+                                                  File.separator + "conf" + File.separator + "identity" + File.separator +
+                                                  IDENTITY_CONFIG_XML;
 
         File apimConfSourceFile = new File(apimConfigArtifactLocation);
         File apimConfTargetFile = new File(apimRepositoryConfigLocation);
