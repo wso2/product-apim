@@ -27,7 +27,6 @@
             <directory>target/wso2carbon-core-${carbon.platform.version}</directory>
             <outputDirectory>wso2am-${pom.version}</outputDirectory>
             <excludes>
-                <exclude>**/*.sh</exclude>
                 <exclude>**/conf/axis2/axis2.xml</exclude>
                 <exclude>**/conf/axis2/axis2.xml_NHTTP</exclude>
                 <exclude>**/conf/axis2/axis2.xml_PT</exclude>
@@ -37,7 +36,6 @@
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
-                <exclude>**/wso2server.bat</exclude>
                 <exclude>**/README.txt</exclude>
                 <exclude>**/LICENSE.txt</exclude>
                 <exclude>**/INSTALL.txt</exclude>
@@ -662,18 +660,6 @@
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
-	<file>
-            <source>../../../config/wso2server.sh</source>
-            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
-        </file>
-	<file>
-            <source>../../../config/wso2server.bat</source>
-            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-
         <file>
             <source>src/main/conf/carbon.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
