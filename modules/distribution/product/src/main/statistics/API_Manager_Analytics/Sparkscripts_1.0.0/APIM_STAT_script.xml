@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>APIM_STAT_script</Name>
+<Script>
+
+create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_REQUEST_SUMMARY");
+
+create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");  
+
+CREATE TEMPORARY TABLE API_REQUEST_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_SUMMARY",                           
+  schema "api string,
+  api_version string,
+  version string,
+  apiPublisher string,
+  consumerKey string,
+  userId string,
+  context string,
+  max_request_time long,
+  total_request_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
+); 
+
+insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher, 
+COALESCE(consumerKey,''),
+userId,context,
+max(requestTime) as max_request_time,
+sum(request) as total_request_count,
+hostName,  
+substring(cast(first(requestTime)/1000 as timestamp),0,4),
+substring(cast(first(requestTime)/1000 as timestamp),6,2),
+substring(cast(first(requestTime)/1000 as timestamp),9,2),
+substring(cast(first(requestTime)/1000 as timestamp),0,16) 
+
+from APIRequestData where context is not NULL group by api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,
+
+substring(cast(requestTime/1000 as timestamp),0,4), 
+substring(cast(requestTime/1000 as timestamp),6,2),
+substring(cast(requestTime/1000 as timestamp),9,2);   
+                            
+INSERT OVERWRITE TABLE APIRequestSummaryData SELECT * FROM API_REQUEST_SUMMARY_FINAL;                            
+                            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+create temporary table APIVersionUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_VERSION_USAGE_SUMMARY");
+   
+CREATE TEMPORARY TABLE API_VERSION_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_VERSION_USAGE_SUMMARY",                           
+schema "api string,
+  version string,
+  apiPublisher string,
+  context string,
+  total_request_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
+);
+
+insert into table API_VERSION_USAGE_SUMMARY_FINAL select api,version,apiPublisher,context,sum(request) as total_request_count,hostName,
+
+substring(cast(first(requestTime)/1000 as timestamp),0,4),
+substring(cast(first(requestTime)/1000 as timestamp),6,2),
+substring(cast(first(requestTime)/1000 as timestamp),9,2),
+substring(cast(first(requestTime)/1000 as timestamp),0,16)
+
+from APIRequestData where 
+
+context is not NULL group by api,version,apiPublisher,context,hostName,
+
+substring(cast(requestTime/1000 as timestamp),0,4), 
+substring(cast(requestTime/1000 as timestamp),6,2),
+substring(cast(requestTime/1000 as timestamp),9,2);  
+                            
+INSERT OVERWRITE TABLE APIVersionUsageSummaryData SELECT * FROM API_VERSION_USAGE_SUMMARY_FINAL;                            
+
+
+
+
+
+
+
+
+
+
+
+
+
+create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_Resource_USAGE_SUMMARY");
+
+CREATE TEMPORARY TABLE API_Resource_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_Resource_USAGE_SUMMARY",                           
+schema "api string,
+  version string,
+  apiPublisher string,
+  consumerKey string,
+  resourcePath string,
+  context string,
+  method string,
+  total_request_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api,version,apiPublisher,consumerKey,context,resourcePath,method,hostName,year,month,day"
+);
+
+insert into table API_Resource_USAGE_SUMMARY_FINAL select 
+api,version,apiPublisher,COALESCE(consumerKey,''),
+resourcePath,context,method,sum(request) as total_request_count,hostName, 
+
+substring(cast(first(requestTime)/1000 as timestamp),0,4),
+substring(cast(first(requestTime)/1000 as timestamp),6,2),
+substring(cast(first(requestTime)/1000 as timestamp),9,2),
+substring(cast(first(requestTime)/1000 as timestamp),0,16)
+
+from APIRequestData where 
+context is not NULL group by api,version,apiPublisher,consumerKey,resourcePath,context,method,hostName,
+
+substring(cast(requestTime/1000 as timestamp),0,4), 
+substring(cast(requestTime/1000 as timestamp),6,2),
+substring(cast(requestTime/1000 as timestamp),9,2);
+
+INSERT OVERWRITE TABLE APIResourcePathUsageSummaryData SELECT * FROM API_Resource_USAGE_SUMMARY_FINAL;                            
+
+
+
+
+
+
+create temporary table APIResponseSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_RESPONSE_SUMMARY");
+
+create temporary table APIResponseData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_RESPONSE");   
+
+CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",                           
+schema "api_version string,
+  apiPublisher string,  
+  context string,
+  serviceTime int,
+  total_response_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api_version,apiPublisher,context,hostName,year,month,day"
+);
+
+insert into table API_RESPONSE_SUMMARY_FINAL select 
+api_version,
+COALESCE(apiPublisher,''),
+context, 
+avg(serviceTime) as avg_service_time,
+sum(response) as total_response_count,
+hostName, 
+substring(cast(first(eventTime)/1000 as timestamp),0,4),
+substring(cast(first(eventTime)/1000 as timestamp),6,2),
+substring(cast(first(eventTime)/1000 as timestamp),9,2),
+substring(cast(first(eventTime)/1000 as timestamp),0,16)
+from APIResponseData 
+where 
+context is not NULL group by api_version,apiPublisher,context,hostName,
+substring(cast(eventTime/1000 as timestamp),0,4), 
+substring(cast(eventTime/1000 as timestamp),6,2),
+substring(cast(eventTime/1000 as timestamp),9,2);               
+                            
+INSERT OVERWRITE TABLE APIResponseSummaryData SELECT * FROM API_RESPONSE_SUMMARY_FINAL;                              
+
+
+
+
+
+
+create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_FAULT_SUMMARY");
+
+create temporary table APIFaultData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_FAULT");                     
+            
+CREATE TEMPORARY TABLE API_FAULT_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_FAULT_SUMMARY",                           
+schema "api string,
+  version string,
+  apiPublisher string,
+  consumerKey string,
+  context string,
+  total_fault_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api,version,apiPublisher,consumerKey,context,hostName,year,month,day"
+);
+
+insert into table API_FAULT_SUMMARY_FINAL select 
+api,version,apiPublisher,COALESCE(consumerKey,''),context,
+count(errorMessage) as total_fault_count,
+hostName, 
+substring(cast(first(requestTime)/1000 as timestamp),0,4),
+substring(cast(first(requestTime)/1000 as timestamp),6,2),
+substring(cast(first(requestTime)/1000 as timestamp),9,2),
+substring(cast(first(requestTime)/1000 as timestamp),0,16) 
+from APIFaultData where 
+context is not NULL group by api,version,apiPublisher,consumerKey ,context,hostName,
+
+substring(cast(requestTime/1000 as timestamp),0,4), 
+substring(cast(requestTime/1000 as timestamp),6,2),
+substring(cast(requestTime/1000 as timestamp),9,2);      
+                            
+INSERT OVERWRITE TABLE APIFaultSummaryData SELECT * FROM API_FAULT_SUMMARY_FINAL;                            
+
+
+
+
+
+
+
+
+
+create temporary table APIDestinationDataSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_DESTINATION_SUMMARY");
+
+create temporary table APIDestinationData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_DESTINATION");                       
+                            
+CREATE TEMPORARY TABLE API_DESTINATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_DESTINATION_SUMMARY",                           
+schema "api string,
+  version string,
+  apiPublisher string,  
+  context string,
+  destination string,
+  total_request_count int,
+  hostName string,
+  year int,
+  month int,
+  day int,
+  time string",
+  primaryKeys "api,version,apiPublisher,context,destination,hostName,year,month,day"
+);
+
+insert into table API_DESTINATION_SUMMARY_FINAL select 
+api,version,apiPublisher, context,destination, sum(request) as total_request_count,hostName, 
+
+substring(cast(first(requestTime)/1000 as timestamp),0,4),
+substring(cast(first(requestTime)/1000 as timestamp),6,2),
+substring(cast(first(requestTime)/1000 as timestamp),9,2),
+substring(cast(first(requestTime)/1000 as timestamp),0,16) 
+
+from APIDestinationData 
+where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
+
+substring(cast(requestTime/1000 as timestamp),0,4), 
+substring(cast(requestTime/1000 as timestamp),6,2),
+substring(cast(requestTime/1000 as timestamp),9,2); 
+                            
+INSERT OVERWRITE TABLE APIDestinationDataSummaryData SELECT * FROM API_DESTINATION_SUMMARY_FINAL;            
+                                                                                                                                                        
+</Script>
+    <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
+</Analytics>

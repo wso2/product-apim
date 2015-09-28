@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="Eventreceiver_throttle" version="1.0.0" type="event/receiver" serverRole="DataAnalyticsServer">
+    <file>EventReceiver_throttle.xml</file>
+</artifact>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="create-toolboxes" default="zip" basedir=".">
+<project name="create-capp" default="zip" basedir=".">
 
 	<property name="project-name" value="${ant.project.name}" />
 	<property name="target-dir" value="target" />
@@ -17,11 +17,11 @@
 	</target>
 
 	<target name="zip" depends="clean,pre-configure">
-		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.tbox">
-		  	<zipfileset dir="${API_Manager_Analytics_dir}" prefix="${API_Manager_Analytics_dir}"/> 
+		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.car">
+		  	<zipfileset dir="${API_Manager_Analytics_dir}" />
 		</zip>
-                <zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.tbox">
-		  	<zipfileset dir="${API_Manager_Analytics_oracle_dir}" prefix="${API_Manager_Analytics_oracle_dir}"/> 
+        <zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.car">
+		  	<zipfileset dir="${API_Manager_Analytics_oracle_dir}" />
 		</zip>
 	</target>
 
