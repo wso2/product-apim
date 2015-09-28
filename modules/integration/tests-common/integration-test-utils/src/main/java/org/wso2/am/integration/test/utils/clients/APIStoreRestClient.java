@@ -702,4 +702,17 @@ public class APIStoreRestClient {
         }
     }
 
+    public HttpResponse searchPaginateAPIs(String tenant, String start, String end, String searchTerm)
+            throws Exception {
+        checkAuthentication();
+        HttpResponse response = HttpRequestUtil.doPost(new URL(
+                backendURL + "/store/site/blocks/search/api-search/ajax/search.jag?")
+                , "action=searchAPIs&tenant=" + tenant + "&start=" + start + "&end=" + end + "&query=" + searchTerm
+                , requestHeaders);
+        if (response.getResponseCode() == 200) {
+            return response;
+        } else {
+            throw new Exception("Get API Information failed> " + response.getData());
+        }
+    }
 }

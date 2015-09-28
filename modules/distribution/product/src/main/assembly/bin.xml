@@ -558,11 +558,6 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>src/main/conf/identity.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-            <destName>identity.xml</destName>
-        </file>
-	<file>
             <source>src/main/conf/thrift-authentication.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>thrift-authentication.xml</destName>
@@ -693,10 +688,17 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/lifecycles/APILifeCycle.xml
+            </source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/lifecycles</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.4.1/conf/tenant-mgt.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <fileMode>644</fileMode>
-        </file>
+        </file-->
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/thrift-agent-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/data-bridge/</outputDirectory>
@@ -714,13 +716,13 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
-        <file>
+        <!--file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/msg-mgt.properties
             </source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <fileMode>644</fileMode>
-        </file>
+        </file-->
 	<!--file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>

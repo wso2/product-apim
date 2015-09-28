@@ -18,10 +18,10 @@
 package org.wso2.am.integration.tests.api.creation;
 
 
-import junit.framework.Assert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -135,15 +135,14 @@ public class APICreationInvocationTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Sample API creation", dependsOnMethods = "testApplicationKeyGeneration")
     public void testAPIInvocation() throws Exception {
-        HttpResponse serviceResponse;
         requestHeaders.put("Accept", "application/xml");
 
-        HttpResponse sampleResponse = HttpRequestUtil.doGet(
+        HttpResponse serviceResponse = HttpRequestUtil.doGet(
                 getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123"), requestHeaders);
-        log.info(sampleResponse.getData());
-        assertEquals(sampleResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+        log.info(serviceResponse.getData());
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched when api invocation");
-        assertTrue(sampleResponse.getData().contains("<Customer>"),
+        assertTrue(serviceResponse.getData().contains("<Customer>"),
                    "Response data mismatched when api invocation");
 
     }
@@ -159,7 +158,7 @@ public class APICreationInvocationTestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                //new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 }
