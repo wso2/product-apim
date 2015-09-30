@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
+import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,9 +118,6 @@ public class APICreationRequestBean extends AbstractRequest {
         this.techOwnerMail = techOwnerMail;
     }
 
-
-
-
     /**
      * constructor of the APICreationRequestBean class only with production url
      *
@@ -148,6 +146,51 @@ public class APICreationRequestBean extends AbstractRequest {
             }
         }
     }
+
+
+/**
+     * constructor of the APICreationRequestBean class
+     *
+     * @param apiName   - Name of the API
+     * @param context   - API Context
+     * @param version   - API version
+     * @param provider  - API provider
+     * @param productionEndpoints - Load Balanced Production Endpoints Array
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider, ArrayList<String> productionEndpoints)
+            throws APIManagerIntegrationTestException {
+
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+
+        String prodEndpoints = "";
+
+        for (int i = 0; i < productionEndpoints.size(); i++) {
+            String uri = "{\"url\":\"" + productionEndpoints.get(i) + "\",\"config\":null},";
+            prodEndpoints = prodEndpoints + uri;
+        }
+
+        try {
+
+            this.endpoint = new JSONObject("{\"production_endpoints\":[" +
+                    prodEndpoints + "]," +
+                    "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                    "\"failOver\":\"True\",\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                    "\"sessionManagement\":\"none\",\"implementation_status\":\"managed\"," +
+                    "\"endpoint_type\":\"load_balance\"}");
+
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
 
 
     /**
@@ -189,6 +232,63 @@ public class APICreationRequestBean extends AbstractRequest {
             throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
         }
     }
+
+   /**
+     * constructor of the APICreationRequestBean class
+     *
+     * @param apiName   - Name of the API
+     * @param context   - API Context
+     * @param version   - API Version
+     * @param provider  - API provider
+     * @param productionEndpoints   - Load balanced Production Endpoints Array
+     * @param sandboxEndpoints  - Load balanced Sandbox Endpoints Array
+     *
+     *
+     */
+    public APICreationRequestBean(String apiName,String context,String version,String provider,
+                                  List<String> productionEndpoints,List<String> sandboxEndpoints)
+            throws APIManagerIntegrationTestException{
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+
+        String prodEndpoints="";
+        if (productionEndpoints!=null && productionEndpoints.size()>0){
+            for (int i = 0; i < productionEndpoints.size(); i++) {
+                String uri = "{\"url\":\"" + productionEndpoints.get(i) + "\",\"config\":null},";
+                prodEndpoints = prodEndpoints + uri;
+            }
+            prodEndpoints="\"production_endpoints\": ["+prodEndpoints+"],";
+
+        }
+        String sandBoxEndpoints = "";
+        if(sandboxEndpoints!=null){
+            for (int i = 0; i < sandboxEndpoints.size(); i++) {
+                String sandboxUri = "{\"url\":\"" + sandboxEndpoints.get(i) + "\",\"config\":null},";
+                sandBoxEndpoints = sandBoxEndpoints + sandboxUri;
+            }
+        }
+        try {
+
+                this.endpoint = new JSONObject("{"+prodEndpoints +
+                        "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                        "\"failOver\":\"True\"," +
+                        "\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                        "\"sessionManagement\":\"none\"," +
+                        "\"sandbox_endpoints\":[" +
+                        sandBoxEndpoints + "]," +
+                        "\"implementation_status\":\"managed\"," +
+                        "\"endpoint_type\":\"load_balance\"}");
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
 
     @Override
     public void setAction() {

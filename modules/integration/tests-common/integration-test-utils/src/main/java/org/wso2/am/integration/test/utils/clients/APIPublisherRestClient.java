@@ -536,6 +536,39 @@ public class APIPublisherRestClient {
     }
 
 
+
+/**
+     * Adding a Document to a API
+     *
+     * @param apiName     - Name of the API.
+     * @param version     - Version of the API.
+     * @param provider    - Name of the API Provider.
+     * @param docName     - Name of the Document
+     * @param docType     - Document Type
+     * @param sourceType  - Source Type
+     * @param docUrl      - Document URL
+     * @param summary     - Document summary
+     * @param docLocation - Document Location
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
+     */
+    public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
+                                    String sourceType, String docUrl, String summary, String docLocation)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
+                    "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
+                            "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
+                            "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
+        }
+    }
+
+
     /**
      * Adding a Document to a API using AddDocumentRequestBean
      *
