@@ -178,7 +178,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
 
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(apiNameTest4, apiContextTest, apiVersion, apiProviderName,
-                        null);
+                        new URL(""));
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
