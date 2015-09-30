@@ -51,6 +51,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
@@ -64,7 +65,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final String TIER_GOLD = "Gold";
     protected static final String TIER_SILVER = "Silver";
     protected static final String MESSAGE_THROTTLED_OUT =
-            "<amt:code>900800</amt:code><amt:message>Message Throttled Out</amt:message><amt:description>" +
+            "<amt:code>900800</amt:code><amt:message>Message throttled out</amt:message><amt:description>" +
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
