@@ -26,7 +26,9 @@
   time string -i,
   key_api_facet facet -i,
   key_userId_facet facet -i,
-  api_version_userId_facet facet -i",
+  api_version_userId_facet facet -i,
+  api_version_userId_apiPublisher_facet facet -i,
+  api_version_userId_context_facet facet -i",
   primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
   );
 
@@ -42,7 +44,9 @@
   substring(cast(first(requestTime)/1000 as timestamp),0,16),
   concat(concat(consumerKey,","),api),
   concat(concat(consumerKey,","),userId),
-  concat(concat(api,","),concat(concat(version,","),userId))
+  concat(concat(api,","),concat(concat(version,","),userId)),
+  concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),apiPublisher))),
+  concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),context)))
   from APIRequestData where context is not NULL group by api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,
 
   substring(cast(requestTime/1000 as timestamp),0,4),
@@ -77,7 +81,8 @@
   month int -i,
   day int -i,
   time string -i,
-  api_facet facet -i",
+  max_request_time long -i,
+  api_version_context_facet facet -i",
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
@@ -87,7 +92,8 @@
   substring(cast(first(requestTime)/1000 as timestamp),6,2),
   substring(cast(first(requestTime)/1000 as timestamp),9,2),
   substring(cast(first(requestTime)/1000 as timestamp),0,16),
-  api
+  max(requestTime),
+  concat(concat(api,","),concat(concat(version,","),context))
 
   from APIRequestData where
 
@@ -157,7 +163,8 @@
   create temporary table APIResponseData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_RESPONSE");
 
   CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
-  schema "api_version string -i,
+  schema "api string -i,
+  version string -i,
   apiPublisher string -i,
   context string -i,
   serviceTime int -i,
@@ -167,12 +174,13 @@
   month int -i,
   day int -i,
   time string -i,
-  api_facet facet -i",
-  primaryKeys "api_version,apiPublisher,context,hostName,year,month,day"
+  max_request_time long -i,
+  api_version_context_facet facet -i",
+  primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
   insert into table API_RESPONSE_SUMMARY_FINAL select
-  api_version,
+  api,version,
   COALESCE(apiPublisher,''),
   context,
   avg(serviceTime) as avg_service_time,
@@ -182,10 +190,11 @@
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   substring(cast(first(eventTime)/1000 as timestamp),0,16),
-  api
+  max(eventTime),
+  concat(api,concat(",", concat(version, concat(",",context))))
   from APIResponseData
   where
-  context is not NULL group by api,api_version,apiPublisher,context,hostName,
+  context is not NULL group by api,version,apiPublisher,context,hostName,
   substring(cast(eventTime/1000 as timestamp),0,4),
   substring(cast(eventTime/1000 as timestamp),6,2),
   substring(cast(eventTime/1000 as timestamp),9,2);

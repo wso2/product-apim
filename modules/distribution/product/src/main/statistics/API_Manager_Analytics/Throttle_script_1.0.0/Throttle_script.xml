@@ -3,7 +3,6 @@
     <Name>Throttle_script</Name>
 <Script>
 
-create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
 
 create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
 
@@ -74,8 +73,7 @@ cast((throttledTime/(1000 * 60 * 60 *24 * 7)) as INT)
 ) b ON a.api=b.api AND a.api_version=b.api_version AND a.context=b.context AND a.apiPublisher=b.apiPublisher AND a.applicationName=b.applicationName AND a.tenantDomain=b.tenantDomain AND
  a.year=b.year AND a.month=b.month AND a.day=b.day AND a.week=b.week;
 
-INSERT OVERWRITE TABLE APIThrottleSummaryData SELECT * FROM THROTTLED_OUT_FINAL_SUMMARY;                    
-                                                                                                                                                        
+
 </Script>
     <CronExpression>0 0/20 * 1/1 * ? *</CronExpression>
 </Analytics>
