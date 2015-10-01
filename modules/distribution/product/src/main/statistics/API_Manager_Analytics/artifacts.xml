@@ -2,7 +2,7 @@
 <artifacts>
     <artifact name="APIM_STAT_CAPP" version="v1.0.2" type="carbon/application">        
 
-	<dependency artifact="Eventstream_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>	
+	<dependency artifact="Eventstream_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_fault" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_request" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_response" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>

@@ -268,6 +268,7 @@
   month int -i,
   day int -i,
   time string -i,
+  max_request_time long -i,
   api_version_context_dest_facet facet -i",
   primaryKeys "api,version,apiPublisher,context,destination,hostName,year,month,day"
   );
@@ -279,6 +280,7 @@
   substring(cast(first(requestTime)/1000 as timestamp),6,2),
   substring(cast(first(requestTime)/1000 as timestamp),9,2),
   substring(cast(first(requestTime)/1000 as timestamp),0,16),
+  max(requestTime),
   concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",destination))))))
   from APIDestinationData
   where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
