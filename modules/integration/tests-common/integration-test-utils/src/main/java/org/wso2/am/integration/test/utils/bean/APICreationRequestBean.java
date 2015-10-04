@@ -41,6 +41,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String visibility = "public";
     private String description = "description";
     private String endpointType = "nonsecured";
+    private String endpointAuthType = "basicAuth";
     private String httpChecked = "http";
     private String httpsChecked = "https";
     private String tags = "tags";
@@ -111,6 +112,7 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("description", description);
         addParameter("endpointType", endpointType);
         if (getEndpointType().equals("secured")) {
+            addParameter("endpointAuthType", endpointAuthType);
             addParameter("epUsername", epUsername);
             addParameter("epPassword", epPassword);
         }
@@ -258,6 +260,10 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setEndpointType(String endpointType) {
         this.endpointType = endpointType;
     }
+
+    public String getEndpointAuthType() { return endpointAuthType; }
+
+    public void setEndpointAuthType(String endpointAuthType) { this.endpointAuthType = endpointAuthType; }
 
     public String getHttpChecked() {
         return httpChecked;
