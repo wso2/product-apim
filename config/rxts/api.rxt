@@ -64,6 +64,13 @@
                 <value>Non Secured</value>             
             </values>
         </field>
+        <field type="options">
+            <name label="Endpoint Auth Type">Endpoint Auth Type</name>
+            <values>
+                <value>Basic</value>
+                <value>Digest</value>
+            </values>
+        </field>
         <field type="text" url="true">
             <name>Endpoint URL</name>
         </field>
