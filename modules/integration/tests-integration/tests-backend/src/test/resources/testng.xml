@@ -92,6 +92,7 @@
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
