@@ -78,11 +78,11 @@
 
         #macro ( http_endpoint $name $ep )
 <endpoint name="$name">
-<http uri-template="$util.escapeXml($ep.get(" url"))">
+<http uri-template="$util.escapeXml($ep.get("url"))">
 #timeout( $ep.get('config') )
 </http>
         #if($destinationBasedStatsEnabled)
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get(" url"))"/>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
         #end
         </endpoint>
         #end
@@ -118,7 +118,7 @@
 
 <call>
 <endpoint name="$ep_name">
-    <http uri-template="$util.escapeXml($endpoints.get(" url"))">
+    <http uri-template="$util.escapeXml($endpoints.get("url"))">
 </http>
 </endpoint>
         </call>
@@ -150,7 +150,7 @@
 #elseif ($endpointClass == "address")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
     #set( $advance_ep = $endpoints.get("config") )
-    <address uri="$util.escapeXml($endpoints.get(" url"))"
+    <address uri="$util.escapeXml($endpoints.get("url"))"
     #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
     format="$advance_ep.get("format")"
     #end
@@ -162,24 +162,23 @@
     #timeout( $endpoints.get('config') )
 </address>
 #if($destinationBasedStatsEnabled)
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get(" url"))"/>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
 #end
 </endpoint>
         #elseif ($endpointClass == "wsdl")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
 #if (${type} == "production")
-<wsdl uri="$util.escapeXml($endpoints.get(" url"))" service="$!endpoint_config.get("wsdlendpointService")" port="
+<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointService")" port="
 $!endpoint_config.get("wsdlendpointPort")">
 #timeout()
 </wsdl>
         #else
-<wsdl uri="$util.escapeXml($endpoints.get("
-      url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
+<wsdl uri="$util.escapeXml($endpoints.get("url"))" service="$!endpoint_config.get("wsdlendpointServiceSandbox")" port="$!endpoint_config.get("wsdlendpointPortSandbox")">
         #timeout()
         </wsdl>
         #end
         #if($destinationBasedStatsEnabled)
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get(" url"))"/>
+<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
         #end
         </endpoint>
         #elseif ($endpointClass == "failover")
