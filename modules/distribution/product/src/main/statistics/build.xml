@@ -6,6 +6,7 @@
 
 	<property name="API_Manager_Analytics_dir" value="API_Manager_Analytics" />
 	<property name="API_Manager_Analytics_oracle_dir" value="API_Manager_Analytics_Oracle" />
+	<property name="API_Manager_Analytics_rdbms_dir" value="API_Manager_Analytics_RDBMS" />
 
 	<target name="clean">
 		<delete dir="${target-dir}" />
@@ -20,8 +21,11 @@
 		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.car">
 		  	<zipfileset dir="${API_Manager_Analytics_dir}" />
 		</zip>
-        <zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.car">
+        <!--zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.car">
 		  	<zipfileset dir="${API_Manager_Analytics_oracle_dir}" />
+		</zip-->
+		<zip destfile="${target-dir}/${API_Manager_Analytics_rdbms_dir}.car">
+			<zipfileset dir="${API_Manager_Analytics_rdbms_dir}" />
 		</zip>
 	</target>
 

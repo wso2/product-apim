@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EventStoreConfiguration>
+<Source>
+       <StreamId>org.wso2.apimgt.statistics.request:1.0.0</StreamId>
+   </Source>
+   <TableSchema>
+
+<ColumnDefinition>
+	<Name>meta_clientType</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>consumerKey</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>context</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>api_version</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>api</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>resourcePath</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>method</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>version</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>request</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>INTEGER</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>requestTime</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>LONG</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>userId</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>tenantDomain</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>hostName</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>apiPublisher</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>applicationName</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>applicationId</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>userAgent</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>tier</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+
+
+
+   </TableSchema>
+   </EventStoreConfiguration>
