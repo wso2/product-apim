@@ -72,7 +72,6 @@
             <!--<class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
