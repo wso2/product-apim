@@ -138,10 +138,36 @@
          context="/digestAuth">
         <resource methods="POST GET PUT DELETE HEAD OPTIONS" url-mapping="/*">
             <inSequence>
-                <filter source="boolean(get-property('Authorization'))" regex="false">
+                <property name="Authorization" expression="$trp:Authorization"/>
+                <filter source="boolean(get-property('Authorization'))" regex="true">
                     <then>
                         <log level="custom">
-                            <property name="Message" value="The Authorization header is not present in the request."/>
+                            <property name="Message"
+                                      value="The Digest Authorization header is present in the request."/>
+                        </log>
+                        <!--Send a 200 OK response to the client-->
+                        <property name="RESPONSE" value="true" scope="default"/>
+                        <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
+                        <property name="HTTP_SC" value="200" scope="axis2"/>
+                        <header name="To" action="remove"/>
+                        <payloadFactory media-type="xml">
+                            <format>
+                                <response>
+                                    <result>Accepted</result>
+                                </response>
+                            </format>
+                            <args/>
+                        </payloadFactory>
+                        <send/>
+                        <log level="custom">
+                            <property name="Message"
+                                      value="The request is accepted and a 200 response is sent to the client with a payload."/>
+                        </log>
+                    </then>
+                    <else>
+                        <log level="custom">
+                            <property name="Message"
+                                      value="The Digest Authorization header is not present in the request."/>
                         </log>
                         <!--Send a 401 Unauthorized response to the client-->
                         <property name="RESPONSE" value="true" scope="default"/>
@@ -161,29 +187,6 @@
                         <send/>
                         <log level="custom">
                             <property name="Message" value="A 401 response is sent to the client"/>
-                        </log>
-                    </then>
-                    <else>
-                        <log level="custom">
-                            <property name="Message" value="The Authorization header is present in the request."/>
-                        </log>
-                        <!--Send a 200 OK response to the client-->
-                        <property name="RESPONSE" value="true" scope="default"/>
-                        <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
-                        <property name="HTTP_SC" value="200" scope="axis2"/>
-                        <header name="To" action="remove"/>
-                        <payloadFactory media-type="xml">
-                            <format>
-                                <response>
-                                    <result>Accepted</result>
-                                </response>
-                            </format>
-                            <args/>
-                        </payloadFactory>
-                        <send/>
-                        <log level="custom">
-                            <property name="Message"
-                                      value="The request is accepted and a 200 response is sent to the client with a payload."/>
                         </log>
                     </else>
                 </filter>

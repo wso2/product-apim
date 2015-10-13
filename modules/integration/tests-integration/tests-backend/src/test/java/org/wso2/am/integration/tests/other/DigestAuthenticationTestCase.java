@@ -24,7 +24,6 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -46,17 +45,9 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
-    @Factory(dataProvider = "userModeDataProvider") public DigestAuthenticationTestCase(TestUserMode userMode) {
-        this.userMode = userMode;
-    }
-
-    @DataProvider public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                new Object[] { TestUserMode.TENANT_ADMIN }, };
-    }
-
-    @BeforeClass(alwaysRun = true) public void setEnvironment() throws Exception {
-        super.init(userMode);
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        super.init();
         String gatewaySessionCookie = createSession(gatewayContextMgt);
 
         //Initialize publisher and store.
@@ -64,14 +55,13 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
         //Load the back-end dummy API
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath(
-                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
-                            + File.separator + "dummy_digest_api.xml", gatewayContextMgt, gatewaySessionCookie);
-        }
+        loadSynapseConfigurationFromClasspath(
+                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                        + File.separator + "dummy_digest_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
-    @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API") public void testDigestAuthentication()
+    @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API")
+    public void testDigestAuthentication()
             throws Exception {
 
         //Login to the API Publisher
@@ -134,7 +124,8 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @AfterClass(alwaysRun = true) public void destroy() throws Exception {
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
         super.cleanUp();
     }
 }

@@ -113,16 +113,16 @@
 <property name="MessageType" expression="get-property('axis2', 'messageType')"/>
 
 <enrich>
-<source type="body" clone="true"/>
-<target type="property" property="MessageBody"/>
+    <source type="body" clone="true"/>
+    <target type="property" property="MessageBody"/>
 </enrich>
 
 <call>
-<endpoint name="$ep_name">
-    <http uri-template="$util.escapeXml($endpoints.get("url"))">
-</http>
-</endpoint>
-        </call>
+    <endpoint name="$ep_name">
+        <http uri-template="$util.escapeXml($endpoints.get("url"))">
+        </http>
+    </endpoint>
+</call>
 
 <class name="org.wso2.carbon.apimgt.gateway.mediators.DigestAuthMediator"/>
 
@@ -133,8 +133,8 @@
 <property name="POST_TO_URI" value="true" scope="axis2"/>
 
 <enrich>
-<source type="property" property="MessageBody" clone="true"/>
-<target type="body"/>
+    <source type="property" property="MessageBody" clone="true"/>
+    <target type="body"/>
 </enrich>
 
         #else
