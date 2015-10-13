@@ -18,8 +18,6 @@
 
 package org.wso2.am.integration.tests.other;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -44,8 +42,6 @@ import static org.testng.Assert.assertEquals;
  */
 
 public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
-
-    private static final Log log = LogFactory.getLog(DigestAuthenticationTestCase.class);
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -75,7 +71,7 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API") public void tesDigestAuthentication()
+    @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API") public void testDigestAuthentication()
             throws Exception {
 
         //Login to the API Publisher

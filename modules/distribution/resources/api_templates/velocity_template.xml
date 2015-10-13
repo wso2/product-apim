@@ -106,6 +106,7 @@
 
 <property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($base64unpw)"
           type="STRING"/>
+<property name="BACKEND_URL" value="$util.escapeXml($endpoints.get("url"))"/>
 <property name="POSTFIX" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
 <property name="HTTP_METHOD" expression="get-property('axis2', 'HTTP_METHOD')"/>
 <property name="POST_TO_URI" value="true" scope="axis2"/>

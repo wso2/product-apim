@@ -148,8 +148,8 @@
                         <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
                         <property name="HTTP_SC" value="401" scope="axis2"/>
                         <header name="To" action="remove"/>
-                        <property name="WWW-Authenticate" action="set" sope="transport"
-                                  value="Digest realm='digestAuth', qop='auth', nonce='MTQ0MzY3OPW3MDI3NTo1NmU2M09hNzJmDsI1NWFlZik5ZWRwMjdjYWViZjcxZQ=='">
+                        <property name="WWW-Authenticate" action="set" scope="transport"
+                                  value="Digest realm='digestAuth', qop='auth', nonce='MTQ0MzY3OPW3MDI3NTo1NmU2M09hNzJmDsI1NWFlZik5ZWRwMjdjYWViZjcxZQ=='"/>
                         <payloadFactory media-type="xml">
                             <format>
                                 <response>
@@ -158,7 +158,7 @@
                             </format>
                             <args/>
                         </payloadFactory>
-                        <respond/>
+                        <send/>
                         <log level="custom">
                             <property name="Message" value="A 401 response is sent to the client"/>
                         </log>
@@ -180,7 +180,7 @@
                             </format>
                             <args/>
                         </payloadFactory>
-                        <respond/>
+                        <send/>
                         <log level="custom">
                             <property name="Message"
                                       value="The request is accepted and a 200 response is sent to the client with a payload."/>
