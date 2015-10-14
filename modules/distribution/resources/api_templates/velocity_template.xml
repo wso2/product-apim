@@ -151,7 +151,7 @@
     #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
     format="$advance_ep.get("format")"
     #end
-    #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") !='leave-as-is')
+    #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
     optimize="$advance_ep.get("optimize")"
     #end
     >
@@ -191,7 +191,7 @@
         #elseif ($endpointClass == "load_balance")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
 #if($endpoint_config.get("sessionManagement") && $endpoint_config.get("sessionManagement") != "" && $endpoint_config.get("sessionManagement") != "none")
-<session type="$endpoint_config.get(" sessionManagement")">
+<session type="$endpoint_config.get("sessionManagement")">
 #if($endpoint_config.get("sessionTimeOut") && $endpoint_config.get("sessionTimeOut") != "")
 <sessionTimeout>$endpoint_config.get("sessionTimeOut")</sessionTimeout>
 #end
@@ -222,7 +222,7 @@
         ######################## End of Macros ######################################
 
 
-<api xmlns="http://ws.apache.org/ns/synapse" name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
+<api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
 <resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
