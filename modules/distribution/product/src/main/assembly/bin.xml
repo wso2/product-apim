@@ -416,7 +416,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#v1.war</include>
+                <include>api#am#store#v1.war</include>
             </includes>
         </fileSet>
 
