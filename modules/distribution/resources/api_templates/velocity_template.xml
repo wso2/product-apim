@@ -172,6 +172,11 @@
         #end
         </loadbalance>
         </endpoint>
+#elseif ($endpointClass == "default")
+<endpoint name="$ep_name">
+    <default>
+    </default>
+</endpoint>
         #end
         </send>
         #if($destinationBasedStatsEnabled)
