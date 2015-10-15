@@ -61,9 +61,7 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the digest authenticated API")
-    public void testDigestAuthentication()
-            throws Exception {
-
+    public void testDigestAuthentication() throws Exception {
         //Login to the API Publisher
         apiPublisher.login(user.getUserName(), user.getPassword());
 
