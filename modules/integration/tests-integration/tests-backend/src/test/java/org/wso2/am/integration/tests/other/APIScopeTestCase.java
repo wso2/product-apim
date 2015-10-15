@@ -190,6 +190,13 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         // Accessing GET method
         response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+
+        //TODO - Remove the second request below. This is a temporary workaround to avoid the issue caused by a bug in
+        // carbon-mediation 4.4.11-SNAPSHOT See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
+        // message processor" on dev@wso2.org for information about the bug.
+        Thread.sleep(5000);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the GET Method");
 
@@ -249,7 +256,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
-//                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
