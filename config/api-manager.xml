@@ -482,17 +482,6 @@
 
     </StartupAPIPublisher>
 
-
-
-    <!--
-	When an API is invoked, a list of handlers get engaged to its execution flow. This
-	property defines the position of the Extension Handler.
-	Supported values: top, bottom
-	Defaults to: bottom
-    -->
-    <!--ExtensionHandlerPosition>top|bottom</ExtensionHandlerPosition-->
-
-
     <!--Configuration to enable/disable sending CORS headers in the Gateway response
         and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
