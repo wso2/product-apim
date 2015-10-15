@@ -347,7 +347,7 @@ public class APIMTestCaseUtils {
                 assertTrue(endPointAdminClient.deleteEndpoint(ep),
                            ep + " Endpoint deletion failed");
                 assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep),
-                           ep + " Endpoint undeployment failed");
+                        ep + " Endpoint undeployment failed");
             }
             assertTrue(endPointAdminClient.addEndPoint(endpoint),
                        ep + " Endpoint addition failed");
@@ -488,7 +488,7 @@ public class APIMTestCaseUtils {
         TaskAdminClient taskAdminClient = new TaskAdminClient(backEndUrl, sessionCookie);
         taskAdminClient.addTask(taskDescription);
         assertTrue(isScheduleTaskDeployed(backEndUrl, sessionCookie
-                           , taskDescription.getAttributeValue(new QName("name"))),
+                        , taskDescription.getAttributeValue(new QName("name"))),
                    "ScheduleTask deployment failed"
         );
     }
@@ -884,7 +884,7 @@ public class APIMTestCaseUtils {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
                 new SequenceTemplateAdminServiceClient(backEndUrl, sessionCookie);
         return ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(),
-                                   sequenceTemplate);
+                sequenceTemplate);
 
     }
 
@@ -933,7 +933,7 @@ public class APIMTestCaseUtils {
                 new LocalEntriesAdminClient(backEndUrl,
                                             sessionCookie);
         assertTrue(localEntryAdminServiceClient.deleteLocalEntry(localEntryName),
-                   "LocalEntry Deletion failed");
+                "LocalEntry Deletion failed");
         assertTrue(isLocalEntryUnDeployed(backEndUrl, sessionCookie, localEntryName),
                    "LocalEntry undeployment failed");
 
@@ -1635,5 +1635,15 @@ public class APIMTestCaseUtils {
             }
         }
         return isFound;
+    }
+
+    /**
+     * Get the json payload required for getting an access token using the password grant-type
+     * @param username - The username of the user (required)
+     * @param password - The password of the user (required)
+     * @return - The json payload. Sample: "grant_type=password&username=user&password=pass"
+     */
+    public static String getPayloadForPasswordGrant(String username, String password){
+        return "grant_type=password&username=" + username + "&password=" + password;
     }
 }
