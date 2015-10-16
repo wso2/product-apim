@@ -37,6 +37,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
@@ -162,7 +163,16 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
             Assert.assertTrue(false);
         }
     }
-
+    @Test(groups = "wso2.am", description = "check charset header contain")
+    public void testAPIWithCharSet() throws Exception {
+        WireMonitorServer wireMonitorServer = new WireMonitorServer(1212);
+        String apiInvocationUrl = "http://localhost:8280/charset";
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpUriRequest get = new HttpGet(apiInvocationUrl);
+        wireMonitorServer.start();
+        httpclient.execute(get);
+        Assert.assertTrue(wireMonitorServer.getCapturedMessage().contains("Content-Type: text/xml; charset=UTF-8"));
+    }
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanup();
