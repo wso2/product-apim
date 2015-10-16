@@ -21,7 +21,9 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
   week int -i,
   time string -i,
   success_request_count int -i,
-  throttleout_count int -i",
+  throttleout_count int -i,
+  api_apiPublisher_applicationName_facet facet -i,
+  applicationName_facet facet -i",
   primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
 );
 
@@ -38,8 +40,10 @@ IF(a.month IS NULL,b.month,a.month),
 IF(a.day IS NULL,b.day,a.day),
 IF(a.week IS NULL,b.week,a.week),
 IF(a.time IS NULL,b.time,a.time),
-success_request_count,
-throttleout_count 
+COALESCE(success_request_count,0),
+COALESCE(throttleout_count,0),
+concat( IF(a.api IS NULL,b.api,a.api),concat(",",concat( IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),concat(",",IF(a.applicationName IS NULL,b.applicationName,a.applicationName)) ))),
+IF(a.applicationName IS NULL,b.applicationName,a.applicationName)
 from 
 (select api,api_version,context,apiPublisher,applicationName,tenantDomain, 
 substring(cast(first(requestTime)/1000 as timestamp),0,4) year,
