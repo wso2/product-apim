@@ -106,12 +106,28 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
                 "Response code mismatched when invoke api before Retire");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
                 "Response data mismatched when invoke  API  before Retire" +
-                        " Response Data:" + oldVersionInvokeResponse.getData());
+                        " Response Data:" + oldVersionInvokeResponse.getData()); 
     }
 
+    @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
+            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToRetired") 
+    public void testChangeAPILifecycleToDepricated() throws APIManagerIntegrationTestException {
+        //Block the API version 1.0.0
+        APILifeCycleStateRequest blockUpdateRequest =
+                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.DEPRECATED);
+        blockUpdateRequest.setVersion(API_VERSION_1_0_0);
+        //Change API lifecycle  to Block
+        HttpResponse blockAPIActionResponse =
+                apiPublisherRestClient.changeAPILifeCycleStatus(blockUpdateRequest);
+        assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
+        assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.PUBLISHED,
+                APILifeCycleState.DEPRECATED), "API status Change is invalid when retire an API :" +
+                getAPIIdentifierString(apiIdentifier) +
+                " Response Code:" + blockAPIActionResponse.getData());
+    }
 
     @Test(groups = {"wso2.am"}, description = "Change API lifecycle to Retired",
-            dependsOnMethods = "testInvokeAPIBeforeChangeAPILifecycleToRetired")
+            dependsOnMethods = "testChangeAPILifecycleToDepricated") 
     public void testChangeAPILifecycleToRetired() throws APIManagerIntegrationTestException {
         //Block the API version 1.0.0
         APILifeCycleStateRequest blockUpdateRequest =
@@ -121,7 +137,7 @@ public class AccessibilityOfRetireAPITestCase extends APIManagerLifecycleBaseTes
         HttpResponse blockAPIActionResponse =
                 apiPublisherRestClient.changeAPILifeCycleStatus(blockUpdateRequest);
         assertEquals(blockAPIActionResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.PUBLISHED,
+        assertTrue(verifyAPIStatusChange(blockAPIActionResponse, APILifeCycleState.DEPRECATED,
                 APILifeCycleState.RETIRED), "API status Change is invalid when retire an API :" +
                 getAPIIdentifierString(apiIdentifier) +
                 " Response Code:" + blockAPIActionResponse.getData());
