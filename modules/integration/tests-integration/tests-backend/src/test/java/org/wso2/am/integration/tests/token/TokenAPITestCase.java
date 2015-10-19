@@ -156,14 +156,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                 .doGet(gatewayUrl,
                        requestHeadersSandBox);
 
-        //TODO - Remove the second request below. This is a temporary workaround to avoid the issue caused by a bug in
-        // carbon-mediation 4.4.11-SNAPSHOT See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
-        // message processor" on dev@wso2.org for information about the bug.
-        Thread.sleep(5000);
-        youTubeResponseSandBox = HttpRequestUtil
-                .doGet(gatewayUrl,
-                        requestHeadersSandBox);
-
         log.info("Response " + youTubeResponseSandBox);
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
 
