@@ -419,6 +419,14 @@
             </includes>
         </fileSet>
 
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/tenant</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/tenant-conf.json</include>
+            </includes>
+        </fileSet>
+
         <!--copying runtimes-->
         <fileSet>
         <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/lib/runtimes</directory>
