@@ -22,6 +22,7 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
   time string -i,
   success_request_count int -i,
   throttleout_count int -i,
+  max_request_time long -i,
   api_apiPublisher_applicationName_facet facet -i,
   applicationName_facet facet -i",
   primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
@@ -42,10 +43,11 @@ IF(a.week IS NULL,b.week,a.week),
 IF(a.time IS NULL,b.time,a.time),
 COALESCE(success_request_count,0),
 COALESCE(throttleout_count,0),
+COALESCE(a.times, COALESCE(b.times,0)),
 concat( IF(a.api IS NULL,b.api,a.api),concat(",",concat( IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),concat(",",IF(a.applicationName IS NULL,b.applicationName,a.applicationName)) ))),
 IF(a.applicationName IS NULL,b.applicationName,a.applicationName)
 from 
-(select api,api_version,context,apiPublisher,applicationName,tenantDomain, 
+(select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
 substring(cast(first(requestTime)/1000 as timestamp),0,4) year,
 substring(cast(first(requestTime)/1000 as timestamp),6,2) month,
 substring(cast(first(requestTime)/1000 as timestamp),9,2) day,
@@ -61,7 +63,7 @@ substring(cast(requestTime/1000 as timestamp),9,2),
 cast(requestTime/(1000 * 60 * 60 *24 * 7) as INT)
 ) a full outer join 
 
-(select api,api_version,context,apiPublisher,applicationName,tenantDomain, 
+(select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(throttledTime) as times,
 substring(cast(first(throttledTime)/1000 as timestamp),0,4) year,
 substring(cast(first(throttledTime)/1000 as timestamp),6,2) month,
 substring(cast(first(throttledTime)/1000 as timestamp),9,2) day,
