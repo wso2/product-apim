@@ -56,7 +56,13 @@
         <!--
             Admin password for the Authentication manager.
         -->
-        <Password>${admin.password}</Password>
+	<Password>${admin.password}</Password>
+
+	<!-- 
+	   Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
+	   via a remote service. The check will be done on the local server when false.	
+	-->
+	<CheckPermissionsRemotely>false</CheckPermissionsRemotely>
     </AuthManager>
 
     <!--
@@ -131,7 +137,7 @@
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
-                <Environment type="hybrid">
+                <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
 			<!--
@@ -232,9 +238,8 @@
     </APIUsageTracking>
 
     <!--
-        API key manager configuration used by API key manager (IS), API store and API gateway.
-        This is used by API store to generate and manage API keys. API gateway uses it to
-        validate and authenticate users against the provided API keys.
+        API key validator configuration used by API key manager (IS), API store and API gateway.
+        API gateway uses it to validate and authenticate users against the provided API keys.
     -->
     <APIKeyValidator>
         <!--
@@ -294,6 +299,14 @@
         -->
        <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
 
+        <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been white listed internally.
+        -->
+        <!--ScopeWhitelist>
+            <Scope>^device_.*</Scope>
+            <Scope>openid</Scope>
+        </ScopeWhitelist-->
+
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
@@ -313,6 +326,22 @@
     </APIKeyValidator>
 
     <!--
+    Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
+    Unless a ThirdParty KeyManager is used, you don't need to configure this section.
+    -->
+    
+    <!--APIKeyManager>
+        <KeyManagerClientImpl>org.wso2.carbon.apimgt.keymgt.AMDefaultKeyManagerImpl</KeyManagerClientImpl>
+        <Configuration>
+            <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+            <Username>${admin.username}</Username>
+            <Password>${admin.password}</Password>
+            <TokenURL>https://${carbon.local.ip}:${https.nio.port}/token</TokenURL>
+            <RevokeURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeURL>
+        </Configuration>
+    </APIKeyManager-->
+
+    <!--
         Settings related to managing API access tiers.
     -->
     <TierManagement>
@@ -330,6 +359,7 @@
     -->
     <APIStore>
 	<!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
+	<!--GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor-->
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
@@ -346,6 +376,10 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
+        <!--
+              Uncomment this to limit the number of APIs in api the API Store
+          -->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.

@@ -72,7 +72,6 @@
             <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.APIManager3152RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
@@ -92,6 +91,7 @@
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>

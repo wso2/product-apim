@@ -56,7 +56,13 @@
         <!--
             Admin password for the Authentication manager.
         -->
-        <Password>${admin.password}</Password>
+	<Password>${admin.password}</Password>
+
+	<!-- 
+	   Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
+	   via a remote service. The check will be done on the local server when false.	
+	-->
+	<CheckPermissionsRemotely>false</CheckPermissionsRemotely>
     </AuthManager>
 
     <!--

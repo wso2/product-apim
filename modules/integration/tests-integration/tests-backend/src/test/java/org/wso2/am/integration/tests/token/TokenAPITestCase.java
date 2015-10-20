@@ -28,7 +28,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -38,17 +37,11 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +54,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private ServerConfigurationManager serverConfigurationManager;
+//    private ServerConfigurationManager serverConfigurationManager;
 
     private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
 
@@ -74,7 +67,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -88,22 +81,22 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
           To tests issue mentioned in https://wso2.org/jira/browse/APIMANAGER-2065 please run this test against
           WSo2 Load balancer fronted 2 gateways 2 key manager setup with WSClient mode. Please refer resource api-manager.xml file.
         */
-        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                            File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
+//        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+//                            File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
+//
+//        String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
+//                            "deployment" + File.separator + "server" + File.separator + "webapps";
+//
+//        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
 
-        String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
-                            "deployment" + File.separator + "server" + File.separator + "webapps";
-
-        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
-
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
-
-        serverConfigurationManager.applyConfigurationWithoutRestart(
-                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
-        serverConfigurationManager.applyConfiguration(
-                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+//        serverConfigurationManager = new ServerConfigurationManager(
+//                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+//                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+//
+//        serverConfigurationManager.applyConfigurationWithoutRestart(
+//                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+//        serverConfigurationManager.applyConfiguration(
+//                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
 
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
@@ -162,6 +155,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         HttpResponse youTubeResponseSandBox = HttpRequestUtil
                 .doGet(gatewayUrl,
                        requestHeadersSandBox);
+
         log.info("Response " + youTubeResponseSandBox);
         // assertEquals(youTubeResponseSandBox.getResponseCode(), 200, "Response code mismatched");
 
@@ -204,9 +198,9 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         HttpResponse youTubeResponse = HttpRequestUtil
                 .doGet(gatewayUrl, requestHeaders);
-        //check JWT headers here
+
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                     "Response code mismatched");
+                "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("John"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<name"),
                    "Response data mismatched");
@@ -241,8 +235,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                            requestHeaders);
         }
 
-        assert errorResponse != null;
-        assertEquals(errorResponse.getResponseCode(), 503,
+        assertEquals(errorResponse.getResponseCode(), 429,
                      "Response code mismatched while token API test case");
         Thread.sleep(60000);
         errorResponse = HttpRequestUtil
@@ -282,6 +275,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication("TokenTestAPI-Application");
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
+//        serverConfigurationManager.restoreToLastConfiguration();
     }
 }
