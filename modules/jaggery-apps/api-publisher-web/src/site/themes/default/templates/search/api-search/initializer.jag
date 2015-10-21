@@ -1,9 +1,0 @@
-<%
-jagg.initializer("search/api-search", {
-
-    preInitialize:function () {
-        jagg.addHeaderJS("search", "jagg", "templates/search/api-search/js/api-search.js");
-    }
-});
-%>
-

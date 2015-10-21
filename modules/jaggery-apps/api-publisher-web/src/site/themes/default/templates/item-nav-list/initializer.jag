@@ -1,8 +1,0 @@
-<%
-jagg.initializer("item-nav-list", {
-
-   preInitialize:function () {
-    }
-});
-%>
-

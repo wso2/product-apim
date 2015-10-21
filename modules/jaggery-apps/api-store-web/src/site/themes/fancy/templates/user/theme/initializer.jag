@@ -1,7 +1,0 @@
-<%
-jagg.initializer("user/theme", {
-
-    preInitialize:function (data) {
-    }
-});
-%>
