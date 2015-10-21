@@ -1,8 +1,0 @@
-<%
-jagg.block("banner/featured", {
-
-    initialize:function (data) {
-
-    }
-});
-%>
