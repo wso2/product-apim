@@ -78,10 +78,10 @@ print("==");
 print(publisherHostObj.getAuthServerURL());
 print("==");
 //18
-print(publisherHostObj.getCustomInSequences());
+print(publisherHostObj.getCustomInSequences("HostObjectTestAPI", "1.0.0", "admin@wso2.com"));
 print("==");
 //19
-print(publisherHostObj.getCustomOutSequences());
+print(publisherHostObj.getCustomOutSequences("HostObjectTestAPI", "1.0.0", "admin@wso2.com"));
 print("==");
 //20
 print(publisherHostObj.getHTTPsURL());

@@ -1,3 +1,4 @@
+
 <!--
   ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
@@ -76,6 +77,7 @@
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
@@ -103,3 +105,4 @@
     </test>
 
 </suite>
+

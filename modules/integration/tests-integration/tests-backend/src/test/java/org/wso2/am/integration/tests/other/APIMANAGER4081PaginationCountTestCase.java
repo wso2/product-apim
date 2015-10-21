@@ -52,7 +52,7 @@ import static org.testng.Assert.assertTrue;
 public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTest {
 
     private String publisherURLHttp;
-    private String tenantDomain = "testwso2.com";
+    private String tenantDomain = "paginationtest.com";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() {

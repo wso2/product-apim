@@ -28,7 +28,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -40,9 +39,7 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
@@ -53,8 +50,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -65,8 +60,6 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private  static ServerConfigurationManager serverConfigurationManager;
-    private static boolean isConfigChanged = false;
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
@@ -83,29 +76,6 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        if(!isConfigChanged) {
-            serverConfigurationManager =
-                    new ServerConfigurationManager(new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                                         APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
-
-        /*
-        If test run in external distributed deployment you need to copy following resources accordingly.
-        configFiles/hostobjecttest/api-manager.xml
-        configFiles/tokenTest/log4j.properties
-        Also need to copy the content of /resources/artifacts/AM/jaggery to servers following folder folder
-        repository/deployment/server/jaggeryapps/testapp
-        */
-
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                                                                                 + File.separator +
-                                                                                 "configFiles/hostobjecttest/" +
-                                                                                 "api-manager.xml"));
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                                                                   + File.separator +
-                                                                   "configFiles/tokenTest/" +
-                                                                   "log4j.properties"));
-            isConfigChanged = true;
-        }
         super.init(userMode);
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -117,11 +87,6 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("HostObjectTestAPI-Application");
-        //to revert the changes after test is completed for tenant too
-        if(isConfigChanged && (userMode == TestUserMode.TENANT_ADMIN)) {
-            serverConfigurationManager.restoreToLastConfiguration();
-            isConfigChanged = false;
-        }
         super.cleanUp();
     }
 
@@ -182,8 +147,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken =
                 response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        assertNotNull(accessToken, "Access Token cannot be Null");
 
         //host object tests
         String sourcePath = computeSourcePath(filePublisher);
@@ -272,7 +236,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     }
 
     private boolean validateStoreResponseArray(String[] array) throws XPathExpressionException {
-        assertTrue(array[1].contains("true"),
+        assertTrue(array[1].contains("false"),
                    "Error while getting status of billing system from API store host object (isBillingEnabled)");
         assertTrue(array[2].contains("https"),
                    "Error while getting https url from API store host object (getHTTPsURL)");
@@ -310,8 +274,6 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting API from API store host object (getAPI)");
         assertTrue(array[19].contains("true"),
                    "Error while checking subscription state from API store host object (isSubscribed)");
-        //      assertTrue(array[20].contains("application"),
-        //               "Error while getting subscriptions from API store host object (getSubscriptions)");
         assertTrue(array[21].contains("true"),
                    "Error while checking user permission from API store host object (hasUserPermissions)");
         assertTrue(array[22].contains("true"),
