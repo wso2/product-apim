@@ -1,8 +1,0 @@
-<%
-jagg.block("usage", {
-    initializer:function (data) {
-
-    }
-
-});
-%>
