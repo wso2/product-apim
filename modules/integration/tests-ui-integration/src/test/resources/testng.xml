@@ -20,6 +20,7 @@
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3366MultipleGatewayPublishTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3371BusinessInformationClearedWhenAPISavedButton"/>
             <class name="org.wso2.am.integration.ui.tests.APIMANAGER3412DifferentRegistryContextPath"/>-->
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER4139SubscriptionAfterRecreationTestCase"/>
             <!--<class name="org.wso2.am.integration.ui.tests.APIStoreLogoutTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.APIVersoinStatTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.LoginTestCase"/>

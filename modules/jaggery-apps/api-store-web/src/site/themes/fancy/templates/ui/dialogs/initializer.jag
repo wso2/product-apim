@@ -1,7 +1,0 @@
-<%
-jagg.initializer("ui/dialogs", {
-
-    preInitialize:function () {
-    }
-});
-%>

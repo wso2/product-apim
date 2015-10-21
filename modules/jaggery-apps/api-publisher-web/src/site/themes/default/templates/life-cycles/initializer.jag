@@ -1,7 +1,0 @@
-<%
-jagg.initializer("life-cycles", {
-
-    preInitialize:function () {
-    }
-});
-%>

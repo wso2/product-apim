@@ -1,7 +1,0 @@
-<%
-jagg.block("comment/comment-add", {
-    initializer:function (data) {
-
-    }
-});
-%>

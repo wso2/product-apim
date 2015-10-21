@@ -1,8 +1,0 @@
-<%
-jagg.block("search/api-search", {
-
-    initialize:function (data) {
-
-    }
-});
-%>

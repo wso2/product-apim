@@ -1,7 +1,0 @@
-<%
-jagg.block("application/application-remove", {
-    initializer:function (data) {
-
-    }
-});
-%>

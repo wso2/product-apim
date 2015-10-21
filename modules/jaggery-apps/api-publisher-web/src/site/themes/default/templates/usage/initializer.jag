@@ -1,7 +1,0 @@
-<%
-jagg.initializer("usage", {
-
-    preInitialize:function () {
-    }
-});
-%>
