@@ -814,7 +814,7 @@
                 <version>${google.guava.version}</version>
                 <scope>test</scope>
             </dependency>
-        </dependencies>
+	</dependencies>
     </dependencyManagement>
 
 
@@ -875,7 +875,7 @@
         <carbon.mediation.version>4.4.11-SNAPSHOT</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>4.6.0-M2</carbon.identity.version>
+        <carbon.identity.version>4.6.0-SNAPSHOT</carbon.identity.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.5.3</carbon.deployment.version>
@@ -973,7 +973,6 @@
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <google.guava.version>16.0.1</google.guava.version>
-
 
     </properties>
 
