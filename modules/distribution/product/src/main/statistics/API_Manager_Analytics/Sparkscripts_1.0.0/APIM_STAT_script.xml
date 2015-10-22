@@ -163,8 +163,7 @@
   create temporary table APIResponseData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_RESPONSE");
 
   CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
-  schema "api string -i,
-  version string -i,
+  schema "api_version string -i,
   apiPublisher string -i,
   context string -i,
   serviceTime int -i,
@@ -180,7 +179,7 @@
   );
 
   insert into table API_RESPONSE_SUMMARY_FINAL select
-  api,version,
+  api_version,
   COALESCE(apiPublisher,''),
   context,
   sum(serviceTime) as avg_service_time,
@@ -191,10 +190,10 @@
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   substring(cast(first(eventTime)/1000 as timestamp),0,16),
   max(eventTime),
-  concat(api,concat(",", concat(version, concat(",",context))))
+  concat(api_version, concat(",",context))
   from APIResponseData
   where
-  context is not NULL group by api,version,apiPublisher,context,hostName,
+  context is not NULL group by api_version,apiPublisher,context,hostName,
   substring(cast(eventTime/1000 as timestamp),0,4),
   substring(cast(eventTime/1000 as timestamp),6,2),
   substring(cast(eventTime/1000 as timestamp),9,2);
