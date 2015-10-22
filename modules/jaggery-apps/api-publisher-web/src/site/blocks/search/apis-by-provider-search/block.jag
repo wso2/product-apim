@@ -1,7 +1,0 @@
-<%
-jagg.block("search/apis-by-provider-search", {
-
-    initialize:function (data) {
-    }
-});
-%>

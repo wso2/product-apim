@@ -1,7 +1,0 @@
-<%
-jagg.initializer("api/documentation/view", {
-
-    preInitialize:function () {
-    }
-});
-%>

@@ -1,8 +1,0 @@
-<%
-jagg.initializer("api/recently-added", {
-
-    preInitialize:function () {
-       jagg.addHeaderJS("api/recently-added", "recently-added", "utils/ratings/star-generator.js");
-    }
-});
-%>
