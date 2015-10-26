@@ -814,7 +814,14 @@
                 <version>${google.guava.version}</version>
                 <scope>test</scope>
             </dependency>
-	</dependencies>
+
+            <dependency>
+                <groupId>org.wso2.am</groupId>
+                <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
+                <version>${apimserver.version}</version>
+            </dependency>
+
+        </dependencies>
     </dependencyManagement>
 
 
@@ -825,16 +832,6 @@
         <carbon.apimgt.imp.pkg.version>[4.3.0, 4.4.0)</carbon.apimgt.imp.pkg.version>
         <axis2-transports.wso2.version>1.1.0-wso2v12</axis2-transports.wso2.version>
 
-        <apimgt.api.version>4.3.0-SNAPSHOT</apimgt.api.version>
-        <apimgt.impl.version>4.3.0-SNAPSHOT</apimgt.impl.version>
-        <apimgt.core.version>4.3.0-SNAPSHOT</apimgt.core.version>
-        <apimgt.gateway.version>4.3.0-SNAPSHOT</apimgt.gateway.version>
-        <apimgt.hostobjects.version>4.3.0-SNAPSHOT</apimgt.hostobjects.version>
-        <apimgt.interceptor.version>4.3.0-SNAPSHOT</apimgt.interceptor.version>
-        <apimgt.keymgt.version>4.3.0-SNAPSHOT</apimgt.keymgt.version>
-        <apimgt.keymgt.client.version>4.3.0-SNAPSHOT</apimgt.keymgt.client.version>
-        <apimgt.startup.publisher.version>4.3.0-SNAPSHOT</apimgt.startup.publisher.version>
-        <apimgt.usage.client>4.3.0-SNAPSHOT</apimgt.usage.client>
         <apimgt.usage.publisher>4.3.0-SNAPSHOT</apimgt.usage.publisher>
         <apimgt.keymgt.stub.version>4.3.0-SNAPSHOT</apimgt.keymgt.stub.version>
         <apimgt.handlers.security.stub>4.3.0-SNAPSHOT</apimgt.handlers.security.stub>
@@ -842,13 +839,6 @@
         <carbon.forum.feature.version>4.3.0-SNAPSHOT</carbon.forum.feature.version>
         <carbon.forum.server.feature.version>4.3.0-SNAPSHOT</carbon.forum.server.feature.version>
 
-        <apimgt.core.feature.version>4.3.0-SNAPSHOT</apimgt.core.feature.version>
-        <apimgt.feature.version>4.3.0-SNAPSHOT</apimgt.feature.version>
-        <apimgt.gateway.feature>4.3.0-SNAPSHOT</apimgt.gateway.feature>
-        <apimgt.interceptor.feature>4.3.0-SNAPSHOT</apimgt.interceptor.feature>
-        <apimgt.publisher.feature.version>4.3.0-SNAPSHOT</apimgt.publisher.feature.version>
-        <apimgt.startup.publisher.feature.version>4.3.0-SNAPSHOT</apimgt.startup.publisher.feature.version>
-        <apimgt.store.feature.version>4.3.0-SNAPSHOT</apimgt.store.feature.version>
         <apimgt.oidc.version>4.3.0-SNAPSHOT</apimgt.oidc.version>
 
         <!-- Carbon Registry -->
@@ -862,10 +852,9 @@
         <!--carbon versions-->
         <carbon.kernel.version>4.4.2</carbon.kernel.version>
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
-        <apim.version>4.3.0-SNAPSHOT</apim.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
-	    <carbon.commons.version>4.4.7</carbon.commons.version>
+        <carbon.commons.version>4.4.7</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -886,7 +875,6 @@
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.5.0-m1</carbon.multitenancy.version>
 
-        <apim.version>4.3.0-SNAPSHOT</apim.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
