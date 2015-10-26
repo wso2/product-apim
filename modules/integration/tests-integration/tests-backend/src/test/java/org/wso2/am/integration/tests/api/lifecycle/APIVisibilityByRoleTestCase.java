@@ -168,7 +168,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
         }
 
-        userManagementClient2.addInternalRole(INTERNAL_ROLE_SUBSCRIBER,
+        userManagementClient2.addInternalRole("subscriber",
                 new String[]{}, new String[]{"/permission/admin/login", "/permission/admin/manage/api/subscribe"});
 
         userManagementClient2.addUser(TENANT_SUBSCRIBER_USERNAME, String.valueOf(TENANT_SUBSCRIBER_PASSWORD),
