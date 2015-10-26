@@ -832,15 +832,6 @@
         <carbon.apimgt.imp.pkg.version>[4.3.0, 4.4.0)</carbon.apimgt.imp.pkg.version>
         <axis2-transports.wso2.version>1.1.0-wso2v12</axis2-transports.wso2.version>
 
-        <apimgt.usage.publisher>4.3.0-SNAPSHOT</apimgt.usage.publisher>
-        <apimgt.keymgt.stub.version>4.3.0-SNAPSHOT</apimgt.keymgt.stub.version>
-        <apimgt.handlers.security.stub>4.3.0-SNAPSHOT</apimgt.handlers.security.stub>
-        <carbon.forum.version>4.3.0-SNAPSHOT</carbon.forum.version>
-        <carbon.forum.feature.version>4.3.0-SNAPSHOT</carbon.forum.feature.version>
-        <carbon.forum.server.feature.version>4.3.0-SNAPSHOT</carbon.forum.server.feature.version>
-
-        <apimgt.oidc.version>4.3.0-SNAPSHOT</apimgt.oidc.version>
-
         <!-- Carbon Registry -->
         <carbon.registry.version>4.4.8</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.8, 4.5.0)</carbon.registry.package.import.version.range>
@@ -883,8 +874,6 @@
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <carbon.platform.version>4.4.2</carbon.platform.version>
         <synapse.version>2.1.3-wso2v12-SNAPSHOT</synapse.version>
-        <axis2.transport.version>1.6.1-wso2v11</axis2.transport.version>
-        <passthru.transport.version>1.0.0</passthru.transport.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v11</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v5</axiom.wso2.version>
