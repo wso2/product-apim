@@ -238,10 +238,10 @@
                                     org.wso2.carbon.identity.authenticator.saml2.sso.ui:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.gateway:${apim.version}
+                                    org.wso2.carbon.apimgt.gateway:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.core:${apimgt.feature.version}
+                                    org.wso2.carbon.apimgt.core:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.registry.contentsearch:${carbon.registry.version}
@@ -321,10 +321,10 @@
      				    org.wso2.carbon.bam.service.agent:${carbon.deployment.version}
 				</importFeatureDef>
 				<importFeatureDef>
-     				    org.wso2.carbon.apimgt.authenticator.oidc:${apimgt.oidc.version}
+     				    org.wso2.carbon.apimgt.authenticator.oidc:${carbon.apimgt.version}
 				</importFeatureDef>
 				<importFeatureDef>
-     				    org.wso2.carbon.apimgt.hostobjects.oidc:${apimgt.oidc.version}
+     				    org.wso2.carbon.apimgt.hostobjects.oidc:${carbon.apimgt.version}
 				</importFeatureDef>
 				<importFeatureDef>
                                     org.wso2.carbon.tenant.mgt.common:${carbon.commons.version}
