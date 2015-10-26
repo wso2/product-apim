@@ -62,6 +62,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     private final String TENANT_SUBSCRIBER_USERNAME = "subscriberUser2";
     private final char[] TENANT_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String ROLE_SUBSCRIBER = "subscriber";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
@@ -168,7 +169,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
             userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
         }
 
-        userManagementClient2.addInternalRole("subscriber",
+        userManagementClient2.addInternalRole(ROLE_SUBSCRIBER,
                 new String[]{}, new String[]{"/permission/admin/login", "/permission/admin/manage/api/subscribe"});
 
         userManagementClient2.addUser(TENANT_SUBSCRIBER_USERNAME, String.valueOf(TENANT_SUBSCRIBER_PASSWORD),
