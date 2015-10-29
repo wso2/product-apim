@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<artifact name="Eventreceiver_destination" version="1.0.0" type="event/receiver" serverRole="DataAnalyticsServer">
-    <file>EventReceiver_destination.xml</file>
-</artifact>

@@ -8,6 +8,10 @@
 	<property name="API_Manager_Analytics_oracle_dir" value="API_Manager_Analytics_Oracle" />
 	<property name="API_Manager_Analytics_rdbms_dir" value="API_Manager_Analytics_RDBMS" />
 
+	<property name="stream_definition_dir" value="streams" />
+	<property name="rest_scripts_dir" value="scripts/rest" />
+	<property name="rdbms_scripts_dir" value="scripts/rdbms" />
+
 	<target name="clean">
 		<delete dir="${target-dir}" />
 	</target>
@@ -19,13 +23,12 @@
 
 	<target name="zip" depends="clean,pre-configure">
 		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.car">
-		  	<zipfileset dir="${API_Manager_Analytics_dir}" />
+		  	<zipfileset dir="${stream_definition_dir}" />
+			<zipfileset dir="${rest_scripts_dir}" />
 		</zip>
-        <!--zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.car">
-		  	<zipfileset dir="${API_Manager_Analytics_oracle_dir}" />
-		</zip-->
 		<zip destfile="${target-dir}/${API_Manager_Analytics_rdbms_dir}.car">
-			<zipfileset dir="${API_Manager_Analytics_rdbms_dir}" />
+			<zipfileset dir="${stream_definition_dir}" />
+			<zipfileset dir="${rdbms_scripts_dir}" />
 		</zip>
 	</target>
 
