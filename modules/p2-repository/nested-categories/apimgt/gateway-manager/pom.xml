@@ -199,10 +199,10 @@
                                     org.wso2.carbon.um.ws.service.client:${carbon.identity.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.gateway:${apim.version}
+                                    org.wso2.carbon.apimgt.gateway:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.core:${apimgt.feature.version}
+                                    org.wso2.carbon.apimgt.core:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.registry.contentsearch:${carbon.registry.version}
