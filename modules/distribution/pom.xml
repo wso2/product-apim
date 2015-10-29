@@ -46,10 +46,6 @@
         <module>product</module>
     </modules>
 
-    <dependencies>
-        <!--runtime environments' dependencies -->
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>

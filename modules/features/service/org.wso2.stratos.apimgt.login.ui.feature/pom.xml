@@ -36,7 +36,6 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
-            <version>${apimserver.version}</version>
         </dependency>
     </dependencies>
 

@@ -209,7 +209,7 @@
                                 <featureArtifactDef>org.jaggeryjs.modules:i18n.feature:${i18n.feature.version}</featureArtifactDef>
                                 <featureArtifactDef>org.jaggeryjs.modules:ws.feature:1.1.0</featureArtifactDef>
 
-                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${apimgt.feature.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.feature:${carbon.apimgt.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.am:org.wso2.stratos.apimgt.dashboard.ui.feature:${stratos.version}</featureArtifactDef>
 
                                 <!-- Registry Features -->
@@ -266,8 +266,8 @@
                                 <!--<featureArtifactDef>org.wso2.carbon:org.wso2.carbon.sequences.ui.feature:${carbon.platform.version}</featureArtifactDef>-->
                                 <featureArtifactDef>org.wso2.carbon.deployment:org.wso2.carbon.bam.service.agent.feature:${carbon.deployment.version}</featureArtifactDef>
                                 <featureArtifactDef>org.wso2.carbon.commons:org.wso2.carbon.ndatasource.feature:${carbon.commons.version}</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
-                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${apimgt.oidc.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.authenticator.oidc.feature:${carbon.apimgt.version}</featureArtifactDef>
+                                <featureArtifactDef>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.hostobjects.oidc.feature:${carbon.apimgt.version}</featureArtifactDef>
                             </featureArtifacts>
                             <categories>
                                 <!--Start of API Manager feature categories-->
