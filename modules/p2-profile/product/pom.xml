@@ -530,6 +530,11 @@
                                     org.jaggeryjs.modules:ws.feature:${ws.feature.version}
                                 </featureArtifactDef>
 
+
+                                <!--featureArtifactDef>
+                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.store.feature:${carbon.apimgt.version}
+                                </featureArtifactDef-->
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1147,6 +1152,11 @@
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
+
+                                <!--feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
+                                    <version>${apim.version}</version>
+                                </feature-->
 
                             </features>
                         </configuration>
