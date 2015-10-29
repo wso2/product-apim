@@ -522,6 +522,31 @@ public class APIStoreRestClient {
 
         }
     }
+    
+    /**
+     * Unsubscribe from API by application name
+     *
+     * @param API           - name of api
+     * @param version       - api version
+     * @param provider      - provider name
+     * @param applicationName - application Name
+     * @return - http response of unsubscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
+     */
+    public HttpResponse removeAPISubscriptionByApplicationName(String API, String version, String provider,
+                                              String applicationName)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-remove/ajax/subscription-remove.jag?" +
+                            "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
+                            "&applicationName=" + applicationName), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+
+        }
+    }
 
     /**
      * Get all API tags
