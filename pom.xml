@@ -797,12 +797,12 @@
 	    <apimgt.oidc.version>2.0.1-SNAPSHOT</apimgt.oidc.version>
 	
 	<!-- Carbon Registry -->
-        <carbon.registry.version>4.4.9</carbon.registry.version>
+        <carbon.registry.version>4.5.0</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.0, 4.5.0)</carbon.registry.package.import.version.range>
 
 
 	<!-- Carbon Governance -->
-        <carbon.governance.version>4.5.9</carbon.governance.version>
+        <carbon.governance.version>4.6.0</carbon.governance.version>
         <carbon.governance.ext.version>4.4.6</carbon.governance.ext.version>
 	
 	<!--carbon versions-->
@@ -810,7 +810,7 @@
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <apim.version>2.0.1-SNAPSHOT</apim.version>
 
-	 <carbon.commons.version>4.4.7</carbon.commons.version>
+	 <carbon.commons.version>4.4.8</carbon.commons.version>
 	 <carbon.kernel.imp.pkg.version>[4.4.0, 4.5.0)</carbon.kernel.imp.pkg.version>
 
 	<!-- carbon mediation -->
@@ -826,10 +826,10 @@
 	<carbon.analytics.version>1.0.1</carbon.analytics.version>
 
 	<!--jaggery-->
-	<org.jaggery.version>0.10.3</org.jaggery.version>
+	<org.jaggery.version>0.11.2</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.4.1</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.4.4</carbon.multitenancy.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
