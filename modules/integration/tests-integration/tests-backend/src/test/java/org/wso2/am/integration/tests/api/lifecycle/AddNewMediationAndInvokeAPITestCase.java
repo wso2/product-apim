@@ -114,9 +114,6 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
 
         assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
 
-
-        System.out.println("Before adding Mediation " + response.getHeaders("Content-Type")[0]);
-
     }
 
 
