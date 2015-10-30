@@ -83,13 +83,6 @@
 	<Type>STRING</Type>
 </ColumnDefinition>
 <ColumnDefinition>
-	<Name>service_name</Name>
-	<EnableIndexing>true</EnableIndexing>
-	<IsPrimaryKey>false</IsPrimaryKey>
-	<EnableScoreParam>false</EnableScoreParam>
-	<Type>STRING</Type>
-</ColumnDefinition>
-<ColumnDefinition>
 	<Name>operation_name</Name>
 	<EnableIndexing>true</EnableIndexing>
 	<IsPrimaryKey>false</IsPrimaryKey>

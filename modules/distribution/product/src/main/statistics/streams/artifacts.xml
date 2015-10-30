@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <artifacts>
-    <artifact name="APIM_STAT_CAPP" version="v1.0.2" type="carbon/application">        
+    <artifact name="APIM_STAT_CAPP" version="v1.0.3" type="carbon/application">
 
-	<dependency artifact="Eventstream_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>	
+	<dependency artifact="Eventstream_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_fault" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_request" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_response" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
@@ -24,7 +24,7 @@
 	<dependency artifact="Eventreceiver_workflow" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_throttle" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 
-	<!--dependency artifact="Sparkscripts" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
-	<dependency artifact="Throttle_script" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/-->
+	<dependency artifact="Sparkscripts" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="Throttle_script" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
     </artifact>
 </artifacts>

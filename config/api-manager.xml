@@ -504,4 +504,10 @@
  	You can enable this and set preferable Logger name. 
    -->
    <!--VelocityLogger>VELOCITY</VelocityLogger-->
+
+    <!-- For APIM implemented Statistic client for DAS REST API -->
+    <StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatisticClientProvider>
+    <!-- For APIM implemented Statistic client for RDBMS -->
+    <!--StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRdbmsClientImpl</StatisticClientProvider-->
+
 </APIManager>
