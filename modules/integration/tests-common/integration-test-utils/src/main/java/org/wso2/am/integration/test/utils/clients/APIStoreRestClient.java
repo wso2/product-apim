@@ -179,7 +179,7 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
 
         try {
-            checkAuthentication();
+            //checkAuthentication();
             Map<String, String> authenticationRequestHeaders = new HashMap<String, String>();
             String basicAuthHeader = consumeKey + ":" + consumerSecret;
             byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
@@ -332,7 +332,7 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpRequestUtil.doGet(
                     backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
-                    "action=getAllDocumentationOfAPI&name=" + apiName +
+                    "action=getAllDocumentationOfApi&name=" + apiName +
                     "&version=" + version + "&provider=" + provider, requestHeaders);
 
         } catch (Exception e) {
@@ -341,6 +341,32 @@ public class APIStoreRestClient {
 
         }
     }
+
+    /**
+     * Method to retrieve all endpoint urls
+     */
+    public HttpResponse getApiEndpointUrls(String apiName,String version, String provider)
+        throws APIManagerIntegrationTestException{
+        try{
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL+ "store/site/blocks/api/api-info/ajax/api-info.jag?"+
+                            "action=getAPIEndpointURLs&name=" + apiName+
+                            "&version=" + version + "&provider=" + provider, requestHeaders);
+
+
+        }catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
+                    apiName, e);
+
+        }
+
+
+
+    }
+
+
+
 
     /**
      * Get all paginated published API for a given tenant
@@ -363,6 +389,30 @@ public class APIStoreRestClient {
                                                          "APIs for tenant - " + tenant, e);
         }
     }
+
+
+    /**
+     * Gell all paginated published apis for a given tenant
+     *
+     * @param tenant - tenant name
+     * @param start  - starting index
+     * @param end - ending index
+     *
+     */
+    public HttpResponse getAllPaginatedPublishedAPIs(String tenant, int start, int end)
+        throws APIManagerIntegrationTestException{
+        try {
+            checkAuthentication();
+
+            return HttpRequestUtil.doGet(backendURL + "store/site/blocks/api/listing/ajax/list.jag?" +
+                    "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
+                    "&start=" + start + "&end=" + end, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
+                    "APIs for tenant - " + tenant, e);
+        }
+    }
+
 
     /**
      * Get all published APIs for tenant
@@ -499,6 +549,52 @@ public class APIStoreRestClient {
     }
 
     /**
+     * Get subscribed Apis by application name
+     * @param applicationName - Application Name
+     */
+    public HttpResponse getSubscribedAPIs(String applicationName) throws
+            APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+
+
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
+                            + applicationName), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs", e);
+
+        }
+    }
+
+
+
+    /**
+     * Get subscribed APIs for the specific Application
+     *
+     * @param applicationName - Name of the Application of API in store
+     * @return - HttpResponse - Response with subscribed APIs
+     * @throws APIManagerIntegrationTestException
+     */
+
+    public HttpResponse getSubscribedAPIs(String applicationName,String domain) throws
+            APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
+                            + applicationName + "&tenant="+domain), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs", e);
+
+        }
+    }
+
+
+
+    /**
      * Unsubscribe from API
      *
      * @param API           - name of api
@@ -546,6 +642,35 @@ public class APIStoreRestClient {
             throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
 
         }
+    }
+
+    /**
+     * Unsubscribe from API
+     *
+     * @param API           - name of api
+     * @param version       - api version
+     * @param provider      - provider name
+     * @param appName - application name
+     * @return - http response of unsubscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if unsubscription fails
+     */
+
+    public HttpResponse removeAPISubscriptionByName(String API, String version,String provider,
+                                              String appName) throws APIManagerIntegrationTestException{
+        try{
+            checkAuthentication();
+            HttpResponse responseApp = getAllApplications();
+            String appId = getApplicationId(responseApp.getData(), appName);
+
+            return removeAPISubscription(API,version,provider,appId);
+
+
+        } catch(Exception e){
+            throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
+                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName , e);
+
+        }
+
     }
 
     /**
@@ -726,6 +851,113 @@ public class APIStoreRestClient {
             throw new APIManagerIntegrationTestException("Response message is not JSON Response");
         }
     }
+
+
+
+ /**
+     * API Store logout
+     *
+     */
+    public HttpResponse logout() throws APIManagerIntegrationTestException{
+        try{
+            checkAuthentication();
+            return HttpRequestUtil.doPost(new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
+                    "action=logout", requestHeaders);
+        }catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Error in store app logout ", e);
+        }
+    }
+
+ /**
+     * API Store sign up
+     * @param userName - store user name
+     * @param password -store password
+     * @param firstName - user first name
+     * @param lastName - user's last name
+     * @param email - user's email
+     * @return
+     * @throws APIManagerIntegrationTestException
+     *
+     */
+    public HttpResponse signUp(String userName, String password, String firstName, String lastName, String email) throws
+            APIManagerIntegrationTestException {
+        try {
+            return HttpRequestUtil.doPost(new URL(backendURL + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
+                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
+                            "|" + lastName + "|" + email, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Error in user sign up ", e);
+        }
+    }
+
+    /**
+     * Get Prototyped APIs in Store
+     *
+     * @return HttpResponse - Response with APIs which are deployed as a Prototyped APIs
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse getPrototypedAPI(String tenant) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+
+            return HttpRequestUtil.doGet(backendURL + "store/site/pages/list-prototyped-apis.jag?"
+                    + "tenant=" +tenant , requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get prototype APIs", e);
+        }
+
+    }
+
+//    /**
+//     * @param API      - Name of the API
+//     * @param version  - version of the API
+//     * @param provider - provider of the API
+//     * @param appName  - Application name of the API in store
+//     * @return -Http Response of Remove Subscription list
+//     * @throws APIManagerIntegrationTestException
+//     */
+//    public HttpResponse removeAPISubscriptionByName(String API, String version, String provider,
+//                                                    String appName)
+//            throws APIManagerIntegrationTestException {
+//        try {
+//            checkAuthentication();
+//            HttpResponse responseApp = getAllApplications();
+//            String appId = getApplicationId(responseApp.getData(), appName);
+//
+//            return removeAPISubscription(API, version, provider, appId);
+//
+//
+//        } catch (Exception e) {
+//            throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
+//                    " Version: " + version + "Provider: " + provider + "App Name: " + appName, e);
+//
+//        }
+//
+//    }
+
+//    /**
+//     * Get subscribed APIs for the specific Application
+//     *
+//     * @param applicationName - Name of the Application of API in store
+//     * @return - HttpResponse - Response with subscribed APIs
+//     * @throws APIManagerIntegrationTestException
+//     */
+//
+//    public HttpResponse getSubscribedAPIs(String applicationName) throws
+//            APIManagerIntegrationTestException {
+//        try {
+//            checkAuthentication();
+//            return HttpRequestUtil.doPost(
+//                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/" +
+//                            "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
+//                            + applicationName + "&tenant=carbon.super"), "", requestHeaders);
+//        } catch (Exception e) {
+//            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs", e);
+//
+//        }
+//    }
+
 
     public HttpResponse searchPaginateAPIs(String tenant, String start, String end, String searchTerm)
             throws Exception {

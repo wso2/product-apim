@@ -1,0 +1,2 @@
+apiDocumentation -
+ APIM2-624:Add documentation to an API [ Public Forum | File ] through the publisher REST api

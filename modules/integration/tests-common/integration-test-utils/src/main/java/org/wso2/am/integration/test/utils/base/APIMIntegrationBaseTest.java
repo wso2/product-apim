@@ -54,6 +54,7 @@ public class APIMIntegrationBaseTest {
     protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt
             , gatewayContextWrk, backEndServer;
     protected OMElement synapseConfiguration;
+    protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected User user;
@@ -77,6 +78,8 @@ public class APIMIntegrationBaseTest {
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
     protected void init(TestUserMode userMode) throws APIManagerIntegrationTestException {
+
+        apimTestCaseUtils = new APIMTestCaseUtils();
 
         try {
             //create store server instance based on configuration given at automation.xml
