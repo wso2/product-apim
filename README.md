@@ -1,6 +1,15 @@
         ================================================================================
                                         WSO2 API Manager
         ================================================================================
+        
+---
+
+| Branch | Build Status |
+| :------------ |:-------------
+| master | [![Build Status](https://wso2.org/jenkins/job/product-apim/badge/icon)](https://wso2.org/jenkins/job/product-apim) |
+
+
+---
 
 WSO2 API Manager is a powerful platform for creating, managing, consuming and
 monitoring web APIs. It combines tried and tested SOA best practices with modern
