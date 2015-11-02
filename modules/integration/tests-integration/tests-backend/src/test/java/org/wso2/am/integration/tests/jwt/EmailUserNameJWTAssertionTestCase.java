@@ -349,18 +349,14 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
             if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName + " Activated successfully");
                 log.info("Tenant domain " + domainName + " Activated successfully");
 
             } else if (!tenantInfoBeanGet.getActive()) {
                 tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName +
-                                   " created and activated successfully");
                 log.info("Tenant domain " + domainName + " created and activated successfully");
                 isSuccess = true;
             } else {
-                System.out.println("Tenant domain " + domainName + " already registered");
                 log.info("Tenant domain " + domainName + " already registered");
             }
         } catch (RemoteException e) {
