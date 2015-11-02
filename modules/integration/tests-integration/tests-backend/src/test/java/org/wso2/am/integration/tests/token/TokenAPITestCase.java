@@ -117,7 +117,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         String APIVersion = "1.0.0";
 
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        //APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url), new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);

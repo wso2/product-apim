@@ -53,10 +53,6 @@
       "type": "STRING"
     },
     {
-      "name": "service_name",
-      "type": "STRING"
-    },
-    {
       "name": "operation_name",
       "type": "STRING"
     },

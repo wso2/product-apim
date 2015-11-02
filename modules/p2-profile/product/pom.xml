@@ -530,10 +530,13 @@
                                     org.jaggeryjs.modules:ws.feature:${ws.feature.version}
                                 </featureArtifactDef>
 
+                                <featureArtifactDef>
+                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.publisher.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
 
-                                <!--featureArtifactDef>
+                                <featureArtifactDef>
                                   org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.store.feature:${carbon.apimgt.version}
-                                </featureArtifactDef-->
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1153,11 +1156,14 @@
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
 
-                                <!--feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
-                                    <version>${apim.version}</version>
-                                </feature-->
-
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2432,6 +2438,10 @@
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
+                                    <version>${apim.version}</version>
+                                </feature-->
                             </features>
                         </configuration>
                     </execution>
@@ -2920,6 +2930,11 @@
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <!--feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature.group</id>
+                                    <version>${apim.version}</version>
+                                </feature-->
+
                             </features>
                         </configuration>
                     </execution>

@@ -845,7 +845,7 @@
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
-        <carbon.commons.version>4.4.7</carbon.commons.version>
+        <carbon.commons.version>4.4.8</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -855,7 +855,7 @@
         <carbon.identity.version>4.6.0-SNAPSHOT</carbon.identity.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.5.3</carbon.deployment.version>
+        <carbon.deployment.version>4.6.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.0.1</carbon.analytics.version>
