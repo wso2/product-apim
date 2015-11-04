@@ -136,7 +136,8 @@
 		<!-- Environments can be of different types. Allowed values are 'hybrid', 'production' and 'sandbox'.
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
-		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
+		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
+		<!-- api-console element specifies whether the environment should be listed in API Console or not -->
                 <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
