@@ -79,7 +79,7 @@
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/> -->
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
@@ -91,7 +91,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
