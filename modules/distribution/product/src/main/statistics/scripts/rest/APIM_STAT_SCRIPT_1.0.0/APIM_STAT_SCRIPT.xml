@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Analytics>
-    <Name>APIM_STAT_script</Name>
+    <Name>APIM_STAT_SCRIPT</Name>
 <Script>
 
   CREATE TEMPORARY TABLE API_UTIL USING CarbonAnalytics OPTIONS (tableName "API_UTIL",

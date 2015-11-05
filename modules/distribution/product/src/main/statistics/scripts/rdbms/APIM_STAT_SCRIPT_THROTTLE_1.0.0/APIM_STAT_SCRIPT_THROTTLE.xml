@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Analytics>
-  <Name>Throttle_script</Name>
+  <Name>APIM_STAT_SCRIPT_THROTTLE</Name>
   <Script>
 
     create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
