@@ -45,7 +45,7 @@
     COALESCE(success_request_count,0),
     COALESCE(throttleout_count,0),
     COALESCE(a.times, COALESCE(b.times,0)),
-    concat( IF(a.api IS NULL,b.api,a.api),concat(",",concat( IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),concat(",",IF(a.applicationName IS NULL,b.applicationName,a.applicationName)) ))),
+    facet3( IF(a.api IS NULL,b.api,a.api), IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),IF(a.applicationName IS NULL,b.applicationName,a.applicationName)),
     IF(a.applicationName IS NULL,b.applicationName,a.applicationName)
     from
     (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
