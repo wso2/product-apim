@@ -9,8 +9,8 @@
 		#end
 		    methods="$resource.getMethodsAsString()" faultSequence="fault">
 	<inSequence>
-		<property name="isDefault" expression="get-property('transport', 'WSO2_AM_API_DEFAULT_VERSION')"/>
-		<filter source="get-property('isDefault')" regex="true">
+		<property name="isDefault" expression="$trp:WSO2_AM_API_DEFAULT_VERSION"/>
+		<filter source="$ctx:isDefault" regex="true">
 		    <then>
 		        <log level="custom">
 		            <property name="STATUS" value="Faulty invoking through default API.Dropping message to avoid recursion.."/>
