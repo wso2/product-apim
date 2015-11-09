@@ -30,22 +30,22 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
 
 insert into table THROTTLED_OUT_FINAL_SUMMARY select 
 
-IF(a.api IS NULL,b.api,a.api),
-IF(a.api_version IS NULL,b.api_version,a.api_version),
-IF(a.context IS NULL,b.context,a.context),
-IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),
-IF(a.applicationName IS NULL,b.applicationName,a.applicationName),
-IF(a.tenantDomain IS NULL,b.tenantDomain,a.tenantDomain),
-IF(a.year IS NULL,b.year,a.year),
-IF(a.month IS NULL,b.month,a.month),
-IF(a.day IS NULL,b.day,a.day),
-IF(a.week IS NULL,b.week,a.week),
-IF(a.time IS NULL,b.time,a.time),
+COALESCE(a.api,b.api),
+COALESCE(a.api_version,b.api_version),
+COALESCE(a.context,b.context),
+COALESCE(a.apiPublisher,b.apiPublisher),
+COALESCE(a.applicationName,b.applicationName),
+COALESCE(a.tenantDomain,b.tenantDomain),
+COALESCE(a.year,b.year),
+COALESCE(a.month,b.month),
+COALESCE(a.day,b.day),
+COALESCE(a.week,b.week),
+COALESCE(a.time,b.time),
 COALESCE(success_request_count,0),
 COALESCE(throttleout_count,0),
 COALESCE(a.times, COALESCE(b.times,0)),
-facet3( IF(a.api IS NULL,b.api,a.api), IF(a.apiPublisher IS NULL,b.apiPublisher,a.apiPublisher),IF(a.applicationName IS NULL,b.applicationName,a.applicationName)),
-IF(a.applicationName IS NULL,b.applicationName,a.applicationName)
+facet3( COALESCE(a.api,b.api), COALESCE(a.apiPublisher,b.apiPublisher),COALESCE(a.applicationName,b.applicationName)),
+COALESCE(a.applicationName,b.applicationName)
 from 
 (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
 substring(cast(first(requestTime)/1000 as timestamp),0,4) year,
