@@ -247,7 +247,7 @@
 
     <fileSet>
         <directory>
-            ../resources/stat/migration-1.9.0_to_1.10.0/
+            ../statistics/target/
         </directory>
         <outputDirectory>wso2am-${pom.version}/dbscripts/stat/migration-1.9.0_to_1.10.0</outputDirectory>
     </fileSet>

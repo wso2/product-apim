@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="APIM_1_10_X_MIGRATION" version="1.0.0" type="analytics/spark" serverRole="DataAnalyticsServer">
+    <file>APIM_1_10_X_MIGRATION.xml</file>
+</artifact>
