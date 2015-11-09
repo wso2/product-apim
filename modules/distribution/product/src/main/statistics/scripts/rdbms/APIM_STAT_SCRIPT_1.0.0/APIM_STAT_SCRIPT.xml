@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Analytics>
-  <Name>APIM_STAT_script</Name>
+  <Name>APIM_STAT_SCRIPT</Name>
   <Script>
 
 
@@ -41,11 +41,11 @@
     substring(cast(first(requestTime)/1000 as timestamp),6,2),
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
-    concat(concat(consumerKey,","),api),
-    concat(concat(consumerKey,","),userId),
-    concat(concat(api,","),concat(concat(version,","),userId)),
-    concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),apiPublisher))),
-    concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),context)))
+    facet2(consumerKey,api),
+    facet2(consumerKey,userId),
+    facet3(api,version,userId),
+    facet4(api,version,userId,apiPublisher),
+    facet4(api,version,userId,context)
     from APIRequestData where context is not NULL group by api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,
 
     substring(cast(requestTime/1000 as timestamp),0,4),
@@ -93,7 +93,7 @@
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
     max(requestTime),
-    concat(concat(api,","),concat(concat(version,","),context))
+    facet3(api,version,context)
 
     from APIRequestData where
 
@@ -146,8 +146,8 @@
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
     max(requestTime),
-    concat(consumerKey,concat(",", concat(api, concat(",",concat(method, concat(",",resourcePath)))))),
-    concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",method))))))
+    facet4(consumerKey,api,method,resourcePath),
+    facet4(api,version,context,method)
     from APIRequestData where
     context is not NULL group by api,version,apiPublisher,consumerKey,resourcePath,context,method,hostName,
 
@@ -191,7 +191,7 @@
     substring(cast(first(eventTime)/1000 as timestamp),9,2),
     substring(cast(first(eventTime)/1000 as timestamp),0,16),
     max(eventTime),
-    concat(api_version, concat(",",context))
+    facet2(api_version,context)
     from APIResponseData
     where
     context is not NULL group by api_version,apiPublisher,context,hostName,
@@ -236,8 +236,8 @@
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
     max(requestTime),
-    concat(consumerKey,concat(",",api)),
-    concat(api,concat(",", concat(version, concat(",",concat(apiPublisher, concat(",",context))))))
+    facet2(consumerKey,api),
+    facet4(api,version,apiPublisher,context)
     from APIFaultData where
     context is not NULL group by api,version,apiPublisher,consumerKey ,context,hostName,
 
@@ -283,7 +283,7 @@
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
     max(requestTime),
-    concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",destination))))))
+    facet4(api,version,context,destination)
     from APIDestinationData
     where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
 

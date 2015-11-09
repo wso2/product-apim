@@ -77,6 +77,10 @@
     {
       "name": "tier",
       "type": "STRING"
+    },
+    {
+      "name": "throttledOut",
+      "type": "BOOL"
     }
   ]
 }

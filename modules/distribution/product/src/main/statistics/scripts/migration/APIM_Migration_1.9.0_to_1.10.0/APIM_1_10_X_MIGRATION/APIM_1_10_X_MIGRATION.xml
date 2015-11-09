@@ -1,6 +1,9 @@
-
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>APIM_1_10_X_MIGRATION</Name>
+<Script>
   
-create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
+create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_THROTTLED_OUT_SUMMARY");
 CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
   schema "api string -i,
   api_version string -i,
@@ -58,7 +61,7 @@ applicationName from APIThrottleSummaryData;
   primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
   );
 
-  create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_REQUEST_SUMMARY");
+  create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_REQUEST_SUMMARY");
 
   insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
   consumerKey,
@@ -94,7 +97,7 @@ applicationName from APIThrottleSummaryData;
 
 
 
-  create temporary table APIVersionUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_VERSION_USAGE_SUMMARY");
+  create temporary table APIVersionUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_VERSION_USAGE_SUMMARY");
 
   CREATE TEMPORARY TABLE API_VERSION_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_VERSION_USAGE_SUMMARY",
   schema "api string -i,
@@ -130,7 +133,7 @@ applicationName from APIThrottleSummaryData;
 
 
 
-create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_Resource_USAGE_SUMMARY");
+create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_Resource_USAGE_SUMMARY");
 
   CREATE TEMPORARY TABLE API_Resource_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_Resource_USAGE_SUMMARY",
   schema "api string -i,
@@ -166,7 +169,7 @@ create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options 
 
 
 
-create temporary table APIResponseSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_RESPONSE_SUMMARY");
+create temporary table APIResponseSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_RESPONSE_SUMMARY");
 
   CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
   schema "api_version string -i,
@@ -196,7 +199,7 @@ create temporary table APIResponseSummaryData using CarbonJDBC options (dataSour
 
 
 
-create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_FAULT_SUMMARY");
+create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_FAULT_SUMMARY");
 
   CREATE TEMPORARY TABLE API_FAULT_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_FAULT_SUMMARY",
   schema "api string -i,
@@ -224,7 +227,7 @@ create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource 
 
 
 
-  create temporary table APIDestinationDataSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_DESTINATION_SUMMARY");
+  create temporary table APIDestinationDataSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_DESTINATION_SUMMARY");
   CREATE TEMPORARY TABLE API_DESTINATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_DESTINATION_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -248,3 +251,8 @@ create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource 
   concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",destination))))))
   from APIDestinationDataSummaryData;
 
+     
+                                                                                                                                                        
+</Script>
+   
+</Analytics>
