@@ -233,6 +233,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             log.error("user john cannot access the resources (expected behaviour)");
             assertTrue(true, "user john cannot access the resources");
         }
+        Thread.sleep(10000);
     }
 
     @AfterClass(alwaysRun = true)
@@ -251,6 +252,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
         super.cleanUp();
+        Thread.sleep(20000);
+       
     }
 
     @DataProvider
