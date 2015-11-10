@@ -37,7 +37,7 @@ public class APITierManagementTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APITierManagementTestCase.class);
     
     private AdminDashboardRestClient adminDashboard;
-    private String tierName = "SmapleTier";
+    private String tierName = "SampleTier";
     
     @Factory(dataProvider = "userModeDataProvider")
     public APITierManagementTestCase(TestUserMode userMode) {
