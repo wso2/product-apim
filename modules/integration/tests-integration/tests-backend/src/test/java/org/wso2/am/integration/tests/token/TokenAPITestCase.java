@@ -28,6 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -37,11 +38,18 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,14 +57,14 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
+    private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-//    private ServerConfigurationManager serverConfigurationManager;
-
-    private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
+    private ServerConfigurationManager serverConfigurationManager;
+    private String executionEnvironment;
 
     @Factory(dataProvider = "userModeDataProvider")
     public TokenAPITestCase(TestUserMode userMode) {
@@ -81,22 +89,27 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
           To tests issue mentioned in https://wso2.org/jira/browse/APIMANAGER-2065 please run this test against
           WSo2 Load balancer fronted 2 gateways 2 key manager setup with WSClient mode. Please refer resource api-manager.xml file.
         */
-//        String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-//                            File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
-//
-//        String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
-//                            "deployment" + File.separator + "server" + File.separator + "webapps";
-//
-//        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
+        executionEnvironment =
+                gatewayContextWrk.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
 
-//        serverConfigurationManager = new ServerConfigurationManager(
-//                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-//                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
-//
-//        serverConfigurationManager.applyConfigurationWithoutRestart(
-//                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
-//        serverConfigurationManager.applyConfiguration(
-//                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+        if (this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                    File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "jaxrs_basic.war";
+
+            String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
+                    "deployment" + File.separator + "server" + File.separator + "webapps";
+
+            FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
+
+            serverConfigurationManager = new ServerConfigurationManager(
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(
+                    new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+        }
 
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
@@ -276,6 +289,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication("TokenTestAPI-Application");
         super.cleanUp();
-//        serverConfigurationManager.restoreToLastConfiguration();
+        if (this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
     }
 }

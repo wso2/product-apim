@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -29,6 +30,7 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -86,7 +88,9 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the filter by Tags before changing the Tags")
-    public void testFilterByTagsBeforeTagChange() throws APIManagerIntegrationTestException, MalformedURLException {
+    public void testFilterByTagsBeforeTagChange()
+            throws APIManagerIntegrationTestException, IOException, InterruptedException,
+                   XPathExpressionException {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             String apiTags = apiTagEntry.getValue();
@@ -97,9 +101,19 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                     new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
                             new URL(apiEndPointUrl));
             apiCreationRequestBean.setTags(apiTags);
-            apiCreationRequestBean.setDescription(API_DESCRIPTION);
+            apiCreationRequestBean.setDescription(API_DESCRIPTION + " with tags " + apiTags );
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiCreationRequestBean,
                     apiPublisherClientUser1);
+
+            waitForAPIDeploymentSync(apiIdentifier.getProviderName(),
+                                     apiIdentifier.getApiName(),
+                                     apiIdentifier.getVersion(),
+                                     APIMIntegrationConstants.IS_API_EXISTS);
+
+            apiStoreClientUser1.waitForSwaggerDocument(apiIdentifier.getProviderName(),
+                                                   apiIdentifier.getApiName(),
+                                                   apiIdentifier.getVersion(),
+                                                   apiTags);
         }
         HttpResponse apiPageFilteredWithTagsResponse =
                 apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);

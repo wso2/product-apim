@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -34,6 +35,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -94,10 +96,13 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
 
     @Test(groups = {"wso2.am"}, description = " Test Copy API.Copy API version 1.0.0  to 2.0.0 ")
-    public void testCopyAPI() throws APIManagerIntegrationTestException {
+    public void testCopyAPI() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifierAPI1Version1, apiCreationRequestBean, apiPublisherRestClient, false);
         //Copy API version 1.0.0  to 2.0.0
+        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(), apiCreationRequestBean.getName(),
+                                 apiCreationRequestBean.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+
         HttpResponse httpResponseCopyAPI =
                 apiPublisherRestClient.copyAPI(providerName, API_NAME, API_VERSION_1_0_0, API_VERSION_2_0_0, "");
         assertEquals(httpResponseCopyAPI.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -114,6 +119,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         APILifeCycleStateRequest publishUpdateRequest =
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.PUBLISHED);
         publishUpdateRequest.setVersion(API_VERSION_2_0_0);
+
         HttpResponse publishAPIResponse =
                 apiPublisherRestClient.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version2, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -127,14 +133,26 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
     @Test(groups = {"wso2.am"}, description = " Test availability of old and new API versions in the store.",
             dependsOnMethods = "testPublishCopiedAPI")
-    public void testAvailabilityOfOldAndNewAPIVersionsInStore() throws APIManagerIntegrationTestException {
+    public void testAvailabilityOfOldAndNewAPIVersionsInStore()
+            throws APIManagerIntegrationTestException, XPathExpressionException {
         // Check availability of old API version in API Store
+
+
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifierAPI1Version1.getApiName(),
+                                 apiIdentifierAPI1Version1.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         List<APIIdentifier> apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreRestClient.getAPI());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList),
                 "Old version Api is not visible in API Store after publish new version." +
                         getAPIIdentifierString(apiIdentifierAPI1Version1));
         // Check availability of new API version in API Store
+
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifierAPI1Version2.getApiName(),
+                                 apiIdentifierAPI1Version2.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreRestClient.getAPI());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList),

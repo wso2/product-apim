@@ -37,12 +37,17 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +63,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
     private static String backEndEndpointUrl;
+    private String executionEnvironment;
 
     private static final String APPLICATION_NAME = "RefreshTokenTestAPI-Application";
 
@@ -84,19 +90,33 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
           configFiles/hostobjecttest/api-manager.xml
           configFiles/tokenTest/log4j.properties
         */
+        executionEnvironment =
+                gatewayContextWrk.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
 
-//            serverConfigurationManager.applyConfiguration(
-//                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-//                             "tokenTest" + File.separator + "api-manager.xml"));
-//            serverConfigurationManager.applyConfiguration(
-//                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
-//                             "tokenTest" + File.separator + "log4j.properties"));
+        if(this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            String sourcePath = TestConfigurationProvider.getResourceLocation() + File.separator +
+                    "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
+                    File.separator + "jaxrs_basic.war";
+
+            String targetPath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator +
+                    "deployment" + File.separator + "server" + File.separator + "webapps";
+
+            //serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
+
+
+            serverConfigurationManager = new ServerConfigurationManager(
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                            "tokenTest" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(
+                    new File(getAMResourceLocation() + File.separator + "configFiles" + File.separator +
+                            "tokenTest" + File.separator + "log4j.properties"));
+        }
 
         backEndEndpointUrl = getGatewayURLHttp() + "jaxrs_basic/services/customers/customerservice";
-
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();

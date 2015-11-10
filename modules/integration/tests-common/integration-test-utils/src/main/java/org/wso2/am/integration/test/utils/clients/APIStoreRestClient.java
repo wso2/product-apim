@@ -30,6 +30,7 @@ import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ public class APIStoreRestClient {
     private static final Log log = LogFactory.getLog(APIStoreRestClient.class);
     private String backendURL;
     private Map<String, String> requestHeaders = new HashMap<String, String>();
+    private static final long WAIT_TIME = 90 * 1000;
 
     public APIStoreRestClient(String backendURL) {
         this.backendURL = backendURL;
@@ -739,5 +741,70 @@ public class APIStoreRestClient {
         } else {
             throw new Exception("Get API Information failed> " + response.getData());
         }
+    }
+
+    /**
+     * Wait for swagger document until its updated.
+     * @param userName - Name of the api provider
+     * @param apiName  - API Name
+     * @param apiVersion - API Version
+     * @param expectedResponse - Expected response of the API
+     * @throws IOException - Throws if Swagger document cannot be found
+     * @throws javax.xml.xpath.XPathExpressionException - Throws if Swagger document cannot be found
+     */
+    public void waitForSwaggerDocument(String userName, String apiName, String apiVersion,
+                                       String expectedResponse)
+            throws IOException, XPathExpressionException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        HttpResponse response = null;
+
+        while (waitTime > System.currentTimeMillis()) {
+
+            log.info("WAIT for swagger document of API :" + apiName + " with version: " + apiVersion
+                     + " user :" + userName + " with expected response : " + expectedResponse);
+
+            try {
+                response = getSwaggerDocument(userName, apiName, apiVersion);
+            } catch (APIManagerIntegrationTestException ignored) {
+
+            }
+            if (response != null) {
+                if (response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                             " with expected response " + expectedResponse + " found");
+                    break;
+                }
+            } else {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {
+
+                }
+
+            }
+        }
+    }
+
+    /**
+     * This method will return swagger document of given api name and version
+     *
+     * @param userName   - User who request the swagger document
+     * @param apiName    - Name of the API
+     * @param apiVersion - Version of the API
+     * @return - HTTP Response of the GET swagger document request
+     * @throws APIManagerIntegrationTestException - Throws if swagger document GET request fails
+     */
+    public HttpResponse getSwaggerDocument(String userName, String apiName, String apiVersion)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.sendGetRequest(backendURL + "store/api-docs/" + userName + "/" +
+                                                  apiName + "/" + apiVersion, null);
+        } catch (IOException ex) {
+            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
+        }
+
     }
 }

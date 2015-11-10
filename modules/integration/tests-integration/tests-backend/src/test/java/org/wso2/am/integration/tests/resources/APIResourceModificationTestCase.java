@@ -25,10 +25,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -39,6 +41,7 @@ import static org.testng.Assert.assertEquals;
 public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStoreRestClient;
     private String APIName = "APIResourceTestAPI";
     private String APIVersion = "1.0.0";
     private String providerName = "";
@@ -91,6 +94,10 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         // resource are modified by using swagger doc. create the swagger doc
         // with modified
         // information. Similar thing happens when using UI to modify the
@@ -106,6 +113,8 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
                 "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"testscope\",\"description\":\"\",\"key\":\"scopeKey\",\"roles\":\"internal/subscriber\"}]}}}";
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
+
+        apiStoreRestClient.waitForSwaggerDocument(providerName, APIName, APIVersion, "Unlimited");
 
         JSONObject jsonObject = new JSONObject(response.getData());
         boolean error = (Boolean) jsonObject.get("error");

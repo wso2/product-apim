@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -32,7 +33,7 @@ import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -95,7 +96,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         storeURLHttp = getStoreURLHttp();
         //Login to API Publisher and Store with CarbonSuper admin
         apiPublisherClientCarbonSuperAdmin = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientCarbonSuperAdmin = new APIStoreRestClient(publisherURLHttp);
+        apiStoreClientCarbonSuperAdmin = new APIStoreRestClient(storeURLHttp);
 
         apiPublisherClientCarbonSuperAdmin.login(user.getUserName(), user.getPassword());
 
@@ -130,10 +131,14 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         // create new user in CarbonSuper with only subscriber role and login to the Store
         userManagementClient1 =
                 new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                        createSession(publisherContext));
+                                         createSession(publisherContext));
+
+        if (userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, CARBON_SUPER_SUBSCRIBER_USERNAME)) {
+            userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
+        }
 
         userManagementClient1.addUser(CARBON_SUPER_SUBSCRIBER_USERNAME, String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD),
-                new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+                                      new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
 
         apiStoreClientSubscriberUserSameDomain = new APIStoreRestClient(publisherURLHttp);
         apiStoreClientSubscriberUserSameDomain.login(
@@ -165,33 +170,42 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         // create new user in tenant with only subscriber role and login to the Store
         userManagementClient2 = new UserManagementClient(
                 keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
-        if(userManagementClient2.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
+        if (userManagementClient2.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
             userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
         }
 
-        userManagementClient2.addInternalRole(ROLE_SUBSCRIBER,
-                new String[]{}, new String[]{"/permission/admin/login", "/permission/admin/manage/api/subscribe"});
+        userManagementClient2.addInternalRole(INTERNAL_ROLE_SUBSCRIBER,
+                                              new String[]{}, new String[]{"/permission/admin/login",
+                                                                           "/permission/admin/manage/api/subscribe"});
+
+        if (userManagementClient2.userNameExists(INTERNAL_ROLE_SUBSCRIBER, TENANT_SUBSCRIBER_USERNAME)) {
+            userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
+        }
 
         userManagementClient2.addUser(TENANT_SUBSCRIBER_USERNAME, String.valueOf(TENANT_SUBSCRIBER_PASSWORD),
-                new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+                                      new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+
         apiStoreClientSubscriberUserOtherDomain = new APIStoreRestClient(publisherURLHttp);
         apiStoreClientSubscriberUserOtherDomain.login(TENANT_SUBSCRIBER_USERNAME,
-                String.valueOf(TENANT_SUBSCRIBER_PASSWORD));
+                                                      String.valueOf(TENANT_SUBSCRIBER_PASSWORD));
 
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for API creator ")
     public void testVisibilityForCreatorInPublisher() throws APIManagerIntegrationTestException,
-            MalformedURLException {
+                                                             IOException, XPathExpressionException {
         apiIdentifierAdminVisibility =
                 new APIIdentifier(providerName, API_NAME_ADMIN_VISIBILITY, API_VERSION_1_0_0);
+
         apiIdentifierSubscriberVisibility =
                 new APIIdentifier(providerName, API_NAME_SUBSCRIBER_VISIBILITY, API_VERSION_1_0_0);
+
         //Create API  with public visibility and publish.
         APICreationRequestBean apiCreationReqBeanVisibilityAdmin =
                 new APICreationRequestBean(API_NAME_ADMIN_VISIBILITY, API_CONTEXT1, API_VERSION_1_0_0,
-                        providerName, new URL(apiEndPointUrl));
+                                           providerName, new URL(apiEndPointUrl));
+
         apiCreationReqBeanVisibilityAdmin.setTags(API_TAGS);
         apiCreationReqBeanVisibilityAdmin.setDescription(API_DESCRIPTION);
         apiCreationReqBeanVisibilityAdmin.setVisibility("restricted");
@@ -207,15 +221,38 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
         apiCreationReqBeanVisibilityInternalSubscriber.setRoles("Internal/subscriber");
         apiPublisherClientCarbonSuperUser1.addAPI(apiCreationReqBeanVisibilityInternalSubscriber);
         publishAPI(apiIdentifierSubscriberVisibility, apiPublisherClientCarbonSuperUser1, false);
+
+        waitForAPIDeploymentSync(apiIdentifierAdminVisibility.getProviderName(),
+                                 apiIdentifierAdminVisibility.getApiName(),
+                                 apiIdentifierAdminVisibility.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        waitForAPIDeploymentSync(apiCreationReqBeanVisibilityAdmin.getProvider(),
+                                 apiCreationReqBeanVisibilityAdmin.getName(),
+                                 apiCreationReqBeanVisibilityAdmin.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        waitForAPIDeploymentSync(apiCreationReqBeanVisibilityInternalSubscriber.getProvider(),
+                                 apiCreationReqBeanVisibilityInternalSubscriber.getName(),
+                                 apiCreationReqBeanVisibilityInternalSubscriber.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+
+        waitForAPIDeploymentSync(apiIdentifierSubscriberVisibility.getProviderName(),
+                                 apiIdentifierSubscriberVisibility.getApiName(),
+                                 apiIdentifierSubscriberVisibility.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                         apiPublisherClientCarbonSuperUser1.getAllAPIs());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAdminVisibility, apiPublisherAPIIdentifierList),
-                "API with  Role admin  visibility is not visible to creator in API Publisher." +
-                        getAPIIdentifierString(apiIdentifierAdminVisibility));
+                   "API with  Role admin  visibility is not visible to creator in API Publisher." +
+                   getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiPublisherAPIIdentifierList),
-                "API with  Role Internal/subscriber  visibility is not visible to creator in API Publisher." +
-                        getAPIIdentifierString(apiIdentifierSubscriberVisibility));
+                   "API with  Role Internal/subscriber  visibility is not visible to creator in API Publisher." +
+                   getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
 
@@ -236,19 +273,19 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for admin in same domain ",
-            dependsOnMethods = "testVisibilityForCreatorInStore")
+          dependsOnMethods = "testVisibilityForCreatorInStore")
     public void testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInPublisher()
             throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiPublisherClientCarbonSuperAdmin.getAllAPIs());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAdminVisibility, apiPublisherAPIIdentifierList),
-                "API with  Role admin  visibility is not visible to Admin user with Admin and subscriber role in same" +
-                        " domain in API Publisher." +
-                        getAPIIdentifierString(apiIdentifierAdminVisibility));
+                   "API with  Role admin  visibility is not visible to Admin user with Admin and subscriber role in same" +
+                   " domain in API Publisher." +
+                   getAPIIdentifierString(apiIdentifierAdminVisibility));
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiPublisherAPIIdentifierList),
-                "API with  Role Internal/subscriber  visibility is not visible to Admin user with Admin and subscriber" +
-                        " role in same domain  in API Publisher." +
-                        getAPIIdentifierString(apiIdentifierSubscriberVisibility));
+                   "API with  Role Internal/subscriber  visibility is not visible to Admin user with Admin and subscriber" +
+                   " role in same domain  in API Publisher." +
+                   getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for admin in same domain ",
@@ -268,9 +305,12 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for another user in same domain",
-            dependsOnMethods = "testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInStore")
-    public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInPublisher() throws
-            APIManagerIntegrationTestException {
+          dependsOnMethods = "testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInStore")
+    public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInPublisher()
+            throws APIManagerIntegrationTestException, IOException, XPathExpressionException {
+
+
+
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                         apiPublisherClientCarbonSuperUser2.getAllAPIs());
@@ -288,7 +328,18 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in same domain",
             dependsOnMethods = "testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInPublisher")
     public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInStore() throws
-            APIManagerIntegrationTestException {
+                                                                                            APIManagerIntegrationTestException,
+                                                                                            XPathExpressionException,
+                                                                                            IOException {
+
+        waitForAPIDeploymentSync(storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
+                                 apiIdentifierAdminVisibility.getApiName(), apiIdentifierAdminVisibility.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        waitForAPIDeploymentSync(storeContext.getContextTenant().getTenantUser(CARBON_SUPER_TENANT2_KEY).getUserName(),
+                                 apiIdentifierSubscriberVisibility.getApiName(), apiIdentifierSubscriberVisibility.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         List<APIIdentifier> apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientCarbonSuperUser2.
                         getAllPublishedAPIs(apiCreatorStoreDomain));
@@ -440,10 +491,18 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
-        deleteAPI(apiIdentifierAdminVisibility, apiPublisherClientCarbonSuperAdmin);
-        deleteAPI(apiIdentifierSubscriberVisibility, apiPublisherClientCarbonSuperAdmin);
-        userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
-        userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
-    }
+        if (apiIdentifierAdminVisibility != null && apiPublisherClientCarbonSuperAdmin != null) {
+            deleteAPI(apiIdentifierAdminVisibility, apiPublisherClientCarbonSuperAdmin);
+            deleteAPI(apiIdentifierSubscriberVisibility, apiPublisherClientCarbonSuperAdmin);
+        }
 
+        if (userManagementClient1 != null) {
+            userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
+        }
+
+        if (userManagementClient2 != null) {
+            userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
+            userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
+        }
+    }
 }

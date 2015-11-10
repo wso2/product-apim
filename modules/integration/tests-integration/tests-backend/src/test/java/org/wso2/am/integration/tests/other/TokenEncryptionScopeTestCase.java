@@ -38,6 +38,7 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -82,48 +83,50 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
     private static final String IDENTITY_CONFIG_XML = "identity.xml";
 
     private static String apiProvider;
+    private static String executionEnvironment;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
         super.init();
 
+        executionEnvironment =
+                gatewayContextWrk.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
+
         apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                                   File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                                   "configFiles" + File.separator + "token_encryption" + File.separator;
+        if (this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
+            String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
+                    File.separator + "artifacts" + File.separator + "AM" + File.separator +
+                    "configFiles" + File.separator + "token_encryption" + File.separator;
 
-        String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
-        String identityConfigArtifactLocation = artifactsLocation + IDENTITY_CONFIG_XML;
+            String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
+            String identityConfigArtifactLocation = artifactsLocation + IDENTITY_CONFIG_XML;
 
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                                              File.separator + "conf" + File.separator + APIM_CONFIG_XML;
+            String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
+                    File.separator + "conf" + File.separator + APIM_CONFIG_XML;
 
-        String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                                                  File.separator + "conf" + File.separator + "identity" + File.separator +
-                                                  IDENTITY_CONFIG_XML;
+            String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
+                    File.separator + "conf" + File.separator + IDENTITY_CONFIG_XML;
+            File apimConfSourceFile = new File(apimConfigArtifactLocation);
+            File apimConfTargetFile = new File(apimRepositoryConfigLocation);
+            File identityConfSourceFile = new File(identityConfigArtifactLocation);
+            File identityConfTargetFile = new File(identityRepositoryConfigLocation);
 
-        File apimConfSourceFile = new File(apimConfigArtifactLocation);
-        File apimConfTargetFile = new File(apimRepositoryConfigLocation);
+            serverManager = new ServerConfigurationManager(gatewayContextWrk);
 
-        File identityConfSourceFile = new File(identityConfigArtifactLocation);
-        File identityConfTargetFile = new File(identityRepositoryConfigLocation);
+            // apply configuration to  api-manager.xml
+            serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
+            log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
+                    " to :" + apimRepositoryConfigLocation);
 
-        serverManager = new ServerConfigurationManager(gatewayContextWrk);
-
-        // apply configuration to  api-manager.xml
-        serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-        log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                 " to :" + apimRepositoryConfigLocation);
-
-        // apply configuration to identity.xml
-        serverManager.applyConfigurationWithoutRestart(identityConfSourceFile, identityConfTargetFile, true);
-        log.info("identity.xml configuration file copy from :" + identityConfigArtifactLocation +
-                 " to :" + identityRepositoryConfigLocation);
-
-        serverManager.restartGracefully();
+            // apply configuration to identity.xml
+            serverManager.applyConfigurationWithoutRestart(identityConfSourceFile, identityConfTargetFile, true);
+            log.info("identity.xml configuration file copy from :" + identityConfigArtifactLocation +
+                    " to :" + identityRepositoryConfigLocation);
+            serverManager.restartGracefully();
+        }
 
         //Initialize publisher and store.
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -136,20 +139,30 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = "wso2.am", description = "Check if Scopes work fine with token encryption enabled.")
-    public void testTokenEncryptionWithScopes() {
+    public void testTokenEncryptionWithScopes() throws Exception {
 
         try {
-            userManagementClient = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
+            userManagementClient = new UserManagementClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                             publisherContext.getContextTenant().getContextUser().getUserName(),
                                                             publisherContext.getContextTenant().getContextUser().getPassword());
             //adding new role subscriber
+            if (userManagementClient.roleNameExists(SUBSCRIBER_ROLE)) {
+                userManagementClient.deleteRole(SUBSCRIBER_ROLE);
+            }
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
                                                                                        "/permission/admin/manage/api/subscribe"});
 
+
             //creating user sam
+            if (userManagementClient.userNameExists(SUBSCRIBER_ROLE, USER_SAM)) {
+                userManagementClient.deleteUser(USER_SAM);
+            }
             userManagementClient.addUser(USER_SAM, "sam123", new String[]{SUBSCRIBER_ROLE}, "sam");
 
             //creating user mike
+            if (userManagementClient.userNameExists(SUBSCRIBER_ROLE, APP_DEV_USER)) {
+                userManagementClient.deleteUser(APP_DEV_USER);
+            }
             userManagementClient.addUser(APP_DEV_USER, APP_DEV_PWD, new String[]{SUBSCRIBER_ROLE}, APP_DEV_USER);
 
         } catch (AxisFault axisFault) {

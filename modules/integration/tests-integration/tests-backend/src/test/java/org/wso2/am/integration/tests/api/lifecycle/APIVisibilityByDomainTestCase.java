@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -147,6 +148,10 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
 
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         publishAPI(apiIdentifier, apiPublisherClientCarbonSuperUser1, false);
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
                         apiPublisherClientCarbonSuperUser1.getAllAPIs());
