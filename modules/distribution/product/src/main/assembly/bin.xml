@@ -245,6 +245,23 @@
         <outputDirectory>wso2am-${pom.version}/dbscripts/migration-1.8.0_to_1.9.0</outputDirectory>
     </fileSet>
 
+    <fileSet>
+        <directory>
+            ../statistics/target/
+        </directory>
+        <outputDirectory>wso2am-${pom.version}/dbscripts/stat/migration-1.9.0_to_1.10.0</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+        <directory>
+            ../resources/stat/sql/
+        </directory>
+        <outputDirectory>wso2am-${pom.version}/dbscripts/stat/sql</outputDirectory>
+        <includes>
+            <include>**/**.sql</include>
+        </includes>
+    </fileSet>
+
 	<fileSet>
              <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/jaggeryapps/api-publisher/</directory>
              <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/publisher</outputDirectory>
