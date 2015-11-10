@@ -33,14 +33,14 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class APITiersTestCase extends APIMIntegrationBaseTest {
-    private final Log log = LogFactory.getLog(APITiersTestCase.class);
+public class APITierManagementTestCase extends APIMIntegrationBaseTest {
+    private final Log log = LogFactory.getLog(APITierManagementTestCase.class);
     
     private AdminDashboardRestClient adminDashboard;
     private String tierName = "SmapleTier";
     
     @Factory(dataProvider = "userModeDataProvider")
-    public APITiersTestCase(TestUserMode userMode) {
+    public APITierManagementTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
     
