@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<artifact name="Throttle_script" version="1.0.0" type="analytics/spark" serverRole="DataAnalyticsServer">
-    <file>Throttle_script.xml</file>
-</artifact>

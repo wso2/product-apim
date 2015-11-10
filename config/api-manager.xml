@@ -364,6 +364,20 @@
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
+
+	<!--
+            Server URL of the API Store.
+        -->
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <!--
+            Admin username for API Store.
+        -->
+        <Username>${admin.username}</Username>
+
+        <!--
+            Admin password for API Store.
+        -->
+        <Password>${admin.password}</Password>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
@@ -414,6 +428,19 @@
     <APIPublisher>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/publisher</URL>
+	
+	<!--
+            Server URL of the API Publisher.
+        -->
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <!--
+            Admin username for API Publisher.
+        -->
+        <Username>${admin.username}</Username>
+        <!--
+            Admin password for API Publisher.
+        -->
+        <Password>${admin.password}</Password>
         <!--
                This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
                By default any document associate with an API will have the same permissions set as the API.With enabling below

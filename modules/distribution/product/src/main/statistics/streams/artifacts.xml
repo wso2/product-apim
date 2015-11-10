@@ -24,7 +24,7 @@
 	<dependency artifact="Eventreceiver_workflow" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_throttle" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 
-	<dependency artifact="Sparkscripts" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
-	<dependency artifact="Throttle_script" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="APIM_STAT_SCRIPT" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="APIM_STAT_SCRIPT_THROTTLE" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
     </artifact>
 </artifacts>
