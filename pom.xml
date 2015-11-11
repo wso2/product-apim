@@ -562,7 +562,11 @@
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
                 <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
@@ -616,6 +620,11 @@
             <dependency>
                 <groupId>org.wso2.carbon.deployment</groupId>
                 <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
+                <version>${carbon.deployment.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.deployment</groupId>
+                <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
                 <version>${carbon.deployment.version}</version>
             </dependency>
             <dependency>

@@ -30,6 +30,8 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -45,6 +47,7 @@ import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;

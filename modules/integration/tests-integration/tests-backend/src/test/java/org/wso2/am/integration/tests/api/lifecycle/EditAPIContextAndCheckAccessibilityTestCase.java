@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -99,6 +100,9 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
         requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);
@@ -133,6 +137,9 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
             " after the API context change", dependsOnMethods = "testEditAPIContext")
     public void testInvokeAPIAfterChangeAPIContextWithOldContext() throws Exception {
         //Invoke  old context
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                                 "new" + API_CONTEXT);
+
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
                         API_END_POINT_METHOD, requestHeaders);

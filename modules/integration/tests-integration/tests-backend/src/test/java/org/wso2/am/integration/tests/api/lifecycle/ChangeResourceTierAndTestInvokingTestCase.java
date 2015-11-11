@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -40,9 +41,10 @@ import static org.testng.Assert.assertTrue;
  * Change the API resource tier and test the throttling.
  */
 public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
-
-    private final String API_NAME = "ChangeResourceTierAndTestInvokingTest";
-    private final String API_CONTEXT = "ChangeResourceTierAndTestInvoking";
+    //Random number to avoid test failure on clustered setup. Swagger document of the API not getting
+    //removed properly hence re-executing the tests trend to yield false negatives.
+    private final String API_NAME = "ChangeResourceTierAndTestInvokingTest" + (int )(Math.random() * 100 + 1);
+    private final String API_CONTEXT = "ChangeResourceTierAndTestInvoking" + (int )(Math.random() * 50 + 1);
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_END_POINT_METHOD = "customers/123";
@@ -93,6 +95,8 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get access token
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
@@ -143,6 +147,11 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
 
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Silver", executionMode);
+
         long startTime = System.currentTimeMillis();
         long currentTime;
         for (int invocationCount = 1; invocationCount <= SILVER_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
@@ -188,6 +197,11 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
 
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
+
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Gold", executionMode);
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
         long startTime = System.currentTimeMillis();
         long currentTime;
         for (int invocationCount = 1; invocationCount <= GOLD_INVOCATION_LIMIT_PER_MIN; invocationCount++) {

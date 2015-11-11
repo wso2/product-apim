@@ -24,6 +24,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -70,6 +71,10 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 		loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
 				+ File.separator + "synapseconfigs" + File.separator + "rest"
                 + File.separator + synapseConfFile, gatewayContextMgt, gatewaySessionCookie);
+
+        waitForAPIDeploymentSync(gatewayContextWrk.getContextTenant().getContextUser().getUserName(),
+                                 "stockquote", "1.0.0",
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 	}
 
 	@Test(groups = { "wso2.am" },
