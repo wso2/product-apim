@@ -150,7 +150,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
-        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Silver");
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Silver", executionMode);
 
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -198,7 +198,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
 
-        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Gold");
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Gold", executionMode);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 

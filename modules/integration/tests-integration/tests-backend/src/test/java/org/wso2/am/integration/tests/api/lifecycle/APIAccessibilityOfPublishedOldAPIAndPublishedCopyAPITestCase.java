@@ -51,7 +51,8 @@ import static org.testng.Assert.assertTrue;
  * still subscribe to old version. Test invocation of both old and new API versions.
  */
 
-public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extends APIManagerLifecycleBaseTest {
+public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
+        extends APIManagerLifecycleBaseTest {
     private final String API_NAME = "APIAccessibilityOfOldAndCopyAPITest";
     private final String API_CONTEXT = "APIAccessibilityOfOldAndCopyAPI";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
@@ -71,13 +72,14 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
     private APIStoreRestClient apiStoreRestClient;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+                                    MalformedURLException {
         super.init();
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
+                                           new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiIdentifierAPI1Version1 = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
@@ -106,10 +108,10 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         HttpResponse httpResponseCopyAPI =
                 apiPublisherRestClient.copyAPI(providerName, API_NAME, API_VERSION_1_0_0, API_VERSION_2_0_0, "");
         assertEquals(httpResponseCopyAPI.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Copy API request code is invalid." + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                     "Copy API request code is invalid." + getAPIIdentifierString(apiIdentifierAPI1Version1));
         assertEquals(getValueFromJSON(httpResponseCopyAPI, "error"), "false",
-                "Copy  API response data is invalid" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + httpResponseCopyAPI.getData());
+                     "Copy  API response data is invalid" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
+                     "Response Data:" + httpResponseCopyAPI.getData());
     }
 
 
@@ -123,16 +125,16 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         HttpResponse publishAPIResponse =
                 apiPublisherRestClient.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version2, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version2));
+                     "API publish Response code is invalid " + getAPIIdentifierString(apiIdentifierAPI1Version2));
         assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
-                "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
-                        "Response Data:" + publishAPIResponse.getData());
+                   "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
+                   "Response Data:" + publishAPIResponse.getData());
 
     }
 
 
     @Test(groups = {"wso2.am"}, description = " Test availability of old and new API versions in the store.",
-            dependsOnMethods = "testPublishCopiedAPI")
+          dependsOnMethods = "testPublishCopiedAPI")
     public void testAvailabilityOfOldAndNewAPIVersionsInStore()
             throws APIManagerIntegrationTestException, XPathExpressionException {
         // Check availability of old API version in API Store
@@ -144,11 +146,13 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
 
         List<APIIdentifier> apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreRestClient.getAPI());
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList),
-                "Old version Api is not visible in API Store after publish new version." +
-                        getAPIIdentifierString(apiIdentifierAPI1Version1));
-        // Check availability of new API version in API Store
 
+        //DisplayMultipleVersions property in api_manager.xml set to false in order to run the test on cluster
+        //assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version1, apiStoreAPIIdentifierList),
+        //        "Old version Api is not visible in API Store after publish new version." +
+        //                getAPIIdentifierString(apiIdentifierAPI1Version1));
+
+        // Check availability of new API version in API Store
         waitForAPIDeploymentSync(user.getUserName(), apiIdentifierAPI1Version2.getApiName(),
                                  apiIdentifierAPI1Version2.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
@@ -156,39 +160,39 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreRestClient.getAPI());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAPI1Version2, apiStoreAPIIdentifierList),
-                "New version Api is not visible in API Store after publish new version." +
-                        getAPIIdentifierString(apiIdentifierAPI1Version2));
+                   "New version Api is not visible in API Store after publish new version." +
+                   getAPIIdentifierString(apiIdentifierAPI1Version2));
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe of old API version.",
-            dependsOnMethods = "testAvailabilityOfOldAndNewAPIVersionsInStore")
+          dependsOnMethods = "testAvailabilityOfOldAndNewAPIVersionsInStore")
     public void testSubscribeOldVersion() throws APIManagerIntegrationTestException {
         HttpResponse oldVersionSubscribeResponse =
                 subscribeToAPI(apiIdentifierAPI1Version1, APPLICATION_NAME, apiStoreRestClient);
         assertEquals(oldVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Subscribe of old API" +
-                " version request not successful " + getAPIIdentifierString(apiIdentifierAPI1Version1));
+                                                                                           " version request not successful " + getAPIIdentifierString(apiIdentifierAPI1Version1));
         assertEquals(getValueFromJSON(oldVersionSubscribeResponse, "error"), "false",
-                "Error in subscribe of old API version" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
-                        "Response Data:" + oldVersionSubscribeResponse.getData());
+                     "Error in subscribe of old API version" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
+                     "Response Data:" + oldVersionSubscribeResponse.getData());
     }
 
 
     @Test(groups = {"wso2.am"}, description = " Test availability of old and new API versions i the store.",
-            dependsOnMethods = "testSubscribeOldVersion")
+          dependsOnMethods = "testSubscribeOldVersion")
     public void testSubscribeNewVersion() throws APIManagerIntegrationTestException {
         HttpResponse newVersionSubscribeResponse =
                 subscribeToAPI(apiIdentifierAPI1Version2, APPLICATION_NAME, apiStoreRestClient);
         assertEquals(newVersionSubscribeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Subscribe of old API" +
-                " version request not successful " + getAPIIdentifierString(apiIdentifierAPI1Version2));
+                                                                                           " version request not successful " + getAPIIdentifierString(apiIdentifierAPI1Version2));
         assertEquals(getValueFromJSON(newVersionSubscribeResponse, "error"), "false",
-                "Error in subscribe of old API version" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
-                        "Response Data:" + newVersionSubscribeResponse.getData());
+                     "Error in subscribe of old API version" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
+                     "Response Data:" + newVersionSubscribeResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Publish a API and check its visibility in the API Store. " +
-            "Copy and create a new version, publish  the new version, test invocation of both old and" +
-            " new API versions.", dependsOnMethods = "testSubscribeNewVersion")
+                                              "Copy and create a new version, publish  the new version, test invocation of both old and" +
+                                              " new API versions.", dependsOnMethods = "testSubscribeNewVersion")
     public void testAccessibilityOfPublishedOldAPIAndPublishedCopyAPI() throws Exception {
         //get access token
         String accessToken = generateApplicationKeys(apiStoreRestClient, APPLICATION_NAME).getAccessToken();
@@ -198,14 +202,14 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase extend
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
-                        API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
+                                      API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
         //Invoke new version
         HttpResponse newVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0)  + "/" +
-                        API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0) + "/" +
+                                      API_END_POINT_METHOD, requestHeaders);
         assertEquals(newVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
         assertTrue(newVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched");
 

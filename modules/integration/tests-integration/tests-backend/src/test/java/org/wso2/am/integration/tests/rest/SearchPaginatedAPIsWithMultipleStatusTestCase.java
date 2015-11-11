@@ -32,81 +32,78 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.net.URL;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class SearchPaginatedAPIsWithMultipleStatusTestCase extends APIMIntegrationBaseTest {
 
-	private APIPublisherRestClient apiPublisher;
-	private APIStoreRestClient apiStore;
-	private ServerConfigurationManager serverConfigurationManager;
-	private final int apiCount = 24;
-	private static final String PROVIDER = "admin";
-	private static final String TENANT_DOMAIN = "carbon.super";
-	private static final String API_NAME_PREFIX = "YoutubeFeeds";
-	private static final String API_CONTEXT_PREFIX = "youtube";
-	private static final String API_VERSION = "1.0.0";
-	private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
-	private static final int PAGINATED_COUNT = 10;
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+    private ServerConfigurationManager serverConfigurationManager;
+    private final int apiCount = 24;
+    private static final String PROVIDER = "admin";
+    private static final String TENANT_DOMAIN = "carbon.super";
+    private static final String API_NAME_PREFIX = "YoutubeFeeds";
+    private static final String API_CONTEXT_PREFIX = "youtube";
+    private static final String API_VERSION = "1.0.0";
+    private static final String API_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private static final int PAGINATED_COUNT = 10;
 
-	@Factory(dataProvider = "userModeDataProvider")
-	public SearchPaginatedAPIsWithMultipleStatusTestCase(TestUserMode userMode) {
-		this.userMode = userMode;
-	}
+    @Factory(dataProvider = "userModeDataProvider")
+    public SearchPaginatedAPIsWithMultipleStatusTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
-	@DataProvider
-	public static Object[][] userModeDataProvider() {
-		return new Object[][]{
-				new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
-		};
-	}
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
+        };
+    }
 
-	@BeforeClass(alwaysRun = true)
-	public void setEnvironment() throws Exception {
-		super.init(userMode);
-		String publisherURLHttp = getPublisherURLHttp();
-		String storeURLHttp = getStoreURLHttp();
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        super.init(userMode);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
 
-		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-		apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStore = new APIStoreRestClient(storeURLHttp);
 
-		apiPublisher.login(user.getUserName(), user.getPassword());
-		apiStore.login(user.getUserName(), user.getPassword());
-	}
+        apiPublisher.login(user.getUserName(), user.getPassword());
+        apiStore.login(user.getUserName(), user.getPassword());
+    }
 
-	@Test(groups = { "wso2.am" }, description = "check paginated API count")
-	public void testPaginationWithMultipleStatus() throws Exception {
-		for (int i = 0; i < apiCount; i++) {
-			APIRequest apiRequest = new APIRequest(API_NAME_PREFIX + i, API_CONTEXT_PREFIX + i,
-					new URL(API_URL));
-			apiPublisher.addAPI(apiRequest);
-			if (i % 2 == 0) {
+    @Test(groups = { "wso2.am" }, description = "check paginated API count")
+    public void testPaginationWithMultipleStatus() throws Exception {
+        for (int i = 0; i < apiCount; i++) {
+            APIRequest apiRequest = new APIRequest(API_NAME_PREFIX + i, API_CONTEXT_PREFIX + i,
+                                                   new URL(API_URL));
+            apiPublisher.addAPI(apiRequest);
+            if (i % 2 == 0) {
 
-				APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_PREFIX + i,
-						user.getUserName(), APILifeCycleState.PUBLISHED);
-				apiPublisher.changeAPILifeCycleStatus(updateRequest);
-			}
-			Thread.sleep(500);
-		}
+                APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_PREFIX + i,
+                                                                                      user.getUserName(), APILifeCycleState.PUBLISHED);
+                apiPublisher.changeAPILifeCycleStatus(updateRequest);
+            }
+            Thread.sleep(500);
+        }
 
-		Thread.sleep(10000);//Wait till APIs get indexed
-		HttpResponse response = apiStore.searchPaginateAPIs(TENANT_DOMAIN, "0", "10", API_NAME_PREFIX);
-		JSONObject responseJSON = new JSONObject(response.getData());
-		JSONArray returnedAPIs = responseJSON.getJSONArray("result");
-		Assert.assertEquals(returnedAPIs.length(), PAGINATED_COUNT);
-	}
+        Thread.sleep(10000);//Wait till APIs get indexed
+        HttpResponse response = apiStore.searchPaginateAPIs(TENANT_DOMAIN, "0", "10", API_NAME_PREFIX);
+        JSONObject responseJSON = new JSONObject(response.getData());
+        JSONArray returnedAPIs = responseJSON.getJSONArray("result");
+        Assert.assertEquals(returnedAPIs.length(), PAGINATED_COUNT);
+    }
 
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		for (int i = 0; i < apiCount; i++) {
-			apiPublisher.deleteAPI(API_NAME_PREFIX + i, API_VERSION, PROVIDER);
-		}
-		super.cleanUp();
-	}
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        for (int i = 0; i < apiCount; i++) {
+            apiPublisher.deleteAPI(API_NAME_PREFIX + i, API_VERSION, PROVIDER);
+        }
+        super.cleanUp();
+    }
 }

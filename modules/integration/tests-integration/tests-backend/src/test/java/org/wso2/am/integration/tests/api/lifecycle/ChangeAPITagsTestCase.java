@@ -113,7 +113,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             apiStoreClientUser1.waitForSwaggerDocument(apiIdentifier.getProviderName(),
                                                    apiIdentifier.getApiName(),
                                                    apiIdentifier.getVersion(),
-                                                   apiTags);
+                                                   apiTags, executionMode);
         }
         HttpResponse apiPageFilteredWithTagsResponse =
                 apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);

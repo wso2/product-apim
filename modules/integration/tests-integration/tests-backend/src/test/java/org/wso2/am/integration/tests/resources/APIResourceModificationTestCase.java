@@ -63,7 +63,10 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
+
         providerName = user.getUserName();
     }
 
@@ -114,7 +117,7 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
-        apiStoreRestClient.waitForSwaggerDocument(providerName, APIName, APIVersion, "Unlimited");
+        apiStoreRestClient.waitForSwaggerDocument(providerName, APIName, APIVersion, "Unlimited", executionMode);
 
         JSONObject jsonObject = new JSONObject(response.getData());
         boolean error = (Boolean) jsonObject.get("error");
