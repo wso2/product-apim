@@ -200,7 +200,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         APICreationRequestBean apiCreateRequestBean = new APICreationRequestBean(apiName, context, version,
                 providerName, endpointLB);
-        apiCreateRequestBean.setTier(tier);
+        apiCreateRequestBean.setTiersCollection(tier);
         apiCreateRequestBean.setResourceBeanList(resourceBeanList);
         apiCreateRequestBean.setVisibility(visibility);
         apiCreateRequestBean.setTags(tags);
@@ -309,7 +309,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         APICreationRequestBean apiSBCreationRequestBean = new APICreationRequestBean(apiNameSandbox, contextSandbox,
                 version, providerName, endpointProd, endpointSandbox);
-        apiSBCreationRequestBean.setTier(tier);
+        apiSBCreationRequestBean.setTiersCollection(tier);
         apiSBCreationRequestBean.setResourceBeanList(resourceBeanList);
         apiSBCreationRequestBean.setVisibility(visibility);
         apiSBCreationRequestBean.setTags(tagsSandbox);
