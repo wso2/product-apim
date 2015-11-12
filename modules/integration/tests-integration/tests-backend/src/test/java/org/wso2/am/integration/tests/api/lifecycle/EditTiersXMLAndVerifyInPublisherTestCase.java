@@ -91,8 +91,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
                         File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
         resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContextMgt));
+                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
+                                               createSession(publisherContext));
         originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
         newTiersXML = readFile(artifactsLocation);
     }
