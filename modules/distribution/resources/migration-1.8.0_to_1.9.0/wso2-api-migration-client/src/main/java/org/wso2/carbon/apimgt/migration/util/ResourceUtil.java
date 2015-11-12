@@ -33,14 +33,12 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ResourceUtil {
@@ -92,31 +90,6 @@ public class ResourceUtil {
 
 
     /**
-     * This method is used to get the database driver name
-     *
-     * @return user database type as a string
-     * @throws SQLException
-     */
-    private static String getDatabaseDriverName() throws SQLException {
-        Connection connection = APIMgtDBUtil.getConnection();
-        String databaseType;
-
-        if (connection.getMetaData().getDriverName().contains("MySQL")) {
-            databaseType = "MYSQL";
-        } else if (connection.getMetaData().getDriverName().contains("MS SQL") ||
-                connection.getMetaData().getDriverName().contains("Microsoft")) {
-            databaseType = "MSSQL";
-        } else if (connection.getMetaData().getDriverName().contains("H2")) {
-            databaseType = "H2";
-        } else if (connection.getMetaData().getDriverName().contains("PostgreSQL")) {
-            databaseType = "POSTGRESQL";
-        } else {
-            databaseType = "ORACLE";
-        }
-        return databaseType;
-    }
-
-    /**
      * This method picks the query according to the users database
      *
      * @param migrateVersion migrate version
@@ -134,32 +107,27 @@ public class ResourceUtil {
 
             String resourcePath;
 
-            if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_9)) {
+            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
                 //pick from 18to19Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
-            } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_8)) {
-                //pick from 17to18Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.7.0_to_1.8.0/";
-            } else if (migrateVersion.equalsIgnoreCase(Constants.VERSION_1_7)) {
-                //pick from 16to17Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.6.0_to_1.7.0/";
+                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
             } else {
                 throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
             }
 
             if (Constants.CONSTRAINT.equals(queryType)) {
-                resourcePath = CarbonUtils.getCarbonHome() + "/dbscripts/migration-1.8.0_to_1.9.0/";
+                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
                 //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
-                queryTobeExecuted = resourcePath +  databaseType + ".sql";
+                queryTobeExecuted = resourcePath + databaseType + ".sql";
                 //queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
 
         } catch (IOException e) {
             throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
         } catch (Exception e) {
-            throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
+            //getDatabaseType inherited from DBCreator, which throws generic exception
+            throw new APIMigrationException("Error occurred while searching for database type " + e);
         }
 
         return queryTobeExecuted;
@@ -188,18 +156,26 @@ public class ResourceUtil {
         try {
             String namespace = "http://ws.apache.org/ns/synapse";
             String filePath = sequenceDirectoryFilePath + sequenceName + ".xml";
+
+            File sequenceFile = new File(filePath);
+
+            if (!sequenceFile.exists()) {
+                log.debug("Sequence file " + sequenceName + ".xml does not exist");
+                return;
+            }
+
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.parse(filePath);
             Node sequence = doc.getElementsByTagName("sequence").item(0);
             Element corsSequence = doc.createElementNS(namespace, "sequence");
-            corsSequence.setAttribute("key", "_cors_request_handler");
+            corsSequence.setAttribute("key", "_cors_request_handler_");
             boolean available = false;
             for (int i = 0; i < sequence.getChildNodes().getLength(); i++) {
                 Node tempNode = sequence.getChildNodes().item(i);
                 if (tempNode.getNodeType() == Node.ELEMENT_NODE &&"sequence".equals(tempNode.getLocalName()) &&
-                    "_cors_request_handler".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
+                    "_cors_request_handler_".equals(tempNode.getAttributes().getNamedItem("key").getTextContent())) {
                     available = true;
                     break;
                 }
@@ -235,48 +211,164 @@ public class ResourceUtil {
     /**
      * To update synapse API
      *
-     * @param filePath       file path
-     * @param implementation new impl
+     * @param document       XML document object
+     * @param file       synapse file
      * @throws APIMigrationException
      */
-    public static void updateSynapseAPI(File filePath, String implementation) throws APIMigrationException {
+    public static void updateSynapseAPI(Document document, File file) throws APIMigrationException {
         try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            docFactory.setNamespaceAware(true);
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = null;
-            doc = docBuilder.parse(filePath.getAbsolutePath());
-            Node handlers = doc.getElementsByTagName("handlers").item(0);
-            Element corsHandler = doc.createElement("handler");
-            corsHandler.setAttribute("class", "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler");
-            Element property = doc.createElement("property");
-            property.setAttribute("name", "inline");
-            property.setAttribute("value", implementation);
-            corsHandler.appendChild(property);
-            NodeList handlerNodes = doc.getElementsByTagName("handler");
-            for (int i = 0; i < handlerNodes.getLength(); i++) {
-                Node tempNode = handlerNodes.item(i);
-                if ("org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler"
-                        .equals(tempNode.getAttributes().getNamedItem("class").getTextContent())) {
-                    handlers.removeChild(tempNode);
-                }
-                handlers.insertBefore(corsHandler, handlerNodes.item(0));
-            }
+            updateAPIAttributes(document, file);
+            updateHandlers(document, file);
+            updateResources(document, file);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(filePath);
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(file);
             transformer.transform(source, result);
-        } catch (ParserConfigurationException e) {
-            handleException("Could not initiate Document Builder.", e);
         } catch (TransformerConfigurationException e) {
             handleException("Could not initiate TransformerFactory Builder.", e);
         } catch (TransformerException e) {
             handleException("Could not transform the source.", e);
-        } catch (SAXException e) {
-            handleException("SAX exception occurred while parsing the file.", e);
-        } catch (IOException e) {
-            handleException("IO Exception occurred. Please check the file.", e);
+        }
+    }
+
+    private static void updateAPIAttributes(Document document, File file) {
+        Element apiElement = document.getDocumentElement();
+
+        String versionType = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE);
+
+        if (versionType.equals(Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL)) {
+            String context = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT);
+            String version = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION);
+
+            context = context + "/" + version;
+            apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT, context);
+            apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE, Constants.SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT);
+        }
+    }
+
+
+    private static void updateHandlers(Document document, File file) {
+        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
+
+        NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
+
+        for (int i = 0; i < handlerNodes.getLength(); ++i) {
+            Element handler = (Element) handlerNodes.item(i);
+
+            String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
+
+            if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
+                handlersElement.removeChild(handler);
+                break;
+            }
+        }
+
+        // Find the inSequence
+        Element inSequenceElement = (Element) document.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+
+        NodeList sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
+
+        Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLER);
+        corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
+        Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+        property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
+
+        if (0 < sendElements.getLength()) {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
+        }
+        else {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
+        }
+
+        corsHandler.appendChild(property);
+
+        handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
+
+    }
+
+    private static void updateResources(Document document, File file) throws APIMigrationException {
+        NodeList resourceNodes = document.getElementsByTagName("resource");
+        for (int i = 0; i < resourceNodes.getLength(); i++) {
+            Element resourceElement = (Element) resourceNodes.item(i);
+
+            updateInSequence(resourceElement, document);
+
+            updateOutSequence(resourceElement, document);
+        }
+    }
+
+    private static void updateInSequence(Element resourceElement, Document doc) {
+        // Find the inSequence
+        Element inSequenceElement = (Element) resourceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+
+        // Find the property element in the inSequence
+        NodeList properties = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+
+        boolean isBackEndRequestTimeSet = false;
+
+        for (int i = 0; i < properties.getLength(); ++i) {
+            Element propertyElement = (Element) properties.item(i);
+
+            if (propertyElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME)) {
+                if (Constants.SYNAPSE_API_VALUE_BACKEND_REQUEST_TIME.equals(propertyElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                    isBackEndRequestTimeSet = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isBackEndRequestTimeSet) {
+            NodeList filters = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_FILTER);
+
+            for (int j = 0; j < filters.getLength(); ++j) {
+                Element filterElement = (Element) filters.item(j);
+
+                if (Constants.SYNAPSE_API_VALUE_AM_KEY_TYPE.equals(filterElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_SOURCE))) {
+                    // Only one <then> element can exist in filter mediator
+                    Element thenElement = (Element) filterElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_THEN).item(0);
+
+                    // At least one <send> element must exist as a child of <then> element
+                    Element sendElement = (Element) thenElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+
+                    Element propertyElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+                    propertyElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_BACKEND_REQUEST_TIME);
+                    propertyElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_EXPRESSION, Constants.SYNAPSE_API_VALUE_EXPRESSION);
+
+                    thenElement.insertBefore(propertyElement, sendElement);
+                }
+            }
+        }
+    }
+
+
+    private static void updateOutSequence(Element resourceElement, Document doc) {
+        // Find the outSequence
+        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
+
+        NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
+
+        boolean isResponseHandlerSet = false;
+
+        for (int i = 0; i < classNodes.getLength(); ++i) {
+            Element classElement = (Element) classNodes.item(i);
+
+            if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                isResponseHandlerSet = true;
+                break;
+            }
+        }
+
+        if (!isResponseHandlerSet) {
+            // There must be at least one <send> element for an outSequence
+            Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+
+            Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
+            classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
+            classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
+
+            outSequenceElement.insertBefore(classElement, sendElement);
         }
     }
 }
