@@ -232,32 +232,6 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Change the status of the API to BLOCKED through" +
-            " the publisher rest API ", dependsOnMethods = "testChangeTheStatusOfTheAPIToRetired")
-    public void testChangeTheStatusOfTheAPIToBlocked() throws Exception {
-
-        //Change the status RETIRED to BLOCKED
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest
-                (apiNameTest, apiProvider, APILifeCycleState.BLOCKED);
-        updateRequest.setRequireResubscription("true");
-        HttpResponse creationResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        assertTrue(creationResponse.getData().contains("BLOCKED"),
-                apiNameTest + "  status not updated as Prototyped");
-
-        //Check whether deprecated API is available in publisher
-        HttpResponse prototypedApiResponse = (apiPublisher.getAPI
-                (apiNameTest, apiProvider, apiVersion));
-        JSONObject prototypedApiObject = new JSONObject(prototypedApiResponse.getData());
-        JSONObject allApiObject = new JSONObject(prototypedApiObject.getString("api"));
-        assertFalse(prototypedApiObject.getBoolean("error"), apiNameTest +
-                " is not visible in publisher");
-        assertTrue(allApiObject.getString("name").equals(apiNameTest),
-                apiNameTest + " is not visible in publisher");
-        assertTrue(allApiObject.getString("status").equals("BLOCKED"),
-                "Status of the " + apiNameTest + "is not a valid status");
-
-    }
-
     @AfterClass(alwaysRun = true)
     public void cleanUp() throws APIManagerIntegrationTestException, JSONException {
         apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProvider);
