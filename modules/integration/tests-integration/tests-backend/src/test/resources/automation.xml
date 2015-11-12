@@ -289,8 +289,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">8080</port>
-                    <port type="https">8082</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                     <!--<port type="nhttps">8780</port>-->
                     <!--<port type="nhttp">8743</port>-->
                 </ports>

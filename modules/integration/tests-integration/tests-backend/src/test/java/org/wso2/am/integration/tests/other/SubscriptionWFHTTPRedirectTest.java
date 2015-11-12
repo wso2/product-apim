@@ -13,6 +13,8 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.apimgt.api.WorkflowResponse;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -30,6 +32,7 @@ import static org.testng.Assert.assertFalse;
 /**
  * The test class that tests the custom Subscription creation workflow which has a HTTP redirect.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class SubscriptionWFHTTPRedirectTest  extends APIManagerLifecycleBaseTest{
 
 

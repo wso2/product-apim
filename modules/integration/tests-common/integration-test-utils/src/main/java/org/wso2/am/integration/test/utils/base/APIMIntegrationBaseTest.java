@@ -16,6 +16,7 @@
 *under the License.
 */
 package org.wso2.am.integration.test.utils.base;
+
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
@@ -29,10 +30,14 @@ import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.carbon.automation.engine.FrameworkConstants;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
 
@@ -40,6 +45,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 
@@ -51,12 +57,13 @@ import java.util.regex.Matcher;
 public class APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
-    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt
-            , gatewayContextWrk, backEndServer;
+    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt, gatewayContextWrk, backEndServer;
     protected OMElement synapseConfiguration;
     protected TestUserMode userMode;
+    protected String executionMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected User user;
+    private static final long WAIT_TIME = 90 * 1000;
 
 
     /**
@@ -107,9 +114,10 @@ public class APIMIntegrationBaseTest {
             keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
 
             backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                      APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
+                                                  APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
             backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
 
+            executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
 
             user = storeContext.getContextTenant().getContextUser();
 
@@ -124,8 +132,8 @@ public class APIMIntegrationBaseTest {
      * init the object with tenant domain, user key and instance of store,publisher and gateway
      * create context objects and construct URL bean
      *
-     * @param domainKey         - tenant domain key
-     * @param userKey           - tenant user key
+     * @param domainKey - tenant domain key
+     * @param userKey   - tenant user key
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
     protected void init(String domainKey, String userKey)
@@ -160,7 +168,7 @@ public class APIMIntegrationBaseTest {
             keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
 
             backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                                      APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, domainKey, userKey);
+                                                  APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, domainKey, userKey);
             backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
 
             user = storeContext.getContextTenant().getContextUser();
@@ -277,9 +285,11 @@ public class APIMIntegrationBaseTest {
     protected String getGatewayMgtURLHttp() {
         return gatewayUrlsMgt.getWebAppURLHttp();
     }
-    protected String getGatewayMgtBackendURLHttps()  {
+
+    protected String getGatewayMgtBackendURLHttps() {
         return gatewayUrlsMgt.getWebAppURLHttp();
     }
+
     protected String getGatewayMgtURLHttps() {
         return gatewayUrlsMgt.getWebAppURLHttps();
     }
@@ -301,11 +311,12 @@ public class APIMIntegrationBaseTest {
     }
 
     protected String getAPIInvocationURLHttp(String apiContext) throws XPathExpressionException {
-        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" +apiContext;
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext;
     }
 
-    protected String getAPIInvocationURLHttp(String apiContext, String version) throws XPathExpressionException {
-        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" +apiContext + "/" + version;
+    protected String getAPIInvocationURLHttp(String apiContext, String version)
+            throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext + "/" + version;
     }
 
     protected String getAPIInvocationURLHttps(String apiContext) throws XPathExpressionException {
@@ -313,17 +324,18 @@ public class APIMIntegrationBaseTest {
     }
 
     protected String getBackendEndServiceEndPointHttp(String serviceName) {
-        return backEndServerUrl.getWebAppURLHttp()  + serviceName;
+        return backEndServerUrl.getWebAppURLHttp() + serviceName;
     }
 
     protected String getBackendEndServiceEndPointHttps(String serviceName) {
-        return backEndServerUrl.getWebAppURLHttps()  + serviceName;
+        return backEndServerUrl.getWebAppURLHttps() + serviceName;
     }
 
     /**
      * Cleaning up the API manager by removing all APIs and applications other than default application
+     *
      * @throws APIManagerIntegrationTestException - occurred when calling the apis
-     * @throws org.json.JSONException                      - occurred when reading the json
+     * @throws org.json.JSONException             - occurred when reading the json
      */
     protected void cleanUp() throws Exception {
 
@@ -335,7 +347,7 @@ public class APIMIntegrationBaseTest {
         verifyResponse(subscriptionDataResponse);
         JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
 
-        if(!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
+        if (!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
             JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
             JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
 
@@ -348,7 +360,7 @@ public class APIMIntegrationBaseTest {
                     JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
                     verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
                             , subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION),
-                                                   subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
+                                                                  subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
                 }
             }
         }
@@ -387,5 +399,99 @@ public class APIMIntegrationBaseTest {
 
     }
 
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws XPathExpressionException - Throws if something goes wrong
+     */
+    protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                            String expectedResponse)
+            throws XPathExpressionException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+
+        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
+
+            while (waitTime > System.currentTimeMillis()) {
+                HttpResponse response = null;
+                try {
+                    response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                                                              "APIStatusMonitor/api_status/api-data/" +
+                                                              apiProvider + "--" + apiName +
+                                                              ":v" + apiVersion, null);
+                } catch (IOException ignored) {
+                    log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed");
+                }
+
+                log.info("WAIT for availability of API :" + apiName + " with version: " + apiVersion +
+                         " with expected response : " + expectedResponse);
+
+                if (response != null) {
+                    if (response.getData().contains(expectedResponse)) {
+                        log.info("API :" + apiName + " with version: " + apiVersion +
+                                 " with expected response " + expectedResponse + " found");
+                        break;
+                    } else {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ignored) {
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This method can be used to wait for API Un-deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws XPathExpressionException - Throws if something goes wrong
+     */
+    protected void waitForAPIUnDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                              String expectedResponse)
+            throws IOException, XPathExpressionException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+
+        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
+
+            while (waitTime > System.currentTimeMillis()) {
+                HttpResponse response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                                                                       "APIStatusMonitor/api_status/api-data/" +
+                                                                       apiProvider + "--" + apiName +
+                                                                       ":v" + apiVersion, null);
+
+                log.info("WAIT for meta data sync of API :" + apiName + " with version: " + apiVersion +
+                         " without entry : " + expectedResponse);
+
+                if (!response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                             " with expected response " + expectedResponse + " not found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+    }
 }
 

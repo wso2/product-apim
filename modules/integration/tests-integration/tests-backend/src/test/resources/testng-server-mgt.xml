@@ -1,7 +1,8 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="apim-server-startup">
+<suite name="apim-automation-tests-suite-1">
     <parameter name="useDefaultListeners" value="false"/>
+
     <listeners>
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestExecutionListener"/>
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestManagerListener"/>
@@ -10,10 +11,17 @@
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
     </listeners>
 
-    <test name="apim-integration-tests-server-mgt" preserve-order="true" parallel="false">
+    <test name="apim-startup-tests" preserve-order="true" parallel="false">
         <classes>
-            <!--<class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>-->
-            <!--<class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
+            <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
+            <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-common-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
         </classes>
     </test>
 

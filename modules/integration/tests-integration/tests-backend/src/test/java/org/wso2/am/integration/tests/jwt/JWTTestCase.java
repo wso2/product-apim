@@ -106,7 +106,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath(
                 "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest" +
-                        File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+                File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @AfterClass(alwaysRun = true)
@@ -116,13 +116,13 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     }
 
     private void addAPI(String apiName, String apiVersion, String apiContext, String description, String endpointURL,
-            String tags, String providerName)
+                        String tags, String providerName)
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException {
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
 
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointURL));
         apiRequest.setTags(tags);
@@ -133,7 +133,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, providerName,
-                APILifeCycleState.PUBLISHED);
+                                                                              APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
     }
@@ -165,11 +165,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                                 storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                storeContext.getContextTenant().getContextUser().getUserName());
+                                                                          storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -182,15 +182,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
-        
+
         //check the jwt header
         String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(serverMessage);
         if(decodedJWTHeaderString != null) {
-        	 log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
-        	 JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
-        	 Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
-        	 Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");   	 
-        	 
+            log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
+            JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
+            Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
+            Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
+
         }
 
         String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
@@ -229,7 +229,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
-            InterruptedException {
+                   InterruptedException {
 
         String applicationName = "JWTTokenCacheTestApp";
         String apiName = "JWTTokenCacheTestAPI";
@@ -245,11 +245,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                                 storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                storeContext.getContextTenant().getContextUser().getUserName());
+                                                                          storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -273,8 +273,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         //Second attempt to invoke the API.
         httpResponse = HttpRequestUtil.doGet(url, headers);
         assertEquals("GET request failed for " + url +
-                        ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
-                httpResponse.getResponseCode());
+                     ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
+                     httpResponse.getResponseCode());
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject) throws JSONException {
@@ -286,14 +286,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("APILifeCycleTestAPI-application"));
+                   claim.contains("APILifeCycleTestAPI-application"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/tokenTest" + "/"
-                + jsonObject.getString("http://wso2.org/claims/version")));
+                                                                                     + jsonObject.getString("http://wso2.org/claims/version")));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
         assertTrue("JWT claim version invalid. Received " + claim, claim.contains("1.0.0"));
@@ -312,7 +312,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/role");
         assertTrue("JWT claim role invalid. Received " + claim,
-                claim.contains("admin") && claim.contains("Internal/subscriber") && claim.contains("Internal/everyone"));
+                   claim.contains("admin") && claim.contains("Internal/subscriber") && claim.contains("Internal/everyone"));
     }
 
     @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, specific user claims", enabled = true)
@@ -326,9 +326,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String accessToken;
 
         if ((userManagementClient != null) &&
-                !userManagementClient.userNameExists("Internal/subscriber", subscriberUser)) {
+            !userManagementClient.userNameExists("Internal/subscriber", subscriberUser)) {
             userManagementClient.addUser(subscriberUser, password,
-                    new String[]{"Internal/subscriber"}, null);
+                                         new String[]{"Internal/subscriber"}, null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
@@ -356,7 +356,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                providerName);
+                                                                          providerName);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -387,7 +387,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("APILifeCycleTestAPI-application"));
+                   claim.contains("APILifeCycleTestAPI-application"));
 
     }
 
@@ -415,14 +415,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
         apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
+                           "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("public");
 
         apiRequest.setProvider(provider);
         apiPublisherRestClient.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, provider,
-                APILifeCycleState.PUBLISHED);
+                                                                              APILifeCycleState.PUBLISHED);
         apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
@@ -430,7 +430,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                provider);
+                                                                          provider);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 

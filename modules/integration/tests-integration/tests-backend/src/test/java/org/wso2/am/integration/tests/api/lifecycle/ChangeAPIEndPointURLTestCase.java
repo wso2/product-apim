@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -97,6 +98,8 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put("accept", "text/xml");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,  API_VERSION_1_0_0)  + "/" + API1_END_POINT_METHOD,
                         requestHeaders);
@@ -132,6 +135,9 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
             "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         //Invoke  new context
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, API2_END_POINT_URL);
+
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0),
                         requestHeaders);

@@ -42,4 +42,11 @@ public class APIMIntegrationConstants {
     public static final String API_RESPONSE_ELEMENT_NAME_ID = "id";
 
     public static final String OAUTH_DEFAULT_APPLICATION_NAME = "DefaultApplication";
+
+    public static final String IS_API_EXISTS = "\"isApiExists\":true";
+    public static final String IS_WEB_APP_EXISTS = "\"isWebAppExists\":true";
+    public static final String IS_API_BLOCKED = "API blocked";
+    public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
+    public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
+
 }
