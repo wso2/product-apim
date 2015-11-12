@@ -149,7 +149,7 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         apiCreationRequestBean = new APICreationRequestBean(apiName, context, version,
                 apiProvider, new URL(endpointUrl));
         apiCreationRequestBean.setEndpointType(endPointType);
-        apiCreationRequestBean.setTier(tier);
+        apiCreationRequestBean.setTiersCollection(tier);
         apiCreationRequestBean.setTags(tags);
         apiCreationRequestBean.setResourceBeanList(resourceBeanList);
         apiCreationRequestBean.setDescription(apiDescription);
