@@ -144,7 +144,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
                     version,providerName,
                     new URL(endpointUrl));
             apiCreationRequestBean.setEndpointType(endPointType);
-            apiCreationRequestBean.setTier(tier);
+            apiCreationRequestBean.setTiersCollection(tier);
             apiCreationRequestBean.setTags(tags);
             apiCreationRequestBean.setResourceBeanList(resourceBeanList);
             apiCreationRequestBean.setDescription(description);
@@ -329,7 +329,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         JSONArray getAllAppsJsonArray=getAllAppJsonObject.getJSONArray("applications");
 
         for(int arrayIndex=0;arrayIndex<getAllAppsJsonArray.length();arrayIndex++){
-            if(getAllAppsJsonArray.getJSONObject(arrayIndex).getString("name").equals(applicationName)){
+            if(getAllAppsJsonArray.getJSONObject(arrayIndex).getString("name").equals(newApplicationName)){
                 String defaultAppId=getAllAppsJsonArray.getJSONObject(arrayIndex).getString("id");
 
                 //remove subscription by application Id
