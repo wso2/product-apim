@@ -335,7 +335,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.logging</artifactId>
-                <version>${carbon.kernel.version}</version>
+                <version>4.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
@@ -449,7 +449,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>${carbon.apimgt.version}</version>
+                <version>1.2.3</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jettison.wso2</groupId>
@@ -470,7 +470,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-                <version>${carbon.apimgt.version}</version>
+                <version>1.2.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-digester</groupId>
@@ -828,12 +828,6 @@
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.stratos.apimgt.login.ui</artifactId>
                 <version>${apimserver.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.cxf.wso2</groupId>
-                <artifactId>cxf-bundle</artifactId>
-                <version>2.6.1.wso2v2</version>
             </dependency>
 
         </dependencies>
