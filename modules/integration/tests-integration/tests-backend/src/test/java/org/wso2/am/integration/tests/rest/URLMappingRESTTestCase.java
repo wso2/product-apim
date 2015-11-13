@@ -36,8 +36,8 @@ import java.io.File;
 import static org.testng.Assert.assertEquals;
 
 /**
- * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-769
- * This test class test the Rest URI template patterns like uri-template="/view/*"
+ * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-769 &  APIMANAGER-4194
+ * This test class test the Rest URI template patterns like uri-template="/view/*" & uri-template="view/{param1},{param2},{param3}*"
  */
 public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 
@@ -89,7 +89,16 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 
-	@AfterClass(alwaysRun = true)
+    @Test(groups = { "wso2.am" },
+            description = "Sending a Message Via REST to test uri template fix")
+    public void testRESTURITemplateForCommaSeparetdParameters() throws Exception {
+        // Before apply this patch uri template not recognize localhost:8280/stockquote/test/param1,param2,param3
+        HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("stockquote/courses/course1,CE001,sem1"), null);
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
+    }
+
+
+    @AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
         super.cleanUp();
 	}
