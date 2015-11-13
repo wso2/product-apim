@@ -27,6 +27,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -179,6 +180,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         requestBody = "grant_type=password&username=" + storeContext.getContextTenant().getContextUser().getUserName() +
                       "&password=" + storeContext.getContextTenant().getContextUser().getPassword() +
                       "&scope=admin_scope user_scope";
+
+        waitForAPIDeploymentSync(apiProvider, API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                   requestBody, tokenEndpointURL);

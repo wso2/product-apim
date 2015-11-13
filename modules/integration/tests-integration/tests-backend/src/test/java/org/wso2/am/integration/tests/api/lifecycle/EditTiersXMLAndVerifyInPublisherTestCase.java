@@ -49,6 +49,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String TIER_XML_REG_CONFIG_LOCATION = "/_system/governance/apimgt/applicationdata/tiers.xml";
+    private final String TIER_XML_REG_CONFIG_APP_LOCATION = "/_system/governance/apimgt/applicationdata/app-tiers.xml";
+    private final String TIER_XML_REG_CONFIG_RES_LOCATION = "/_system/governance/apimgt/applicationdata/res-tiers.xml";
     private final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
     private final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
     private final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
@@ -91,8 +93,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
                         File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
         resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContextMgt));
+                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
+                                               createSession(publisherContext));
         originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
         newTiersXML = readFile(artifactsLocation);
     }
@@ -136,6 +138,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
             ResourceAdminServiceExceptionException, APIManagerIntegrationTestException {
         //Changing the Tier XML
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, newTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, newTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, newTiersXML);
         HttpResponse tierPermissionPageHttpResponse =
                 apiPublisherClientUser1.getTierPermissionsPage();
         assertEquals(tierPermissionPageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,

@@ -37,6 +37,7 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -51,13 +52,14 @@ import java.util.Map;
  * This test will cover OpenId based access token generation and validation for users
  * Here we will retrieve access tokens with open id scope and use it for user info API
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
     private ServerConfigurationManager serverConfigurationManager;
     private String publisherURLHttp;
     private String storeURLHttp;
+    private String executionEnvironment;
 
     @Factory(dataProvider = "userModeDataProvider")
     public OpenIDTokenAPITestCase(TestUserMode userMode) {
@@ -68,18 +70,22 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
+        executionEnvironment =
+                gatewayContextWrk.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = storeUrls.getWebAppURLHttp();
 
-        serverConfigurationManager = new ServerConfigurationManager(
-                new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                      APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+        if(this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            serverConfigurationManager = new ServerConfigurationManager(
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                            APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
 
-        serverConfigurationManager.applyConfigurationWithoutRestart(
-                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+            serverConfigurationManager.applyConfigurationWithoutRestart(
+                    new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
 
-        serverConfigurationManager.applyConfiguration(
-                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+            serverConfigurationManager.applyConfiguration(
+                    new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "log4j.properties"));
+        }
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -163,14 +169,16 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
 
         HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrlsWrk.getWebAppURLHttp() + "oauth2/userinfo?schema=openid", requestHeaders);
+               .doGet(gatewayUrlsMgt.getWebAppURLNhttp() + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
+        if(this.executionEnvironment.equalsIgnoreCase(ExecutionEnvironment.STANDALONE.name())) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
     }
 
     @DataProvider
