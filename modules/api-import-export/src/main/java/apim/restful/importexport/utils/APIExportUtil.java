@@ -106,8 +106,9 @@ public class APIExportUtil {
             return provider;
 
         } catch (APIManagementException e) {
-            log.error("Error while retrieving provider" + e.getMessage());
-            throw new APIExportException("Error while retrieving current provider", e);
+            String errorMessage = "Error while retrieving provider";
+            log.error( errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
 
     }
@@ -169,8 +170,9 @@ public class APIExportUtil {
         try {
             apiToReturn = provider.getAPI(apiID);
         } catch (APIManagementException e) {
-            log.error("Unable to retrieve API", e);
-            return Response.status(Response.Status.NOT_FOUND).entity("Unable to retrieve API")
+            String errorMessage = "Unable to retrieve API";
+            log.error(errorMessage, e);
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage)
                     .type(MediaType.APPLICATION_JSON).
                             build();
         }
@@ -183,7 +185,8 @@ public class APIExportUtil {
         try {
             docList = provider.getAllDocumentation(apiID);
         } catch (APIManagementException e) {
-            log.error("Unable to retrieve API Documentation", e);
+            String errorMessage = "Unable to retrieve API Documentation";
+            log.error(errorMessage, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error")
                     .type(MediaType.APPLICATION_JSON).build();
         }
@@ -255,9 +258,9 @@ public class APIExportUtil {
         } catch (IOException e) {
             //Exception is ignored by logging due to the reason that Thumbnail is not essential for
             // an API to be recreated
-            log.error("I/O error while writing API Thumbnail to file" + e.getMessage());
+            log.error("I/O error while writing API Thumbnail to file", e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving API Thumbnail " + e.getMessage());
+            log.error("Error while retrieving API Thumbnail ", e.getMessage());
         } finally {
             IOUtils.closeQuietly(imageDataStream);
             IOUtils.closeQuietly(outputStream);
@@ -339,11 +342,13 @@ public class APIExportUtil {
             }
 
         } catch (IOException e) {
-            log.error("I/O error while writing API documentation to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing API documentation to file", e);
+            String errorMessage = "I/O error while writing API documentation to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving documentation " + e.getMessage());
-            throw new APIExportException("Error while retrieving documentation", e);
+            String errorMessage = "Error while retrieving documentation ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(fileInputStream);
             IOUtils.closeQuietly(outputStream);
@@ -386,11 +391,13 @@ public class APIExportUtil {
                 }
             }
         } catch (IOException e) {
-            log.error("I/O error while writing WSDL to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing WSDL to file", e);
+            String errorMessage = "I/O error while writing WSDL to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving WSDL " + e.getMessage());
-            throw new APIExportException("Error while retrieving WSDL", e);
+            String errorMessage = "Error while retrieving WSDL ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(wsdlStream);
             IOUtils.closeQuietly(outputStream);
@@ -452,8 +459,9 @@ public class APIExportUtil {
                     }
                 }
             } catch (APIManagementException e) {
-                log.error("Error while retrieving custom sequence" + e.getMessage());
-                throw new APIExportException("Error while retrieving custom sequence", e);
+                String errorMessage = "Error while retrieving custom sequence";
+                log.error(errorMessage, e);
+                throw new APIExportException(errorMessage, e);
 
             }
         }
@@ -488,11 +496,13 @@ public class APIExportUtil {
             }
 
         } catch (FileNotFoundException e) {
-            log.error("Unable to find file" + e.getMessage());
-            throw new APIExportException("Unable to find file: " + exportedSequenceFile, e);
+            String errorMessage = "Unable to find file: " + exportedSequenceFile;
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (XMLStreamException e) {
-            log.error("Error while processing XML stream" + e.getMessage());
-            throw new APIExportException("Error while processing XML stream", e);
+            String errorMessage = "Error while processing XML stream ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
@@ -508,8 +518,9 @@ public class APIExportUtil {
         if (path != null) {
             File file = new File(path);
             if (!file.exists() && !file.mkdirs()) {
-                log.error("Error while creating directory : " + path);
-                throw new APIExportException("Directory creation failed " + path);
+                String errorMessage = "Error while creating directory : " + path;
+                log.error(errorMessage, e);
+                throw new APIExportException(errorMessage);
             }
         }
     }
@@ -547,8 +558,9 @@ public class APIExportUtil {
             }
 
         } catch (APIManagementException e) {
-            log.error("Error while retrieving Swagger definition" + e.getMessage());
-            throw new APIExportException("Error while retrieving Swagger definition", e);
+            String errorMessage = "Error while retrieving Swagger definition";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
     }
 
@@ -566,8 +578,9 @@ public class APIExportUtil {
             writer = new FileWriter(path);
             IOUtils.copy(new StringReader(content), writer);
         } catch (IOException e) {
-            log.error("I/O error while writing to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing to file", e);
+            String errorMessage = "I/O error while writing to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(writer);
         }
