@@ -837,7 +837,7 @@
     <properties>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>4.3.0-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.version>4.3.1-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[4.3.0, 4.4.0)</carbon.apimgt.imp.pkg.version>
         <axis2-transports.wso2.version>1.1.0-wso2v12</axis2-transports.wso2.version>
 
