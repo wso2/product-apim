@@ -27,7 +27,6 @@ under the License.
     <groupId>ArtifactDeploymentMonitor</groupId>
     <artifactId>ArtifactDeploymentMonitor</artifactId>
     <name>WSO2 API Manager - ArtifactDeploymentMonitor WebApp</name>
-    <version>1.0</version>
     <packaging>war</packaging>
     <modelVersion>4.0.0</modelVersion>
 
