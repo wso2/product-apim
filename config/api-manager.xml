@@ -364,6 +364,20 @@
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
+
+	<!--
+            Server URL of the API Store.
+        -->
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <!--
+            Admin username for API Store.
+        -->
+        <Username>${admin.username}</Username>
+
+        <!--
+            Admin password for API Store.
+        -->
+        <Password>${admin.password}</Password>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
