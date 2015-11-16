@@ -74,6 +74,12 @@ under the License.
                             <name>usedefaultlisteners</name>
                             <value>false</value>
                         </property>
+                        <property>
+                            <name>download.location</name>
+                            <value>
+                                ${basedir}/target
+                            </value>
+                        </property>
                         <sec.verifier.dir>${basedir}/target/security-verifier/</sec.verifier.dir>
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
