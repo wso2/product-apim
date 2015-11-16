@@ -74,7 +74,7 @@
                 </payloadFactory>
             </else>
         </filter>
-        <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+        <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
             <property name="messageType" value="application/xml" scope="axis2"/>
         </filter>
         <property name="HTTP_SC" value="404" scope="axis2"/>
