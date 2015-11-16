@@ -1,5 +1,4 @@
 <%
-<%
 //Order of these operations are important as we fetch results based on order
  //If you add new test add them to bottom of this file and update validate response method
  //available in host object test class
@@ -89,5 +88,4 @@ print("==");
 //print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3"));
 //print("==");
 //print(storeHostObj.getTopRatedAPIs("3"));
-%>
 %>
