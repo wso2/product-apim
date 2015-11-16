@@ -106,8 +106,9 @@ public class AuthenticatorUtil {
             }
 
         } catch (UserStoreException e) {
-            log.error("Error while accessing user configuration" + e.getMessage());
-            throw new APIExportException("Error while accessing user configuration", e);
+            String errorMessage = "Error while accessing user configuration";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }

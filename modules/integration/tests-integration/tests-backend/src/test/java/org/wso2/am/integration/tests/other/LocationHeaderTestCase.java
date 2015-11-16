@@ -32,6 +32,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -125,6 +126,9 @@ public class LocationHeaderTestCase extends APIMIntegrationBaseTest {
         HttpClient httpclient = new DefaultHttpClient();
         HttpUriRequest get = new HttpGet(apiInvocationUrl);
         get.addHeader(new BasicHeader("Authorization", "Bearer " + accessToken));
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         org.apache.http.HttpResponse httpResponse = httpclient.execute(get);
         Header locationHeader = httpResponse.getFirstHeader("Location");

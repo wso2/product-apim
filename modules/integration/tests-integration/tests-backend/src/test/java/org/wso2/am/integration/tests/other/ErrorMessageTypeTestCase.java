@@ -23,6 +23,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
