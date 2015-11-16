@@ -538,6 +538,10 @@
                                   org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.store.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
+                                <featureArtifactDef>
+                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:0.9.0-SNAPSHOT
+                                </featureArtifactDef>
+
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1164,6 +1168,12 @@
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
+                                    <version>0.9.0-SNAPSHOT</version>
+                                </feature>
+
+
                             </features>
                         </configuration>
                     </execution>
@@ -3382,6 +3392,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
+                                    <version>0.9.0-SNAPSHOT</version>
                                 </feature>
                             </features>
                         </configuration>
