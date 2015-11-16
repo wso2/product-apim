@@ -335,7 +335,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.logging</artifactId>
-                <version>4.0.0</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
@@ -449,7 +449,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>1.2.3</version>
+                <version>${carbon.apimgt.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jettison.wso2</groupId>
@@ -470,7 +470,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-                <version>1.2.2</version>
+                <version>${carbon.apimgt.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-digester</groupId>
@@ -830,6 +830,12 @@
                 <version>${apimserver.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.cxf.wso2</groupId>
+                <artifactId>cxf-bundle</artifactId>
+                <version>${cxf-bundle.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -875,6 +881,7 @@
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.5.0</carbon.multitenancy.version>
 
+        <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
@@ -884,7 +891,7 @@
         <carbon.platform.version>4.4.2</carbon.platform.version>
         <synapse.version>2.1.4-wso2v1</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
-        <axis2.wso2.version>1.6.1.wso2v11</axis2.wso2.version>
+        <axis2.wso2.version>1.6.1.wso2v12</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v5</axiom.wso2.version>
         <servlet-api.version>2.4</servlet-api.version>
         <log4j.version>1.2.13</log4j.version>
