@@ -864,10 +864,10 @@
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.4.11</carbon.mediation.version>
+        <carbon.mediation.version>4.4.12-SNAPSHOT</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.0.2</carbon.identity.version>
+        <carbon.identity.version>5.0.3-SNAPSHOT</carbon.identity.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.6.0</carbon.deployment.version>
@@ -889,7 +889,7 @@
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
         <carbon.platform.version>4.4.2</carbon.platform.version>
-        <synapse.version>2.1.4-wso2v1</synapse.version>
+        <synapse.version>2.1.4-wso2v2-SNAPSHOT</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v12</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v5</axiom.wso2.version>
