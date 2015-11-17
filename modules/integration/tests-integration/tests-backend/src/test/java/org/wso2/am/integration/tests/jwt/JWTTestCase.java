@@ -388,6 +388,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
                    claim.contains("APILifeCycleTestAPI-application"));
+        
+        apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
+        apiStoreRestClient.removeApplication(applicationName);
 
     }
 
@@ -457,6 +460,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/t/wso2.com/tokenTest"));
+        
+        apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, provider, applicationName);
+        apiStoreRestClient.removeApplication(applicationName);
+        apiPublisherRestClient.deleteAPI(apiName, apiVersion, provider);
 
     }
 }

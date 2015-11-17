@@ -30,6 +30,7 @@ public class SubscriptionRequest extends AbstractRequest {
     private String version = "1.0.0";
     private String applicationName = "DefaultApplication";
     private String tier = "Gold";
+    private int applicationId;
 
     /**
      * Constructor using default values
@@ -58,6 +59,26 @@ public class SubscriptionRequest extends AbstractRequest {
         this.provider = provider;
         this.applicationName = appName;
         this.tier = tier;
+    }
+
+    /**
+     * constructor with application Id
+     * @param apiName- Name of the API
+     * @param apiVersion - Api version
+     * @param provider - Api Provider
+     * @param  applicationId-  Application id
+     * @param  tier - Tier of the application
+     *
+     */
+    public SubscriptionRequest(String apiName,String apiVersion,String provider,
+                               int applicationId, String tier){
+
+        this.name=apiName;
+        this.version=apiVersion;
+        this.provider=provider;
+        this.applicationId=applicationId;
+        this.tier=tier;
+
     }
 
     @Override
