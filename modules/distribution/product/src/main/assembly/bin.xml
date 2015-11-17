@@ -446,6 +446,28 @@
                 <include>api#am#publisher#v1.war</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
+            </outputDirectory>
+            <includes>
+                <include>client-registration#v1.war</include>
+            </includes>
+        </fileSet>
+
+
+        <!-- Copy sample calculator api webapp-->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>am#sample#calculator#v1.war</include>
+            </includes>
+        </fileSet>
 
 
         <!--Multitenancy related file -->
@@ -491,6 +513,15 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/service-provider</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
+            </includes>
+        </fileSet>
+
+        <!-- Default Tiers -->
+        <fileSet>
+            <directory>../resources/default-tiers</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/default-tiers</outputDirectory>
+            <includes>
+                <include>**/**.xml</include>
             </includes>
         </fileSet>
         <!--End of  API Manager related -->
