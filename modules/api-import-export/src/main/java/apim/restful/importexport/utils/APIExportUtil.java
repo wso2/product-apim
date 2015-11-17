@@ -550,7 +550,7 @@ public class APIExportUtil {
             sequenceConfig.serialize(outputStream);
 
             if (log.isDebugEnabled()) {
-                log.debug("Sequence retrieved successfully");
+                log.debug(sequenceFileName + " retrieved successfully");
             }
 
         } catch (FileNotFoundException e) {
