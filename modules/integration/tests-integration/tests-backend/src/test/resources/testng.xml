@@ -99,13 +99,6 @@
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.APIM34InvokeAPIWithSandboxTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM366PublishNewCopyGivenDeprecateOldVersionTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM370PublishNewCopyGivenRequireReSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM371PublishNewCopyGivenDeprecateOldVersionAndRequireReSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM372PublishNewCopyGivenDeprecateOldVersionTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM373PublishNewCopyGivenRequireReSubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.APIM374PublishNewCopyGivenDeprecateOldVersionAndRequireReSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
@@ -142,7 +135,6 @@
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.DeleteSubscribedApiFromPublisherTestCase"/>
         </classes>
     </test>
 
