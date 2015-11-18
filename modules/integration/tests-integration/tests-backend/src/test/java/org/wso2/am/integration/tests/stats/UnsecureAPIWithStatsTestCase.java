@@ -70,7 +70,7 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
 
         apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
-        String gatewaySessionCookie = createSession(gatewayContext);
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
 
         String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
         String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
@@ -93,12 +93,12 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
         File dsConfSourceFile = new File(masterDatasourceLocation);
         File dsConfTargetFile = new File(masterDatasourceConfigLocation);
 
-        serverManager = new ServerConfigurationManager(gatewayContext);
+        serverManager = new ServerConfigurationManager(gatewayContextMgt);
 
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml", gatewayContext, gatewaySessionCookie);
+                + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
 
         // apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
@@ -123,7 +123,7 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
 
         // Adding API
         String apiContext = "analyticsapi";
-        String endpointUrl = gatewayUrls.getWebAppURLNhttp() + "response";
+        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -169,11 +169,11 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
             apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
 
             String apiInvocationUrl;
-            if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-                apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + apiContext + "/" + API_VERSION;
+            if (gatewayContextMgt.getContextTenant().getDomain().equals("carbon.super")) {
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + API_VERSION;
             } else {
-                apiInvocationUrl = gatewayUrls.getWebAppURLNhttp() + "t/" +
-                        gatewayContext.getContextTenant().getDomain() + "/" + apiContext + "/" + API_VERSION;
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
+                        gatewayContextMgt.getContextTenant().getDomain() + "/" + apiContext + "/" + API_VERSION;
             }
 
             HttpResponse directResponse = HttpRequestUtil.doGet(endpointUrl, new HashMap<String, String>());
