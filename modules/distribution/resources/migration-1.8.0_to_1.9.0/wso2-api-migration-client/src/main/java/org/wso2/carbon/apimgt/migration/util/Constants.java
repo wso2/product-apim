@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.migration.util;
 public class Constants {
 
     public static final String VERSION_1_9 = "1.9";
+    public static final String VERSION_1_10 = "1.10";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String ALTER = "alter";

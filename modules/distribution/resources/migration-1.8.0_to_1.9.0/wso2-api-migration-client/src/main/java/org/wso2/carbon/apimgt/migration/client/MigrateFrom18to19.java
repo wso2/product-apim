@@ -32,7 +32,6 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
-import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
@@ -52,7 +51,6 @@ import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.session.UserRegistry;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -60,13 +58,24 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.io.StringWriter;
+import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -75,93 +84,12 @@ import java.util.*;
  */
 
 @SuppressWarnings("unchecked")
-public class MigrateFrom18to19 implements MigrationClient {
+public class MigrateFrom18to19 extends MigrationClientBase implements MigrationClient {
 
     private static final Log log = LogFactory.getLog(MigrateFrom18to19.class);
-    private List<Tenant> tenantsArray;
 
     public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments) throws UserStoreException {
-        TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
-
-        if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
-            tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
-
-            tenantsArray = new ArrayList();
-
-            buildTenantList(tenantManager, tenantsArray, tenantArguments);
-        } else if (blackListTenantArguments != null) {
-            blackListTenantArguments = blackListTenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
-
-            List<Tenant> blackListTenants = new ArrayList();
-            buildTenantList(tenantManager, blackListTenants, blackListTenantArguments);
-
-            List<Tenant> allTenants = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
-            Tenant superTenant = new Tenant();
-            superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-            superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
-            allTenants.add(superTenant);
-
-            tenantsArray = new ArrayList();
-
-            for (Tenant tenant : allTenants) {
-                boolean isBlackListed = false;
-                for (Tenant blackListTenant : blackListTenants) {
-                    if (blackListTenant.getId() == tenant.getId()) {
-                        isBlackListed = true;
-                        break;
-                    }
-                }
-
-                if (!isBlackListed) {
-                    tenantsArray.add(tenant);
-                }
-            }
-
-        } else {  // Load all tenants
-            tenantsArray = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
-            Tenant superTenant = new Tenant();
-            superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
-            superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
-            tenantsArray.add(superTenant);
-        }
-    }
-
-
-    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments) throws UserStoreException {
-        if (tenantArguments.contains(",")) { // Multiple arguments specified
-            String[] parts = tenantArguments.split(",");
-
-            for (int i = 0; i < parts.length; ++i) {
-                if (parts[i].length() > 0) {
-                    populateTenants(tenantManager, tenantList, parts[i]);
-                }
-            }
-        } else { // Only single argument provided
-            populateTenants(tenantManager, tenantList, tenantArguments);
-        }
-    }
-
-
-    private void populateTenants(TenantManager tenantManager, List<Tenant> tenantList, String argument) throws UserStoreException {
-        log.debug("Argument provided : " + argument);
-
-        if (argument.contains("@")) { // Username provided as argument
-            int tenantID = tenantManager.getTenantId(argument);
-
-            if (tenantID != -1) {
-                tenantList.add(tenantManager.getTenant(tenantID));
-            } else {
-                log.error("Tenant does not exist for username " + argument);
-            }
-        } else { // Domain name provided as argument
-            Tenant[] tenants = tenantManager.getAllTenantsForTenantDomainStr(argument);
-
-            if (tenants.length > 0) {
-                tenantList.addAll(Arrays.asList(tenants));
-            } else {
-                log.error("Tenant does not exist for domain " + argument);
-            }
-        }
+        super(tenantArguments, blackListTenantArguments);
     }
 
     /**
@@ -169,133 +97,19 @@ public class MigrateFrom18to19 implements MigrationClient {
      * This executes the database queries according to the user's db type and alters the tables
      *
      * @param migrateVersion version to be migrated
-     * @throws APIMigrationException
      * @throws SQLException
      */
     @Override
     public void databaseMigration(String migrateVersion) throws SQLException {
-        log.info("Database migration for API Manager " + Constants.VERSION_1_9 + " started");
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        BufferedReader bufferedReader = null;
-        try {
-            connection = APIMgtDBUtil.getConnection();
-            String dbType = MigrationDBCreator.getDatabaseType(connection);
-            String dbScript = ResourceUtil.pickQueryFromResources(migrateVersion, dbType);
+        String scriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
+        updateAPIManangerDatabase(scriptPath);
 
-            InputStream is = new FileInputStream(dbScript);
-            bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
-            String sqlQuery;
-            while ((sqlQuery = bufferedReader.readLine()) != null) {
-                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
-                sqlQuery = sqlQuery.trim();
-                if (sqlQuery.startsWith("//") || sqlQuery.startsWith("--")) {
-                    continue;
-                }
-                StringTokenizer stringTokenizer = new StringTokenizer(sqlQuery);
-                if (stringTokenizer.hasMoreTokens()) {
-                    String token = stringTokenizer.nextToken();
-                    if ("REM".equalsIgnoreCase(token)) {
-                        continue;
-                    }
-                }
+        String constraintsScriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
 
-                if (sqlQuery.contains("\\n")) {
-                    sqlQuery = sqlQuery.replace("\\n", "");
-                }
-
-                if (sqlQuery.length() > 0) {
-                    preparedStatement = connection.prepareStatement(sqlQuery.trim());
-                    preparedStatement.execute();
-                    connection.commit();
-                }
-            }
-
-            //To drop the foreign key
-            dropFKConstraint(migrateVersion, dbType);
-
-            bufferedReader.close();
-
-        } catch (IOException e) {
-            //Errors logged to let user know the state of the db migration and continue other resource migrations
-            log.error("Error occurred while migrating databases", e);
-        } catch (Exception e) {
-            /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
-            method getDatabaseType throws generic Exception */
-            log.error("Error occurred while migrating databases", e);
-        } finally {
-            if (preparedStatement != null) {
-                preparedStatement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
-        }
-        log.info("DB resource migration done for all the tenants");
+        //To drop the foreign key
+        dropFKConstraint(constraintsScriptPath);
     }
 
-    /**
-     * This method is used to remove the FK constraint which is unnamed
-     * This finds the name of the constraint and build the query to delete the constraint and execute it
-     *
-     * @param migrateVersion version to be migrated
-     * @param dbType         database type of the user
-     * @throws SQLException
-     * @throws IOException
-     */
-    public void dropFKConstraint(String migrateVersion, String dbType) throws SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-        Statement statement = null;
-        try {
-            String queryToExecute = ResourceUtil.pickQueryFromResources(migrateVersion, Constants.CONSTRAINT).trim();
-            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
-
-            connection = APIMgtDBUtil.getConnection();
-            connection.setAutoCommit(false);
-            statement = connection.createStatement();
-            if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
-            }
-            resultSet = statement.executeQuery(queryArray[0]);
-            String constraintName = null;
-
-            while (resultSet.next()) {
-                constraintName = resultSet.getString("constraint_name");
-            }
-
-            if (constraintName != null) {
-                queryToExecute = queryArray[1].replace("<temp_key_name>", constraintName);
-                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    queryToExecute = queryToExecute.replace(Constants.DELIMITER, "");
-                }
-
-                if (queryToExecute.contains("\\n")) {
-                    queryToExecute = queryToExecute.replace("\\n", "");
-                }
-                preparedStatement = connection.prepareStatement(queryToExecute);
-                preparedStatement.execute();
-                connection.commit();
-            }
-        } catch (APIMigrationException e) {
-            //Foreign key might be already deleted, log the error and let it continue
-            log.error("Error occurred while deleting foreign key", e);
-        } catch (IOException e) {
-            //If user does not add the file migration will continue and migrate the db without deleting
-            // the foreign key reference
-            log.error("Error occurred while finding the foreign key deletion query for execution", e);
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-
-            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
-        }
-
-    }
 
     /**
      * This method is used to migrate all registry resources
@@ -314,7 +128,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     void externalStoreMigration() throws APIMigrationException {
         log.info("External API store migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
-        for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : getTenantsArray()) {
             log.debug("Start API store migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             Registry registry = null;
             try {
@@ -365,7 +179,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             docFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             xmlContent = new String((byte[]) resource.getContent(), "UTF8");
-            Document doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes())));
+            Document doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes("UTF8"))));
 
             NodeList externalAPIStores = doc.getElementsByTagName(Constants.EXTERNAL_API_STORE);
 
@@ -415,7 +229,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
-        for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : getTenantsArray()) {
             log.debug("Start rxtMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             try {
                 PrivilegedCarbonContext.startTenantFlow();
@@ -494,7 +308,7 @@ public class MigrateFrom18to19 implements MigrationClient {
             File newRxtFile = new File(CarbonUtils.getCarbonHome() + Constants.RXT_PATH);
             String rxtContent = FileUtils.readFileToString(newRxtFile, "UTF-8");
 
-            for (Tenant tenant : tenantsArray) {
+            for (Tenant tenant : getTenantsArray()) {
                 int tenantId = tenant.getId();
                 isTenantFlowStarted = true;
                 PrivilegedCarbonContext.startTenantFlow();
@@ -550,7 +364,7 @@ public class MigrateFrom18to19 implements MigrationClient {
         log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
 
-        for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
                 log.debug("Start swaggerResourceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             }
@@ -1047,7 +861,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     public void cleanOldResources() throws APIMigrationException {
         log.info("Resource cleanup started for API Manager " + Constants.VERSION_1_9);
         try {
-            for (Tenant tenant : tenantsArray) {
+            for (Tenant tenant : getTenantsArray()) {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain());
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId());
@@ -1126,7 +940,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     void sequenceMigration() {
         String repository = CarbonUtils.getCarbonRepository();
         String TenantRepo = CarbonUtils.getCarbonTenantsDirPath();
-        for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : getTenantsArray()) {
             log.debug("Start sequenceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             String SequenceFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
@@ -1171,7 +985,7 @@ public class MigrateFrom18to19 implements MigrationClient {
     void synapseAPIMigration() {
         String repository = CarbonUtils.getCarbonRepository();
         String tenantRepository = CarbonUtils.getCarbonTenantsDirPath();
-        for (Tenant tenant : tenantsArray) {
+        for (Tenant tenant : getTenantsArray()) {
             log.debug("Start synapseAPIMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             String apiFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {

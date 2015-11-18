@@ -110,17 +110,19 @@ public class ResourceUtil {
             if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
                 //pick from 18to19Migration/sql-scripts
                 resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
+            }
+            else if (Constants.VERSION_1_10.equalsIgnoreCase(migrateVersion)) {
+                //pick from 19to110Migration/sql-scripts
+                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "19-110-migration" + File.separator;
             } else {
                 throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
             }
 
             if (Constants.CONSTRAINT.equals(queryType)) {
                 resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
-                //queryTobeExecuted = resourcePath + "drop-fk.sql";
                 queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
             } else {
                 queryTobeExecuted = resourcePath + databaseType + ".sql";
-                //queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + databaseType + ".sql")), "UTF-8");
             }
 
         } catch (IOException e) {

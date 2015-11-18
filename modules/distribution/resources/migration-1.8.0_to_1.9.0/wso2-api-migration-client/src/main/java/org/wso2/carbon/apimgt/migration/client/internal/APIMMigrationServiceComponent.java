@@ -23,6 +23,7 @@ import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
+import org.wso2.carbon.apimgt.migration.client.MigrateFrom19to110;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
@@ -82,7 +83,7 @@ public class APIMMigrationServiceComponent {
         try {
             if (migrateToVersion != null) {
                 if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
-                    log.info("Migrating WSO2 API Manager 1.8.0 to WSO2 API Manager 1.9.0");
+                    log.info("Starting WSO2 API Manager migration");
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
 
@@ -90,24 +91,24 @@ public class APIMMigrationServiceComponent {
 
                     //Default operation will migrate all three types of resources
                     if (migrateAll) {
-                        log.info("Migrating WSO2 API Manager 1.8.0 resources to WSO2 API Manager 1.9.0");
+                        log.info("Migrating All WSO2 API Manager resources");
                         migrateFrom18to19.databaseMigration(migrateToVersion);
                         migrateFrom18to19.registryResourceMigration();
                         migrateFrom18to19.fileSystemMigration();
                     } else {
                         //Only performs database migration
                         if (isDBMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 databases to WSO2 API Manager 1.9.0");
+                            log.info("Migrating WSO2 API Manager databases");
                             migrateFrom18to19.databaseMigration(migrateToVersion);
                         }
                         //Only performs registry migration
                         if (isRegistryMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 registry resources to WSO2 API Manager 1.9.0");
+                            log.info("Migrating WSO2 API Manager registry resources");
                             migrateFrom18to19.registryResourceMigration();
                         }
                         //Only performs file system migration
                         if (isFileSystemMigration) {
-                            log.info("Migrating WSO2 API Manager 1.8.0 file system resources to WSO2 API Manager 1.9.0");
+                            log.info("Migrating WSO2 API Manager file system resources");
                             migrateFrom18to19.fileSystemMigration();
                         }
                     }
@@ -123,15 +124,22 @@ public class APIMMigrationServiceComponent {
                         log.info("Stat migration completed");
                     }
 
+                    log.info("Ending WSO2 API Manager migration");
+                } else if (Constants.VERSION_1_10.equalsIgnoreCase(migrateToVersion)) {
+                    //Do the logic for 1.10 Migration
                     if (log.isDebugEnabled()) {
-                        log.debug("API Manager 1.8.0 to 1.9.0 migration successfully completed");
+                        log.debug("Migrating to the version " + migrateToVersion);
                     }
+
+                    MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants);
+
+                    migrateFrom19to110.databaseMigration(migrateToVersion);
+
                 } else {
                     log.error("The given migrate version " + migrateToVersion + " is not supported. Please check the version and try again.");
 
                 }
-            }
-            else { // Migration version not specified
+            } else { // Migration version not specified
                 if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
                     log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
                 }
