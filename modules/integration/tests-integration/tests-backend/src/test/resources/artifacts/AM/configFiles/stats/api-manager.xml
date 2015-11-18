@@ -187,6 +187,20 @@
     -->
     <APIUsageTracking>
 
+        <Enabled>true</Enabled>
+
+        <BAMServerURL>{tcp://localhost:7614/}</BAMServerURL>
+
+        <!--
+            Administrator username to login to the remote BAM server.
+        -->
+        <BAMUsername>admin</BAMUsername>
+
+        <!--
+            Administrator password to login to the remote BAM server.
+        -->
+        <BAMPassword>admin</BAMPassword>
+
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
             the stats enabled flag is set to true.
@@ -321,7 +335,7 @@
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
 	org.wso2.carbon.identity.oauth.tokenprocessor.EncryptionDecryptionPersistenceProcessor in the identity.xml -->
-	<EncryptPersistedTokens>true</EncryptPersistedTokens>
+	<EncryptPersistedTokens>false</EncryptPersistedTokens>
 
     </APIKeyValidator>
 
