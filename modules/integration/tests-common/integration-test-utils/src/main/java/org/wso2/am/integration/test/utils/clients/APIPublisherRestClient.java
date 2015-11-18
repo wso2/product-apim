@@ -387,7 +387,7 @@ public class APIPublisherRestClient {
                     "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Check for valid endpoint fails for " +
-                                                         endpointUrl, e);
+                    endpointUrl, e);
         }
     }
 
@@ -521,6 +521,39 @@ public class APIPublisherRestClient {
      *                                            HttpRequestUtil.doPost() method call
      */
     public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
+                                    String sourceType, String docUrl, String summary, String docLocation,String mimeType, String newType)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag"),
+                    "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
+                            "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
+                            "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType+ "&newType=" + newType, requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
+        }
+    }
+
+
+
+/**
+     * Adding a Document to a API
+     *
+     * @param apiName     - Name of the API.
+     * @param version     - Version of the API.
+     * @param provider    - Name of the API Provider.
+     * @param docName     - Name of the Document
+     * @param docType     - Document Type
+     * @param sourceType  - Source Type
+     * @param docUrl      - Document URL
+     * @param summary     - Document summary
+     * @param docLocation - Document Location
+     * @return HttpResponse - Response  with Document adding result.
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
+     */
+    public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
                                     String sourceType, String docUrl, String summary, String docLocation)
             throws APIManagerIntegrationTestException {
         try {
@@ -528,7 +561,7 @@ public class APIPublisherRestClient {
             return HttpRequestUtil.doPost(
                     new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
-                            "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl" + docUrl +
+                            "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
                             "=&summary=" + summary + "&docLocation=" + docLocation, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
@@ -552,8 +585,10 @@ public class APIPublisherRestClient {
                     "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
                             addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
                             addDocRequestBean.getDocName() + "&docType=" + addDocRequestBean.getDocType() + "&sourceType=" +
-                            addDocRequestBean.getDocSourceType() + "&docUrl" + addDocRequestBean.getDocUrl() + "=&summary=" +
-                            addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation(), requestHeaders);
+                            addDocRequestBean.getDocSourceType() + "&docUrl=" + addDocRequestBean.getDocUrl() + "=&summary=" +
+                            addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation() +
+                            "&mimeType=" + addDocRequestBean.getMimeType() +
+                            "&optionsRadios=" + addDocRequestBean.getDocType() + "&optionsRadios1=" + addDocRequestBean.getDocSourceType(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API", e);
         }
@@ -593,8 +628,7 @@ public class APIPublisherRestClient {
                     new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available " +
-                    "for the user in Publisher", e);
+            throw new APIManagerIntegrationTestException("Exception when Adding the New API " , e);
         }
     }
 
@@ -617,5 +651,109 @@ public class APIPublisherRestClient {
                     "for the user in Publisher", e);
         }
     }
+
+
+    /**
+     * Design an API using APIDesignBean object
+     *
+     * @param designBean -Instance of APIDesignBean object with all needed information to create an API up to design level.
+     * @return HttpResponse -Response that contains the results of API creation up to design level
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doPost() method call
+     */
+    public HttpResponse designAPI(APIDesignBean designBean)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
+                    designBean.generateRequestParameters("design"), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to design API ", e);
+        }
+    }
+
+
+    public HttpResponse implement(APIImplementationBean implementationBean)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag?"),
+                    implementationBean.generateRequestParameters("implement"), requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to prototype API ", e);
+        }
+    }
+
+
+    /**
+     * Retrieve implementation page for the requested API
+     *
+     * @param apiName  - Name of the API
+     * @param provider - Provider of the API
+     * @param version  -Version of the API
+     * @return - Response that contains the implementation page of the API
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
+     *                                            HttpRequestUtil.doGet() method call
+     */
+    public HttpResponse getAPIImplementPage(String apiName, String provider, String version)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doGet(
+                    backendURL + "/publisher/prototype?name=" + apiName + "&version=" + version + "&provider=" + provider,
+                    requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when retrieving the API Implement page", e);
+        }
+    }
+
+    /**
+     * Validate API Name when creating a new API
+     * @param apiName - Name of the API
+     * @return - Response that contains the API is valid or not..
+     * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
+     *                                           method and HttpRequestUtil.doPost() method call
+     */
+    public HttpResponse checkValidAPIName(String apiName) throws APIManagerIntegrationTestException{
+        try {
+            checkAuthentication();
+            return  HttpRequestUtil.doPost( new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                    "action=isAPINameExist&apiName=" + apiName , requestHeaders);
+        }catch (Exception e){
+            throw new APIManagerIntegrationTestException("Exeption when adding a new API with existing API name",e);
+
+        }
+    }
+
+    /**
+     * @return - Response that contains all the available tiers
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse getTiers() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),"action=getTiers" ,requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page", e);
+        }
+    }
+
+    /**
+     *
+     * @param role
+     * @return
+     * @throws APIManagerIntegrationTestException
+     */
+    public HttpResponse validateRoles(String role) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),"action=validateRoles&roles=" + role ,requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page", e);
+        }
+    }
+
 
 }

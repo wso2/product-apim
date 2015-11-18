@@ -23,6 +23,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -106,6 +107,8 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         apiIdentifier.setTier(TIER_UNLIMITED);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         HttpResponse httpResponseGet =
@@ -122,11 +125,13 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
 
 
     @Test(groups = {"wso2.am"}, dataProvider = "SymbolCharacters", description = "Test the API with endpoint security" +
-            " enabled with complex password",
-            dependsOnMethods = "testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters")
-    public void testInvokeGETResourceWithSecuredEndPointComplexPassword(String st) throws Exception {
+                                                                                 " enabled with complex password",
+          dependsOnMethods = "testInvokeGETResourceWithSecuredEndPointPasswordOnlyNumbersAndLetters")
+    public void testInvokeGETResourceWithSecuredEndPointComplexPassword(String symbolicCharacter)
+            throws Exception {
+
         String endpointUsername = "user";
-        char[] endpointPassword = {'a', 'b', 'c', 'd', st.charAt(0), 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
+        char[] endpointPassword = {'a', 'b', 'c', 'd', symbolicCharacter.charAt(0), 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
         byte[] userNamePasswordByteArray = (endpointUsername + ":" + String.valueOf(endpointPassword)).getBytes();
         String encodedUserNamePassword = DatatypeConverter.printBase64Binary(userNamePasswordByteArray);
         APICreationRequestBean apiCreationRequestBean =
@@ -143,6 +148,9 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
                 "information fail");
         assertEquals(updateAPIHTTPResponse.getData(), "{\"error\" : false}", "Update APi with new Resource information fail");
         //Send GET request
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, encodedUserNamePassword);
+
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
                         requestHeadersGet);

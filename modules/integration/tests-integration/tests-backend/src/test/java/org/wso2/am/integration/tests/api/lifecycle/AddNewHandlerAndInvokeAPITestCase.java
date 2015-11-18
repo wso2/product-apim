@@ -29,6 +29,8 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -52,6 +54,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Configure a new handler and Invoke the API and verify  the  request is going through newly added handler.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(AddNewHandlerAndInvokeAPITestCase.class);
     private static final String API_NAME = "AddNewHandlerAndInvokeAPITest";

@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -115,6 +116,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
@@ -168,6 +171,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                      "Update APi with new Resource information fail");
         //Send GET Request
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, "POST");
+
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
@@ -207,6 +212,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+
+        waitForAPIDeploymentSync(user.getUserName(),
+                                 apiCreationRequestBean.getName(),
+                                 apiCreationRequestBean.getVersion(), "\"urlMapping\":\"\\/customers\\/name\"");
+
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
@@ -261,6 +271,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                      "Update APi with new Resource information fail");
         //Send GET request
+
+        waitForAPIUnDeploymentSync(user.getUserName(),
+                                 apiCreationRequestBean.getName(),
+                                 apiCreationRequestBean.getVersion(), "POST");
+
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);

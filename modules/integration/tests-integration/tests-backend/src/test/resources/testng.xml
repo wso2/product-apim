@@ -24,10 +24,7 @@
 
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
-
-
         <classes>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
@@ -64,14 +61,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
         </classes>
     </test>
-
-
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
-
         <classes>
-
-            <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
@@ -89,7 +80,6 @@
             <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
@@ -97,10 +87,54 @@
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.APITierManagementTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
-          <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
-          <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
+            <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+        </classes>
+    </test>
 
+    <test name="apim-publisher-tests" preserve-order="true" parallel="false">
+
+        <classes>
+            <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
+            <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
+            <!--Disable the test case due to APIMANAGER-4039-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
+
+
+        </classes>
+    </test>
+
+
+    <test name="apim-store-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
+            <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM684GenerateApplicationKeyTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
         </classes>
     </test>
 

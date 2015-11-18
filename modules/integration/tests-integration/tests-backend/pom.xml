@@ -64,7 +64,9 @@ under the License.
                                         <include>automation.xml</include>
                                     </includes>
                                     <dir>src/test/resources/</dir>
-                                    <stylesheet>src/test/resources/integration-test-host-config.xsl</stylesheet>
+                                    <stylesheet>
+                                        src/test/resources/integration-test-host-config.xsl
+                                    </stylesheet>
                                     <outputDir>src/test/resources</outputDir>
                                 </transformationSet>
                             </transformationSets>
@@ -80,54 +82,55 @@ under the License.
                 </plugins>
             </build>
         </profile>
-    <profile>
-        <!--The profile below will activate the profile when the system property "platform" is specified with any value-->
-        <!--mvn clean install -DplatformTests -->
-        <id>platform</id>
-        <activation>
-            <activeByDefault>false</activeByDefault>
-            <property>
-                <name>platformTests</name>
-            </property>
-        </activation>
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>xml-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>transform</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <transformationSets>
-                            <transformationSet>
-                                <includes>
-                                    <include>automation.xml</include>
-                                </includes>
-                                <dir>src/test/resources/</dir>
-                                <stylesheet>src/test/resources/platform-test-host-config.xsl</stylesheet>
-                                <outputDir>src/test/resources</outputDir>
-                            </transformationSet>
-                        </transformationSets>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>net.sf.saxon</groupId>
-                            <artifactId>saxon</artifactId>
-                            <version>8.7</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-            </plugins>
-        </build>
-    </profile>
+        <profile>
+            <!--The profile below will activate the profile when the system property "platform" is specified with any value-->
+            <!--mvn clean install -DplatformTests -->
+            <id>platform</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>platformTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <includes>
+                                        <include>automation.xml</include>
+                                    </includes>
+                                    <dir>src/test/resources/</dir>
+                                    <stylesheet>src/test/resources/platform-test-host-config.xsl
+                                    </stylesheet>
+                                    <outputDir>src/test/resources</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>net.sf.saxon</groupId>
+                                <artifactId>saxon</artifactId>
+                                <version>8.7</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
-</profiles>
+    </profiles>
 
     <build>
         <plugins>
@@ -137,8 +140,8 @@ under the License.
                 <configuration>
                     <argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m</argLine>
                     <!--<argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m -Xmx1024m -XX:PermSize=256m-->
-                        <!---XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE-->
-                        <!---Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005-->
+                    <!---XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE-->
+                    <!---Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005-->
                     <!--</argLine>-->
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng-server-mgt.xml</suiteXmlFile>
@@ -208,6 +211,7 @@ under the License.
                         </configuration>
                     </execution>
 
+
                     <execution>
                         <id>unpack-mar-jks</id>
                         <phase>compile</phase>
@@ -246,28 +250,6 @@ under the License.
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
                 <executions>
-                    <!--<execution>-->
-                    <!--<id>copy-resources-jks</id>-->
-                    <!--<phase>compile</phase>-->
-                    <!---->
-                    <!--<goals>-->
-                    <!--<goal>copy-resources</goal>-->
-                    <!--</goals>-->
-                    <!--<configuration>-->
-                    <!--<outputDirectory>${basedir}/src/test/resources/keystores/products-->
-                    <!--</outputDirectory>-->
-                    <!--<resources>-->
-                    <!--<resource>-->
-                    <!--<directory>-->
-                    <!--${basedir}/target/tobeCopied/wso2am-${project.version}/repository/resources/security/-->
-                    <!--</directory>-->
-                    <!--<includes>-->
-                    <!--<include>**/*.jks</include>-->
-                    <!--</includes>-->
-                    <!--</resource>-->
-                    <!--</resources>-->
-                    <!--</configuration>-->
-                    <!--</execution>-->
                     <execution>
                         <id>copy-stratos-jks</id>
                         <phase>compile</phase>
@@ -326,6 +308,26 @@ under the License.
                                     </directory>
                                     <includes>
                                         <include>**/*.mar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-artifacts-01</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/src/test/resources/artifacts/AS/ghost
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>../../tests-common/backend-service/monitor-app/target
+                                    </directory>
+                                    <includes>
+                                        <include>*.war</include>
                                     </includes>
                                 </resource>
                             </resources>
