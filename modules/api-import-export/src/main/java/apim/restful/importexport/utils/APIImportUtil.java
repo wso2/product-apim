@@ -107,8 +107,9 @@ public final class APIImportUtil {
                 outFileStream.write(bytes, 0, read);
             }
         } catch (IOException e) {
-            log.error("Error in transferring files.", e);
-            throw new APIImportException("Error in transferring archive files. " + e.getMessage());
+            String errorMessage = "Error in transferring files.";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(outFileStream);
         }
@@ -167,8 +168,9 @@ public final class APIImportUtil {
             }
             return archiveName;
         } catch (IOException e) {
-            log.error("Failed to extract archive file ", e);
-            throw new APIImportException("Failed to extract archive file. " + e.getMessage());
+            String errorMessage = "Failed to extract archive file ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(zipInputStream);
             IOUtils.closeQuietly(inputStream);
@@ -200,8 +202,9 @@ public final class APIImportUtil {
                 bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 importedApi = new Gson().fromJson(bufferedReader, API.class);
             } catch (FileNotFoundException e) {
-                log.error("Error in locating api.json file. ", e);
-                throw new APIImportException("Error in locating api.json file. " + e.getMessage());
+                String errorMessage = "Error in locating api.json file. ";
+                log.error(errorMessage, e);
+                throw new APIImportException(errorMessage, e);
             } finally {
                 IOUtils.closeQuietly(inputStream);
                 IOUtils.closeQuietly(bufferedReader);
@@ -221,8 +224,9 @@ public final class APIImportUtil {
                 importedApi = new Gson().fromJson(configElement, API.class);
 
             } catch (IOException e) {
-                log.error("Error in setting API provider to logged in user. ", e);
-                throw new APIImportException("Error in setting API provider to logged in user. " + e.getMessage());
+                String errorMessage = "Error in setting API provider to logged in user. ";
+                log.error(errorMessage, e);
+                throw new APIImportException(errorMessage, e);
             }
         }
 
@@ -232,8 +236,9 @@ public final class APIImportUtil {
         try{
             allowedTiers = provider.getTiers();
         } catch (APIManagementException e) {
-            log.error("Error in retrieving tiers of the provider. ", e);
-            throw new APIImportException("Error in retrieving tiers of the provider. " + e.getMessage());
+            String errorMessage = "Error in retrieving tiers of the provider. ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         }
 
         if (!(allowedTiers.isEmpty())){
@@ -257,8 +262,9 @@ public final class APIImportUtil {
             addSwaggerDefinition(importedApi.getId(), pathToArchive);
         } catch (APIManagementException e){
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
-            log.error("Error in adding API to the provider. ", e);
-            throw new APIImportException("Error in adding API to the provider. " + e.getMessage());
+            String errorMessage = "Error in adding API to the provider. ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         }
 
         //Since Image, documents, sequences and WSDL are optional, exceptions are logged and ignored in implementation
@@ -511,11 +517,13 @@ public final class APIImportUtil {
                     new File(archivePath + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
             provider.saveSwagger20Definition(apiId, swaggerContent);
         } catch (APIManagementException e) {
-            log.error("Error in adding Swagger definition for the API. ", e);
-            throw new APIImportException("Error in adding Swagger definition for the API. " + e.getMessage());
+            String errorMessage = "Error in adding Swagger definition for the API. ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         } catch (IOException e) {
-            log.error("Error in importing Swagger definition for the API. ", e);
-            throw new APIImportException("Error in importing Swagger definition for the API. " + e.getMessage());
+            String errorMessage = "Error in importing Swagger definition for the API. ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
         }
     }
 

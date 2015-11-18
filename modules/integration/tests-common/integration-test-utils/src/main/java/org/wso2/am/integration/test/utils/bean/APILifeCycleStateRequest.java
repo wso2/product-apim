@@ -28,6 +28,8 @@ public class APILifeCycleStateRequest extends AbstractRequest {
     private String provider;
     private String version = "1.0.0";
     private String publishToGateway = "true";
+    private String deprecateOldVersions = "";
+    private String requireResubscription = "";
 
     public APILifeCycleStateRequest(String apiName, String provider, APILifeCycleState status) {
         this.name = apiName;
@@ -47,6 +49,9 @@ public class APILifeCycleStateRequest extends AbstractRequest {
         addParameter("provider", provider);
         addParameter("version", version);
         addParameter("publishToGateway", publishToGateway);
+        addParameter("deprecateOldVersions", deprecateOldVersions);
+        addParameter("requireResubscription", requireResubscription);
+
     }
 
     public String getName() {
@@ -79,5 +84,22 @@ public class APILifeCycleStateRequest extends AbstractRequest {
 
     public void setPublishToGateway(boolean publishToGateway) {
         this.publishToGateway = String.valueOf(publishToGateway);
+    }
+
+    public String getDeprecateOldVersions() {
+        return deprecateOldVersions;
+    }
+
+    public void setDeprecateOldVersions(String deprecateOldVersions) {
+        this.deprecateOldVersions = deprecateOldVersions;
+    }
+
+
+    public String getRequireResubscription() {
+        return requireResubscription;
+    }
+
+    public void setRequireResubscription(String requireResubscription) {
+        this.requireResubscription = requireResubscription;
     }
 }
