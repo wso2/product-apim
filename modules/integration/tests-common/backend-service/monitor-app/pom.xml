@@ -27,111 +27,52 @@ under the License.
     <groupId>ArtifactDeploymentMonitor</groupId>
     <artifactId>ArtifactDeploymentMonitor</artifactId>
     <name>WSO2 API Manager - ArtifactDeploymentMonitor WebApp</name>
-    <version>1.0</version>
     <packaging>war</packaging>
     <modelVersion>4.0.0</modelVersion>
 
 
     <dependencies>
-
-        <!--<dependency>-->
-        <!--<groupId>org.springframework</groupId>-->
-        <!--<artifactId>spring-context</artifactId>-->
-        <!--<version>${springmvc}</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>org.springframework</groupId>-->
-        <!--<artifactId>spring-web</artifactId>-->
-        <!--<version>${springmvc}</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>org.springframework</groupId>-->
-        <!--<artifactId>spring-webmvc</artifactId>-->
-        <!--<version>${springmvc}</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.apache.cxf.wso2</groupId>
             <artifactId>cxf-bundle</artifactId>
-            <version>2.6.1.wso2v2</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging</artifactId>
-            <version>4.4.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
-            <version>1.6.1.wso2v12</version>
             <scope>provided</scope>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>commons-httpclient</groupId>-->
-        <!--<artifactId>commons-httpclient</artifactId>-->
-        <!--<version>${httpclient.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>javax.ws.rs</groupId>-->
-        <!--<artifactId>javax.ws.rs-api</artifactId>-->
-        <!--<version>${jax.ws.rs}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.codehaus.jackson</groupId>-->
-        <!--<artifactId>jackson-jaxrs</artifactId>-->
-        <!--<version>${jackson.version}</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
-            <version>1.2.5</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>javax.ws.rs</groupId>-->
-        <!--<artifactId>javax.ws.rs-api</artifactId>-->
-        <!--<version>2.0-m10</version>-->
-        <!--</dependency>-->
+
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api</artifactId>
-            <version>4.2.2</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
-            <version>4.5.3</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.wso2.carbon.deployment</groupId>
-            <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
-            <version>4.5.3</version>
-            <scope>provided</scope>
-        </dependency>
-
 
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
-            <version>4.4.2</version>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>javax.servlet</groupId>-->
-        <!--<artifactId>javax.servlet-api</artifactId>-->
-        <!--<version>3.1.0</version>-->
-        <!--</dependency>-->
     </dependencies>
 
 

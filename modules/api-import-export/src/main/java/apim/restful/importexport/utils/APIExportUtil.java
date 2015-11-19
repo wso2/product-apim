@@ -36,6 +36,8 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.api.model.Documentation;
+import org.wso2.carbon.apimgt.api.model.Scope;
+import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
@@ -52,6 +54,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import java.io.File;
@@ -63,9 +66,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * This is the util class which consists of all the functions for exporting API
@@ -106,8 +111,9 @@ public class APIExportUtil {
             return provider;
 
         } catch (APIManagementException e) {
-            log.error("Error while retrieving provider" + e.getMessage());
-            throw new APIExportException("Error while retrieving current provider", e);
+            String errorMessage = "Error while retrieving provider";
+            log.error( errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
 
     }
@@ -169,8 +175,9 @@ public class APIExportUtil {
         try {
             apiToReturn = provider.getAPI(apiID);
         } catch (APIManagementException e) {
-            log.error("Unable to retrieve API", e);
-            return Response.status(Response.Status.NOT_FOUND).entity("Unable to retrieve API")
+            String errorMessage = "Unable to retrieve API";
+            log.error(errorMessage, e);
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage)
                     .type(MediaType.APPLICATION_JSON).
                             build();
         }
@@ -183,7 +190,8 @@ public class APIExportUtil {
         try {
             docList = provider.getAllDocumentation(apiID);
         } catch (APIManagementException e) {
-            log.error("Unable to retrieve API Documentation", e);
+            String errorMessage = "Unable to retrieve API Documentation";
+            log.error(errorMessage, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error")
                     .type(MediaType.APPLICATION_JSON).build();
         }
@@ -199,7 +207,7 @@ public class APIExportUtil {
         }
 
         //export sequences
-        exportSequences(apiToReturn, apiID, tenantId);
+        exportSequences(apiToReturn, apiID, tenantId, registry);
 
         //set API status to created
         apiToReturn.setStatus(APIStatus.CREATED);
@@ -255,9 +263,9 @@ public class APIExportUtil {
         } catch (IOException e) {
             //Exception is ignored by logging due to the reason that Thumbnail is not essential for
             // an API to be recreated
-            log.error("I/O error while writing API Thumbnail to file" + e.getMessage());
+            log.error("I/O error while writing API Thumbnail to file", e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving API Thumbnail " + e.getMessage());
+            log.error("Error while retrieving API Thumbnail ", e);
         } finally {
             IOUtils.closeQuietly(imageDataStream);
             IOUtils.closeQuietly(outputStream);
@@ -339,11 +347,13 @@ public class APIExportUtil {
             }
 
         } catch (IOException e) {
-            log.error("I/O error while writing API documentation to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing API documentation to file", e);
+            String errorMessage = "I/O error while writing API documentation to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving documentation " + e.getMessage());
-            throw new APIExportException("Error while retrieving documentation", e);
+            String errorMessage = "Error while retrieving documentation ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(fileInputStream);
             IOUtils.closeQuietly(outputStream);
@@ -386,11 +396,13 @@ public class APIExportUtil {
                 }
             }
         } catch (IOException e) {
-            log.error("I/O error while writing WSDL to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing WSDL to file", e);
+            String errorMessage = "I/O error while writing WSDL to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (RegistryException e) {
-            log.error("Error while retrieving WSDL " + e.getMessage());
-            throw new APIExportException("Error while retrieving WSDL", e);
+            String errorMessage = "Error while retrieving WSDL ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(wsdlStream);
             IOUtils.closeQuietly(outputStream);
@@ -402,9 +414,11 @@ public class APIExportUtil {
      *
      * @param api           exporting API
      * @param apiIdentifier ID of the requesting API
-     * @throws APIExportException If an error occurs while retrieving sequences from registry
+     * @param registry      current tenant registry
+     * @throws APIExportException If an error occurs while exporting sequences
      */
-    public static void exportSequences(API api, APIIdentifier apiIdentifier, int tenantId) throws APIExportException {
+    public static void exportSequences(API api, APIIdentifier apiIdentifier, int tenantId, Registry registry)
+        throws APIExportException {
 
         Map<String, String> sequences = new HashMap<String, String>();
 
@@ -425,74 +439,128 @@ public class APIExportUtil {
                     apiIdentifier.getVersion());
             createDirectory(archivePath + File.separator + "Sequences");
 
-            try {
-                String sequenceName;
-                String direction;
-                OMElement sequenceConfig;
-                for (Map.Entry<String, String> sequence : sequences.entrySet()) {
-                    sequenceName = sequence.getValue();
-                    direction = sequence.getKey();
-                    if (sequenceName != null) {
-                        if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN);
-                            writeSequenceToFile(sequenceConfig, sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                                    apiIdentifier);
-                        } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT);
-                            writeSequenceToFile(sequenceConfig, sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                                    apiIdentifier);
-                        } else {
-                            sequenceConfig = APIUtil.getCustomSequence(sequenceName, tenantId,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT);
-                            writeSequenceToFile(sequenceConfig, sequenceName,
-                                    APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, apiIdentifier);
-                        }
+            String sequenceName;
+            String direction;
+            for (Map.Entry<String, String> sequence : sequences.entrySet()) {
+                sequenceName = sequence.getValue();
+                direction = sequence.getKey();
+                AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
+                if (sequenceName != null) {
+                    if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
+                        sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                            registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                            apiIdentifier);
+                    } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
+                        sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                            registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                            apiIdentifier);
+                    } else {
+                        sequenceDetails = getCustomSequence(sequenceName,
+                            APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
+                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
+                            apiIdentifier);
                     }
                 }
-            } catch (APIManagementException e) {
-                log.error("Error while retrieving custom sequence" + e.getMessage());
-                throw new APIExportException("Error while retrieving custom sequence", e);
-
             }
         }
     }
 
     /**
+     * Retrieve custom sequence details from the registry
+     *
+     * @param sequenceName Name of the sequence
+     * @param type         Sequence type
+     * @param registry     Current tenant registry
+     * @return Registry resource name of the sequence and its content
+     * @throws APIExportException If an error occurs while retrieving registry elements
+     */
+    private static AbstractMap.SimpleEntry<String, OMElement> getCustomSequence(String sequenceName,
+        String type, Registry registry) throws APIExportException {
+        AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
+
+        org.wso2.carbon.registry.api.Collection seqCollection = null;
+
+        try {
+            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                                registry.get(APIConstants.API_CUSTOM_INSEQUENCE_LOCATION);
+            } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                                registry.get(APIConstants.API_CUSTOM_OUTSEQUENCE_LOCATION);
+            } else
+                if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
+                    seqCollection = (org.wso2.carbon.registry.api.Collection)
+                                    registry.get(APIConstants.API_CUSTOM_FAULTSEQUENCE_LOCATION);
+            }
+
+            if (seqCollection != null) {
+                String[] childPaths = seqCollection.getChildren();
+
+                for (int i = 0; i < childPaths.length; i++) {
+                    Resource sequence = registry.get(childPaths[i]);
+                    OMElement seqElment = APIUtil.buildOMElement(sequence.getContentStream());
+                    if (sequenceName.equals(seqElment.getAttributeValue(new QName("name")))) {
+                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().lastIndexOf('/'));
+                        sequenceDetails = new AbstractMap.SimpleEntry<String, OMElement>(sequenceFileName, seqElment);
+                        return sequenceDetails;
+                    }
+                }
+            }
+
+        } catch (RegistryException e) {
+            String errorMessage = "Error while retrieving sequence from the registry ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (Exception e ) { //APIUtil.buildOMElement() throws a generic exception
+            String errorMessage = "Error while reading sequence content ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        }
+
+        return null;
+
+    }
+
+    /**
      * Store custom sequences in the archive directory
      *
-     * @param sequenceConfig Sequence configuration
-     * @param sequenceName   Sequence name
+     * @param sequenceDetails   Details of the sequence
      * @param direction      Direction of the sequence "in", "out" or "fault"
      * @param apiIdentifier  ID of the requesting API
      * @throws APIExportException If an error occurs while serializing XML stream or storing in
      *                            archive directory
      */
-    public static void writeSequenceToFile(OMElement sequenceConfig, String sequenceName, String direction,
-            APIIdentifier apiIdentifier) throws APIExportException {
+    private static void writeSequenceToFile(AbstractMap.SimpleEntry<String, OMElement> sequenceDetails,
+                                            String direction,
+                                            APIIdentifier apiIdentifier)
+            throws APIExportException {
         OutputStream outputStream = null;
         String archivePath = archiveBasePath.concat(File.separator + apiIdentifier.getApiName() + "-" +
                 apiIdentifier.getVersion()) + File.separator + "Sequences" + File.separator;
 
         String pathToExportedSequence = archivePath + direction + "-sequence" + File.separator;
-
-        String exportedSequenceFile = pathToExportedSequence + sequenceName + ".xml";
+        String sequenceFileName = sequenceDetails.getKey();
+        OMElement sequenceConfig = sequenceDetails.getValue();
+        String exportedSequenceFile = pathToExportedSequence + sequenceFileName;
         try {
             createDirectory(pathToExportedSequence);
             outputStream = new FileOutputStream(exportedSequenceFile);
             sequenceConfig.serialize(outputStream);
 
             if (log.isDebugEnabled()) {
-                log.debug(sequenceName + " retrieved successfully");
+                log.debug(sequenceFileName + " retrieved successfully");
             }
 
         } catch (FileNotFoundException e) {
-            log.error("Unable to find file" + e.getMessage());
-            throw new APIExportException("Unable to find file: " + exportedSequenceFile, e);
+            String errorMessage = "Unable to find file: " + exportedSequenceFile;
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } catch (XMLStreamException e) {
-            log.error("Error while processing XML stream" + e.getMessage());
-            throw new APIExportException("Error while processing XML stream", e);
+            String errorMessage = "Error while processing XML stream ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(outputStream);
         }
@@ -508,8 +576,9 @@ public class APIExportUtil {
         if (path != null) {
             File file = new File(path);
             if (!file.exists() && !file.mkdirs()) {
-                log.error("Error while creating directory : " + path);
-                throw new APIExportException("Directory creation failed " + path);
+                String errorMessage = "Error while creating directory : " + path;
+                log.error(errorMessage);
+                throw new APIExportException(errorMessage);
             }
         }
     }
@@ -529,6 +598,8 @@ public class APIExportUtil {
                 apiToReturn.getId().getVersion());
 
         createDirectory(archivePath + File.separator + "Meta-information");
+        //Remove unnecessary data from exported Api
+        cleanApiDataToExport(apiToReturn);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String apiInJson = gson.toJson(apiToReturn);
@@ -547,9 +618,24 @@ public class APIExportUtil {
             }
 
         } catch (APIManagementException e) {
-            log.error("Error while retrieving Swagger definition" + e.getMessage());
-            throw new APIExportException("Error while retrieving Swagger definition", e);
+            String errorMessage = "Error while retrieving Swagger definition";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
+    }
+
+    /**
+     * Clean api by removing unnecessary details
+     *
+     * @param api api to be exported
+     */
+    private static void cleanApiDataToExport(API api) {
+        // Thumbnail will be set according to the importing environment. Therefore current URL is removed
+        api.setThumbnailUrl(null);
+        // Swagger.json contains complete details about scopes and URI templates. Therefore scope and URI template
+        // details are removed from api.json
+        api.setScopes(new TreeSet<Scope>());
+        api.setUriTemplates(new TreeSet<URITemplate>());
     }
 
     /**
@@ -566,8 +652,9 @@ public class APIExportUtil {
             writer = new FileWriter(path);
             IOUtils.copy(new StringReader(content), writer);
         } catch (IOException e) {
-            log.error("I/O error while writing to file" + e.getMessage());
-            throw new APIExportException("I/O error while writing to file", e);
+            String errorMessage = "I/O error while writing to file";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(writer);
         }

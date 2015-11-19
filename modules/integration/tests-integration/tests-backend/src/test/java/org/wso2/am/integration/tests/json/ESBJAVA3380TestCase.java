@@ -72,9 +72,9 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-            serverConfigurationManager =
-                    new ServerConfigurationManager(new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME
-                            , APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
+        serverConfigurationManager =
+                new ServerConfigurationManager(new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME
+                        , APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN));
 
 
         /*
@@ -83,11 +83,11 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
            * configFiles/json_to_xml/synapse.properties
            */
 
-       serverConfigurationManager.applyConfigurationWithoutRestart(
-                    new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(
+                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
 
-       serverConfigurationManager.applyConfiguration(
-                    new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
+        serverConfigurationManager.applyConfiguration(
+                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
 
         super.init(userMode);
 
@@ -119,38 +119,38 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
         try {
             response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp("Weather/1.0.0")), payload,
-                                              requestHeaders);
+                    requestHeaders);
             assert response != null;
             Assert.assertEquals(response.getResponseCode(), 200,
-                                "Response code mismatched while Json to XML test case");
+                    "Response code mismatched while Json to XML test case");
         } catch (Exception e) {
-            
+
             if(e.getLocalizedMessage().contains("Connection error")){
                 //restart again and retry
                 Thread.sleep(20000);
                 serverConfigurationManager.restartGracefully();
                 Thread.sleep(20000);
                 try {
-                response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp("Weather/1.0.0")), payload,
-                        requestHeaders);
-                assert response != null;
-                Assert.assertEquals(response.getResponseCode(), 200,
-                        "Response code mismatched while Json to XML test case");
+                    response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp("Weather/1.0.0")), payload,
+                            requestHeaders);
+                    assert response != null;
+                    Assert.assertEquals(response.getResponseCode(), 200,
+                            "Response code mismatched while Json to XML test case");
                 }catch (Exception e2) {
                     Assert.assertFalse(
                             e.getLocalizedMessage().contains("Connection error"),
                             "Problem in converting json to xml. " + e.getLocalizedMessage());
                 }
-                
-            
+
+
             } else {
                 log.error("connection error. " + e.getLocalizedMessage());
             }
-           
-            
+
+
         }
 
-   
+
     }
 
     @AfterClass(alwaysRun = true)

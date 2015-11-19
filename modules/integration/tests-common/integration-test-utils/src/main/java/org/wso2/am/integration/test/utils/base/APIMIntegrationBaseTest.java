@@ -59,6 +59,7 @@ public class APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
     protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt, gatewayContextWrk, backEndServer;
     protected OMElement synapseConfiguration;
+    protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
     protected String executionMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
@@ -84,6 +85,8 @@ public class APIMIntegrationBaseTest {
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
     protected void init(TestUserMode userMode) throws APIManagerIntegrationTestException {
+
+        apimTestCaseUtils = new APIMTestCaseUtils();
 
         try {
             //create store server instance based on configuration given at automation.xml

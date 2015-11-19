@@ -234,7 +234,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
+<resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     <payloadFactory>
         <format>
