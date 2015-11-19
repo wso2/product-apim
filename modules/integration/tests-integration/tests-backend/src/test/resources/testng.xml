@@ -128,7 +128,7 @@
 
     <test name="apim-store-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
