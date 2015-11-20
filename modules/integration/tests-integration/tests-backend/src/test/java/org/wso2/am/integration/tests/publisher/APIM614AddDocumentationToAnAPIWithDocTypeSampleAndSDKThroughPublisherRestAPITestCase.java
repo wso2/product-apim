@@ -24,23 +24,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.SchemeRegistryFactory;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
@@ -53,20 +43,11 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 
-import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -97,7 +78,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -107,9 +88,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
 
         String apiProductionEndpointPostfixUrl = "jaxrs_basic/services/customers/" +
                 "customerservice/customers/123";
-        String loginUrl = "https://localhost:9943/publisher/site/blocks/user/login/ajax/login.jag";
-
-        Thread.sleep(5000);
+        String loginUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/user/login/ajax/login.jag";
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
 
@@ -182,7 +161,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM614 =TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM614;;
-        String addDocUrl = "https://localhost:9943/publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
 
 
         //Send Http Post request to add a new file
@@ -233,7 +212,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM622 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM622;
-        String addDocUrl = "https://localhost:9943/publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp() +"publisher/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -283,7 +262,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM624 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM624;
-        String addDocUrl = "https://localhost:9943/publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -317,7 +296,6 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         assertFalse(jsonObject1.getBoolean("error"), "Error when adding files to the API ");
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Add Documentation To An API With Type  support forum And" +
             " Source File through the publisher rest API ",
             dependsOnMethods = "testAddDocumentToAnAPIPublicToFile")
@@ -333,7 +311,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM626 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM626;
-        String addDocUrl = "https://localhost:9943/publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
@@ -383,7 +361,7 @@ public class APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublish
         String filePathAPIM629 = TestConfigurationProvider.getResourceLocation() + File.separator +
                 "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" +
                 File.separator + fileNameAPIM629;
-        String addDocUrl = "https://localhost:9943/publisher/site/blocks/documentation/ajax/docs.jag";
+        String addDocUrl = publisherUrls.getWebAppURLHttp()+"publisher/site/blocks/documentation/ajax/docs.jag";
 
         //Send Http Post request to add a new file
         HttpPost httppost = new HttpPost(addDocUrl);
