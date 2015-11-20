@@ -101,8 +101,9 @@ public class ArchiveGeneratorUtil {
             }
 
         } catch (IOException e) {
-            log.error("I/O error while adding files to archive" + e.getMessage());
-            throw new APIExportException("I/O error while adding files to archive", e);
+            String errorMessage = "I/O error while adding files to archive";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(zipOutputStream);
             IOUtils.closeQuietly(fileOutputStream);
@@ -134,8 +135,9 @@ public class ArchiveGeneratorUtil {
 
             zipOutputStream.closeEntry();
         } catch (IOException e) {
-            log.error("I/O error while writing files to archive" + e.getMessage());
-            throw new APIExportException("I/O error while writing files to archive", e);
+            String errorMessage = "I/O error while writing files to archive";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             IOUtils.closeQuietly(fileInputStream);
         }

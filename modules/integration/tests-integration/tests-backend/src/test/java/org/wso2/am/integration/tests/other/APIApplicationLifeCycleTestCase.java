@@ -184,12 +184,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiPublisher.updateAPI(apiRequest);
         //TODO need to reformat this code after we finalize new APIs
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", "In-line",
-                "url-no-need", "summary", "");
+                "url-no-need", "summary", "","","");
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name1", "How To", "URL",
-                "http://www.businesstoday.lk/article.php?article=3549", "summary", "");
+                "http://www.businesstoday.lk/article.php?article=3549", "summary", "","",null);
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name2", "How To", " File",
                 "url-no-need", "summary",
-                getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml");
+                getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml","","");
         apiPublisher.removeDocumentation(APIName, APIVersion, providerName, "Doc Name", "How To");
         //create application
         apiStore.addApplication("test-application", "Gold", "", "this-is-test");
