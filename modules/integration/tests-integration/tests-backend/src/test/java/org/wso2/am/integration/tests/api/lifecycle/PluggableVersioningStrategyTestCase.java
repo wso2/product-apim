@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -74,7 +75,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
 
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                new URL(apiEndPointUrl));
+                                                            new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setTier(TIER_GOLD);
@@ -83,7 +84,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
     @Test(groups = {"wso2.am"}, description = "This test method tests the pluggable versioning stratergy")
     public void testPluggableVersioningStratergy() throws Exception,
-            IOException, LogViewerLogViewerException {
+                                                          IOException, LogViewerLogViewerException {
 
         //Create an application with gold tier
         apiStoreClientUser.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
@@ -93,6 +94,9 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         apiIdentifier.setTier(TIER_GOLD);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser, apiStoreClientUser, APPLICATION_NAME);
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
 
         //Add request headers
         HashMap<String, String> requestHeadersGet = new HashMap<String, String>();
@@ -105,10 +109,10 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         //Send GET Request
         HttpResponse httpResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
-                        requestHeadersGet);
+                                      requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
-                " Expected value : " + RESPONSE_GET + " not contains in response data " + httpResponse.getData());
+                                                                  " Expected value : " + RESPONSE_GET + " not contains in response data " + httpResponse.getData());
     }
 
 

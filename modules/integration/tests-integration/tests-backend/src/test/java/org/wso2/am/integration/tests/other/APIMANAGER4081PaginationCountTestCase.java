@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -64,6 +65,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             // create a tenant
             TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
                     keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
+
             tenantManagementServiceClient.addTenant(tenantDomain,
                     keyManagerContext.getContextTenant().getTenantAdmin().getPassword(),
                     keyManagerContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
@@ -100,12 +102,12 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
                 String url = "https://localhost:9443/test";
                 String description = "This is test API create by API manager integration test";
                 String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
-                        + "@" + tenantDomain;
+                                      + "@" + tenantDomain;
                 String APIVersion = "1.0.0";
                 APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
                 apiPublisher.login
                         (publisherContext.getContextTenant().getTenantAdmin().getUserName() + "@" + tenantDomain,
-                                publisherContext.getContextTenant().getTenantAdmin().getPassword());
+                         publisherContext.getContextTenant().getTenantAdmin().getPassword());
 
                 APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
                 apiRequest.setTags(tags);
@@ -118,12 +120,19 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
                 //update the lifecycle of the API to Published state, so that is it visible in store
                 APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
-                        providerName, APILifeCycleState.PUBLISHED);
+                                                                                      providerName, APILifeCycleState.PUBLISHED);
                 apiPublisher.changeAPILifeCycleStatus(updateRequest);
             }
 
+            for (int i = 0; i < numberOfAPIs; i++) {
+                String apiName = "PaginationTestAPI" + Integer.toString(i);
+                String apiVersion = "1.0.0";
+                waitForAPIDeploymentSync(publisherContext.getContextTenant().getTenantAdmin().getUserName()
+                                         + "@" + tenantDomain, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+            }
+
             //give a short time to apply the changes and build index, otherwise it will not be visible in the store
-            Thread.sleep(60000);
+            //Thread.sleep(60000);
             //after adding the APIs, send the request to log-in to the api store
             storeLoginResponse = apiStore.login("admin", "admin");
 
@@ -133,35 +142,33 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             assertTrue(false, "Error occurred while log-in to add APIs. Pagination count test case failed.");
         } catch (MalformedURLException e) {
             assertTrue(false, "Invalid service URL to add APIs. Pagination count test case failed.");
-        } catch (InterruptedException e) {
-            assertTrue(false, "Error while pausing the current thread. Pagination count test case failed.");
-        }
 
-        String loginResponseCookie = null;
-        //get the cookie related to the login
-        if (storeLoginResponse != null) {
-            loginResponseCookie = storeLoginResponse.getHeaders().get("Set-Cookie");
-            if (successResponse.equals(storeLoginResponse.getData())) {
-                isLoginSuccess = true;
+            String loginResponseCookie = null;
+            //get the cookie related to the login
+            if (storeLoginResponse != null) {
+                loginResponseCookie = storeLoginResponse.getHeaders().get("Set-Cookie");
+                if (successResponse.equals(storeLoginResponse.getData())) {
+                    isLoginSuccess = true;
+                }
             }
-        }
 
-        //the second request to get APIs for the pages, is sent only if the login is successful and and cookie is ok
-        if (isLoginSuccess && loginResponseCookie != null) {
-            int offset = 10;
-            //fetch the first page, this page should have 10 results
-            int countInFirstPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 0, offset);
-            //fetch the 2nd page, this page should have 10 results
-            int countInSecondPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 10, offset);
-            //fetch the 3nd page, this page should have 4 results
-            int countInThirdPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 20, offset);
+            //the second request to get APIs for the pages, is sent only if the login is successful and and cookie is ok
+            if (isLoginSuccess && loginResponseCookie != null) {
+                int offset = 10;
+                //fetch the first page, this page should have 10 results
+                int countInFirstPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 0, offset);
+                //fetch the 2nd page, this page should have 10 results
+                int countInSecondPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 10, offset);
+                //fetch the 3nd page, this page should have 4 results
+                int countInThirdPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 20, offset);
 
-            //testing the output; added 24 APIs should be paginated as 10,10,4
-            if (countInFirstPage == 10 && countInSecondPage == 10 && countInThirdPage == 4) {
-                isPaginationCorrect = true;
+                //testing the output; added 24 APIs should be paginated as 10,10,4
+                if (countInFirstPage == 10 && countInSecondPage == 10 && countInThirdPage == 4) {
+                    isPaginationCorrect = true;
+                }
             }
+            assertTrue(isPaginationCorrect, "Incorrect Pagination during API Search. Pagination count test case failed.");
         }
-        assertTrue(isPaginationCorrect, "Incorrect Pagination during API Search. Pagination count test case failed.");
     }
 
     /**

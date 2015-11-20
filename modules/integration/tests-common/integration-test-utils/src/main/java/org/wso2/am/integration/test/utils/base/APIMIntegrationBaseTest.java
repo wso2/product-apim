@@ -427,10 +427,10 @@ public class APIMIntegrationBaseTest {
                                                               apiProvider + "--" + apiName +
                                                               ":v" + apiVersion, null);
                 } catch (IOException ignored) {
-                    log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed");
+                    log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
                 }
 
-                log.info("WAIT for availability of API :" + apiName + " with version: " + apiVersion +
+                log.info("WAIT for availability of API :" + apiName + " with version: " + apiVersion + " with provider: " + apiProvider +
                          " with expected response : " + expectedResponse);
 
                 if (response != null) {
@@ -476,7 +476,7 @@ public class APIMIntegrationBaseTest {
                                                                        apiProvider + "--" + apiName +
                                                                        ":v" + apiVersion, null);
 
-                log.info("WAIT for meta data sync of API :" + apiName + " with version: " + apiVersion +
+                log.info("WAIT for meta data sync of API :" + apiName + " with version: " + apiVersion + " with provider: " + apiProvider +
                          " without entry : " + expectedResponse);
 
                 if (!response.getData().contains(expectedResponse)) {
