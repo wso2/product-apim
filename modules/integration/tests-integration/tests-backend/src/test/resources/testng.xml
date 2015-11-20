@@ -90,7 +90,6 @@
             <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.RESTAPITestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APITierManagementTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
