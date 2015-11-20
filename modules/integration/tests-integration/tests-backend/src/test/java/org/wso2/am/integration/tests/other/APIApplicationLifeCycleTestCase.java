@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -139,7 +140,8 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
-        Thread.sleep(60000);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
         //  for (int i = 0; i < 19; i++) {
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp()+"testAPI/1.0.0/most_popular", requestHeaders);
@@ -182,12 +184,12 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiPublisher.updateAPI(apiRequest);
         //TODO need to reformat this code after we finalize new APIs
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", "In-line",
-                "url-no-need", "summary", "");
+                "url-no-need", "summary", "","","");
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name1", "How To", "URL",
-                "http://www.businesstoday.lk/article.php?article=3549", "summary", "");
+                "http://www.businesstoday.lk/article.php?article=3549", "summary", "","",null);
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name2", "How To", " File",
                 "url-no-need", "summary",
-                getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml");
+                getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml","","");
         apiPublisher.removeDocumentation(APIName, APIVersion, providerName, "Doc Name", "How To");
         //create application
         apiStore.addApplication("test-application", "Gold", "", "this-is-test");
@@ -250,8 +252,8 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                     + "invalid",
                     publisherContext.getContextTenant().getContextUser().getPassword());
         } catch (Exception e) {
-            assertTrue(e.getMessage().toString().contains(
-                    "Please recheck the username and password and try again"),
+            assertTrue(e.getMessage().contains(
+                               "Please recheck the username and password and try again"),
                     "Invalid user can login to the API publisher");
         }
 
@@ -308,7 +310,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
                     "password@123");
         } catch (Exception e) {
             loginFailed = true;
-            error = e.getMessage().toString();
+            error = e.getMessage();
         }
 
         Assert.assertTrue(error.contains("Operation not successful: " +
@@ -458,7 +460,8 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
-        Thread.sleep(60000);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "testAPI/1.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
@@ -627,7 +630,8 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         //check comment is there
         //Add rating
         //check rating
-        Thread.sleep(60000);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "testAPI/1.0.0/most_popular", requestHeaders);
         Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");

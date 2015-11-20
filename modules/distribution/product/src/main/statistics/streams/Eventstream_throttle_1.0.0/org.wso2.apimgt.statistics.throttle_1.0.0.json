@@ -49,7 +49,12 @@
     {
       "name": "applicationId",
       "type": "STRING"
+    },
+    {
+      "name": "throttledOutReason",
+      "type": "STRING"
     }
+
   ]
 }
 					                                    		

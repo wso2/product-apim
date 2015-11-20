@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+  <Name>APIM_STAT_SCRIPT</Name>
+  <Script>
+
+
+    create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_REQUEST_SUMMARY");
+
+    create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
+
+    CREATE TEMPORARY TABLE API_REQUEST_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_SUMMARY",
+    schema "api string -i,
+    api_version string -i,
+    version string -i,
+    apiPublisher string -i,
+    consumerKey string -i,
+    userId string -i,
+    context string -i,
+    max_request_time long -i,
+    total_request_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    key_api_facet facet -i,
+    key_userId_facet facet -i,
+    api_version_userId_facet facet -i,
+    api_version_userId_apiPublisher_facet facet -i,
+    api_version_userId_context_facet facet -i",
+    primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
+    );
+
+    insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
+    COALESCE(consumerKey,''),
+    userId,context,
+    max(requestTime) as max_request_time,
+    sum(request) as total_request_count,
+    hostName,
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    substring(cast(first(requestTime)/1000 as timestamp),0,16),
+    facet2(consumerKey,api),
+    facet2(consumerKey,userId),
+    facet3(api,version,userId),
+    facet4(api,version,userId,apiPublisher),
+    facet4(api,version,userId,context)
+    from APIRequestData where context is not NULL group by api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,
+
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+    INSERT OVERWRITE TABLE APIRequestSummaryData SELECT api,api_version,version,apiPublisher,consumerKey,userId,context,max_request_time,total_request_count,hostName,year,month,day,time FROM API_REQUEST_SUMMARY_FINAL;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    create temporary table APIVersionUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_VERSION_USAGE_SUMMARY");
+
+    CREATE TEMPORARY TABLE API_VERSION_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_VERSION_USAGE_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    context string -i,
+    total_request_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    max_request_time long -i,
+    api_version_context_facet facet -i",
+    primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
+    );
+
+    insert into table API_VERSION_USAGE_SUMMARY_FINAL select api,version,apiPublisher,context,sum(request) as total_request_count,hostName,
+
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    substring(cast(first(requestTime)/1000 as timestamp),0,16),
+    max(requestTime),
+    facet3(api,version,context)
+
+    from APIRequestData where
+
+    context is not NULL group by api,version,apiPublisher,context,hostName,
+
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+    INSERT OVERWRITE TABLE APIVersionUsageSummaryData SELECT api,version,apiPublisher,context,total_request_count,hostName,year,month,day,time FROM API_VERSION_USAGE_SUMMARY_FINAL;
+
+
+
+
+
+
+
+
+
+
+
+    create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_Resource_USAGE_SUMMARY");
+
+    CREATE TEMPORARY TABLE API_Resource_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_Resource_USAGE_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    consumerKey string -i,
+    resourcePath string -i,
+    context string -i,
+    method string -i,
+    total_request_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    max_request_time long -i,
+    key_api_method_path_facet facet -i,
+    api_version_context_method_facet facet -i",
+    primaryKeys "api,version,apiPublisher,consumerKey,context,resourcePath,method,hostName,year,month,day"
+    );
+
+    insert into table API_Resource_USAGE_SUMMARY_FINAL select
+    api,version,apiPublisher,COALESCE(consumerKey,''),
+    resourcePath,context,method,sum(request) as total_request_count,hostName,
+
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    substring(cast(first(requestTime)/1000 as timestamp),0,16),
+    max(requestTime),
+    facet4(consumerKey,api,method,resourcePath),
+    facet4(api,version,context,method)
+    from APIRequestData where
+    context is not NULL group by api,version,apiPublisher,consumerKey,resourcePath,context,method,hostName,
+
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+    INSERT OVERWRITE TABLE APIResourcePathUsageSummaryData SELECT api,version,apiPublisher,consumerKey,resourcePath,context,method,total_request_count,hostName,year,month,day,time FROM API_Resource_USAGE_SUMMARY_FINAL;
+
+
+
+    create temporary table APIResponseSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_RESPONSE_SUMMARY");
+
+    create temporary table APIResponseData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_RESPONSE");
+
+    CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
+    schema "api_version string -i,
+    apiPublisher string -i,
+    context string -i,
+    serviceTime int -i,
+    total_response_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    max_request_time long -i,
+    api_version_context_facet facet -i",
+    primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
+    );
+
+    insert into table API_RESPONSE_SUMMARY_FINAL select
+    api_version,
+    COALESCE(apiPublisher,''),
+    context,
+    sum(serviceTime) as avg_service_time,
+    sum(response) as total_response_count,
+    hostName,
+    substring(cast(first(eventTime)/1000 as timestamp),0,4),
+    substring(cast(first(eventTime)/1000 as timestamp),6,2),
+    substring(cast(first(eventTime)/1000 as timestamp),9,2),
+    substring(cast(first(eventTime)/1000 as timestamp),0,16),
+    max(eventTime),
+    facet2(api_version,context)
+    from APIResponseData
+    where
+    context is not NULL group by api_version,apiPublisher,context,hostName,
+    substring(cast(eventTime/1000 as timestamp),0,4),
+    substring(cast(eventTime/1000 as timestamp),6,2),
+    substring(cast(eventTime/1000 as timestamp),9,2);
+
+    INSERT OVERWRITE TABLE APIResponseSummaryData SELECT api_version,apiPublisher,context,serviceTime,total_response_count,hostName,year,month,day,time FROM API_RESPONSE_SUMMARY_FINAL;
+
+
+
+
+
+    create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_FAULT_SUMMARY");
+
+    create temporary table APIFaultData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_FAULT");
+
+    CREATE TEMPORARY TABLE API_FAULT_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_FAULT_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    consumerKey string -i,
+    context string -i,
+    total_fault_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    max_request_time long -i,
+    consumerKey_api_facet facet -i,
+    api_version_apiPublisher_context_facet facet -i",
+    primaryKeys "api,version,apiPublisher,consumerKey,context,hostName,year,month,day"
+    );
+
+    insert into table API_FAULT_SUMMARY_FINAL select
+    api,version,apiPublisher,COALESCE(consumerKey,''),context,
+    count(errorMessage) as total_fault_count,
+    hostName,
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    substring(cast(first(requestTime)/1000 as timestamp),0,16),
+    max(requestTime),
+    facet2(consumerKey,api),
+    facet4(api,version,apiPublisher,context)
+    from APIFaultData where
+    context is not NULL group by api,version,apiPublisher,consumerKey ,context,hostName,
+
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+
+    INSERT OVERWRITE TABLE APIFaultSummaryData SELECT api,version,apiPublisher,consumerKey,context,total_fault_count,hostName,year,month,day,time FROM API_FAULT_SUMMARY_FINAL;
+
+
+
+
+
+
+
+    create temporary table APIDestinationDataSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_DESTINATION_SUMMARY");
+
+    create temporary table APIDestinationData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_DESTINATION");
+
+    CREATE TEMPORARY TABLE API_DESTINATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_DESTINATION_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    context string -i,
+    destination string -i,
+    total_request_count int -i,
+    hostName string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    time string -i,
+    max_request_time long -i,
+    api_version_context_dest_facet facet -i",
+    primaryKeys "api,version,apiPublisher,context,destination,hostName,year,month,day"
+    );
+
+    insert into table API_DESTINATION_SUMMARY_FINAL select
+    api,version,apiPublisher, context,destination, sum(request) as total_request_count,hostName,
+
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    substring(cast(first(requestTime)/1000 as timestamp),0,16),
+    max(requestTime),
+    facet4(api,version,context,destination)
+    from APIDestinationData
+    where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
+
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+    INSERT OVERWRITE TABLE APIDestinationDataSummaryData SELECT api,version,apiPublisher,context,destination,total_request_count,hostName,year,month,day,time FROM API_DESTINATION_SUMMARY_FINAL;
+
+
+  </Script>
+  <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
+</Analytics>

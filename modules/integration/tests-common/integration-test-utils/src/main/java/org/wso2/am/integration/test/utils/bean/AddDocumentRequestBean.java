@@ -32,6 +32,7 @@ public class AddDocumentRequestBean {
     private String docUrl;
     private String docSummary;
     private String docLocation;
+    private String mimeType;
 
     public String getApiName() {
         return apiName;
@@ -103,5 +104,13 @@ public class AddDocumentRequestBean {
 
     public void setDocLocation(String docLocation) {
         this.docLocation = docLocation;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 }

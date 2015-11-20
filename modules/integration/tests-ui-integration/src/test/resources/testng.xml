@@ -28,6 +28,7 @@
             <!--<class name="org.wso2.am.integration.ui.tests.SubscriptionAvailabilityTestCase"/>
             <class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>-->
             <!--<class name="org.wso2.am.integration.ui.tests.OAuthConsumerAppsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.ui.tests.APIMANAGER4167StoreDebugEnabledTestCase"/>-->
         </classes>
     </test>
 </suite>

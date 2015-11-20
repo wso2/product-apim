@@ -21,6 +21,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -89,7 +90,9 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
 
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
-        Thread.sleep(2000);
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
                                                              + "/most_popular", requestHeaders);
@@ -107,11 +110,11 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         String tags = "youtube, token, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName();
+        String providerName = publisherContext.getSuperTenant().getTenantAdmin().getUserName();
         String APIVersion = "1.0.0";
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getTenantAdmin().getUserName(),
-                publisherContext.getContextTenant().getTenantAdmin().getPassword());
+        apiPublisher.login(publisherContext.getSuperTenant().getTenantAdmin().getUserName(),
+                publisherContext.getSuperTenant().getTenantAdmin().getPassword());
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
@@ -127,7 +130,10 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
-        Thread.sleep(2000);
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
                                                              + "/most_popular", requestHeaders);

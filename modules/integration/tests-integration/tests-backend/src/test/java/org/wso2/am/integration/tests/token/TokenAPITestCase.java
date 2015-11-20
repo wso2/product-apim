@@ -201,7 +201,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                 .doGet(gatewayUrl, requestHeaders);
 
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code mismatched");
+                     "Response code mismatched");
         assertTrue(youTubeResponse.getData().contains("John"), "Response data mismatched");
         assertTrue(youTubeResponse.getData().contains("<name"),
                    "Response data mismatched");

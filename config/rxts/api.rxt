@@ -198,6 +198,7 @@
                                 <value>POST</value>
                                 <value>PUT</value>
                                 <value>DELETE</value>
+                                <value>PATCH</value>
                                 <value>OPTIONS</value>
                             </values>
                         </field>

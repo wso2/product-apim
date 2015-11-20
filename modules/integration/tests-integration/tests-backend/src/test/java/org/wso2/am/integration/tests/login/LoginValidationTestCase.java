@@ -40,14 +40,16 @@ import static org.testng.Assert.assertTrue;
  */
 
 public class LoginValidationTestCase extends APIMIntegrationBaseTest {
-
-
+    
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String ROLE_SUBSCRIBER = "subscriber";
+    
     private String publisherURLHttp;
     private String storeURLHttp;
     private UserManagementClient userManagementClient;
     private String invalidUserName;
     private String subscriberUser;
-    private String subscriberRole;
+    //private String subscriberRole;
 
     @Factory(dataProvider = "userModeDataProvider")
     public LoginValidationTestCase(TestUserMode userMode) {
@@ -67,19 +69,18 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
+     
 
         userManagementClient = new UserManagementClient(
                 storeContext.getContextUrls().getBackEndUrl(), createSession(storeContext));
 
         if (storeContext.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             invalidUserName = storeContext.getContextTenant().getContextUser().getUserName() + "invalid";
-            subscriberUser ="subscriberUser";
-            subscriberRole = "Internal/subscriber";
+            subscriberUser ="subscriberUser";            
         }
         else{
             invalidUserName = storeContext.getContextTenant().getTenantAdmin().getUserName().replace("admin","admininvalid");
-            subscriberUser = "subscriberUser@wso2.com";
-            subscriberRole = "Internal/everyone";
+            subscriberUser = "subscriberUser@wso2.com";            
         }
 
     }
@@ -107,14 +108,21 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
         //Try login to publisher with subscriber user
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists(subscriberRole, subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, "password@123",
-                                         new String[]{subscriberRole}, null);
+        
+        if(!userManagementClient.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)){
+            String[] subscriberPermissions = {
+                    "/permission/admin/login",
+                    "/permission/admin/manage/api/subscribe"};
+            userManagementClient.addInternalRole(ROLE_SUBSCRIBER, null, subscriberPermissions);
         }
 
-        HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser",
+        if ((userManagementClient != null) &&
+            !userManagementClient.userNameExists(INTERNAL_ROLE_SUBSCRIBER, "subscriberUser")) {
+            userManagementClient.addUser("subscriberUser", "password@123",
+                                         new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+        }
+
+        HttpResponse httpResponse = apiPublisherRestClient.login(subscriberUser,
                                                                  "password@123");
 
         JSONObject response = new JSONObject(httpResponse.getData());

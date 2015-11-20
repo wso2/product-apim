@@ -85,8 +85,11 @@ public class AuthenticatorUtil {
             if (userstoremanager.authenticate(tenantAwareUsername, password)) {
                 log.info(username + " user authenticated successfully");
                 //Get admin role name of the current domain
-                String adminRoleName =
-                        CarbonContext.getCurrentContext().getUserRealm().getRealmConfiguration().getAdminRoleName();
+                String adminRoleName = CarbonContext
+                                       .getThreadLocalCarbonContext()
+                                       .getUserRealm()
+                                       .getRealmConfiguration()
+                                       .getAdminRoleName();
 
                 String[] userRoles = userstoremanager.getRoleListOfUser(tenantAwareUsername);
 
@@ -106,8 +109,9 @@ public class AuthenticatorUtil {
             }
 
         } catch (UserStoreException e) {
-            log.error("Error while accessing user configuration" + e.getMessage());
-            throw new APIExportException("Error while accessing user configuration", e);
+            String errorMessage = "Error while accessing user configuration";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
