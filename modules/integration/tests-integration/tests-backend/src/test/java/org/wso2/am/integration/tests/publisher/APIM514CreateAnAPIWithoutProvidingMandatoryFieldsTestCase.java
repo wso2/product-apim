@@ -230,8 +230,8 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        apiPublisher.deleteAPI(apiNameTest1, apiVersion, apiProviderName);
         apiPublisher.deleteAPI("",apiVersion,apiProviderName);
+        apiPublisher.deleteAPI("APIM514PublisherTest5",apiVersion,apiProviderName);
 
     }
 
