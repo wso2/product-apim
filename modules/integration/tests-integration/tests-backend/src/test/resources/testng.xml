@@ -59,6 +59,9 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
+
+            <!-- Commenting this test since its required to setup BAM and the DBs to run this
+            <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
@@ -124,7 +127,7 @@
 
     <test name="apim-store-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>
             <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
             <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
