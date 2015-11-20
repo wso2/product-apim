@@ -106,7 +106,6 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
 
     }
 
-
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
             "without proving Context")
     public void testCreateAnAPIThroughThePublisherRestWithoutContext() throws Exception {
@@ -167,7 +166,8 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         assertTrue(apiResponse.getString("message").contains
                 ("No tier defined for the API"), apiNameTest3 + "can be create without Tier availability");
     }
-
+    
+//TODO Disabling test case due to the error occured while creating empty/null URL
 //    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
 //            "without proving Production endpoint")
     public void testCreateAnAPIThroughThePublisherRestWithoutEndpoint() throws Exception {
@@ -186,8 +186,9 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
                 ("null"), apiNameTest4 + "can be create without Endpoint");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
-            "without proving Resources")
+//TODO Disabling test case: Reference https://wso2.org/jira/browse/APIMANAGER-4240
+//    @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
+//            "without proving Resources")
     public void testCreateAnAPIThroughThePublisherRestWithoutResources() throws Exception {
 
         String apiContextTest = "apim514PublisherTestAPI5";
@@ -249,6 +250,4 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
             setAction("");
         }
     }
-
-
 }
