@@ -20,7 +20,7 @@ package org.wso2.am.integration.test.utils.generic;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.impl.builder.StAXOMBuilder;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.*;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,10 +59,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.testng.Assert.assertTrue;
