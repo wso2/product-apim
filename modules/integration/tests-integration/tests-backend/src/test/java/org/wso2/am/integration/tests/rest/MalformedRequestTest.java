@@ -23,34 +23,48 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.carbon.am.tests.APIManagerIntegrationTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-public class MalformedRequestTest extends APIManagerIntegrationTest {
+public class MalformedRequestTest extends APIMIntegrationBaseTest {
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void setEnvironment() throws Exception {
 
         super.init();
 
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+
         //Load the back-end dummy API
-        loadESBConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api.xml");
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                    + File.separator + "synapseconfigs" + File.separator + "rest"
+                    + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        }
     }
 
     @Test(groups = "wso2.am", description = "Check if a malformed request breaks the system")
     public void testMalformedPostWithMessageBuilding() {
 
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(getApiInvocationURLHttp("response"));
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpPost httppost = new HttpPost(getGatewayURLNhttp() + "response");
 
         httppost.addHeader(new Header() {
             @Override
