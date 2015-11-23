@@ -1565,6 +1565,10 @@
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1963,6 +1967,10 @@
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+				 <feature>
+                                    <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2335,6 +2343,18 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                    <version>${uuid.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                    <version>${sso.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
+                                    <version>${ws.feature.version}</version>
                                 </feature>
                                 <!--<feature>
                                     <id>org.jaggeryjs.modules.ws.feature.group</id>
@@ -2827,6 +2847,18 @@
                                     <id>org.jaggeryjs.feature.group</id>
                                     <version>${org.jaggery.version}</version>
                                 </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.carbon.feature.group</id>
+                                    <version>${carbon.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.uuid.feature.group</id>
+                                    <version>${uuid.feature.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.jaggeryjs.modules.sso.feature.group</id>
+                                    <version>${sso.feature.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.jaggeryjs.modules.i18n.feature.group</id>
                                     <version>${i18n.feature.version}</version>
@@ -2838,6 +2870,10 @@
                                 <feature>
                                     <id>org.jaggeryjs.modules.process.feature.group</id>
                                     <version>${process.feature.version}</version>
+                                </feature>
+				<feature>
+                                    <id>org.jaggeryjs.modules.ws.feature.group</id>
+                                    <version>${ws.feature.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.feature.group</id>
@@ -2926,10 +2962,6 @@
                                    </feature-->
 
                                 <!-- Features related to Asset Store -->
-                                <feature>
-                                    <id>org.jaggeryjs.feature.group</id>
-                                    <version>${org.jaggery.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.bam.service.agent.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
@@ -3402,6 +3434,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
                                     <version>0.9.0-SNAPSHOT</version>
+                                </feature>
+				<feature>
+                                    <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>
+                                    <version>${carbon.deployment.version}</version>
                                 </feature>
                             </features>
                         </configuration>
