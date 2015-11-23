@@ -795,6 +795,29 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+	
+	<!-- Cipher Tool Files -->
+    	<file>
+	    <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.sh</source>
+	    <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
+	    <fileMode>755</fileMode>
+	</file>
+	<file>
+	    <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.bat</source>
+	    <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
+	</file>
+	<file>
+	    <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/org.wso2.ciphertool-${cipher.tool.version}.jar</source>
+	    <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+	</file>
+	<file>
+	    <source>src/main/conf/cipher-text.properties</source>
+	    <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+	</file>
+	<file>
+	    <source>src/main/conf/cipher-tool.properties</source>
+	    <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+	</file>
         <!--file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/msg-mgt.properties
