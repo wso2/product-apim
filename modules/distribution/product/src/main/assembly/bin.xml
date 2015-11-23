@@ -740,9 +740,10 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>src/main/conf/carbon.xml</source>
+            <source>target/wso2carbon-core-${carbon.platform.version}/repository/conf/carbon.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <filtered>true</filtered>
+	    <fileMode>644</fileMode>
         </file>
         <file>
             <source>src/main/conf/cloud-services-desc.xml</source>
