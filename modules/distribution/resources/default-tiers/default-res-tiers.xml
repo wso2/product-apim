@@ -111,11 +111,6 @@
                         </throttle:Attributes>
                         </wsp:Policy>
                         -->
-                        <wsp:Policy>
-                            <throttle:Attributes>
-                                <throttle:IsPaid>false</throttle:IsPaid>
-                            </throttle:Attributes>
-                        </wsp:Policy>
                     </wsp:Policy>
                 </throttle:Control>
             </wsp:Policy>
