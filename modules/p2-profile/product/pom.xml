@@ -539,7 +539,7 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:0.9.0-SNAPSHOT
+                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 				
 				<featureArtifactDef>
@@ -1174,7 +1174,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
-                                    <version>0.9.0-SNAPSHOT</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.ciphertool.feature.group</id>
@@ -3433,7 +3433,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
-                                    <version>0.9.0-SNAPSHOT</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.webapp.mgt.server.feature.group</id>

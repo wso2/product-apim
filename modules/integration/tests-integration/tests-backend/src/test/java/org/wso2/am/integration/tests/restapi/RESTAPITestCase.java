@@ -19,6 +19,7 @@
 
 package org.wso2.am.integration.tests.restapi;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -88,19 +89,25 @@ public class RESTAPITestCase extends APIMIntegrationBaseTest {
                 "          \"saasApp\": true\n" +
                 "         }";
         Map<String, String> dcrRequestHeaders = new HashMap<String, String>();
-        dcrRequestHeaders.put("Authorization", "Basic YWRtaW46YWRtaW4=");
+        //=======================Basic Auth header for user====================
+        String basicAuthHeader = "admin" + ":" + "admin";
+        byte[] encodedBytes = Base64.encodeBase64(basicAuthHeader.getBytes("UTF-8"));
+        dcrRequestHeaders.put("Authorization", "Basic " + new String(encodedBytes, "UTF-8"));
+        //dcrRequestHeaders.put("Authorization", "Basic YWRtaW46YWRtaW4=");
+
+        //Set content type as its mandatory for API
         dcrRequestHeaders.put("Content-Type", "application/json");
         JSONObject clientRegistrationResponse =new JSONObject(HttpRequestUtil.doPost(new URL(dcrEndpointURL), applicationRequestBody,dcrRequestHeaders));
 
         String consumerKey =new JSONObject(clientRegistrationResponse.getString("data")).get("clientId").toString();
         String consumerSecret =new JSONObject(clientRegistrationResponse.getString("data")).get("clientSecret").toString();
         Thread.sleep(2000);
-        String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
+        String requestBody = "grant_type=password&username=admin&password=admin&scope=API_CREATOR_SCOPE";
         URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
-        JSONObject accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                                               tokenEndpointURL).getData()
-        );
+        HttpResponse tokenGenerateResponse = apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                tokenEndpointURL);
+        if(tokenGenerateResponse.getResponseCode()==200){
+        JSONObject accessTokenGenerationResponse = new JSONObject(tokenGenerateResponse.getData());
         String userAccessToken = accessTokenGenerationResponse.getString("access_token");
         String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
         assertNotNull(userAccessToken);
@@ -108,7 +115,9 @@ public class RESTAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         //Check User Access Token
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
-        requestHeaders.put("accept", "text/xml");
+        //requestHeaders.put("accept", "text/xml");
+        HttpRequestUtil.doGet(getKeyManagerURLHttp()+"api/am/publisher/v1/apis?query=admin&type=provider",requestHeaders).getResponseCode();
+        }
     }
 
     @AfterClass(alwaysRun = true)
