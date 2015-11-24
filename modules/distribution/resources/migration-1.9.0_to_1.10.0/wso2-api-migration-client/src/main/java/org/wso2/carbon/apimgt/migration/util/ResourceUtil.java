@@ -250,41 +250,51 @@ public class ResourceUtil {
 
 
     private static void updateHandlers(Document document, File file) {
-        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
+        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, 
+                                                                            Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
 
-        NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
-
-        for (int i = 0; i < handlerNodes.getLength(); ++i) {
-            Element handler = (Element) handlerNodes.item(i);
-
-            String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
-
-            if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
-                handlersElement.removeChild(handler);
-                break;
+        if (handlersElement != null) {
+            NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
+    
+            for (int i = 0; i < handlerNodes.getLength(); ++i) {
+                Element handler = (Element) handlerNodes.item(i);
+    
+                String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
+    
+                if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
+                    handlersElement.removeChild(handler);
+                    break;
+                }
             }
+    
+            // Find the inSequence
+            Element inSequenceElement = (Element) document.getElementsByTagName
+                    (Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+            
+            NodeList sendElements = null;            
+            if (inSequenceElement != null) {    
+                sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
+            }
+    
+            Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, 
+                                                           Constants.SYNAPSE_API_ELEMENT_HANDLER);
+            corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
+            Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, 
+                                                        Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
+    
+            if (sendElements != null && 0 < sendElements.getLength()) {
+                property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
+            }
+            else {
+                property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, 
+                                      Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
+            }
+    
+            corsHandler.appendChild(property);
+    
+            handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
         }
-
-        // Find the inSequence
-        Element inSequenceElement = (Element) document.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
-
-        NodeList sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
-
-        Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLER);
-        corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
-        Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
-        property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
-
-        if (0 < sendElements.getLength()) {
-            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
-        }
-        else {
-            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
-        }
-
-        corsHandler.appendChild(property);
-
-        handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
 
     }
 
@@ -345,30 +355,33 @@ public class ResourceUtil {
 
     private static void updateOutSequence(Element resourceElement, Document doc) {
         // Find the outSequence
-        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
+        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, 
+                                                                     Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
+        if (outSequenceElement != null) {
 
-        NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
-
-        boolean isResponseHandlerSet = false;
-
-        for (int i = 0; i < classNodes.getLength(); ++i) {
-            Element classElement = (Element) classNodes.item(i);
-
-            if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
-                isResponseHandlerSet = true;
-                break;
+            NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
+    
+            boolean isResponseHandlerSet = false;
+    
+            for (int i = 0; i < classNodes.getLength(); ++i) {
+                Element classElement = (Element) classNodes.item(i);
+    
+                if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                    isResponseHandlerSet = true;
+                    break;
+                }
             }
-        }
-
-        if (!isResponseHandlerSet) {
-            // There must be at least one <send> element for an outSequence
-            Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
-
-            Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
-            classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
-            classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
-
-            outSequenceElement.insertBefore(classElement, sendElement);
+    
+            if (!isResponseHandlerSet) {
+                // There must be at least one <send> element for an outSequence
+                Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+    
+                Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
+                classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
+                classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
+    
+                outSequenceElement.insertBefore(classElement, sendElement);
+            }
         }
     }
 }
