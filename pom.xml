@@ -945,7 +945,7 @@
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <google.guava.version>16.0.1</google.guava.version>
-
+	<javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
     </properties>
 
 </project>
