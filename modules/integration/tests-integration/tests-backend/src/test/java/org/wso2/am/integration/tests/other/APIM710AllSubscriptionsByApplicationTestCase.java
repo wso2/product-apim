@@ -64,7 +64,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
     private String providerName;
     private final String tier = "Unlimited";
     private final String tags = "subscription";
-    private final String applicationName = "SubscribeApplication";
+    private final String applicationName = "APIM710SubscribeApplication";
     private static final String webApp = "jaxrs_basic";
     private final String endPointType = "http";
     private APIPublisherRestClient apiPublisher;
@@ -76,7 +76,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
     private String accessUrl;
     private boolean isApisDeleted=false;
     private int defaultAppListIndex;
-    private String newApplicationName="NewApplication1";
+    private String newApplicationName="APIM710NewApplication1";
 
 
 
@@ -350,6 +350,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         apiStore.removeApplication(applicationName);
         isApisDeleted=false;
 
+        apiStore.removeApplication(newApplicationName);
+
         //delete first set of apis
         for(int listIndex=0;listIndex<apiNameList.size()-2;listIndex++){
             providerName=publisherContext.getContextTenant().getContextUser().getUserName();
@@ -370,7 +372,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         }
         assertTrue(isApisDeleted,"Error in Application Deleted: " + applicationName);
 
-        apiStore.removeApplication(newApplicationName);
+
     }
 
 }

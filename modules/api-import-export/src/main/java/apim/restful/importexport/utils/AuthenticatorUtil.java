@@ -85,8 +85,11 @@ public class AuthenticatorUtil {
             if (userstoremanager.authenticate(tenantAwareUsername, password)) {
                 log.info(username + " user authenticated successfully");
                 //Get admin role name of the current domain
-                String adminRoleName =
-                        CarbonContext.getCurrentContext().getUserRealm().getRealmConfiguration().getAdminRoleName();
+                String adminRoleName = CarbonContext
+                                       .getThreadLocalCarbonContext()
+                                       .getUserRealm()
+                                       .getRealmConfiguration()
+                                       .getAdminRoleName();
 
                 String[] userRoles = userstoremanager.getRoleListOfUser(tenantAwareUsername);
 

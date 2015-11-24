@@ -30,6 +30,10 @@ public class APIImportException extends Exception {
         this.errorDescription = errorMessage;
     }
 
+    public APIImportException(String msg, Throwable e) {
+        super(msg, e);
+    }
+
     /**
      * This method returns the error description to the caller.
      *

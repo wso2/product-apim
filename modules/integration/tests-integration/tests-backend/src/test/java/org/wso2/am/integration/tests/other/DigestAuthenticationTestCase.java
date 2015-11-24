@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.other;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -99,6 +100,8 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         //Subscribe to the new application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, providerName,
                 "DigestAuthAPP", "Unlimited");
+
+        waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
         apiStore.subscribe(subscriptionRequest);
 
         //Generate a production token and invoke the API
