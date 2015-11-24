@@ -25,7 +25,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.frameworkutils.TestFrameworkUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
@@ -63,7 +62,7 @@ public class DataDrivenTestUtils {
     }
 
 
-    public ClientResponse geneticRestRequestPost(String resourceUrl, String contentType,
+    public Response geneticRestRequestPost(String resourceUrl, String contentType,
                                                  String acceptMediaType, Object postBody,
                                                  Map<String, String> queryParamMap,
                                                  Map<String, String> headerMap,
@@ -91,10 +90,10 @@ public class DataDrivenTestUtils {
             response = builder.post(Entity.entity(Entity.xml(postBody), MediaType.APPLICATION_XML));
         }
         client.close();
-        return ((ClientResponse) response);
+        return response;
     }
 
-    public ClientResponse geneticRestRequestGet(String resourceUrl,
+    public Response geneticRestRequestGet(String resourceUrl,
                                                 String acceptMediaType,
                                                 Map<String, String> queryParamMap,
                                                 Map<String, String> headerMap,
@@ -107,10 +106,10 @@ public class DataDrivenTestUtils {
         Response response = null;
         response = builder.get();
         client.close();
-        return ((ClientResponse) response);
+        return  response;
     }
 
-    public ClientResponse geneticRestRequestPut(String resourceUrl, String contentType,
+    public Response geneticRestRequestPut(String resourceUrl, String contentType,
                                                 String acceptMediaType, Object postBody,
                                                 Map<String, String> queryParamMap,
                                                 Map<String, String> headerMap,
@@ -137,11 +136,11 @@ public class DataDrivenTestUtils {
             response = builder.put(Entity.entity(Entity.xml(postBody), MediaType.APPLICATION_XML));
         }
         client.close();
-        return ((ClientResponse) response);
+        return response;
     }
 
 
-    public ClientResponse geneticRestRequestDelete(String resourceUrl,
+    public Response geneticRestRequestDelete(String resourceUrl,
                                                    String acceptMediaType,
                                                    Map<String, String> queryParamMap,
                                                    Map<String, String> headerMap,
@@ -152,10 +151,10 @@ public class DataDrivenTestUtils {
         Response response = null;
         response = builder.delete();
         client.close();
-        return ((ClientResponse) response);
+        return response;
     }
 
-    public ClientResponse geneticRestRequestHead(String resourceUrl,
+    public Response geneticRestRequestHead(String resourceUrl,
                                                  String acceptMediaType,
                                                  Map<String, String> queryParamMap,
                                                  Map<String, String> headerMap,
@@ -166,7 +165,7 @@ public class DataDrivenTestUtils {
         Response response = null;
         response = builder.head();
         client.close();
-        return ((ClientResponse) response);
+        return  response;
     }
 
     private Invocation.Builder getBuilder(String acceptMediaType, Map<String, String> queryParamMap,

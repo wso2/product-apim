@@ -539,7 +539,7 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:0.9.0-SNAPSHOT
+                                  org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.rest.api.dcr.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
                             </featureArtifacts>
@@ -1170,7 +1170,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
-                                    <version>0.9.0-SNAPSHOT</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
 
@@ -3395,7 +3395,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.dcr.feature.group</id>
-                                    <version>0.9.0-SNAPSHOT</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
