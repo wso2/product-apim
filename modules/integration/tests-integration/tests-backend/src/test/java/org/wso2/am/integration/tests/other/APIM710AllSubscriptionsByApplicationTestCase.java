@@ -350,6 +350,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         apiStore.removeApplication(applicationName);
         isApisDeleted=false;
 
+        apiStore.removeApplication(newApplicationName);
+
         //delete first set of apis
         for(int listIndex=0;listIndex<apiNameList.size()-2;listIndex++){
             providerName=publisherContext.getContextTenant().getContextUser().getUserName();
@@ -370,7 +372,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         }
         assertTrue(isApisDeleted,"Error in Application Deleted: " + applicationName);
 
-        apiStore.removeApplication(newApplicationName);
+
     }
 
 }
