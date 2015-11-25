@@ -28,11 +28,11 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>am-toolbox</artifactId>
+    <artifactId>am-capp</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - BAM Toolbox</name>
+    <name>WSO2 API Manager - DAS Carbon Application</name>
     <url>http://wso2.org/projects/bam/java</url>
-    <description>WSO2 API Manager BAM Toolbox</description>
+    <description>WSO2 API Manager DAS Carbon Application</description>
 
     <licenses>
         <license>

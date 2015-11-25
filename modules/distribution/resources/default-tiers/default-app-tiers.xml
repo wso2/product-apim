@@ -7,7 +7,7 @@
              For ex:  <throttle:ID throttle:type="ROLE" throttle:displayName="xxxx">Gold</throttle:ID>
                       ......
              -->
-            <throttle:ID throttle:type="ROLE">Gold</throttle:ID>
+            <throttle:ID throttle:type="ROLE">Large</throttle:ID>
             <wsp:Policy>
                 <throttle:Control>
                     <wsp:Policy>
@@ -36,7 +36,7 @@
             For ex:  <throttle:ID throttle:type="ROLE" throttle:displayName="xxxx">Gold</throttle:ID>
                      ......
             -->
-            <throttle:ID throttle:type="ROLE">Silver</throttle:ID>
+            <throttle:ID throttle:type="ROLE">Medium</throttle:ID>
             <wsp:Policy>
                 <throttle:Control>
                     <wsp:Policy>
@@ -65,7 +65,7 @@
             For ex:  <throttle:ID throttle:type="ROLE" throttle:displayName="xxxx">Gold</throttle:ID>
                      ......
             -->
-            <throttle:ID throttle:type="ROLE">Bronze</throttle:ID>
+            <throttle:ID throttle:type="ROLE">Small</throttle:ID>
             <wsp:Policy>
                 <throttle:Control>
                     <wsp:Policy>
