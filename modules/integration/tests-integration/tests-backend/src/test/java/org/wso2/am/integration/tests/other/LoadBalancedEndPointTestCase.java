@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -38,6 +39,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,68 +96,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         log.info("Test Starting user mode: " + userMode);
 
-        //copy first .war file
-        String sourcePathPrefix = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-        String fileFormat = ".war";
-
-        String firstProductionSourcePath = sourcePathPrefix + webApp1 + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient =
-                new WebAppAdminClient(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(firstProductionSourcePath);
-
-        //Copy second .war file
-        String secondProductionSourcePath = sourcePathPrefix + webApp2 + fileFormat;
-        webAppAdminClient.uploadWarFile(secondProductionSourcePath);
-
-        //Copy third .war file
-        String thirdProductionSourcePath = sourcePathPrefix + webApp3 + fileFormat;
-        webAppAdminClient.uploadWarFile(thirdProductionSourcePath);
-
-        //Copy first SB .war file
-        String firstSandboxSourcePath = sourcePathPrefix + firstWebAppSB + fileFormat;
-        webAppAdminClient.uploadWarFile(firstSandboxSourcePath);
-
-        //Copy second SB .war file
-        String secondSandboxSourcepath = sourcePathPrefix + secondWebAppSB + fileFormat;
-        webAppAdminClient.uploadWarFile(secondSandboxSourcepath);
-
-        //Copy Third SB .war file
-        String thirdSandboxSourcePath = sourcePathPrefix + thirdWebAppSB + fileFormat;
-        webAppAdminClient.uploadWarFile(thirdSandboxSourcePath);
-
-        //verify first production endpoint web apps deployments
-        boolean isFirstWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp1);
-        assertTrue(isFirstWebAppDeploy, webApp1 + fileFormat + " is not deployed");
-
-        //verify second production endpoint app deployment
-        boolean isSecondWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp2);
-        assertTrue(isSecondWebAppDeploy, webApp2 + fileFormat + " is not deployed");
-
-        //verify third production endpoint web app deployment
-        boolean isThirdWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp3);
-        assertTrue(isThirdWebAppDeploy, webApp3 + fileFormat + " is not deployed");
-
-        //verify first sandbox endpoint app deployment
-        boolean isFirstSandboxWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, firstWebAppSB);
-        assertTrue(isFirstSandboxWebAppDeploy, firstWebAppSB + fileFormat + " is not deployed");
-
-        //verify second sandbox endpoint app deployment
-        boolean isSecondSandboxWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, secondWebAppSB);
-        assertTrue(isSecondSandboxWebAppDeploy, secondWebAppSB + fileFormat + " is not deployed");
-
-        //verify third sandbox endpoint app deployment
-        boolean isThirdSandboxWebAppDeploy = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, thirdWebAppSB);
-        assertTrue(isThirdSandboxWebAppDeploy, thirdWebAppSB + fileFormat + " is not deployed");
-
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
 
@@ -178,6 +118,17 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
                     gatewayContextWrk.getContextTenant().getDomain() + "/";
 
         }
+
+        //checking whether endpoint web apps are deployed
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), firstWebAppSB,
+                "HelloWSO2 from File 1_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), secondWebAppSB,
+                "HelloWSO2 from File 2_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), thirdWebAppSB,
+                "HelloWSO2 from File 3_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp1,"HelloWSO2 from File 1");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp2,"HelloWSO2 from File 2");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp3,"HelloWSO2 from File 3");
 
     }
 
@@ -229,7 +180,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Verify Round Robin Algorithm by Invoking the Production Endpoint API",
+     @Test(groups = {"wso2.am"}, description = "Verify Round Robin Algorithm by Invoking the Production Endpoint API",
             dependsOnMethods = {"testCreateApiWithDifferentProductionEndpoints"})
     public void testRoundRobinAlgorithmInProductionEndpoints() throws Exception {
 
@@ -259,6 +210,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         int numberOfEndpoints=3;
         int requestCount=10;
+         //Todo replace sleep with proper method
+         Thread.sleep(80000);
         for (int requestNumber = 1; requestNumber < requestCount; requestNumber++) {
             apiInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeader);
             assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -384,9 +337,10 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         int numberOfSandboxEndpoints = 3;
         int requestNumber;
 
+        //TODO replace sleep with proper method
+        Thread.sleep(80000);
         //production end point api invoke with production key
         for (requestNumber = 1; requestNumber < requestCount; requestNumber++) {
-
             apiProductionInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeaderProduction);
             assertEquals(apiProductionInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                     "Response Code Mismatched in Production API invoke");
@@ -430,5 +384,39 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiStore.removeApplication(applicationNameSandbox);
         apiPublisher.deleteAPI(apiName, version, providerName);
         apiPublisher.deleteAPI(apiNameSandbox, version, providerName);
+    }
+
+
+    /**
+     * Verify whether WEB_APPs are deployed or not
+     * @param webAppURL - Backend URL of the webApp (not need to include webApp name or context)
+     *
+     */
+    public static void isWebAppDeployed(String webAppURL,String webAppName,String expectedResponse) {
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + (90 * 1000);
+        HttpResponse response = null;
+
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = HttpRequestUtil.sendGetRequest(webAppURL+"/"+webAppName+"/name", null);
+
+            } catch (IOException ignore) {
+                log.info("WAIT for webapp deployment :" + webAppName );
+            }
+
+            if (response != null) {
+                if (response.getData().contains(expectedResponse)) {
+                    log.info("WEB_APP :" + webAppName + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
     }
 }
