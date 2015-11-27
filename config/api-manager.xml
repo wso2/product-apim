@@ -308,6 +308,25 @@
             <Scope>openid</Scope>
         </ScopeWhitelist-->
 
+        <RESTAPIScopes>
+            <Scope>
+                <Name>API_PUBLISHER_SCOPE</Name>
+                <Roles>admin</Roles>
+            </Scope>
+            <Scope>
+                <Name>API_SUBSCRIBER_SCOPE</Name>
+                <Roles>subscriber</Roles>
+            </Scope>
+            <Scope>
+                <Name>API_CREATOR_SCOPE</Name>
+                <Roles>admin</Roles>
+            </Scope>
+            <Scope>
+                <Name>API_ADMINISTRATIVE_SCOPE</Name>
+                <Roles>admin</Roles>
+            </Scope>
+        </RESTAPIScopes>
+
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
