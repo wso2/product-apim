@@ -496,9 +496,12 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(
+           /* return HttpRequestUtil.doGet(
                     backendURL + "/publisher/info?name=" + apiName + "&version=" + version + "&provider=" + provider,
-                    requestHeaders);
+                    requestHeaders); */
+            HttpResponse resp = HttpRequestUtil.doPost(new URL(backendURL + "/publisher/info"), 
+                    "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
+            return resp;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page", e);
         }
