@@ -538,6 +538,16 @@
             </includes>
         </fileSet>
 
+        <!-- Metrics related fileset -->
+        <fileSet>
+            <directory>
+                ../p2-profile/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/
+            </directory>
+            <outputDirectory>${project.artifactId}-${project.version}/dbscripts/metrics</outputDirectory>
+            <includes>
+                <include>**/*.sql</include>
+            </includes>
+        </fileSet>
     </fileSets>
     <dependencySets>
         <!-- use the new tool to create a bundles -->
@@ -740,9 +750,10 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>src/main/conf/carbon.xml</source>
+            <source>target/wso2carbon-core-${carbon.platform.version}/repository/conf/carbon.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <filtered>true</filtered>
+	    <fileMode>644</fileMode>
         </file>
         <file>
             <source>src/main/conf/cloud-services-desc.xml</source>
@@ -773,11 +784,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/resources/lifecycles</outputDirectory>
             <filtered>true</filtered>
         </file>
-        <!--file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components/features/org.wso2.carbon.tenant.common.server_4.4.1/conf/tenant-mgt.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy/tenant-mgt.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <fileMode>644</fileMode>
-        </file-->
+        </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/thrift-agent-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/data-bridge/</outputDirectory>
@@ -789,11 +800,34 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
-	 <file>
+        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
+        </file>
+
+        <!-- Cipher Tool Files -->
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.sh</source>
+            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.bat</source>
+            <outputDirectory>wso2am-${pom.version}/bin</outputDirectory>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/lib/org.wso2.ciphertool-${cipher.tool.version}.jar</source>
+            <outputDirectory>wso2am-${pom.version}/lib</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/conf/cipher-text.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/conf/cipher-tool.properties</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
         </file>
         <!--file>
             <source>
@@ -809,5 +843,27 @@
             <filtered>true</filtered>
 	    <fileMode>644</fileMode>
         </file-->
-</files>
+
+        <!-- Metrics related files -->
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.xml</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/metrics.properties</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/datasources/metrics-datasources.xml</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/datasources/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.h2.db</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/database/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+    </files>
 </assembly>

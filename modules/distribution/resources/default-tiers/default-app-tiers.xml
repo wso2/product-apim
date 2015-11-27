@@ -22,9 +22,10 @@
                         </wsp:Policy>
                         -->
                         <wsp:Policy>
-                        <throttle:Attributes>
-                            <throttle:IsPaid>false</throttle:IsPaid>
-                        </throttle:Attributes>
+                            <throttle:Attributes>
+                                <throttle:x-wso2-BillingPlan>FREE</throttle:x-wso2-BillingPlan>
+                                <throttle:x-wso2-StopOnQuotaReach>true</throttle:x-wso2-StopOnQuotaReach>
+                            </throttle:Attributes>
                         </wsp:Policy>
                     </wsp:Policy>
                 </throttle:Control>
@@ -52,7 +53,8 @@
                         -->
                         <wsp:Policy>
                             <throttle:Attributes>
-                                <throttle:IsPaid>false</throttle:IsPaid>
+                                <throttle:x-wso2-BillingPlan>FREE</throttle:x-wso2-BillingPlan>
+                                <throttle:x-wso2-StopOnQuotaReach>true</throttle:x-wso2-StopOnQuotaReach>
                             </throttle:Attributes>
                         </wsp:Policy>
                     </wsp:Policy>
@@ -81,7 +83,8 @@
                         -->
                         <wsp:Policy>
                             <throttle:Attributes>
-                                <throttle:IsPaid>false</throttle:IsPaid>
+                                <throttle:x-wso2-BillingPlan>FREE</throttle:x-wso2-BillingPlan>
+                                <throttle:x-wso2-StopOnQuotaReach>true</throttle:x-wso2-StopOnQuotaReach>
                             </throttle:Attributes>
                         </wsp:Policy>
                     </wsp:Policy>
@@ -108,11 +111,6 @@
                         </throttle:Attributes>
                         </wsp:Policy>
                         -->
-                        <wsp:Policy>
-                            <throttle:Attributes>
-                                <throttle:IsPaid>false</throttle:IsPaid>
-                            </throttle:Attributes>
-                        </wsp:Policy>
                     </wsp:Policy>
                 </throttle:Control>
             </wsp:Policy>
