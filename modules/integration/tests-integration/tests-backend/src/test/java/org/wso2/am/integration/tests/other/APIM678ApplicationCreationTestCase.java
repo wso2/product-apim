@@ -54,7 +54,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     private static final Log log = LogFactory.getLog(APIM678ApplicationCreationTestCase.class);
     private APIStoreRestClient apiStore;
-    private String applicationName = "NewApplication1";
+    private String applicationName = "NewApplication1111";
     private static final String description = "NewApplicationCreation";
     private static final String tier = "Unlimited";
     private final String webApp = "jaxrs_basic";
@@ -79,10 +79,10 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public static Object[][] createAppWithValidDataProvider() throws Exception {
 
         return new Object[][]{
-                {"NewApplication1", tier, callBackUrl, description},
-                {"NewApplication2", tier, callBackUrl, ""},
-                {"NewApplication3", tier, "", description},
-                {"NewApplication4", tier, "", ""}
+                {"NewApplication1111", tier, callBackUrl, description},
+                {"NewApplication2222", tier, callBackUrl, ""},
+                {"NewApplication3333", tier, "", description},
+                {"NewApplication4444", tier, "", ""}
         };
     }
 
@@ -130,6 +130,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         //Add default application to the list
         applicationsList.add("DefaultApplication");
+        removeAllApps();
 
     }
 
@@ -321,7 +322,6 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertTrue(isTierUpdated, "Error in Tier Update Response");
     }
 
-
     //Remove a application
     @Test(description = "Remove application")
     public void testRemoveApplication() throws Exception {
@@ -377,6 +377,10 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+    removeAllApps();
+    }
+
+    public void removeAllApps() throws Exception{
         //delete created applications
         HttpResponse getAllAppResponse = apiStore.getAllApplications();
         assertEquals(getAllAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -387,9 +391,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         List<String> allAppResponseList = new ArrayList<String>();
         for (int i = 0; i < getAllAppJsonArray.length(); i++) {
             allAppResponseList.add(getAllAppJsonArray.getJSONObject(i).getString("name"));
+            if(!getAllAppJsonArray.getJSONObject(i).getString("name").equals("DefaultApplication"))
+                apiStore.removeApplication(getAllAppJsonArray.getJSONObject(i).getString("name"));
         }
-
-
     }
-
 }
