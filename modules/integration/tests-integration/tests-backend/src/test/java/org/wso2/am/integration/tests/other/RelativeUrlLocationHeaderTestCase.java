@@ -46,6 +46,8 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import java.io.File;
 import java.net.URL;
 
+import static org.testng.Assert.assertEquals;
+
 
 /**
  * Test to check the Http 201 response when location header is a relative URL
@@ -102,11 +104,13 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
                                                                               APILifeCycleState.PUBLISHED);
 
-        waitForAPIDeploymentSync(updateRequest.getProvider(), updateRequest.getName(),
-                                 updateRequest.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
 
         //Publish the API
         response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        waitForAPIDeploymentSync(updateRequest.getProvider(), updateRequest.getName(),
+                                 updateRequest.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+
         verifyResponse(response);
 
         //Login to the API Store
@@ -131,7 +135,7 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = responseProduction.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        Assert.assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
+        assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
 
         //Going to access the API with the version in the request url.
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
@@ -143,7 +147,7 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         org.apache.http.HttpResponse httpResponse = httpclient.execute(get);
 
 
-        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
+        assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
     }
 
     @AfterClass(alwaysRun = true)
