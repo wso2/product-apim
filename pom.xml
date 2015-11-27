@@ -205,6 +205,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>commons-codec.wso2</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.ui</artifactId>
                 <version>${carbon.kernel.version}</version>
@@ -289,11 +294,6 @@
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>${commons.logging.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-codec.wso2</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>${commons.codec.version}</version>
             </dependency>
             <!-- Dependencies for login ui -->
             <dependency>
@@ -876,8 +876,8 @@
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
-        <commons.codec.version>1.4.0.wso2v1</commons.codec.version>
         <commons.logging.version>1.1.1</commons.logging.version>
+        <commons-codec.version>1.4.0.wso2v1</commons-codec.version>
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>

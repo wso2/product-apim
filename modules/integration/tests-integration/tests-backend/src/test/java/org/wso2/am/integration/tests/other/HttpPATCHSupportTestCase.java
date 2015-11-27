@@ -21,7 +21,8 @@ package org.wso2.am.integration.tests.other;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -32,8 +33,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
@@ -53,9 +52,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN}
-        };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN } };
     }
 
     @BeforeClass(alwaysRun = true)
@@ -74,7 +71,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
         String APIName = "HttpPatchAPI";
         String APIContext = "patchTestContext";
-        String url = "https://burning-torch-4029.firebaseio.com/users/jack/name.json";
+        String url = "http://jsonplaceholder.typicode.com/posts/1";
         String providerName = user.getUserName();
         String APIVersion = "1.0.0";
 
@@ -89,6 +86,15 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        String modifiedResource = "{\"paths\":{ \"/*\":{\"patch\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
+                "\"x-throttling-tier\":\"Unlimited\" },\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
+                "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"HttpPatchAPI\",\"version\":\"1.0.0\"}," +
+                "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
+                "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
+
+        //Modify the resources to add the PATCH resource method to the API
+        apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
         //Login to the API Store
         apiStore.login(user.getUserName(), user.getPassword());
@@ -110,14 +116,17 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         String accessToken = jsonResponse.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
         String apiInvocationUrl = getAPIInvocationURLHttp(APIContext, APIVersion);
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Accept", "application/json");
-        headers.put("Authorization", "Bearer " + accessToken);
 
         //Invoke the API by sending a PATCH request;
 
-        HttpClient client = new DefaultHttpClient();
-        HttpPatch request = new HttpPatch(url);
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPatch request = new HttpPatch(apiInvocationUrl);
+        request.setHeader("Accept", "application/json");
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        StringEntity payload = new StringEntity("{}", "UTF-8");
+        payload.setContentType("application/json");
+        request.setEntity(payload);
+
         HttpResponse httpResponsePatch = client.execute(request);
 
         //Assertion
