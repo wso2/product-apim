@@ -1560,6 +1560,13 @@ public class APIMTestCaseUtils {
         return new String(jwtByteArray, "UTF-8");
     }
 
+    /**
+     * This method is used to base64Url-decode a base64Url-encoded string
+     *
+     * @param arg - The base64Url encoded string to be decoded
+     * @return - The base64Url decoded string
+     * @throws Exception
+     */
     public static byte[] decode(String arg) throws Exception{
         String decodedString = arg;
         decodedString = decodedString.replaceAll("-", "+");
