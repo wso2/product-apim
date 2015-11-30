@@ -71,7 +71,7 @@ import static org.testng.AssertJUnit.assertTrue;
     private String description = "This is test API created by API manager integration test";
     private String providerName = "admin";
     private String apiVersion = "1.0.0";
-    private String applicationName = "APILifeCycleTestAPI-application";
+    private String applicationName = "URLSafeJWTTest-application";
     private String apiTier = "Gold";
 
     @BeforeClass(alwaysRun = true)
@@ -282,7 +282,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("APILifeCycleTestAPI-application"));
+                claim.contains("URLSafeJWTTest-application"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
@@ -379,7 +379,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("APILifeCycleTestAPI-application"));
+                claim.contains("URLSafeJWTTest-application"));
 
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
         apiStoreRestClient.removeApplication(applicationName);

@@ -1563,29 +1563,29 @@ public class APIMTestCaseUtils {
     /**
      * This method is used to base64Url-decode a base64Url-encoded string
      *
-     * @param arg - The base64Url encoded string to be decoded
+     * @param stringToBeDecodedArg - The base64Url encoded string to be decoded
      * @return - The base64Url decoded string
-     * @throws Exception
+     * @throws UnsupportedEncodingException
      */
-    public static byte[] decode(String arg) throws Exception{
-        String decodedString = arg;
-        decodedString = decodedString.replaceAll("-", "+");
-        decodedString = decodedString.replaceAll("_", "/");
+    public static byte[] decode(String stringToBeDecodedArg) throws UnsupportedEncodingException{
 
-        switch (decodedString.length() % 4) {
+        String stringToBeDecoded = stringToBeDecodedArg;
+        stringToBeDecoded = stringToBeDecoded.replaceAll("-", "+");
+        stringToBeDecoded = stringToBeDecoded.replaceAll("_", "/");
+
+        switch (stringToBeDecoded.length() % 4) {
             case 0: break;
             case 1: break;
-            case 2: decodedString = decodedString + "==";
+            case 2: stringToBeDecoded = stringToBeDecoded + "==";
                     break;
-            case 3: decodedString = decodedString + "=";
+            case 3: stringToBeDecoded = stringToBeDecoded + "=";
                     break;
-            default: throw new Exception("Illegal base64url string!");
         }
 
-        return Base64.decodeBase64(decodedString.getBytes("UTF-8"));
+        return Base64.decodeBase64(stringToBeDecoded.getBytes("UTF-8"));
     }
 
-    public static String getDecodedURLSafeJWT(String serverMessage) throws Exception {
+    public static String getDecodedURLSafeJWT(String serverMessage) throws UnsupportedEncodingException {
         // result comes as header values
         String[] headerArray = serverMessage.split("\n");
         //tokenize  from JWT assertion header
@@ -1597,7 +1597,7 @@ public class APIMTestCaseUtils {
         return new String(jwtByteArray, "UTF-8");
     }
 
-    public static String getDecodedURLSafeJWTHeader(String serverMessage) throws Exception {
+    public static String getDecodedURLSafeJWTHeader(String serverMessage) throws UnsupportedEncodingException {
         // result comes as header values
         String[] headerArray = serverMessage.split("\n");
         //tokenize  from JWT assertion header
