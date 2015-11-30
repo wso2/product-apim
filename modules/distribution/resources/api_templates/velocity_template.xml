@@ -256,7 +256,7 @@
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-        uri-template="$resource.getUriTemplate()"
+        uri-template="$util.escapeXml($resource.getUriTemplate())"
         #else
         url-mapping="$resource.getUriTemplate()"
         #end
