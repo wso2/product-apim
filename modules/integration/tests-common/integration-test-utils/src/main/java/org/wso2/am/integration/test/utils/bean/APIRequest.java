@@ -53,7 +53,7 @@ public class APIRequest extends AbstractRequest {
     private String thumbUrl = "";
     private String tiersCollection = "Gold";
     private String resourceCount = "0";
-    private String resourceMethod = "GET,POST,PUT,PATCH,DELETE,HEAD";
+    private String resourceMethod = "GET,POST";
     private String resourceMethodAuthType = "Application & Application User,Application & Application User";
     private String resourceMethodThrottlingTier = "Unlimited,Unlimited";
     private String uriTemplate = "/*";
