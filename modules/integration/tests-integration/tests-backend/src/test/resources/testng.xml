@@ -60,7 +60,7 @@
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
-            <!--class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/-->
+            <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <!-- Commenting this test since its required to setup BAM and the DBs to run this
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
@@ -77,6 +77,7 @@
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
@@ -143,4 +144,3 @@
     </test>
 
 </suite>
-
