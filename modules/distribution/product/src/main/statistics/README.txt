@@ -24,8 +24,7 @@ Configuring DAS
 
 1. Extract the DS binary distribution to your local file system.
 2. Change port offset to 1 by editing the repository/conf/carbon.xml
-3. Copy the  API_Manager_Analytics.tbox to repository/deployment/server/bam-toolbox
-   (Create the bam-toolbox directory if it already doesn't exist)
+3. Copy the API_Manager_Analytics_REST.car and API_Manager_Analytics_RDBMS.car to <WSO2AM_HOME>/statistics
 4. Add the following to <DAS_HOME>/conf/datasources/master-datasources.xml file if hope to use RDBMS Client.
    Please note that if you set port offset in BAM server increment and update cassandra datasource.
    Ex: If port offset is one set url config like this <url>jdbc:cassandra://localhost:9161/EVENT_KS</url>
