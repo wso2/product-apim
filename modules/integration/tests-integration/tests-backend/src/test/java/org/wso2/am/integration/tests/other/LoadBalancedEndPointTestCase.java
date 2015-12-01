@@ -23,22 +23,27 @@ package org.wso2.am.integration.tests.other;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.annotations.*;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +52,6 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
@@ -62,12 +66,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
     private String tier = "Unlimited";
     private String endPointType = "load_balance";
     private String applicationName = "LoadBalanceAPIApplication";
-    private final String webApp1 = "name-checkOne";
-    private final String webApp2 = "name-checkTwo";
-    private final String webApp3 = "name-checkThree";
-    private final String firstWebAppSB = "name-check1_SB";
-    private final String secondWebAppSB = "name-check2_SB";
-    private final String thirdWebAppSB = "name-check3_SB";
     private List<APIResourceBean> resourceBeanList;
     private String apiNameSandbox = "SandboxAPITestCase";
     private String contextSandbox = "SandboxAPI";
@@ -85,9 +83,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-//                new Object[]{TestUserMode.TENANT_ADMIN},
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                //                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 
@@ -120,27 +117,30 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         }
 
         //checking whether endpoint web apps are deployed
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), firstWebAppSB,
-                "HelloWSO2 from File 1_Sandbox");
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), secondWebAppSB,
-                "HelloWSO2 from File 2_Sandbox");
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), thirdWebAppSB,
-                "HelloWSO2 from File 3_Sandbox");
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp1,"HelloWSO2 from File 1");
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp2,"HelloWSO2 from File 2");
-        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(), webApp3,"HelloWSO2 from File 3");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME, "HelloWSO2 from File 1_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME, "HelloWSO2 from File 2_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME, "HelloWSO2 from File 3_Sandbox");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.PRODEP1_WEB_APP_NAME, "HelloWSO2 from File 1");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.PRODEP2_WEB_APP_NAME, "HelloWSO2 from File 2");
+        isWebAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL(),
+                APIMIntegrationConstants.PRODEP3_WEB_APP_NAME, "HelloWSO2 from File 3");
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test Load Balance End Points",priority = 1)
+    @Test(groups = { "wso2.am" }, description = "Test Load Balance End Points", priority = 1)
     public void testCreateApiWithDifferentProductionEndpoints() throws Exception {
 
         String tags = "LB";
         String description = "LoadBalancedEnd-point";
 
-        firstProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp1;
-        secondProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp2;
-        thirdProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp3;
+        firstProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME;
+        secondProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME;
+        thirdProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME;
 
         ArrayList<String> endpointLB = new ArrayList<String>();
         endpointLB.add(firstProductionEndPoint);
@@ -159,12 +159,11 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiCreateRequestBean.setEndpointType(endPointType);
 
         HttpResponse apiCreateResponse = apiPublisher.addAPI(apiCreateRequestBean);
-        assertEquals(apiCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Invalid Response Code");
+        assertEquals(apiCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Invalid Response Code");
 
         //assert JSON object
         JSONObject jsonObject = new JSONObject(apiCreateResponse.getData());
-        assertFalse(jsonObject.getBoolean("error"),"Error in API creation");
+        assertFalse(jsonObject.getBoolean("error"), "Error in API creation");
 
         HttpResponse verifyApi = apiPublisher.getApi(apiName, providerName, version);
         JSONObject verifyApiJsonObject = new JSONObject(verifyApi.getData());
@@ -180,8 +179,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
     }
 
-     @Test(groups = {"wso2.am"}, description = "Verify Round Robin Algorithm by Invoking the Production Endpoint API",
-            dependsOnMethods = {"testCreateApiWithDifferentProductionEndpoints"})
+    @Test(groups = { "wso2.am" }, description = "Verify Round Robin Algorithm by Invoking the Production Endpoint API",
+            dependsOnMethods = { "testCreateApiWithDifferentProductionEndpoints" })
     public void testRoundRobinAlgorithmInProductionEndpoints() throws Exception {
 
         String accessUrl = gatewayUrl + context + "/" + version + "/name";
@@ -208,10 +207,10 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse apiInvokeResponse;
 
-        int numberOfEndpoints=3;
-        int requestCount=10;
-         //Todo replace sleep with proper method
-         Thread.sleep(80000);
+        int numberOfEndpoints = 3;
+        int requestCount = 10;
+        //Todo replace sleep with proper method
+        Thread.sleep(80000);
         for (int requestNumber = 1; requestNumber < requestCount; requestNumber++) {
             apiInvokeResponse = HttpRequestUtil.doGet(accessUrl, applicationHeader);
             assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -231,16 +230,17 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test Load balanced function with both Production and Sandbox Endpoints",
-    priority = 2)
+    @Test(groups = {
+            "wso2.am" }, description = "Test Load balanced function with both Production and Sandbox Endpoints",
+            priority = 2)
     public void testCreateApiWithBothProdAndSandboxEndpoints() throws Exception {
 
         String descriptionSandbox = "SandboxEnd-point";
         String tagsSandbox = "sandbox";
 
-        firstProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp1;
-        secondProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp2;
-        thirdProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + webApp3;
+        firstProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME;
+        secondProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME;
+        thirdProductionEndPoint = gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME;
 
         //Add production endpoints
         List<String> endpointProd = new ArrayList<String>();
@@ -249,16 +249,19 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         endpointProd.add(thirdProductionEndPoint);
 
         //add sandbox endpoints
-        String firstSandboxEndpoint = gatewayUrlsWrk.getWebAppURLHttp() + firstWebAppSB;
-        String secondSandboxEndpoint = gatewayUrlsWrk.getWebAppURLHttp() + secondWebAppSB;
-        String thirdSandboxEndpoint = gatewayUrlsWrk.getWebAppURLHttp() + thirdWebAppSB;
+        String firstSandboxEndpoint =
+                gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME;
+        String secondSandboxEndpoint =
+                gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME;
+        String thirdSandboxEndpoint =
+                gatewayUrlsWrk.getWebAppURLHttp() + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME;
 
         List<String> endpointSandbox = new ArrayList<String>();
         endpointSandbox.add(firstSandboxEndpoint);
         endpointSandbox.add(secondSandboxEndpoint);
         endpointSandbox.add(thirdSandboxEndpoint);
 
-        providerName=publisherContext.getContextTenant().getContextUser().getUserName();
+        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
 
         APICreationRequestBean apiSBCreationRequestBean = new APICreationRequestBean(apiNameSandbox, contextSandbox,
                 version, providerName, endpointProd, endpointSandbox);
@@ -270,7 +273,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiSBCreationRequestBean.setEndpointType(endPointType);
 
         HttpResponse apiSBCreateResponse = apiPublisher.addAPI(apiSBCreationRequestBean);
-        assertEquals(apiSBCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(), "Invalid Response code");
+        assertEquals(apiSBCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Invalid Response code");
         JSONObject apiSBCreateJsonObject = new JSONObject(apiSBCreateResponse.getData());
         assertFalse(apiSBCreateJsonObject.getBoolean("error"), "Response Data is Mismatched in API Creation");
 
@@ -288,8 +292,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         assertFalse(apiPublishedJsonObject.getBoolean("error"), "API is not published");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Verify Round Robin Algorithm by Invoking the Sandbox Endpoint API",
-            dependsOnMethods = {"testCreateApiWithBothProdAndSandboxEndpoints"})
+    @Test(groups = { "wso2.am" }, description = "Verify Round Robin Algorithm by Invoking the Sandbox Endpoint API",
+            dependsOnMethods = { "testCreateApiWithBothProdAndSandboxEndpoints" })
     public void testRoundRobinAlgorithmInProductionAndSandboxEndpoints() throws Exception {
 
         String webAppSandboxResponsePrefix = "HelloWSO2 from File ";
@@ -299,7 +303,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         apiStore.addApplication(applicationNameSandbox, tier, "", "");
 
-        providerName=storeContext.getContextTenant().getContextUser().getUserName();
+        providerName = storeContext.getContextTenant().getContextUser().getUserName();
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiNameSandbox, version, providerName,
                 applicationNameSandbox, tier);
@@ -309,12 +313,14 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         assertFalse(subscriptionJsonObject.getBoolean("error"), "Error in Subscription Response");
 
         //generate production endpoint key
-        APPKeyRequestGenerator appKeyRequestGeneratorProduction=new APPKeyRequestGenerator(applicationNameSandbox);
-        String responseStringProductionEndpoint = apiStore.generateApplicationKey(appKeyRequestGeneratorProduction).getData();
-        JSONObject productionEndpointJsonObject=new JSONObject(responseStringProductionEndpoint);
-        String accessTokenProduction=productionEndpointJsonObject.getJSONObject("data").getJSONObject("key").getString("accessToken");
+        APPKeyRequestGenerator appKeyRequestGeneratorProduction = new APPKeyRequestGenerator(applicationNameSandbox);
+        String responseStringProductionEndpoint = apiStore.generateApplicationKey(appKeyRequestGeneratorProduction)
+                .getData();
+        JSONObject productionEndpointJsonObject = new JSONObject(responseStringProductionEndpoint);
+        String accessTokenProduction = productionEndpointJsonObject.getJSONObject("data").getJSONObject("key")
+                .getString("accessToken");
 
-        Map<String,String> applicationHeaderProduction=new HashMap<String, String>();
+        Map<String, String> applicationHeaderProduction = new HashMap<String, String>();
         applicationHeaderProduction.put("Authorization", " Bearer " + accessTokenProduction);
 
         //generate sandbox endpoint key
@@ -332,8 +338,8 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         HttpResponse apiSandboxInvokeResponse;
         HttpResponse apiProductionInvokeResponse;
 
-        int requestCount=10;
-        int numberOfProductionEndpoints=3;
+        int requestCount = 10;
+        int numberOfProductionEndpoints = 3;
         int numberOfSandboxEndpoints = 3;
         int requestNumber;
 
@@ -367,11 +373,11 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
             if (remainder == 0) {
                 log.info(apiSandboxInvokeResponse.getData());
                 assertEquals(apiSandboxInvokeResponse.getData(), webAppSandboxResponsePrefix + "3" +
-                                webAppSandboxResponseSuffix,"Error in Round Robin Algorithm in cycle ");
+                        webAppSandboxResponseSuffix, "Error in Round Robin Algorithm in cycle ");
             } else {
                 log.info(apiSandboxInvokeResponse.getData());
                 assertEquals(apiSandboxInvokeResponse.getData(), webAppSandboxResponsePrefix + remainder +
-                                webAppSandboxResponseSuffix,"Error in Round Robin Algorithm in Cycle " + requestNumber);
+                        webAppSandboxResponseSuffix, "Error in Round Robin Algorithm in Cycle " + requestNumber);
             }
         }
     }
@@ -386,23 +392,22 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiPublisher.deleteAPI(apiNameSandbox, version, providerName);
     }
 
-
     /**
      * Verify whether WEB_APPs are deployed or not
      * @param webAppURL - Backend URL of the webApp (not need to include webApp name or context)
      *
      */
-    public static void isWebAppDeployed(String webAppURL,String webAppName,String expectedResponse) {
+    public static void isWebAppDeployed(String webAppURL, String webAppName, String expectedResponse) {
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + (90 * 1000);
         HttpResponse response = null;
 
         while (waitTime > System.currentTimeMillis()) {
             try {
-                response = HttpRequestUtil.sendGetRequest(webAppURL+"/"+webAppName+"/name", null);
+                response = HttpRequestUtil.sendGetRequest(webAppURL + "/" + webAppName + "/name", null);
 
             } catch (IOException ignore) {
-                log.info("WAIT for webapp deployment :" + webAppName );
+                log.info("WAIT for webapp deployment :" + webAppName);
             }
 
             if (response != null) {
