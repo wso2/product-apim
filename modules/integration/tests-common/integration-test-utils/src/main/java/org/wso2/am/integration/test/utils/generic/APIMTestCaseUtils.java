@@ -59,10 +59,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.testng.Assert.assertTrue;
@@ -214,8 +211,7 @@ public class APIMTestCaseUtils {
             String apiName = api.getAttributeValue(new QName(NAME));
             if (ArrayUtils.contains(apiAdminClient.getApiNames(), apiName)) {
                 apiAdminClient.deleteApi(apiName);
-                assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName)
-                        , apiName + " Api undeployment failed");
+                assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName), apiName + " Api undeployment failed");
             }
             apiAdminClient.add(api);
             log.info(apiName + " API Uploaded");
@@ -268,9 +264,8 @@ public class APIMTestCaseUtils {
             if (ArrayUtils
                     .contains(messageProcessorClient.getMessageProcessorNames(), mProcessor)) {
                 messageProcessorClient.deleteMessageProcessor(mProcessor);
-                assertTrue(
-                        isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor)
-                        , mProcessor + " Message Processor undeployment failed");
+                assertTrue(isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor),
+                        mProcessor + " Message Processor undeployment failed");
             }
             messageProcessorClient.addMessageProcessor(messageProcessor);
             log.info(mProcessor + " Message Processor Uploaded");
@@ -289,7 +284,7 @@ public class APIMTestCaseUtils {
             if (ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), mStore)) {
                 messageStoreAdminClient.deleteMessageStore(mStore);
                 assertTrue(isMessageStoreUnDeployed(backendURL, sessionCookie, mStore),
-                           mStore + " Message Store undeployment failed");
+                        mStore + " Message Store undeployment failed");
             }
             messageStoreAdminClient.addMessageStore(messageStore);
             log.info(mStore + " Message Store Uploaded");
@@ -305,8 +300,7 @@ public class APIMTestCaseUtils {
             String proxyName = proxy.getAttributeValue(new QName(NAME));
             if (adminServiceService.isServiceExists(proxyName)) {
                 proxyAdmin.deleteProxy(proxyName);
-                assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName),
-                           proxyName + " Undeployment failed");
+                assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName), proxyName + " Undeployment failed");
             }
             proxyAdmin.addProxyService(proxy);
             log.info(proxyName + " Proxy Uploaded");
@@ -344,13 +338,10 @@ public class APIMTestCaseUtils {
             OMElement endpoint = (OMElement) endpoints.next();
             String ep = endpoint.getAttributeValue(new QName(NAME));
             if (ArrayUtils.contains(endPointAdminClient.getEndpointNames(), ep)) {
-                assertTrue(endPointAdminClient.deleteEndpoint(ep),
-                           ep + " Endpoint deletion failed");
-                assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep),
-                        ep + " Endpoint undeployment failed");
+                assertTrue(endPointAdminClient.deleteEndpoint(ep), ep + " Endpoint deletion failed");
+                assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep), ep + " Endpoint undeployment failed");
             }
-            assertTrue(endPointAdminClient.addEndPoint(endpoint),
-                       ep + " Endpoint addition failed");
+            assertTrue(endPointAdminClient.addEndPoint(endpoint), ep + " Endpoint addition failed");
             log.info(ep + " Endpoint Uploaded");
         }
     }
@@ -363,13 +354,11 @@ public class APIMTestCaseUtils {
             OMElement localEntry = (OMElement) localEntries.next();
             String le = localEntry.getAttributeValue(new QName(KEY));
             if (ArrayUtils.contains(localEntryAdminServiceClient.getEntryNames(), le)) {
-                assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le),
-                           le + " Local Entry deletion failed");
+                assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le), le + " Local Entry deletion failed");
                 assertTrue(isLocalEntryUnDeployed(backendURL, sessionCookie, le),
-                           le + " Local Entry undeployment failed");
+                        le + " Local Entry undeployment failed");
             }
-            assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry),
-                       le + " Local Entry addition failed");
+            assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry), le + " Local Entry addition failed");
             log.info(le + " LocalEntry Uploaded");
         }
     }
@@ -487,8 +476,8 @@ public class APIMTestCaseUtils {
             throws TaskManagementException, RemoteException {
         TaskAdminClient taskAdminClient = new TaskAdminClient(backEndUrl, sessionCookie);
         taskAdminClient.addTask(taskDescription);
-        assertTrue(isScheduleTaskDeployed(backEndUrl, sessionCookie
-                        , taskDescription.getAttributeValue(new QName("name"))),
+        assertTrue(isScheduleTaskDeployed(backEndUrl, sessionCookie,
+                        taskDescription.getAttributeValue(new QName("name"))),
                    "ScheduleTask deployment failed"
         );
     }
@@ -559,7 +548,7 @@ public class APIMTestCaseUtils {
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Message Processor " +
-                 messageProcessorName);
+                messageProcessorName);
         boolean isMessageStoreExist = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -883,8 +872,7 @@ public class APIMTestCaseUtils {
                                            String sequenceTemplate) throws RemoteException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
                 new SequenceTemplateAdminServiceClient(backEndUrl, sessionCookie);
-        return ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(),
-                sequenceTemplate);
+        return ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(), sequenceTemplate);
 
     }
 
@@ -892,8 +880,7 @@ public class APIMTestCaseUtils {
                                            String endpointTemplate) throws RemoteException {
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
                 new EndpointTemplateAdminServiceClient(backEndUrl, sessionCookie);
-        return ArrayUtils.contains(endpointTemplateAdminServiceClient.getEndpointTemplates(),
-                                   endpointTemplate);
+        return ArrayUtils.contains(endpointTemplateAdminServiceClient.getEndpointTemplates(), endpointTemplate);
 
     }
 
@@ -932,8 +919,7 @@ public class APIMTestCaseUtils {
         LocalEntriesAdminClient localEntryAdminServiceClient =
                 new LocalEntriesAdminClient(backEndUrl,
                                             sessionCookie);
-        assertTrue(localEntryAdminServiceClient.deleteLocalEntry(localEntryName),
-                "LocalEntry Deletion failed");
+        assertTrue(localEntryAdminServiceClient.deleteLocalEntry(localEntryName), "LocalEntry Deletion failed");
         assertTrue(isLocalEntryUnDeployed(backEndUrl, sessionCookie, localEntryName),
                    "LocalEntry undeployment failed");
 
@@ -943,8 +929,7 @@ public class APIMTestCaseUtils {
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
                                                                           sessionCookie);
-        assertTrue(endPointAdminClient.deleteEndpoint(endpointName),
-                   "Endpoint deletion failed");
+        assertTrue(endPointAdminClient.deleteEndpoint(endpointName), "Endpoint deletion failed");
         assertTrue(isEndpointUnDeployed(backEndUrl, sessionCookie, endpointName),
                    "Endpoint undeployment failed");
     }
@@ -1056,7 +1041,7 @@ public class APIMTestCaseUtils {
         MessageStoreAdminClient messageStoreAdminClient =
                 new MessageStoreAdminClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Undeployment Message Store " +
-                 messageStoreName);
+                messageStoreName);
         boolean isMessageStoreDeleted = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -1083,7 +1068,7 @@ public class APIMTestCaseUtils {
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY +
-                 " millis for Undeployment Message Processor " + messageProcessorName);
+                " millis for Undeployment Message Processor " + messageProcessorName);
         boolean isMessageProcessorDeleted = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -1572,6 +1557,55 @@ public class APIMTestCaseUtils {
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
         // decode  JWT header
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[0].getBytes("UTF-8"));
+        return new String(jwtByteArray, "UTF-8");
+    }
+
+    /**
+     * This method is used to base64Url-decode a base64Url-encoded string
+     *
+     * @param stringToBeDecodedArg - The base64Url encoded string to be decoded
+     * @return - The base64Url decoded string
+     * @throws UnsupportedEncodingException
+     */
+    public static byte[] decode(String stringToBeDecodedArg) throws UnsupportedEncodingException{
+
+        String stringToBeDecoded = stringToBeDecodedArg;
+        stringToBeDecoded = stringToBeDecoded.replaceAll("-", "+");
+        stringToBeDecoded = stringToBeDecoded.replaceAll("_", "/");
+
+        switch (stringToBeDecoded.length() % 4) {
+            case 0: break;
+            case 1: break;
+            case 2: stringToBeDecoded = stringToBeDecoded + "==";
+                    break;
+            case 3: stringToBeDecoded = stringToBeDecoded + "=";
+                    break;
+        }
+
+        return Base64.decodeBase64(stringToBeDecoded.getBytes("UTF-8"));
+    }
+
+    public static String getDecodedURLSafeJWT(String serverMessage) throws UnsupportedEncodingException {
+        // result comes as header values
+        String[] headerArray = serverMessage.split("\n");
+        //tokenize  from JWT assertion header
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        //take first part
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        // decode  JWT part
+        byte[] jwtByteArray = decode(jwtTokenArray[1]);
+        return new String(jwtByteArray, "UTF-8");
+    }
+
+    public static String getDecodedURLSafeJWTHeader(String serverMessage) throws UnsupportedEncodingException {
+        // result comes as header values
+        String[] headerArray = serverMessage.split("\n");
+        //tokenize  from JWT assertion header
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        //take first part
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        // decode  JWT header
+        byte[] jwtByteArray = decode(jwtTokenArray[0]);
         return new String(jwtByteArray, "UTF-8");
     }
 

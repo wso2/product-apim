@@ -256,14 +256,14 @@
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-        uri-template="$resource.getUriTemplate()"
+        uri-template="$util.escapeXml($resource.getUriTemplate())"
         #else
         url-mapping="$resource.getUriTemplate()"
         #end
         methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
 ## check and set jwt
-#if($jwtIsEnabled)
+#if($jwtIsEnabled && ($apiStatus != 'PROTOTYPED'))
 <class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
 #end
 ## check and set response caching
