@@ -98,7 +98,7 @@
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
-            <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>
+            <!--class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/-->
         </classes>
     </test>
 
