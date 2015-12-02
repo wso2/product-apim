@@ -156,6 +156,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
 
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
+
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
                          "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
                          ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +

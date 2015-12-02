@@ -247,6 +247,4 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         apiStoreClientUser1.removeApplication(applicationNameSilver);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
     }
-
-
 }
