@@ -136,17 +136,15 @@ public abstract class MigrationClientBase {
 
             InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
             bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
-            String sqlQuery;
-            while ((sqlQuery = bufferedReader.readLine()) != null) {
-
-                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
-                sqlQuery = sqlQuery.trim();
-                if (sqlQuery.startsWith("//") || sqlQuery.startsWith("--")) {
+            String sqlQuery = "";
+            boolean isFoundQueryEnd = false;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("//") || line.startsWith("--")) {
                     continue;
                 }
-                StringTokenizer stringTokenizer = new StringTokenizer(sqlQuery);
+                StringTokenizer stringTokenizer = new StringTokenizer(line);
                 if (stringTokenizer.hasMoreTokens()) {
                     String token = stringTokenizer.nextToken();
                     if ("REM".equalsIgnoreCase(token)) {
@@ -154,15 +152,31 @@ public abstract class MigrationClientBase {
                     }
                 }
 
-                if (sqlQuery.contains("\\n")) {
-                    sqlQuery = sqlQuery.replace("\\n", "");
+                if (line.contains("\\n")) {
+                    line = line.replace("\\n", "");
                 }
 
-                if (sqlQuery.length() > 0) {
-                    log.debug("SQL to be executed : " + sqlQuery);
-                    preparedStatement = connection.prepareStatement(sqlQuery.trim());
-                    preparedStatement.execute();
-                    connection.commit();
+                sqlQuery += " " + line;
+
+                if (line.contains(";")) {
+                    isFoundQueryEnd = true;
+                }
+
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
+
+                if (isFoundQueryEnd) {
+                    if (sqlQuery.length() > 0) {
+                        log.debug("SQL to be executed : " + sqlQuery);
+                        preparedStatement = connection.prepareStatement(sqlQuery.trim());
+                        preparedStatement.execute();
+                        connection.commit();
+                    }
+
+                    // Reset variables to read next SQL
+                    sqlQuery = "";
+                    isFoundQueryEnd = false;
                 }
             }
 
@@ -250,6 +264,4 @@ public abstract class MigrationClientBase {
         }
 
     }
-
-
 }

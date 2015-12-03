@@ -24,6 +24,7 @@ import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.registry.core.RegistryConstants;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -32,8 +33,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 public class ResourceUtil {
 
@@ -319,5 +323,48 @@ public class ResourceUtil {
 
             outSequenceElement.insertBefore(classElement, sendElement);
         }
+    }
+
+    public static String getResourceContent(Object content) {
+        return new String((byte[]) content, Charset.defaultCharset());
+    }
+
+    public static Document buildDocument(String xmlContent, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            docFactory.setNamespaceAware(true);
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes(Charset.defaultCharset()))));
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (ParserConfigurationException e) {
+            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
+    }
+
+
+    public static Document buildDocument(FileInputStream fileInputStream, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            docFactory.setNamespaceAware(true);
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            doc = docBuilder.parse(new InputSource(fileInputStream));
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (ParserConfigurationException e) {
+            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
     }
 }

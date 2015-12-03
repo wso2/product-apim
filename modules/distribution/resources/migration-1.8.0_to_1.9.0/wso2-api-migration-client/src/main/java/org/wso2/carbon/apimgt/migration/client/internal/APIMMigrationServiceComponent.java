@@ -26,6 +26,7 @@ import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
 import org.wso2.carbon.apimgt.migration.client.MigrateFrom19to110;
 import org.wso2.carbon.apimgt.migration.client.MigrationClient;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.apimgt.migration.util.RegistryServiceImpl;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
@@ -86,8 +87,9 @@ public class APIMMigrationServiceComponent {
                     log.info("Starting WSO2 API Manager migration");
 
                     // Create a thread and wait till the APIManager DBUtils is initialized
+                    RegistryServiceImpl registryService = new RegistryServiceImpl();
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants);
+                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants, registryService);
 
                     //Default operation will migrate all three types of resources
                     if (migrateAll) {
@@ -130,8 +132,9 @@ public class APIMMigrationServiceComponent {
                     if (log.isDebugEnabled()) {
                         log.debug("Migrating to the version " + migrateToVersion);
                     }
+                    RegistryServiceImpl registryService = new RegistryServiceImpl();
 
-                    MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants);
+                    MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants, registryService);
 
                     migrateFrom19to110.databaseMigration(migrateToVersion);
 

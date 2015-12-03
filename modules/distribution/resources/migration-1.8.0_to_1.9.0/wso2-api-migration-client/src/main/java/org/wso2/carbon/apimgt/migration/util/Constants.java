@@ -123,8 +123,38 @@ public class Constants {
     public static final String SWAGGER_SAMPLE_DEFINITION = "sampleItem";
 
 
+    // Work flow extensions
+    public static final String WF_SUBSCRIPTION_DELETION_TAG = "SubscriptionDeletion";
+    public static final String WF_EXECUTOR_ATTRIBUTE = "executor";
+    public static final String WF_SUBSCRIPTION_DELETION_CLASS = "org.wso2.carbon.apimgt.impl.workflow.SubscriptionDeletionSimpleWorkflowExecutor";
+    public static final String WF_SUBSCRIPTION_DELETION_TAG_COMMENT =
+            "SubscriptionDeletion executor=\"org.wso2.carbon.apimgt.impl.workflow.SubscriptionDeletionSimpleWorkflowExecutor\">";
+    public static final String WF_SUBSCRIPTION_SERVICE_ENDPOINT_COMMENT =
+            "<Property name=\"serviceEndpoint\">http://localhost:9765/services/SubscriptionApprovalWorkFlowProcess/</Property>";
+    public static final String WF_USERNAME_COMMENT = "<Property name=\"username\">admin</Property>";
+    public static final String WF_PASSWORD_COMMENT = "<Property name=\"password\">admin</Property>";
+    public static final String WF_CALLBACK_URL_COMMENT = "<Property name=\"callbackURL\">https://localhost:8243/services/WorkflowCallbackService</Property>";
+    public static final String WF_SUBSCRIPTION_DELETION_CLOSING_TAG_COMMENT = "</SubscriptionDeletion";
+    public static final String WF_APPLICATION_DELETION_TAG = "ApplicationDeletion";
+    public static final String WF_APPLICATION_DELETION_CLASS = "org.wso2.carbon.apimgt.impl.workflow.ApplicationDeletionSimpleWorkflowExecutor";
+    public static final String WF_APPLICATION_DELETION_TAG_COMMENT =
+            "ApplicationDeletion executor=\"org.wso2.carbon.apimgt.impl.workflow.ApplicationDeletionSimpleWorkflowExecutor\">";
+    public static final String WF_APPLICATION_SERVICE_ENDPOINT_COMMENT =
+            "<Property name=\"serviceEndpoint\">http://localhost:9765/services/ApplicationApprovalWorkFlowProcess/</Property>";
+    public static final String WF_APPLICATION_DELETION_CLOSING_TAG_COMMENT = "</ApplicationDeletion";
+    public static final String WF_COMMENT_INDENT = "     ";
 
-
+    // Tier xml
+    public static final String TIER_THROTTLE_XMLNS = "http://www.wso2.org/products/wso2commons/throttle";
+    public static final String TIER_THROTTLE_XMLNS_VAR = "throttle";
+    public static final String TIER_WSP_XMLNS = "http://schemas.xmlsoap.org/ws/2004/09/policy";
+    public static final String TIER_WSP_XMLNS_VAR = "wsp";
+    public static final String TIER_MEDIATOR_THROTTLE_ASSERTION_TAG = "MediatorThrottleAssertion";
+    public static final String TIER_CONTROL_TAG = "Control";
+    public static final String TIER_POLICY_TAG = "Policy";
+    public static final String TIER_ATTRIBUTES_TAG = "Attributes";
+    public static final String TIER_BILLING_PLAN_FREE = "FREE";
+    public static final String TIER_STOP_ON_QUOTA_TRUE = "true";
 
     //database types
     public static final String DB_TYPE_ORACLE = "oracle";
@@ -134,6 +164,10 @@ public class Constants {
     public static final String DB_TYPE_POSTGRE = "postgre";
     public static final String DB_TYPE_OPENEDGE = "openedge";
 
+    // API Life Cycle
+    public static final String LIFE_CYCLES_FOLDER = "lifecycles";
+    public static final String API_LIFE_CYCLE_STATE_TAG = "state";
+    public static final String API_LIFE_CYCLE_DATA_MODEL_TAG = "datamodel";
 
     //default Swagger v2 response parameter
     public static final String DEFAULT_RESPONSE = "{ " +

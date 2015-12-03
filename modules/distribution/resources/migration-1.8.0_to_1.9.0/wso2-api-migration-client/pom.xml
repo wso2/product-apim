@@ -143,13 +143,19 @@
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
             <version>${org.wso2.carbon.apimgt.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.5</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.apache.felix.src.plugin.version>1.7.2</org.apache.felix.src.plugin.version>
         <org.apache.felix.budnle.plugin.version>2.5.3</org.apache.felix.budnle.plugin.version>
-        <org.wso2.carbon.apimgt.version>4.3.0-SNAPSHOT</org.wso2.carbon.apimgt.version>
+        <org.wso2.carbon.apimgt.version>4.3.1-SNAPSHOT</org.wso2.carbon.apimgt.version>
         <org.wso2.carbon.logging.version>4.4.1</org.wso2.carbon.logging.version>
         <carbon.kernel.version>4.4.2</carbon.kernel.version>
     </properties>

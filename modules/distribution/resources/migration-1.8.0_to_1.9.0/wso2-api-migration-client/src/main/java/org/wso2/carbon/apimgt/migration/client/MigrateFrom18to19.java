@@ -36,6 +36,7 @@ import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.base.MultitenantConstants;
@@ -87,9 +88,11 @@ import java.util.Set;
 public class MigrateFrom18to19 extends MigrationClientBase implements MigrationClient {
 
     private static final Log log = LogFactory.getLog(MigrateFrom18to19.class);
+    private RegistryService registryService;
 
-    public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments) throws UserStoreException {
+    public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments, RegistryService registryService) throws UserStoreException {
         super(tenantArguments, blackListTenantArguments);
+        this.registryService = registryService;
     }
 
     /**
@@ -143,6 +146,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
                 registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant
                         .getId());
+
+                if (!registryService.isGovernanceRegistryResourceExists(tenant,
+                                                                        APIConstants.EXTERNAL_API_STORES_LOCATION)) {
+                    continue;
+                }
 
                 Resource externalStoreResource = registry.get(APIConstants.EXTERNAL_API_STORES_LOCATION);
 
@@ -362,33 +370,16 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      */
     void swaggerResourceMigration() throws APIMigrationException {
         log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
-        boolean isTenantFlowStarted = false;
 
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
                 log.debug("Start swaggerResourceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
             }
 
-            try {
-                PrivilegedCarbonContext.startTenantFlow();
-                isTenantFlowStarted = true;
+            GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts(tenant);
 
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain());
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId());
-
-                Registry registry = getRegistry(tenant);
-
-                if (registry != null) {
-                    GenericArtifact[] artifacts = getGenericArtifacts(registry);
-
-                    if (artifacts != null) {
-                        updateSwaggerResources(artifacts, registry, tenant);
-                    }
-                }
-            } finally {
-                if (isTenantFlowStarted) {
-                    PrivilegedCarbonContext.endTenantFlow();
-                }
+            if (artifacts != null) {
+                updateSwaggerResources(artifacts, tenant);
             }
 
             log.debug("End swaggerResourceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
@@ -397,64 +388,15 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         log.info("Swagger resource migration done for all the tenants.");
     }
 
-    private Registry getRegistry(Tenant tenant) {
-        log.debug("Calling getRegistry");
-        Registry registry = null;
-
-        try {
-            String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getRealmConfiguration().getAdminUserName();
-            log.debug("Tenant admin username : " + adminName);
-            registry = ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant.getId());
-            ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
-        } catch (UserStoreException e) {
-            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
-        } catch (RegistryException e) {
-            log.error("Error occurred while accessing the registry of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
-        }
-
-        return registry;
-    }
 
 
-    private GenericArtifact[] getGenericArtifacts(Registry registry) {
-        log.debug("Calling getGenericArtifacts");
-        GenericArtifact[] artifacts = null;
 
-        try {
-            if (GovernanceUtils.findGovernanceArtifactConfiguration(Constants.API, registry) != null) {
-                GenericArtifactManager manager = new GenericArtifactManager(registry, Constants.API);
-                GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
-                artifacts = manager.getAllGenericArtifacts();
 
-                log.debug("Total number of api artifacts : " + artifacts.length);
-            } else {
-                log.debug("API artifacts do not exist in registry");
-            }
 
-        } catch (RegistryException e) {
-            log.error("Error occurred when getting GenericArtifacts from registry", e);
-        }
-
-        return artifacts;
-    }
-
-    private API getAPI(GenericArtifact artifact) {
-        log.debug("Calling getAPI");
-        API api = null;
-
-        try {
-            api = APIUtil.getAPI(artifact);
-        } catch (APIManagementException e) {
-            log.error("Error when getting api artifact " + artifact.getId() + " from registry", e);
-        }
-
-        return api;
-    }
-
-    private void updateSwaggerResources(GenericArtifact[] artifacts, Registry registry, Tenant tenant) throws APIMigrationException {
+    private void updateSwaggerResources(GenericArtifact[] artifacts, Tenant tenant) throws APIMigrationException {
         log.debug("Calling updateSwaggerResources");
         for (GenericArtifact artifact : artifacts) {
-            API api = getAPI(artifact);
+            API api = registryService.getAPI(artifact);
 
             if (api != null) {
                 APIIdentifier apiIdentifier = api.getId();
@@ -473,7 +415,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
 
                     String swagger2Document;
 
-                    if (!registry.resourceExists(swagger12location)) {
+                    if (!registryService.isGovernanceRegistryResourceExists(tenant, swagger12location)) {
                         log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
 
                         APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
@@ -481,13 +423,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         swagger2Document = definitionFromSwagger20.generateAPIDefinition(api);
                     } else {
                         log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
-                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(registry, swagger12location, api);
+                        swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger12location, api);
                     }
 
-                    Resource docContent = registry.newResource();
-                    docContent.setContent(swagger2Document);
-                    docContent.setMediaType("application/json");
-                    registry.put(swagger2location, docContent);
+                    registryService.addGovernanceRegistryResource(tenant, swagger2location, swagger2Document, "application/json");
 
                     ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).getAuthorizationManager()
                             .authorizeRole(APIConstants.ANONYMOUS_ROLE,
@@ -514,7 +453,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     /**
      * This method generates swagger v2 doc using swagger 1.2 doc
      *
-     * @param registry          governance registry
+     * @param tenant          Tenant
      * @param swagger12location the location of swagger 1.2 doc
      * @return JSON string of swagger v2 doc
      * @throws java.net.MalformedURLException
@@ -522,22 +461,21 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @throws org.wso2.carbon.registry.core.exceptions.RegistryException
      */
 
-    private String getSwagger2docUsingSwagger12RegistryResources(Registry registry, String swagger12location, API api)
-            throws MalformedURLException, ParseException, RegistryException {
+    private String getSwagger2docUsingSwagger12RegistryResources(Tenant tenant, String swagger12location, API api)
+            throws MalformedURLException, ParseException, RegistryException, UserStoreException {
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
         JSONParser parser = new JSONParser();
         String swagger12BasePath = null;
 
-        Resource swaggerRes = registry.get(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
+        Object rawResource = registryService.getGovernanceRegistryResource(tenant, swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
+        String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
         try {
-            JSONObject swagger12doc = (JSONObject) parser.parse(new String((byte[]) swaggerRes.getContent(), "UTF8"));
+            JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
 
             Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
-            Resource swagger12Res = registry.get(swagger12location);
 
-            //get all the resources inside the 1.2 resource location
-            String[] apiDefinitions = (String[]) swagger12Res.getContent();
+            String[] apiDefinitions = (String[]) registryService.getGovernanceRegistryResource(tenant, swagger12location);
 
             //get each resource in the 1.2 folder except the api-doc resource
             for (String apiDefinition : apiDefinitions) {
@@ -548,14 +486,14 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     continue;
                 }
 
-                Resource resource = registry.get(apiDefinition);
+                Object resource = registryService.getGovernanceRegistryResource(tenant, apiDefinition);
 
                 String swaggerDocContent;
 
-                if (resource.getContent() instanceof String[]) {
-                    swaggerDocContent = Arrays.toString((String[]) resource.getContent());
+                if (resource instanceof String[]) {
+                    swaggerDocContent = Arrays.toString((String[]) resource);
                 } else {
-                    swaggerDocContent = new String((byte[]) resource.getContent(), "UTF8");
+                    swaggerDocContent = new String((byte[]) resource, "UTF8");
                 }
 
                 log.debug("swaggerDocContent : " + swaggerDocContent);
