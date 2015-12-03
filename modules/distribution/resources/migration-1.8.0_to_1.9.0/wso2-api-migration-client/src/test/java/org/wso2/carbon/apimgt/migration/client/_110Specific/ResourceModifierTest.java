@@ -29,27 +29,36 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 
-import javax.print.Doc;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
+
 
 public class ResourceModifierTest {
+    private static final String FILE_NAME_WORK_FLOW_EXTENSIONS_19 = "1.9-workflow-extensions.xml";
+    private static final String FILE_NAME_WORK_FLOW_EXTENSIONS_110 = "1.10-workflow-extensions.xml";
+    private static final String FILE_NAME_WORK_DEFAULT_TIERS_19 = "1.9-default-tiers.xml";
+    private static final String FILE_NAME_WORK_DEFAULT_TIERS_110 = "1.10-default-tiers.xml";
+    private static final String FILE_NAME_API_LIFE_CYCLE = "APILifeCycle.xml";
+    private static final String FILE_NAME_EXECUTORLESS_API_LIFE_CYCLE = "APILifeCycleWithoutExecutors.xml";
+
     InputStream workflow19Stream;
     InputStream workflow110Stream;
     InputStream tiers19Stream;
     InputStream tiers110Stream;
+    InputStream lifeCycleStream;
+    InputStream executorlessLifeCycleStream;
 
     @BeforeClass
     public void setup() {
-        workflow19Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("1.9-workflow-extensions.xml");
-        workflow110Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("1.10-workflow-extensions.xml");
-        tiers19Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("1.9-default-tiers.xml");
-        tiers110Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream("1.10-default-tiers.xml");
+        workflow19Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_NAME_WORK_FLOW_EXTENSIONS_19);
+        workflow110Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_NAME_WORK_FLOW_EXTENSIONS_110);
+        tiers19Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_NAME_WORK_DEFAULT_TIERS_19);
+        tiers110Stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_NAME_WORK_DEFAULT_TIERS_110);
+        lifeCycleStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE_NAME_API_LIFE_CYCLE);
+        executorlessLifeCycleStream = Thread.currentThread().getContextClassLoader().
+                                            getResourceAsStream(FILE_NAME_EXECUTORLESS_API_LIFE_CYCLE);
     }
 
     @AfterClass
@@ -59,6 +68,8 @@ public class ResourceModifierTest {
             workflow110Stream.close();
             tiers19Stream.close();
             tiers110Stream.close();
+            lifeCycleStream.close();
+            executorlessLifeCycleStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -69,10 +80,8 @@ public class ResourceModifierTest {
         String workFlowExtensions19 = IOUtils.toString(workflow19Stream);
         String modifiedWorkFlowExtensions = ResourceModifier.modifyWorkFlowExtensions(workFlowExtensions19);
 
-        String workFlowExtensions110 = IOUtils.toString(workflow110Stream);
-
-        Document modifiedDoc = loadXMLFromString(modifiedWorkFlowExtensions);
-        Document expectedDoc = loadXMLFromString(workFlowExtensions110);
+        Document modifiedDoc = ResourceUtil.buildDocument(modifiedWorkFlowExtensions, "modifiedWorkFlowExtensions");
+        Document expectedDoc = ResourceUtil.buildDocument(workflow110Stream, FILE_NAME_WORK_FLOW_EXTENSIONS_110);
 
         Assert.assertEquals(compareXMLDocuments(expectedDoc, modifiedDoc), true);
     }
@@ -82,22 +91,10 @@ public class ResourceModifierTest {
         String tiers19 = IOUtils.toString(tiers19Stream);
         String modifiedTiers = ResourceModifier.modifyTiers(tiers19, "tiers.xml");
 
-        System.out.println(modifiedTiers);
-
-        String tiers110 = IOUtils.toString(tiers110Stream);
-
-        Document modifiedDoc = loadXMLFromString(modifiedTiers);
-        Document expectedDoc = loadXMLFromString(tiers110);
+        Document modifiedDoc = ResourceUtil.buildDocument(modifiedTiers, "modifiedTiers");
+        Document expectedDoc = ResourceUtil.buildDocument(tiers110Stream, FILE_NAME_WORK_DEFAULT_TIERS_110);
 
         Assert.assertEquals(compareXMLDocuments(expectedDoc, modifiedDoc), true);
-    }
-
-
-    private Document loadXMLFromString(String xml) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(xml));
-        return builder.parse(is);
     }
 
     private boolean compareXMLDocuments(Document expected, Document actual) {
@@ -147,6 +144,14 @@ public class ResourceModifierTest {
 
     @Test
     public void testRemoveExecutorsFromAPILifeCycle() throws Exception {
+        //URL apiLifeCycleURL = Thread.currentThread().getContextClassLoader().getResource(FILE_NAME_API_LIFE_CYCLE);
+        String apiLifeCycle = IOUtils.toString(lifeCycleStream);
+        String modifiedLifeCycle = ResourceModifier.removeExecutorsFromAPILifeCycle(apiLifeCycle);
 
+        Document modifiedDoc = ResourceUtil.buildDocument(modifiedLifeCycle, "modifiedLifeCycle");
+        Document expectedDoc = ResourceUtil.buildDocument(executorlessLifeCycleStream,
+                                                                        FILE_NAME_EXECUTORLESS_API_LIFE_CYCLE);
+
+        Assert.assertEquals(compareXMLDocuments(expectedDoc, modifiedDoc), true);
     }
 }

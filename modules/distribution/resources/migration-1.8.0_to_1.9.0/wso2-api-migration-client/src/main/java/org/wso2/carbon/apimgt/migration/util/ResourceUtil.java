@@ -33,10 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 
 public class ResourceUtil {
@@ -349,13 +346,13 @@ public class ResourceUtil {
     }
 
 
-    public static Document buildDocument(FileInputStream fileInputStream, String fileName) throws APIMigrationException {
+    public static Document buildDocument(InputStream inputStream, String fileName) throws APIMigrationException {
         Document doc = null;
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            doc = docBuilder.parse(new InputSource(fileInputStream));
+            doc = docBuilder.parse(new InputSource(inputStream));
             doc.getDocumentElement().normalize();
         } catch (SAXException e) {
             ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);

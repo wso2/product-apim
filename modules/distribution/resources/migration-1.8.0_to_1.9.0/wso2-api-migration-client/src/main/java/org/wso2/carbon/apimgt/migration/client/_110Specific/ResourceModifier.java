@@ -146,44 +146,39 @@ public class ResourceModifier {
     }
 
 
-    public static String removeExecutorsFromAPILifeCycle(String apiLifeCycleXMLPath) throws APIMigrationException {
+    public static String removeExecutorsFromAPILifeCycle(String apiLifeCycle) throws APIMigrationException {
         Writer stringWriter = new StringWriter();
 
-        try {
-            FileInputStream fileInputStream = new FileInputStream(new File(apiLifeCycleXMLPath));
+        Document doc = ResourceUtil.buildDocument(apiLifeCycle, "APILifeCycle");
 
-            if (fileInputStream != null) {
-                Document doc = ResourceUtil.buildDocument(fileInputStream, apiLifeCycleXMLPath);
+        if (doc != null) {
+            Element rootElement = doc.getDocumentElement();
 
-                if (doc != null) {
-                    Element rootElement = doc.getDocumentElement();
+            NodeList stateTags = rootElement.getElementsByTagName(Constants.API_LIFE_CYCLE_STATE_TAG);
 
-                    NodeList stateTags = rootElement.getElementsByTagName(Constants.API_LIFE_CYCLE_STATE_TAG);
+            for (int i = 0; i < stateTags.getLength(); ++i) {
+                Element stateTag = (Element) stateTags.item(i);
 
-                    for (int i = 0; i < stateTags.getLength(); ++i) {
-                        Element stateTag = (Element) stateTags.item(i);
+                NodeList dataModelTags = stateTag.getElementsByTagName(Constants.API_LIFE_CYCLE_DATA_MODEL_TAG);
 
-                        NodeList dataModelTags = stateTag.getElementsByTagName(Constants.API_LIFE_CYCLE_DATA_MODEL_TAG);
-
-                        if (dataModelTags.getLength() > 0) {
-                            Element dataModelTag = (Element) dataModelTags.item(0);
-                            dataModelTag.getParentNode().removeChild(dataModelTag);
-                        }
-                    }
-
-                    doc.getDocumentElement().normalize();
-                    Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                    transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
-                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                    transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
+                if (dataModelTags.getLength() > 0) {
+                    Element dataModelTag = (Element) dataModelTags.item(0);
+                    dataModelTag.getParentNode().removeChild(dataModelTag);
                 }
             }
-        } catch (FileNotFoundException e) {
-            ResourceUtil.handleException("File " + apiLifeCycleXMLPath + " not found", e);
-        } catch (TransformerException e) {
-            ResourceUtil.handleException("Error occurred while transforming modified " + apiLifeCycleXMLPath, e);
+
+            try {
+                doc.getDocumentElement().normalize();
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                transformer.transform(new DOMSource(doc), new StreamResult(stringWriter));
+            }
+            catch (TransformerException e) {
+                ResourceUtil.handleException("Error occurred while transforming modified " + "APILifeCycle", e);
+            }
         }
 
         return stringWriter.toString();

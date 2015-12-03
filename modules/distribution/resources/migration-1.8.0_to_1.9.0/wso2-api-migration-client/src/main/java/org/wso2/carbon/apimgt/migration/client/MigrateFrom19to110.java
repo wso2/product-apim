@@ -17,11 +17,12 @@
 package org.wso2.carbon.apimgt.migration.client;
 
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 import org.wso2.carbon.apimgt.api.model.API;
+import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
@@ -37,13 +38,12 @@ import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.CarbonUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Vector;
 
 
@@ -277,30 +277,52 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 File.separator + Constants.LIFE_CYCLES_FOLDER + File.separator +
                 APIConstants.API_LIFE_CYCLE + ".xml";
 
-        String executorlessApiLifeCycle = ResourceModifier.removeExecutorsFromAPILifeCycle(apiLifeCycleXMLPath);
+        try (FileInputStream fileInputStream = new FileInputStream(new File(apiLifeCycleXMLPath))) {
+            String apiLifeCycle = IOUtils.toString(fileInputStream);
 
-        for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start life cycle migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            String executorlessApiLifeCycle = ResourceModifier.removeExecutorsFromAPILifeCycle(apiLifeCycle);
 
-            try {
+            HashMap<String, String[]> actionList = new HashMap<>();
+            actionList.put(APIStatus.PUBLISHED.toString(), new String[]{"Publish"});
+            actionList.put(APIStatus.PROTOTYPED.toString(), new String[]{"Deploy as a Prototype"});
+            actionList.put(APIStatus.BLOCKED.toString(), new String[]{"Publish", "Block"});
+            actionList.put(APIStatus.DEPRECATED.toString(), new String[]{"Publish", "Deprecate"});
+            actionList.put(APIStatus.RETIRED.toString(), new String[]{"Publish", "Deprecate", "Retire"});
+
+            for (Tenant tenant : getTenantsArray()) {
+                log.debug("Start life cycle migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+
                 final String apiLifeCycleRegistryPath = RegistryConstants.CONFIG_REGISTRY_BASE_PATH +
                         RegistryConstants.LIFECYCLE_CONFIGURATION_PATH + APIConstants.API_LIFE_CYCLE;
 
-                if (registryService.isConfigRegistryResourceExists(tenant, apiLifeCycleRegistryPath))
-                {
-                    String apiLifeCycle = ResourceUtil.getResourceContent(
-                            registryService.getConfigRegistryResource(tenant, apiLifeCycleRegistryPath));
+                registryService.updateConfigRegistryResource(tenant, apiLifeCycleRegistryPath, executorlessApiLifeCycle);
 
+                GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts(tenant);
 
+                for (GenericArtifact artifact : artifacts) {
+                    String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
 
+                    artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
+                    String[] actions = actionList.get(currentState);
 
+                    if (actions != null) {
+                        for (String action : actions) {
+                            artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
+                        }
+                    }
                 }
-            } catch (UserStoreException e) {
-                ResourceUtil.handleException("Error occurred while accessing the user store", e);
-            } catch (RegistryException e) {
-                ResourceUtil.handleException("Error occurred while accessing the registry", e);
-            }
 
+                registryService.updateConfigRegistryResource(tenant, apiLifeCycleRegistryPath, apiLifeCycle);
+            }
+        } catch (UserStoreException e) {
+            ResourceUtil.handleException("Error occurred while accessing the user store", e);
+        } catch (RegistryException e) {
+            ResourceUtil.handleException("Error occurred while accessing the registry", e);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
 }
