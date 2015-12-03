@@ -32,7 +32,7 @@
     );
 
     insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
-    COALESCE(consumerKey,''),
+    COALESCE(consumerKey,'-'),
     userId,context,
     max(requestTime) as max_request_time,
     sum(request) as total_request_count,
@@ -138,7 +138,7 @@
     );
 
     insert into table API_Resource_USAGE_SUMMARY_FINAL select
-    api,version,apiPublisher,COALESCE(consumerKey,''),
+    api,version,apiPublisher,COALESCE(consumerKey,'-'),
     resourcePath,context,method,sum(request) as total_request_count,hostName,
 
     substring(cast(first(requestTime)/1000 as timestamp),0,4),
@@ -228,7 +228,7 @@
     );
 
     insert into table API_FAULT_SUMMARY_FINAL select
-    api,version,apiPublisher,COALESCE(consumerKey,''),context,
+    api,version,apiPublisher,COALESCE(consumerKey,'-'),context,
     count(errorMessage) as total_fault_count,
     hostName,
     substring(cast(first(requestTime)/1000 as timestamp),0,4),
