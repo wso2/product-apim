@@ -289,6 +289,22 @@
   substring(cast(requestTime/1000 as timestamp),9,2);
 
 
+  create temporary table APILastAccessSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_LAST_ACCESS_TIME_SUMMARY");
+
+  CREATE TEMPORARY TABLE API_LAST_ACCESS_TIME_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_LAST_ACCESS_TIME_SUMMARY",
+  schema "tenantDomain string -i,
+  apiPublisher string -i,
+  api string -i,
+  version string -i,
+  userId string -i,
+  context string -i,
+  max_request_time long -i",
+  primaryKeys "tenantDomain,apiPublisher,api"
+  );
+
+  insert into table API_LAST_ACCESS_TIME_SUMMARY_FINAL select tenantDomain, apiPublisher, api, version, userId, context, requestTime from APIRequestData order by requestTime ASC;
+
+
 
 </Script>
     <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
