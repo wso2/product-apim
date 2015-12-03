@@ -174,6 +174,16 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.9.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>1.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -204,6 +214,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>commons-codec.wso2</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.ui</artifactId>
@@ -823,6 +838,18 @@
                 <version>${cxf-bundle.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${javax.ws.rs-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.dblock.waffle.wso2</groupId>
+                <artifactId>waffle-jna</artifactId>
+                <version>${waffle-jna.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -846,6 +873,9 @@
         <carbon.kernel.version>4.4.2</carbon.kernel.version>
         <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
+	
+
+	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
         <carbon.commons.version>4.4.8</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
@@ -872,6 +902,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
         <commons.logging.version>1.1.1</commons.logging.version>
+        <commons-codec.version>1.4.0.wso2v1</commons-codec.version>
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
@@ -906,6 +937,8 @@
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
         <orbit.version.jettison>1.3.4.wso2v1</orbit.version.jettison>
         <emma.version>2.1.5320</emma.version>
+        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <waffle-jna.version>1.6.wso2v2</waffle-jna.version>
 
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
@@ -942,6 +975,8 @@
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <google.guava.version>16.0.1</google.guava.version>
+
+        <carbon.metrics.version>1.1.0</carbon.metrics.version>
 
     </properties>
 

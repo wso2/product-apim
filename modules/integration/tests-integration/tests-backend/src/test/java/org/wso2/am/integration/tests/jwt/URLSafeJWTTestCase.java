@@ -52,26 +52,26 @@ import java.util.Map;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class JWTTestCase extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class URLSafeJWTTestCase
+        extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient;
-    private static final Log log = LogFactory.getLog(JWTTestCase.class);
+    private static final Log log = LogFactory.getLog(URLSafeJWTTestCase.class);
 
     private String publisherURLHttp;
     private String storeURLHttp;
     private WireMonitorServer server;
     private int hostPort = 9988;
 
-    private String apiName = "JWTTokenTestAPI";
-    private String apiContext = "tokenTest";
+    private String apiName = "URLSafeJWTTokenTestAPI";
+    private String apiContext = "urlSafeTokenTest";
     private String tags = "token, jwt";
     private String wireMonitorURL = "";
-    private String description = "This is test API create by API manager integration test";
+    private String description = "This is test API created by API manager integration test";
     private String providerName = "admin";
     private String apiVersion = "1.0.0";
-    private String applicationName = "APILifeCycleTestAPI-application";
+    private String applicationName = "URLSafeJWTTest-application";
     private String apiTier = "Gold";
 
     @BeforeClass(alwaysRun = true)
@@ -83,15 +83,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         //enable JWT token generation
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfigurationWithoutRestart(
-                new File(getAMResourceLocation() + File.separator + "configFiles/tokenTest/" + "api-manager.xml"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(
+                getAMResourceLocation() + File.separator + "configFiles/tokenTest/urlSafeTokenTest/"
+                        + "api-manager.xml"));
 
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator +
-                                                               "configFiles/tokenTest/" + "log4j.properties"));
+                "configFiles/tokenTest/urlSafeTokenTest/" + "log4j.properties"));
 
-
-        userManagementClient = new UserManagementClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(),
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getContextUser().getUserName(),
                 keyManagerContext.getContextTenant().getContextUser().getPassword());
 
@@ -106,7 +105,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath(
                 "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest" +
-                File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+                        File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @AfterClass(alwaysRun = true)
@@ -116,13 +115,13 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     }
 
     private void addAPI(String apiName, String apiVersion, String apiContext, String description, String endpointURL,
-                        String tags, String providerName)
+            String tags, String providerName)
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException {
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         APIRequest apiRequest = new APIRequest(apiName, apiContext, new URL(endpointURL));
         apiRequest.setTags(tags);
@@ -133,43 +132,40 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, providerName,
-                                                                              APILifeCycleState.PUBLISHED);
+                APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, admin user claims", enabled = true)
+    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, admin user claims", enabled = true)
     public void testEnableJWTAndClaims() throws Exception {
 
-        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
-                new RemoteUserStoreManagerServiceClient(
-                        keyManagerContext.getContextUrls().getBackEndUrl(),
-                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                        keyManagerContext.getContextTenant().getContextUser().getPassword());
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         String username = keyManagerContext.getContextTenant().getContextUser().getUserName();
         String profile = "default";
 
-        remoteUserStoreManagerServiceClient.setUserClaimValue(
-                username, "http://wso2.org/claims/givenname",
-                "first name", profile);
+        remoteUserStoreManagerServiceClient
+                .setUserClaimValue(username, "http://wso2.org/claims/givenname", "first name", profile);
 
-        remoteUserStoreManagerServiceClient.setUserClaimValue(
-                username, "http://wso2.org/claims/lastname",
-                "last name", profile);
+        remoteUserStoreManagerServiceClient
+                .setUserClaimValue(username, "http://wso2.org/claims/lastname", "last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
 
-        addAPI(apiName, apiVersion, apiContext,description,wireMonitorURL,tags,providerName);
+        addAPI(apiName, apiVersion, apiContext, description, wireMonitorURL, tags, providerName);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                                 storeContext.getContextTenant().getContextUser().getPassword());
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                                                                          storeContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -178,15 +174,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "tokenTest/1.0.0";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "urlSafeTokenTest/1.0.0";
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
         //check the jwt header
-        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(serverMessage);
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedURLSafeJWTHeader(serverMessage);
 
-        if(decodedJWTHeaderString != null) {
+        if (decodedJWTHeaderString != null) {
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
@@ -194,7 +190,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         }
 
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -225,12 +221,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
      * an invalidated cache and hence failed. In carbon 4.2 products cache invalidation timeout is not configurable
      * and is hardcoded to 15 mins. So the test case will take approximately 15mins to complete and it will delay the
      * product build unnecessarily, hence the test case is disabled.
-     *
      */
     @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
-                   InterruptedException {
+            InterruptedException {
 
         String applicationName = "JWTTokenCacheTestApp";
         String apiName = "JWTTokenCacheTestAPI";
@@ -246,11 +241,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                                 storeContext.getContextTenant().getContextUser().getPassword());
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                                                                          storeContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -274,8 +269,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         //Second attempt to invoke the API.
         httpResponse = HttpRequestUtil.doGet(url, headers);
         assertEquals("GET request failed for " + url +
-                     ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
-                     httpResponse.getResponseCode());
+                        ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
+                httpResponse.getResponseCode());
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject) throws JSONException {
@@ -287,14 +282,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                   claim.contains("APILifeCycleTestAPI-application"));
+                claim.contains("URLSafeJWTTest-application"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
-        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/tokenTest" + "/"
-                                                                                     + jsonObject.getString("http://wso2.org/claims/version")));
+        assertTrue("JWT claim apicontext invalid. Received " + claim,
+                claim.contains("/urlSafeTokenTest" + "/" + jsonObject.getString("http://wso2.org/claims/version")));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
         assertTrue("JWT claim version invalid. Received " + claim, claim.contains("1.0.0"));
@@ -313,10 +308,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/role");
         assertTrue("JWT claim role invalid. Received " + claim,
-                   claim.contains("admin") && claim.contains("Internal/subscriber") && claim.contains("Internal/everyone"));
+                claim.contains("admin") && claim.contains("Internal/subscriber") && claim
+                        .contains("Internal/everyone"));
     }
 
-    @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, specific user claims", enabled = true)
+    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true)
     public void testSpecificUserJWTClaims() throws Exception {
 
         server.setFinished(false);
@@ -326,27 +322,23 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String password = "password@123";
         String accessToken;
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, password,
-                                         new String[]{"Internal/subscriber"}, null);
+        if ((userManagementClient != null) && !userManagementClient
+                .userNameExists("Internal/subscriber", subscriberUser)) {
+            userManagementClient.addUser(subscriberUser, password, new String[] { "Internal/subscriber" }, null);
         }
 
-        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
-                new RemoteUserStoreManagerServiceClient(
-                        keyManagerContext.getContextUrls().getBackEndUrl(),
-                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                        keyManagerContext.getContextTenant().getContextUser().getPassword());
+        RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         String profile = "default";
 
-        remoteUserStoreManagerServiceClient.setUserClaimValue(
-                subscriberUser, "http://wso2.org/claims/givenname",
-                "subscriberUser name", profile);
+        remoteUserStoreManagerServiceClient
+                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/givenname", "subscriberUser name", profile);
 
-        remoteUserStoreManagerServiceClient.setUserClaimValue(
-                subscriberUser, "http://wso2.org/claims/lastname",
-                "subscriberUser name", profile);
+        remoteUserStoreManagerServiceClient
+                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/lastname", "subscriberUser name", profile);
 
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
@@ -356,8 +348,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.login(subscriberUser, password);
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                                                                          providerName);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, providerName);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -366,14 +357,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "tokenTest/1.0.0/";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "urlSafeTokenTest/1.0.0/";
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
         Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"), "JWT assertion not in the header");
 
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -388,15 +379,14 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                   claim.contains("APILifeCycleTestAPI-application"));
-        
+                claim.contains("URLSafeJWTTest-application"));
+
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
 
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Enabling JWT Token generation, tenant user claims", enabled = false)
+    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, tenant user claims", enabled = false)
     public void testTenantUserJWTClaims() throws Exception {
 
         server.setFinished(false);
@@ -418,23 +408,22 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(apiVersion);
-        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products" +
-                           "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
+        apiRequest.setWsdl("https://svn.wso2.org/repos/wso2/carbon/platform/trunk/products"
+                + "/bps/modules/samples/product/src/main/resources/bpel/2.0/MyRoleMexTestProcess/echo.wsdl");
         apiRequest.setVisibility("public");
 
         apiRequest.setProvider(provider);
         apiPublisherRestClient.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, provider,
-                                                                              APILifeCycleState.PUBLISHED);
+                APILifeCycleState.PUBLISHED);
         apiPublisherRestClient.changeAPILifeCycleStatus(updateRequest);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(tenantUser, password);
 
         apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                                                                          provider);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, provider);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -443,11 +432,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "t/wso2.com/tokenTest/1.0.0/";
+        String url = gatewayUrlsWrk.getWebAppURLNhttp() + "t/wso2.com/urlSafeTokenTest/1.0.0/";
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
 
         JSONObject jsonObject = new JSONObject(decodedJWTString);
 
@@ -460,11 +449,12 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("admin@wso2.com"));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
-        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/t/wso2.com/tokenTest"));
+        assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/t/wso2.com/urlSafeTokenTest"));
 
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, provider, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
         apiPublisherRestClient.deleteAPI(apiName, apiVersion, provider);
 
     }
+
 }

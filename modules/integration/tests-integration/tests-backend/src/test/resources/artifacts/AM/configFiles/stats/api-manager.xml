@@ -107,12 +107,6 @@
 	 -->
 	<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.JWTGenerator</TokenGeneratorImpl>
 
-        <!--
-            This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
-        Token generation the implementation is provided in URLSafeJWTGenerator
-        -->
-    <!--<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.URLSafeJWTGenerator</TokenGeneratorImpl>-->
-
 	<!--
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
@@ -142,8 +136,7 @@
 		<!-- Environments can be of different types. Allowed values are 'hybrid', 'production' and 'sandbox'.
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
-		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
-		<!-- api-console element specifies whether the environment should be listed in API Console or not -->
+		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
                 <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
@@ -193,6 +186,20 @@
         Google Analytics publisher in API gateway.
     -->
     <APIUsageTracking>
+
+        <Enabled>true</Enabled>
+
+        <BAMServerURL>{tcp://localhost:7614/}</BAMServerURL>
+
+        <!--
+            Administrator username to login to the remote BAM server.
+        -->
+        <BAMUsername>admin</BAMUsername>
+
+        <!--
+            Administrator password to login to the remote BAM server.
+        -->
+        <BAMPassword>admin</BAMPassword>
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
@@ -314,25 +321,6 @@
             <Scope>openid</Scope>
         </ScopeWhitelist-->
 
-        <RESTAPIScopes>
-            <Scope>
-                <Name>API_PUBLISHER_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_SUBSCRIBER_SCOPE</Name>
-                <Roles>subscriber</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_CREATOR_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_ADMINISTRATIVE_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-        </RESTAPIScopes>
-
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
@@ -389,20 +377,6 @@
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
-
-	<!--
-            Server URL of the API Store.
-        -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
-        <!--
-            Admin username for API Store.
-        -->
-        <Username>${admin.username}</Username>
-
-        <!--
-            Admin password for API Store.
-        -->
-        <Password>${admin.password}</Password>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
@@ -522,6 +496,17 @@
 
     </StartupAPIPublisher>
 
+
+
+    <!--
+	When an API is invoked, a list of handlers get engaged to its execution flow. This
+	property defines the position of the Extension Handler.
+	Supported values: top, bottom
+	Defaults to: bottom
+    -->
+    <!--ExtensionHandlerPosition>top|bottom</ExtensionHandlerPosition-->
+
+
     <!--Configuration to enable/disable sending CORS headers in the Gateway response
         and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
@@ -534,7 +519,7 @@
 	<Access-Control-Allow-Origin>*</Access-Control-Allow-Origin>
 
 	<!--Configure Access-Control-Allow-Methods-->
-	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,PATCH,OPTIONS</Access-Control-Allow-Methods>
+	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,OPTIONS</Access-Control-Allow-Methods>
 
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
@@ -544,10 +529,4 @@
  	You can enable this and set preferable Logger name. 
    -->
    <!--VelocityLogger>VELOCITY</VelocityLogger-->
-
-    <!-- For APIM implemented Statistic client for DAS REST API -->
-    <StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatisticClientProvider>
-    <!-- For APIM implemented Statistic client for RDBMS -->
-    <!--StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRdbmsClientImpl</StatisticClientProvider-->
-
 </APIManager>
