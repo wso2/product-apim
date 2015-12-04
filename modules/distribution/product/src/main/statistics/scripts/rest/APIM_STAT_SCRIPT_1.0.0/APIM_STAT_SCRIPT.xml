@@ -33,7 +33,7 @@
   );
 
   insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
-  COALESCE(consumerKey,''),
+  COALESCE(consumerKey,'-'),
   userId,context,
   max(requestTime) as max_request_time,
   sum(request) as total_request_count,
@@ -138,7 +138,7 @@
   );
 
   insert into table API_Resource_USAGE_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),
+  api,version,apiPublisher,COALESCE(consumerKey,'-'),
   resourcePath,context,method,sum(request) as total_request_count,hostName,
 
   substring(cast(first(requestTime)/1000 as timestamp),0,4),
@@ -226,7 +226,7 @@
   );
 
   insert into table API_FAULT_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),context,
+  api,version,apiPublisher,COALESCE(consumerKey,'-'),context,
   count(errorMessage) as total_fault_count,
   hostName,
   substring(cast(first(requestTime)/1000 as timestamp),0,4),
@@ -287,6 +287,22 @@
   substring(cast(requestTime/1000 as timestamp),0,4),
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
+
+
+  create temporary table APILastAccessSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_LAST_ACCESS_TIME_SUMMARY");
+
+  CREATE TEMPORARY TABLE API_LAST_ACCESS_TIME_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_LAST_ACCESS_TIME_SUMMARY",
+  schema "tenantDomain string -i,
+  apiPublisher string -i,
+  api string -i,
+  version string -i,
+  userId string -i,
+  context string -i,
+  max_request_time long -i",
+  primaryKeys "tenantDomain,apiPublisher,api"
+  );
+
+  insert into table API_LAST_ACCESS_TIME_SUMMARY_FINAL select tenantDomain, apiPublisher, api, version, userId, context, requestTime from APIRequestData order by requestTime ASC;
 
 
 
