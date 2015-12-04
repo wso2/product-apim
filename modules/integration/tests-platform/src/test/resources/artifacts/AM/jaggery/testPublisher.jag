@@ -10,7 +10,7 @@ print("==");
 //print("==");
 print(publisherHostObj.validateRoles('admin', 'admin'));
 print("==");
-print(publisherHostObj.isURLValid("https","https://www.google.com"));
+print(publisherHostObj.isURLValid("https","https://www.google.com","admin","HostObjectTestAPI","1.0.0"));
 print("==");
 print(publisherHostObj.getAPIsByProvider("admin"));
 print("==");
