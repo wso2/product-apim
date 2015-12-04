@@ -108,6 +108,17 @@ CREATE TABLE IF NOT EXISTS `API_THROTTLED_OUT_SUMMARY` (
   `success_request_count` int(11) DEFAULT NULL,
   `throttleout_count` int(11) DEFAULT NULL,
   PRIMARY KEY (`api`,`api_version`,`context`,`apiPublisher`,`applicationName`,`tenantDomain`,`year`,`month`,`day`,`time`)
-); 
+);
+
+CREATE TABLE IF NOT EXISTS `API_LAST_ACCESS_TIME_SUMMARY` (
+  `tenantDomain` varchar(100) NOT NULL DEFAULT '',
+  `apiPublisher` varchar(100) NOT NULL DEFAULT '',
+  `api` varchar(100) NOT NULL DEFAULT '',
+  `version` varchar(100) DEFAULT NULL,
+  `userId` varchar(100) DEFAULT NULL,
+  `context` varchar(100) DEFAULT NULL,
+  `max_request_time` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`tenantDomain`,`apiPublisher`,`api`)
+);
 
 
