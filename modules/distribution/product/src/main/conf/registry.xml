@@ -234,7 +234,7 @@
     <!-- This defines index configuration which is used in meta data search feature of the registry -->
     <indexingConfiguration>
         <startingDelayInSeconds>60</startingDelayInSeconds>
-        <indexingFrequencyInSeconds>2</indexingFrequencyInSeconds>
+        <indexingFrequencyInSeconds>3</indexingFrequencyInSeconds>
         <!--number of resources submit for given indexing thread -->
         <batchSize>50</batchSize>
         <!--number of worker threads for indexing -->
