@@ -216,11 +216,15 @@
         #end
         </send>
         #if($destinationBasedStatsEnabled)
+<filter source="get-property('isStatEnabled')" regex="true">
+<then>
 <bam>
 <serverProfile name="$!profileName">
     <streamConfig name="$!streamName" version="$!streamVersion"/>
 </serverProfile>
 </bam>
+</then>
+</filter>
         #end
         #end
 
