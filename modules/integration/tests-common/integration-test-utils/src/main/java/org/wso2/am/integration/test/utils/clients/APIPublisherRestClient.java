@@ -378,16 +378,15 @@ public class APIPublisherRestClient {
      * @return HttpResponse -  Response of the getAPI request
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Check for valid endpoint fails.
      */
-    public HttpResponse checkValidEndpoint(String type, String endpointUrl)
-            throws APIManagerIntegrationTestException {
+    public HttpResponse checkValidEndpoint(String type, String endpointUrl, String providerName, String apiName,
+            String apiVersion) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
-                    new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
-                    "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl, requestHeaders);
+            return HttpRequestUtil.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
+                    "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl + "&providerName=" + providerName
+                            + "&apiName=" + apiName + "&apiVersion=" + apiVersion, requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Check for valid endpoint fails for " +
-                    endpointUrl, e);
+            throw new APIManagerIntegrationTestException("Check for valid endpoint fails for " + endpointUrl, e);
         }
     }
 
