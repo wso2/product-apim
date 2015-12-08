@@ -542,9 +542,9 @@
         <!-- Metrics related fileset -->
         <fileSet>
             <directory>
-                ../p2-profile/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/
             </directory>
-            <outputDirectory>${project.artifactId}-${project.version}/dbscripts/metrics</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/metrics</outputDirectory>
             <includes>
                 <include>**/*.sql</include>
             </includes>

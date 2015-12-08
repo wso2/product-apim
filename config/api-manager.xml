@@ -117,6 +117,9 @@
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
 	<!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
+
+        <!-- Provide the claims Cache expiry in seconds -->
+        <!--APIMClaimCacheExpiry>900</APIMClaimCacheExpiry-->
     </APIConsumerAuthentication>
 
     <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
@@ -273,7 +276,8 @@
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
-
+        <!-- Expiry time for the apim key mgt validation info cache -->
+        <!--APIMKeyCacheExpiry>900</APIMKeyCacheExpiry-->
         <!--
         Configurations related to enable thrift support for key-management related communication.
         If you want to switch back to Web Service Client, change the value of "KeyValidatorClientType" to "WSClient".

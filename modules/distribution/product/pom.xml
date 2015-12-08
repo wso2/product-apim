@@ -307,6 +307,11 @@
 				    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
 				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>	
 			        </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler)</token>
+                                    <value>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake</value>
+                                </replacement>
 			        <replacement>
 				    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
 				    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
