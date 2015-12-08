@@ -82,22 +82,22 @@ public final class RESTAPITestConstants {
     public static final String CONSUMER_KEY = "consumerKey";
 
     //text to represent consumer secret
-    public static final String CONSUMER_SECRET= "consumerSecret";
+    public static final String CONSUMER_SECRET = "consumerSecret";
 
     //oauth message body
-    public static final String OAUTH_MESSAGE_BODY= "grant_type=password&username=admin&password=admin&scope=";
+    public static final String OAUTH_MESSAGE_BODY = "grant_type=password&username=admin&password=admin&scope=";
 
     //text to represent access token
-    public static final String ACCESS_TOKEN_TEXT="access_token";
+    public static final String ACCESS_TOKEN_TEXT = "access_token";
 
     //basic Auth Header
-    public static final String BASIC_AUTH_HEADER="admin:admin";
+    public static final String BASIC_AUTH_HEADER = "admin:admin";
 
     //client-registration link
-    public static final String CLIENT_REGISTRATION_URL= "client-registration/v1/register";
+    public static final String CLIENT_REGISTRATION_URL = "client-registration/v1/register";
 
     //token endpoint suffix
-    public static final String TOKEN_ENDPOINT_SUFFIX= "token";
+    public static final String TOKEN_ENDPOINT_SUFFIX = "token";
 
     //text to represent content type
     public static final String CONTENT_TYPE = "Content-Type";
@@ -107,5 +107,14 @@ public final class RESTAPITestConstants {
 
     //text to represent client secret
     public static final String CLIENT_SECRET = "clientSecret";
+
+    //text to represent preserve-list element
+    public static final String PRESERVE_LIST = "preserve-list";
+
+    //text to represent preserved attribute-name element
+    public static final String PRESERVED_ATTRIBUTE_NAME = "attribute-name";
+
+    //text to represent response-location element
+    public static final String RESPONSE_LOCATION = "response-location";
 
 }

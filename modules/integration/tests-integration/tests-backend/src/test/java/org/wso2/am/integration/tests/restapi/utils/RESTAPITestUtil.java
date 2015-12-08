@@ -57,6 +57,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
+
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -190,14 +191,15 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
                         (method, resourceUrl, queryParameters, requestHeaders, requestPayload, cookie);
                 String outputText = ((ResponseImpl) responseOfHttpCall).readEntity(String.class);
 
-                if(!configObject.isNull("preserve-list")){
-                    JSONArray preserveListArray = configObject.getJSONArray("preserve-list");
-                    if(preserveListArray!=null && preserveListArray.length()>0){
+                if (!configObject.isNull(RESTAPITestConstants.PRESERVE_LIST)) {
+                    JSONArray preserveListArray = configObject.getJSONArray(RESTAPITestConstants.PRESERVE_LIST);
+                    if (preserveListArray != null && preserveListArray.length() > 0) {
                         for (int j = 0; j < preserveListArray.length(); j++) {
-                            String parameterName = preserveListArray.getJSONObject(j).getString("attribute-name");
+                            String parameterName = preserveListArray.getJSONObject(j).
+                                    getString(RESTAPITestConstants.PRESERVED_ATTRIBUTE_NAME);
                             String parameterValue = new JSONObject(outputText).get(preserveListArray.getJSONObject(j).
-                                    getString("response-location")).toString();
-                            preservedAttributes.put(parameterName,parameterValue);
+                                    getString(RESTAPITestConstants.RESPONSE_LOCATION)).toString();
+                            preservedAttributes.put(parameterName, parameterValue);
                         }
                     }
                 }
@@ -210,12 +212,10 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
             }
 
         } catch (APIManagerIntegrationTestException integrationTestException) {
-            //todo review this
             log.error("Error occurred in sending request to the REST API.", integrationTestException);
             assertTrue(false);
 
         } catch (JSONException e) {
-            //todo review this
             log.error("Error occurred in parsing the data in JSON file.", e);
             assertTrue(false);
         }

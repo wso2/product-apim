@@ -28,12 +28,12 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
+
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 
 
 public class DataDrivenTestUtils {
-
 
 
     private void setKeysForRestClient() {
@@ -45,23 +45,23 @@ public class DataDrivenTestUtils {
 
 
     public Response sendRequestToRESTAPI(String method, String resourceUrl, Map<String, String> queryParameters,
-                           Map<String, String> requestHeaders, String requestPayload, String cookie) {
+                                         Map<String, String> requestHeaders, String requestPayload, String cookie) {
 
         Response response = null;
 
         if (RESTAPITestConstants.GET_METHOD.equalsIgnoreCase(method)) {
-             response = geneticRestRequestGet(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+            response = geneticRestRequestGet(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
                     queryParameters, requestHeaders, cookie);
         } else if (RESTAPITestConstants.POST_METHOD.equalsIgnoreCase(method)) {
-             response = geneticRestRequestPost(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+            response = geneticRestRequestPost(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
                     RESTAPITestConstants.APPLICATION_JSON_CONTENT, requestPayload, queryParameters, requestHeaders,
                     cookie);
         } else if (RESTAPITestConstants.PUT_METHOD.equalsIgnoreCase(method)) {
-             response = geneticRestRequestPut(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+            response = geneticRestRequestPut(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
                     RESTAPITestConstants.APPLICATION_JSON_CONTENT, requestPayload, queryParameters, requestHeaders,
                     cookie);
         } else if (RESTAPITestConstants.DELETE_METHOD.equalsIgnoreCase(method)) {
-             response = geneticRestRequestDelete(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+            response = geneticRestRequestDelete(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
                     queryParameters, requestHeaders, cookie);
         }
         return response;
