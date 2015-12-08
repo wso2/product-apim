@@ -15,16 +15,4 @@
       <value>
          <![CDATA[<GrantTypeValidatorImplClass>org.wso2.carbon.identity.oauth.common.NTLMAuthenticationValidator</GrantTypeValidatorImplClass>]]></value>
    </add>
-   <!-- Add the application_token grant type config element -->
-   <add>
-      <inside>//s:Server/s:OAuth/s:SupportedGrantTypes</inside>
-      <value>
-         <![CDATA[
-            <SupportedGrantType>
-               <GrantTypeName>application_token</GrantTypeName>
-               <GrantTypeHandlerImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantHandler</GrantTypeHandlerImplClass>
-               <GrantTypeValidatorImplClass>org.wso2.carbon.apimgt.keymgt.handlers.ApplicationTokenGrantValidator</GrantTypeValidatorImplClass>
-           </SupportedGrantType>
-            ]]></value>
-   </add>
 </processor>
