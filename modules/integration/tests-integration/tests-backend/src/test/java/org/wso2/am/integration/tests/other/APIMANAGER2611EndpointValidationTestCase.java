@@ -26,9 +26,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.net.URL;
 
 public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBaseTest {
 
@@ -57,10 +60,23 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBas
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
 
         apiPublisherRestClient.login(user.getUserName(), user.getPassword());
+
+        String APIName = "APIMANAGER2611testAPI";
+        String APIContext = "/testEndpointValid";
         //Service which does not support HTTP HEAD
         String endPointToValidate = getGatewayURLHttp() + "oauth2/token";
+        String providerName = user.getUserName();
+        String APIVersion = "1.0.0";
 
-        HttpResponse response = apiPublisherRestClient.checkValidEndpoint("http", endPointToValidate );
+        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(endPointToValidate));
+        apiRequest.setVersion(APIVersion);
+        apiRequest.setProvider(providerName);
+
+        //Adding the API to the publisher
+        apiPublisherRestClient.addAPI(apiRequest);
+
+        HttpResponse response = apiPublisherRestClient
+                .checkValidEndpoint("http", endPointToValidate, providerName, APIName, APIVersion);
         int statusCode = response.getResponseCode();
         Assert.assertEquals(statusCode, HttpStatus.SC_OK, "response code mismatched");
         String responseString = response.getData();
