@@ -16,18 +16,7 @@
 *under the License.
 */
 
-package org.wso2.am.integration.tests.restapi;
-
-import org.testng.annotations.*;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.carbon.automation.engine.FrameworkConstants;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.engine.frameworkutils.TestFrameworkUtils;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.wso2.carbon.integration.common.utils.exceptions.AutomationUtilException;
+package org.wso2.am.integration.tests.restapi.utils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -38,16 +27,15 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Response;
-import java.io.File;
-
-import static org.testng.Assert.assertEquals;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 
 
 public class DataDrivenTestUtils {
+
+
+
     private void setKeysForRestClient() {
         System.setProperty("javax.net.ssl.trustStore", "/repository/resources/security/wso2carbon.jks");
         System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
@@ -55,22 +43,37 @@ public class DataDrivenTestUtils {
 
     }
 
-    public String testRestAPI(String url, String requestPayLoad, Map<String,String> header, Map<String, String> queryParams,
-                              String responsePayLoad){
-        return "test";
 
+    public Response sendRequestToRESTAPI(String method, String resourceUrl, Map<String, String> queryParameters,
+                           Map<String, String> requestHeaders, String requestPayload, String cookie) {
+
+        Response response = null;
+
+        if (RESTAPITestConstants.GET_METHOD.equalsIgnoreCase(method)) {
+             response = geneticRestRequestGet(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+                    queryParameters, requestHeaders, cookie);
+        } else if (RESTAPITestConstants.POST_METHOD.equalsIgnoreCase(method)) {
+             response = geneticRestRequestPost(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+                    RESTAPITestConstants.APPLICATION_JSON_CONTENT, requestPayload, queryParameters, requestHeaders,
+                    cookie);
+        } else if (RESTAPITestConstants.PUT_METHOD.equalsIgnoreCase(method)) {
+             response = geneticRestRequestPut(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+                    RESTAPITestConstants.APPLICATION_JSON_CONTENT, requestPayload, queryParameters, requestHeaders,
+                    cookie);
+        } else if (RESTAPITestConstants.DELETE_METHOD.equalsIgnoreCase(method)) {
+             response = geneticRestRequestDelete(resourceUrl, RESTAPITestConstants.APPLICATION_JSON_CONTENT,
+                    queryParameters, requestHeaders, cookie);
+        }
+        return response;
     }
 
 
-    public Response geneticRestRequestPost(String resourceUrl, String contentType,
-                                                 String acceptMediaType, Object postBody,
-                                                 Map<String, String> queryParamMap,
-                                                 Map<String, String> headerMap,
-                                                 String cookie) {
-        Client client = ClientBuilder.newClient();
-        WebTarget target = client.target(resourceUrl);
+    public Response geneticRestRequestPost(String resourceUrl, String contentType, String acceptMediaType,
+                                           Object postBody, Map<String, String> queryParamMap,
+                                           Map<String, String> headerMap, String cookie) {
 
-        // Resource resource = client.resource(resourceUrl);
+        Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
+        WebTarget target = client.target(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
         Response response = null;
         Form form = new Form();
@@ -85,7 +88,7 @@ public class DataDrivenTestUtils {
             }
             response = builder.post(Entity.entity(form, MediaType.MULTIPART_FORM_DATA));
         } else if (contentType == MediaType.APPLICATION_JSON) {
-            response = builder.post(Entity.entity(Entity.json(postBody), MediaType.APPLICATION_JSON));
+            response = builder.post(Entity.json(postBody));
         } else if (contentType == MediaType.APPLICATION_XML) {
             response = builder.post(Entity.entity(Entity.xml(postBody), MediaType.APPLICATION_XML));
         }
@@ -93,28 +96,24 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-    public Response geneticRestRequestGet(String resourceUrl,
-                                                String acceptMediaType,
-                                                Map<String, String> queryParamMap,
-                                                Map<String, String> headerMap,
-                                                String cookie) {
-        Client client = ClientBuilder.newClient();
+    public Response geneticRestRequestGet(String resourceUrl, String acceptMediaType,
+                                          Map<String, String> queryParamMap, Map<String, String> headerMap,
+                                          String cookie) {
+        Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
-
-        // Resource resource = client.resource(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
         Response response = null;
         response = builder.get();
         client.close();
-        return  response;
+        return response;
     }
 
-    public Response geneticRestRequestPut(String resourceUrl, String contentType,
-                                                String acceptMediaType, Object postBody,
-                                                Map<String, String> queryParamMap,
-                                                Map<String, String> headerMap,
-                                                String cookie) {
-        Client client = ClientBuilder.newClient();
+
+    public Response geneticRestRequestPut(String resourceUrl, String contentType, String acceptMediaType,
+                                          Object postBody, Map<String, String> queryParamMap,
+                                          Map<String, String> headerMap, String cookie) {
+
+        Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
 
@@ -131,7 +130,7 @@ public class DataDrivenTestUtils {
             }
             response = builder.put(Entity.entity(form, MediaType.MULTIPART_FORM_DATA));
         } else if (contentType == MediaType.APPLICATION_JSON) {
-            response = builder.put(Entity.entity(Entity.json(postBody), MediaType.APPLICATION_JSON));
+            response = builder.put(Entity.json(postBody));
         } else if (contentType == MediaType.APPLICATION_XML) {
             response = builder.put(Entity.entity(Entity.xml(postBody), MediaType.APPLICATION_XML));
         }
@@ -140,12 +139,11 @@ public class DataDrivenTestUtils {
     }
 
 
-    public Response geneticRestRequestDelete(String resourceUrl,
-                                                   String acceptMediaType,
-                                                   Map<String, String> queryParamMap,
-                                                   Map<String, String> headerMap,
-                                                   String cookie) {
-        Client client = ClientBuilder.newClient();
+    public Response geneticRestRequestDelete(String resourceUrl, String acceptMediaType,
+                                             Map<String, String> queryParamMap, Map<String, String> headerMap,
+                                             String cookie) {
+
+        Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
         Response response = null;
@@ -155,17 +153,17 @@ public class DataDrivenTestUtils {
     }
 
     public Response geneticRestRequestHead(String resourceUrl,
-                                                 String acceptMediaType,
-                                                 Map<String, String> queryParamMap,
-                                                 Map<String, String> headerMap,
-                                                 String cookie) {
-        Client client = ClientBuilder.newClient();
+                                           String acceptMediaType,
+                                           Map<String, String> queryParamMap,
+                                           Map<String, String> headerMap,
+                                           String cookie) {
+        Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
         Response response = null;
         response = builder.head();
         client.close();
-        return  response;
+        return response;
     }
 
     private Invocation.Builder getBuilder(String acceptMediaType, Map<String, String> queryParamMap,
@@ -186,10 +184,8 @@ public class DataDrivenTestUtils {
         if (cookie != null) {
             builder.cookie(new Cookie(cookie.split("=")[0], cookie.split("=")[1]));
         }
-        builder.accept(acceptMediaType);
         return builder;
     }
 
 
 }
-
