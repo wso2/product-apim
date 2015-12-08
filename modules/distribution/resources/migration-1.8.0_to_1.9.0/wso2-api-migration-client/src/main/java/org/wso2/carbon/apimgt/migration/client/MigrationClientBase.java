@@ -39,9 +39,8 @@ public abstract class MigrationClientBase {
     private static final Log log = LogFactory.getLog(MigrationClientBase.class);
     private List<Tenant> tenantsArray;
 
-    public MigrationClientBase(String tenantArguments, String blackListTenantArguments) throws UserStoreException {
-        TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
-
+    public MigrationClientBase(String tenantArguments, String blackListTenantArguments, TenantManager tenantManager)
+                                                                                            throws UserStoreException {
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
             tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 

@@ -52,6 +52,7 @@ import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.registry.core.session.UserRegistry;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -90,8 +91,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     private static final Log log = LogFactory.getLog(MigrateFrom18to19.class);
     private RegistryService registryService;
 
-    public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments, RegistryService registryService) throws UserStoreException {
-        super(tenantArguments, blackListTenantArguments);
+    public MigrateFrom18to19(String tenantArguments, String blackListTenantArguments,
+                             RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+        super(tenantArguments, blackListTenantArguments, tenantManager);
         this.registryService = registryService;
     }
 
@@ -99,11 +101,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * This method is used to migrate database tables
      * This executes the database queries according to the user's db type and alters the tables
      *
-     * @param migrateVersion version to be migrated
      * @throws SQLException
      */
     @Override
-    public void databaseMigration(String migrateVersion) throws SQLException {
+    public void databaseMigration() throws SQLException {
         String scriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
         updateAPIManangerDatabase(scriptPath);
 

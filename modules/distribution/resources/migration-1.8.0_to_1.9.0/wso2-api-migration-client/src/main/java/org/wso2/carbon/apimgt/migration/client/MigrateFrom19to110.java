@@ -36,6 +36,7 @@ import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.*;
@@ -52,13 +53,14 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
     private RegistryService registryService;
 
-    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments, RegistryService registryService) throws UserStoreException {
-        super(tenantArguments, blackListTenantArguments);
+    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments,
+                              RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+        super(tenantArguments, blackListTenantArguments, tenantManager);
         this.registryService = registryService;
     }
 
     @Override
-    public void databaseMigration(String migrateVersion) throws APIMigrationException, SQLException {
+    public void databaseMigration() throws APIMigrationException, SQLException {
         /*There are no changes in APIM tables, but there are changes in IDN tables, So use the database migration
         /method defined in IS Migration Client */
 
@@ -82,6 +84,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         workflowExtensionsMigration();
 
         updateTiers();
+
+        migrateLifeCycles();
     }
 
     @Override

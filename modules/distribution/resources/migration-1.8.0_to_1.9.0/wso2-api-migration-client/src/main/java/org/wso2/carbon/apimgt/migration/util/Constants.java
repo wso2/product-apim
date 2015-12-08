@@ -18,13 +18,16 @@ package org.wso2.carbon.apimgt.migration.util;
 
 public class Constants {
 
-    public static final String VERSION_1_9 = "1.9";
-    public static final String VERSION_1_10 = "1.10";
+    public static final String VERSION_1_8 = "1.8.0";
+    public static final String VERSION_1_9 = "1.9.0";
+    public static final String VERSION_1_9_1 = "1.9.1";
+    public static final String VERSION_1_10 = "1.10.0";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String ALTER = "alter";
     public static final String DELIMITER = ";";
     public static final String API = "api";
+    public static final String APIM_COMPONENT = "apim";
 
     public static final String GOVERNANCE_COMPONENT_REGISTRY_LOCATION = "/repository/components/org.wso2.carbon" +
             ".governance";
@@ -32,7 +35,9 @@ public class Constants {
     public static final String DATA_SOURCE_NAME = "DataSourceName";
 
     // Migration client argument property names
-    public static final String ARG_MIGRATE_TO_VERSION = "migrateToVersion";
+    public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
+    public static final String ARG_MIGRATE_FROM_VERSION = "migrateFromVersion";
+    public static final String ARG_COMPONENT = "component";
     public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
     public static final String ARG_MIGRATE_ALL = "migrate";

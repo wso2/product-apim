@@ -22,16 +22,15 @@ import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.MigrateFrom18to19;
-import org.wso2.carbon.apimgt.migration.client.MigrateFrom19to110;
-import org.wso2.carbon.apimgt.migration.client.MigrationClient;
+import org.wso2.carbon.apimgt.migration.client.MigrationClientFactory;
+import org.wso2.carbon.apimgt.migration.client.MigrationExecutor;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryServiceImpl;
-import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.core.tenant.TenantManager;
 
 import java.sql.SQLException;
 
@@ -71,7 +70,9 @@ public class APIMMigrationServiceComponent {
             log.error("Error occurred while initializing DB Util ", e);
         }
 
-        String migrateToVersion = System.getProperty(Constants.ARG_MIGRATE_TO_VERSION);
+        String migrateFromVersion = System.getProperty(Constants.ARG_MIGRATE_FROM_VERSION);
+        String specificVersion = System.getProperty(Constants.ARG_RUN_SPECIFIC_VERSION);
+        String component = System.getProperty(Constants.ARG_COMPONENT);
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
         String blackListTenants = System.getProperty(Constants.ARG_MIGRATE_BLACKLIST_TENANTS);
         boolean migrateAll = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_ALL));
@@ -82,71 +83,24 @@ public class APIMMigrationServiceComponent {
         boolean isStatMigration = Boolean.parseBoolean(System.getProperty(Constants.ARG_MIGRATE_STATS));
 
         try {
-            if (migrateToVersion != null) {
-                if (Constants.VERSION_1_9.equalsIgnoreCase(migrateToVersion)) {
-                    log.info("Starting WSO2 API Manager migration");
+            RegistryServiceImpl registryService = new RegistryServiceImpl();
+            TenantManager tenantManager = ServiceHolder.getRealmService().getTenantManager();
 
-                    // Create a thread and wait till the APIManager DBUtils is initialized
-                    RegistryServiceImpl registryService = new RegistryServiceImpl();
+            MigrationClientFactory.initFactory(tenants, blackListTenants, registryService, tenantManager);
 
-                    MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants, registryService);
+            MigrationExecutor.Arguments arguments = new MigrationExecutor.Arguments();
+            arguments.setMigrateFromVersion(migrateFromVersion);
+            arguments.setSpecificVersion(specificVersion);
+            arguments.setComponent(component);
+            arguments.setMigrateAll(migrateAll);
+            arguments.setCleanupNeeded(cleanupNeeded);
+            arguments.setDBMigration(isDBMigration);
+            arguments.setRegistryMigration(isRegistryMigration);
+            arguments.setFileSystemMigration(isFileSystemMigration);
+            arguments.setStatMigration(isStatMigration);
 
-                    //Default operation will migrate all three types of resources
-                    if (migrateAll) {
-                        log.info("Migrating All WSO2 API Manager resources");
-                        migrateFrom18to19.databaseMigration(migrateToVersion);
-                        migrateFrom18to19.registryResourceMigration();
-                        migrateFrom18to19.fileSystemMigration();
-                    } else {
-                        //Only performs database migration
-                        if (isDBMigration) {
-                            log.info("Migrating WSO2 API Manager databases");
-                            migrateFrom18to19.databaseMigration(migrateToVersion);
-                        }
-                        //Only performs registry migration
-                        if (isRegistryMigration) {
-                            log.info("Migrating WSO2 API Manager registry resources");
-                            migrateFrom18to19.registryResourceMigration();
-                        }
-                        //Only performs file system migration
-                        if (isFileSystemMigration) {
-                            log.info("Migrating WSO2 API Manager file system resources");
-                            migrateFrom18to19.fileSystemMigration();
-                        }
-                    }
-                    //Old resource cleanup
-                    if (cleanupNeeded) {
-                        migrateFrom18to19.cleanOldResources();
-                        log.info("Old resources cleaned up.");
-                    }
+            MigrationExecutor.execute(arguments);
 
-                    if (isStatMigration) {
-                        StatDBUtil.initialize();
-                        migrateFrom18to19.statsMigration();
-                        log.info("Stat migration completed");
-                    }
-
-                    log.info("Ending WSO2 API Manager migration");
-                } else if (Constants.VERSION_1_10.equalsIgnoreCase(migrateToVersion)) {
-                    //Do the logic for 1.10 Migration
-                    if (log.isDebugEnabled()) {
-                        log.debug("Migrating to the version " + migrateToVersion);
-                    }
-                    RegistryServiceImpl registryService = new RegistryServiceImpl();
-
-                    MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants, registryService);
-
-                    migrateFrom19to110.databaseMigration(migrateToVersion);
-
-                } else {
-                    log.error("The given migrate version " + migrateToVersion + " is not supported. Please check the version and try again.");
-
-                }
-            } else { // Migration version not specified
-                if (migrateAll || cleanupNeeded || isDBMigration || isRegistryMigration || isFileSystemMigration) {
-                    log.error("The property " + Constants.ARG_MIGRATE_TO_VERSION + " has not been specified . Please specify the property and try again.");
-                }
-            }
         } catch (APIMigrationException e) {
             log.error("API Management  exception occurred while migrating", e);
         } catch (UserStoreException e) {
