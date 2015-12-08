@@ -1,0 +1,86 @@
+{
+    "testCase": [
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "GET",
+                    "url": "api/am/publisher/v1//tiers/api",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": {
+                        "status-code": "200"
+                    },
+                    "response-payload": ""
+                }
+            }
+            ,
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "api/am/publisher/v1//tiers/api",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
+                    \"displayName\": \"NewTier\",\n   \"requestCount\": 20,\n   \"description\": \"Allows 20 request(s) per minute.\",\n
+                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "response-headers": {
+                        "status-code": "201"
+                    },
+                    "response-payload": ""
+                }
+            }
+            ,
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "PUT",
+                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "query-parameters": {
+                        "tierName": "NewTier",
+                        "Content-Type": "application/json"
+                    },
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n   \"displayName\": \"NewTier\",\n   \"requestCount\": 20,\n   \"description\": \"Updated Description\",\n   \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}\n",
+                    "response-headers": {
+                        "status-code": "200"
+                    },
+                    "response-payload": ""
+                }
+            }
+            ,
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "DELETE",
+                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "query-parameters": {
+                        "tierName": "NewTier"
+                    },
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": {
+                        "status-code": "200"
+                    },
+                    "response-payload": ""
+                }
+            }
+    ]
+}
