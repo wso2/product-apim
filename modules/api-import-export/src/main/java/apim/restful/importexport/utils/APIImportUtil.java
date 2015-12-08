@@ -41,7 +41,7 @@ import org.wso2.carbon.apimgt.api.FaultGatewaysException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.Documentation;
-import org.wso2.carbon.apimgt.api.model.Icon;
+import org.wso2.carbon.apimgt.api.model.ResourceFile;
 import org.wso2.carbon.apimgt.api.model.Tier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
@@ -297,9 +297,9 @@ public final class APIImportUtil {
 
                         String mimeType = URLConnection.guessContentTypeFromName(imageFile.getName());
                         inputStream = new FileInputStream(imageFile.getAbsolutePath());
-                        Icon apiImage = new Icon(inputStream, mimeType);
+                        ResourceFile apiImage = new ResourceFile(inputStream, mimeType);
                         String thumbPath = APIUtil.getIconPath(importedApi.getId());
-                        String thumbnailUrl = provider.addIcon(thumbPath, apiImage);
+                        String thumbnailUrl = provider.addResourceFile(thumbPath, apiImage);
 
                         importedApi.setThumbnailUrl(APIUtil.prependTenantPrefix(thumbnailUrl,
                                 importedApi.getId().getProviderName()));
@@ -359,7 +359,7 @@ public final class APIImportUtil {
                             equalsIgnoreCase(doc.getSourceType().toString())) {
                         inputStream = new FileInputStream(pathToArchive + doc.getFilePath());
                         String docExtension = FilenameUtils.getExtension(pathToArchive + doc.getFilePath());
-                        Icon apiDocument = new Icon(inputStream, docExtension);
+                        ResourceFile apiDocument = new ResourceFile(inputStream, docExtension);
                         String visibleRolesList = importedApi.getVisibleRoles();
                         String[] visibleRoles = new String[0];
 
@@ -370,7 +370,7 @@ public final class APIImportUtil {
                         String filePathDoc = APIUtil.getDocumentationFilePath(apiIdentifier, doc.getName());
                         APIUtil.setResourcePermissions(importedApi.getId().getProviderName(),
                                 importedApi.getVisibility(), visibleRoles, filePathDoc);
-                        doc.setFilePath(provider.addIcon(filePathDoc, apiDocument));
+                        doc.setFilePath(provider.addResourceFile(filePathDoc, apiDocument));
                         provider.addDocumentation(apiIdentifier, doc);
                     }
                 }
