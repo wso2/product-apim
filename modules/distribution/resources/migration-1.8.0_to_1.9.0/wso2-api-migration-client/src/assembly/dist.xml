@@ -19,8 +19,8 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}/src/main/resources/19to110Migration/sql-scripts/idn</directory>
-            <outputDirectory>migration-scripts/19-110-migration/idn</outputDirectory>
+            <directory>${project.basedir}/src/main/resources/19to110Migration/sql-scripts</directory>
+            <outputDirectory>migration-scripts/19-110-migration</outputDirectory>
             <includes>
                 <include>*.sql</include>
             </includes>

@@ -25,34 +25,42 @@ import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 
 public interface RegistryService {
-    GenericArtifact[] getGenericAPIArtifacts(Tenant tenant);
+    void startTenantFlow(Tenant tenant);
 
-    void updateGenericAPIArtifacts(Tenant tenant, GenericArtifact[] artifacts);
+    void endTenantFlow();
+
+    void rollbackGovernanceRegistryTransaction() throws UserStoreException, RegistryException;
+
+    void rollbackConfigRegistryTransaction() throws UserStoreException, RegistryException;
+
+    GenericArtifact[] getGenericAPIArtifacts();
+
+    void updateGenericAPIArtifacts(GenericArtifact[] artifacts);
 
     API getAPI(GenericArtifact artifact);
 
-    boolean isConfigRegistryResourceExists(Tenant tenant, final String registryLocation)
+    boolean isConfigRegistryResourceExists(final String registryLocation)
             throws UserStoreException, RegistryException;
 
-    boolean isGovernanceRegistryResourceExists(Tenant tenant, final String registryLocation)
+    boolean isGovernanceRegistryResourceExists(final String registryLocation)
             throws UserStoreException, RegistryException;
 
-    Object getConfigRegistryResource(Tenant tenant, final String registryLocation)
+    Object getConfigRegistryResource(final String registryLocation)
             throws UserStoreException, RegistryException;
 
-    Object getGovernanceRegistryResource(Tenant tenant, final String registryLocation)
+    Object getGovernanceRegistryResource(final String registryLocation)
             throws UserStoreException, RegistryException;
 
-    void addConfigRegistryResource(Tenant tenant, final String registryLocation, final String content, final String mediaType)
+    void addConfigRegistryResource(final String registryLocation, final String content, final String mediaType)
             throws UserStoreException, RegistryException;
 
-    void addGovernanceRegistryResource(Tenant tenant, final String registryLocation, final String content, final String mediaType)
+    void addGovernanceRegistryResource(final String registryLocation, final String content, final String mediaType)
             throws UserStoreException, RegistryException;
 
-    void updateConfigRegistryResource(Tenant tenant, final String registryLocation, final String content)
+    void updateConfigRegistryResource(final String registryLocation, final String content)
             throws UserStoreException, RegistryException;
 
-    void updateGovernanceRegistryResource(Tenant tenant, final String registryLocation, final String content)
+    void updateGovernanceRegistryResource(final String registryLocation, final String content)
             throws UserStoreException, RegistryException;
 }
 

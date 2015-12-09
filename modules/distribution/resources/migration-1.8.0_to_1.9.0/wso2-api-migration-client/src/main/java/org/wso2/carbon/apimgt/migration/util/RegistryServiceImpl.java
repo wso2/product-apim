@@ -34,21 +34,45 @@ import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 
-import java.nio.charset.Charset;
 
 public class RegistryServiceImpl implements RegistryService {
     private static final Log log = LogFactory.getLog(RegistryServiceImpl.class);
+    private Tenant tenant = null;
 
     @Override
-    public GenericArtifact[] getGenericAPIArtifacts(Tenant tenant) {
+    public void startTenantFlow(Tenant tenant) {
+        if (this.tenant != null) {
+            throw new IllegalStateException("Previous tenant flow has not been ended, " +
+                                                "'RegistryService.endTenantFlow()' needs to be called");
+        }
+        PrivilegedCarbonContext.startTenantFlow();
+        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        this.tenant = tenant;
+    }
+
+    @Override
+    public void endTenantFlow() {
+        PrivilegedCarbonContext.endTenantFlow();
+        this.tenant = null;
+    }
+
+    @Override
+    public void rollbackGovernanceRegistryTransaction() throws UserStoreException, RegistryException {
+        getGovernanceRegistry().rollbackTransaction();
+    }
+
+    @Override
+    public void rollbackConfigRegistryTransaction() throws UserStoreException, RegistryException {
+        getConfigRegistry().rollbackTransaction();
+    }
+
+    @Override
+    public GenericArtifact[] getGenericAPIArtifacts() {
         log.debug("Calling getGenericAPIArtifacts");
         GenericArtifact[] artifacts = null;
 
         try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-
-            Registry registry = getGovernanceRegistry(tenant);
+            Registry registry = getGovernanceRegistry();
             GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
 
             if (artifactManager != null) {
@@ -65,22 +89,17 @@ public class RegistryServiceImpl implements RegistryService {
             log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
         } catch (APIManagementException e) {
             log.error("Failed to initialize GenericArtifactManager", e);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
         }
 
         return artifacts;
     }
 
     @Override
-    public void updateGenericAPIArtifacts(Tenant tenant, GenericArtifact[] artifacts) {
+    public void updateGenericAPIArtifacts(GenericArtifact[] artifacts) {
         log.debug("Calling updateGenericAPIArtifacts");
 
         try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-
-            Registry registry = getGovernanceRegistry(tenant);
+            Registry registry = getGovernanceRegistry();
             GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
 
             for (GenericArtifact artifact : artifacts) {
@@ -93,9 +112,6 @@ public class RegistryServiceImpl implements RegistryService {
             log.error("Error occurred when updating GenericArtifacts in registry", e);
         } catch (APIManagementException e) {
             log.error("Failed to initialize GenericArtifactManager", e);
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
         }
     }
 
@@ -114,155 +130,92 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     @Override
-    public boolean isConfigRegistryResourceExists(Tenant tenant, String registryLocation) throws UserStoreException, RegistryException {
-        boolean isExists = false;
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-
-            Registry registry = getConfigRegistry(tenant);
-            isExists = registry.resourceExists(registryLocation);
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
-        return isExists;
+    public boolean isConfigRegistryResourceExists(String registryLocation) throws UserStoreException, RegistryException {
+        return getConfigRegistry().resourceExists(registryLocation);
     }
 
     @Override
-    public boolean isGovernanceRegistryResourceExists(Tenant tenant, String registryLocation) throws UserStoreException, RegistryException {
-        boolean isExists = false;
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-
-            Registry registry = getGovernanceRegistry(tenant);
-            isExists = registry.resourceExists(registryLocation);
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
-        return isExists;
+    public boolean isGovernanceRegistryResourceExists(String registryLocation) throws UserStoreException, RegistryException {
+        return getGovernanceRegistry().resourceExists(registryLocation);
     }
 
     @Override
-    public Object getConfigRegistryResource(Tenant tenant, final String registryLocation) throws UserStoreException, RegistryException {
+    public Object getConfigRegistryResource(final String registryLocation) throws UserStoreException, RegistryException {
         Object content = null;
 
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getConfigRegistry();
 
-            Registry registry = getConfigRegistry(tenant);
-
-            if (registry.resourceExists(registryLocation)) {
-                Resource resource = registry.get(registryLocation);
-                content = resource.getContent();
-            }
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
+        if (registry.resourceExists(registryLocation)) {
+            Resource resource = registry.get(registryLocation);
+            content = resource.getContent();
         }
 
         return content;
     }
 
     @Override
-    public Object getGovernanceRegistryResource(Tenant tenant, final String registryLocation) throws UserStoreException, RegistryException {
+    public Object getGovernanceRegistryResource(final String registryLocation) throws UserStoreException, RegistryException {
         Object content = null;
 
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getGovernanceRegistry();
 
-            Registry registry = getGovernanceRegistry(tenant);
-
-            if (registry.resourceExists(registryLocation)) {
-                Resource resource = registry.get(registryLocation);
-                content = resource.getContent();
-            }
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
+        if (registry.resourceExists(registryLocation)) {
+            Resource resource = registry.get(registryLocation);
+            content = resource.getContent();
         }
 
         return content;
     }
 
     @Override
-    public void addConfigRegistryResource(Tenant tenant, final String registryLocation, final String content,
+    public void addConfigRegistryResource(final String registryLocation, final String content,
                                           final String mediaType) throws UserStoreException, RegistryException {
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getConfigRegistry();
 
-            Registry registry = getConfigRegistry(tenant);
-
-            Resource resource = registry.newResource();
-            resource.setContent(content);
-            resource.setMediaType(mediaType);
-            registry.put(content, resource);
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
+        Resource resource = registry.newResource();
+        resource.setContent(content);
+        resource.setMediaType(mediaType);
+        registry.put(content, resource);
     }
 
     @Override
-    public void addGovernanceRegistryResource(Tenant tenant, final String registryLocation, final String content,
+    public void addGovernanceRegistryResource(final String registryLocation, final String content,
                                               final String mediaType) throws UserStoreException, RegistryException {
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getGovernanceRegistry();
 
-            Registry registry = getGovernanceRegistry(tenant);
-
-            Resource resource = registry.newResource();
-            resource.setContent(content);
-            resource.setMediaType(mediaType);
-            registry.put(content, resource);
-        }
-        finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
+        Resource resource = registry.newResource();
+        resource.setContent(content);
+        resource.setMediaType(mediaType);
+        registry.put(content, resource);
     }
 
     @Override
-    public void updateConfigRegistryResource(Tenant tenant, final String registryLocation, final String content)
+    public void updateConfigRegistryResource(final String registryLocation, final String content)
                                                                         throws UserStoreException, RegistryException {
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getConfigRegistry();
 
-            Registry registry = getConfigRegistry(tenant);
-
-            Resource resource = registry.get(registryLocation);
-            resource.setContent(content);
-            registry.put(registryLocation, resource);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
+        Resource resource = registry.get(registryLocation);
+        resource.setContent(content);
+        registry.put(registryLocation, resource);
     }
 
 
     @Override
-    public void updateGovernanceRegistryResource(Tenant tenant, final String registryLocation, final String content)
+    public void updateGovernanceRegistryResource(final String registryLocation, final String content)
                                                                         throws UserStoreException, RegistryException {
-        try {
-            PrivilegedCarbonContext.startTenantFlow();
-            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        Registry registry = getGovernanceRegistry();
 
-            Registry registry = getGovernanceRegistry(tenant);
-
-            Resource resource = registry.get(registryLocation);
-            resource.setContent(content);
-            registry.put(registryLocation, resource);
-        } finally {
-            PrivilegedCarbonContext.endTenantFlow();
-        }
+        Resource resource = registry.get(registryLocation);
+        resource.setContent(content);
+        registry.put(registryLocation, resource);
     }
 
-    private Registry getConfigRegistry(Tenant tenant) throws UserStoreException, RegistryException {
+    private Registry getConfigRegistry() throws UserStoreException, RegistryException {
+        if (tenant == null) {
+            throw new IllegalStateException("The tenant flow has not been started, " +
+                        "'RegistryService.startTenantFlow(Tenant tenant)' needs to be called");
+        }
+
         String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).
                 getRealmConfiguration().getAdminUserName();
         log.debug("Tenant admin username : " + adminName);
@@ -271,7 +224,12 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
 
-    private Registry getGovernanceRegistry(Tenant tenant) throws UserStoreException, RegistryException {
+    private Registry getGovernanceRegistry() throws UserStoreException, RegistryException {
+        if (tenant == null) {
+            throw new IllegalStateException("The tenant flow has not been started, " +
+                    "'RegistryService.startTenantFlow(Tenant tenant)' needs to be called");
+        }
+
         String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).
                 getRealmConfiguration().getAdminUserName();
         log.debug("Tenant admin username : " + adminName);
