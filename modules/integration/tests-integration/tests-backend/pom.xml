@@ -433,7 +433,6 @@ under the License.
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <version>3.1.4</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>
