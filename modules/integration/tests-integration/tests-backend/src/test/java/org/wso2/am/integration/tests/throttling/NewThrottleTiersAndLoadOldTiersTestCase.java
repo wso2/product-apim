@@ -92,7 +92,7 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
     private final String RES_TIER_TEST_API_CONTEXT = "test_RESTier_api_context";
     private final String RES_TIER_TEST_APP = "test_RESTier_app_name";
 
-    private final String Old_TIER_TEST_API = "old_Tier_api";
+    private final String OLD_TIER_TEST_API = "old_Tier_api";
     private final String OLD_TIER_TEST_API_CONTEXT = "old_Tier_api_context";
 
     private String apiEndPointUrl;
@@ -322,18 +322,18 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, newTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, newTiersXML);
 
-        APICreationRequestBean apiRequestBean = new APICreationRequestBean(Old_TIER_TEST_API, OLD_TIER_TEST_API_CONTEXT,
+        APICreationRequestBean apiRequestBean = new APICreationRequestBean(OLD_TIER_TEST_API, OLD_TIER_TEST_API_CONTEXT,
                 API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiRequestBean.setTags(API_TAGS);
         apiRequestBean.setDescription(API_DESCRIPTION);
 
         //create and publish a api
-        After_TierTEST_ID = new APIIdentifier(providerName, Old_TIER_TEST_API, API_VERSION_1_0_0);
+        After_TierTEST_ID = new APIIdentifier(providerName, OLD_TIER_TEST_API, API_VERSION_1_0_0);
         createAndPublishAPI(After_TierTEST_ID, apiRequestBean, apiPublisherClientUser, false);
 
         //check the availability of old throttle tiers
         HttpResponse tierManagePageHttpResponse = apiPublisherClientUser
-                .getAPIManagePage(Old_TIER_TEST_API, providerName, API_VERSION_1_0_0);
+                .getAPIManagePage(OLD_TIER_TEST_API, providerName, API_VERSION_1_0_0);
         assertEquals(tierManagePageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke to get Tier Permission Page");
         assertTrue(tierManagePageHttpResponse.getData().contains(TIER_MANAGE_PAGE_TIER_GOLD),
