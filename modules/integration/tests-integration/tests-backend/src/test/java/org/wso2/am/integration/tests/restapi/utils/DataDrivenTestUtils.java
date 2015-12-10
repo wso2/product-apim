@@ -32,7 +32,9 @@ import java.util.Map;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 
-
+/**
+ * This class is used to send respective requests based on the request
+ */
 public class DataDrivenTestUtils {
 
 
@@ -43,7 +45,17 @@ public class DataDrivenTestUtils {
 
     }
 
-
+    /**
+     * This method is used to send the request to the REST API based on its type
+     *
+     * @param method http method to be used
+     * @param resourceUrl url of the resource
+     * @param queryParameters map containing query parameters
+     * @param requestHeaders map containing request headers
+     * @param requestPayload request payload/body
+     * @param cookie cookie string if any
+     * @return response of the relevant request
+     */
     public Response sendRequestToRESTAPI(String method, String resourceUrl, Map<String, String> queryParameters,
                                          Map<String, String> requestHeaders, String requestPayload, String cookie) {
 
@@ -67,7 +79,18 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-
+    /**
+     *This method is used to send the POST request
+     *
+     * @param resourceUrl url of the resource
+     * @param contentType content type
+     * @param acceptMediaType accepted media type
+     * @param postBody payload
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @return response of the POST request
+     */
     public Response geneticRestRequestPost(String resourceUrl, String contentType, String acceptMediaType,
                                            Object postBody, Map<String, String> queryParamMap,
                                            Map<String, String> headerMap, String cookie) {
@@ -96,9 +119,18 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-    public Response geneticRestRequestGet(String resourceUrl, String acceptMediaType,
-                                          Map<String, String> queryParamMap, Map<String, String> headerMap,
-                                          String cookie) {
+    /**
+     *This method is used to send the GET request
+     *
+     * @param resourceUrl url of the resource
+     * @param acceptMediaType accepted media type
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @return response of the GET request
+     */
+    public Response geneticRestRequestGet(String resourceUrl, String acceptMediaType, Map<String, String> queryParamMap,
+                                          Map<String, String> headerMap, String cookie) {
         Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
         Invocation.Builder builder = getBuilder(acceptMediaType, queryParamMap, headerMap, cookie, target);
@@ -108,7 +140,18 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-
+    /**
+     *This method is used to send the PUT request
+     *
+     * @param resourceUrl url of the resource
+     * @param contentType content type
+     * @param acceptMediaType accepted media type
+     * @param postBody payload
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @return response of the PUT request
+     */
     public Response geneticRestRequestPut(String resourceUrl, String contentType, String acceptMediaType,
                                           Object postBody, Map<String, String> queryParamMap,
                                           Map<String, String> headerMap, String cookie) {
@@ -138,7 +181,16 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-
+    /**
+     *This method is used to send the DELETE request
+     *
+     * @param resourceUrl url of the resource
+     * @param acceptMediaType accepted media type
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @return response of the DELETE request
+     */
     public Response geneticRestRequestDelete(String resourceUrl, String acceptMediaType,
                                              Map<String, String> queryParamMap, Map<String, String> headerMap,
                                              String cookie) {
@@ -152,10 +204,18 @@ public class DataDrivenTestUtils {
         return response;
     }
 
-    public Response geneticRestRequestHead(String resourceUrl,
-                                           String acceptMediaType,
-                                           Map<String, String> queryParamMap,
-                                           Map<String, String> headerMap,
+    /**
+     *This method is used to send the HEAD request
+     *
+     * @param resourceUrl url of the resource
+     * @param acceptMediaType accepted media type
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @return response of the HEAD request
+     */
+    public Response geneticRestRequestHead(String resourceUrl, String acceptMediaType,
+                                           Map<String, String> queryParamMap, Map<String, String> headerMap,
                                            String cookie) {
         Client client = ClientBuilder.newClient().register(JacksonJsonProvider.class);
         WebTarget target = client.target(resourceUrl);
@@ -166,10 +226,20 @@ public class DataDrivenTestUtils {
         return response;
     }
 
+    /**
+     * This method builds a builder based on client request invocation
+     *
+     * @param acceptMediaType accepted media type
+     * @param queryParamMap map containing query parameters
+     * @param headerMap map containing headers
+     * @param cookie cookie string if any
+     * @param target web target resource
+     * @return a builder based on client request
+     */
     private Invocation.Builder getBuilder(String acceptMediaType, Map<String, String> queryParamMap,
                                           Map<String, String> headerMap, String cookie,
                                           WebTarget target) {
-        // Resource resource = client.resource(resourceUrl);
+
         if (!(queryParamMap.size() <= 0)) {
             for (Map.Entry<String, String> queryParamEntry : queryParamMap.entrySet()) {
                 target.queryParam(queryParamEntry.getKey(), queryParamEntry.getValue());
@@ -186,6 +256,5 @@ public class DataDrivenTestUtils {
         }
         return builder;
     }
-
 
 }

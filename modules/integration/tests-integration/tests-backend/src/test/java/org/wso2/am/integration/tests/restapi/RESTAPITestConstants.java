@@ -19,10 +19,16 @@
 package org.wso2.am.integration.tests.restapi;
 
 
+import java.io.File;
+
 /**
  * This class represents the constants that are used for APIManager REST API implementation
  */
 public final class RESTAPITestConstants {
+
+    //substring of the path to the data file
+    public static final String PATH_SUBSTRING = File.separator + "src" + File.separator + "test" + File.separator +
+            "resources" + File.separator + "rest-api-test-data" + File.separator;
 
     //application json content type
     public static final String APPLICATION_JSON_CONTENT = "application/json";

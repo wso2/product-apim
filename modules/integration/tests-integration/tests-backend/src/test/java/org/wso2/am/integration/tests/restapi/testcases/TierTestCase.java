@@ -25,10 +25,15 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.am.integration.tests.restapi.utils.RESTAPITestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.testng.Assert.assertTrue;
 
@@ -55,13 +60,14 @@ public class TierTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Tier handling test case")
     public void testTiers() {
 
-        //todo path?????
+        String gatewayURL = getGatewayURLNhttp();
+        String keyManagerURL = getKeyManagerURLHttp();
 
-
-
-
-
-        boolean testSuccessStatus = new RESTAPITestUtil().testRestAPI("/Applications/APIManagerGit/product-apim/modules/integration/tests-integration/tests-backend/src/test/resources/rest-api-test-data/TierTestCase.txt");
+        //file name of the JSON data file related to : Tier handling test case
+        String dataFileName = "TierTestCase.txt";
+        String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
+                RESTAPITestConstants.PATH_SUBSTRING + dataFileName;
+        boolean testSuccessStatus = new RESTAPITestUtil().testRestAPI(dataFilePath, gatewayURL, keyManagerURL);
         assertTrue(testSuccessStatus);
     }
 

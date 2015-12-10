@@ -16,7 +16,6 @@
 *under the License.
 */
 
-
 package org.wso2.am.integration.tests.restapi.utils;
 
 import org.apache.commons.codec.binary.Base64;
@@ -29,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.tests.restapi.RESTAPITestConstants;
 import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -50,13 +48,23 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 
-
-public class RESTAPITestUtil extends APIMIntegrationBaseTest {
+/**
+ * This class is used as a util class to test the REST API.
+ */
+public class RESTAPITestUtil {
 
     private static final Log log = LogFactory.getLog(RESTAPITestUtil.class);
     private DataDrivenTestUtils dataDrivenTestUtils = new DataDrivenTestUtils();
 
-    public boolean testRestAPI(String configFilePath) {
+    /**
+     * This method is used to test a given scenario using the REST API
+     *
+     * @param configFilePath location of the data file
+     * @param gatewayURL     gateway URL
+     * @param keyMangerURL   key manager URL
+     * @return true if all the scenarios in the current test is successful, otherwise false
+     */
+    public boolean testRestAPI(String configFilePath, String gatewayURL, String keyMangerURL) {
 
         //this is the boolean which indicates the success or failure of the current test
         boolean isTestSuccess = false;
@@ -64,7 +72,7 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
         try {
 
             String configData = getConfigurations(configFilePath);
-            Map<String, String> dataMap = registerOAuthApplication();
+            Map<String, String> dataMap = registerOAuthApplication(keyMangerURL);
             String accessToken;
             JSONObject testScenario = new JSONObject(configData);
             JSONArray array = testScenario.getJSONArray(RESTAPITestConstants.JSON_ROOT_ELEMENT);
@@ -87,7 +95,7 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
                     break;
                 }
 
-                accessToken = generateOAuthAccessToken(scope, dataMap);
+                accessToken = generateOAuthAccessToken(scope, dataMap, gatewayURL);
 
                 if (accessToken == null) {
                     //if the access token is null, that means it has failed to generate OAuth access token
@@ -99,9 +107,8 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
 
                 JSONObject dataConfigurationObject = configObject.getJSONObject(RESTAPITestConstants.DATA_SECTION);
                 String method = dataConfigurationObject.get(RESTAPITestConstants.METHOD_ELEMENT).toString();
-                String resourceUrl = getKeyManagerURLHttp() +
+                String resourceUrl = keyMangerURL +
                         dataConfigurationObject.get(RESTAPITestConstants.URL_ELEMENT).toString();
-
                 Pattern parameterPattern = Pattern.compile("\\{(.*?)\\}");
                 Matcher matcher = parameterPattern.matcher(resourceUrl);
 
@@ -188,6 +195,13 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
                 //the test is successful only if actualStatusCode is same as expectedStatusCode
                 if (actualStatusCode == expectedStatusCode) {
                     isTestSuccess = true;
+                } else {
+                    isTestSuccess = false;
+                }
+
+                //if the current test fails no need to run the rest of the scenario, so break and return false
+                if (!isTestSuccess) {
+                    break;
                 }
             }
 
@@ -204,7 +218,13 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
         return isTestSuccess;
     }
 
-
+    /**
+     * This method reads the data/configurations from the given file
+     *
+     * @param fileLocation location of the data file
+     * @return a string that contains the content in the file
+     * @throws APIManagerIntegrationTestException if it fails to read the data file
+     */
     private String getConfigurations(String fileLocation) throws APIManagerIntegrationTestException {
 
         BufferedReader bufferedReader = null;
@@ -232,15 +252,23 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
         }
     }
 
-
-    private String generateOAuthAccessToken(String scope, Map<String, String> dataMap)
+    /**
+     * This method generates OAuth access token to invoke the REST API
+     *
+     * @param scope      scope required to create the token
+     * @param dataMap    map which contains the consumer key and secret
+     * @param gatewayUrl url of the gateway
+     * @return generating access token
+     * @throws APIManagerIntegrationTestException if an error occurs while generating access token
+     */
+    private String generateOAuthAccessToken(String scope, Map<String, String> dataMap, String gatewayUrl)
             throws APIManagerIntegrationTestException {
 
         try {
             String consumeKey = dataMap.get(RESTAPITestConstants.CONSUMER_KEY);
             String consumerSecret = dataMap.get(RESTAPITestConstants.CONSUMER_SECRET);
             String messageBody = RESTAPITestConstants.OAUTH_MESSAGE_BODY + scope;
-            URL tokenEndpointURL = new URL(getGatewayURLNhttp() + RESTAPITestConstants.TOKEN_ENDPOINT_SUFFIX);
+            URL tokenEndpointURL = new URL(gatewayUrl + RESTAPITestConstants.TOKEN_ENDPOINT_SUFFIX);
             HashMap<String, String> accessKeyMap = new HashMap<String, String>();
 
             //concat consumeKey and consumerSecret and make the authenticationHeader to get access token
@@ -276,10 +304,17 @@ public class RESTAPITestUtil extends APIMIntegrationBaseTest {
         return null;
     }
 
+    /**
+     * This method is used to register OAuth Application
+     *
+     * @param keyMangerUrl url of the key manger
+     * @return map which contains the consumer key and secret
+     * @throws APIManagerIntegrationTestException if it fails to register OAuth Application
+     */
+    private Map<String, String> registerOAuthApplication(String keyMangerUrl)
+            throws APIManagerIntegrationTestException {
 
-    private Map<String, String> registerOAuthApplication() throws APIManagerIntegrationTestException {
-
-        String dcrEndpointURL = getKeyManagerURLHttp() + RESTAPITestConstants.CLIENT_REGISTRATION_URL;
+        String dcrEndpointURL = keyMangerUrl + RESTAPITestConstants.CLIENT_REGISTRATION_URL;
 
         //use a random name for client to avoid conflicts in application(s)
         String randomClientName = RandomStringUtils.randomAlphabetic(5);
