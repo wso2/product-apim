@@ -49,4 +49,37 @@ public class APIMIntegrationConstants {
     public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
 
+    public static final class APPLICATION_TIER {
+        public static final String UNLIMITED = "Unlimited";
+        public static final String LARGE = "Large";
+        public static final String MEDIUM = "Medium";
+        public static final String SMALL = "Small";
+
+        public static final int LARGE_LIMIT = 20;
+        public static final int MEDIUM_LIMIT = 5;
+        public static final int SMALL_LIMIT = 1;
+    }
+
+    public static class API_TIER {
+        public static final String UNLIMITED = "Unlimited";
+        public static final String GOLD = "Gold";
+        public static final String SILVER = "Silver";
+        public static final String BRONZE = "Bronze";
+
+        public static final int GOLD_LIMIT = 20;
+        public static final int SILVER_LIMIT = 5;
+        public static final int BRONZE_LIMIT = 1;
+
+    }
+
+    public static class RESOURCE_TIER {
+        public static final String UNLIMITED = "Unlimited";
+        public static final String ULTIMATE = "Ultimate";
+        public static final String PLUS = "Plus";
+        public static final String BASIC = "Basic";
+
+        public static final int ULTIMATE_LIMIT = 20;
+        public static final int PLUS_LIMIT = 5;
+        public static final int BASIC_LIMIT = 1;
+    }
 }

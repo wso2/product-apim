@@ -1054,4 +1054,22 @@ public class APIStoreRestClient {
         }
         return response;
     }
+
+    /**
+     * Get application page
+     *
+     * @return - http response of get application
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - if fails to get application page
+     */
+    public HttpResponse getApplicationPage() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil
+                    .doPost(new URL(backendURL + "store/site/pages/applications.jag"), "", requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get application page", e);
+
+        }
+    }
 }
