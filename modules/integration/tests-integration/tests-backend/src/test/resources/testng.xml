@@ -25,6 +25,8 @@
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <classes>
+            <!--Always run this NewThrottleTiersAndLoadOldTiersTestCase first, because remaining test are depend on it-->
+            <class name="org.wso2.am.integration.tests.throttling.NewThrottleTiersAndLoadOldTiersTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
