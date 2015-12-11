@@ -27,7 +27,7 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
 insert into table THROTTLED_OUT_FINAL_SUMMARY select 
 api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,
 day,week,time,COALESCE(success_request_count,0),COALESCE(throttleout_count,0),
-COALESCE(timestamp(time),0), facet3(api,apiPublisher,applicationName),
+COALESCE(timestamp(time),0),concat( api,concat(",",concat(apiPublisher,concat(",",applicationName)) )),
 applicationName from APIThrottleSummaryData; 
 
 
@@ -74,11 +74,11 @@ applicationName from APIThrottleSummaryData;
   month,
   day,
   time,
-  facet2(consumerKey,api),
-  facet2(consumerKey,userId),
-  facet3(api,version,userId),
-  facet4(api,version,userId,apiPublisher),
-  facet4(api,version,userId,context)
+  concat(concat(consumerKey,","),api),
+  concat(concat(consumerKey,","),userId),
+  concat(concat(api,","),concat(concat(version,","),userId)),
+  concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),apiPublisher))),
+  concat(concat(api,","),concat(concat(version,","),concat(concat(userId,","),context)))
   from APIRequestSummaryData;
 
   
@@ -116,8 +116,7 @@ applicationName from APIThrottleSummaryData;
   );
 
   insert into table API_VERSION_USAGE_SUMMARY_FINAL select api,version,apiPublisher,context,total_request_count,hostName,
-  year,  month,  day,  time,  timestamp(time),
-  facet3(api,version,context)
+  year,  month,  day,  time,  timestamp(time),  concat(concat(api,","),concat(concat(version,","),context)) 
   from APIVersionUsageSummaryData; 
 
 
@@ -161,8 +160,8 @@ create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options 
   resourcePath,context,method,total_request_count,hostName,
   year,  month,  day,  time,
   timestamp(time),
-  facet4(consumerKey, api, method, resourcePath),
-  facet4(api, version, context, ,method)
+  concat(consumerKey,concat(",", concat(api, concat(",",concat(method, concat(",",resourcePath)))))),
+  concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",method))))))
   from APIResourcePathUsageSummaryData;
 
 
@@ -190,8 +189,7 @@ create temporary table APIResponseSummaryData using CarbonJDBC options (dataSour
 
   insert into table API_RESPONSE_SUMMARY_FINAL select
   api_version,  COALESCE(apiPublisher,''),  context,  serviceTime,  total_response_count,
-  hostName,  year,  month,  day,  time,  timestamp(time),
-  facet3(api_version, api_version, context)
+  hostName,  year,  month,  day,  time,  timestamp(time), concat(api_version,concat(",", concat(api_version, concat(",",context))))
   from APIResponseSummaryData;
 
 
@@ -223,9 +221,8 @@ create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource 
 
   insert into table API_FAULT_SUMMARY_FINAL select
   api,version,apiPublisher,COALESCE(consumerKey,''),context,  total_fault_count,
-  hostName,year,  month,  day,  time, timestamp(time),
-  facet2(consumerKey, api),
-  facet4(api, version, apiPublisher, context)
+  hostName,year,  month,  day,  time, timestamp(time), concat(consumerKey,concat(",",api)),
+  concat(api,concat(",", concat(version, concat(",",concat(apiPublisher, concat(",",context))))))
   from APIFaultSummaryData;
 
 
@@ -251,7 +248,7 @@ create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource 
   insert into table API_DESTINATION_SUMMARY_FINAL select
   api,version,apiPublisher, context,destination,total_request_count,hostName,
   year,  month,  day,  time, timestamp(time),
-  facet3(api, version, context, destination)
+  concat(api,concat(",", concat(version, concat(",",concat(context, concat(",",destination))))))
   from APIDestinationDataSummaryData;
 
      
