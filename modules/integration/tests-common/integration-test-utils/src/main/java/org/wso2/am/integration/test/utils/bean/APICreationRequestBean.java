@@ -122,21 +122,13 @@ public class APICreationRequestBean extends AbstractRequest {
     /**
      * constructor of the APICreationRequestBean class only with production url
      *
-     * @param apiName     - Name of the APi
-     * @param context     - API context
-     * @param version     - API version
-     * @param endpointUrl - Endpoint URL of the API
-     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
-     */
-    /**
-     * constructor of the APICreationRequestBean class only with production url
-     * @param apiName     - Name of the APi
-     * @param context     - API context
-     * @param version     - API version
-     * @param provider    - Api Provider
-     * @param apiTier     - Api Tier
+     * @param apiName       - Name of the APi
+     * @param context       - API context
+     * @param version       - API version
+     * @param provider      - Api Provider
+     * @param apiTier       - Api Tier
      * @param resourceTier- Resource Tier
-     * @param endpointUrl - Endpoint URL of the API
+     * @param endpointUrl   - Endpoint URL of the API
      * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
      */
     public APICreationRequestBean(String apiName, String context, String version, String provider,String apiTier,String resourceTier, URL endpointUrl)
