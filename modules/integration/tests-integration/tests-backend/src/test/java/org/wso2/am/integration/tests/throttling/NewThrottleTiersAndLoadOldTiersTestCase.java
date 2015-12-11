@@ -55,6 +55,12 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * Test case for New Tier groups. After the New Tier groups Old Tier groups will be replace in registory for further
+ * Test cases.
+ *
+ * Note: Always run this Test case first, because most of the test are depend on this
+ */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBaseTest {
 
@@ -181,7 +187,8 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test API Tier availability and it's throttle limit", dependsOnMethods = "testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML")
+            "wso2.am" }, description = "Test API Tier availability and it's throttle limit",
+            dependsOnMethods = "testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML")
     public void testAPITiers() throws IOException, APIManagerIntegrationTestException, XPathExpressionException {
 
         APICreationRequestBean apiRequestBean = new APICreationRequestBean(API_TIER_TEST_API, API_TIER_TEST_API_CONTEXT,
@@ -224,7 +231,8 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test Application Tier availability and it's throttle limit", dependsOnMethods = "testAPITiers")
+            "wso2.am" }, description = "Test Application Tier availability and it's throttle limit",
+            dependsOnMethods = "testAPITiers")
     public void testApplicationTiers()
             throws IOException, APIManagerIntegrationTestException, XPathExpressionException {
 
@@ -268,7 +276,8 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test Resource Tier availability and it's throttle limit", dependsOnMethods = "testApplicationTiers")
+            "wso2.am" }, description = "Test Resource Tier availability and it's throttle limit",
+            dependsOnMethods = "testApplicationTiers")
     public void testResourceTiers() throws IOException, APIManagerIntegrationTestException, XPathExpressionException {
 
         APICreationRequestBean apiRequestBean = new APICreationRequestBean(RES_TIER_TEST_API, RES_TIER_TEST_API_CONTEXT,
@@ -311,7 +320,8 @@ public class NewThrottleTiersAndLoadOldTiersTestCase extends APIMIntegrationBase
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Test availability of tiers in API Manage Page after change tiers", dependsOnMethods = "testResourceTiers")
+            "wso2.am" }, description = "Test availability of tiers in API Manage Page after change tiers",
+            dependsOnMethods = "testResourceTiers")
     public void testAvailabilityOfTiersInAPIManagePageAfterChangeTiersXML() throws Exception {
 
         //remove created apis
