@@ -77,6 +77,7 @@ public class RESTAPITestUtil {
             JSONObject testScenario = new JSONObject(configData);
             JSONArray array = testScenario.getJSONArray(RESTAPITestConstants.JSON_ROOT_ELEMENT);
             int arrayLength = array.length();
+            //this is the map to store the preserved attributes if there are any
             HashMap<String, String> preservedAttributes = new HashMap<String, String>();
 
             //go through each section of the JSON string and fetch data
@@ -94,7 +95,7 @@ public class RESTAPITestUtil {
                     //stop the rest of the iterations of the loop if it has failed to register OAuth application
                     break;
                 }
-
+                //get the access token to send the request
                 accessToken = generateOAuthAccessToken(scope, dataMap, gatewayURL);
 
                 if (accessToken == null) {
@@ -107,21 +108,26 @@ public class RESTAPITestUtil {
 
                 JSONObject dataConfigurationObject = configObject.getJSONObject(RESTAPITestConstants.DATA_SECTION);
                 String method = dataConfigurationObject.get(RESTAPITestConstants.METHOD_ELEMENT).toString();
-                String resourceUrl = keyMangerURL +
+                //take the resource URL from the data file (initial URL)
+                String resourceURL = keyMangerURL +
                         dataConfigurationObject.get(RESTAPITestConstants.URL_ELEMENT).toString();
+                //get the pattern for dynamically generated resource URLs
                 Pattern parameterPattern = Pattern.compile("\\{(.*?)\\}");
-                Matcher matcher = parameterPattern.matcher(resourceUrl);
+                Matcher matcher = parameterPattern.matcher(resourceURL);
 
+                //if a match is found, then fetch the applicable value from the preserved attribute list
                 while (matcher.find()) {
                     String parameterName = matcher.group(1);
+                    //construct the final resource URL with the  value fetched from the preserved attribute list
                     String template = "{" + parameterName + "}";
-                    resourceUrl = resourceUrl.replace(template, preservedAttributes.get(parameterName));
+                    resourceURL = resourceURL.replace(template, preservedAttributes.get(parameterName));
                 }
 
                 Map<String, String> queryParameters = new HashMap<String, String>();
                 String queryParameterText =
                         dataConfigurationObject.get(RESTAPITestConstants.QUERY_PARAMETERS).toString();
 
+                //fetch the query parameters if there are any, and put them into the query parameter map
                 if (!queryParameterText.isEmpty()) {
                     Iterator queryParamIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.QUERY_PARAMETERS).keys();
@@ -136,6 +142,7 @@ public class RESTAPITestUtil {
                 Map<String, String> requestHeaders = new HashMap<String, String>();
                 String requestHeaderText = dataConfigurationObject.get(RESTAPITestConstants.REQUEST_HEADERS).toString();
 
+                //fetch the request headers if there are any, and put them into the request header map
                 if (!requestHeaderText.isEmpty()) {
                     Iterator requestHeaderIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.REQUEST_HEADERS).keys();
@@ -157,6 +164,7 @@ public class RESTAPITestUtil {
                         dataConfigurationObject.get(RESTAPITestConstants.RESPONSE_HEADERS).toString();
                 Map<String, String> responseHeaders = new HashMap<String, String>();
 
+                //fetch the response headers if there are any, and put them into the response header map
                 if (!responseHeaderText.isEmpty()) {
                     Iterator responseHeaderIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.RESPONSE_HEADERS).keys();
@@ -172,9 +180,10 @@ public class RESTAPITestUtil {
                 String cookie = null;
 
                 Response responseOfHttpCall = dataDrivenTestUtils.sendRequestToRESTAPI
-                        (method, resourceUrl, queryParameters, requestHeaders, requestPayload, cookie);
+                        (method, resourceURL, queryParameters, requestHeaders, requestPayload, cookie);
                 String outputText = ((ResponseImpl) responseOfHttpCall).readEntity(String.class);
 
+                //put the values (to the map) that should be preserved from the response of the current request,
                 if (!configObject.isNull(RESTAPITestConstants.PRESERVE_LIST)) {
                     JSONArray preserveListArray = configObject.getJSONArray(RESTAPITestConstants.PRESERVE_LIST);
                     if (preserveListArray != null && preserveListArray.length() > 0) {
@@ -189,8 +198,8 @@ public class RESTAPITestUtil {
                 }
 
                 int actualStatusCode = responseOfHttpCall.getStatus();
-                int expectedStatusCode = dataConfigurationObject.getJSONObject(RESTAPITestConstants.RESPONSE_HEADERS).
-                        getInt(RESTAPITestConstants.STATUS_CODE);
+                int expectedStatusCode = configObject.getJSONObject(RESTAPITestConstants.ASSERT_SECTION).
+                        getJSONObject(RESTAPITestConstants.HEADER_ASSERTS).getInt(RESTAPITestConstants.STATUS_CODE);
 
                 //the test is successful only if actualStatusCode is same as expectedStatusCode
                 if (actualStatusCode == expectedStatusCode) {
