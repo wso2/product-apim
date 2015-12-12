@@ -42,10 +42,14 @@
             \"responseCaching\": \"Disabled\",\r\n   \"isDefaultVersion\": false,\r\n   \"businessInformation\":
             {\r\n      \"technicalOwner\": null,\r\n      \"technicalOwnerEmail\": null,\r\n
             \"businessOwner\": null,\r\n      \"businessOwnerEmail\": null\r\n   }\r\n}",
-            "response-headers":{
-               "status-code":"201"
-            },
+            "response-headers":"",
             "response-payload":""
+         },
+         "asserts": {
+            "header-asserts": {
+                "status-code": "201"
+            },
+            "body-asserts": ""
          },
          "preserve-list":[
             {
@@ -98,16 +102,20 @@
             \"responseCaching\": \"Disabled\",\r\n   \"isDefaultVersion\": false,\r\n   \"businessInformation\":
             {\r\n      \"technicalOwner\": null,\r\n      \"technicalOwnerEmail\": null,\r\n
             \"businessOwner\": null,\r\n      \"businessOwnerEmail\": null\r\n   }\r\n}",
-            "response-headers":{
-               "status-code":"200"
-            },
+            "response-headers":"",
             "response-payload":""
+         },
+         "asserts": {
+            "header-asserts": {
+                "status-code": "200"
+            },
+            "body-asserts": ""
          }
       }
       ,
       {
          "init":{
-            "scope":"API_CREATOR_SCOPE"
+            "scope":"API_CREATOR_PUBLISHER_SCOPE"
          },
          "data":{
             "method":"GET",
@@ -117,10 +125,14 @@
                "Authorization":"Bearer"
             },
             "request-payload":"",
-            "response-headers":{
-               "status-code":"200"
-            },
+            "response-headers":"",
             "response-payload":""
+         },
+         "asserts": {
+            "header-asserts": {
+                "status-code": "200"
+            },
+            "body-asserts": ""
          }
       }
       ,
@@ -136,10 +148,14 @@
                "Authorization":"Bearer"
             },
             "request-payload":"",
-            "response-headers":{
-               "status-code":"200"
-            },
+            "response-headers":"",
             "response-payload":""
+         },
+         "asserts": {
+            "header-asserts": {
+                "status-code": "200"
+            },
+            "body-asserts": ""
          }
       }
    ]
