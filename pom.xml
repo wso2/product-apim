@@ -52,8 +52,8 @@
         <module>modules/p2-profile</module>
         <module>/modules/distribution/product/src/main/statistics</module>
         <module>modules/distribution</module>
-        <!--<module>modules/p2-repository</module>-->
         <module>modules/integration</module>
+        <module>nested-categories</module>
     </modules>
 
     <scm>
