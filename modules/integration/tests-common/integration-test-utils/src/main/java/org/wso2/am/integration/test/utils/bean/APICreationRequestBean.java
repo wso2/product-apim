@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 
 import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
@@ -46,9 +47,9 @@ public class APICreationRequestBean extends AbstractRequest {
     private String httpChecked = "http";
     private String httpsChecked = "https";
     private String tags = "tags";
-    private String tier = "Silver";
+    private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
-    private String tiersCollection = "Gold";
+    private String tiersCollection = APIMIntegrationConstants.API_TIER.GOLD;
     private String resourceCount = "0";
     private String roles = "";
     private String wsdl = "";
@@ -168,7 +169,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         if(endpointUrl != null) {
             try {
                 this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
@@ -200,7 +202,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints = "";
 
@@ -246,7 +249,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         try{
 
             this.endpoint = new JSONObject();
@@ -287,7 +291,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints="";
         if (productionEndpoints!=null && productionEndpoints.size()>0){

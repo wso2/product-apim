@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+
 /**
  * Basic request for subscribe to API
  * action=addAPISubscription&name=apiName&version=1.0.0&provider=provider&tier=Gold&applicationName=DefaultApplication
@@ -29,7 +31,7 @@ public class SubscriptionRequest extends AbstractRequest {
     private String provider;
     private String version = "1.0.0";
     private String applicationName = "DefaultApplication";
-    private String tier = "Gold";
+    private String tier = APIMIntegrationConstants.API_TIER.GOLD;
     private int applicationId;
 
     /**

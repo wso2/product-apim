@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -72,7 +73,7 @@ import static org.testng.AssertJUnit.assertTrue;
     private String providerName = "admin";
     private String apiVersion = "1.0.0";
     private String applicationName = "URLSafeJWTTest-application";
-    private String apiTier = "Gold";
+    private String apiTier = APIMIntegrationConstants.API_TIER.GOLD;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -163,7 +164,8 @@ import static org.testng.AssertJUnit.assertTrue;
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 
-        apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
+        apiStoreRestClient
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
                 storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
@@ -233,7 +235,7 @@ import static org.testng.AssertJUnit.assertTrue;
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
         String endpointURL = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
-        String apiTier = "Gold";
+        String apiTier = APIMIntegrationConstants.API_TIER.GOLD;
         String tags = "token,jwt,cache";
         int waitingSecs = 900;
 
@@ -243,7 +245,8 @@ import static org.testng.AssertJUnit.assertTrue;
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 
-        apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
+        apiStoreRestClient
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
                 storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
@@ -285,7 +288,8 @@ import static org.testng.AssertJUnit.assertTrue;
                 claim.contains("URLSafeJWTTest-application"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
-        assertTrue("JWT claim applicationtier invalid. Received " + claim, claim.contains("Gold"));
+        assertTrue("JWT claim applicationtier invalid. Received " + claim,
+                claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim,
@@ -347,7 +351,8 @@ import static org.testng.AssertJUnit.assertTrue;
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(subscriberUser, password);
 
-        apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
+        apiStoreRestClient
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, providerName);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
@@ -422,7 +427,8 @@ import static org.testng.AssertJUnit.assertTrue;
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(tenantUser, password);
 
-        apiStoreRestClient.addApplication(applicationName, apiTier, "", "this-is-test");
+        apiStoreRestClient
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, provider);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);

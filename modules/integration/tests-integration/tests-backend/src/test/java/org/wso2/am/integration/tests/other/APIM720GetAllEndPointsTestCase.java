@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -63,7 +64,8 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
     private static final String apiVersion = "1.0.0";
     private static final String apiContext = "endpointtestapi";
     private final String tags = "document";
-    private final String tier = "Unlimited";
+    private String tier= APIMIntegrationConstants.API_TIER.UNLIMITED;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED;
     private final String description = "testApi";
     private String apiProvider;
     private static final String webApp = "jaxrs_basic";
@@ -132,7 +134,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
 
         String uri = "customers/{id}/";
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", tier, uri));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uri));
         String endpointProduction = "/services/customers/customerservice";
         String endpointSandbox="/services/customers/customerservice";
 

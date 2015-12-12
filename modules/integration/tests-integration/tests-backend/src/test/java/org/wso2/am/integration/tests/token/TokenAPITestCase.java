@@ -28,6 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -132,12 +133,13 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
 
         // Create application
-        apiStore.addApplication("TokenTestAPI-Application", "Gold", "", "this-is-test");
+        apiStore.addApplication("TokenTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+                "this-is-test");
 
         String provider = storeContext.getContextTenant().getContextUser().getUserName();
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, provider);
-        subscriptionRequest.setTier("Gold");
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         subscriptionRequest.setApplicationName("TokenTestAPI-Application");
         apiStore.subscribe(subscriptionRequest);
 

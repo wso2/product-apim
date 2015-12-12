@@ -153,7 +153,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         // create new application and subscribing
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                        storeContext.getContextTenant().getContextUser().getPassword());
-        apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
+        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
         subscriptionRequest.setApplicationName(APP_NAME);

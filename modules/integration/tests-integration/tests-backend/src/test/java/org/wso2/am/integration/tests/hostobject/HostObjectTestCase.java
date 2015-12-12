@@ -28,6 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -134,7 +135,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
             assertTrue(tags.contains(tag), "API tag data mismatched");
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
-        apiStore.addApplication("HostObjectTestAPI-Application", "Gold", "", "this-is-test");
+        apiStore.addApplication("HostObjectTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                "", "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
         subscriptionRequest.setApplicationName("HostObjectTestAPI-Application");
