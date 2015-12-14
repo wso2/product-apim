@@ -24,7 +24,7 @@
 
     <groupId>org.wso2.carbon.apimgt</groupId>
     <artifactId>api-import-export</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <description>JAX-RS API Import Export</description>
     <packaging>war</packaging>
