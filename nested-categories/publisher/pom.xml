@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.apimgt.publisher.nested.category.feature</artifactId>
     <packaging>pom</packaging>
-    <name>Publisher</name>
+    <name>API Publisher ${project.version}</name>
     <url>http://wso2.org</url>
     <description>Includes features for Publisher component.</description>
  
