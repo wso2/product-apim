@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.apimgt.gateway-manager.nested.category.feature</artifactId>
     <packaging>pom</packaging>
-    <name>Gateway Manager</name>
+    <name>API Gateway Manager ${project.version}</name>
     <url>http://wso2.org</url>
     <description>Includes features for Gateway Manager.</description>
 
