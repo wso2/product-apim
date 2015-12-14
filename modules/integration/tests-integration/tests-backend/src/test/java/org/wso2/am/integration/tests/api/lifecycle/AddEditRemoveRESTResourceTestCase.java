@@ -101,10 +101,10 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     @Test(groups = {"wso2.am"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         //Create publish and subscribe a API
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(TIER_GOLD);
+        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
@@ -157,10 +157,10 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
 
-        APIResourceBean apiResourceBeanGET =
-                new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*");
-        APIResourceBean apiResourceBeanPOST =
-                new APIResourceBean("POST", "Application & Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -203,10 +203,10 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         //apiCreationRequestBean.setVersion(API_VERSION_1_0_0);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET =
-                new APIResourceBean("GET", "Application & Application User", "Unlimited", "/customers/{id}");
-        APIResourceBean apiResourceBeanPOST =
-                new APIResourceBean("POST", "Application & Application User", "Unlimited", "/customers/name");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}");
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -261,7 +261,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information

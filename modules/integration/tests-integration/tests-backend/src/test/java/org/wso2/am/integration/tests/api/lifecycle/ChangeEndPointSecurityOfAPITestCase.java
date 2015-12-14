@@ -81,7 +81,8 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         requestHeadersGet.put("Content-Type", "text/plain");
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
     }
 
 
