@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.apimgt.store.nested.category.feature</artifactId>
     <packaging>pom</packaging>
-    <name>Store</name>
+    <name>API Store ${project.version}</name>
     <url>http://wso2.org</url>
     <description>Includes features for Store component.</description>
  

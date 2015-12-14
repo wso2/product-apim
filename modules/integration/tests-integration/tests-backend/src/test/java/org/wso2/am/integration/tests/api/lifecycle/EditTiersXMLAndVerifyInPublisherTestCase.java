@@ -53,14 +53,16 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private final String TIER_XML_REG_CONFIG_RES_LOCATION = "/_system/governance/apimgt/applicationdata/res-tiers.xml";
     private final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
     private final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
-    private final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
-    private final String TIER_MANAGE_PAGE_TIER_PLATINUM = "{ \"value\": \"Platinum\", \"text\": \"Platinum\" }";
+    private final String TIER_MANAGE_PAGE_TIER_GOLD = "value=\"Silver\"";
+    private final String TIER_MANAGE_PAGE_TIER_PLATINUM = "value=\"Platinum\"";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
     private String originalTiersXML;
+    private String originalAppTiersXML;
+    private String originalResTiersXML;
     private String newTiersXML;
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -96,6 +98,9 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
                 new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
                                                createSession(publisherContext));
         originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
+        originalAppTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_APP_LOCATION);
+        originalResTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_RES_LOCATION);
+
         newTiersXML = readFile(artifactsLocation);
     }
 
@@ -171,6 +176,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //restore the original tiers.xml content.
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, originalTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, originalAppTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, originalResTiersXML);
     }
 
 

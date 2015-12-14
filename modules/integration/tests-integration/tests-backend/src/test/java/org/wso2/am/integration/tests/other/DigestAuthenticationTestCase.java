@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.other;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -78,8 +79,8 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         apiCreationRequestBean.setEndpointAuthType("digestAuth");
         apiCreationRequestBean.setEpUsername("DigestAuth");
         apiCreationRequestBean.setEpPassword("digest123");
-        apiCreationRequestBean.setTier("Unlimited");
-        apiCreationRequestBean.setTiersCollection("Unlimited");
+        apiCreationRequestBean.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiCreationRequestBean.setProvider(providerName);
 
         //Add the API to the publisher
@@ -94,11 +95,12 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
         apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        apiStore.addApplication("DigestAuthAPP", "Unlimited", "", "Test-Digest-Auth");
+        apiStore.addApplication("DigestAuthAPP", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "Test-Digest-Auth");
 
         //Subscribe to the new application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, providerName,
-                "DigestAuthAPP", "Unlimited");
+                "DigestAuthAPP", APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiStore.subscribe(subscriptionRequest);
 
         //Generate a production token and invoke the API

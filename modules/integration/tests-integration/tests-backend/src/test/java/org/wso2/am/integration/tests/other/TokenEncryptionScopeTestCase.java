@@ -29,6 +29,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -189,8 +190,8 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             Assert.assertTrue(false);
         }
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setTiersCollection("Unlimited");
-        apiRequest.setTier("Unlimited");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         try {
             apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
@@ -221,10 +222,11 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             // For Admin user
             // create new application and subscribing
             apiStore.login(APP_DEV_USER, APP_DEV_PWD);
-            apiStore.addApplication(APP_NAME, "Unlimited", "some_url2", "NewApp");
+            apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url2",
+                    "NewApp");
             SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
             subscriptionRequest.setApplicationName(APP_NAME);
-            subscriptionRequest.setTier("Unlimited");
+            subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
             apiStore.subscribe(subscriptionRequest);
 
             //Generate production token and invoke with that
