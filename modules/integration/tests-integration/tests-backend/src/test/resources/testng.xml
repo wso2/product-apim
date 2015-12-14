@@ -146,4 +146,11 @@
         </classes>
     </test>
 
+    <test name="rest-api-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
+        </classes>
+    </test>
+
 </suite>

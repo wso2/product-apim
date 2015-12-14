@@ -2,7 +2,7 @@
     "testCase": [
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "API_CREATOR_PUBLISHER_SCOPE"
                 },
                 "data": {
                     "method": "GET",
@@ -12,10 +12,14 @@
                         "Authorization": "Bearer"
                     },
                     "request-payload": "",
-                    "response-headers": {
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
                         "status-code": "200"
                     },
-                    "response-payload": ""
+                    "body-asserts": ""
                 }
             }
             ,
@@ -31,12 +35,16 @@
                         "Authorization": "Bearer"
                     },
                     "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
-                    \"displayName\": \"NewTier\",\n   \"requestCount\": 20,\n   \"description\": \"Allows 20 request(s) per minute.\",\n
+                    \"requestCount\": 20,\n   \"description\": \"Allows 20 request(s) per minute.\",\n
                     \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
-                    "response-headers": {
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
                         "status-code": "201"
                     },
-                    "response-payload": ""
+                    "body-asserts": ""
                 }
             }
             ,
@@ -54,12 +62,19 @@
                     "request-headers": {
                         "Authorization": "Bearer"
                     },
-                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n   \"displayName\": \"NewTier\",\n   \"requestCount\": 20,\n   \"description\": \"Updated Description\",\n   \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}\n",
-                    "response-headers": {
+                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
+                                        \"requestCount\": 20,\n   \"description\": \"Updated description.\",\n
+                                        \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
                         "status-code": "200"
                     },
-                    "response-payload": ""
+                    "body-asserts": ""
                 }
+
             }
             ,
             {
@@ -76,10 +91,14 @@
                         "Authorization": "Bearer"
                     },
                     "request-payload": "",
-                    "response-headers": {
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
                         "status-code": "200"
                     },
-                    "response-payload": ""
+                    "body-asserts": ""
                 }
             }
     ]

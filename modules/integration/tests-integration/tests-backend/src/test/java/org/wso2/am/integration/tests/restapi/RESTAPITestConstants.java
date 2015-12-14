@@ -60,6 +60,12 @@ public final class RESTAPITestConstants {
     //element in JSON file for the data-set
     public static final String DATA_SECTION = "data";
 
+    //element in JSON file for the assert section
+    public static final String ASSERT_SECTION = "asserts";
+
+    //header-asserts under the assert section
+    public static final String HEADER_ASSERTS = "header-asserts";
+
     //method element in data section in JSON file
     public static final String METHOD_ELEMENT = "method";
 
