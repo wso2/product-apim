@@ -28,6 +28,7 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -57,7 +58,8 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
     private String visibility="public";
     private String description="Test Description";
     private static final String WEB_APP_FILE_NAME="jaxrs_basic";
-    private String tier="Gold";
+    private String tier= APIMIntegrationConstants.API_TIER.GOLD;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE;
     private String endPointType="http";
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -110,8 +112,8 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
         providerName=publisherContext.getContextTenant().getContextUser().getUserName();
 
         List<APIResourceBean> resourceBeanList=new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET","Application & Application User", tier, "customers/{id}/"));
-        resourceBeanList.add(new APIResourceBean("POST","Application & Application User", tier, "customers/name/"));
+        resourceBeanList.add(new APIResourceBean("GET","Application & Application User", resTier, "customers/{id}/"));
+        resourceBeanList.add(new APIResourceBean("POST","Application & Application User", resTier, "customers/name/"));
 
         APICreationRequestBean apiCreationRequestBean=new APICreationRequestBean(API_NAME,API_CONTEXT,
                 version,providerName,new URL(endpointUrl));

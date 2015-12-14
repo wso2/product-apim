@@ -108,8 +108,8 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setDefault_version("default_version");
         apiRequest.setDefault_version_checked("default_version");
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection("Unlimited");
-        apiRequest.setTier("Unlimited");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setProvider(provider);
 
         //Add the API using the API publisher.
@@ -125,12 +125,13 @@ public class DefaultVersionAPITestCase extends APIMIntegrationBaseTest {
         apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        response = apiStore.addApplication("DefaultVersionAPP", "Unlimited", "", "");
+        response = apiStore
+                .addApplication("DefaultVersionAPP", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
         verifyResponse(response);
 
         //Subscribe the API to the DefaultApplication
-        SubscriptionRequest subscriptionRequest =
-                new SubscriptionRequest(apiName, apiVersion, provider, "DefaultVersionAPP", "Unlimited");
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, provider,
+                "DefaultVersionAPP", APIMIntegrationConstants.API_TIER.UNLIMITED);
         response = apiStore.subscribe(subscriptionRequest);
 
         //Generate production token and invoke with that

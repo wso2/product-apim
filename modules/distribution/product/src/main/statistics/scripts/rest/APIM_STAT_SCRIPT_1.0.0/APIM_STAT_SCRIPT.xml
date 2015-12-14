@@ -290,7 +290,6 @@
 
 
 
-
   CREATE TEMPORARY TABLE API_LAST_ACCESS_TIME_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_LAST_ACCESS_TIME_SUMMARY",
   schema "tenantDomain string -i,
   apiPublisher string -i,

@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -86,7 +87,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
             IOException, LogViewerLogViewerException {
 
         //Create an application with gold tier
-        apiStoreClientUser.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
 
         //Create publish and subscribe an API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);

@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
@@ -56,7 +57,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     private APIStoreRestClient apiStore;
     private String applicationName = "NewApplication1";
     private static final String description = "NewApplicationCreation";
-    private static final String tier = "Unlimited";
+    private static final String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+
     private final String webApp = "jaxrs_basic";
     private static final String callBackUrl = "http://myserver.com";
     private List<String> applicationsList = new ArrayList<String>();//list getting from the application creation response
@@ -79,17 +81,17 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public static Object[][] createAppWithValidDataProvider() throws Exception {
 
         return new Object[][]{
-                {"NewApplication1", tier, callBackUrl, description},
-                {"NewApplication2", tier, callBackUrl, ""},
-                {"NewApplication3", tier, "", description},
-                {"NewApplication4", tier, "", ""}
+                {"NewApplication1", appTier, callBackUrl, description},
+                {"NewApplication2", appTier, callBackUrl, ""},
+                {"NewApplication3", appTier, "", description},
+                {"NewApplication4", appTier, "", ""}
         };
     }
 
     @DataProvider(name = "createApplicationWithInValidData")
     public static Object[][] createAppWithInValidDataProvider() throws Exception {
         return new Object[][]{
-                {"", tier, "", ""},//name is empty
+                {"", appTier, "", ""},//name is empty
                 {"NewApplication5", "", callBackUrl, description},
                 {"", "", callBackUrl, description},
         };
@@ -138,7 +140,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public void testApplicationCreation(String applicationName, String tier, String callBackUrl, String description)
             throws Exception {
 
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier, callBackUrl, description);
+        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl, description);
         assertEquals(addApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code is mismatched in add application: " + applicationName);
         JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
@@ -154,7 +156,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @Test(dataProvider = "createApplicationWithInValidData", description = "Create application for invalid data")
     public void testApplicationCreationForInvalidData(String applicationName, String tier, String callBackUrl,
                                                       String description) throws Exception {
-        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, tier, callBackUrl, description);
+        HttpResponse addApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl, description);
         JSONObject addApplicationJsonObject = new JSONObject(addApplicationResponse.getData());
         //Error when application name string empty (JIRA 4040)
         //assertTrue(addApplicationJsonObject.getBoolean("error"), "Error in Application Creation with Invalid data: "
@@ -170,7 +172,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @Test(description = "Create already created application", dependsOnMethods = "testApplicationCreation")
     public void testAlreadyCreatedApplication() throws Exception {
 
-        HttpResponse alreadyCreatedApplicationResponse = apiStore.addApplication(applicationName, tier, callBackUrl,
+        HttpResponse alreadyCreatedApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl,
                 description);
         assertEquals(alreadyCreatedApplicationResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Invalid Response Code in application creation");
@@ -270,7 +272,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         //update description fields
         String updatedDescription = "updatednewdescription";
         HttpResponse updateDescriptionResponse = apiStore.updateApplication(updatedAppName, updatedAppName,
-                appCallbackUrl, updatedDescription, "Gold");
+                appCallbackUrl, updatedDescription, APIMIntegrationConstants.APPLICATION_TIER.LARGE);
         assertEquals(updateDescriptionResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code Invalid in Description update Response");
         JSONObject updateDescriptionJsonObject = new JSONObject(updateDescriptionResponse.getData());
@@ -295,7 +297,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertTrue(isUpdatedDescriptionAvailable, "Error in Application Description Update Response");
 
         //update tier field
-        String newTier = "Gold";
+        String newTier = APIMIntegrationConstants.APPLICATION_TIER.LARGE;
         HttpResponse updateTierResponse = apiStore.updateApplication(updatedAppName, updatedAppName,
                 "http://myserverupdated.com", updatedDescription, newTier);
         assertEquals(updateTierResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -327,7 +329,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public void testRemoveApplication() throws Exception {
 
         String applicationName = "RemoveMeApp";
-        HttpResponse createApplicationResponse = apiStore.addApplication(applicationName, tier, callBackUrl,
+        HttpResponse createApplicationResponse = apiStore.addApplication(applicationName, appTier, callBackUrl,
                 description);
         JSONObject createAppJsonObject = new JSONObject(createApplicationResponse.getData());
         assertFalse(createAppJsonObject.getBoolean("error"), "Error in Create an Application: " + applicationName);
