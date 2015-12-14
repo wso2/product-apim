@@ -875,8 +875,8 @@
     <properties>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>4.3.1-SNAPSHOT</carbon.apimgt.version>
-        <carbon.apimgt.imp.pkg.version>[4.3.0, 4.4.0)</carbon.apimgt.imp.pkg.version>
+        <carbon.apimgt.version>5.0.0-SNAPSHOT</carbon.apimgt.version>
+        <carbon.apimgt.imp.pkg.version>[5.0.0, 6.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
         <carbon.registry.version>4.4.8</carbon.registry.version>
