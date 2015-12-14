@@ -410,7 +410,7 @@ public class APIExportUtil {
     }
 
     /**
-     * Retrieve available custom sequences for the exporting API
+     * Retrieve available custom sequences and API specific sequences for API export
      *
      * @param api           exporting API
      * @param apiIdentifier ID of the requesting API
@@ -448,19 +448,42 @@ public class APIExportUtil {
                 if (sequenceName != null) {
                     if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equalsIgnoreCase(direction)) {
                         sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                            registry);
-                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                            apiIdentifier);
+                                                            registry);
+                        if (sequenceDetails == null) {
+                            sequenceDetails = getAPISpecificSequence(api.getId(),sequenceName, APIConstants
+                                    .API_CUSTOM_SEQUENCE_TYPE_IN, registry);
+                            writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                                                           apiIdentifier);
+                        } else {
+                            writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
+                                                apiIdentifier);
+                        }
+
                     } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equalsIgnoreCase(direction)) {
                         sequenceDetails = getCustomSequence(sequenceName, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                            registry);
-                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                            apiIdentifier);
+                                                            registry);
+                        if (sequenceDetails == null) {
+                            sequenceDetails = getAPISpecificSequence(api.getId(),sequenceName, APIConstants
+                                    .API_CUSTOM_SEQUENCE_TYPE_OUT, registry);
+                            writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                                                           apiIdentifier);
+                        } else {
+                            writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
+                                                apiIdentifier);
+                        }
                     } else {
-                        sequenceDetails = getCustomSequence(sequenceName,
-                            APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
-                        writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
-                            apiIdentifier);
+                        sequenceDetails = getCustomSequence(sequenceName, APIConstants
+                                .API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
+
+                        if (sequenceDetails == null) {
+                            sequenceDetails = getAPISpecificSequence(api.getId(), sequenceName, APIConstants
+                                    .API_CUSTOM_SEQUENCE_TYPE_FAULT, registry);
+                            writeAPISpecificSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
+                                                           apiIdentifier);
+                        } else {
+                            writeSequenceToFile(sequenceDetails, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
+                                                apiIdentifier);
+                        }
                     }
                 }
             }
@@ -524,6 +547,64 @@ public class APIExportUtil {
     }
 
     /**
+     * Retrieve API Specific sequence details from the registry
+     *
+     * @param sequenceName Name of the sequence
+     * @param type         Sequence type
+     * @param registry     Current tenant registry
+     * @return Registry resource name of the sequence and its content
+     * @throws APIExportException If an error occurs while retrieving registry elements
+     */
+    private static AbstractMap.SimpleEntry<String, OMElement> getAPISpecificSequence(APIIdentifier api,String sequenceName, String type, Registry registry) throws APIExportException {
+        AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
+
+        org.wso2.carbon.registry.api.Collection seqCollection = null;
+
+        String regPath="/apimgt/applicationdata/provider/"+api.getProviderName()+File.separator+api.getApiName()+File.separator+api.getVersion()+File.separator+type;
+
+        try {
+            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                        registry.get(regPath);
+            } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                        registry.get(regPath);
+            } else
+            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
+                seqCollection = (org.wso2.carbon.registry.api.Collection)
+                        registry.get(regPath);
+            }
+
+            if (seqCollection != null) {
+                String[] childPaths = seqCollection.getChildren();
+
+                for (int i = 0; i < childPaths.length; i++) {
+                    Resource sequence = registry.get(childPaths[i]);
+                    OMElement seqElment = APIUtil.buildOMElement(sequence.getContentStream());
+                    if (sequenceName.equals(seqElment.getAttributeValue(new QName("name")))) {
+                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().lastIndexOf('/'));
+                        sequenceDetails = new AbstractMap.SimpleEntry<String, OMElement>(sequenceFileName, seqElment);
+                        return sequenceDetails;
+                    }
+                }
+            }
+
+        } catch (RegistryException e) {
+            String errorMessage = "Error while retrieving sequence from the registry ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (Exception e ) { //APIUtil.buildOMElement() throws a generic exception
+            String errorMessage = "Error while reading sequence content ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        }
+
+        return null;
+
+    }
+
+
+    /**
      * Store custom sequences in the archive directory
      *
      * @param sequenceDetails   Details of the sequence
@@ -541,6 +622,49 @@ public class APIExportUtil {
                 apiIdentifier.getVersion()) + File.separator + "Sequences" + File.separator;
 
         String pathToExportedSequence = archivePath + direction + "-sequence" + File.separator;
+        String sequenceFileName = sequenceDetails.getKey();
+        OMElement sequenceConfig = sequenceDetails.getValue();
+        String exportedSequenceFile = pathToExportedSequence + sequenceFileName;
+        try {
+            createDirectory(pathToExportedSequence);
+            outputStream = new FileOutputStream(exportedSequenceFile);
+            sequenceConfig.serialize(outputStream);
+
+            if (log.isDebugEnabled()) {
+                log.debug(sequenceFileName + " retrieved successfully");
+            }
+
+        } catch (FileNotFoundException e) {
+            String errorMessage = "Unable to find file: " + exportedSequenceFile;
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (XMLStreamException e) {
+            String errorMessage = "Error while processing XML stream ";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } finally {
+            IOUtils.closeQuietly(outputStream);
+        }
+    }
+
+    /**
+     * Store API Specific sequences in the archive directory
+     *
+     * @param sequenceDetails   Details of the sequence
+     * @param direction      Direction of the sequence "in", "out" or "fault"
+     * @param apiIdentifier  ID of the requesting API
+     * @throws APIExportException If an error occurs while serializing XML stream or storing in
+     *                            archive directory
+     */
+    private static void writeAPISpecificSequenceToFile(AbstractMap.SimpleEntry<String, OMElement> sequenceDetails,
+                                                       String direction,
+                                                       APIIdentifier apiIdentifier)
+            throws APIExportException {
+        OutputStream outputStream = null;
+        String archivePath = archiveBasePath.concat(File.separator + apiIdentifier.getApiName() + "-" + apiIdentifier
+                .getVersion()) + File.separator + "Sequences" + File.separator;
+
+        String pathToExportedSequence = archivePath + direction + "-sequence" + File.separator + "Custom";
         String sequenceFileName = sequenceDetails.getKey();
         OMElement sequenceConfig = sequenceDetails.getValue();
         String exportedSequenceFile = pathToExportedSequence + sequenceFileName;
@@ -635,7 +759,7 @@ public class APIExportUtil {
         // Swagger.json contains complete details about scopes and URI templates. Therefore scope and URI template
         // details are removed from api.json
         api.setScopes(new TreeSet<Scope>());
-        api.setUriTemplates(new TreeSet<URITemplate>());
+        //api.setUriTemplates(new TreeSet<URITemplate>());
     }
 
     /**
