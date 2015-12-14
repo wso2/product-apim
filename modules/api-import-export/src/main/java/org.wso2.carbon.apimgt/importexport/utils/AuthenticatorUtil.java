@@ -16,9 +16,9 @@
  * /
  */
 
-package apim.restful.importexport.utils;
+package org.wso2.carbon.apimgt.importexport.utils;
 
-import apim.restful.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;

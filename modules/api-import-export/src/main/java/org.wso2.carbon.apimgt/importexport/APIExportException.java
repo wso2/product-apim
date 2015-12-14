@@ -16,7 +16,7 @@
  * /
  */
 
-package apim.restful.importexport;
+package org.wso2.carbon.apimgt.importexport;
 
 /**
  * This class is used for handling exceptions occur in API export

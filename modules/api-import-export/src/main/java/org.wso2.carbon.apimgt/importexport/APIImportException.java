@@ -16,7 +16,7 @@
  * /
  */
 
-package apim.restful.importexport;
+package org.wso2.carbon.apimgt.importexport;
 
 /**
  * This is the class to represent APIImportException. This exception is used to indicate the

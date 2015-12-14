@@ -16,9 +16,9 @@
  * /
  */
 
-package apim.restful.importexport.utils;
+package org.wso2.carbon.apimgt.importexport.utils;
 
-import apim.restful.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

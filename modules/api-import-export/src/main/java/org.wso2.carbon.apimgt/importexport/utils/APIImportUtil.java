@@ -16,12 +16,12 @@
  * /
  */
 
-package apim.restful.importexport.utils;
+package org.wso2.carbon.apimgt.importexport.utils;
 
-import apim.restful.importexport.APIExportException;
-import apim.restful.importexport.APIImportExportConstants;
-import apim.restful.importexport.APIImportException;
-import apim.restful.importexport.APIService;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
+import org.wso2.carbon.apimgt.importexport.APIImportException;
+import org.wso2.carbon.apimgt.importexport.APIService;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
