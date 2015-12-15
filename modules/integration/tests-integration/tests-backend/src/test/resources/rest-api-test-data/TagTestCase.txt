@@ -1,0 +1,155 @@
+{
+	"testCase": [
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "api/am/publisher/v1//tiers/api",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"name\": \"TempTier\",\n   \"attributes\": {},\n
+                    \"requestCount\": 25,\n   \"description\": \"Allows 25 requests per minute.\",\n
+                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": ""
+                }
+            },
+            {
+               "init":{
+                  "scope":"API_CREATOR_SCOPE"
+               },
+               "data":{
+                  "method":"POST",
+                  "url":"/api/am/publisher/v1//apis",
+                  "query-parameters":"",
+                  "request-headers":{
+                     "Authorization":"Bearer"
+                  },
+                  "request-payload":"{\r\n   \"name\": \"APItoTestTags\",\r\n   \"context\": \"\/testTagContext\",\r\n
+                        \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\r\n   \"status\": \"CREATED\",\r\n
+                        \"tags\": [\"Tag1\",\"Tag2\",\"Tag3\"],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
+                        \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
+                        \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"TempTier\"],\r\n
+                        \"thumbnailUrl\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+                        \"visibleTenants\": [],\r\n
+                        \"endpointConfig\":
+                        \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
+                        \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
+                        \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n
+                        \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
+                        \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":
+                        \\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"TempTier\\\",
+                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"Request Body\\\",
+                        \\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
+                        \\\"responses\\\":{\\\"200\\\":{}}},\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"delete\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"patch\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
+                        \\\"responses\\\":{\\\"200\\\":{}}}}},\\\"swagger\\\":\\\"2.0\\\",
+                        \\\"info\\\":{\\\"title\\\":\\\"api1\\\",\\\"version\\\":\\\"1\\\"}}\",\r\n
+                        \"responseCaching\": \"Disabled\",\r\n   \"isDefaultVersion\": false,\r\n   \"businessInformation\":
+                        {\r\n      \"technicalOwner\": null,\r\n      \"technicalOwnerEmail\": null,\r\n
+                        \"businessOwner\": null,\r\n      \"businessOwnerEmail\": null\r\n   }\r\n}",
+
+                        "response-headers":"",
+                        "response-payload":""
+               },
+               "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": ""
+                },
+               "preserve-list":[
+                    {
+                        "attribute-name":"apiId",
+                        "response-location":"id"
+                    }
+               ]
+            },
+            {
+                 "init":{
+                    "scope":"API_CREATOR_SCOPE"
+                 },
+                 "data":{
+                    "method":"GET",
+                    "url":"/api/am/store/v1//tags",
+                    "query-parameters":"",
+                    "request-headers":{
+                       "Authorization":"Bearer"
+                    },
+                    "request-payload":"",
+                    "response-headers":"",
+                    "response-payload":""
+                 },
+                 "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                 }
+            },
+            {
+                 "init":{
+                    "scope":"API_CREATOR_SCOPE"
+                 },
+                 "data":{
+                    "method":"DELETE",
+                    "url":"/api/am/publisher/v1//apis/{apiId}",
+                    "query-parameters":"",
+                    "request-headers":{
+                       "Authorization":"Bearer"
+                    },
+                    "request-payload":"",
+                    "response-headers":"",
+                    "response-payload":""
+                 },
+                 "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                 }
+            },
+            {
+                "init": {
+                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                },
+                "data": {
+                    "method": "DELETE",
+                    "url": "api/am/publisher/v1//tiers/api/TempTier",
+                    "query-parameters": {
+                        "tierName": "TempTier"
+                    },
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                }
+            }
+    ]
+}
