@@ -36,7 +36,7 @@
 			    }
 			]
 		},
-        {
+		{
 			"init": {
 				"scope": "API_SUBSCRIBER_SCOPE"
 			},
@@ -66,7 +66,7 @@
 				"body-asserts": ""
 			}
 		},
-        {
+		{
 			"init": {
 				"scope": "API_CREATOR_SCOPE"
 			},
@@ -88,7 +88,7 @@
 				"body-asserts": ""
 			}
 		},
-        {
+		{
 			"init": {
 				"scope": "API_SUBSCRIBER_SCOPE"
 			},
@@ -110,7 +110,7 @@
 				"body-asserts": ""
 			}
 		},
-        {
+		{
 			"init": {
 				"scope": "API_SUBSCRIBER_SCOPE"
 			},
