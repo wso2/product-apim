@@ -56,6 +56,9 @@ public class RESTAPITestUtil {
     private static final Log log = LogFactory.getLog(RESTAPITestUtil.class);
     private DataDrivenTestUtils dataDrivenTestUtils = new DataDrivenTestUtils();
 
+    //this is the map to store the preserved attributes if there are any
+    private HashMap<String, String> preservedAttributes = new HashMap<String, String>();
+
     /**
      * This method is used to test a given scenario using the REST API
      *
@@ -77,8 +80,6 @@ public class RESTAPITestUtil {
             JSONObject testScenario = new JSONObject(configData);
             JSONArray array = testScenario.getJSONArray(RESTAPITestConstants.JSON_ROOT_ELEMENT);
             int arrayLength = array.length();
-            //this is the map to store the preserved attributes if there are any
-            HashMap<String, String> preservedAttributes = new HashMap<String, String>();
 
             //go through each section of the JSON string and fetch data
             for (int i = 0; i < arrayLength; i++) {
@@ -108,21 +109,12 @@ public class RESTAPITestUtil {
 
                 JSONObject dataConfigurationObject = configObject.getJSONObject(RESTAPITestConstants.DATA_SECTION);
                 String method = dataConfigurationObject.get(RESTAPITestConstants.METHOD_ELEMENT).toString();
-                //take the resource URL from the data file (initial URL)
-                String resourceURL = keyMangerURL +
+                //take the resource URL from the data file (initial URL, might contain space for parameters)
+                String parametrizedResourceURL = keyMangerURL +
                         dataConfigurationObject.get(RESTAPITestConstants.URL_ELEMENT).toString();
-                //get the pattern for dynamically generated resource URLs
-                Pattern parameterPattern = Pattern.compile("\\{(.*?)\\}");
-                Matcher matcher = parameterPattern.matcher(resourceURL);
-
-                //if a match is found, then fetch the applicable value from the preserved attribute list
-                while (matcher.find()) {
-                    String parameterName = matcher.group(1);
-                    //construct the final resource URL with the  value fetched from the preserved attribute list
-                    String template = "{" + parameterName + "}";
-                    resourceURL = resourceURL.replace(template, preservedAttributes.get(parameterName));
-                }
-
+                //replace the parameters with the actual vales if there are any, and construct the actual URL
+                String actualResourceURL = replaceParameterPatternWithValues
+                                                (parametrizedResourceURL, RESTAPITestConstants.URL_REGEX);
                 Map<String, String> queryParameters = new HashMap<String, String>();
                 String queryParameterText =
                         dataConfigurationObject.get(RESTAPITestConstants.QUERY_PARAMETERS).toString();
@@ -159,7 +151,12 @@ public class RESTAPITestUtil {
                     }
                 }
 
-                String requestPayload = dataConfigurationObject.get(RESTAPITestConstants.REQUEST_PAYLOAD).toString();
+                //take the initial payload from the data file (might contain space for parameters)
+                String parametrizedRequestPayload =
+                        dataConfigurationObject.get(RESTAPITestConstants.REQUEST_PAYLOAD).toString();
+                //replace the parameters with actual vales if there are any, and construct the actual request payload
+                String actualRequestPayload = replaceParameterPatternWithValues
+                                                (parametrizedRequestPayload, RESTAPITestConstants.PAYLOAD_REGEX);
                 String responseHeaderText =
                         dataConfigurationObject.get(RESTAPITestConstants.RESPONSE_HEADERS).toString();
                 Map<String, String> responseHeaders = new HashMap<String, String>();
@@ -180,7 +177,7 @@ public class RESTAPITestUtil {
                 String cookie = null;
 
                 Response responseOfHttpCall = dataDrivenTestUtils.sendRequestToRESTAPI
-                        (method, resourceURL, queryParameters, requestHeaders, requestPayload, cookie);
+                        (method, actualResourceURL, queryParameters, requestHeaders, actualRequestPayload, cookie);
                 String outputText = ((ResponseImpl) responseOfHttpCall).readEntity(String.class);
 
                 //put the values (to the map) that should be preserved from the response of the current request,
@@ -259,6 +256,35 @@ public class RESTAPITestUtil {
                 }
             }
         }
+    }
+
+    /**
+     * This method will plug the actual value for a parametrized string, by making use of a given regular expression
+     *
+     * @param parametrizedText initial text, might contain space for parameters
+     * @param regex            regular expression to identify the parameter location
+     * @return actual text where parameters are replaced with the corresponding values
+     */
+    private String replaceParameterPatternWithValues(String parametrizedText, String regex) {
+
+        String actualTextWithValues = parametrizedText;
+
+        if (parametrizedText != null && regex != null && regex.length() > 1) {
+            //get the pattern for dynamically generated texts
+            Pattern parameterPattern = Pattern.compile(regex);
+            Matcher matcher = parameterPattern.matcher(parametrizedText);
+
+            //if a match is found, then fetch the applicable value from the preserved attribute list
+            while (matcher.find()) {
+                String parameterName = matcher.group(1);
+                //construct the final text with the values fetched from the preserved attribute list
+                String template = Character.toString(regex.charAt(1)) +
+                        parameterName + Character.toString(regex.charAt(regex.length() - 1));
+                actualTextWithValues = parametrizedText.replace(template, preservedAttributes.get(parameterName));
+            }
+        }
+        //if patterns are found, then this returns the text with the values fetched from the preserved attribute list
+        return actualTextWithValues;
     }
 
     /**

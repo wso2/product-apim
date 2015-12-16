@@ -150,6 +150,11 @@
         <classes>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
         </classes>
     </test>
 
