@@ -27,6 +27,7 @@ import org.wso2.carbon.registry.core.RegistryConstants;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,7 +50,7 @@ public class ResourceUtil {
      * @return swagger v1.2 location
      */
     public static String getSwagger12ResourceLocation(String apiName, String apiVersion, String apiProvider) {
-        return APIConstants.API_DOC_LOCATION + RegistryConstants.PATH_SEPARATOR + apiName + "-" + apiVersion + "-"
+        return APIConstants.API_DOC_LOCATION + RegistryConstants.PATH_SEPARATOR + apiName + '-' + apiVersion + '-'
                 + apiProvider + RegistryConstants.PATH_SEPARATOR + APIConstants.API_DOC_1_2_LOCATION;
     }
 
@@ -116,6 +117,7 @@ public class ResourceUtil {
 
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.parse(filePath);
             Node sequence = doc.getElementsByTagName("sequence").item(0);
@@ -167,9 +169,9 @@ public class ResourceUtil {
      */
     public static void updateSynapseAPI(Document document, File file) throws APIMigrationException {
         try {
-            updateAPIAttributes(document, file);
-            updateHandlers(document, file);
-            updateResources(document, file);
+            updateAPIAttributes(document);
+            updateHandlers(document);
+            updateResources(document);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -183,23 +185,23 @@ public class ResourceUtil {
         }
     }
 
-    private static void updateAPIAttributes(Document document, File file) {
+    private static void updateAPIAttributes(Document document) {
         Element apiElement = document.getDocumentElement();
 
         String versionType = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE);
 
-        if (versionType.equals(Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL)) {
+        if (Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL.equals(versionType)) {
             String context = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT);
             String version = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION);
 
-            context = context + "/" + version;
+            context = context + '/' + version;
             apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT, context);
             apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE, Constants.SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT);
         }
     }
 
 
-    private static void updateHandlers(Document document, File file) {
+    private static void updateHandlers(Document document) {
         Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
 
         NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
@@ -209,7 +211,7 @@ public class ResourceUtil {
 
             String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
 
-            if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
+            if (Constants.SYNAPSE_API_VALUE_CORS_HANDLER.equals(className)) {
                 handlersElement.removeChild(handler);
                 break;
             }
@@ -238,7 +240,7 @@ public class ResourceUtil {
 
     }
 
-    private static void updateResources(Document document, File file) throws APIMigrationException {
+    private static void updateResources(Document document) throws APIMigrationException {
         NodeList resourceNodes = document.getElementsByTagName("resource");
         for (int i = 0; i < resourceNodes.getLength(); i++) {
             Element resourceElement = (Element) resourceNodes.item(i);
@@ -331,6 +333,7 @@ public class ResourceUtil {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes(Charset.defaultCharset()))));
             doc.getDocumentElement().normalize();
@@ -351,6 +354,7 @@ public class ResourceUtil {
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             doc = docBuilder.parse(new InputSource(inputStream));
             doc.getDocumentElement().normalize();

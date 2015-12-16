@@ -97,7 +97,7 @@ public final class MigrationExecutor {
                             " is not supported. Please check the version and try again.");
                 }
             }
-            if (arguments.specificVersion != null) {
+            else if (arguments.specificVersion != null) {
                 MigrationClient migrationClient = MigrationClientFactory.getClient(arguments.specificVersion);
 
                 if (migrationClient != null) {
@@ -109,8 +109,9 @@ public final class MigrationExecutor {
             } else { // Migration version not specified
                 if (arguments.migrateAll || arguments.cleanupNeeded || arguments.isDBMigration ||
                         arguments.isRegistryMigration || arguments.isFileSystemMigration) {
-                    log.error("The property " + Constants.ARG_MIGRATE_FROM_VERSION +
-                            " has not been specified . Please specify the property and try again.");
+                    log.error("The property -D" + Constants.ARG_MIGRATE_FROM_VERSION + " or -D" +
+                            Constants.ARG_RUN_SPECIFIC_VERSION +
+                            " has not been specified. Please specify the property you wish to use and try again.");
                 }
             }
         }

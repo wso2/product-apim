@@ -46,6 +46,11 @@ public final class MigrationClientFactory {
         registerClient(version_1_9_x, migrateFrom19to110, version_1_10_x);
     }
 
+    public static void clearFactory() {
+        nextClientVersionLocator.clear();
+        clientLocator.clear();
+        migrationClients.clear();
+    }
 
     private static void registerClient(String[] migrateFromVersions, MigrationClient migrationClient,
                                        String[] migrateToVersions) {

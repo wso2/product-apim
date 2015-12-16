@@ -46,7 +46,7 @@ public class StatDBUtil {
             dataSource = (DataSource) ctx.lookup(DATA_SOURCE_NAME);
         } catch (NamingException e) {
             throw new APIMigrationException("Error while looking up the data " +
-                    "source: " + DATA_SOURCE_NAME);
+                    "source: " + DATA_SOURCE_NAME, e);
         }
     }
 

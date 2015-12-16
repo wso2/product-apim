@@ -130,7 +130,7 @@ public class MigrationDBCreator extends DatabaseCreator {
                 // and in Oracle it may contain a hint
                 // so we cannot just remove it, instead we must end it
                 if (!keepFormat && line.indexOf("--") >= 0) {
-                    sql.append("\n");
+                    sql.append('\n');
                 }
                 if ((checkStringBufferEndsWith(sql, delimiter))) {
                     executeSQL(sql.substring(0, sql.length() - delimiter.length()));
@@ -192,7 +192,7 @@ public class MigrationDBCreator extends DatabaseCreator {
             }
             connection.clearWarnings();
         } catch (SQLException e) {
-            if (e.getSQLState().equals("X0Y32") || e.getSQLState().equals("42710")) {
+            if ("X0Y32".equals(e.getSQLState()) || "42710".equals(e.getSQLState())) {
                 // eliminating the table already exception for the derby and DB2 database types
                 if (log.isDebugEnabled()) {
                     log.info("Table Already Exists. Hence, skipping table creation");

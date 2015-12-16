@@ -112,6 +112,9 @@ public class APIMMigrationServiceComponent {
         } catch (Throwable t) {
             log.error("Throwable error", t);
         }
+        finally {
+            MigrationClientFactory.clearFactory();
+        }
         log.info("WSO2 API Manager migration component successfully activated.");
     }
 

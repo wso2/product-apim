@@ -21,23 +21,31 @@ package org.wso2.carbon.apimgt.migration.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
+import org.wso2.carbon.governance.api.util.GovernanceUtils;
+import org.wso2.carbon.governance.lcm.util.CommonUtil;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 
+import javax.xml.stream.XMLStreamException;
+import java.io.FileNotFoundException;
+
 
 public class RegistryServiceImpl implements RegistryService {
     private static final Log log = LogFactory.getLog(RegistryServiceImpl.class);
     private Tenant tenant = null;
+    private APIProvider apiProvider = null;
 
     @Override
     public void startTenantFlow(Tenant tenant) {
@@ -54,6 +62,7 @@ public class RegistryServiceImpl implements RegistryService {
     public void endTenantFlow() {
         PrivilegedCarbonContext.endTenantFlow();
         this.tenant = null;
+        this.apiProvider = null;
     }
 
     @Override
@@ -64,6 +73,11 @@ public class RegistryServiceImpl implements RegistryService {
     @Override
     public void rollbackConfigRegistryTransaction() throws UserStoreException, RegistryException {
         getConfigRegistry().rollbackTransaction();
+    }
+
+    @Override
+    public void addDefaultLifecycles() throws RegistryException, UserStoreException, FileNotFoundException, XMLStreamException {
+        CommonUtil.addDefaultLifecyclesIfNotAvailable(getConfigRegistry(), CommonUtil.getRootSystemRegistry(tenant.getId()));
     }
 
     @Override
@@ -80,13 +94,13 @@ public class RegistryServiceImpl implements RegistryService {
 
                 log.debug("Total number of api artifacts : " + artifacts.length);
             } else {
-                log.debug("No api artifacts found in registry for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                log.debug("No api artifacts found in registry for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             }
 
         } catch (RegistryException e) {
             log.error("Error occurred when getting GenericArtifacts from registry", e);
         } catch (UserStoreException e) {
-            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (APIManagementException e) {
             log.error("Failed to initialize GenericArtifactManager", e);
         }
@@ -107,7 +121,7 @@ public class RegistryServiceImpl implements RegistryService {
             }
 
         } catch (UserStoreException e) {
-            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+            log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (RegistryException e) {
             log.error("Error occurred when updating GenericArtifacts in registry", e);
         } catch (APIManagementException e) {
@@ -127,6 +141,11 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         return api;
+    }
+
+    @Override
+    public String getGenericArtifactPath(GenericArtifact artifact) throws UserStoreException, RegistryException {
+        return GovernanceUtils.getArtifactPath(getGovernanceRegistry(), artifact.getId());
     }
 
     @Override
@@ -175,7 +194,7 @@ public class RegistryServiceImpl implements RegistryService {
         Resource resource = registry.newResource();
         resource.setContent(content);
         resource.setMediaType(mediaType);
-        registry.put(content, resource);
+        registry.put(registryLocation, resource);
     }
 
     @Override
@@ -186,7 +205,7 @@ public class RegistryServiceImpl implements RegistryService {
         Resource resource = registry.newResource();
         resource.setContent(content);
         resource.setMediaType(mediaType);
-        registry.put(content, resource);
+        registry.put(registryLocation, resource);
     }
 
     @Override
@@ -209,6 +228,20 @@ public class RegistryServiceImpl implements RegistryService {
         resource.setContent(content);
         registry.put(registryLocation, resource);
     }
+
+    @Override
+    public void setGovernanceRegistryResourcePermissions(String visibility, String[] roles,
+                                                                String resourcePath) throws APIManagementException {
+        initAPIProvider();
+        APIUtil.setResourcePermissions(tenant.getAdminName(), visibility, roles, resourcePath);
+    }
+
+    private void initAPIProvider() throws APIManagementException {
+        if (apiProvider == null) {
+            apiProvider = APIManagerFactory.getInstance().getAPIProvider(tenant.getAdminName());
+        }
+    }
+
 
     private Registry getConfigRegistry() throws UserStoreException, RegistryException {
         if (tenant == null) {

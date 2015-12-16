@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.user.api.Tenant;
@@ -112,12 +111,20 @@ public abstract class MigrationClientBase {
                 log.error("Tenant does not exist for username " + argument);
             }
         } else { // Domain name provided as argument
-            Tenant[] tenants = tenantManager.getAllTenantsForTenantDomainStr(argument);
+            if (MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equalsIgnoreCase(argument)) {
+                Tenant superTenant = new Tenant();
+                superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+                superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
+                tenantList.add(superTenant);
+            }
+            else {
+                Tenant[] tenants = tenantManager.getAllTenantsForTenantDomainStr(argument);
 
-            if (tenants.length > 0) {
-                tenantList.addAll(Arrays.asList(tenants));
-            } else {
-                log.error("Tenant does not exist for domain " + argument);
+                if (tenants.length > 0) {
+                    tenantList.addAll(Arrays.asList(tenants));
+                } else {
+                    log.error("Tenant does not exist for domain " + argument);
+                }
             }
         }
     }
@@ -155,7 +162,7 @@ public abstract class MigrationClientBase {
                     line = line.replace("\\n", "");
                 }
 
-                sqlQuery += " " + line;
+                sqlQuery += ' ' + line;
 
                 if (line.contains(";")) {
                     isFoundQueryEnd = true;

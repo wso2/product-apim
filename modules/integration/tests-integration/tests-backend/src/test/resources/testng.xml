@@ -24,6 +24,7 @@
 
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
+        <depends
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>

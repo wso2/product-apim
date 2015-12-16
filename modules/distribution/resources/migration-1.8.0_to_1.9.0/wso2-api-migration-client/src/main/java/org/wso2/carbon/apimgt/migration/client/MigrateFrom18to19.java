@@ -57,6 +57,7 @@ import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -105,10 +106,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      */
     @Override
     public void databaseMigration() throws SQLException {
-        String scriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
+        final String productHome = CarbonUtils.getCarbonHome();
+        String scriptPath = productHome + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
         updateAPIManangerDatabase(scriptPath);
 
-        String constraintsScriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
+        String constraintsScriptPath = productHome + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
 
         //To drop the foreign key
         dropFKConstraint(constraintsScriptPath);
@@ -132,7 +134,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     void externalStoreMigration() throws APIMigrationException {
         log.info("External API store migration for API Manager " + Constants.VERSION_1_9 + " started.");
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start API store migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("Start API store migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             try {
                 registryService.startTenantFlow(tenant);
 
@@ -162,7 +164,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             } finally {
                 registryService.endTenantFlow();
             }
-            log.debug("End API store migration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("End API store migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
     }
 
@@ -172,6 +174,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes("UTF8"))));
 
@@ -183,7 +186,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 boolean isAttribExists = false;
 
                 for (int j = 0; j < attributes.getLength(); j++) {
-                    if(attributes.item(j).getNodeName().equals(Constants.ATTRIBUTE_CLASSNAME)) {
+                    if(Constants.ATTRIBUTE_CLASSNAME.equals(attributes.item(j).getNodeName())) {
                         isAttribExists = true;
                     }
                 }
@@ -222,7 +225,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         log.info("Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
         boolean isTenantFlowStarted = false;
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start rxtMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("Start rxtMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             try {
                 PrivilegedCarbonContext.startTenantFlow();
                 isTenantFlowStarted = true;
@@ -246,8 +249,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         API api = APIUtil.getAPI(artifact, registry);
 
                         if (api == null) {
-                            log.error("Cannot find corresponding api for registry artifact " + artifact.getAttribute("overview_name") + "-" + artifact.getAttribute("overview_version") + "-" + artifact.getAttribute("overview_provider") +
-                                    " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ") in AM_DB");
+                            log.error("Cannot find corresponding api for registry artifact " +
+                                    artifact.getAttribute("overview_name") + '-' +
+                                    artifact.getAttribute("overview_version") + '-' +
+                                    artifact.getAttribute("overview_provider") +
+                                    " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ") in AM_DB");
                             continue;
                         }
 
@@ -267,7 +273,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         artifactManager.updateGenericArtifact(artifact);
                     }
                 } else {
-                    log.debug("No api artifacts found in registry for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                    log.debug("No api artifacts found in registry for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 }
             } catch (APIManagementException e) {
                 ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
@@ -280,7 +286,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     PrivilegedCarbonContext.endTenantFlow();
                 }
             }
-            log.debug("End rxtMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("End rxtMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
 
         log.info("Rxt resource migration done for all the tenants");
@@ -357,7 +363,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
 
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
-                log.debug("Start swaggerResourceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                log.debug("Start swaggerResourceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             }
 
             try {
@@ -372,7 +378,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 registryService.endTenantFlow();
             }
 
-            log.debug("End swaggerResourceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("End swaggerResourceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
 
         log.info("Swagger resource migration done for all the tenants.");
@@ -385,6 +391,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
 
     private void updateSwaggerResources(GenericArtifact[] artifacts, Tenant tenant) throws APIMigrationException {
         log.debug("Calling updateSwaggerResources");
+        APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+
         for (GenericArtifact artifact : artifacts) {
             API api = registryService.getAPI(artifact);
 
@@ -407,13 +415,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     String swagger2Document;
 
                     if (!registryService.isGovernanceRegistryResourceExists(swagger12location)) {
-                        log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
-
-                        APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+                        log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + '-' + apiVersion + '-' + apiProviderName);
 
                         swagger2Document = definitionFromSwagger20.generateAPIDefinition(api);
                     } else {
-                        log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + "-" + apiVersion + "-" + apiProviderName);
+                        log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + '-' + apiVersion + '-' + apiProviderName);
                         swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger12location, api);
                     }
 
@@ -427,17 +433,17 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                             .authorizeRole(APIConstants.EVERYONE_ROLE,
                                     "_system/governance" + swagger2location, ActionConstants.GET);
                     */
-                    APIUtil.setResourcePermissions(apiProviderName, null, null, swagger2location);
+                    registryService.setGovernanceRegistryResourcePermissions(null, null, swagger2location);
                 } catch (RegistryException e) {
-                    log.error("Registry error encountered for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                    log.error("Registry error encountered for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (ParseException e) {
-                    log.error("Error occurred while parsing swagger v1.2 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                    log.error("Error occurred while parsing swagger v1.2 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (UserStoreException e) {
-                    log.error("Error occurred while setting permissions of swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                    log.error("Error occurred while setting permissions of swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (MalformedURLException e) {
-                    log.error("Error occurred while creating swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                    log.error("Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (APIManagementException e) {
-                    log.error("Error occurred while creating swagger v2.0 document for api " + apiName + "-" + apiVersion + "-" + apiProviderName + " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ")", e);
+                    log.error("Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 }
                 finally {
                     registryService.endTenantFlow();
@@ -478,9 +484,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             //get each resource in the 1.2 folder except the api-doc resource
             for (String apiDefinition : apiDefinitions) {
 
-                String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf("/"));
+                String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf('/'));
                 //skip if api-doc file
-                if (resourceName.equals(APIConstants.API_DOC_1_2_RESOURCE_NAME)) {
+                if (APIConstants.API_DOC_1_2_RESOURCE_NAME.equals(resourceName)) {
                     continue;
                 }
 
@@ -512,7 +518,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     log.error("Cannot find resources in swagger v1.2 document");
                 }
             }
-            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, swagger12BasePath, api);
+            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
             return swagger2Doc.toJSONString();
         } catch (UnsupportedEncodingException e) {
             log.error("Error while reading swagger resource", e);
@@ -530,14 +536,13 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      *
      * @param swagger12doc      Old Swagger Document
      * @param apiDefPaths       Paths in API definition
-     * @param swagger12BasePath Location of swagger v1.2 document
      * @return Swagger v2.0 document as a JSON object
      * @throws ParseException
      * @throws MalformedURLException
      */
 
     private static JSONObject generateSwagger2Document(JSONObject swagger12doc,
-                                                       Map<String, JSONArray> apiDefPaths, String swagger12BasePath, API api)
+                                                       Map<String, JSONArray> apiDefPaths, API api)
             throws ParseException, MalformedURLException {
         log.debug("Calling generateSwagger2Document");
 
@@ -557,19 +562,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         //JSONObject pathObj = generatePathsObj(api);
         swagger20doc.put(Constants.SWAGGER_PATHS, pathObj);
 
-        //Base path and host is not needed for swagger v2.0
-        /*if (swagger12BasePath != null) {
-            URL url = new URL(swagger12BasePath);
-            swagger20doc.put(Constants.SWAGGER_HOST, url.getHost());
-            swagger20doc.put(Constants.SWAGGER_BASE_PATH, url.getPath());
-
-            JSONArray schemes = new JSONArray();
-            schemes.add(url.getProtocol());
-            swagger20doc.put(Constants.SWAGGER_SCHEMES, schemes);
-        }
-        else {
-            log.debug("swagger12BasePath is null");
-        }*/
 
         //securityDefinitions
         if (swagger12doc.containsKey(Constants.SWAGGER_AUTHORIZATIONS)) {
@@ -735,7 +727,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                             if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
                                 paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
                             } else {
-                                paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, false);
+                                paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
                             }
                             if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
                                 paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
@@ -880,10 +872,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         String repository = CarbonUtils.getCarbonRepository();
         String TenantRepo = CarbonUtils.getCarbonTenantsDirPath();
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start sequenceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("Start sequenceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             String SequenceFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
-                SequenceFilePath = TenantRepo + "/" + tenant.getId() +
+                SequenceFilePath = TenantRepo + '/' + tenant.getId() +
                         "/synapse-configs/default/sequences/";
             } else {
                 SequenceFilePath = repository + "synapse-configs/default/sequences/";
@@ -891,7 +883,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
 
             File sequenceFolder = new File(SequenceFilePath);
             if (!sequenceFolder.exists()) {
-                log.debug("No sequence folder exists for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                log.debug("No sequence folder exists for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 continue;
             }
 
@@ -909,7 +901,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 log.error("Copying sequences failed", e);
             }
 
-            log.debug("End sequenceMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("End sequenceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
     }
 
@@ -925,10 +917,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         String repository = CarbonUtils.getCarbonRepository();
         String tenantRepository = CarbonUtils.getCarbonTenantsDirPath();
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start synapseAPIMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("Start synapseAPIMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             String apiFilePath;
             if (tenant.getId() != MultitenantConstants.SUPER_TENANT_ID) {
-                apiFilePath = tenantRepository + "/" + tenant.getId() +
+                apiFilePath = tenantRepository + '/' + tenant.getId() +
                         "/synapse-configs/default/api";
             } else {
                 apiFilePath = repository + "synapse-configs/default/api";
@@ -937,7 +929,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             File[] synapseFiles = APIFiles.listFiles();
 
             if (synapseFiles == null) {
-                log.debug("No api folder " + apiFilePath + " exists for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+                log.debug("No api folder " + apiFilePath + " exists for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 continue;
             }
 
@@ -946,6 +938,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 docFactory.setNamespaceAware(true);
 
                 try {
+                    docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                     DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
                     Document doc = docBuilder.parse(synapseFile);
 
@@ -970,7 +963,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 }
             }
 
-            log.debug("End synapseAPIMigration for tenant " + tenant.getId() + "(" + tenant.getDomain() + ")");
+            log.debug("End synapseAPIMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
     }
 }
