@@ -26,6 +26,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -108,11 +109,12 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        apiStore.addApplication("HttpPatchSupportAPP", "Gold", "", "Test-HTTP-PATCH");
+        apiStore.addApplication("HttpPatchSupportAPP", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+                "Test-HTTP-PATCH");
 
         //Subscribe to the new application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, APIVersion, providerName,
-                "HttpPatchSupportAPP", "Gold");
+                "HttpPatchSupportAPP", APIMIntegrationConstants.API_TIER.GOLD);
         apiStore.subscribe(subscriptionRequest);
 
         //Generate a production token and invoke the API

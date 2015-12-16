@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -57,7 +58,9 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
     private String version = "1.0.0";
     private String visibility = "public";
     private String providerName;
-    private String tier = "Unlimited";
+    private String tier= APIMIntegrationConstants.API_TIER.UNLIMITED;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED;
+    private String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
     private String endPointType = "load_balance";
     private String applicationName = "LoadBalanceAPIApplication";
     private final String webApp1 = "name-checkOne";
@@ -169,7 +172,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getPassword());
         //add resources
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", tier, "name"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, "name"));
 
         if (gatewayContextWrk.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
@@ -234,7 +237,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
     public void testRoundRobinAlgorithmInProductionEndpoints() throws Exception {
 
         String accessUrl = gatewayUrl + context + "/" + version + "/name";
-        apiStore.addApplication(applicationName, tier, "", "");
+        apiStore.addApplication(applicationName, appTier, "", "");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, version, providerName,
                 applicationName, tier);
@@ -344,7 +347,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
 
         String accessUrl = gatewayUrl + contextSandbox + "/" + version + "/name";
 
-        apiStore.addApplication(applicationNameSandbox, tier, "", "");
+        apiStore.addApplication(applicationNameSandbox, appTier, "", "");
 
         providerName=storeContext.getContextTenant().getContextUser().getUserName();
 

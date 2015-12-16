@@ -86,7 +86,8 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     public void testInvokingWithGoldTier() throws Exception {
 
         applicationNameGold = APPLICATION_NAME + TIER_GOLD;
-        apiStoreClientUser1.addApplication(applicationNameGold, TIER_GOLD, "", "");
+        apiStoreClientUser1
+                .addApplication(applicationNameGold, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
@@ -171,7 +172,8 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     public void testInvokingWithSilverTier() throws Exception {
         applicationNameSilver = APPLICATION_NAME + TIER_SILVER;
         // create new application
-        apiStoreClientUser1.addApplication(applicationNameSilver, TIER_GOLD, "", "");
+        apiStoreClientUser1
+                .addApplication(applicationNameSilver, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         apiIdentifier.setTier(TIER_SILVER);
         // Do a API Silver subscription.
         subscribeToAPI(apiIdentifier, applicationNameSilver, apiStoreClientUser1);

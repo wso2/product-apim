@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -63,7 +64,11 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
     private String apiProvider;
     private String visibility = "public";
     private String endPointType = "http";
-    private String tier = "Unlimited";
+
+    private String tier= APIMIntegrationConstants.API_TIER.UNLIMITED;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED;
+    private String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
+
     private final String webApp = "jaxrs_basic";
     private String applicationName="NewApplication";
     private final String applicationDescription = "NewKeyGeneration";
@@ -132,8 +137,8 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         String uriGet = "customers/{id}/";
         String uriPost = "customers/name/";
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", tier, uriGet));
-        resourceBeanList.add(new APIResourceBean("POST", "Application & Application User", tier, uriPost));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uriGet));
+        resourceBeanList.add(new APIResourceBean("POST", "Application & Application User", resTier, uriPost));
         String endpoint = "/services/customers/customerservice";
 
         endpointUrl = gatewayUrlsWrk.getWebAppURLHttp() + webApp + endpoint;
@@ -183,7 +188,7 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         apiProvider = storeContext.getContextTenant().getContextUser().getUserName();
 
         //add application
-        HttpResponse addApplicationResponse=apiStore.addApplication(applicationName, tier, callbackUrl,
+        HttpResponse addApplicationResponse=apiStore.addApplication(applicationName, appTier, callbackUrl,
                 applicationDescription);
         assertEquals(addApplicationResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
                 "Response Code Mismatched in Create Application: " + applicationName);

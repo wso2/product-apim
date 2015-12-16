@@ -16,7 +16,7 @@
  * /
  */
 
-package apim.restful.importexport;
+package org.wso2.carbon.apimgt.importexport;
 
 
 import com.google.gson.Gson;
@@ -37,10 +37,10 @@ import javax.ws.rs.core.Response.Status;
 import java.io.File;
 import java.io.InputStream;
 
-import apim.restful.importexport.utils.APIExportUtil;
-import apim.restful.importexport.utils.APIImportUtil;
-import apim.restful.importexport.utils.ArchiveGeneratorUtil;
-import apim.restful.importexport.utils.AuthenticatorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

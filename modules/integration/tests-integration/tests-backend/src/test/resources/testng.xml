@@ -111,7 +111,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
-            <!--<class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
@@ -144,6 +144,13 @@
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
+        </classes>
+    </test>
+
+    <test name="rest-api-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
         </classes>
     </test>
 

@@ -102,7 +102,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), "can be create API without name");
         assertTrue(apiResponse.getString("message").contains
-                ("null"), "can be create API without name");
+                ("API name is not specified"), "can be create API without name");
 
     }
 
@@ -121,7 +121,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest1 + "can be create without Context");
         assertTrue(apiResponse.getString("message").contains
-                        ("Error while adding the API- " + apiNameTest1 + "-" + apiVersion),
+                        ("Context not defined for API"),
                 apiNameTest1 + "can be create without Context");
     }
 
@@ -142,7 +142,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest2 + "can be create without Version");
         assertTrue(apiResponse.getString("message").contains
-                ("null"), apiNameTest2 + "can be create without Version");
+                ("Version not specified for API " + apiNameTest2), apiNameTest2 + "can be create without Version");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -165,7 +165,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         assertTrue(apiResponse.getBoolean("error"), apiNameTest3 +
                 "can be create without Tier availability");
         assertTrue(apiResponse.getString("message").contains
-                ("null"), apiNameTest3 + "can be create without Tier availability");
+                ("No tier defined for the API"), apiNameTest3 + "can be create without Tier availability");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -175,10 +175,10 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         String apiContextTest = "apim514PublisherTestAPI4";
         String apiNameTest4 = "APIM514PublisherTest4";
 
-
+        URL url = null;
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(apiNameTest4, apiContextTest, apiVersion, apiProviderName,
-                        new URL(""));
+                        url);
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
@@ -186,7 +186,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest4 + "can be create without Endpoint");
         assertTrue(apiResponse.getString("message").contains
-                ("null"), apiNameTest4 + "can be create without Endpoint");
+                ("Endpoint Configuration is missing"), apiNameTest4 + "can be create without Endpoint");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +

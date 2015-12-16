@@ -31,6 +31,6 @@
         </jaxrs:serviceBeans>
     </jaxrs:server>
 
-    <bean id="serviceBean" class="apim.restful.importexport.APIService"/>
+    <bean id="serviceBean" class="org.wso2.carbon.apimgt.importexport.APIService"/>
 </beans>
 
