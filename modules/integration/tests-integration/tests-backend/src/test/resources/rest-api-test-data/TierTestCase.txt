@@ -35,7 +35,7 @@
                         "Authorization": "Bearer"
                     },
                     "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
-                    \"requestCount\": 20,\n   \"description\": \"Allows 20 request(s) per minute.\",\n
+                    \"requestCount\": 20,\n   \"description\": \"Allows 20 requests per minute.\",\n
                     \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
                     "response-headers": "",
                     "response-payload": ""

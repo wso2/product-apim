@@ -36,10 +36,10 @@ import java.io.File;
 import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
-public class APITestCase extends APIMIntegrationBaseTest {
+public class APILifecycleTestCase extends APIMIntegrationBaseTest {
 
     @Factory(dataProvider = "userModeDataProvider")
-    public APITestCase(TestUserMode userMode) {
+    public APILifecycleTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -55,14 +55,14 @@ public class APITestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
     }
 
-    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API handling test case")
-    public void testAPIs() {
+    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API Lifecycle change test case")
+    public void testAPILifecycle() {
 
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();
 
-        //file name of the JSON data file related to : API handling test case
-        String dataFileName = "APITestCase.txt";
+        //file name of the JSON data file related to : API lifecycle change test case
+        String dataFileName = "APILifecycleTestCase.txt";
         String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
                 RESTAPITestConstants.PATH_SUBSTRING + dataFileName;
         boolean testSuccessStatus = new RESTAPITestUtil().testRestAPI(dataFilePath, gatewayURL, keyManagerURL);
