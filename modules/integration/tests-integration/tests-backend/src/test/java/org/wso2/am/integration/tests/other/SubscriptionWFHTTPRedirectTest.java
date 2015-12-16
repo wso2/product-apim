@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -21,6 +22,7 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
 import javax.xml.xpath.XPathExpressionException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -106,7 +108,7 @@ public class SubscriptionWFHTTPRedirectTest  extends APIManagerLifecycleBaseTest
 
         apiStore.login(userName, user.getPassword());
 
-        apiStore.addApplication(appName, "Gold", "", "this-is-test");
+        apiStore.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, userName);
         subscriptionRequest.setApplicationName(appName);
