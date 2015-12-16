@@ -56,7 +56,7 @@ public class SubscriptionTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API Subscription test case")
-    public void testAPIs() {
+    public void testSubscription() {
 
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();

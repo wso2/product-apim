@@ -56,7 +56,7 @@ public class TagTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API tags test case")
-    public void testAPIs() {
+    public void testAPITags() {
 
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();

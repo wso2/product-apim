@@ -56,7 +56,7 @@ public class ApplicationTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Application handling test case")
-    public void testAPIs() {
+    public void testApplications() {
 
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();

@@ -56,7 +56,7 @@ public class APILifecycleTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API Lifecycle change test case")
-    public void testAPIs() {
+    public void testAPILifecycle() {
 
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();
