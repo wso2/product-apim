@@ -28,8 +28,8 @@
   insert into table THROTTLED_OUT_FINAL_SUMMARY select
   api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,
   day,week,time,COALESCE(success_request_count,0),COALESCE(throttleout_count,0),
-  COALESCE(timestamp(time),0), facet3(api,apiPublisher,applicationName),
-  applicationName from APIThrottleSummaryData;
+  COALESCE(timestamp(time),0), facet5(api,year,month,week,day),
+  applicationName,facet3(api,apiPublisher,applicationName) from APIThrottleSummaryData;
 
 
   <!--setting Request Summary data-->
