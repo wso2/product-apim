@@ -524,6 +524,12 @@
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
 
+    <!--Configure Access-Control-Allow-Credentials-->
+    <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
+         It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*)
+    -->
+    <Access-Control-Allow-Credentials>false</Access-Control-Allow-Credentials>
+
     </CORSConfiguration>
    <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
  	You can enable this and set preferable Logger name. 
