@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Analytics>
-    <Name>APIM_1_10_X_MIGRATION</Name>
+    <Name>APIM_1_10_X_MIGRATION_H2_ORACLE</Name>
 <Script>
 
   <!--setting Throttle Summary data-->
@@ -60,7 +60,7 @@
   create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_REQUEST_SUMMARY");
 
   insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
-  consumerKey,
+  COALESCE(consumerKey,'-'),
   userId,
   context,
   max_request_time,
@@ -128,7 +128,7 @@
   );
 
   insert into table API_Resource_USAGE_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),
+  api,version,apiPublisher,COALESCE(consumerKey,'-'),
   resourcePath,context,method,total_request_count,hostName,
   year,  month,  day,  time,
   timestamp(time),
@@ -158,7 +158,7 @@
   );
 
   insert into table API_RESPONSE_SUMMARY_FINAL select
-  api_version,  COALESCE(apiPublisher,''),  context,  serviceTime,  total_response_count,
+  api_version,  COALESCE(apiPublisher,'-'),  context,  serviceTime,  total_response_count,
   hostName,  year,  month,  day,  time,  timestamp(time),
   facet2(api_version, context)
   from APIResponseSummaryData;
@@ -186,7 +186,7 @@
   );
 
   insert into table API_FAULT_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),context,  total_fault_count,
+  api,version,apiPublisher,COALESCE(consumerKey,'-'),context,  total_fault_count,
   hostName,year,  month,  day,  time, timestamp(time),
   facet2(consumerKey, api),
   facet4(api, version, apiPublisher, context)

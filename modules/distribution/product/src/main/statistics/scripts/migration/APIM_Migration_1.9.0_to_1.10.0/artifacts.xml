@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <artifacts>
     <artifact name="APIM_1_10_X_MIGRATION_STAT_CAPP" version="v1.0.3" type="carbon/application">
-	<dependency artifact="APIM_1_10_X_MIGRATION" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	    <dependency artifact="APIM_1_10_X_MIGRATION_MYSQL" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+        <dependency artifact="APIM_1_10_X_MIGRATION_H2_ORACLE" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
     </artifact>
 </artifacts>
