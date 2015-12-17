@@ -60,7 +60,7 @@
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
-            <!-- <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <!-- Commenting this test since its required to setup BAM and the DBs to run this
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
