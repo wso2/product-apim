@@ -2,7 +2,7 @@
    "testCase":[
       {
          "init":{
-            "scope":"API_CREATOR_SCOPE"
+            "scope":"apim_create_api_scope"
          },
          "data":{
             "method":"POST",
@@ -61,7 +61,7 @@
       },
       {
          "init":{
-            "scope":"API_CREATOR_PUBLISHER_SCOPE"
+            "scope":"apim_create_publish_api_scope"
          },
          "data":{
             "method":"GET",
@@ -84,7 +84,7 @@
       },
       {
          "init":{
-            "scope":"API_CREATOR_SCOPE"
+            "scope":"apim_create_api_scope"
          },
          "data":{
             "method":"DELETE",
