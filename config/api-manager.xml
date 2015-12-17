@@ -187,9 +187,10 @@
     </APIGateway>
 
      <!--
-	    Enable/Disable Usage metering and billing for api usage
+	    From API Manager 1.10 onward billing sample will not zip with product anymore.
+	    We suggest users to use new monotization extensions provided.
+	    So removed billing sample and its configuration from pack
      -->
-     <EnableBillingAndUsage>false</EnableBillingAndUsage>
 
     <!--
         API usage tracker configuration used by the BAM data publisher and
