@@ -2,7 +2,7 @@
 	"testCase": [
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "apim_edit_tiers_scope"
                 },
                 "data": {
                     "method": "POST",
@@ -26,7 +26,7 @@
             },
             {
                 "init": {
-                    "scope": "API_SUBSCRIBER_SCOPE"
+                    "scope": "apim_subscribe_api_scope"
                 },
                 "data": {
                     "method": "POST",
@@ -62,7 +62,7 @@
 		    },
             {
                "init":{
-                  "scope":"API_CREATOR_SCOPE"
+                  "scope":"apim_create_api_scope"
                },
                "data":{
                   "method":"POST",
@@ -121,7 +121,7 @@
             },
             {
                 "init": {
-                    "scope": "API_PUBLISHER_SCOPE"
+                    "scope": "apim_publish_api_scope"
                 },
                 "data": {
                     "method": "POST",
@@ -143,7 +143,7 @@
             },
             {
                 "init": {
-                    "scope": "API_SUBSCRIBER_SCOPE"
+                    "scope": "apim_subscribe_api_scope"
                 },
                 "data": {
                     "method": "POST",
@@ -171,7 +171,7 @@
             },
             {
                 "init": {
-                    "scope": "API_SUBSCRIBER_SCOPE"
+                    "scope": "apim_subscribe_api_scope"
                 },
                 "data": {
                     "method": "DELETE",
@@ -193,7 +193,7 @@
             },
             {
                 "init": {
-                    "scope": "API_SUBSCRIBER_SCOPE"
+                    "scope": "apim_subscribe_api_scope"
                 },
                 "data": {
                     "method": "DELETE",
@@ -215,7 +215,7 @@
             },
             {
                  "init":{
-                    "scope":"API_CREATOR_SCOPE"
+                    "scope":"apim_create_api_scope"
                  },
                  "data":{
                     "method":"DELETE",
@@ -237,7 +237,7 @@
             },
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "apim_edit_tiers_scope"
                 },
                 "data": {
                     "method": "DELETE",
