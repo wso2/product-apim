@@ -20,7 +20,7 @@
     success_request_count int -i,
     throttleout_count int -i,
     max_request_time long -i,
-    api_apiPublisher_applicationName_facet facet -i,
+    api_year_month_week_day_facet facet -i,
     applicationName_facet facet -i",
     primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
   );
@@ -29,7 +29,7 @@
   api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,
   day,week,time,COALESCE(success_request_count,0),COALESCE(throttleout_count,0),
   COALESCE(timestamp(time),0), facet5(api,year,month,week,day),
-  applicationName,facet3(api,apiPublisher,applicationName) from APIThrottleSummaryData;
+  applicationName from APIThrottleSummaryData;
 
 
   <!--setting Request Summary data-->
@@ -213,9 +213,9 @@
   );
 
   insert into table API_DESTINATION_SUMMARY_FINAL select
-  api,version,apiPublisher, context,destination,total_request_count,hostName,
+  api,version,apiPublisher, context,COALESCE(destination,'-'),total_request_count,hostName,
   year,  month,  day,  time, timestamp(time),
-  facet4(api, version, context, destination)
+  facet4(api, version, context, COALESCE(destination,'-'))
   from APIDestinationDataSummaryData;
 
      
