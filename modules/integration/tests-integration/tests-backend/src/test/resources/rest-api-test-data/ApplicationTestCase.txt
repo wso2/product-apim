@@ -2,7 +2,7 @@
 	"testCase": [
 	    {
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "POST",
@@ -38,7 +38,7 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "PUT",
@@ -68,7 +68,7 @@
 		},
 		{
 			"init": {
-				"scope": "apim_create_api_scope"
+				"scope": "apim:api_create"
 			},
 			"data": {
 				"method": "GET",
@@ -90,7 +90,7 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "GET",
@@ -112,7 +112,7 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "DELETE",
