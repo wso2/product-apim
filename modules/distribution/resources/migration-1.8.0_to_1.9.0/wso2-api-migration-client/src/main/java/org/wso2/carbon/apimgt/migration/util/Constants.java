@@ -72,12 +72,21 @@ public class Constants {
     public static final String SYNAPSE_API_VALUE_EXPRESSION = "get-property('SYSTEM_TIME')";
     public static final String SYNAPSE_API_VALUE_RESPONSE_HANDLER = "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler";
     public static final String SYNAPSE_API_VALUE_CORS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler";
+    public static final String SYNAPSE_API_VALUE_THROTTLE_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler";
     public static final String SYNAPSE_API_VALUE_INLINE = "inline";
     public static final String SYNAPSE_API_VALUE_INLINE_UPPERCASE = "INLINE";
     public static final String SYNAPSE_API_VALUE_ENPOINT = "ENDPOINT";
     public static final String SYNAPSE_API_VALUE_VERSION_TYPE_URL = "url";
     public static final String SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT = "context";
     public static final String SYNAPSE_API_XMLNS = "http://ws.apache.org/ns/synapse";
+    public static final String SYNAPSE_API_VALUE_ID = "id";
+    public static final String SYNAPSE_API_VALUE_A = "A";
+    public static final String SYNAPSE_API_VALUE_RESOURCE_KEY = "policyKeyResource";
+    public static final String SYNAPSE_API_VALUE_RESOURCE_KEY_VALUE = "gov:/apimgt/applicationdata/res-tiers.xml";
+    public static final String SYNAPSE_API_VALUE_API_KEY = "policyKey";
+    public static final String SYNAPSE_API_VALUE_API_KEY_VALUE = "gov:/apimgt/applicationdata/tiers.xml";
+    public static final String SYNAPSE_API_VALUE_APP_KEY = "policyKeyApplication";
+    public static final String SYNAPSE_API_VALUE_APP_KEY_VALUE = "gov:/apimgt/applicationdata/app-tiers.xml";
 
 
     //Swagger v2.0 constants

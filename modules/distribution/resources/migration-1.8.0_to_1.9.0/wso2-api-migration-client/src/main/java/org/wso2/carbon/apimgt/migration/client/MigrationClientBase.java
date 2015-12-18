@@ -268,6 +268,5 @@ public abstract class MigrationClientBase {
 
             APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
         }
-
     }
 }

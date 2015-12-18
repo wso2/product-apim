@@ -25,6 +25,7 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
+import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -42,6 +43,7 @@ import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class MigrateFrom19to110 extends MigrationClientBase implements MigrationClient {
@@ -87,7 +89,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     @Override
     public void fileSystemMigration() throws APIMigrationException {
-
+        synapseAPIMigration();
     }
 
     @Override
@@ -98,6 +100,18 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     @Override
     public void statsMigration() throws APIMigrationException {
 
+    }
+
+    private void synapseAPIMigration() {
+        for (Tenant tenant : getTenantsArray()) {
+            String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
+            List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
+            ResourceModifier.updateSynapseConfigs(synapseDTOs);
+
+            for (SynapseDTO synapseDTO : synapseDTOs) {
+                ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+            }
+        }
     }
 
 
@@ -149,25 +163,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                     updateStatement.setString(i++, pair.usernameWithoutDomain);
                     updateStatement.setString(i++, pair.authzUser);
                 }
-
-                //String updateQuery = "UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ? WHERE AUTHZ_USER = ?";
-                //final StringBuilder updateQuery = new StringBuilder("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = CASE ");
-
-                //for (Pair pair : updateValues) {
-                //    updateQuery.append(" WHEN AUTHZ_USER = '");
-                //    updateQuery.append(pair.authzUser);
-                //    updateQuery.append("' THEN '");
-                //    updateQuery.append(pair.usernameWithoutDomain);
-                    /*
-                    updateStatement = connection.prepareStatement(updateQuery);
-                    updateStatement.setString(1, pair.usernameWithoutDomain);
-                    updateStatement.setString(2, pair.authzUser);
-                    updateStatement.execute();
-                    */
-                //}
-
-
-                //updateQuery.append(" END");;
                 updateStatement.execute();
 
                 connection.commit();
@@ -214,62 +209,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
         log.info("Rxt resource migration done for all the tenants");
     }
-
-    /*
-    private void updateResourcePermissions(GenericArtifact artifact, Tenant tenant) throws APIMigrationException {
-        API api = registryService.getAPI(artifact);
-
-        if (api != null) {
-            APIIdentifier apiIdentifier = api.getId();
-            String apiName = apiIdentifier.getApiName();
-            String apiVersion = apiIdentifier.getVersion();
-            String apiProviderName = apiIdentifier.getProviderName();
-
-            String swagger2Path = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
-
-            try {
-                registryService.setGovernanceRegistryResourcePermissions(apiProviderName, null, null, swagger2Path);
-            } catch (APIManagementException e) {
-                log.error("Error when setting permissions in registry for " + swagger2Path, e);
-            }
-
-            String apiArtifactPath = null;
-
-            try {
-                apiArtifactPath = registryService.getGenericArtifactPath(artifact);
-            } catch (UserStoreException e) {
-                log.error("User Store Error when getting generic artifacts path", e);
-            } catch (RegistryException e) {
-                log.error("Registry Error when getting generic artifacts path", e);
-            }
-
-            if (apiArtifactPath != null) {
-                try {
-                    String visibleRolesList = api.getVisibleRoles();
-                    String[] visibleRoles = new String[0];
-                    if (visibleRolesList != null) {
-                        visibleRoles = visibleRolesList.split(",");
-                    }
-                    registryService.setGovernanceRegistryResourcePermissions(api.getId().getProviderName(),
-                                                                api.getVisibility(), visibleRoles, apiArtifactPath);
-                } catch (APIManagementException e) {
-                    log.error("Error when setting permissions in registry for " + apiArtifactPath, e);
-                }
-            }
-        }
-        else {
-            try {
-                log.error("Cannot find corresponding api for registry artifact " + artifact.getAttribute("overview_name")
-                        + "-" + artifact.getAttribute("overview_version") + "-" + artifact.getAttribute("overview_provider") +
-                        " of tenant " + tenant.getId() + "(" + tenant.getDomain() + ") in AM_DB");
-            } catch (GovernanceException e) {
-                log.error("Cannot find corresponding api for registry artifact of tenant "
-                        + tenant.getId() + "(" + tenant.getDomain() + ") in AM_DB");
-
-            }
-        }
-    }
-    */
 
     /**
      * This method is used to workflow-extensions.xml configuration by handling the addition of the executors

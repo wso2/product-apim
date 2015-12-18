@@ -25,14 +25,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.dto.HandlerPropertyDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
+import org.wso2.carbon.apimgt.migration.util.SynapseUtil;
+import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceModifier {
     public static String modifyWorkFlowExtensions(String xmlContent) throws APIMigrationException {
@@ -236,5 +241,60 @@ public class ResourceModifier {
 
         return nodes.getLength() > 0;
 
+    }
+
+
+    public static void updateSynapseConfigs(List<SynapseDTO> synapseDTOs) {
+        ArrayList<HandlerPropertyDTO> propertyDTOs = new ArrayList<>();
+
+        HandlerPropertyDTO idProperty = new HandlerPropertyDTO();
+        idProperty.setName(Constants.SYNAPSE_API_VALUE_ID);
+        idProperty.setValue(Constants.SYNAPSE_API_VALUE_A);
+        propertyDTOs.add(idProperty);
+
+        HandlerPropertyDTO resourceProperty = new HandlerPropertyDTO();
+        resourceProperty.setName(Constants.SYNAPSE_API_VALUE_RESOURCE_KEY);
+        resourceProperty.setValue(Constants.SYNAPSE_API_VALUE_RESOURCE_KEY_VALUE);
+        propertyDTOs.add(resourceProperty);
+
+        HandlerPropertyDTO apiProperty = new HandlerPropertyDTO();
+        apiProperty.setName(Constants.SYNAPSE_API_VALUE_API_KEY);
+        apiProperty.setValue(Constants.SYNAPSE_API_VALUE_API_KEY_VALUE);
+        propertyDTOs.add(apiProperty);
+
+        HandlerPropertyDTO appProperty =  new HandlerPropertyDTO();
+        appProperty.setName(Constants.SYNAPSE_API_VALUE_APP_KEY);
+        appProperty.setValue(Constants.SYNAPSE_API_VALUE_APP_KEY_VALUE);
+        propertyDTOs.add(appProperty);
+
+        for (SynapseDTO synapseDTO : synapseDTOs) {
+            Element existingThrottleHandler = SynapseUtil.getHandler(synapseDTO.getDocument(),
+                    Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER);
+
+            if (!isThrottleHandlerUpdated(existingThrottleHandler)) {
+                Element updatedThrottleHandler = SynapseUtil.createHandler(synapseDTO.getDocument(),
+                        Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER, propertyDTOs);
+                SynapseUtil.updateHandler(synapseDTO.getDocument(),
+                        Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER, updatedThrottleHandler);
+            }
+        }
+    }
+
+    private static boolean isThrottleHandlerUpdated(Element existingThrottleHandler) {
+        NodeList properties = existingThrottleHandler.getChildNodes();
+
+        for (int i = 0; i < properties.getLength(); ++i) {
+            Node childNode = properties.item(i);
+
+            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                String nameAttribute = ((Element) childNode).getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME);
+
+                if (nameAttribute != null) {
+                    return Constants.SYNAPSE_API_VALUE_RESOURCE_KEY.equals(nameAttribute);
+                }
+            }
+        }
+
+        return false;
     }
 }

@@ -23,7 +23,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
+import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -36,6 +39,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceUtil {
 
@@ -331,16 +336,11 @@ public class ResourceUtil {
     public static Document buildDocument(String xmlContent, String fileName) throws APIMigrationException {
         Document doc = null;
         try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            docFactory.setNamespaceAware(true);
-            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
             doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes(Charset.defaultCharset()))));
             doc.getDocumentElement().normalize();
         } catch (SAXException e) {
             ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
-        } catch (ParserConfigurationException e) {
-            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
         } catch (IOException e) {
             ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
         }
@@ -352,20 +352,106 @@ public class ResourceUtil {
     public static Document buildDocument(InputStream inputStream, String fileName) throws APIMigrationException {
         Document doc = null;
         try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            docFactory.setNamespaceAware(true);
-            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
             doc = docBuilder.parse(new InputSource(inputStream));
             doc.getDocumentElement().normalize();
         } catch (SAXException e) {
             ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
-        } catch (ParserConfigurationException e) {
-            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
         } catch (IOException e) {
             ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
         }
 
         return doc;
     }
+
+    public static Document buildDocument(File file, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
+            doc = docBuilder.parse(file);
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
+    }
+
+    private static DocumentBuilder getDocumentBuilder(String fileName) throws APIMigrationException {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        docFactory.setNamespaceAware(true);
+        DocumentBuilder docBuilder = null;
+        try {
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
+        }
+
+        return docBuilder;
+    }
+
+    public static void transformXMLDocument(Document document, File file) {
+        document.getDocumentElement().normalize();
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.transform(new DOMSource(document), new StreamResult(file));
+        } catch (TransformerConfigurationException e) {
+            log.error("Transformer configuration error encountered while transforming file " + file.getName(), e);
+        } catch (TransformerException e) {
+            log.error("Transformer error encountered while transforming file " + file.getName(), e);
+        }
+    }
+
+
+    public static String getApiPath(int tenantID, String tenantDomain) {
+        log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        String apiFilePath;
+        if (tenantID != MultitenantConstants.SUPER_TENANT_ID) {
+            apiFilePath = CarbonUtils.getCarbonTenantsDirPath() + File.separatorChar + tenantID +
+                    File.separatorChar + "synapse-configs" + File.separatorChar + "default" + File.separatorChar + "api";
+        } else {
+            apiFilePath = CarbonUtils.getCarbonRepository() + "synapse-configs" + File.separatorChar +
+                    "default" + File.separatorChar  +"api";
+        }
+        log.debug("Path of api folder " + apiFilePath);
+
+        return apiFilePath;
+    }
+
+
+    public static List<SynapseDTO> getVersionedAPIs(String apiFilePath) {
+        File apiFiles = new File(apiFilePath);
+        File[] files = apiFiles.listFiles();
+        List<SynapseDTO> versionedAPIs = new ArrayList<>();
+
+        if (files != null) {
+            for (File file : files) {
+                try {
+                    Document doc = buildDocument(file, file.getName());
+                    Element rootElement = doc.getDocumentElement();
+
+                    // Ensure that we skip internal apis such as '_TokenAPI_.xml' and apis
+                    // that represent default versions
+                    if (Constants.SYNAPSE_API_ROOT_ELEMENT.equals(rootElement.getNodeName()) &&
+                            rootElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION)) {
+                        SynapseDTO synapseConfig = new SynapseDTO(doc, file);
+                        versionedAPIs.add(synapseConfig);
+                    }
+                } catch (APIMigrationException e) {
+                    log.error("Error when passing file " + file.getName(), e);
+                }
+            }
+        }
+
+        return versionedAPIs;
+    }
+
+
 }
