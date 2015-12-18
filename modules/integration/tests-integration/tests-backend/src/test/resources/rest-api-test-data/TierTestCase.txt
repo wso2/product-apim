@@ -2,7 +2,7 @@
     "testCase": [
             {
                 "init": {
-                    "scope": "API_CREATOR_PUBLISHER_SCOPE"
+                    "scope": "apim_create_publish_api_scope"
                 },
                 "data": {
                     "method": "GET",
@@ -25,7 +25,7 @@
             ,
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "apim_edit_tiers_scope"
                 },
                 "data": {
                     "method": "POST",
@@ -35,7 +35,7 @@
                         "Authorization": "Bearer"
                     },
                     "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
-                    \"requestCount\": 20,\n   \"description\": \"Allows 20 request(s) per minute.\",\n
+                    \"requestCount\": 20,\n   \"description\": \"Allows 20 requests per minute.\",\n
                     \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
                     "response-headers": "",
                     "response-payload": ""
@@ -50,7 +50,7 @@
             ,
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "apim_edit_tiers_scope"
                 },
                 "data": {
                     "method": "PUT",
@@ -79,7 +79,7 @@
             ,
             {
                 "init": {
-                    "scope": "API_ADMINISTRATIVE_SCOPE"
+                    "scope": "apim_edit_tiers_scope"
                 },
                 "data": {
                     "method": "DELETE",

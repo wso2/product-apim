@@ -45,6 +45,12 @@ public final class RESTAPITestConstants {
     //http DELETE method
     public static final String DELETE_METHOD = "DELETE";
 
+    //regular expression pattern for URL
+    public static final String URL_REGEX = "\\{(.*?)\\}";
+
+    //regular expression pattern for payload
+    public static final String PAYLOAD_REGEX = "\\((.*?)\\)";
+
     //text to represent Authorization
     public static final String AUTHORIZATION_KEY = "Authorization";
 

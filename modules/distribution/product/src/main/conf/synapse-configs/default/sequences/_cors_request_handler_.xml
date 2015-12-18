@@ -16,6 +16,15 @@
                <property name="Access-Control-Allow-Headers" expression="$ctx:Access-Control-Allow-Headers" scope="transport" type="STRING"/>
             </then>
          </filter>
+         <filter source="boolean($trp:Access-Control-Allow-Credentials)" regex="false">
+            <then>
+               <filter source="boolean($ctx:Access-Control-Allow-Credentials)" regex="true">
+                  <then>
+                     <property name="Access-Control-Allow-Credentials" expression="$ctx:Access-Control-Allow-Credentials" scope="transport" type="STRING"/>
+                  </then>
+               </filter>
+            </then>
+         </filter>
       </then>
    </filter>
 </sequence>
