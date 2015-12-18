@@ -2,7 +2,7 @@
 	"testCase": [
             {
                 "init": {
-                    "scope": "apim_edit_tiers_scope"
+                    "scope": "apim:tier_manage"
                 },
                 "data": {
                     "method": "POST",
@@ -26,7 +26,7 @@
             },
             {
                "init":{
-                  "scope":"apim_create_api_scope"
+                  "scope":"apim:api_create"
                },
                "data":{
                   "method":"POST",
@@ -85,7 +85,7 @@
             },
             {
                  "init":{
-                    "scope":"apim_create_api_scope"
+                    "scope":""
                  },
                  "data":{
                     "method":"GET",
@@ -107,7 +107,7 @@
             },
             {
                  "init":{
-                    "scope":"apim_create_api_scope"
+                    "scope":"apim:api_create"
                  },
                  "data":{
                     "method":"DELETE",
@@ -129,7 +129,7 @@
             },
             {
                 "init": {
-                    "scope": "apim_edit_tiers_scope"
+                    "scope": "apim:tier_manage"
                 },
                 "data": {
                     "method": "DELETE",
