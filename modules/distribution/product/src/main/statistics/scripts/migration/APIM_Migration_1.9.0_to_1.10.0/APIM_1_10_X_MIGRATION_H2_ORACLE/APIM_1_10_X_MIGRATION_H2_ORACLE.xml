@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Analytics>
-    <Name>APIM_1_10_X_MIGRATION</Name>
+    <Name>APIM_1_10_X_MIGRATION_H2_ORACLE</Name>
 <Script>
 
   <!--setting Throttle Summary data-->
@@ -20,16 +20,17 @@
     success_request_count int -i,
     throttleout_count int -i,
     max_request_time long -i,
-    api_apiPublisher_applicationName_facet facet -i,
+    api_year_month_week_day_facet facet -i,
     applicationName_facet facet -i",
     primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
   );
 
   insert into table THROTTLED_OUT_FINAL_SUMMARY select
-  api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,
-  day,week,time,COALESCE(success_request_count,0),COALESCE(throttleout_count,0),
-  COALESCE(timestamp(time),0), facet3(api,apiPublisher,applicationName),
-  applicationName from APIThrottleSummaryData;
+  API,API_VERSION,CONTEXT,APIPUBLISHER,APPLICATIONNAME,TENANTDOMAIN,YEAR,MONTH,
+  DAY,WEEK,TIME,SUCCESS_REQUEST_COUNT,THROTTLEOUT_COUNT,
+  COALESCE(timestamp(TIME),0), facet5(API,YEAR,MONTH,WEEK,DAY),
+  APPLICATIONNAME from APIThrottleSummaryData;
+
 
 
   <!--setting Request Summary data-->
@@ -59,22 +60,22 @@
 
   create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_REQUEST_SUMMARY");
 
-  insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
-  consumerKey,
-  userId,
-  context,
-  max_request_time,
-  total_request_count,
-  hostName,
-  year,
-  month,
-  day,
-  time,
-  facet2(consumerKey,api),
-  facet2(consumerKey,userId),
-  facet3(api,version,userId),
-  facet4(api,version,userId,apiPublisher),
-  facet4(api,version,userId,context)
+  insert into table API_REQUEST_SUMMARY_FINAL select API, API_VERSION,VERSION, APIPUBLISHER,
+  COALESCE(CONSUMERKEY,'-'),
+  USERID,
+  CONTEXT,
+  MAX_REQUEST_TIME,
+  TOTAL_REQUEST_COUNT,
+  HOSTNAME,
+  YEAR,
+  MONTH,
+  DAY,
+  TIME,
+  facet2(CONSUMERKEY,API),
+  facet2(CONSUMERKEY,USERID),
+  facet3(API,VERSION,USERID),
+  facet4(API,VERSION,USERID,APIPUBLISHER),
+  facet4(API,VERSION,USERID,CONTEXT)
   from APIRequestSummaryData;
 
 
@@ -98,9 +99,9 @@
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
-  insert into table API_VERSION_USAGE_SUMMARY_FINAL select api,version,apiPublisher,context,total_request_count,hostName,
-  year,  month,  day,  time,  timestamp(time),
-  facet3(api,version,context)
+  insert into table API_VERSION_USAGE_SUMMARY_FINAL select API,VERSION,APIPUBLISHER,CONTEXT,TOTAL_REQUEST_COUNT,HOSTNAME,
+  YEAR,  MONTH,  DAY,  TIME,  timestamp(TIME),
+  facet3(API,VERSION,CONTEXT)
   from APIVersionUsageSummaryData;
 
 
@@ -128,12 +129,12 @@
   );
 
   insert into table API_Resource_USAGE_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),
-  resourcePath,context,method,total_request_count,hostName,
-  year,  month,  day,  time,
-  timestamp(time),
-  facet4(consumerKey, api, method, resourcePath),
-  facet4(api, version, context, method)
+  API,VERSION,APIPUBLISHER,COALESCE(CONSUMERKEY,'-'),
+  RESOURCEPATH,CONTEXT,METHOD,TOTAL_REQUEST_COUNT,HOSTNAME,
+  YEAR,  MONTH,  DAY,  TIME,
+  timestamp(TIME),
+  facet4(CONSUMERKEY, API, METHOD, RESOURCEPATH),
+  facet4(API, VERSION, CONTEXT, METHOD)
   from APIResourcePathUsageSummaryData;
 
 
@@ -158,9 +159,9 @@
   );
 
   insert into table API_RESPONSE_SUMMARY_FINAL select
-  api_version,  COALESCE(apiPublisher,''),  context,  serviceTime,  total_response_count,
-  hostName,  year,  month,  day,  time,  timestamp(time),
-  facet2(api_version, context)
+  API_VERSION,  COALESCE(APIPUBLISHER,'-'),  CONTEXT,  SERVICETIME,  TOTAL_RESPONSE_COUNT,
+  HOSTNAME,  YEAR,  MONTH,  DAY,  TIME,  timestamp(TIME),
+  facet2(API_VERSION, CONTEXT)
   from APIResponseSummaryData;
 
 
@@ -186,10 +187,10 @@
   );
 
   insert into table API_FAULT_SUMMARY_FINAL select
-  api,version,apiPublisher,COALESCE(consumerKey,''),context,  total_fault_count,
-  hostName,year,  month,  day,  time, timestamp(time),
-  facet2(consumerKey, api),
-  facet4(api, version, apiPublisher, context)
+  API,VERSION,APIPUBLISHER,COALESCE(CONSUMERKEY,'-'),CONTEXT,  TOTAL_FAULT_COUNT,
+  HOSTNAME,YEAR,  MONTH,  DAY,  TIME, timestamp(TIME),
+  facet2(CONSUMERKEY, API),
+  facet4(API, VERSION, APIPUBLISHER, CONTEXT)
   from APIFaultSummaryData;
 
 
@@ -213,9 +214,9 @@
   );
 
   insert into table API_DESTINATION_SUMMARY_FINAL select
-  api,version,apiPublisher, context,destination,total_request_count,hostName,
-  year,  month,  day,  time, timestamp(time),
-  facet4(api, version, context, destination)
+  API,VERSION,APIPUBLISHER, CONTEXT,COALESCE(DESTINATION,'-'),TOTAL_REQUEST_COUNT,HOSTNAME,
+  YEAR,  MONTH,  DAY,  TIME, timestamp(TIME),
+  facet4(API, VERSION, CONTEXT, COALESCE(DESTINATION,'-'))
   from APIDestinationDataSummaryData;
 
      
