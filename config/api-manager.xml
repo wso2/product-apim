@@ -117,6 +117,9 @@
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
 	<!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
+
+        <!-- Provide the claims Cache expiry in seconds -->
+        <!--APIMClaimCacheExpiry>900</APIMClaimCacheExpiry-->
     </APIConsumerAuthentication>
 
     <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
@@ -184,9 +187,10 @@
     </APIGateway>
 
      <!--
-	    Enable/Disable Usage metering and billing for api usage
+	    From API Manager 1.10 onward billing sample will not zip with product anymore.
+	    We suggest users to use new monotization extensions provided.
+	    So removed billing sample and its configuration from pack
      -->
-     <EnableBillingAndUsage>false</EnableBillingAndUsage>
 
     <!--
         API usage tracker configuration used by the BAM data publisher and
@@ -273,7 +277,8 @@
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
-
+        <!-- Expiry time for the apim key mgt validation info cache -->
+        <!--APIMKeyCacheExpiry>900</APIMKeyCacheExpiry-->
         <!--
         Configurations related to enable thrift support for key-management related communication.
         If you want to switch back to Web Service Client, change the value of "KeyValidatorClientType" to "WSClient".
@@ -313,26 +318,6 @@
             <Scope>^device_.*</Scope>
             <Scope>openid</Scope>
         </ScopeWhitelist-->
-
-        <RESTAPIScopes>
-            <Scope>
-                <Name>API_PUBLISHER_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_SUBSCRIBER_SCOPE</Name>
-                <Roles>subscriber</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_CREATOR_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-            <Scope>
-                <Name>API_ADMINISTRATIVE_SCOPE</Name>
-                <Roles>admin</Roles>
-            </Scope>
-        </RESTAPIScopes>
-
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
@@ -538,6 +523,12 @@
 
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
+
+    <!--Configure Access-Control-Allow-Credentials-->
+    <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
+         It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*)
+    -->
+    <Access-Control-Allow-Credentials>false</Access-Control-Allow-Credentials>
 
     </CORSConfiguration>
    <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.

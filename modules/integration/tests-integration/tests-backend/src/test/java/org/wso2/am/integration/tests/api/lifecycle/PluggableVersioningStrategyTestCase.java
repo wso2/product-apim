@@ -87,7 +87,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
                                                           IOException, LogViewerLogViewerException {
 
         //Create an application with gold tier
-        apiStoreClientUser.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
 
         //Create publish and subscribe an API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);

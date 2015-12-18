@@ -24,6 +24,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -129,7 +130,8 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
-        apiStore.addApplication("CommentRatingAPI-Application", "Gold", "", "this-is-test");
+        apiStore.addApplication("CommentRatingAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+                "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()
                 .getContextUser()

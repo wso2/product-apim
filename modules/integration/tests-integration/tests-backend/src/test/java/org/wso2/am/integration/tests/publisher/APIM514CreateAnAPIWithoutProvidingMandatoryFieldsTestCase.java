@@ -102,7 +102,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), "can be create API without name");
         assertTrue(apiResponse.getString("message").contains
-                ("Unable to find the API"), "can be create API without name");
+                ("API name is not specified"), "can be create API without name");
 
     }
 
@@ -120,7 +120,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest1 + "can be create without Context");
         assertTrue(apiResponse.getString("message").contains
-                        (" Context not defined for API"),
+                        ("Context not defined for API"),
                 apiNameTest1 + "can be create without Context");
     }
 
@@ -141,7 +141,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest2 + "can be create without Version");
         assertTrue(apiResponse.getString("message").contains
-                ("Version not specified for API"), apiNameTest2 + "can be create without Version");
+                ("Version not specified for API " + apiNameTest2), apiNameTest2 + "can be create without Version");
     }
 
     @Test(groups = {"wso2.am"}, description = "Create an API Through the Publisher Rest API " +
@@ -174,8 +174,10 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
 
         String apiContextTest = "apim514PublisherTestAPI4";
         String apiNameTest4 = "APIM514PublisherTest4";
-        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiNameTest4, apiContextTest,
-                apiVersion, apiProviderName,new URL(null));
+        URL url = null;
+        APICreationRequestBean apiCreationRequestBean =
+                new APICreationRequestBean(apiNameTest4, apiContextTest, apiVersion, apiProviderName,
+                        url);
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 
@@ -183,7 +185,7 @@ public class APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase extends
         JSONObject apiResponse = new JSONObject(apiCreationResponse.getData());
         assertTrue(apiResponse.getBoolean("error"), apiNameTest4 + "can be create without Endpoint");
         assertTrue(apiResponse.getString("message").contains
-                ("null"), apiNameTest4 + "can be create without Endpoint");
+                ("Endpoint Configuration is missing"), apiNameTest4 + "can be create without Endpoint");
     }
 
 //TODO Disabling test case: Reference https://wso2.org/jira/browse/APIMANAGER-4240

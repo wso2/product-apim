@@ -80,21 +80,24 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
         //Create application
-//        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke a resource with auth type Application And Application User")
     public void testInvokeResourceWithAuthTypeApplicationAndApplicationUser() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Create publish and subscribe a API
@@ -130,7 +133,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
@@ -162,7 +166,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
@@ -198,7 +203,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "None", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "None",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information

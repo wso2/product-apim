@@ -24,7 +24,7 @@
     success_request_count int -i,
     throttleout_count int -i,
     max_request_time long -i,
-    api_apiPublisher_applicationName_facet facet -i,
+    api_year_month_week_day_facet facet -i,
     applicationName_facet facet -i",
     primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
     );
@@ -45,8 +45,8 @@
     COALESCE(success_request_count,0),
     COALESCE(throttleout_count,0),
     COALESCE(a.times, COALESCE(b.times,0)),
-    facet3( COALESCE(a.api,b.api), COALESCE(a.apiPublisher,b.apiPublisher),COALESCE(a.applicationName,b.applicationName)),
-    COALESCE(a.applicationName,b.applicationName)
+    facet5( COALESCE(a.api,b.api), COALESCE(a.year,b.year),COALESCE(a.month,b.month),COALESCE(a.week,b.week),COALESCE(a.day,b.day)),
+    COALESCE(a.applicationName,b.applicationName,'_ANONYMOUS_')
     from
     (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
     substring(cast(first(requestTime)/1000 as timestamp),0,4) year,

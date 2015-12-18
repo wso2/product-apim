@@ -89,7 +89,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                                               "Resource Tier: Unlimited.")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         //Create publish and subscribe a API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
@@ -152,22 +152,25 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
 
     @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
-                                              "Resource Tier: Silver.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited")
+   "Resource Tier: Plus.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
 
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                         "\"Silver\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
-                         ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
-                         "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
-                         "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
+                "\"" + APIMIntegrationConstants.RESOURCE_TIER.PLUS
+                + "\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
+
 
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
 
         waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
-        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Silver", executionMode);
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.RESOURCE_TIER.PLUS, executionMode);
 
         long startTime = System.currentTimeMillis();
         long currentTime;
@@ -178,13 +181,15 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                     HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
                                           API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                         "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
-                         (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
-                         "  and Silver Resource tier");
+
+                    "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
+                            (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
+                            "  and Plus Resource tier");
             assertTrue(invokeResponse.getData().contains(API_RESPONSE_DATA),
-                       "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
-                       (currentTime - startTime) + " milliseconds under Gold API and Gold Application level tier" +
-                       " and Silver Resource tier");
+                    "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
+                            (currentTime - startTime) + " milliseconds under Gold API and Gold Application level tier" +
+                            " and Plus Resource tier");
+
         }
 
         currentTime = System.currentTimeMillis();
@@ -205,13 +210,14 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         }
 
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS,
-                     "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
-                     " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
-                     " Application level tier and Silver Resource tier");
+                "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
+                        " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
+                        " Application level tier and Plus Resource tier");
         assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
-                   "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
-                   " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
-                   "Application level tier and Silver Resource tier");
+                "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
+                        " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
+                        "Application level tier and Plus Resource tier");
+
     }
 
 
@@ -221,14 +227,16 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
-                         "\"Gold\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
-                         ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
-                         "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
-                         "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
+                "\"" + APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE
+                + "\",\"responses\":{\"200\":\"{}\"}}}},\"swagger\":\"2.0\",\"x-wso2-security\":{\"apim\"" +
+                ":{\"x-wso2-scopes\":[]}},\"info\":{\"licence\":{},\"title\":\"" + API_NAME + "\",\"description\":" +
+                "\"This is test API create by API manager integration test\",\"contact\":{\"email\":null,\"name\":null}," +
+                "\"version\":\"" + API_VERSION_1_0_0 + "\"}}";
 
         apiPublisherClientUser1.updateResourceOfAPI(providerName, API_NAME, API_VERSION_1_0_0, swagger);
 
-        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0, "Gold", executionMode);
+        apiStoreClientUser1.waitForSwaggerDocument(user.getUserName(), API_NAME, API_VERSION_1_0_0,
+                APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE, executionMode);
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
 
@@ -241,13 +249,13 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                     HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
                                           API_END_POINT_METHOD, requestHeaders);
             assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                         "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
-                         (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
-                         " and Gold Resource tier");
+                    "Response code mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
+                            (currentTime - startTime) + " milliseconds under Gold API  and Gold Application level tier" +
+                            " and Ultimate Resource tier");
             assertTrue(invokeResponse.getData().contains(API_RESPONSE_DATA),
-                       "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
-                       (currentTime - startTime) + " milliseconds under Gold API and Gold  Application level tier" +
-                       " and Gold Resource tier");
+                    "Response data mismatched. Invocation attempt:" + invocationCount + " failed  during :" +
+                            (currentTime - startTime) + " milliseconds under Gold API and Gold  Application level tier" +
+                            " and Ultimate Resource tier");
         }
         currentTime = System.currentTimeMillis();
         HttpResponse invokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
@@ -267,13 +275,13 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
 
         assertEquals(invokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS,
-                     "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
-                     " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
-                     "Application level tier and Gold Resource tier");
+                "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
+                        " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
+                        "Application level tier and Ultimate Resource tier");
         assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
-                   "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
-                   " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
-                   "Application level tier and Gold Resource tier");
+                "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
+                        " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
+                        "Application level tier and Ultimate Resource tier");
     }
 
 

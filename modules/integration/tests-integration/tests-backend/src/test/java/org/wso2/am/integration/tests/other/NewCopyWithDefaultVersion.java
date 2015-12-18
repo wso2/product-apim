@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -59,7 +60,8 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     private String visibility = "public";
     private String description = "Test Description";
     private static final String WEB_APP_FILE_NAME = "jaxrs_basic";
-    private String tier = "Gold";
+    private String tier= APIMIntegrationConstants.API_TIER.GOLD;
+    private String resTier= APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE;
     private String endPointType = "http";
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -115,7 +117,7 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
 
 
         List<APIResourceBean> apiResourceBeanList=new ArrayList<APIResourceBean>();
-        apiResourceBeanList.add(new APIResourceBean("GET","Application & Application User", tier,
+        apiResourceBeanList.add(new APIResourceBean("GET","Application & Application User", resTier,
                 "customers/{id}/"));
 
         APICreationRequestBean apiCreationRequestBean=new APICreationRequestBean(API_NAME,apiContext,

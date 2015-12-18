@@ -54,6 +54,11 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
     private String publisherURLHttp;
     private String tenantDomain = "paginationtest.com";
+    private String[] APINames;
+    private String providerName;
+    private int numberOfAPIs = 24;
+    private String APIVersion = "1.0.0";
+    private APIPublisherRestClient apiPublisher;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() {
@@ -85,7 +90,8 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
     @Test(groups = {"wso2.am"}, description = "Pagination test case")
     public void testPagination() throws Exception {
 
-        int numberOfAPIs = 24;
+        //creates an array to store the names of the APIs, for cleanup purpose
+        APINames = new String[numberOfAPIs];
         boolean isLoginSuccess = false;
         boolean isPaginationCorrect = false;
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -97,14 +103,19 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         try {
             for (int i = 0; i < numberOfAPIs; i++) {
                 String APIName = "PaginationTestAPI" + Integer.toString(i);
+                //put the name of the API in the array so that we can refer it when deleting
+                APINames [i] = APIName;
                 String APIContext = "paginationTest" + Integer.toString(i);
                 String tags = "pagination";
                 String url = "https://localhost:9443/test";
                 String description = "This is test API create by API manager integration test";
-                String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
-                                      + "@" + tenantDomain;
+
                 String APIVersion = "1.0.0";
-                APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
+                providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName()
+                        + "@" + tenantDomain;
+                apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+
                 apiPublisher.login
                         (publisherContext.getContextTenant().getTenantAdmin().getUserName() + "@" + tenantDomain,
                          publisherContext.getContextTenant().getTenantAdmin().getPassword());
@@ -217,6 +228,12 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        if (apiPublisher != null) {
+            //take the names of the newly added APIs from the saved array and delete them
+            for (int j = 0; j < numberOfAPIs; j++) {
+                apiPublisher.deleteAPI(APINames[j], APIVersion, providerName);
+            }
+        }
         super.cleanUp();
     }
 

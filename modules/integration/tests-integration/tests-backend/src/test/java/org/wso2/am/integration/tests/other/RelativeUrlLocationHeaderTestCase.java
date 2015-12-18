@@ -94,8 +94,8 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         apiRequest = new APIRequest(apiName, apiContext, new URL(endpointUrl));
 
         apiRequest.setVersion(apiVersion);
-        apiRequest.setTiersCollection("Unlimited");
-        apiRequest.setTier("Unlimited");
+        apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //Add the API using the API publisher.
         response = apiPublisher.addAPI(apiRequest);
@@ -118,12 +118,12 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         verifyResponse(response);
 
         //Add an Application in the Store.
-        response = apiStore.addApplication(appName, "Unlimited", "", "");
+        response = apiStore.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
         verifyResponse(response);
 
         //Subscribe the API to the DefaultApplication
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, user.getUserName()
-                , appName, "Unlimited");
+                , appName, APIMIntegrationConstants.API_TIER.UNLIMITED);
         response = apiStore.subscribe(subscriptionRequest);
         verifyResponse(response);
 

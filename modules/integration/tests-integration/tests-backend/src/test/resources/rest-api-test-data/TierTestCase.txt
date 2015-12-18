@@ -1,0 +1,105 @@
+{
+    "testCase": [
+            {
+                "init": {
+                    "scope": "apim_create_publish_api_scope"
+                },
+                "data": {
+                    "method": "GET",
+                    "url": "api/am/publisher/v1//tiers/api",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                }
+            }
+            ,
+            {
+                "init": {
+                    "scope": "apim_edit_tiers_scope"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "api/am/publisher/v1//tiers/api",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
+                    \"requestCount\": 20,\n   \"description\": \"Allows 20 requests per minute.\",\n
+                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": ""
+                }
+            }
+            ,
+            {
+                "init": {
+                    "scope": "apim_edit_tiers_scope"
+                },
+                "data": {
+                    "method": "PUT",
+                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "query-parameters": {
+                        "tierName": "NewTier",
+                        "Content-Type": "application/json"
+                    },
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
+                                        \"requestCount\": 20,\n   \"description\": \"Updated description.\",\n
+                                        \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                }
+
+            }
+            ,
+            {
+                "init": {
+                    "scope": "apim_edit_tiers_scope"
+                },
+                "data": {
+                    "method": "DELETE",
+                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "query-parameters": {
+                        "tierName": "NewTier"
+                    },
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": ""
+                }
+            }
+    ]
+}

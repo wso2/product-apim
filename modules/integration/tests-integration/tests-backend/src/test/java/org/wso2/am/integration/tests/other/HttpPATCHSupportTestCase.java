@@ -26,12 +26,14 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
@@ -59,9 +61,16 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+
         //Initialize publisher and store.
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
+
+        //Load the back-end dummy API
+        loadSynapseConfigurationFromClasspath(
+                "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                        + File.separator + "dummy_patch_api.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of HTTP PATCH support for APIM")
@@ -71,7 +80,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
 
         String APIName = "HttpPatchAPI";
         String APIContext = "patchTestContext";
-        String url = "http://jsonplaceholder.typicode.com/posts/1";
+        String url = getGatewayURLNhttp() + "httpPatchSupportContext";
         String providerName = user.getUserName();
         String APIVersion = "1.0.0";
 
@@ -100,11 +109,12 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        apiStore.addApplication("HttpPatchSupportAPP", "Gold", "", "Test-HTTP-PATCH");
+        apiStore.addApplication("HttpPatchSupportAPP", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+                "Test-HTTP-PATCH");
 
         //Subscribe to the new application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, APIVersion, providerName,
-                "HttpPatchSupportAPP", "Gold");
+                "HttpPatchSupportAPP", APIMIntegrationConstants.API_TIER.GOLD);
         apiStore.subscribe(subscriptionRequest);
 
         //Generate a production token and invoke the API
@@ -123,7 +133,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         HttpPatch request = new HttpPatch(apiInvocationUrl);
         request.setHeader("Accept", "application/json");
         request.setHeader("Authorization", "Bearer " + accessToken);
-        StringEntity payload = new StringEntity("{}", "UTF-8");
+        StringEntity payload = new StringEntity("{\"first\":\"Greg\"}", "UTF-8");
         payload.setContentType("application/json");
         request.setEntity(payload);
 

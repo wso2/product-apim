@@ -138,13 +138,13 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
                        storeContext.getContextTenant().getContextUser().getPassword());
 
         //Add Application.
-        apiStore.addApplication(APPLICATION_NAME, "Gold", "", "this-is-test");
+        apiStore.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
 
         //Subscribe Application to API.
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, storeContext.getContextTenant()
                 .getContextUser()
                 .getUserName());
-        subscriptionRequest.setTier("Gold");
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         subscriptionRequest.setApplicationName(APPLICATION_NAME);
         apiStore.subscribe(subscriptionRequest);
 

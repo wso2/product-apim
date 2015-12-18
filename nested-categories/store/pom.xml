@@ -27,7 +27,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.apimgt.store.nested.category.feature</artifactId>
     <packaging>pom</packaging>
-    <name>Store</name>
+    <name>API Store ${project.version}</name>
     <url>http://wso2.org</url>
     <description>Includes features for Store component.</description>
  
@@ -55,18 +55,18 @@
                                 </properties>
                             </adviceFile>
                             <importFeatures>
-				<importFeatureDef>org.jaggeryjs:0.9.0.ALPHA4.wso2v1</importFeatureDef>
+				<importFeatureDef>org.jaggeryjs:${org.jaggery.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.core.common:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.core.server:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.core.runtime:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.core:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.as.runtimes.cxf:4.2.2</importFeatureDef>
-				<importFeatureDef>org.wso2.am.styles:1.8.0</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.apimgt.core:1.2.3</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.apimgt.store:1.2.3</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.application.mgt.synapse.server:${carbon.platform.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.application.deployer.synapse:4.2.2</importFeatureDef>
+				<importFeatureDef>org.wso2.am.styles:${apimserver.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.apimgt.core:${carbon.apimgt.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.apimgt.store:${carbon.apimgt.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.application.mgt.server:${carbon.commons.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.application.mgt.synapse.server:${carbon.mediation.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.application.deployer.synapse:${carbon.mediation.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.system.statistics:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.datasource.server:4.2.1</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.ec2-client:${carbon.platform.version}</importFeatureDef>
@@ -75,15 +75,15 @@
 				<importFeatureDef>org.wso2.carbon.event.server:4.2.2</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.governance.lifecycle.management:4.2.1</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.governance.metadata:4.2.2</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.authenticator.saml2.sso.server:4.2.1</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.authenticator.saml2.sso.ui:4.2.1</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.core:4.2.4</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.oauth:4.2.4</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.self.registration.server:4.2.2</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.identity.application.authentication.framework.server:4.2.3</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.jaxws.webapp.mgt:${carbon.platform.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.authenticator.saml2.sso.server:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.authenticator.saml2.sso.ui:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.core:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.oauth:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.self.registration.server:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.identity.application.authentication.framework.server:${carbon.identity.version}</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.jaxws.webapp.mgt:${carbon.deployment.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.localentry.server:4.2.1</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.logging.mgt:4.2.2</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.logging.mgt:${carbon.commons.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.message.flows:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.mex:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.module.mgt.server:${carbon.platform.version}</importFeatureDef>

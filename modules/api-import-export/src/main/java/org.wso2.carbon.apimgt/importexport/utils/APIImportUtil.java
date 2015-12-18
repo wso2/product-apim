@@ -16,12 +16,12 @@
  * /
  */
 
-package apim.restful.importexport.utils;
+package org.wso2.carbon.apimgt.importexport.utils;
 
-import apim.restful.importexport.APIExportException;
-import apim.restful.importexport.APIImportExportConstants;
-import apim.restful.importexport.APIImportException;
-import apim.restful.importexport.APIService;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
+import org.wso2.carbon.apimgt.importexport.APIImportException;
+import org.wso2.carbon.apimgt.importexport.APIService;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -41,7 +41,7 @@ import org.wso2.carbon.apimgt.api.FaultGatewaysException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.Documentation;
-import org.wso2.carbon.apimgt.api.model.Icon;
+import org.wso2.carbon.apimgt.api.model.ResourceFile;
 import org.wso2.carbon.apimgt.api.model.Tier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
@@ -271,6 +271,7 @@ public final class APIImportUtil {
         addAPIImage(pathToArchive, importedApi);
         addAPIDocuments(pathToArchive, importedApi);
         addAPISequences(pathToArchive, importedApi, currentUser);
+        addAPISpecificSequences(pathToArchive, importedApi, currentUser);
         addAPIWsdl(pathToArchive, importedApi, currentUser);
 
     }
@@ -297,9 +298,9 @@ public final class APIImportUtil {
 
                         String mimeType = URLConnection.guessContentTypeFromName(imageFile.getName());
                         inputStream = new FileInputStream(imageFile.getAbsolutePath());
-                        Icon apiImage = new Icon(inputStream, mimeType);
+                        ResourceFile apiImage = new ResourceFile(inputStream, mimeType);
                         String thumbPath = APIUtil.getIconPath(importedApi.getId());
-                        String thumbnailUrl = provider.addIcon(thumbPath, apiImage);
+                        String thumbnailUrl = provider.addResourceFile(thumbPath, apiImage);
 
                         importedApi.setThumbnailUrl(APIUtil.prependTenantPrefix(thumbnailUrl,
                                 importedApi.getId().getProviderName()));
@@ -359,7 +360,7 @@ public final class APIImportUtil {
                             equalsIgnoreCase(doc.getSourceType().toString())) {
                         inputStream = new FileInputStream(pathToArchive + doc.getFilePath());
                         String docExtension = FilenameUtils.getExtension(pathToArchive + doc.getFilePath());
-                        Icon apiDocument = new Icon(inputStream, docExtension);
+                        ResourceFile apiDocument = new ResourceFile(inputStream, docExtension);
                         String visibleRolesList = importedApi.getVisibleRoles();
                         String[] visibleRoles = new String[0];
 
@@ -370,7 +371,7 @@ public final class APIImportUtil {
                         String filePathDoc = APIUtil.getDocumentationFilePath(apiIdentifier, doc.getName());
                         APIUtil.setResourcePermissions(importedApi.getId().getProviderName(),
                                 importedApi.getVisibility(), visibleRoles, filePathDoc);
-                        doc.setFilePath(provider.addIcon(filePathDoc, apiDocument));
+                        doc.setFilePath(provider.addResourceFile(filePathDoc, apiDocument));
                         provider.addDocumentation(apiIdentifier, doc);
                     }
                 }
@@ -401,47 +402,90 @@ public final class APIImportUtil {
         String inSequenceFileName = importedApi.getInSequence() + APIImportExportConstants.XML_EXTENSION;
         String inSequenceFileLocation = pathToArchive + APIImportExportConstants.IN_SEQUENCE_LOCATION
                 + inSequenceFileName;
+        String regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_LOCATION + File.separator;
 
         //Adding in-sequence, if any
         if (checkFileExistence(inSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN,
-                    inSequenceFileName, inSequenceFileLocation);
+            regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN + File.separator + inSequenceFileName;
+            addSequenceToRegistry(registry, inSequenceFileLocation ,regResourcePath);
         }
 
         String outSequenceFileName = importedApi.getOutSequence() + APIImportExportConstants.XML_EXTENSION;
         String outSequenceFileLocation = pathToArchive + APIImportExportConstants.OUT_SEQUENCE_LOCATION
-                + outSequenceFileName;
+                                         + outSequenceFileName;
 
         //Adding out-sequence, if any
         if (checkFileExistence(outSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT,
-                    outSequenceFileName, outSequenceFileLocation);
+            regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT + File.separator + outSequenceFileName;
+            addSequenceToRegistry(registry, outSequenceFileLocation,regResourcePath);
         }
 
         String faultSequenceFileName = importedApi.getFaultSequence() + APIImportExportConstants.XML_EXTENSION;
         String faultSequenceFileLocation = pathToArchive + APIImportExportConstants.FAULT_SEQUENCE_LOCATION
-                + faultSequenceFileName;
+                                           + faultSequenceFileName;
 
         //Adding fault-sequence, if any
         if (checkFileExistence(faultSequenceFileLocation)) {
-            addSequenceToRegistry(registry, APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT,
-                    faultSequenceFileName, faultSequenceFileLocation);
+            regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT + File.separator + faultSequenceFileName;
+            addSequenceToRegistry(registry, faultSequenceFileLocation, regResourcePath);
+        }
+    }
+
+    /**
+     * This method adds API Specific sequences added through the store to the imported API.
+     *
+     * @param pathToArchive location of the extracted folder of the API
+     * @param importedApi   the imported API object
+     * @param currentUser   current logged in username
+     */
+    private static void addAPISpecificSequences(String pathToArchive, API importedApi, String currentUser) {
+
+        Registry registry = APIExportUtil.getRegistry(currentUser);
+        String inSequenceFileName = importedApi.getInSequence();
+        String inSequenceFileLocation = pathToArchive + APIImportExportConstants.IN_SEQUENCE_LOCATION + "custom" +
+                                        File.separator + inSequenceFileName;
+
+        String regResourcePath = APIConstants.API_ROOT_LOCATION + File.separator + importedApi.getId()
+                .getProviderName() + File.separator + importedApi.getId().getApiName() + File.separator + importedApi
+                                         .getId().getVersion() + File.separator;
+
+        //Adding in-sequence, if any
+        if (checkFileExistence(inSequenceFileLocation)) {
+            regResourcePath = regResourcePath + APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN + File.separator +
+                              inSequenceFileName;
+            addSequenceToRegistry(registry, inSequenceFileLocation, regResourcePath);
+        }
+
+        String outSequenceFileName = importedApi.getOutSequence();
+        String outSequenceFileLocation = pathToArchive + APIImportExportConstants.OUT_SEQUENCE_LOCATION + "custom" +
+                                         File.separator + outSequenceFileName;
+
+        //Adding out-sequence, if any
+        if (checkFileExistence(outSequenceFileLocation)) {
+            regResourcePath = regResourcePath + APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT + File.separator +
+                              outSequenceFileName;
+            addSequenceToRegistry(registry, outSequenceFileLocation, regResourcePath);
+        }
+
+        String faultSequenceFileName = importedApi.getFaultSequence();
+        String faultSequenceFileLocation = pathToArchive + APIImportExportConstants.FAULT_SEQUENCE_LOCATION + "custom" +
+                                           File.separator + outSequenceFileName;
+
+        //Adding fault-sequence, if any
+        if (checkFileExistence(faultSequenceFileLocation)) {
+            regResourcePath = regResourcePath + APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT + File.separator +
+                              faultSequenceFileName;
+            addSequenceToRegistry(registry, faultSequenceFileLocation, regResourcePath);
         }
     }
 
     /**
      * This method adds the sequence files to the registry.
-     *
      * @param registry             the registry instance
-     * @param customSequenceType   type of the sequence
-     * @param sequenceFileName     name of the sequence
      * @param sequenceFileLocation location of the sequence file
      */
-    private static void addSequenceToRegistry(Registry registry, String customSequenceType, String sequenceFileName,
-                                              String sequenceFileLocation) {
+    private static void addSequenceToRegistry(Registry registry, String sequenceFileLocation, String regResourcePath) {
 
-        String regResourcePath = APIConstants.API_CUSTOM_SEQUENCE_LOCATION + File.separator + customSequenceType
-                + File.separator + sequenceFileName;
         InputStream inSeqStream = null;
         try {
             if (registry.resourceExists(regResourcePath)) {
@@ -461,10 +505,10 @@ public final class APIImportUtil {
             }
         } catch (org.wso2.carbon.registry.api.RegistryException e) {
             //this is logged and ignored because sequences are optional
-            log.error("Failed to add sequences into the registry: " + customSequenceType, e);
+            log.error("Failed to add sequences into the registry : " + regResourcePath, e);
         } catch (IOException e) {
             //this is logged and ignored because sequences are optional
-            log.error("I/O error while writing sequence data to the registry, Sequence type: " + customSequenceType, e);
+            log.error("I/O error while writing sequence data to the registry : " + regResourcePath, e);
         } finally {
             IOUtils.closeQuietly(inSeqStream);
         }

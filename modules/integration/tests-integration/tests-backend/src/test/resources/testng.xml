@@ -60,7 +60,7 @@
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
-            <!-- <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <!-- Commenting this test since its required to setup BAM and the DBs to run this
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
@@ -86,7 +86,7 @@
             <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
-           <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
+            <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
@@ -109,7 +109,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
-            <!--<class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
@@ -142,6 +142,18 @@
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
+        </classes>
+    </test>
+
+    <test name="rest-api-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
         </classes>
     </test>
 
