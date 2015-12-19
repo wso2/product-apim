@@ -54,6 +54,9 @@ import javax.ws.rs.core.Response;
 public class RESTAPITestUtil {
 
     private static final Log log = LogFactory.getLog(RESTAPITestUtil.class);
+
+    private Pattern URLPattern = Pattern.compile(RESTAPITestConstants.URL_REGEX);
+    private Pattern payloadPattern = Pattern.compile(RESTAPITestConstants.PAYLOAD_REGEX);
     private DataDrivenTestUtils dataDrivenTestUtils = new DataDrivenTestUtils();
 
     //This is the map to store the preserved attributes if there are any
@@ -114,7 +117,7 @@ public class RESTAPITestUtil {
                         dataConfigurationObject.get(RESTAPITestConstants.URL_ELEMENT).toString();
                 //Replace the parameters with the actual vales if there are any, and construct the actual URL
                 String actualResourceURL = replaceParameterPatternWithValues
-                                                (parametrizedResourceURL, RESTAPITestConstants.URL_REGEX);
+                        (parametrizedResourceURL, URLPattern, RESTAPITestConstants.URL_REGEX);
                 Map<String, String> queryParameters = new HashMap<String, String>();
                 String queryParameterText =
                         dataConfigurationObject.get(RESTAPITestConstants.QUERY_PARAMETERS).toString();
@@ -156,7 +159,7 @@ public class RESTAPITestUtil {
                         dataConfigurationObject.get(RESTAPITestConstants.REQUEST_PAYLOAD).toString();
                 //replace the parameters with actual vales if there are any, and construct the actual request payload
                 String actualRequestPayload = replaceParameterPatternWithValues
-                                                (parametrizedRequestPayload, RESTAPITestConstants.PAYLOAD_REGEX);
+                        (parametrizedRequestPayload, payloadPattern, RESTAPITestConstants.PAYLOAD_REGEX);
                 String responseHeaderText =
                         dataConfigurationObject.get(RESTAPITestConstants.RESPONSE_HEADERS).toString();
                 Map<String, String> responseHeaders = new HashMap<String, String>();
@@ -259,19 +262,19 @@ public class RESTAPITestUtil {
     }
 
     /**
-     * This method will plug the actual value for a parametrized string, by making use of a given regular expression
+     * This method will plug the actual value for a parametrized string, by making use of a given pattern and regex
      *
      * @param parametrizedText initial text, might contain space for parameters
-     * @param regex            regular expression to identify the parameter location
+     * @param parameterPattern pattern of the parametrized string
+     * @param regex regular expression to identify the parameter location
      * @return actual text where parameters are replaced with the corresponding values
      */
-    private String replaceParameterPatternWithValues(String parametrizedText, String regex) {
+    private String replaceParameterPatternWithValues(String parametrizedText, Pattern parameterPattern, String regex) {
 
         String actualTextWithValues = parametrizedText;
 
         if (parametrizedText != null && regex != null && regex.length() > 1) {
-            //Get the pattern for dynamically generated texts
-            Pattern parameterPattern = Pattern.compile(regex);
+            //Get the pattern for dynamically generated texts and build the matcher
             Matcher matcher = parameterPattern.matcher(parametrizedText);
 
             //If a match is found, then fetch the applicable value from the preserved attribute list
