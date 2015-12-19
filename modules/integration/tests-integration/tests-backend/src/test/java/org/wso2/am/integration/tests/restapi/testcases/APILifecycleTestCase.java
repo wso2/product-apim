@@ -61,7 +61,7 @@ public class APILifecycleTestCase extends APIMIntegrationBaseTest {
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();
 
-        //file name of the JSON data file related to : API lifecycle change test case
+        //File name of the JSON data file related to : API lifecycle change test case
         String dataFileName = "APILifecycleTestCase.txt";
         String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
                 RESTAPITestConstants.PATH_SUBSTRING + dataFileName;

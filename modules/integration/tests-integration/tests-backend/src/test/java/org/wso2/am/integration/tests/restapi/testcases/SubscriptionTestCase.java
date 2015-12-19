@@ -61,7 +61,7 @@ public class SubscriptionTestCase extends APIMIntegrationBaseTest {
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();
 
-        //file name of the JSON data file related to : API Subscription test case
+        //File name of the JSON data file related to : API Subscription test case
         String dataFileName = "SubscriptionTestCase.txt";
         String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
                 RESTAPITestConstants.PATH_SUBSTRING + dataFileName;

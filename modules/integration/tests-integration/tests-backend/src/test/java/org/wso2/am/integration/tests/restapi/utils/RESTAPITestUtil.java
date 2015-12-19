@@ -56,7 +56,7 @@ public class RESTAPITestUtil {
     private static final Log log = LogFactory.getLog(RESTAPITestUtil.class);
     private DataDrivenTestUtils dataDrivenTestUtils = new DataDrivenTestUtils();
 
-    //this is the map to store the preserved attributes if there are any
+    //This is the map to store the preserved attributes if there are any
     private HashMap<String, String> preservedAttributes = new HashMap<String, String>();
 
     /**
@@ -69,7 +69,7 @@ public class RESTAPITestUtil {
      */
     public boolean testRestAPI(String configFilePath, String gatewayURL, String keyMangerURL) {
 
-        //this is the boolean which indicates the success or failure of the current test
+        //This is the boolean which indicates the success or failure of the current test
         boolean isTestSuccess = false;
 
         try {
@@ -81,7 +81,7 @@ public class RESTAPITestUtil {
             JSONArray array = testScenario.getJSONArray(RESTAPITestConstants.JSON_ROOT_ELEMENT);
             int arrayLength = array.length();
 
-            //go through each section of the JSON string and fetch data
+            //Go through each section of the JSON string and fetch data
             for (int i = 0; i < arrayLength; i++) {
 
                 JSONObject configObject = (JSONObject) array.get(i);
@@ -90,36 +90,36 @@ public class RESTAPITestUtil {
                 String scope = initializationConfigurationObject.get(RESTAPITestConstants.SCOPE_ELEMENT).toString();
 
                 if (dataMap == null || dataMap.isEmpty()) {
-                    //if the data map is null or empty, that means it has failed to register OAuth application
+                    //If the data map is null or empty, that means it has failed to register OAuth application
                     log.error("Failed to register OAuth application to test the REST API.");
                     isTestSuccess = false;
-                    //stop the rest of the iterations of the loop if it has failed to register OAuth application
+                    //Stop the rest of the iterations of the loop if it has failed to register OAuth application
                     break;
                 }
-                //get the access token to send the request
+                //Get the access token to send the request
                 accessToken = generateOAuthAccessToken(scope, dataMap, gatewayURL);
 
                 if (accessToken == null) {
-                    //if the access token is null, that means it has failed to generate OAuth access token
+                    //If the access token is null, that means it has failed to generate OAuth access token
                     log.error("Failed to generate OAuth access token to test the REST API.");
                     isTestSuccess = false;
-                    //stop the rest of the iterations of the loop if the test has failed due to accessToken error
+                    //Stop the rest of the iterations of the loop if the test has failed due to accessToken error
                     break;
                 }
 
                 JSONObject dataConfigurationObject = configObject.getJSONObject(RESTAPITestConstants.DATA_SECTION);
                 String method = dataConfigurationObject.get(RESTAPITestConstants.METHOD_ELEMENT).toString();
-                //take the resource URL from the data file (initial URL, might contain space for parameters)
+                //Take the resource URL from the data file (initial URL, might contain space for parameters)
                 String parametrizedResourceURL = keyMangerURL +
                         dataConfigurationObject.get(RESTAPITestConstants.URL_ELEMENT).toString();
-                //replace the parameters with the actual vales if there are any, and construct the actual URL
+                //Replace the parameters with the actual vales if there are any, and construct the actual URL
                 String actualResourceURL = replaceParameterPatternWithValues
                                                 (parametrizedResourceURL, RESTAPITestConstants.URL_REGEX);
                 Map<String, String> queryParameters = new HashMap<String, String>();
                 String queryParameterText =
                         dataConfigurationObject.get(RESTAPITestConstants.QUERY_PARAMETERS).toString();
 
-                //fetch the query parameters if there are any, and put them into the query parameter map
+                //Fetch the query parameters if there are any, and put them into the query parameter map
                 if (!queryParameterText.isEmpty()) {
                     Iterator queryParamIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.QUERY_PARAMETERS).keys();
@@ -134,7 +134,7 @@ public class RESTAPITestUtil {
                 Map<String, String> requestHeaders = new HashMap<String, String>();
                 String requestHeaderText = dataConfigurationObject.get(RESTAPITestConstants.REQUEST_HEADERS).toString();
 
-                //fetch the request headers if there are any, and put them into the request header map
+                //Fetch the request headers if there are any, and put them into the request header map
                 if (!requestHeaderText.isEmpty()) {
                     Iterator requestHeaderIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.REQUEST_HEADERS).keys();
@@ -143,7 +143,7 @@ public class RESTAPITestUtil {
                         String value = dataConfigurationObject.
                                 getJSONObject(RESTAPITestConstants.REQUEST_HEADERS).getString(key);
 
-                        //set the Auth header according to the required manner (i.e - separated with a space)
+                        //Set the Auth header according to the required manner (i.e - separated with a space)
                         if (RESTAPITestConstants.AUTHORIZATION_KEY.equalsIgnoreCase(key)) {
                             value = value.concat(" " + accessToken);
                         }
@@ -151,7 +151,7 @@ public class RESTAPITestUtil {
                     }
                 }
 
-                //take the initial payload from the data file (might contain space for parameters)
+                //Take the initial payload from the data file (might contain space for parameters)
                 String parametrizedRequestPayload =
                         dataConfigurationObject.get(RESTAPITestConstants.REQUEST_PAYLOAD).toString();
                 //replace the parameters with actual vales if there are any, and construct the actual request payload
@@ -161,7 +161,7 @@ public class RESTAPITestUtil {
                         dataConfigurationObject.get(RESTAPITestConstants.RESPONSE_HEADERS).toString();
                 Map<String, String> responseHeaders = new HashMap<String, String>();
 
-                //fetch the response headers if there are any, and put them into the response header map
+                //Fetch the response headers if there are any, and put them into the response header map
                 if (!responseHeaderText.isEmpty()) {
                     Iterator responseHeaderIterator = dataConfigurationObject.getJSONObject
                             (RESTAPITestConstants.RESPONSE_HEADERS).keys();
@@ -180,7 +180,7 @@ public class RESTAPITestUtil {
                         (method, actualResourceURL, queryParameters, requestHeaders, actualRequestPayload, cookie);
                 String outputText = ((ResponseImpl) responseOfHttpCall).readEntity(String.class);
 
-                //put the values (to the map) that should be preserved from the response of the current request,
+                //Put the values (to the map) that should be preserved from the response of the current request,
                 if (!configObject.isNull(RESTAPITestConstants.PRESERVE_LIST)) {
                     JSONArray preserveListArray = configObject.getJSONArray(RESTAPITestConstants.PRESERVE_LIST);
                     if (preserveListArray != null && preserveListArray.length() > 0) {
@@ -198,26 +198,26 @@ public class RESTAPITestUtil {
                 int expectedStatusCode = configObject.getJSONObject(RESTAPITestConstants.ASSERT_SECTION).
                         getJSONObject(RESTAPITestConstants.HEADER_ASSERTS).getInt(RESTAPITestConstants.STATUS_CODE);
 
-                //the test is successful only if actualStatusCode is same as expectedStatusCode
+                //The test is successful only if actualStatusCode is same as expectedStatusCode
                 if (actualStatusCode == expectedStatusCode) {
                     isTestSuccess = true;
                 } else {
                     isTestSuccess = false;
                 }
 
-                //if the current test fails no need to run the rest of the scenario, so break and return false
+                //If the current test fails no need to run the rest of the scenario, so break and return false
                 if (!isTestSuccess) {
                     break;
                 }
             }
 
         } catch (APIManagerIntegrationTestException integrationTestException) {
-            //if an error occurs while sending request to the REST API, the test fails
+            //If an error occurs while sending request to the REST API, the test fails
             log.error("Error occurred in sending request to the REST API.", integrationTestException);
             isTestSuccess = false;
 
         } catch (JSONException e) {
-            //if an error occurs while parsing the data in JSON file, the test fails
+            //If an error occurs while parsing the data in JSON file, the test fails
             log.error("Error occurred in parsing the data in JSON file.", e);
             isTestSuccess = false;
         }
@@ -270,11 +270,11 @@ public class RESTAPITestUtil {
         String actualTextWithValues = parametrizedText;
 
         if (parametrizedText != null && regex != null && regex.length() > 1) {
-            //get the pattern for dynamically generated texts
+            //Get the pattern for dynamically generated texts
             Pattern parameterPattern = Pattern.compile(regex);
             Matcher matcher = parameterPattern.matcher(parametrizedText);
 
-            //if a match is found, then fetch the applicable value from the preserved attribute list
+            //If a match is found, then fetch the applicable value from the preserved attribute list
             while (matcher.find()) {
                 String parameterName = matcher.group(1);
                 //construct the final text with the values fetched from the preserved attribute list
@@ -283,7 +283,7 @@ public class RESTAPITestUtil {
                 actualTextWithValues = parametrizedText.replace(template, preservedAttributes.get(parameterName));
             }
         }
-        //if patterns are found, then this returns the text with the values fetched from the preserved attribute list
+        //If patterns are found, then this returns the text with the values fetched from the preserved attribute list
         return actualTextWithValues;
     }
 
@@ -306,7 +306,7 @@ public class RESTAPITestUtil {
             URL tokenEndpointURL = new URL(gatewayUrl + RESTAPITestConstants.TOKEN_ENDPOINT_SUFFIX);
             HashMap<String, String> accessKeyMap = new HashMap<String, String>();
 
-            //concat consumeKey and consumerSecret and make the authenticationHeader to get access token
+            //Concat consumeKey and consumerSecret and make the authenticationHeader to get access token
             String authenticationHeader = consumeKey + ":" + consumerSecret;
             byte[] encodedBytes = Base64.encodeBase64(authenticationHeader.getBytes("UTF-8"));
             accessKeyMap.put(RESTAPITestConstants.AUTHORIZATION_KEY, "Basic " + new String(encodedBytes, "UTF-8"));
@@ -351,7 +351,7 @@ public class RESTAPITestUtil {
 
         String dcrEndpointURL = keyMangerUrl + RESTAPITestConstants.CLIENT_REGISTRATION_URL;
 
-        //use a random name for client to avoid conflicts in application(s)
+        //Use a random name for client to avoid conflicts in application(s)
         String randomClientName = RandomStringUtils.randomAlphabetic(5);
         String applicationRequestBody = "{\n" +
                 "\"callbackUrl\": \"www.google.lk\",\n" +
@@ -381,7 +381,7 @@ public class RESTAPITestUtil {
                     (clientRegistrationResponse.getString(RESTAPITestConstants.DATA_SECTION)).
                     get(RESTAPITestConstants.CLIENT_SECRET).toString();
 
-            //give 2 second duration to create consumer key and consumer secret
+            //Give 2 second duration to create consumer key and consumer secret
             Thread.sleep(2000);
             dataMap.put(RESTAPITestConstants.CONSUMER_KEY, consumerKey);
             dataMap.put(RESTAPITestConstants.CONSUMER_SECRET, consumerSecret);
