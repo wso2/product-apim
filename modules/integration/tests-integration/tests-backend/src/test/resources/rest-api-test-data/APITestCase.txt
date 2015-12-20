@@ -21,7 +21,7 @@
             \"endpointConfig\":
             \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
             \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
-            \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n
+            \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
             \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
             \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
             \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
@@ -81,7 +81,7 @@
             \"endpointConfig\":
             \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Kandy\\\",
             \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
-            \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n
+            \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
             \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
             \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
             \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
