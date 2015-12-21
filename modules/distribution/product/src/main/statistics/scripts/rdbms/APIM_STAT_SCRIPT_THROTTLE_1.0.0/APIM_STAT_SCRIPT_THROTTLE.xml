@@ -83,5 +83,5 @@
     INSERT OVERWRITE TABLE APIThrottleSummaryData SELECT api,api_version,context,apiPublisher,applicationName Descending,tenantDomain,year,month,day,week,time,success_request_count,throttleout_count
     FROM THROTTLED_OUT_FINAL_SUMMARY;
   </Script>
-  <CronExpression>0 0/20 * 1/1 * ? *</CronExpression>
+  <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
 </Analytics>
