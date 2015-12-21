@@ -276,14 +276,14 @@
     );
 
     insert into table API_DESTINATION_SUMMARY_FINAL select
-    api,version,apiPublisher, context,destination, sum(request) as total_request_count,hostName,
+    api,version,apiPublisher, context, COALESCE(destination,'-'), sum(request) as total_request_count,hostName,
 
     substring(cast(first(requestTime)/1000 as timestamp),0,4),
     substring(cast(first(requestTime)/1000 as timestamp),6,2),
     substring(cast(first(requestTime)/1000 as timestamp),9,2),
     substring(cast(first(requestTime)/1000 as timestamp),0,16),
     max(requestTime),
-    facet4(api,version,context,destination)
+    facet4(api,version,context,COALESCE(destination,'-'))
     from APIDestinationData
     where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
 
@@ -291,7 +291,8 @@
     substring(cast(requestTime/1000 as timestamp),6,2),
     substring(cast(requestTime/1000 as timestamp),9,2);
 
-    INSERT OVERWRITE TABLE APIDestinationDataSummaryData SELECT api,version,apiPublisher,context,destination,total_request_count,hostName,year,month,day,time FROM API_DESTINATION_SUMMARY_FINAL;
+    INSERT OVERWRITE TABLE APIDestinationDataSummaryData SELECT api,version,apiPublisher,context,destination,total_request_count,hostName,year,month,day,time
+    FROM API_DESTINATION_SUMMARY_FINAL where destination !='';
 
 
 

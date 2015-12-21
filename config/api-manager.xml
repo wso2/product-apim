@@ -193,10 +193,52 @@
      -->
 
     <!--
-        API usage tracker configuration used by the BAM data publisher and
+        API usage tracker configuration used by the DAS data publisher and
         Google Analytics publisher in API gateway.
     -->
     <APIUsageTracking>
+
+        <!--
+            Below property is used to enable API Manager analytics configuration via api-manager.xml
+            Enabling analytics via a configuration file can be useful in scenarios such as automated deployments where
+            UI integration is inconvenient.
+
+            If you uncomment this property, analytics configurations added via admin-dashboard UI will
+            get overwritten by tha configuration details provided below when you restart the server.
+        -->
+        <!--Enabled>false</Enabled-->
+
+        <!--
+            Server URL of the remote DAS/CEP server used to collect statistics. Must
+            be specified in protocol://hostname:port/ format.
+
+            An event can also be published to multiple Receiver Groups each having 1 or more receivers. Receiver
+            Groups are delimited by curly braces whereas receivers are delimited by commas.
+        Ex - Multiple Receivers within a single group
+         tcp://localhost:7612/,tcp://localhost:7613/,tcp://localhost:7614/
+        Ex - Multiple Receiver Groups with two receivers each
+                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/}
+        -->
+        <DASServerURL>{tcp://localhost:7612/}</DASServerURL>
+
+        <!--
+            Administrator username to login to the remote DAS server.
+        -->
+        <DASUsername>admin</DASUsername>
+
+        <!--
+            Administrator password to login to the remote DAS server.
+        -->
+        <DASPassword>admin</DASPassword>
+
+        <!--
+            DAS REST API configuration
+                Set the values if .'org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl'
+                is used as Statistic Client
+        -->
+        <DataAnalyzerURL>https://localhost:9444</DataAnalyzerURL>
+        <DataAnalyzeUsername>admin</DataAnalyzeUsername>
+        <DataAnalyzerURLPassword>admin</DataAnalyzerURLPassword>
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
@@ -267,10 +309,6 @@
             Admin password for API key manager.
         -->
         <Password>${admin.password}</Password>
-        <!--
-            Enable/Disable JWT caching.
-        -->
-        <EnableJWTCache>false</EnableJWTCache>
 
         <!--
             Enable/Disable API key validation information caching at key-management server

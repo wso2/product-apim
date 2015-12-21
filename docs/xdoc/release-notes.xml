@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v1.9.0 - 15th June 2015</title>
+    <title>WSO2 API Manager v1.10.0 - 23rd December 2015</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 1.9.0 Released!</h1>
+<h1>The WSO2 API Manager 1.10.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 1.9.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 1.10.0 of
     the Open Source API Manager.
 </p>
 
@@ -70,7 +70,7 @@
 <p>
     For more information on WSO2 API Manager please visit <a href="http://wso2.com/products/api-manager">
     http://wso2.com/products/api-manager</a>. Also take a look at the online product
-    <a href="http://docs.wso2.org/wiki/display/AM150/WSO2+API+Manager+Documentation">documentation</a>.
+    <a href="https://docs.wso2.com/display/AM1100/WSO2+API+Manager+Documentation">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
@@ -86,13 +86,84 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-<h3>APIM 1.9.0 includes following New Features, Improvements, Tasks and Bug Fixes.</h3>
-
+<h2>New Features in 1.10.0</h2>
 <ul>
-<li><a href="https://wso2.org/jira/issues/?filter=12241">New Features</a></li>
-<li><a href="https://wso2.org/jira/issues/?filter=12243">Improvements</a></li>
-<li><a href="https://wso2.org/jira/issues/?filter=12242">Tasks</a></li>
-<li><a href="https://wso2.org/jira/issues/?filter=12240">Bug Fixes</a></li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-509'>APIMANAGER-509</a>] -         Provide means to search tags
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-647'>APIMANAGER-647</a>] -         Provide a better UI than selecting from a drop down list to deal with lifecycle states of an API with publisher UI
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3705'>APIMANAGER-3705</a>] -         Add HTTP method &quot;PATCH&quot; support to API-M
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3979'>APIMANAGER-3979</a>] -         Support Digest auth protected enpoint as a back end URL.
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4027'>APIMANAGER-4027</a>] -         Enabling users to invoke APIs when the throttle limit has exceeded
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4034'>APIMANAGER-4034</a>] -         Making the backend endpoint/url optional
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4179'>APIMANAGER-4179</a>] -         Support reverse proxy for API manager admin-dashboard application
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4192'>APIMANAGER-4192</a>] -         Set a throttling hard limit per API
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4262'>APIMANAGER-4262</a>] -         REST API for publisher and there we are exposing a resource &quot;/tiers&quot;
+</li>
+</ul>
+
+<h2>Improvements in 1.10.0</h2>
+<ul>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2166'>APIMANAGER-2166</a>] -         DB2 Support 
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2514'>APIMANAGER-2514</a>] -         [APIM Migration] Improve instructions in README.txt for default embedded h2 db
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2553'>APIMANAGER-2553</a>] -         Review the REST API
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2661'>APIMANAGER-2661</a>] -         uri templates are allowed to be saved with invalid characters
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-2687'>APIMANAGER-2687</a>] -         Forum content and reply editting
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3364'>APIMANAGER-3364</a>] -         Set correct registry permissions when the Publisher/Subscriber roles have been created by an external Identity Server
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3591'>APIMANAGER-3591</a>] -         Throttle Policy management Enhacements
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3638'>APIMANAGER-3638</a>] -         Make order of execution of APIManagerExtensionHandler and APIAuthenticationHandler configurable at each tenant
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3951'>APIMANAGER-3951</a>] -         Store and return audit meta data for artifacts that are created or modified via published API calls
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3958'>APIMANAGER-3958</a>] -         OAuth2 SCOPE value is not available in message path.  It is better to set it as property?
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3978'>APIMANAGER-3978</a>] -         /userinfo  end point can be deployed as default API in the Gateway.
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4112'>APIMANAGER-4112</a>] -         [Store REST API] New API to return APIs by tag 
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4114'>APIMANAGER-4114</a>] -         Renaming locations to which the store/publisher apps are being copied at build time
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4124'>APIMANAGER-4124</a>] -         High number of DB calls going from Gateway to the database if default api is selected.
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4144'>APIMANAGER-4144</a>] -         Fix the issue in API Migration client when we have blocked APIs
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4146'>APIMANAGER-4146</a>] -         Integrate registry lifecycle with APIM 1.10.0
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4189'>APIMANAGER-4189</a>] -         Introduce IDs for fields to enable EnjoyHint capabilities for the cloud tutorial
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4217'>APIMANAGER-4217</a>] -         Sufficient Audit logs should be included for main activities in publisher, store 
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4383'>APIMANAGER-4383</a>] -         Change the error message into a meaningful one that get after exceeding the hard throttling limit in APIM logs.
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4392'>APIMANAGER-4392</a>] -         Its better to make the wildcard charater mandatory for the publisher REST API query
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4393'>APIMANAGER-4393</a>] -         APIM is not sending &quot;Access-Control-Allow-Credentials&quot; header in response.
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4413'>APIMANAGER-4413</a>] -         Include different error codes when throttling out in different throttling levels
+</li>
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4414'>APIMANAGER-4414</a>] -         Add log messages to indicate when DAS reconnected with APIM and when DAS disconnected with APIM
+</li>
+</ul>
+
+
+<h2>Resolved Issues</h2>
+<ul>
+    <li>
+        <a href="https://wso2.org/jira/issues/?filter=12597">WSO2 API Manager V1.10.0 resolved issues</a>
+    </li>
 </ul>
 
 <h2>Key Features of WSO2 API Manager</h2>
@@ -101,17 +172,6 @@
     based on the target user group.
 </p>
 <ul>
-
-    <li>Design and Prototype APIs:
-        <ul>
-            <li>Design APIs, gather developer's feedback before implementing (API First Design).</li>
-            <li>Design can be done from the publishing interface or via importing an existing swagger definition</li>
-            <li>Deploy a prototyped API, provide early access to APIs, and get early feedback.</li>
-            <li>Mock API implementation using Javascript.</li>
-            <li>Support publishing SOAP, REST, JSON and XML style services as XML.</li>
-        </ul>
-
-    </li>
     <li>Create a Store of all Available APIs:
         <ul>
             <li>Graphical experience similar to Android Marketplace or Apple App Store.</li>
@@ -137,29 +197,17 @@
             <li>Manage API versions and deployment status by version.</li>
             <li>Govern the API lifecycle (publish, deprecate, retire).</li>
             <li>Attach documentation (files, external URLs) to APIs.</li>
+            <li>Apply Security policies to APIs (authentication, authorization).</li>
+            <li>Associate API available to system defined service tiers.</li>
             <li>Provision and Manage API keys.</li>
             <li>Track consumers per API.</li>
             <li>One-click deployment to API Gateway for immediate publishing.</li>
         </ul>
 
     </li>
-
-     <li>Control Access and Enforce Security:
-        <ul>
-
-            <li>Apply Security policies to APIs (authentication, authorization).</li>
-            <li>Rely on OAuth2 standard for API access (implicit, authorization code, client, SAML, IWA Grant type).</li>
-            <li>Restrict API access tokens to domains/IPs</li>
-            <li>Block a subscription and restrict a complete application.</li>
-            <li>Associate API available to system defined service tiers.</li>
-            <li>Leverage XACML for entitlements management and fine grained authorization.</li>
-            <li>Configire Single Sign-On (SSO) using SAML 2.0 for easy integartion with existing web apps.</li>
-            <li>Powered by WSO2 Enterprise Service Bus.</li>
-        </ul>
-    </li>
-
     <li>Route API Traffic:
         <ul>
+
             <li>Supports API authentication with OAuth2.</li>
             <li>Extremely high performance pass-through message routing with sub-millisecond latency.</li>
             <li>Enforce rate limiting and throttling policies for APIs by consumer.</li>
@@ -256,7 +304,7 @@
 </p>
 <ul>
     <li>
-        <a href="https://wso2.org/jira/issues/?filter=12237">
+        <a href="https://wso2.org/jira/secure/IssueNavigator.jspa?mode=hide&amp;requestId=10810">
             Known Issues
         </a>
     </li>
