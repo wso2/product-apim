@@ -16,7 +16,7 @@
  *  under the License.
  */
 
-package org.wso2.carbon.apimgt.migration.dto;
+package org.wso2.carbon.apimgt.migration.client._110Specific.dto;
 
 public class HandlerPropertyDTO {
     private String name;

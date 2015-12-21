@@ -25,11 +25,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.dto.HandlerPropertyDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.HandlerPropertyDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.apimgt.migration.util.SynapseUtil;
-import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
+import org.wso2.carbon.core.util.CryptoException;
+import org.wso2.carbon.core.util.CryptoUtil;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
@@ -37,6 +40,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class ResourceModifier {
@@ -296,5 +300,20 @@ public class ResourceModifier {
         }
 
         return false;
+    }
+
+    public static void decryptConsumerKeyIfEncrypted(List<AppKeyMappingDTO> appKeyMappingDTOs) {
+        Iterator<AppKeyMappingDTO> iterator = appKeyMappingDTOs.iterator();
+        while (iterator.hasNext()) {
+            try {
+                AppKeyMappingDTO appKeyMappingDTO = iterator.next();
+                byte[] decryptedKey =  CryptoUtil.getDefaultCryptoUtil().
+                                            base64DecodeAndDecrypt(appKeyMappingDTO.getConsumerKey());
+
+                appKeyMappingDTO.setConsumerKey(new String(decryptedKey, Charset.defaultCharset()));
+            } catch (CryptoException e) {  // CryptoException indicates value being decrypted was not encrypted
+                iterator.remove(); // Remove objects with consumer keys that do not require decryption
+            }
+        }
     }
 }

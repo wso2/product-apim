@@ -25,7 +25,8 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
-import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -51,8 +52,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
     private RegistryService registryService;
 
-    private static class Pair {
-        Pair(String usernameWithoutDomain, String authzUser) {
+    private static class AccessTokenInfo {
+        AccessTokenInfo(String usernameWithoutDomain, String authzUser) {
             this.usernameWithoutDomain = usernameWithoutDomain;
             this.authzUser = authzUser;
         }
@@ -74,6 +75,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         updateAPIManangerDatabase(amScriptPath);
 
         updateAuthzUserName();
+
+        decryptEncryptedConsumerKeys();
     }
 
     @Override
@@ -121,7 +124,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         PreparedStatement selectStatement = null;
         ResultSet resultSet = null;
 
-        ArrayList<Pair> updateValues = new ArrayList<>();
+        ArrayList<AccessTokenInfo> updateValues = new ArrayList<>();
         StringBuilder whenConditions = new StringBuilder();
         try {
             String selectQuery = "SELECT DISTINCT AUTHZ_USER FROM IDN_OAUTH2_ACCESS_TOKEN WHERE AUTHZ_USER LIKE '%@%'";
@@ -135,8 +138,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
                 String usernameWithoutDomain = authzUser.split("@")[0];
 
-                Pair pair = new Pair(usernameWithoutDomain, authzUser);
-                updateValues.add(pair);
+                AccessTokenInfo accessTokenInfo = new AccessTokenInfo(usernameWithoutDomain, authzUser);
+                updateValues.add(accessTokenInfo);
 
                 whenConditions.append(System.lineSeparator());
                 whenConditions.append("WHEN AUTHZ_USER = ? THEN ?");
@@ -159,9 +162,9 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 updateStatement = connection.prepareStatement(updateQuery);
 
                 int i = 1;
-                for (Pair pair : updateValues) {
-                    updateStatement.setString(i++, pair.usernameWithoutDomain);
-                    updateStatement.setString(i++, pair.authzUser);
+                for (AccessTokenInfo accessTokenInfo : updateValues) {
+                    updateStatement.setString(i++, accessTokenInfo.usernameWithoutDomain);
+                    updateStatement.setString(i++, accessTokenInfo.authzUser);
                 }
                 updateStatement.execute();
 
@@ -171,6 +174,64 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             }
         }
         log.info("Updating Authz UserName for API Manager completed");
+    }
+
+    private void decryptEncryptedConsumerKeys() throws SQLException {
+        log.info("Decrypting encrypted consumer keys for API Manager started");
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<AppKeyMappingDTO> appKeyMappingDTOs = new ArrayList<>();
+
+        try {
+            String query = "SELECT APPLICATION_ID, CONSUMER_KEY, KEY_TYPE FROM AM_APPLICATION_KEY_MAPPING";
+
+            connection = APIMgtDBUtil.getConnection();
+            preparedStatement = connection.prepareStatement(query);
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                AppKeyMappingDTO appKeyMappingDTO = new AppKeyMappingDTO();
+                appKeyMappingDTO.setApplicationId(resultSet.getString("APPLICATION_ID"));
+                appKeyMappingDTO.setConsumerKey(resultSet.getString("CONSUMER_KEY"));
+                appKeyMappingDTO.setKeyType(resultSet.getString("KEY_TYPE"));
+
+                appKeyMappingDTOs.add(appKeyMappingDTO);
+            }
+
+            ResourceModifier.decryptConsumerKeyIfEncrypted(appKeyMappingDTOs);
+        } finally {
+            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
+        }
+
+        if (!appKeyMappingDTOs.isEmpty()) {
+            PreparedStatement updateStatement = null;
+            StringBuilder updateQuery = new StringBuilder("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = CASE ");
+
+            for (int i = 0; i < appKeyMappingDTOs.size(); ++i) {
+                updateQuery.append(System.lineSeparator());
+                updateQuery.append("WHEN APPLICATION_ID = ? AND KEY_TYPE = ? THEN ?");
+            }
+
+            updateQuery.append(System.lineSeparator());
+            updateQuery.append("END");
+            try {
+                connection = APIMgtDBUtil.getConnection();
+                updateStatement = connection.prepareStatement(updateQuery.toString());
+
+                int j = 1;
+                for (AppKeyMappingDTO appKeyMappingDTO : appKeyMappingDTOs) {
+                    updateStatement.setString(j++, appKeyMappingDTO.getApplicationId());
+                    updateStatement.setString(j++, appKeyMappingDTO.getKeyType());
+                    updateStatement.setString(j++, appKeyMappingDTO.getConsumerKey());
+                }
+                updateStatement.execute();
+
+                connection.commit();
+            } finally {
+                APIMgtDBUtil.closeAllConnections(updateStatement, connection, null);
+            }
+        }
     }
 
     /**
@@ -191,8 +252,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
                 for (GenericArtifact artifact : artifacts) {
                     artifact.setAttribute("overview_endpointAuthType", "Basic Auth");
-
-                    //updateResourcePermissions(artifact, tenant);
                 }
 
                 registryService.updateGenericAPIArtifacts(artifacts);

@@ -18,7 +18,7 @@
  * /
  */
 
-package org.wso2.carbon.apimgt.migration.dto;
+package org.wso2.carbon.apimgt.migration.client._110Specific.dto;
 
 import org.w3c.dom.Document;
 

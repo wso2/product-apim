@@ -16,28 +16,35 @@
  *  under the License.
  */
 
-package org.wso2.carbon.apimgt.migration.dto;
+package org.wso2.carbon.apimgt.migration.client._110Specific.dto;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+public class AppKeyMappingDTO {
+    private String applicationId;
+    private String consumerKey;
+    private String keyType;
 
-public class APIHandlersDTO {
-    private Element handlersElement;
-    private NodeList handlerNodes;
-
-    public Element getHandlersElement() {
-        return handlersElement;
+    public String getApplicationId() {
+        return applicationId;
     }
 
-    public void setHandlersElement(Element handlersElement) {
-        this.handlersElement = handlersElement;
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
     }
 
-    public NodeList getHandlerNodes() {
-        return handlerNodes;
+    public String getConsumerKey() {
+        return consumerKey;
     }
 
-    public void setHandlerNodes(NodeList handlerNodes) {
-        this.handlerNodes = handlerNodes;
+    public void setConsumerKey(String consumerKey) {
+        this.consumerKey = consumerKey;
     }
+
+    public String getKeyType() {
+        return keyType;
+    }
+
+    public void setKeyType(String keyType) {
+        this.keyType = keyType;
+    }
+
 }

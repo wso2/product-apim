@@ -23,7 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.dto.SynapseDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.utils.CarbonUtils;
