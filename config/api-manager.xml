@@ -309,10 +309,6 @@
             Admin password for API key manager.
         -->
         <Password>${admin.password}</Password>
-        <!--
-            Enable/Disable JWT caching.
-        -->
-        <EnableJWTCache>false</EnableJWTCache>
 
         <!--
             Enable/Disable API key validation information caching at key-management server

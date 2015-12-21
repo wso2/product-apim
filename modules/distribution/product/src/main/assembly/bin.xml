@@ -434,7 +434,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v1.war</include>
+                <include>api#am#store#v0.9.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -444,7 +444,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v1.war</include>
+                <include>api#am#publisher#v0.9.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -454,7 +454,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v1.war</include>
+                <include>client-registration#v0.9.war</include>
             </includes>
         </fileSet>
 
