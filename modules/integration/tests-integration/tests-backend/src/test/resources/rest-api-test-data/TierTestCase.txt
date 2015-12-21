@@ -2,11 +2,11 @@
     "testCase": [
             {
                 "init": {
-                    "scope": "apim_create_publish_api_scope"
+                    "scope": "apim:tier_view"
                 },
                 "data": {
                     "method": "GET",
-                    "url": "api/am/publisher/v1//tiers/api",
+                    "url": "api/am/publisher/v0.9//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -25,11 +25,11 @@
             ,
             {
                 "init": {
-                    "scope": "apim_edit_tiers_scope"
+                    "scope": "apim:tier_manage"
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v1//tiers/api",
+                    "url": "api/am/publisher/v0.9//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -50,11 +50,11 @@
             ,
             {
                 "init": {
-                    "scope": "apim_edit_tiers_scope"
+                    "scope": "apim:tier_manage"
                 },
                 "data": {
                     "method": "PUT",
-                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "url": "api/am/publisher/v0.9//tiers/api/NewTier",
                     "query-parameters": {
                         "tierName": "NewTier",
                         "Content-Type": "application/json"
@@ -79,11 +79,11 @@
             ,
             {
                 "init": {
-                    "scope": "apim_edit_tiers_scope"
+                    "scope": "apim:tier_manage"
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v1//tiers/api/NewTier",
+                    "url": "api/am/publisher/v0.9//tiers/api/NewTier",
                     "query-parameters": {
                         "tierName": "NewTier"
                     },

@@ -2,11 +2,11 @@
 	"testCase": [
 	    {
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "POST",
-				"url": "/api/am/store/v1//applications",
+				"url": "/api/am/store/v0.9//applications",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer",
@@ -38,11 +38,11 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "PUT",
-				"url": "/api/am/store/v1//applications/{applicationId}",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer",
@@ -68,11 +68,11 @@
 		},
 		{
 			"init": {
-				"scope": "apim_create_api_scope"
+				"scope": "apim:api_create"
 			},
 			"data": {
 				"method": "GET",
-				"url": "/api/am/publisher/v1//applications/{applicationId}",
+				"url": "/api/am/publisher/v0.9//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"
@@ -90,11 +90,11 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "GET",
-				"url": "/api/am/store/v1//applications/{applicationId}",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"
@@ -112,11 +112,11 @@
 		},
 		{
 			"init": {
-				"scope": "apim_subscribe_api_scope"
+				"scope": "apim:subscribe"
 			},
 			"data": {
 				"method": "DELETE",
-				"url": "/api/am/store/v1//applications/{applicationId}",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
 				"query-parameters": "",
 				"request-headers": {
 					"Authorization": "Bearer"
