@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v1//tiers/api",
+                    "url": "api/am/publisher/v0.9//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -30,7 +30,7 @@
                },
                "data":{
                   "method":"POST",
-                  "url":"/api/am/publisher/v1//apis",
+                  "url":"/api/am/publisher/v0.9//apis",
                   "query-parameters":"",
                   "request-headers":{
                      "Authorization":"Bearer"
@@ -45,7 +45,7 @@
                         \"endpointConfig\":
                         \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
                         \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
-                        \"subscriptionAvailability\": null,\r\n   \"subscriptionAvailableTenants\": [],\r\n
+                        \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
                         \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
                         \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
                         \\\"x-throttling-tier\\\":\\\"CustomTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
@@ -89,7 +89,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v1//apis/change-lifecycle?apiId={apiId}&action=Deploy+as+a+Prototype",
+                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Deploy+as+a+Prototype",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -111,7 +111,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v1//apis/change-lifecycle?apiId={apiId}&action=Publish",
+                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Publish",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -133,7 +133,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v1//apis/change-lifecycle?apiId={apiId}&action=Demote+to+Created",
+                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Demote+to+Created",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -155,7 +155,7 @@
                  },
                  "data":{
                     "method":"DELETE",
-                    "url":"/api/am/publisher/v1//apis/{apiId}",
+                    "url":"/api/am/publisher/v0.9//apis/{apiId}",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -177,7 +177,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v1//tiers/api/CustomTier",
+                    "url": "api/am/publisher/v0.9//tiers/api/CustomTier",
                     "query-parameters": {
                         "tierName": "CustomTier"
                     },
