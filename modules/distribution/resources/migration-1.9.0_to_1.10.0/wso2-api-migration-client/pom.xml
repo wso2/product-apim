@@ -159,11 +159,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.apache.felix.src.plugin.version>1.7.2</org.apache.felix.src.plugin.version>
         <org.apache.felix.budnle.plugin.version>2.5.3</org.apache.felix.budnle.plugin.version>
-        <org.wso2.carbon.apimgt.version>4.3.0-SNAPSHOT</org.wso2.carbon.apimgt.version>
+        <org.wso2.carbon.apimgt.version>5.0.0</org.wso2.carbon.apimgt.version>
         <org.wso2.carbon.platform.version>4.4.1</org.wso2.carbon.platform.version>
         <org.wso2.carbon.logging.version>4.4.1</org.wso2.carbon.logging.version>
         <carbon.kernel.version>4.4.2</carbon.kernel.version>
-        <org.wso2.carbon.is.migration.client.version>5.1.0-SNAPSHOT</org.wso2.carbon.is.migration.client.version>
+        <org.wso2.carbon.is.migration.client.version>5.1.0</org.wso2.carbon.is.migration.client.version>
     </properties>
 
 </project>

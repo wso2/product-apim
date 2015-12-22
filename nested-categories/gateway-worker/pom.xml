@@ -98,7 +98,7 @@
 				<importFeatureDef>org.wso2.carbon.registry.ws:${carbon.registry.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.relay.server:${carbon.mediation.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.rest.api:${carbon.kernel.version}</importFeatureDef>
-				<importFeatureDef>org.wso2.carbon.rule.mediation.server:4.4.4-SNAPSHOT</importFeatureDef>
+				<importFeatureDef>org.wso2.carbon.rule.mediation.server:4.4.4</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.mediation.security.server:${carbon.platform.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.security.mgt.server:${carbon.identity.version}</importFeatureDef>
 				<importFeatureDef>org.wso2.carbon.service.mgt.server:${carbon.kernel.version}</importFeatureDef>
