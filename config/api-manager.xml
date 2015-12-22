@@ -236,9 +236,9 @@
                 Set the values if .'org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl'
                 is used as Statistic Client
         -->
-        <DataAnalyzerURL>https://localhost:9444</DataAnalyzerURL>
-        <DataAnalyzeUsername>admin</DataAnalyzeUsername>
-        <DataAnalyzerURLPassword>admin</DataAnalyzerURLPassword>
+        <DASRestApiURL>https://localhost:9444</DASRestApiURL>
+        <DASRestApiUsername>admin</DASRestApiUsername>
+        <DASRestApiPassword>admin</DASRestApiPassword>
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
