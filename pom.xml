@@ -888,7 +888,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.3</carbon.kernel.version>
-        <apimserver.version>1.10.0</apimserver.version>
+        <apimserver.version>1.10.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
 
