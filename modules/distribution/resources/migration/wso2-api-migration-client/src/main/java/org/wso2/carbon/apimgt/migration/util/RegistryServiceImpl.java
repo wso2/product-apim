@@ -83,7 +83,7 @@ public class RegistryServiceImpl implements RegistryService {
     @Override
     public GenericArtifact[] getGenericAPIArtifacts() {
         log.debug("Calling getGenericAPIArtifacts");
-        GenericArtifact[] artifacts = null;
+        GenericArtifact[] artifacts = {};
 
         try {
             Registry registry = getGovernanceRegistry();

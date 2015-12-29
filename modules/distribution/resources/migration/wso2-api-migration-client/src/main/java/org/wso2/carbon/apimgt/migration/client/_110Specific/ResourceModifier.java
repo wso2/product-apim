@@ -310,7 +310,14 @@ public class ResourceModifier {
                 byte[] decryptedKey =  CryptoUtil.getDefaultCryptoUtil().
                                             base64DecodeAndDecrypt(appKeyMappingDTO.getConsumerKey());
 
-                appKeyMappingDTO.setConsumerKey(new String(decryptedKey, Charset.defaultCharset()));
+                String decryptedValue = new String(decryptedKey, Charset.defaultCharset());
+
+                if (ResourceUtil.isConsumerKeyValid(decryptedValue)) {
+                    appKeyMappingDTO.setConsumerKey(decryptedValue);
+                }
+                else {
+                    iterator.remove(); // Remove objects with consumer keys that do not require decryption
+                }
             } catch (CryptoException e) {  // CryptoException indicates value being decrypted was not encrypted
                 iterator.remove(); // Remove objects with consumer keys that do not require decryption
             }

@@ -40,11 +40,17 @@ import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
 public class MigrateFrom19to110 extends MigrationClientBase implements MigrationClient {
@@ -125,7 +131,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         ResultSet resultSet = null;
 
         ArrayList<AccessTokenInfo> updateValues = new ArrayList<>();
-        StringBuilder whenConditions = new StringBuilder();
         try {
             String selectQuery = "SELECT DISTINCT AUTHZ_USER FROM IDN_OAUTH2_ACCESS_TOKEN WHERE AUTHZ_USER LIKE '%@%'";
 
@@ -140,13 +145,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
                 AccessTokenInfo accessTokenInfo = new AccessTokenInfo(usernameWithoutDomain, authzUser);
                 updateValues.add(accessTokenInfo);
-
-                whenConditions.append(System.lineSeparator());
-                whenConditions.append("WHEN AUTHZ_USER = ? THEN ?");
             }
-
-            whenConditions.append(System.lineSeparator());
-            whenConditions.append("END");
 
         } finally {
             APIMgtDBUtil.closeAllConnections(selectStatement, connection, resultSet);
@@ -158,15 +157,15 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             try {
                 connection = APIMgtDBUtil.getConnection();
 
-                String updateQuery = "UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = CASE " + whenConditions.toString();
-                updateStatement = connection.prepareStatement(updateQuery);
+                updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ?" +
+                                                                "WHEN AUTHZ_USER = ?");
 
-                int i = 1;
                 for (AccessTokenInfo accessTokenInfo : updateValues) {
-                    updateStatement.setString(i++, accessTokenInfo.usernameWithoutDomain);
-                    updateStatement.setString(i++, accessTokenInfo.authzUser);
+                    updateStatement.setString(1, accessTokenInfo.usernameWithoutDomain);
+                    updateStatement.setString(2, accessTokenInfo.authzUser);
+                    updateStatement.addBatch();
                 }
-                updateStatement.execute();
+                updateStatement.executeBatch();
 
                 connection.commit();
             } finally {
@@ -206,26 +205,20 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
         if (!appKeyMappingDTOs.isEmpty()) {
             PreparedStatement updateStatement = null;
-            StringBuilder updateQuery = new StringBuilder("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = CASE ");
 
-            for (int i = 0; i < appKeyMappingDTOs.size(); ++i) {
-                updateQuery.append(System.lineSeparator());
-                updateQuery.append("WHEN APPLICATION_ID = ? AND KEY_TYPE = ? THEN ?");
-            }
-
-            updateQuery.append(System.lineSeparator());
-            updateQuery.append("END");
             try {
                 connection = APIMgtDBUtil.getConnection();
-                updateStatement = connection.prepareStatement(updateQuery.toString());
+                updateStatement = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
+                                                                    "WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
 
-                int j = 1;
                 for (AppKeyMappingDTO appKeyMappingDTO : appKeyMappingDTOs) {
-                    updateStatement.setString(j++, appKeyMappingDTO.getApplicationId());
-                    updateStatement.setString(j++, appKeyMappingDTO.getKeyType());
-                    updateStatement.setString(j++, appKeyMappingDTO.getConsumerKey());
+                    updateStatement.setString(1, appKeyMappingDTO.getConsumerKey());
+                    updateStatement.setString(2, appKeyMappingDTO.getApplicationId());
+                    updateStatement.setString(3, appKeyMappingDTO.getKeyType());
+                    updateStatement.addBatch();
                 }
-                updateStatement.execute();
+
+                updateStatement.executeBatch();
 
                 connection.commit();
             } finally {

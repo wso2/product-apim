@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon.apimgt.migration.util;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -23,27 +22,39 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client.MigrationDBCreator;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
 import org.wso2.carbon.utils.CarbonUtils;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceUtil {
 
     private static final Log log = LogFactory.getLog(ResourceUtil.class);
+
+    private static boolean[] validConsumerKeyChars = new boolean[128];
+
+    static {
+        char[] validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_".toCharArray();
+
+        for (char validChar : validChars) {
+            validConsumerKeyChars[validChar] = true;
+        }
+    }
 
     /**
      * location for the swagger 1.2 resources
@@ -54,7 +65,7 @@ public class ResourceUtil {
      * @return swagger v1.2 location
      */
     public static String getSwagger12ResourceLocation(String apiName, String apiVersion, String apiProvider) {
-        return APIConstants.API_DOC_LOCATION + RegistryConstants.PATH_SEPARATOR + apiName + "-" + apiVersion + "-"
+        return APIConstants.API_DOC_LOCATION + RegistryConstants.PATH_SEPARATOR + apiName + '-' + apiVersion + '-'
                 + apiProvider + RegistryConstants.PATH_SEPARATOR + APIConstants.API_DOC_1_2_LOCATION;
     }
 
@@ -87,53 +98,6 @@ public class ResourceUtil {
                 + RegistryConstants.PATH_SEPARATOR + "api";
     }
 
-
-
-    /**
-     * This method picks the query according to the users database
-     *
-     * @param migrateVersion migrate version
-     * @return exact query to execute
-     * @throws SQLException
-     * @throws APIMigrationException
-     * @throws IOException
-     */
-    public static String pickQueryFromResources(String migrateVersion, String queryType) throws SQLException, APIMigrationException,
-            IOException {
-
-        String queryTobeExecuted;
-        try {
-            String databaseType = MigrationDBCreator.getDatabaseType(APIMgtDBUtil.getConnection());
-
-            String resourcePath;
-
-            if (Constants.VERSION_1_9.equalsIgnoreCase(migrateVersion)) {
-                //pick from 18to19Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
-            }
-            else if (Constants.VERSION_1_10.equalsIgnoreCase(migrateVersion)) {
-                //pick from 19to110Migration/sql-scripts
-                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "19-110-migration" + File.separator;
-            } else {
-                throw new APIMigrationException("No query picked up for the given migrate version. Please check the migrate version.");
-            }
-
-            if (Constants.CONSTRAINT.equals(queryType)) {
-                resourcePath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator + "18-19-migration" + File.separator;
-                queryTobeExecuted = IOUtils.toString(new FileInputStream(new File(resourcePath + "drop-fk.sql")), "UTF-8");
-            } else {
-                queryTobeExecuted = resourcePath + databaseType + ".sql";
-            }
-
-        } catch (IOException e) {
-            throw new APIMigrationException("Error occurred while accessing the sql from resources. " + e);
-        } catch (Exception e) {
-            //getDatabaseType inherited from DBCreator, which throws generic exception
-            throw new APIMigrationException("Error occurred while searching for database type " + e);
-        }
-
-        return queryTobeExecuted;
-    }
 
     /**
      * To handle exceptions
@@ -168,6 +132,7 @@ public class ResourceUtil {
 
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.parse(filePath);
             Node sequence = doc.getElementsByTagName("sequence").item(0);
@@ -219,9 +184,9 @@ public class ResourceUtil {
      */
     public static void updateSynapseAPI(Document document, File file) throws APIMigrationException {
         try {
-            updateAPIAttributes(document, file);
-            updateHandlers(document, file);
-            updateResources(document, file);
+            updateAPIAttributes(document);
+            updateHandlers(document);
+            updateResources(document);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -235,72 +200,62 @@ public class ResourceUtil {
         }
     }
 
-    private static void updateAPIAttributes(Document document, File file) {
+    private static void updateAPIAttributes(Document document) {
         Element apiElement = document.getDocumentElement();
 
         String versionType = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE);
 
-        if (versionType.equals(Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL)) {
+        if (Constants.SYNAPSE_API_VALUE_VERSION_TYPE_URL.equals(versionType)) {
             String context = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT);
             String version = apiElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION);
 
-            context = context + "/" + version;
+            context = context + '/' + version;
             apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CONTEXT, context);
             apiElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION_TYPE, Constants.SYNAPSE_API_VALUE_VERSION_TYPE_CONTEXT);
         }
     }
 
 
-    private static void updateHandlers(Document document, File file) {
-        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, 
-                                                                            Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
+    private static void updateHandlers(Document document) {
+        Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
 
-        if (handlersElement != null) {
-            NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
-    
-            for (int i = 0; i < handlerNodes.getLength(); ++i) {
-                Element handler = (Element) handlerNodes.item(i);
-    
-                String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
-    
-                if (className.equals(Constants.SYNAPSE_API_VALUE_CORS_HANDLER)) {
-                    handlersElement.removeChild(handler);
-                    break;
-                }
+        NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
+
+        for (int i = 0; i < handlerNodes.getLength(); ++i) {
+            Element handler = (Element) handlerNodes.item(i);
+
+            String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
+
+            if (Constants.SYNAPSE_API_VALUE_CORS_HANDLER.equals(className)) {
+                handlersElement.removeChild(handler);
+                break;
             }
-    
-            // Find the inSequence
-            Element inSequenceElement = (Element) document.getElementsByTagName
-                    (Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
-            
-            NodeList sendElements = null;            
-            if (inSequenceElement != null) {    
-                sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
-            }
-    
-            Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, 
-                                                           Constants.SYNAPSE_API_ELEMENT_HANDLER);
-            corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
-            Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, 
-                                                        Constants.SYNAPSE_API_ELEMENT_PROPERTY);
-            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
-    
-            if (sendElements != null && 0 < sendElements.getLength()) {
-                property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
-            }
-            else {
-                property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, 
-                                      Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
-            }
-    
-            corsHandler.appendChild(property);
-    
-            handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
         }
+
+        // Find the inSequence
+        Element inSequenceElement = (Element) document.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
+
+        NodeList sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
+
+        Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLER);
+        corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
+        Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+        property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
+
+        if (0 < sendElements.getLength()) {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
+        }
+        else {
+            property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_INLINE_UPPERCASE);
+        }
+
+        corsHandler.appendChild(property);
+
+        handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
 
     }
 
-    private static void updateResources(Document document, File file) throws APIMigrationException {
+    private static void updateResources(Document document) throws APIMigrationException {
         NodeList resourceNodes = document.getElementsByTagName("resource");
         for (int i = 0; i < resourceNodes.getLength(); i++) {
             Element resourceElement = (Element) resourceNodes.item(i);
@@ -357,33 +312,176 @@ public class ResourceUtil {
 
     private static void updateOutSequence(Element resourceElement, Document doc) {
         // Find the outSequence
-        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, 
-                                                                     Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
-        if (outSequenceElement != null) {
+        Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
 
-            NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
-    
-            boolean isResponseHandlerSet = false;
-    
-            for (int i = 0; i < classNodes.getLength(); ++i) {
-                Element classElement = (Element) classNodes.item(i);
-    
-                if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
-                    isResponseHandlerSet = true;
-                    break;
-                }
-            }
-    
-            if (!isResponseHandlerSet) {
-                // There must be at least one <send> element for an outSequence
-                Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
-    
-                Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
-                classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
-                classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
-    
-                outSequenceElement.insertBefore(classElement, sendElement);
+        NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
+
+        boolean isResponseHandlerSet = false;
+
+        for (int i = 0; i < classNodes.getLength(); ++i) {
+            Element classElement = (Element) classNodes.item(i);
+
+            if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                isResponseHandlerSet = true;
+                break;
             }
         }
+
+        if (!isResponseHandlerSet) {
+            // There must be at least one <send> element for an outSequence
+            Element sendElement = (Element) outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND).item(0);
+
+            Element classElement = doc.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_CLASS);
+            classElement.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER);
+            classElement.removeAttribute(Constants.SYNAPSE_API_ATTRIBUTE_XMLNS);
+
+            outSequenceElement.insertBefore(classElement, sendElement);
+        }
     }
+
+    public static String getResourceContent(Object content) {
+        return new String((byte[]) content, Charset.defaultCharset());
+    }
+
+    public static Document buildDocument(String xmlContent, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
+            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xmlContent.getBytes(Charset.defaultCharset()))));
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
+    }
+
+
+    public static Document buildDocument(InputStream inputStream, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
+            doc = docBuilder.parse(new InputSource(inputStream));
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
+    }
+
+    public static Document buildDocument(File file, String fileName) throws APIMigrationException {
+        Document doc = null;
+        try {
+            DocumentBuilder docBuilder = getDocumentBuilder(fileName);
+            doc = docBuilder.parse(file);
+            doc.getDocumentElement().normalize();
+        } catch (SAXException e) {
+            ResourceUtil.handleException("Error occurred while parsing the " + fileName + " xml document", e);
+        } catch (IOException e) {
+            ResourceUtil.handleException("Error occurred while reading the " + fileName + " xml document", e);
+        }
+
+        return doc;
+    }
+
+    private static DocumentBuilder getDocumentBuilder(String fileName) throws APIMigrationException {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        docFactory.setNamespaceAware(true);
+        DocumentBuilder docBuilder = null;
+        try {
+            docFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            ResourceUtil.handleException("Error occurred while trying to build the " + fileName + " xml document", e);
+        }
+
+        return docBuilder;
+    }
+
+    public static void transformXMLDocument(Document document, File file) {
+        document.getDocumentElement().normalize();
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().toString());
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.transform(new DOMSource(document), new StreamResult(file));
+        } catch (TransformerConfigurationException e) {
+            log.error("Transformer configuration error encountered while transforming file " + file.getName(), e);
+        } catch (TransformerException e) {
+            log.error("Transformer error encountered while transforming file " + file.getName(), e);
+        }
+    }
+
+
+    public static String getApiPath(int tenantID, String tenantDomain) {
+        log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        String apiFilePath;
+        if (tenantID != MultitenantConstants.SUPER_TENANT_ID) {
+            apiFilePath = CarbonUtils.getCarbonTenantsDirPath() + File.separatorChar + tenantID +
+                    File.separatorChar + "synapse-configs" + File.separatorChar + "default" + File.separatorChar + "api";
+        } else {
+            apiFilePath = CarbonUtils.getCarbonRepository() + "synapse-configs" + File.separatorChar +
+                    "default" + File.separatorChar  +"api";
+        }
+        log.debug("Path of api folder " + apiFilePath);
+
+        return apiFilePath;
+    }
+
+
+    public static List<SynapseDTO> getVersionedAPIs(String apiFilePath) {
+        File apiFiles = new File(apiFilePath);
+        File[] files = apiFiles.listFiles();
+        List<SynapseDTO> versionedAPIs = new ArrayList<>();
+
+        if (files != null) {
+            for (File file : files) {
+                try {
+                    if (!file.getName().endsWith(".xml")) { // Ignore non xml files
+                        continue;
+                    }
+
+                    Document doc = buildDocument(file, file.getName());
+                    Element rootElement = doc.getDocumentElement();
+
+                    // Ensure that we skip internal apis such as '_TokenAPI_.xml' and apis
+                    // that represent default versions
+                    if (Constants.SYNAPSE_API_ROOT_ELEMENT.equals(rootElement.getNodeName()) &&
+                            rootElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION)) {
+                        log.debug("API file name : " + file.getName());
+                        SynapseDTO synapseConfig = new SynapseDTO(doc, file);
+                        versionedAPIs.add(synapseConfig);
+                    }
+                } catch (APIMigrationException e) {
+                    log.error("Error when passing file " + file.getName(), e);
+                }
+            }
+        }
+
+        return versionedAPIs;
+    }
+
+    public static boolean isConsumerKeyValid(String consumerKey) {
+        for (int i = 0; i < consumerKey.length(); ++i) {
+            char consumerKeyChar = consumerKey.charAt(i);
+
+            if (validConsumerKeyChars.length <= consumerKeyChar) {
+                return false;
+            }
+
+            if (!validConsumerKeyChars[consumerKeyChar]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }
