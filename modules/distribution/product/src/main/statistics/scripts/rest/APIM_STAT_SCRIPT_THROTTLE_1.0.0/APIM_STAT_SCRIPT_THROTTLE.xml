@@ -81,5 +81,5 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
 
 
 </Script>
-    <CronExpression>0 0/20 * 1/1 * ? *</CronExpression>
+    <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
 </Analytics>
