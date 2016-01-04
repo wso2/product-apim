@@ -47,7 +47,14 @@ public class APIMIntegrationConstants {
     public static final String IS_WEB_APP_EXISTS = "\"isWebAppExists\":true";
     public static final String IS_API_BLOCKED = "API blocked";
     public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
+    public static final String JAXRS_BASIC_WEB_APP_NAME = "jaxrs_basic";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
+    public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
+    public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
+    public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";
+    public static final String SANDBOXEP1_WEB_APP_NAME = "name-check1_SB";
+    public static final String SANDBOXEP2_WEB_APP_NAME = "name-check2_SB";
+    public static final String SANDBOXEP3_WEB_APP_NAME = "name-check3_SB";
 
     public static final class APPLICATION_TIER {
         public static final String UNLIMITED = "Unlimited";

@@ -102,6 +102,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                             new URL(apiEndPointUrl));
             apiCreationRequestBean.setTags(apiTags);
             apiCreationRequestBean.setDescription(API_DESCRIPTION + " with tags " + apiTags );
+
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiCreationRequestBean,
                     apiPublisherClientUser1);
 

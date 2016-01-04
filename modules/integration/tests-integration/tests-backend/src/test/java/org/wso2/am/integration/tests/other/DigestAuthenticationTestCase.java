@@ -100,7 +100,10 @@ public class DigestAuthenticationTestCase extends APIMIntegrationBaseTest {
 
         //Subscribe to the new application
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion, providerName,
-                "DigestAuthAPP", APIMIntegrationConstants.API_TIER.UNLIMITED);
+                "DigestAuthAPP",  APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
         apiStore.subscribe(subscriptionRequest);
 
         //Generate a production token and invoke the API

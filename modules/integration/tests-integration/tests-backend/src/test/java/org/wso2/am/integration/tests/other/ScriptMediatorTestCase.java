@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -35,6 +36,9 @@ import static org.testng.Assert.assertNotNull;
  * TestCase used to test the functionality of the Script Mediator when a null value is sent in the JSON response.
  */
 public class ScriptMediatorTestCase extends APIMIntegrationBaseTest {
+
+    private String APIName= "ScriptMediatorAPI";
+    private String APIVersion= "1.0";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -55,6 +59,7 @@ public class ScriptMediatorTestCase extends APIMIntegrationBaseTest {
 
         String endpoint = getGatewayURLNhttp() + "script/test";
 
+        waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
         //Access the deployed API.
         HttpResponse response = HttpRequestUtil.doGet(endpoint, new HashMap<String, String>());
 

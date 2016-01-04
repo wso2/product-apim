@@ -46,8 +46,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTest {
 
-    private final String API_NAME = "ChangeAuthTypeOfResourceTest";
-    private final String API_CONTEXT = "ChangeAuthTypeOfResource";
+    private final String API_NAME = "ChangeAuthTypeOfResourceTest999";
+    private final String API_CONTEXT = "ChangeAuthTypeOfResource999";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
@@ -80,7 +80,9 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
         //Create application
+
         apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+
     }
 
 

@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.annotations.*;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
@@ -34,8 +33,6 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
-import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -89,25 +86,11 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception{
+    public void setEnvironment() throws Exception {
 
         String fileFormat = ".war";
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
-
-        //copy  .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
 
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -120,15 +103,15 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         //publisher login
         HttpResponse publisherLogin = apiPublisher.login
                 (publisherContext.getContextTenant().getContextUser().getUserName(),
-                        publisherContext.getContextTenant().getContextUser().getPassword());
+                 publisherContext.getContextTenant().getContextUser().getPassword());
         assertEquals(publisherLogin.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Publisher Login Response Code is Mismatched: ");
+                     "Publisher Login Response Code is Mismatched: ");
 
         //store login
         HttpResponse loginResponse = apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                                                    storeContext.getContextTenant().getContextUser().getPassword());
         assertEquals(loginResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response code is Mismatched in Login Response");
+                     "Response code is Mismatched in Login Response");
         JSONObject loginJsonObject = new JSONObject(loginResponse.getData());
         assertFalse(loginJsonObject.getBoolean("error"), "Response data error in Login Request");
 
@@ -136,16 +119,16 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resTier, uri));
         String endpointProduction = "/services/customers/customerservice";
-        String endpointSandbox="/services/customers/customerservice";
+        String endpointSandbox = "/services/customers/customerservice";
 
-        List<String> prodEndpointList=new ArrayList<String>();
+        List<String> prodEndpointList = new ArrayList<String>();
         prodEndpointList.add(endpointProduction);
 
-        List<String> sandboxEndpointList=new ArrayList<String>();
+        List<String> sandboxEndpointList = new ArrayList<String>();
         sandboxEndpointList.add(endpointSandbox);
 
-        APICreationRequestBean apiCreationRequestBean=new APICreationRequestBean(apiName,apiContext,apiVersion,
-                apiProvider,prodEndpointList,sandboxEndpointList);
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion,
+                                                                                   apiProvider, prodEndpointList, sandboxEndpointList);
         apiCreationRequestBean.setEndpointType(endPointType);
         apiCreationRequestBean.setTier(tier);
         apiCreationRequestBean.setTags(tags);
@@ -155,7 +138,7 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse apiCreateResponse = apiPublisher.addAPI(apiCreationRequestBean);
         assertEquals(apiCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Invalid Response Code");
+                     "Invalid Response Code");
 
         //assert JSON object
         JSONObject createApiJsonObject = new JSONObject(apiCreateResponse.getData());
@@ -167,11 +150,14 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
 
         //publish API
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, apiProvider,
-                APILifeCycleState.PUBLISHED);
+                                                                              APILifeCycleState.PUBLISHED);
+
 
         HttpResponse statusUpdateResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         assertEquals(statusUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Response Code is Mismatched");
+                     "Response Code is Mismatched");
+
+        waitForAPIDeploymentSync(apiProvider, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
         assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
@@ -180,33 +166,33 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
-                    gatewayContextWrk.getContextTenant().getDomain() + "/";
+                         gatewayContextWrk.getContextTenant().getDomain() + "/";
         }
     }
 
     @Test(description = "Get All Endpoints")
-    public void getAllEndpointUrlsTest() throws Exception{
+    public void getAllEndpointUrlsTest() throws Exception {
 
-        HttpResponse getApiResponse=apiStore.getAllPublishedAPIs();
-        assertEquals(getApiResponse.getResponseCode(),Response.Status.OK.getStatusCode());
-        JSONObject getApiJsonObject=new JSONObject(getApiResponse.getData());
+        HttpResponse getApiResponse = apiStore.getAllPublishedAPIs();
+        assertEquals(getApiResponse.getResponseCode(), Response.Status.OK.getStatusCode());
+        JSONObject getApiJsonObject = new JSONObject(getApiResponse.getData());
         assertFalse(getApiJsonObject.getBoolean("error"), "Response code Mismatched in Get Api Response");
-        JSONArray getApiJsonArray=getApiJsonObject.getJSONArray("apis");
+        JSONArray getApiJsonArray = getApiJsonObject.getJSONArray("apis");
 
-        boolean isApiAvailable=false;
-        boolean isEndpointUrlValid=false;
-        boolean isHttpsUrlAvailable=false;
-        boolean isHttpUrlAvailable=false;
-        String environmentName="Production and Sandbox";
-        String environmentType="hybrid";
+        boolean isApiAvailable = false;
+        boolean isEndpointUrlValid = false;
+        boolean isHttpsUrlAvailable = false;
+        boolean isHttpUrlAvailable = false;
+        String environmentName = "Production and Sandbox";
+        String environmentType = "hybrid";
 
-        for(int apiIndex=0;apiIndex<getApiJsonArray.length();apiIndex++){
+        for (int apiIndex = 0; apiIndex < getApiJsonArray.length(); apiIndex++) {
 
             if (getApiJsonArray.getJSONObject(apiIndex).getString("name").equals(apiName)) {
                 isApiAvailable = true;
                 HttpResponse getEndpointApiResponse = apiStore.getApiEndpointUrls(apiName, apiVersion, apiProvider);
                 assertEquals(getEndpointApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                        "Error in get Endpoints Response Code");
+                             "Error in get Endpoints Response Code");
                 JSONObject getEndpointJsonObject = new JSONObject(getEndpointApiResponse.getData());
                 assertFalse(getEndpointJsonObject.getBoolean("error"), "Error in End point Urls Response");
                 JSONArray getEndPointUrlsJsonArray = getEndpointJsonObject.getJSONArray("endpointURLs");
@@ -214,38 +200,36 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
                     if (getEndPointUrlsJsonArray.getJSONObject(index).getString("environmentURLs").contains(apiContext)) {
                         isEndpointUrlValid = true;
                         assertTrue(getEndPointUrlsJsonArray.getJSONObject(index).
-                                        getString("environmentName").equalsIgnoreCase(environmentName),
-                                "Error in environment Name");
+                                           getString("environmentName").equalsIgnoreCase(environmentName),
+                                   "Error in environment Name");
                         assertTrue(getEndPointUrlsJsonArray.getJSONObject(index).
-                                        getString("environmentType").equalsIgnoreCase(environmentType),
-                                "Error in environment Type");
+                                           getString("environmentType").equalsIgnoreCase(environmentType),
+                                   "Error in environment Type");
                         JSONArray environmentUrlsArray = getEndPointUrlsJsonArray.
                                 getJSONObject(index).getJSONArray("environmentURLs");
 
                         Map<String, String> urlMap = new HashMap<String, String>();
 
-                            for (int mapIndex = 0; mapIndex < environmentUrlsArray.length(); mapIndex++) {
+                        for (int mapIndex = 0; mapIndex < environmentUrlsArray.length(); mapIndex++) {
 
-                                String jsonArrayElement = environmentUrlsArray.getString(mapIndex);
-                                String[] keyValue = jsonArrayElement.split("=");
-                                urlMap.put(keyValue[0], keyValue[1]);
-                                URL url = new URL(keyValue[1]);
-                                if (keyValue[0].equals("https")) {
-                                    isHttpsUrlAvailable = true;
-                                    assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
-                                    assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
-                                } else if (keyValue[0].equals("http")) {
-                                    isHttpUrlAvailable = true;
-                                    assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
-                                    assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
-                                }
-                                if(isHttpsUrlAvailable==true && isHttpUrlAvailable==true){
-                                    break;
-                                }
-
+                            String jsonArrayElement = environmentUrlsArray.getString(mapIndex);
+                            String[] keyValue = jsonArrayElement.split("=");
+                            urlMap.put(keyValue[0], keyValue[1]);
+                            URL url = new URL(keyValue[1]);
+                            if (keyValue[0].equals("https")) {
+                                isHttpsUrlAvailable = true;
+                                assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
+                                assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
+                            } else if (keyValue[0].equals("http")) {
+                                isHttpUrlAvailable = true;
+                                assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
+                                assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
+                            }
+                            if (isHttpsUrlAvailable == true && isHttpUrlAvailable == true) {
+                                break;
                             }
 
-
+                        }
 
 
                     }
@@ -260,23 +244,23 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(description = "Add Comments", dependsOnMethods = "getAllEndpointUrlsTest")
-    public void addCommentTest() throws Exception{
-        apiProvider=storeContext.getContextTenant().getContextUser().getUserName();
-        String comment="testComment";
-        HttpResponse addCommentResponse=apiStore.addComment(apiName,apiVersion,apiProvider,comment);
-        assertEquals(addCommentResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
-                "Error in Add Comment Response");
-        JSONObject addCommentJsonObject=new JSONObject(addCommentResponse.getData());
+    public void addCommentTest() throws Exception {
+        apiProvider = storeContext.getContextTenant().getContextUser().getUserName();
+        String comment = "testComment";
+        HttpResponse addCommentResponse = apiStore.addComment(apiName, apiVersion, apiProvider, comment);
+        assertEquals(addCommentResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                     "Error in Add Comment Response");
+        JSONObject addCommentJsonObject = new JSONObject(addCommentResponse.getData());
         assertFalse(addCommentJsonObject.getBoolean("error"), "Error in Add Comment Response");
     }
 
     @AfterClass(alwaysRun = true)
-    public void destroy() throws Exception{
-        apiProvider=publisherContext.getContextTenant().getContextUser().getUserName();
-        HttpResponse deleteApiResponse=apiPublisher.deleteAPI(apiName,apiVersion,apiProvider);
-        assertEquals(deleteApiResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
-                "Error in Delete API Response");
-        JSONObject deleteApiJsonObject=new JSONObject(deleteApiResponse.getData());
+    public void destroy() throws Exception {
+        apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
+        HttpResponse deleteApiResponse = apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
+        assertEquals(deleteApiResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                     "Error in Delete API Response");
+        JSONObject deleteApiJsonObject = new JSONObject(deleteApiResponse.getData());
         assertFalse(deleteApiJsonObject.getBoolean("error"), "Error in Delete API");
     }
 }
