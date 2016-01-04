@@ -55,7 +55,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     private static final Log log = LogFactory.getLog(APIM678ApplicationCreationTestCase.class);
     private APIStoreRestClient apiStore;
-    private String applicationName = "NewApplication1111";
+    private String applicationName = "NewApplication1";
     private static final String description = "NewApplicationCreation";
     private static final String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
 
