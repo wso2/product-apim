@@ -1,0 +1,51 @@
+<WorkFlowExtensions>
+    <ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationSimpleWorkflowExecutor"/>
+    <!--ApplicationCreation executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationCreationWSWorkflowExecutor">
+         <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationApprovalWorkFlowProcess/</Property>
+         <Property name="username">admin</Property>
+         <Property name="password">admin</Property>
+         <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
+    </ApplicationCreation-->
+    <ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/>
+    <!--ProductionApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationWSWorkflowExecutor">
+        <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationRegistrationWorkFlowProcess/</Property>
+        <Property name="username">admin</Property>
+        <Property name="password">admin</Property>
+        <Property name="callbackURL">https://localhost:8248/services/WorkflowCallbackService</Property>
+    </ProductionApplicationRegistration-->
+    <SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationSimpleWorkflowExecutor"/>
+    <!--SandboxApplicationRegistration executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationRegistrationWSWorkflowExecutor">
+        <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationRegistrationWorkFlowProcess/</Property>
+        <Property name="username">admin</Property>
+        <Property name="password">admin</Property>
+        <Property name="callbackURL">https://localhost:8248/services/WorkflowCallbackService</Property>
+    </SandboxApplicationRegistration-->
+    <SubscriptionCreation executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionCreationSimpleWorkflowExecutor"/>
+    <!--SubscriptionCreation executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionCreationWSWorkflowExecutor">
+         <Property name="serviceEndpoint">http://localhost:9765/services/SubscriptionApprovalWorkFlowProcess/</Property>
+         <Property name="username">admin</Property>
+         <Property name="password">admin</Property>
+         <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
+    </SubscriptionCreation-->
+    <UserSignUp executor="org.wso2.carbon.apimgt.impl.workflow.UserSignUpSimpleWorkflowExecutor"/>
+    <!--UserSignUp executor="org.wso2.carbon.apimgt.impl.workflow.UserSignUpWSWorkflowExecutor">
+         <Property name="serviceEndpoint">http://localhost:9765/services/UserSignupProcess/</Property>
+         <Property name="username">admin</Property>
+         <Property name="password">admin</Property>
+         <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
+    </UserSignUp-->
+    <SubscriptionDeletion executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionDeletionSimpleWorkflowExecutor"/>
+    <!--SubscriptionDeletion executor="org.wso2.carbon.apimgt.impl.workflow.SubscriptionDeletionSimpleWorkflowExecutor">
+         <Property name="serviceEndpoint">http://localhost:9765/services/SubscriptionApprovalWorkFlowProcess/</Property>
+         <Property name="username">admin</Property>
+         <Property name="password">admin</Property>
+         <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
+    </SubscriptionDeletion-->
+    <ApplicationDeletion executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationDeletionSimpleWorkflowExecutor"/>
+    <!--ApplicationDeletion executor="org.wso2.carbon.apimgt.impl.workflow.ApplicationDeletionSimpleWorkflowExecutor">
+         <Property name="serviceEndpoint">http://localhost:9765/services/ApplicationApprovalWorkFlowProcess/</Property>
+         <Property name="username">admin</Property>
+         <Property name="password">admin</Property>
+         <Property name="callbackURL">https://localhost:8243/services/WorkflowCallbackService</Property>
+    </ApplicationDeletion-->
+</WorkFlowExtensions>
