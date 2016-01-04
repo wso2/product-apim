@@ -293,7 +293,7 @@ org.wso2.carbon.feature.mgt.core_4.4.3.jar                                      
 org.wso2.carbon.feature.mgt.services_4.4.3.jar                                  bundle         apache2   6654      
 org.wso2.carbon.feature.mgt.stub_4.4.3.jar                                      bundle         apache2   6653      
 org.wso2.carbon.feature.mgt.ui_4.4.3.jar                                        bundle         apache2   6652      
-org.wso2.carbon.forum_5.0.1.jar                                        bundle         apache2   6651      
+org.wso2.carbon.forum_5.0.2.jar                                        bundle         apache2   6651      
 org.wso2.carbon.framework.exporter_4.4.3.jar                                    bundle         apache2   6650      
 org.wso2.carbon.ganalytics.publisher_4.4.8.jar                                  bundle         apache2   6454      
 org.wso2.carbon.governance.api_4.5.8.jar                                        bundle         apache2   6453      
@@ -315,7 +315,7 @@ org.wso2.carbon.governance.registry.extensions_4.5.8.jar                        
 org.wso2.carbon.governance.wsdltool.stub_4.5.8.jar                              bundle         apache2   6437      
 org.wso2.carbon.governance.wsdltool.ui_4.5.8.jar                                bundle         apache2   6436      
 org.wso2.carbon.governance.wsdltool_4.5.8.jar                                   bundle         apache2   6435      
-org.wso2.carbon.hostobjects.sso_5.0.1.jar                              bundle         apache2   6649      
+org.wso2.carbon.hostobjects.sso_5.0.2.jar                              bundle         apache2   6649      
 org.wso2.carbon.i18n_4.4.3.jar                                                  bundle         apache2   6648      
 org.wso2.carbon.identity.application.authentication.framework_5.0.7.jarbundle         apache2   6647      
 org.wso2.carbon.identity.application.authenticator.basicauth_5.0.7.jar bundle         apache2   6646      
