@@ -29,7 +29,7 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.10.0</version>
+    <version>1.10.1-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>http://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
@@ -58,7 +58,7 @@
         <url>https://github.com/wso2/product-apim.git</url>
         <developerConnection>scm:git:https://github.com/wso2/product-apim.git</developerConnection>
         <connection>scm:git:https://github.com/wso2/product-apim.git</connection>
-        <tag>v1.10.0-rc3</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
@@ -886,7 +886,7 @@
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.3</carbon.kernel.version>
-        <apimserver.version>1.10.0</apimserver.version>
+        <apimserver.version>1.10.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
 
