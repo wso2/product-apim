@@ -149,12 +149,12 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-            <version>5.0.1</version>
+            <version>5.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-            <version>5.0.1</version>
+            <version>5.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
