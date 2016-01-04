@@ -28,7 +28,7 @@
         <!--
          Change this to product|platform/cloud to execute test on specific environment
         -->
-        <executionEnvironment>platform</executionEnvironment>
+        <executionEnvironment>standalone</executionEnvironment>
         <!--
          Change this to user/tenant to execute test with user mode or tenant mode
         -->
@@ -36,7 +36,7 @@
         <!--
          Change this to true if you want to generate coverage statistics
         -->
-        <coverage>false</coverage>
+        <coverage>true</coverage>
         <!--
          Change this to true if you want to enable framework dashboard
         -->
@@ -228,57 +228,57 @@
             <!--configuration of APIM Store instance -->
             <instance name="store" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">store.am.wso2.com</host>
+                    <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
             <instance name="publisher" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">pub.am.wso2.com</host>
+                    <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
             <instance name="keyManager" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">keymanager.am.wso2.com</host>
+                    <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
             <instance name="gateway-mgt" type="standalone" nonBlockingTransportEnabled="false">
                 <hosts>
-                    <host type="default">mgt.gateway.am.wso2.com</host>
+                    <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                 </ports>
                 <properties>
                 </properties>
             </instance>
             <instance name="gateway-wrk" type="standalone" nonBlockingTransportEnabled="true">
                 <hosts>
-                    <host type="default">gateway.am.wso2.com</host>
+                    <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
-                    <port type="nhttps">8243</port>
-                    <port type="nhttp">8280</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
+                    <port type="nhttps">8743</port>
+                    <port type="nhttp">8780</port>
                 </ports>
                 <properties>
                 </properties>
@@ -289,8 +289,8 @@
                     <host type="default">localhost</host>
                 </hosts>
                 <ports>
-                    <port type="http">80</port>
-                    <port type="https">443</port>
+                    <port type="http">10263</port>
+                    <port type="https">9943</port>
                     <!--<port type="nhttps">8780</port>-->
                     <!--<port type="nhttp">8743</port>-->
                 </ports>

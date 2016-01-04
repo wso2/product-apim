@@ -102,7 +102,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
         //copy first .war file
         String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
+                      "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
 
         String sourcePath = path + webApp + fileFormat;
 
@@ -121,10 +121,10 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         apiStore = new APIStoreRestClient(storeURLHttp);
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+                           publisherContext.getContextTenant().getContextUser().getPassword());
 
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                       storeContext.getContextTenant().getContextUser().getPassword());
 
         String uri = "customers/{id}/";
         List<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
@@ -141,8 +141,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             String tempApiName=apiName+count;
             String tempApiContext=apiContext+count;
             APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(tempApiName, tempApiContext,
-                    version,providerName,
-                    new URL(endpointUrl));
+                                                                                       version,providerName,
+                                                                                       new URL(endpointUrl));
             apiCreationRequestBean.setEndpointType(endPointType);
             apiCreationRequestBean.setTiersCollection(tier);
             apiCreationRequestBean.setTags(tags);
@@ -152,7 +152,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
             HttpResponse apiCreateResponse = apiPublisher.addAPI(apiCreationRequestBean);
             assertEquals(apiCreateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Invalid Response Code");
+                         "Invalid Response Code");
 
             //assert JSON object
             JSONObject createApiJsonObject = new JSONObject(apiCreateResponse.getData());
@@ -168,11 +168,11 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
             //publish API
             APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(tempApiName, providerName,
-                    APILifeCycleState.PUBLISHED);
+                                                                                  APILifeCycleState.PUBLISHED);
 
             HttpResponse statusUpdateResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
             assertEquals(statusUpdateResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Response Code is Mismatched");
+                         "Response Code is Mismatched");
 
             JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
             assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
@@ -184,7 +184,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
         } else {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
-                    gatewayContextWrk.getContextTenant().getDomain() + "/";
+                         gatewayContextWrk.getContextTenant().getDomain() + "/";
 
         }
         providerName = storeContext.getContextTenant().getContextUser().getUserName();
@@ -192,20 +192,20 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         //create Application
         HttpResponse createAppResponse = apiStore.addApplication(applicationName, tier, "", "");
         assertEquals(createAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error in Application Creation");
+                     "Error in Application Creation");
         JSONObject createAppJsonObject = new JSONObject(createAppResponse.getData());
         assertFalse(createAppJsonObject.getBoolean("error"), "Error in Application creation Response: "
-                + applicationName);
+                                                             + applicationName);
 
 
         //subscribe first set apis for the created created application
         for(int apiCount=0;apiCount<numberOfApis-2;apiCount++){
             accessUrl = gatewayUrl + apiContextList.get(apiCount) + "/" + version + "/customers/123";
             SubscriptionRequest apiSubscriptionRequest = new SubscriptionRequest(apiNameList.get(apiCount), version, providerName,
-                    applicationName, tier);
+                                                                                 applicationName, tier);
             HttpResponse subscriptionResponse = apiStore.subscribe(apiSubscriptionRequest);
             assertEquals(subscriptionResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Subscription Response Code is Mismatched");
+                         "Subscription Response Code is Mismatched");
             JSONObject subscriptionResponseJsonObject = new JSONObject(subscriptionResponse.getData());
             assertFalse(subscriptionResponseJsonObject.getBoolean("error"), "Subscription Response is Mismatched");
 
@@ -213,10 +213,10 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         //create Application
         HttpResponse createNewAppResponse = apiStore.addApplication(newApplicationName, tier, "", "");
         assertEquals(createAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error in Application Creation");
+                     "Error in Application Creation");
         JSONObject createNewAppJsonObject = new JSONObject(createNewAppResponse.getData());
         assertFalse(createAppJsonObject.getBoolean("error"), "Error in Application creation Response: "
-                + applicationName);
+                                                             + applicationName);
 
 
         //subscribe second set(last 2 apis) for the second application
@@ -224,11 +224,11 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         for(int apiCount=numberOfApis-2;apiCount<numberOfApis;apiCount++){
             accessUrl = gatewayUrl + apiContextList.get(apiCount) + "/" + version + "/customers/123";
             SubscriptionRequest apiSubscriptionRequestDefaultApp=new SubscriptionRequest(apiNameList.get(apiCount),
-                    version,providerName,
-                    newApplicationName,tier);
+                                                                                         version,providerName,
+                                                                                         newApplicationName,tier);
             HttpResponse subscriptionResponseDefaultApp = apiStore.subscribe(apiSubscriptionRequestDefaultApp);
             assertEquals(subscriptionResponseDefaultApp.getResponseCode(), Response.Status.OK.getStatusCode(),
-                    "Subscription Response Code is Mismatched");
+                         "Subscription Response Code is Mismatched");
             JSONObject subscriptionResponseJsonObject = new JSONObject(subscriptionResponseDefaultApp.getData());
             assertFalse(subscriptionResponseJsonObject.getBoolean("error"), "Subscription Response is Mismatched");
 
@@ -242,7 +242,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         //get first set of apis by created application
         publishedApiByAppResponse=apiStore.getPublishedAPIsByApplication(applicationName);
         assertEquals(publishedApiByAppResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
-                "Response Code Mismatched: " + applicationName);
+                     "Response Code Mismatched: " + applicationName);
         publishedApiByAppJsonObject=new JSONObject(publishedApiByAppResponse.getData());
         assertFalse(publishedApiByAppJsonObject.getBoolean("error"),"Response Data Mismatched: " + applicationName);
         log.info(publishedApiByAppJsonObject);
@@ -254,14 +254,14 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         for(int index=0;index<applicationSubscribedJsonArray.length();index++){
             isApisAvailable=true;
             assertEquals(applicationSubscribedJsonArray.getJSONObject(index).getString("apiName"),apiNameList.get(index),
-                    "Api Name is Mismatched");
+                         "Api Name is Mismatched");
         }
         assertTrue(isApisAvailable,"Response Error in Apis");
 
         //get second set (last 2 apis) by the new application
         publishedApiByAppResponse=apiStore.getPublishedAPIsByApplication(newApplicationName);
         assertEquals(publishedApiByAppResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
-                "Response Code Mismatched: " + newApplicationName);
+                     "Response Code Mismatched: " + newApplicationName);
         publishedApiByAppJsonObject=new JSONObject(publishedApiByAppResponse.getData());
         assertFalse(publishedApiByAppJsonObject.getBoolean("error"),"Response Data Mismatched: " + newApplicationName);
         log.info(publishedApiByAppJsonObject);
@@ -274,7 +274,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         for(int index=0;index<defaultApplicationSubscribedJsonArray.length();index++){
             isApisAvailable=true;
             assertEquals(defaultApplicationSubscribedJsonArray.getJSONObject(index).getString("apiName"),
-                    apiNameList.get(defaultAppListIndex), "Api Name is Mismatched");
+                         apiNameList.get(defaultAppListIndex), "Api Name is Mismatched");
             defaultAppListIndex++;
         }
         assertTrue(isApisAvailable,"Response Error in Apis");
@@ -287,16 +287,16 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         for(int apiCount=0;apiCount<numberOfApis-2;apiCount++){
 
             HttpResponse removeSubscriptionByAppName=apiStore.removeAPISubscriptionByName(apiNameList.get(apiCount),
-                    version,providerName,applicationName);
+                                                                                          version,providerName,applicationName);
             assertEquals(removeSubscriptionByAppName.getResponseCode(),Response.Status.OK.getStatusCode());
             JSONObject removeSubscriptionByAppNameJsonObject=new JSONObject(removeSubscriptionByAppName.getData());
             assertFalse(removeSubscriptionByAppNameJsonObject.getBoolean("error"),
-                    "Error in Remove Subscription By Application Name: "+ applicationName);
+                        "Error in Remove Subscription By Application Name: "+ applicationName);
         }
         //verify subscription exists
         HttpResponse verifySubscriptionResponse=apiStore.getPublishedAPIsByApplication(applicationName);
         assertEquals(verifySubscriptionResponse.getResponseCode(),Response.Status.OK.getStatusCode(),
-                "Error in Subscription verification Response");
+                     "Error in Subscription verification Response");
         JSONObject verifySubscriptionJsonObject=new JSONObject(verifySubscriptionResponse.getData());
         assertFalse(verifySubscriptionJsonObject.getBoolean("error"), "Error in Subscription verification Response");
         JSONArray apisJsonArray=verifySubscriptionJsonObject.getJSONArray("apis");
@@ -323,7 +323,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         //get default application Id
         HttpResponse getAllAppResponse= apiStore.getAllApplications();
         assertEquals(getAllAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Error in Get All Apps Response");
+                     "Error in Get All Apps Response");
         JSONObject getAllAppJsonObject=new JSONObject(getAllAppResponse.getData());
         assertFalse(getAllAppJsonObject.getBoolean("error"), "Error in get Applications Response");
         JSONArray getAllAppsJsonArray=getAllAppJsonObject.getJSONArray("applications");
@@ -336,10 +336,10 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
                 HttpResponse removeSubscriptionByIdResponse=apiStore.removeAPISubscription
                         (apiNameList.get(defaultAppListIndex), version, providerName,defaultAppId);
                 assertEquals(removeSubscriptionByIdResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                        "Invalid Response Code");
+                             "Invalid Response Code");
                 JSONObject removeSubscriptionByIdJsonObject=new JSONObject(removeSubscriptionByIdResponse.getData());
                 assertFalse(removeSubscriptionByIdJsonObject.getBoolean("error"),
-                        "Error in Removal Subscription By Application Id");
+                            "Error in Removal Subscription By Application Id");
             }
         }
     }
@@ -349,8 +349,6 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
         apiStore.removeApplication(applicationName);
         isApisDeleted=false;
-
-        apiStore.removeApplication(newApplicationName);
 
         //delete first set of apis
         for(int listIndex=0;listIndex<apiNameList.size()-2;listIndex++){
@@ -372,7 +370,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         }
         assertTrue(isApisDeleted,"Error in Application Deleted: " + applicationName);
 
-
+        apiStore.removeApplication(newApplicationName);
     }
 
 }
