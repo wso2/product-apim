@@ -42,8 +42,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
 import java.io.File;
 import java.net.URL;
+
+import static org.testng.Assert.assertEquals;
 
 
 /**
@@ -64,10 +67,11 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherUrls.getWebAppURLHttp());
         apiStore = new APIStoreRestClient(storeUrls.getWebAppURLHttp());
 
+
         //Load the back-end dummy API
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                + File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
+                                              + File.separator + "synapseconfigs" + File.separator + "rest"
+                                              + File.separator + "dummy_api_relative_url_loc_header.xml", gatewayContextMgt, gatewaySessionCookie);
     }
 
     @Test(groups = "wso2.am", description = "Check functionality of the API for relative URL location header")
@@ -98,10 +102,15 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         verifyResponse(response);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
+                                                                              APILifeCycleState.PUBLISHED);
+
 
         //Publish the API
         response = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        waitForAPIDeploymentSync(updateRequest.getProvider(), updateRequest.getName(),
+                                 updateRequest.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+
         verifyResponse(response);
 
         //Login to the API Store
@@ -126,7 +135,7 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
         //Get the accessToken which was generated.
         String accessToken = responseProduction.getJSONObject("data").getJSONObject("key").getString("accessToken");
 
-        Assert.assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
+        assertEquals(accessToken.isEmpty(), false, "Production access token is Empty");
 
         //Going to access the API with the version in the request url.
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext, apiVersion);
@@ -137,11 +146,16 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
 
         org.apache.http.HttpResponse httpResponse = httpclient.execute(get);
 
-        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
+
+        assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+
+        apiStore.removeApplication("RelativeLocHeaderAPP");
+        apiPublisher.deleteAPI("RelativeUrlLocationHeaderAPI", "1.0.0", user.getUserName());
+
         super.cleanUp();
     }
 

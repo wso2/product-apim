@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -58,12 +59,14 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+                                    MalformedURLException {
         super.init();
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                                           new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = getPublisherURLHttp();
@@ -81,25 +84,34 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
 
     @Test(groups = {"wso2.am"}, description = "Edit the API Information")
-    public void testEditAPIInformation() throws APIManagerIntegrationTestException {
+    public void testEditAPIInformation()
+            throws APIManagerIntegrationTestException, XPathExpressionException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
         //Edit the api
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
         String apiNewTags = API_TAGS + ", " + NEW_API_TAG;
         apiCreationRequestBean.setTags(apiNewTags);
         apiCreationRequestBean.setDescription(NEW_API_DESCRIPTION);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), NEW_API_DESCRIPTION);
+
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+                     "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
-                "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
-                        "Response Data:" + updateAPIHTTPResponse.getData());
+                     "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
+                     "Response Data:" + updateAPIHTTPResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test whether the updated information available in the publisher ",
-            dependsOnMethods = "testEditAPIInformation")
-    public void testUpdatedAPIInformationFromAPIPublisher() throws APIManagerIntegrationTestException {
+          dependsOnMethods = "testEditAPIInformation")
+    public void testUpdatedAPIInformationFromAPIPublisher()
+            throws APIManagerIntegrationTestException {
         APIBean apiBeanAfterUpdate =
                 APIMTestCaseUtils.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
                         API_NAME, providerName, API_VERSION_1_0_0));

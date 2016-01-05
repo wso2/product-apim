@@ -114,10 +114,12 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @Test(groups = {"wso2.am"}, description = "Test the API publishing action. " +
             "Response HTTP message should contains API status change from  CREATED to PUBLISHED",
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
-    public void testAPIPublishing() throws APIManagerIntegrationTestException {
+    public void testAPIPublishing() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Publish the API
         APILifeCycleStateRequest publishUpdateRequest =
                 new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.PUBLISHED);
+        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),apiCreationRequestBean.getName(),
+                API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         publishUpdateRequest.setVersion(API_VERSION_1_0_0);
         HttpResponse publishAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);

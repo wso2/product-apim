@@ -81,6 +81,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     public static Object[][] createAppWithValidDataProvider() throws Exception {
 
         return new Object[][]{
+
                 {"NewApplication1", appTier, callBackUrl, description},
                 {"NewApplication2", appTier, callBackUrl, ""},
                 {"NewApplication3", appTier, "", description},
@@ -132,6 +133,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         //Add default application to the list
         applicationsList.add("DefaultApplication");
+        removeAllApps();
 
     }
 
@@ -323,7 +325,6 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertTrue(isTierUpdated, "Error in Tier Update Response");
     }
 
-
     //Remove a application
     @Test(description = "Remove application")
     public void testRemoveApplication() throws Exception {
@@ -379,6 +380,10 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+    removeAllApps();
+    }
+
+    public void removeAllApps() throws Exception{
         //delete created applications
         HttpResponse getAllAppResponse = apiStore.getAllApplications();
         assertEquals(getAllAppResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -389,9 +394,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         List<String> allAppResponseList = new ArrayList<String>();
         for (int i = 0; i < getAllAppJsonArray.length(); i++) {
             allAppResponseList.add(getAllAppJsonArray.getJSONObject(i).getString("name"));
+            if(!getAllAppJsonArray.getJSONObject(i).getString("name").equals("DefaultApplication"))
+                apiStore.removeApplication(getAllAppJsonArray.getJSONObject(i).getString("name"));
         }
-
-
     }
-
 }
