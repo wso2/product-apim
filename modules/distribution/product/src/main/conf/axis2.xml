@@ -58,8 +58,8 @@
     <parameter name="ModulesDirectory">axis2modules</parameter>
 
     <!-- User agent and the server details to be used in the http communication -->
-    <parameter name="userAgent" locked="true">WSO2 AM 2.0.0</parameter>
-    <parameter name="server" locked="true">WSO2 AM 2.0.0</parameter>
+    <parameter name="userAgent" locked="true">WSO2 AM 1.10.0</parameter>
+    <parameter name="server" locked="true">WSO2 AM 1.10.0</parameter>
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
@@ -156,6 +156,8 @@
                           class="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
         <messageFormatter contentType="multipart/form-data"
                           class="org.apache.axis2.transport.http.MultipartFormDataFormatter"/>
+        <messageFormatter contentType="text/html"
+                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="application/xml"
                           class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="text/xml"
@@ -220,6 +222,8 @@
     <messageBuilders>
 	<messageBuilder contentType="application/xml"
                         class="org.apache.axis2.builder.ApplicationXMLBuilder"/>
+        <messageBuilder contentType="text/html"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
         <messageBuilder contentType="application/x-www-form-urlencoded"
                         class="org.apache.synapse.commons.builders.XFormURLEncodedBuilder"/>
         <messageBuilder contentType="multipart/form-data"

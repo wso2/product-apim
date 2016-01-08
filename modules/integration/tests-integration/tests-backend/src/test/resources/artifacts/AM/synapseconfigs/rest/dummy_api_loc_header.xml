@@ -139,6 +139,11 @@
         <resource methods="POST GET" url-mapping="/*">
             <inSequence>
                 <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
+                <filter source="boolean(get-property('query.param.response'))" regex="true">
+                    <then>
+                        <property name="HTTP_SC" expression="get-property('query.param.response')" scope="axis2"/>
+                    </then>
+                </filter>
                 <payloadFactory>
                     <format>
                         <response xmlns="">

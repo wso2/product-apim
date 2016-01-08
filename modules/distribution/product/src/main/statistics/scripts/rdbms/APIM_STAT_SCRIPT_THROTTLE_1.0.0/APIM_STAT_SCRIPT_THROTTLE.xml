@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+  <Name>APIM_STAT_SCRIPT_THROTTLE</Name>
+  <Script>
+
+    create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
+
+    create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
+
+    create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
+
+    CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
+    schema "api string -i,
+    api_version string -i,
+    context string -i,
+    apiPublisher string -i,
+    applicationName string -i,
+    tenantDomain string -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    week int -i,
+    time string -i,
+    success_request_count int -i,
+    throttleout_count int -i,
+    max_request_time long -i,
+    api_year_month_week_day_facet facet -i,
+    applicationName_facet facet -i",
+    primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
+    );
+
+    insert into table THROTTLED_OUT_FINAL_SUMMARY select
+
+    COALESCE(a.api,b.api),
+    COALESCE(a.api_version,b.api_version),
+    COALESCE(a.context,b.context),
+    COALESCE(a.apiPublisher,b.apiPublisher),
+    COALESCE(a.applicationName,b.applicationName,'_ANONYMOUS_'),
+    COALESCE(a.tenantDomain,b.tenantDomain),
+    COALESCE(a.year,b.year),
+    COALESCE(a.month,b.month),
+    COALESCE(a.day,b.day),
+    COALESCE(a.week,b.week),
+    COALESCE(a.time,b.time),
+    COALESCE(success_request_count,0),
+    COALESCE(throttleout_count,0),
+    COALESCE(a.times, COALESCE(b.times,0)),
+    facet5( COALESCE(a.api,b.api), COALESCE(a.year,b.year),COALESCE(a.month,b.month),COALESCE(a.week,b.week),COALESCE(a.day,b.day)),
+    COALESCE(a.applicationName,b.applicationName,'_ANONYMOUS_')
+    from
+    (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
+    substring(cast(first(requestTime)/1000 as timestamp),0,4) year,
+    substring(cast(first(requestTime)/1000 as timestamp),6,2) month,
+    substring(cast(first(requestTime)/1000 as timestamp),9,2) day,
+    cast(first(requestTime)/(1000 * 60 * 60 *24 * 7) as INT) week,
+    substring(cast(first(requestTime)/1000 as timestamp),0,16) time,
+    sum(request) as success_request_count
+
+    from APIRequestData where context is not NULL group by
+    api,api_version,context,apiPublisher,applicationName,tenantDomain,
+    substring(cast(requestTime/1000 as timestamp),0,4) ,
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2),
+    cast(requestTime/(1000 * 60 * 60 *24 * 7) as INT)
+    ) a full outer join
+
+    (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(throttledTime) as times,
+    substring(cast(first(throttledTime)/1000 as timestamp),0,4) year,
+    substring(cast(first(throttledTime)/1000 as timestamp),6,2) month,
+    substring(cast(first(throttledTime)/1000 as timestamp),9,2) day,
+    cast(first(throttledTime)/(1000 * 60 * 60 *24 * 7) as INT) week,
+    substring(cast(first(throttledTime)/1000 as timestamp),0,16) time,
+    count(apiPublisher) as throttleout_count
+    from APIThrottleData where context is not NULL group by
+    api,api_version,context,apiPublisher,applicationName,tenantDomain,
+    substring(cast(throttledTime/1000 as timestamp),0,4),
+    substring(cast(throttledTime/1000 as timestamp),6,2),
+    substring(cast(throttledTime/1000 as timestamp),9,2),
+    cast((throttledTime/(1000 * 60 * 60 *24 * 7)) as INT)
+    ) b ON a.api=b.api AND a.api_version=b.api_version AND a.context=b.context AND a.apiPublisher=b.apiPublisher AND a.applicationName=b.applicationName AND a.tenantDomain=b.tenantDomain AND
+    a.year=b.year AND a.month=b.month AND a.day=b.day AND a.week=b.week;
+
+    INSERT OVERWRITE TABLE APIThrottleSummaryData SELECT api,api_version,context,apiPublisher,applicationName Descending,tenantDomain,year,month,day,week,time,success_request_count,throttleout_count
+    FROM THROTTLED_OUT_FINAL_SUMMARY;
+  </Script>
+  <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
+</Analytics>

@@ -105,9 +105,9 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("txtUserName")));
 
         driver.findElement(By.id("txtUserName")).clear();
-        driver.findElement(By.id("txtUserName")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+        driver.findElement(By.id("txtUserName")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("txtPassword")).clear();
-        driver.findElement(By.id("txtPassword")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        driver.findElement(By.id("txtPassword")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.cssSelector("input.button")).click();
         // create two tenant
         generateTenant("1");
@@ -208,7 +208,7 @@ public class APIMANAGER3250CrossTenantSubscriptionTestCase extends APIMIntegrati
         driver.findElement(By.id("subscribe-button")).click();
 
         //restart the server to unload the tenants
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextMgt);
         serverConfigurationManager.restartGracefully();
 
         //browse store

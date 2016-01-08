@@ -1,5 +1,4 @@
 <%
-<%
 // Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -98,7 +97,7 @@ print("=="); 
 print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin"));
  print("=="); 
 //24
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin","gold","test-url","updated-application")); 
+print(storeHostObj.updateApplication("DefaultApplication","DefaultApplication","admin","gold","test-url","updated-application")); 
 print("=="); 
 //25
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
@@ -107,5 +106,4 @@ print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
 print(storeHostObj.isEnableEmailUsername()); 
 print("=="); 
 
-%>
 %>

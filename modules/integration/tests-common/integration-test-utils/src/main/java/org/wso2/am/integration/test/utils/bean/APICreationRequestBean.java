@@ -23,7 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 
+import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +43,13 @@ public class APICreationRequestBean extends AbstractRequest {
     private String visibility = "public";
     private String description = "description";
     private String endpointType = "nonsecured";
+    private String endpointAuthType = "basicAuth";
     private String httpChecked = "http";
     private String httpsChecked = "https";
     private String tags = "tags";
-    private String tier = "Silver";
+    private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
-    private String tiersCollection = "Gold";
+    private String tiersCollection = APIMIntegrationConstants.API_TIER.GOLD;
     private String resourceCount = "0";
     private String roles = "";
     private String wsdl = "";
@@ -60,9 +63,98 @@ public class APICreationRequestBean extends AbstractRequest {
     private String inSequence = "none";
     private String outSequence = "none";
     private String faultSequence = "none";
+    private String bizOwner = "";
+    private String bizOwnerMail = "";
+    private String techOwner = "";
+    private String techOwnerMail = "";
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+
+    public JSONObject getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(JSONObject endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public void setDefaultVersion(String defaultVersion) {
+        this.defaultVersion = defaultVersion;
+    }
+
+    public String getBizOwner() {
+        return bizOwner;
+    }
+
+    public void setBizOwner(String bizOwner) {
+        this.bizOwner = bizOwner;
+    }
+
+    public String getBizOwnerMail() {
+        return bizOwnerMail;
+    }
+
+    public void setBizOwnerMail(String bizOwnerMail) {
+        this.bizOwnerMail = bizOwnerMail;
+    }
+
+    public String getTechOwner() {
+        return techOwner;
+    }
+
+    public void setTechOwner(String techOwner) {
+        this.techOwner = techOwner;
+    }
+
+    public String getTechOwnerMail() {
+        return techOwnerMail;
+    }
+
+    public void setTechOwnerMail(String techOwnerMail) {
+        this.techOwnerMail = techOwnerMail;
+    }
 
     /**
-     * constructor of the APICreationRequestBean class
+     * constructor of the APICreationRequestBean class only with production url
+     *
+     * @param apiName       - Name of the APi
+     * @param context       - API context
+     * @param version       - API version
+     * @param provider      - Api Provider
+     * @param apiTier       - Api Tier
+     * @param resourceTier- Resource Tier
+     * @param endpointUrl   - Endpoint URL of the API
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider,String apiTier,String resourceTier, URL endpointUrl)
+            throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        this.tiersCollection=apiTier;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resourceTier, "/*"));
+        if(endpointUrl != null) {
+            try {
+                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
+                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                        + endpointUrl.getProtocol() + "\"}");
+            } catch (JSONException e) {
+                log.error("JSON construct error", e);
+                throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+            }
+        }
+    }
+
+    /**
+     * constructor of the APICreationRequestBean class only with production url
      *
      * @param apiName     - Name of the APi
      * @param context     - API context
@@ -77,16 +169,165 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*"));
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+        if(endpointUrl != null) {
+            try {
+                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
+                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                        + endpointUrl.getProtocol() + "\"}");
+            } catch (JSONException e) {
+                log.error("JSON construct error", e);
+                throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+            }
+        }
+    }
+
+
+/**
+     * constructor of the APICreationRequestBean class
+     *
+     * @param apiName   - Name of the API
+     * @param context   - API Context
+     * @param version   - API version
+     * @param provider  - API provider
+     * @param productionEndpoints - Load Balanced Production Endpoints Array
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider, ArrayList<String> productionEndpoints)
+            throws APIManagerIntegrationTestException {
+
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+
+        String prodEndpoints = "";
+
+        for (int i = 0; i < productionEndpoints.size(); i++) {
+            String uri = "{\"url\":\"" + productionEndpoints.get(i) + "\",\"config\":null},";
+            prodEndpoints = prodEndpoints + uri;
+        }
+
         try {
-            this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                    + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                    + endpointUrl.getProtocol() + "\"}");
+
+            this.endpoint = new JSONObject("{\"production_endpoints\":[" +
+                    prodEndpoints + "]," +
+                    "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                    "\"failOver\":\"True\",\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                    "\"sessionManagement\":\"none\",\"implementation_status\":\"managed\"," +
+                    "\"endpoint_type\":\"load_balance\"}");
+
+
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
         }
     }
+
+
+
+    /**
+     * constructor of the APICreationRequestBean class with production url & sand box url
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @param endpointUrl - Production Endpoint URL of the API
+     * @param sandboxUrl  - Sandbox Endpoint URL of the API
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+
+    public APICreationRequestBean(String apiName, String context, String version, String provider,
+                                  URL endpointUrl, URL sandboxUrl)
+            throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+        try{
+
+            this.endpoint = new JSONObject();
+            if(endpointUrl != null) {
+                this.endpoint.put("production_endpoints", new JSONObject("{\"url\":" + "\""
+                        + endpointUrl + "\",\"config\":null}"));
+                this.endpoint.put("endpoint_type", endpointUrl.getProtocol());
+            }
+            if(sandboxUrl != null) {
+                this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
+                        + sandboxUrl + "\",\"config\":null}"));
+                this.endpoint.put("endpoint_type", sandboxUrl.getProtocol());
+            }
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
+   /**
+     * constructor of the APICreationRequestBean class
+     *
+     * @param apiName   - Name of the API
+     * @param context   - API Context
+     * @param version   - API Version
+     * @param provider  - API provider
+     * @param productionEndpoints   - Load balanced Production Endpoints Array
+     * @param sandboxEndpoints  - Load balanced Sandbox Endpoints Array
+     *
+     *
+     */
+    public APICreationRequestBean(String apiName,String context,String version,String provider,
+                                  List<String> productionEndpoints,List<String> sandboxEndpoints)
+            throws APIManagerIntegrationTestException{
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+
+        String prodEndpoints="";
+        if (productionEndpoints!=null && productionEndpoints.size()>0){
+            for (int i = 0; i < productionEndpoints.size(); i++) {
+                String uri = "{\"url\":\"" + productionEndpoints.get(i) + "\",\"config\":null},";
+                prodEndpoints = prodEndpoints + uri;
+            }
+            prodEndpoints="\"production_endpoints\": ["+prodEndpoints+"],";
+
+        }
+        String sandBoxEndpoints = "";
+        if(sandboxEndpoints!=null){
+            for (int i = 0; i < sandboxEndpoints.size(); i++) {
+                String sandboxUri = "{\"url\":\"" + sandboxEndpoints.get(i) + "\",\"config\":null},";
+                sandBoxEndpoints = sandBoxEndpoints + sandboxUri;
+            }
+        }
+        try {
+
+                this.endpoint = new JSONObject("{"+prodEndpoints +
+                        "\"algoCombo\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                        "\"failOver\":\"True\"," +
+                        "\"algoClassName\":\"org.apache.synapse.endpoints.algorithms.RoundRobin\"," +
+                        "\"sessionManagement\":\"none\"," +
+                        "\"sandbox_endpoints\":[" +
+                        sandBoxEndpoints + "]," +
+                        "\"implementation_status\":\"managed\"," +
+                        "\"endpoint_type\":\"load_balance\"}");
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
 
     @Override
     public void setAction() {
@@ -104,13 +345,16 @@ public class APICreationRequestBean extends AbstractRequest {
 
         addParameter("name", name);
         addParameter("context", context);
-        addParameter("endpoint_config", endpoint.toString());
+        if(endpoint !=  null) {
+            addParameter("endpoint_config", endpoint.toString());
+        }
         addParameter("provider", provider);
         addParameter("visibility", visibility);
         addParameter("version", version);
         addParameter("description", description);
         addParameter("endpointType", endpointType);
         if (getEndpointType().equals("secured")) {
+            addParameter("endpointAuthType", endpointAuthType);
             addParameter("epUsername", epUsername);
             addParameter("epPassword", epPassword);
         }
@@ -154,9 +398,11 @@ public class APICreationRequestBean extends AbstractRequest {
         if (wsdl.length() > 1) {
             addParameter("wsdl", getWsdl());
         }
-        if (sandbox.length() > 1) {
-            addParameter("sandbox", getSandbox());
-        }
+        addParameter("bizOwner",bizOwner);
+        addParameter("bizOwnerMail",bizOwnerMail);
+        addParameter("techOwner",techOwner);
+        addParameter("techOwnerMail",techOwnerMail);
+
     }
 
     public String getEpUsername() {
@@ -258,6 +504,10 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setEndpointType(String endpointType) {
         this.endpointType = endpointType;
     }
+
+    public String getEndpointAuthType() { return endpointAuthType; }
+
+    public void setEndpointAuthType(String endpointAuthType) { this.endpointAuthType = endpointAuthType; }
 
     public String getHttpChecked() {
         return httpChecked;

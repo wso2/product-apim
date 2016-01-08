@@ -27,6 +27,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -76,11 +77,11 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         super.init(userMode);
 
-        apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
+        apiProvider = user.getUserName();
 
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
 
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String storeURLHttp = getStoreURLHttp();
 
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
@@ -91,9 +92,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(),
-                                                        gatewayContext.getContextTenant().getContextUser().getUserName(),
-                                                        gatewayContext.getContextTenant().getContextUser().getPassword());
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                                                        keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         // adding new role subscriber
         userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
@@ -102,12 +103,12 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         // crating user john
         String userJohn;
         String gatewayUrl;
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
+        if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
             userJohn = USER_JOHN;
         } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
-            userJohn = USER_JOHN + "@" + gatewayContext.getContextTenant().getDomain();
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
+            userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
         }
         userManagementClient.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
 
@@ -152,7 +153,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         // create new application and subscribing
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                        storeContext.getContextTenant().getContextUser().getPassword());
-        apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
+        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
         subscriptionRequest.setApplicationName(APP_NAME);
@@ -167,7 +168,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
@@ -180,8 +181,11 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                       "&password=" + storeContext.getContextTenant().getContextUser().getPassword() +
                       "&scope=admin_scope user_scope";
 
-        accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                                                      requestBody, tokenEndpointURL).getData());
+        waitForAPIDeploymentSync(apiProvider, API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
+        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                                                  requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
@@ -189,6 +193,13 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         // Accessing GET method
         response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+
+        //TODO - Remove the second request below. This is a temporary workaround to avoid the issue caused by a bug in
+        // carbon-mediation 4.4.11-SNAPSHOT See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
+        // message processor" on dev@wso2.org for information about the bug.
+        Thread.sleep(5000);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the GET Method");
 
@@ -242,15 +253,13 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient.deleteUser(USER_JOHN);
             userManagementClient.deleteRole(SUBSCRIBER_ROLE);
         }
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
-//                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }

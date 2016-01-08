@@ -30,6 +30,8 @@
             &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.TestNameLengthTestCase"/>&ndash;&gt;
             <class name="org.wso2.am.integration.ui.tests.samples.YouTubeUIPagesTestCase"/>
             &lt;!&ndash;<class name="org.wso2.am.integration.ui.tests.APIMANAGER3363StoreAPIConsoleWithReverseProxy" />&ndash;&gt;
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER4167StoreDebugEnabledTestCase"/>
+            <class name="org.wso2.am.integration.ui.tests.APIMANAGER4279PublisherDebugEnabledTestCase"/>
         </classes>
     </test>-->
 

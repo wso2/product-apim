@@ -29,6 +29,8 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -52,6 +54,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Configure a new handler and Invoke the API and verify  the  request is going through newly added handler.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(AddNewHandlerAndInvokeAPITestCase.class);
     private static final String API_NAME = "AddNewHandlerAndInvokeAPITest";
@@ -93,7 +96,7 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
                 CARBON_HOME + File.separator + "repository" + File.separator + "components" + File.separator + "lib";
         FileManager.copyResourceToFileSystem(customHandlerSourcePath, customHandlerTargetPath, CUSTOM_AUTH_HANDLER_JAR);
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         String log4jPropertiesFile =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
                         "AM" + File.separator + "lifecycletest" + File.separator + "log4j.properties";
@@ -116,14 +119,14 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
-        gatewaySession = createSession(gatewayContext);
+        gatewaySession = createSession(gatewayContextMgt);
         synapseConfigAdminClient =
-                new SynapseConfigAdminClient(gatewayContext.getContextUrls().getBackEndUrl(), gatewaySession);
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+                new SynapseConfigAdminClient(gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewaySession);
+        apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the APi and check the  API request is going through the new handler.")
-    public void testAPIInvocationHitsTheNewHandler() throws APIManagerIntegrationTestException, IOException,
+    public void testAPIInvocationHitsTheNewHandler() throws Exception,
             XMLStreamException, LogViewerLogViewerException {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
@@ -159,12 +162,12 @@ public class AddNewHandlerAndInvokeAPITestCase extends APIManagerLifecycleBaseTe
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersGet.put("CustomAuthorization", CUSTOM_AUTHORIZATION);
 
-        LogViewerClient logViewerClient = new LogViewerClient(gatewayUrls.getWebAppURLHttps() + "services/", gatewaySession);
+        LogViewerClient logViewerClient = new LogViewerClient(gatewayUrlsWrk.getWebAppURLHttps() + "services/", gatewaySession);
         logViewerClient.clearLogs();
 
         //Send GET Request
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" +
                         API_GET_ENDPOINT_METHOD, requestHeadersGet);
 
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");

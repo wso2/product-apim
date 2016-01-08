@@ -69,9 +69,7 @@ public class APIMANAGER3277SSOLogin extends APIMIntegrationUiTestBase {
 
 	@AfterClass(alwaysRun = true)
 	public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
-                         storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
 		driver.quit();
 	}
 

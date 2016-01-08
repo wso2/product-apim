@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -39,38 +40,47 @@ import static org.testng.Assert.assertTrue;
  */
 
 public class LoginValidationTestCase extends APIMIntegrationBaseTest {
-
-
+    
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String ROLE_SUBSCRIBER = "subscriber";
+    
     private String publisherURLHttp;
     private String storeURLHttp;
     private UserManagementClient userManagementClient;
     private String invalidUserName;
     private String subscriberUser;
-    private String subscriberRole;
+    //private String subscriberRole;
 
     @Factory(dataProvider = "userModeDataProvider")
     public LoginValidationTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
+     
 
         userManagementClient = new UserManagementClient(
-                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
+                storeContext.getContextUrls().getBackEndUrl(), createSession(storeContext));
 
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            invalidUserName = publisherContext.getContextTenant().getContextUser().getUserName() + "invalid";
-            subscriberUser ="subscriberUser";
-            subscriberRole = "Internal/subscriber";
+        if (storeContext.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
+            invalidUserName = storeContext.getContextTenant().getContextUser().getUserName() + "invalid";
+            subscriberUser ="subscriberUser";            
         }
         else{
-            invalidUserName = gatewayContext.getContextTenant().getTenantAdmin().getUserName().replace("admin","admininvalid");
-            subscriberUser = "subscriberUser@wso2.com";
-            subscriberRole = "Internal/everyone";
+            invalidUserName = storeContext.getContextTenant().getTenantAdmin().getUserName().replace("admin","admininvalid");
+            subscriberUser = "subscriberUser@wso2.com";            
         }
 
     }
@@ -98,14 +108,21 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
         //Try login to publisher with subscriber user
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
-
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists(subscriberRole, subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, "password@123",
-                                         new String[]{subscriberRole}, null);
+        
+        if(!userManagementClient.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)){
+            String[] subscriberPermissions = {
+                    "/permission/admin/login",
+                    "/permission/admin/manage/api/subscribe"};
+            userManagementClient.addInternalRole(ROLE_SUBSCRIBER, null, subscriberPermissions);
         }
 
-        HttpResponse httpResponse = apiPublisherRestClient.login("subscriberUser",
+        if ((userManagementClient != null) &&
+            !userManagementClient.userNameExists(INTERNAL_ROLE_SUBSCRIBER, "subscriberUser")) {
+            userManagementClient.addUser("subscriberUser", "password@123",
+                                         new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+        }
+
+        HttpResponse httpResponse = apiPublisherRestClient.login(subscriberUser,
                                                                  "password@123");
 
         JSONObject response = new JSONObject(httpResponse.getData());
@@ -118,8 +135,7 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
 
     @Test(groups = {"wso2.am"}, description = "Login to API store test scenario")
-    public void testLoginToStoreTestCase()
-            throws Exception {
+    public void testLoginToStoreTestCase() throws Exception {
 
         //Try login to publisher with tenant subscriber user
         String APICreatorRole = "APICreatorRole";
@@ -171,16 +187,6 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
     }
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
-    }
 }

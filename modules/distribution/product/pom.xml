@@ -17,14 +17,12 @@
   ~  under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-distribution-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>1.10.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -92,50 +90,50 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <property name="tempdir" value="target/docs-temp"/>
-                                <mkdir dir="${tempdir}"/>
+                                <property name="tempdir" value="target/docs-temp" />
+                                <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
                                     <fileset dir="target">
-                                        <include name="wso2am-${project.version}.zip"/>
+                                        <include name="wso2am-${project.version}.zip" />
                                     </fileset>
                                 </unzip>
                                 <copy todir="target/wso2carbon-core-${carbon.platform.version}/repository/components/" overwrite="false">
                                     <fileset dir="${tempdir}/wso2am-${project.version}/repository/components/">
                                     </fileset>
                                 </copy>
-                                <delete file="target/wso2am-${project.version}.zip"/>
-                                <delete dir="${tempdir}"/>
-                                <mkdir dir="${tempdir}"/>
+                                <delete file="target/wso2am-${project.version}.zip" />
+                                <delete dir="${tempdir}" />
+                                <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
                                     <fileset dir="target/wso2carbon-core-${carbon.platform.version}/repository/components/plugins/">
-                                        <include name="*.ui*.jar"/>
+                                        <include name="*.ui*.jar" />
                                     </fileset>
                                 </unzip>
                                 <move todir="${tempdir}/web/" includeemptydirs="false">
                                     <fileset dir="${tempdir}/web/">
-                                        <exclude name="**/yui/**"/>
-                                        <exclude name="**/ajax/**"/>
-                                        <exclude name="**/editarea/**"/>
-                                        <exclude name="**/codepress/**"/>
-                                        <exclude name="**/WEB-INF/**"/>
-                                        <exclude name="**/diffview/**"/>
-                                        <include name="**/*.html"/>
+                                        <exclude name="**/yui/**" />
+                                        <exclude name="**/ajax/**" />
+                                        <exclude name="**/editarea/**" />
+                                        <exclude name="**/codepress/**" />
+                                        <exclude name="**/WEB-INF/**" />
+                                        <exclude name="**/diffview/**" />
+                                        <include name="**/*.html" />
                                     </fileset>
-                                    <mapper type="glob" from="*.html" to="*.xml"/>
+                                    <mapper type="glob" from="*.html" to="*.xml" />
                                 </move>
-                                <delete dir="src/site/xdoc"/>
-                                <mkdir dir="src/site/xdoc"/>
+                                <delete dir="src/site/xdoc" />
+                                <mkdir dir="src/site/xdoc" />
                                 <copy todir="src/site/xdoc" overwrite="false" includeemptydirs="false">
                                     <fileset dir="${tempdir}/web">
-                                        <exclude name="**/yui/**"/>
-                                        <exclude name="**/ajax/**"/>
-                                        <exclude name="**/WEB-INF/**"/>
-                                        <exclude name="**/diffview/**"/>
-                                        <exclude name="**/*.html"/>
-                                        <exclude name="**/*.js"/>
-                                        <exclude name="**/*.jsp"/>
-                                        <exclude name="**/*.xsl"/>
-                                        <exclude name="*.*"/>
+                                        <exclude name="**/yui/**" />
+                                        <exclude name="**/ajax/**" />
+                                        <exclude name="**/WEB-INF/**" />
+                                        <exclude name="**/diffview/**" />
+                                        <exclude name="**/*.html" />
+                                        <exclude name="**/*.js" />
+                                        <exclude name="**/*.jsp" />
+                                        <exclude name="**/*.xsl" />
+                                        <exclude name="*.*" />
                                     </fileset>
                                 </copy>
                                 <copy todir="src/site" overwrite="false" includeemptydirs="false">
@@ -144,10 +142,10 @@
                                 </copy>
                                 <copy todir="target/site/" overwrite="false" includeemptydirs="false">
                                     <fileset dir="src/site/xdoc/">
-                                        <include name="**/images/*.*"/>
+                                        <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
-                                <delete dir="${tempdir}"/>
+                                <delete dir="${tempdir}" />
                             </tasks>
                         </configuration>
                     </execution>
@@ -156,13 +154,13 @@
                         <phase>install</phase>
                         <configuration>
                             <tasks>
-                                <delete dir="target/archive-tmp"/>
-                                <delete dir="target/dependency-maven-plugin-markers"/>
-                                <delete dir="target/maven-archiver"/>
-                                <delete dir="target/wso2carbon-core-${carbon.platform.version}"/>
-                                <delete dir="target/sources"/>
-                                <delete dir="target/site"/>
-                                <delete dir="src/site"/>
+                                <delete dir="target/archive-tmp" />
+                                <delete dir="target/dependency-maven-plugin-markers" />
+                                <delete dir="target/maven-archiver" />
+                                <delete dir="target/wso2carbon-core-${carbon.platform.version}" />
+                                <delete dir="target/sources" />
+                                <delete dir="target/site" />
+                                <delete dir="src/site" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -178,22 +176,16 @@
                         <configuration>
                             <tasks>
                                 <path id="h2.classpath">
-                                    <path refid="maven.compile.classpath"/>
+                                    <path refid="maven.compile.classpath" />
                                 </path>
-                                <echo
-                                        message="########### Creating API Manager Database ##############"/>
-                                <sql
-                                        driver="org.h2.Driver"
-                                        url="jdbc:h2:${basedir}/target/repository/database/WSO2AM_DB"
-                                        userid="wso2carbon" password="wso2carbon" autocommit="true"
-                                        onerror="continue">
+                                <echo message="########### Creating API Manager Database ##############" />
+                                <sql driver="org.h2.Driver" url="jdbc:h2:${basedir}/target/repository/database/WSO2AM_DB" userid="wso2carbon" password="wso2carbon" autocommit="true" onerror="continue">
                                     <classpath>
-                                        <path refid="h2.classpath"/>
+                                        <path refid="h2.classpath" />
                                     </classpath>
-                                    <fileset file="${basedir}/../resources/sql/h2.sql"/>
+                                    <fileset file="${basedir}/../resources/sql/h2.sql" />
                                 </sql>
-                                <echo
-                                        message="##################### END ########################"/>
+                                <echo message="##################### END ########################" />
                             </tasks>
                         </configuration>
                     </execution>
@@ -267,30 +259,118 @@
                 </executions>
             </plugin>
 
-            <!-- Replace datasource used in application-authentication.xml -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <version>1.5.2</version>
-                <executions>
+		<executions>
+            	    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
                     <execution>
+                        <id>replace-for-identity</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>replace</goal>
                         </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.AuthorizationCodeGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedAuthorizationCodeGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.PasswordGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedPasswordGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCredentialsGrantHandler)</token>
+                                    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedClientCredentialsGrantHandler</value>
+			        </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+				    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
+				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>	
+			        </replacement>
+                                <replacement>
+                                    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
+                                    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandler)</token>
+                                    <value>org.wso2.carbon.identity.oauth2.token.handlers.grant.iwa.ntlm.NTLMAuthenticationGrantHandlerWithHandshake</value>
+                                </replacement>
+			        <replacement>
+				    <xpath>/Server/OAuth/OAuthCallbackHandlers</xpath>
+				    <token>(org.wso2.carbon.identity.oauth.callback.DefaultCallbackHandler)</token>
+			    	    <value>org.wso2.carbon.apimgt.keymgt.util.APIManagerOAuthCallbackHandler</value>
+			        </replacement>
+
+                            </replacements>
+                        </configuration>
+		    </execution>
+		    <!-- Replace the Datasource in the thrift-authentication.xml file -->	
+                    <execution>
+                        <id>replace-for-thrift</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/thrift-authentication.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
+                                    <token>(jdbc/WSO2CarbonDB)</token>
+                                    <value>jdbc/WSO2AM_DB</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security/application-authentication.xml</file>
-                    <replacements>
-                        <replacement>
-                            <xpath>/ApplicationAuthentication/JDBCPersistenceManager/DataSource/Name</xpath>
-                            <token>(jdbc/WSO2CarbonDB)</token>
-                            <value>jdbc/WSO2AM_DB</value>
-                        </replacement>
-                    </replacements>
-                </configuration>
-            </plugin>
+	    </plugin>
+
+	    <!-- Add the scope validator to the identity.xml file -->
+            <plugin>
+                <groupId>com.google.code.maven-config-processor-plugin</groupId>
+                <artifactId>config-processor-maven-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>add-scope-validator</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+			<configuration>
+			    <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                   <transformation>    
+                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</input>
+					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</output>
+                                        <config>identity_config_change.xml</config>
+                                    </transformation>
+			    </transformations>
+			    <namespaceContexts>
+				<s>http://wso2.org/projects/carbon/carbon.xml</s>
+        		    </namespaceContexts>
+                        </configuration>
+                    </execution>
+                </executions>
+             </plugin>
+
+	    <!-- Skip deploying the product zip to nexus -->
+	    <plugin>
+  		<groupId>org.apache.maven.plugins</groupId>
+  		<artifactId>maven-deploy-plugin</artifactId>
+  		<configuration>
+    		   <skip>true</skip>
+  		</configuration>
+	    </plugin>
 
         </plugins>
     </build>

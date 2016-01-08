@@ -17,22 +17,20 @@
   ~  under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>1.10.1-SNAPSHOT</version>
         <relativePath>../../../../../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>am-toolbox</artifactId>
+    <artifactId>am-capp</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 API Manager - BAM Toolbox</name>
+    <name>WSO2 API Manager - DAS Carbon Application</name>
     <url>http://wso2.org/projects/bam/java</url>
-    <description>WSO2 API Manager BAM Toolbox</description>
+    <description>WSO2 API Manager DAS Carbon Application</description>
 
     <licenses>
         <license>
@@ -68,7 +66,7 @@
                         <phase>process-resources</phase>
                         <configuration>
                             <target>
-                                <ant antfile="build.xml" target="zip"/>
+                                <ant antfile="build.xml" target="zip" />
                             </target>
                         </configuration>
                         <goals>

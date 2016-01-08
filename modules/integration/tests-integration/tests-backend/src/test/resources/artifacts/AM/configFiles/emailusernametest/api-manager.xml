@@ -52,11 +52,17 @@
         <!--
             Admin username for the Authentication manager.
         -->
-        <Username>admin</Username>
+        <Username>${admin.username}</Username>
         <!--
             Admin password for the Authentication manager.
         -->
-        <Password>admin</Password>
+	<Password>${admin.password}</Password>
+
+	<!-- 
+	   Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
+	   via a remote service. The check will be done on the local server when false.	
+	-->
+	<CheckPermissionsRemotely>false</CheckPermissionsRemotely>
     </AuthManager>
 
     <!--
@@ -95,9 +101,9 @@
 	-->
 	<!--EnableTokenGeneration>false</EnableTokenGeneration-->
 
-        <!-- 
-            This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the 
-	    default implementation provided. 	
+        <!--
+            This parameter specifies which implementation should be used for generating the Token. JWTGenerator is the
+	    default implementation provided.
 	 -->
 	<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.JWTGenerator</TokenGeneratorImpl>
 
@@ -131,8 +137,9 @@
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
 		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
-                <Environment type="hybrid">
+                <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
+                    <Description> Description of environment</Description>
 			<!--
             			Server URL of the API gateway.
         		-->
@@ -140,11 +147,11 @@
 			<!--
             			Admin username for the API gateway.
         		-->
-                        <Username>admin</Username>
+                        <Username>${admin.username}</Username>
 			<!--
             			Admin password for the API gateway.
         		-->
-                        <Password>admin</Password>
+                        <Password>${admin.password}</Password>
 			<!--
             			Endpoint URLs for the APIs hosted in this API gateway.
         		-->
@@ -181,9 +188,10 @@
     <APIUsageTracking>
 
         <!--
-            Enable/Disable the API usage tracker.
+            Below property is used to skip trying to connect to event receiver nodes when publishing events even if
+            the stats enabled flag is set to true.
         -->
-        <Enabled>false</Enabled>
+        <SkipEventReceiverConnection>false</SkipEventReceiverConnection>
 
         <!--
             API Usage Data Publisher.
@@ -191,45 +199,47 @@
         <PublisherClass>org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher</PublisherClass>
 
         <!--
-            Thrift port of the remote BAM server.
+            If below property set to true,then the response message size will be calculated and publish 
+            with each successful API invocation event.
         -->
-        <ThriftPort>7612</ThriftPort>
-
+        <PublishResponseMessageSize>false</PublishResponseMessageSize>
         <!--
-            Server URL of the remote BAM/CEP server used to collect statistics. Must
-            be specified in protocol://hostname:port/ format.
-
-            An event can also be published to multiple Receiver Groups each having 1 or more receivers. Receiver
-            Groups are delimited by curly braces whereas receivers are delimited by commas.
-	    Ex - Multiple Receivers within a single group
-		 tcp://localhost:7612/,tcp://localhost:7613/,tcp://localhost:7614/
-	    Ex - Multiple Receiver Groups with two receivers each
-                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/}
+                Data publishing stream names and versions of API requests, responses and faults. If the default values
+                are changed, the toolbox also needs to be changed accordingly.
         -->
-        <BAMServerURL>tcp://localhost:7612/</BAMServerURL>
-
-        <!--
-            Administrator username to login to the remote BAM server.
-        -->
-        <BAMUsername>admin</BAMUsername>
-
-        <!--
-            Administrator password to login to the remote BAM server.
-        -->
-        <BAMPassword>admin</BAMPassword>
-
-        <!--
-            JNDI name of the data source to be used for getting BAM statistics.This data source should
-            be defined in the master-datasources.xml file in conf/datasources directory.
-        -->
-        <!--DataSourceName>jdbc/WSO2AM_STATS_DB</DataSourceName-->
+        <Streams>
+            <Request>
+                <Name>org.wso2.apimgt.statistics.request</Name>
+                <Version>1.0.0</Version>
+            </Request>
+            <Response>
+                <Name>org.wso2.apimgt.statistics.response</Name>
+                <Version>1.0.0</Version>
+            </Response>
+            <Fault>
+                <Name>org.wso2.apimgt.statistics.fault</Name>
+                <Version>1.0.0</Version>
+            </Fault>
+            <Destination>
+                <Name>org_wso2_apimgt_statistics_destination</Name>
+                <Version>1.0.0</Version>
+                <BAMProfileName>bam-profile</BAMProfileName>
+            </Destination>
+            <Throttle>
+                <Name>org.wso2.apimgt.statistics.throttle</Name>
+                <Version>1.0.0</Version>
+            </Throttle>
+            <Workflow>
+                <Name>org.wso2.apimgt.statistics.workflow</Name>
+                <Version>1.0.0</Version>
+            </Workflow>
+        </Streams>
 
     </APIUsageTracking>
 
     <!--
-        API key manager configuration used by API key manager (IS), API store and API gateway.
-        This is used by API store to generate and manage API keys. API gateway uses it to
-        validate and authenticate users against the provided API keys.
+        API key validator configuration used by API key manager (IS), API store and API gateway.
+        API gateway uses it to validate and authenticate users against the provided API keys.
     -->
     <APIKeyValidator>
         <!--
@@ -240,19 +250,19 @@
         <!--
             Admin username for API key manager.
         -->
-        <Username>admin</Username>
+        <Username>${admin.username}</Username>
 
         <!--
             Admin password for API key manager.
         -->
-        <Password>admin</Password>
+        <Password>${admin.password}</Password>
         <!--
             Enable/Disable JWT caching.
         -->
         <EnableJWTCache>false</EnableJWTCache>
 
         <!--
-            Enable/Disable API key verification information caching at key-management server
+            Enable/Disable API key validation information caching at key-management server
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
@@ -264,6 +274,7 @@
         -If you are at the Gateway node, you need to point "ThriftClientPort" value to the "ThriftServerPort" value given at KeyManager node.
         -If you need to start two API Manager instances in the same machine, you need to give different ports to "ThriftServerPort" value in two nodes.
         -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
+	-Gateway use this parameter to connect key validation thrift service. 
         -->
 
         <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
@@ -272,19 +283,6 @@
         <ThriftServerPort>10397</ThriftServerPort>
 	<!--ThriftServerHost>localhost</ThriftServerHost-->
 	<EnableThriftServer>true</EnableThriftServer>
-	<!--
-	   This parameter is used to specify Thrift server host name. In a distributed deployment we must set this parameter
-	   if keymanager running on separate machine. Gateway use this parameter to connect key verification thrift service
-	-->
-	<!--ThriftServerHost>127.0.0.1</ThriftServerHost-->
-
-        <!--
-            Remove UserName from JWT Token
-        -->
-       <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
-
-	<!-- Name of the token API -->
-	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
         <!-- 
         Scope used for marking Application Tokens. If a token is generated with this scope, they will be treated as Application Access Tokens
@@ -294,12 +292,29 @@
         <!-- 
         Specifies the implementation to be used for KeyValidationHandler. Steps for validating a token can be controlled by plugging in a custom KeyValidation Handler
         -->    
-        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>    
+        <KeyValidationHandlerClassName>org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler</KeyValidationHandlerClassName>
+	
+        <!--
+            Remove UserName from JWT Token
+        -->
+       <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
+
+        <!-- All  scopes under the ScopeWhitelist element are not validating against roles that has assigned to it.
+             By default ^device_.* and openid scopes have been white listed internally.
+        -->
+        <!--ScopeWhitelist>
+            <Scope>^device_.*</Scope>
+            <Scope>openid</Scope>
+        </ScopeWhitelist-->
+
+	<!-- Name of the token API -->
+	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
 	<!-- This the API URL for revoke API. When we revoke tokens revoke requests should go through this
-             API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
+         API deployed in API gateway. Then it will do cache invalidations related to revoked tokens.
 	     In distributed deployment we should configure this property in key manager node by pointing
-	     gateway https url. Also please note that we should point gateway revoke service to key manager
+	     gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
+         Also please note that we should point gateway revoke service to key manager
 	-->
 	<RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
 
@@ -309,6 +324,22 @@
 	<EncryptPersistedTokens>false</EncryptPersistedTokens>
 
     </APIKeyValidator>
+
+    <!--
+    Uncomment this section only if you are going to have an instance other than KeyValidator as your KeyManager.
+    Unless a ThirdParty KeyManager is used, you don't need to configure this section.
+    -->
+    
+    <!--APIKeyManager>
+        <KeyManagerClientImpl>org.wso2.carbon.apimgt.keymgt.AMDefaultKeyManagerImpl</KeyManagerClientImpl>
+        <Configuration>
+            <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+            <Username>${admin.username}</Username>
+            <Password>${admin.password}</Password>
+            <TokenURL>https://${carbon.local.ip}:${https.nio.port}/token</TokenURL>
+            <RevokeURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeURL>
+        </Configuration>
+    </APIKeyManager-->
 
     <!--
         Settings related to managing API access tiers.
@@ -328,6 +359,7 @@
     -->
     <APIStore>
 	<!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
+	<!--GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor-->
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
@@ -344,6 +376,10 @@
 
         -->
         <DisplayAllAPIs>false</DisplayAllAPIs>
+        <!--
+              Uncomment this to limit the number of APIs in api the API Store
+          -->
+        <!--APIsPerPage>5</APIsPerPage-->
 
 		 <!--
             This parameter specifies whether to display the comment editing facility or not.
@@ -371,12 +407,6 @@
     If there are multiple API modification during a short time period, better to disable cache.
     -->
         <EnableRecentlyAddedAPICache>false</EnableRecentlyAddedAPICache>
-
-        	<!-- 
-             This parameter specifies whether we want to reuse app  or not. If this is set to false  api-store will create new consumer and
-	   secret key pair, if value is set to true api-store will use same consumer key and secrete key generated by IS.
-	-->
-		<ReuseAppName>false</ReuseAppName>
 
     </APIStore>
 
@@ -481,8 +511,8 @@
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
 
     </CORSConfiguration>
-   <!-- This property is there to configure velocity log file location. normally it will
-        crete file in carbon home. If you need to use different location you can use this
+   <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
+ 	You can enable this and set preferable Logger name. 
    -->
-   <!--VelocityLogger></VelocityLogger-->
+   <!--VelocityLogger>VELOCITY</VelocityLogger-->
 </APIManager>

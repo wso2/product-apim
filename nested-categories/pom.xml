@@ -14,14 +14,12 @@
  ~ limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>1.9.0</version>
+        <version>1.10.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -91,7 +89,7 @@
         </extensions>
     </build>
 
-    <distributionManagement>
+    <!--<distributionManagement>
         <repository>
             <id>wso2-maven2-repository</id>
             <name>WSO2 Maven2 Repository</name>
@@ -102,7 +100,7 @@
             <name>WSO2 Maven2 Snapshot Repository</name>
             <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/snapshots/maven2/</url>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement>-->
     <!--<properties>
         <apimserver.version>1.5.0</apimserver.version>
     </properties>-->

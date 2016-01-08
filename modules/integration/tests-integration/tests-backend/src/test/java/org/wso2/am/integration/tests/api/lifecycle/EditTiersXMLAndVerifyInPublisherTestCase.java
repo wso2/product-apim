@@ -43,22 +43,26 @@ import static org.testng.Assert.*;
  * Change the tiers.xml file  with new tier added and check the new tier availability in publisher.
  */
 public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "EditTiersXMLAndVerifyInPublisherTest";
-    private static final String API_CONTEXT = "EditTiersXMLAndVerifyInPublisher";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String TIER_XML_REG_CONFIG_LOCATION = "/_system/governance/apimgt/applicationdata/tiers.xml";
-    private static final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
-    private static final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
-    private static final String TIER_MANAGE_PAGE_TIER_GOLD = "{ \"value\": \"Gold\", \"text\": \"Gold\" }";
-    private static final String TIER_MANAGE_PAGE_TIER_PLATINUM = "{ \"value\": \"Platinum\", \"text\": \"Platinum\" }";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "EditTiersXMLAndVerifyInPublisherTest";
+    private final String API_CONTEXT = "EditTiersXMLAndVerifyInPublisher";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String TIER_XML_REG_CONFIG_LOCATION = "/_system/governance/apimgt/applicationdata/tiers.xml";
+    private final String TIER_XML_REG_CONFIG_APP_LOCATION = "/_system/governance/apimgt/applicationdata/app-tiers.xml";
+    private final String TIER_XML_REG_CONFIG_RES_LOCATION = "/_system/governance/apimgt/applicationdata/res-tiers.xml";
+    private final String TIER_PERMISSION_PAGE_TIER_GOLD = "<td>Gold</td>";
+    private final String TIER_PERMISSION_PAGE_TIER_PLATINUM = "<td>Platinum</td>";
+    private final String TIER_MANAGE_PAGE_TIER_GOLD = "value=\"Silver\"";
+    private final String TIER_MANAGE_PAGE_TIER_PLATINUM = "value=\"Platinum\"";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
     private String originalTiersXML;
+    private String originalAppTiersXML;
+    private String originalResTiersXML;
     private String newTiersXML;
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -68,34 +72,35 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
             RemoteException, ResourceAdminServiceExceptionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
 
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         String artifactsLocation =
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
                         File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
         resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContext.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContext));
+                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
+                                               createSession(publisherContext));
         originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
+        originalAppTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_APP_LOCATION);
+        originalResTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_RES_LOCATION);
+
         newTiersXML = readFile(artifactsLocation);
     }
 
@@ -138,6 +143,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
             ResourceAdminServiceExceptionException, APIManagerIntegrationTestException {
         //Changing the Tier XML
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, newTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, newTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, newTiersXML);
         HttpResponse tierPermissionPageHttpResponse =
                 apiPublisherClientUser1.getTierPermissionsPage();
         assertEquals(tierPermissionPageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -169,6 +176,8 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //restore the original tiers.xml content.
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, originalTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, originalAppTiersXML);
+        resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, originalResTiersXML);
     }
 
 

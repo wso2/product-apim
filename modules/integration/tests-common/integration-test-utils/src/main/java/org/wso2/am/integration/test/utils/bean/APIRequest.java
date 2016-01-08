@@ -53,7 +53,7 @@ public class APIRequest extends AbstractRequest {
     private String thumbUrl = "";
     private String tiersCollection = "Gold";
     private String resourceCount = "0";
-    private String resourceMethod = "GET,POST";
+    private String resourceMethod = "GET,POST,PUT,PATCH,DELETE,HEAD";
     private String resourceMethodAuthType = "Application & Application User,Application & Application User";
     private String resourceMethodThrottlingTier = "Unlimited,Unlimited";
     private String uriTemplate = "/*";
@@ -104,6 +104,31 @@ public class APIRequest extends AbstractRequest {
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
                                    + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                                    + endpointUrl.getProtocol() + "\"}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException("JSON construct error", e);
+        }
+
+    }
+    
+
+    /**
+     * This method will create API request.
+     *
+     * @param apiName     - Name of the API
+     * @param context     - API context
+     * @param productionEndpointUrl - API endpoint URL
+     * @throws APIManagerIntegrationTestException - Throws if API request cannot be generated.
+     */
+    public APIRequest(String apiName, String context, URL productionEndpointUrl, URL sandboxEndpointUrl) throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                                   + productionEndpointUrl + "\",\"config\":null}, \"sandbox_endpoints\":{\"url\":\""
+                                   + sandboxEndpointUrl + "\",\"config\":null},\"endpoint_type\":\""
+                                   + productionEndpointUrl.getProtocol() + "\"}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);

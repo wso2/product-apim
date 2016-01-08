@@ -1,69 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<api xmlns="http://ws.apache.org/ns/synapse" name="admin--Weather" context="/Weather">
-    <resource methods="POST GET OPTIONS DELETE PUT" url-mapping="/*">
-        <inSequence>
-            <property name="POST_TO_URI" value="true" scope="axis2" type="STRING"/>
-            <log level="full"/>
-            <filter source="$ctx:AM_KEY_TYPE" regex="PRODUCTION">
-                <then>
-                    <send>
-                        <endpoint name="admin--Weather_APIproductionEndpoint_0">
-                            <http method="get" uri-template="http://api.openweathermap.org/data/2.5/weather?q=London,uk">
-                                <timeout>
-                                    <duration>1000</duration>
-                                    <responseAction>fault</responseAction>
-                                </timeout>
-                                <suspendOnFailure>
-                                    <errorCodes>-1</errorCodes>
-                                    <initialDuration>0</initialDuration>
-                                    <progressionFactor>1.0</progressionFactor>
-                                    <maximumDuration>0</maximumDuration>
-                                </suspendOnFailure>
-                                <markForSuspension>
-                                    <errorCodes>-1</errorCodes>
-                                </markForSuspension>
-                            </http>
-                        </endpoint>
-                    </send>
-                </then>
-                <else>
-                    <send>
-                        <endpoint name="admin--Weather_APIsandboxEndpoint_0">
-                            <http method="get" uri-template="http://api.openweathermap.org/data/2.5/weather?q=London,uk">
-                                <timeout>
-                                    <duration>1000</duration>
-                                    <responseAction>fault</responseAction>
-                                </timeout>
-                                <suspendOnFailure>
-                                    <errorCodes>-1</errorCodes>
-                                    <initialDuration>0</initialDuration>
-                                    <progressionFactor>1.0</progressionFactor>
-                                    <maximumDuration>0</maximumDuration>
-                                </suspendOnFailure>
-                                <markForSuspension>
-                                    <errorCodes>-1</errorCodes>
-                                </markForSuspension>
-                            </http>
-                        </endpoint>
-                    </send>
-                </else>
-            </filter>
-        </inSequence>
-        <outSequence>
-            <send/>
-        </outSequence>
-        <faultSequence/>
-    </resource>
-    <handlers>
-        <handler class="org.wso2.carbon.apimgt.gateway.handlers.security.APIAuthenticationHandler"/>
-        <handler class="org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler">
-            <property name="id" value="A"/>
-            <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
-        </handler>
-        <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageHandler"/>
-        <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler">
-            <property name="configKey" value="gov:/apimgt/statistics/ga-config.xml"/>
-        </handler>
-        <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
-    </handlers>
-</api>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="Response_API"
+         context="/Weather">
+        <resource methods="POST GET" url-mapping="/*">
+            <inSequence>
+                <property name="NO_ENTITY_BODY" action="remove" scope="axis2"/>
+                <payloadFactory>
+                    <format>
+                        <response xmlns="">
+                            <value>Received Request</value>
+                        </response>
+                    </format>
+                </payloadFactory>
+                <property name="RESPONSE" value="true" scope="default" type="STRING"/>
+                <header name="To" action="remove"/>
+                <send/>
+            </inSequence>
+        </resource>
+    </api>
+</definitions>

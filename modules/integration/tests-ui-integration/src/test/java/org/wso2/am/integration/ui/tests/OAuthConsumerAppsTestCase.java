@@ -73,8 +73,8 @@ public class OAuthConsumerAppsTestCase extends APIMIntegrationUiTestBase {
     public void testTenantCreation() throws Exception {
 
         LoginPage test = new LoginPage(driver);
-        test.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-				gatewayContext.getContextTenant().getContextUser().getPassword());
+        test.loginAs(publisherContext.getContextTenant().getContextUser().getUserName(),
+				publisherContext.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         addNewTenantHome.addNewTenant(TEST_DATA_TENANT_DOMAIN, TEST_DATA_TENANT_FIRST_NAME, TEST_DATA_TENANT_LAST_NAME, 

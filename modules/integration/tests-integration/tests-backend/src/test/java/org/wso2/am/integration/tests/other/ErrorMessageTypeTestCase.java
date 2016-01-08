@@ -23,6 +23,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
@@ -48,19 +51,19 @@ public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
           This test will check API Manager will return auth failures in JSON format
          */
         super.init();
-        gatewaySessionCookie = createSession(gatewayContext);
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        gatewaySessionCookie = createSession(gatewayContextWrk);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         String destinationPath = computeDestinationPathForDataSource("axis2.xml");
         String sourcePath = computeAxis2SourceResourcePath("axis2.xml");
         copyAxis2ConfigFile(sourcePath, destinationPath);
         loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                 + File.separator + "synapseconfigs" + File.separator + "error" + File.separator + "handle"
-                + File.separator + "error-handling-test-synapse.xml", gatewayContext, gatewaySessionCookie);
+                + File.separator + "error-handling-test-synapse.xml", gatewayContextWrk, gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "Error Message format test other")
     public void errorMessageTypeTestCase() throws Exception {
-        HttpResponse response = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "stockquote/test/", null);
+        HttpResponse response = HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "stockquote/test/", null);
         assertEquals(response.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(), "Response code mismatch");
         //message contains json string or not
         assertTrue(response.getData().contains("{\"fault\":{"),"Did not receive Json error response");
@@ -68,7 +71,7 @@ public class ErrorMessageTypeTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
         serverConfigurationManager.restoreToLastConfiguration();
     }
 

@@ -71,7 +71,7 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiT
         driver = BrowserManager.getWebDriver();
 
         apiStoreUrl = getStoreURL();
-        this.logViewerClient = new LogViewerClient(gatewayContext.getContextUrls().getBackEndUrl(),
+        this.logViewerClient = new LogViewerClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                    TEST_DATA_USERNAME, TEST_DATA_PASSWORD);
 
     }
@@ -187,8 +187,8 @@ public class APIMANAGER3272ExternalLogoutPageTestCase extends APIMIntegrationUiT
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }

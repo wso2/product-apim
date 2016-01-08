@@ -5,7 +5,7 @@
     <parent>
         <artifactId>org.wso2.carbon.am.integration.test</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -55,10 +55,8 @@
                         <carbon.zip>
                             ${basedir}/../../../distribution/product/target/wso2am-${project.version}.zip
                         </carbon.zip>
-                        <emma.home>${basedir}/target/emma</emma.home>
                         <instr.file>${basedir}/src/test/resources/instrumentation.txt</instr.file>
                         <filters.file>${basedir}/src/test/resources/filters.txt</filters.file>
-                        <emma.output>${basedir}/target/emma</emma.output>
                     </systemProperties>
                     <workingDirectory>${basedir}/target</workingDirectory>
                 </configuration>
@@ -67,16 +65,15 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-emma-dependencies</id>
+                        <id>copy-jacoco-dependencies</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/emma</outputDirectory>
+                            <outputDirectory>${project.build.directory}/jacoco</outputDirectory>
                             <includeTypes>jar</includeTypes>
-                            <includeArtifactIds>emma,org.wso2.carbon.automation.core
-                            </includeArtifactIds>
+                            <includeArtifactIds>org.jacoco.agent</includeArtifactIds>
                         </configuration>
                     </execution>
                     <execution>
@@ -232,10 +229,20 @@
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.common.test.utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.automationutils</groupId>
             <artifactId>org.wso2.carbon.integration.common.utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
         </dependency>
     </dependencies>
 

@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>org.wso2.apimgt.nested.categories</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -245,13 +245,13 @@
                                     org.jaggeryjs.modules.i18n:${i18n.feature.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.gateway:${apim.version}
+                                    org.wso2.carbon.apimgt.gateway:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.core:${apimgt.feature.version}
+                                    org.wso2.carbon.apimgt.core:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
-                                    org.wso2.carbon.apimgt.store:${apimgt.feature.version}
+                                    org.wso2.carbon.apimgt.store:${carbon.apimgt.version}
                                 </importFeatureDef>
                                 <importFeatureDef>
                                     org.wso2.carbon.registry.extensions:${carbon.governance.version}
@@ -380,10 +380,10 @@
      				    org.wso2.carbon.bam.service.agent:${carbon.deployment.version}
 				</importFeatureDef>
 				<!--importFeatureDef>
-     				    org.wso2.carbon.apimgt.authenticator.oidc:${apimgt.oidc.version}
+     				    org.wso2.carbon.apimgt.authenticator.oidc:${carbon.apimgt.version}
 				</importFeatureDef>
 				<importFeatureDef>
-     				    org.wso2.carbon.apimgt.hostobjects.oidc:${apimgt.oidc.version}
+     				    org.wso2.carbon.apimgt.hostobjects.oidc:${carbon.apimgt.version}
 				</importFeatureDef-->
 				<importFeatureDef>
                                     org.wso2.carbon.tenant.mgt.common:${carbon.commons.version}

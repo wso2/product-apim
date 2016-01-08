@@ -1,5 +1,4 @@
 <%
-<%
 // Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
@@ -52,10 +51,10 @@ print("==");
 print(storeHostObj.getUserFields());
 print("==");
 //9
-print(storeHostObj.searchPaginatedAPIsByType("HostObjectTestAPI","carbon.super","0","10"));
+print(storeHostObj.searchPaginatedAPIsByType("HostObjectTestAPI","wso2.com","0","10"));
 print("==");
 //10
-print(storeHostObj.searchPaginatedAPIsByType("name:*","carbon.super","0","10"));
+print(storeHostObj.searchPaginatedAPIsByType("name:*","wso2.com","0","10"));
 print("==");
 //11
 print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
@@ -67,13 +66,13 @@ print("==");
  print(storeHostObj.removeAPIRating("admin@wso2.com","HostObjectTestAPI","1.0.0"));
  print("=="); 
 //14
-print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10")); 
+print(storeHostObj.getAllPaginatedPublishedAPIs("wso2.com","0","10")); 
 print("=="); 
 //15
 print(storeHostObj.getAPIsWithTag("youtube")); 
 print("=="); 
 //16
-print(storeHostObj.getAllPublishedAPIs("carbon.super"));
+print(storeHostObj.getAllPublishedAPIs("wso2.com"));
  print("=="); 
 //17
  print(storeHostObj.isUserExists("admin@wso2.com"));
@@ -98,7 +97,7 @@ print("=="); 
 print(storeHostObj.updateApplicationTier("DefaultApplication","gold","admin@wso2.com"));
  print("=="); 
 //24
-print(storeHostObj.updateApplication("DefaultApplicationTest","DefaultApplication","admin@wso2.com","gold","test-url","updated-application")); 
+print(storeHostObj.updateApplication("DefaultApplication","DefaultApplication","admin@wso2.com","gold","test-url","updated-application")); 
 print("=="); 
 //25
 print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
@@ -106,6 +105,4 @@ print(storeHostObj.validateWFPermission("Basic YWRtaW46YWRtaW4="));
 //26
 print(storeHostObj.isEnableEmailUsername()); 
 print("=="); 
-
-%>
 %>

@@ -93,6 +93,8 @@
                           class="org.apache.axis2.transport.http.MultipartFormDataFormatter"/>
         <messageFormatter contentType="application/xml"
                           class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
+        <messageFormatter contentType="text/html"
+                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="text/xml"
                          class="org.apache.axis2.transport.http.SOAPMessageFormatter"/>
         <messageFormatter contentType="application/soap+xml"
@@ -153,6 +155,8 @@
     <messageBuilders>
         <messageBuilder contentType="application/xml"
                         class="org.apache.axis2.builder.ApplicationXMLBuilder"/>
+        <messageBuilder contentType="text/html"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
         <messageBuilder contentType="application/x-www-form-urlencoded"
                         class="org.apache.synapse.commons.builders.XFormURLEncodedBuilder"/>
         <messageBuilder contentType="multipart/form-data"

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EventStoreConfiguration>
+<Source>
+       <StreamId>org.wso2.apimgt.statistics.throttle:1.0.0</StreamId>
+   </Source>
+   <TableSchema>
+
+<ColumnDefinition>
+	<Name>meta_clientType</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>accessToken</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>userId</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>tenantDomain</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>api</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>api_version</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>context</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>apiPublisher</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>throttledTime</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>LONG</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>applicationName</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+	<Name>applicationId</Name>
+	<EnableIndexing>true</EnableIndexing>
+	<IsPrimaryKey>false</IsPrimaryKey>
+	<EnableScoreParam>false</EnableScoreParam>
+	<Type>STRING</Type>
+</ColumnDefinition>
+<ColumnDefinition>
+   <Name>throttledOutReason</Name>
+   <EnableIndexing>true</EnableIndexing>
+   <IsPrimaryKey>false</IsPrimaryKey>
+   <EnableScoreParam>false</EnableScoreParam>
+   <Type>STRING</Type>
+</ColumnDefinition>
+   </TableSchema>
+   </EventStoreConfiguration>

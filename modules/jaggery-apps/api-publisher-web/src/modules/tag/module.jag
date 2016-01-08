@@ -1,8 +1,0 @@
-<%
-jagg.module("tag", {
-
-    getAllTags:function () {
-        return jagg.require(jagg.getModulesDir() + "tag/tag-list.jag").getAllTags.apply(this, arguments);
-    }
-});
-%>

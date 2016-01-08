@@ -1,9 +1,0 @@
-<%
-jagg.initializer("api/provider-apis", {
-
-    preInitialize:function () {
-
-    }
-
-});
-%>

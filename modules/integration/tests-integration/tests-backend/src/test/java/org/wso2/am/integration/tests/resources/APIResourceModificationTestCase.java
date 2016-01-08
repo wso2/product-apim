@@ -25,10 +25,12 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -39,6 +41,7 @@ import static org.testng.Assert.assertEquals;
 public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStoreRestClient;
     private String APIName = "APIResourceTestAPI";
     private String APIVersion = "1.0.0";
     private String providerName = "";
@@ -48,12 +51,23 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         this.userMode = userMode;
     }
 
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttps();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
+
+        providerName = user.getUserName();
     }
 
     @Test(groups = {"wso2.am"}, description = "add scope to resource test case")
@@ -65,8 +79,8 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         String description = "This is test API create by API manager integration test";
 
         //add all option methods
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(user.getUserName(),
+                user.getPassword());
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
@@ -82,6 +96,10 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         // resource are modified by using swagger doc. create the swagger doc
         // with modified
@@ -99,6 +117,8 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
+        apiStoreRestClient.waitForSwaggerDocument(providerName, APIName, APIVersion, "Unlimited", executionMode);
+
         JSONObject jsonObject = new JSONObject(response.getData());
         boolean error = (Boolean) jsonObject.get("error");
         assertEquals(error, false, "Modifying resources failed for API");
@@ -106,16 +126,5 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
-    }
-
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
     }
 }

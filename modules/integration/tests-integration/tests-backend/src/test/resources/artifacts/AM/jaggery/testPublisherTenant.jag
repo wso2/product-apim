@@ -30,7 +30,7 @@ print("==");
 print(publisherHostObj.validateRoles('admin', 'admin'));
 print("==");
 //2
-print(publisherHostObj.isURLValid("https","https://www.google.com"));
+print(publisherHostObj.isURLValid("https","https://www.google.com","admin@wso2.com","HostObjectTestAPI","1.0.0"));
 print("==");
 //3
 print(publisherHostObj.getAPIsByProvider("admin@wso2.com"));
@@ -78,10 +78,10 @@ print("==");
 print(publisherHostObj.getAuthServerURL());
 print("==");
 //18
-print(publisherHostObj.getCustomInSequences());
+print(publisherHostObj.getCustomInSequences("HostObjectTestAPI", "1.0.0", "admin@wso2.com"));
 print("==");
 //19
-print(publisherHostObj.getCustomOutSequences());
+print(publisherHostObj.getCustomOutSequences("HostObjectTestAPI", "1.0.0", "admin@wso2.com"));
 print("==");
 //20
 print(publisherHostObj.getHTTPsURL());
@@ -90,7 +90,7 @@ print("==");
 print(publisherHostObj.isSynapseGateway());
 print("==");
 //22
-print(publisherHostObj.loadRegistryOfTenant("carbon.super"));
+print(publisherHostObj.loadRegistryOfTenant("wso2.com"));
 print("==");
 //23
 print(publisherHostObj.searchAccessTokens("*:*"));
@@ -111,7 +111,7 @@ print("==");
 var tierData = {};
 tierData["tierName"] = "Gold";
 tierData["permissiontype"] = "Deny";
-tierData["roles"] = "admin@wso2.com";
+tierData["roles"] = "admin";
 //26
 print(publisherHostObj.updateTierPermissions(tierData));
 print("==");

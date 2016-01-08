@@ -1,8 +1,0 @@
-<%
-jagg.initializer("tiers", {
-
-     preInitialize:function () {
-     jagg.addHeaderJS("tiers", "tiers", "templates/tiers/js/tiers.js");
-    }
-});
-%>

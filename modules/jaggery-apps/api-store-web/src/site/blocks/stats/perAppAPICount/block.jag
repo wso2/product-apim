@@ -1,8 +1,0 @@
-<%
-jagg.block("stats/perAppAPICount", {
-    initializer:function (data) {
-
-    }
-
-});
-%>
