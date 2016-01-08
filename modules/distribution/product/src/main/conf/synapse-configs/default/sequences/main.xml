@@ -49,6 +49,7 @@
             <property name="Host" scope="transport" action="remove"/>
             <property name="Accept" scope="transport" action="remove"/>
             <send/>
+            <drop/>
         </filter>
         <filter source="get-property('MESSAGE_FORMAT')" regex="soap1[1-2]">
             <then>
@@ -74,7 +75,7 @@
                 </payloadFactory>
             </else>
         </filter>
-        <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT)).*$">
+        <filter source="$axis2:HTTP_METHOD" regex="^(?!.*(POST|PUT|PATCH)).*$">
             <property name="messageType" value="application/xml" scope="axis2"/>
         </filter>
         <property name="HTTP_SC" value="404" scope="axis2"/>

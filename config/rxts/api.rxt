@@ -64,6 +64,13 @@
                 <value>Non Secured</value>             
             </values>
         </field>
+        <field type="options">
+            <name label="Endpoint Auth Type">Endpoint Auth Type</name>
+            <values>
+                <value>Basic</value>
+                <value>Digest</value>
+            </values>
+        </field>
         <field type="text" url="true">
             <name>Endpoint URL</name>
         </field>
@@ -191,6 +198,7 @@
                                 <value>POST</value>
                                 <value>PUT</value>
                                 <value>DELETE</value>
+                                <value>PATCH</value>
                                 <value>OPTIONS</value>
                             </values>
                         </field>

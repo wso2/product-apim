@@ -1,8 +1,0 @@
-<%
-jagg.block("stats/api-usage-resource-path", {
-    initializer:function (data) {
-
-    }
-
-});
-%>

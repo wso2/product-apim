@@ -25,6 +25,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -53,8 +54,8 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
@@ -65,11 +66,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                        storeContext.getContextTenant().getContextUser().getPassword());
 
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
-        } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
-        }
+        gatewayUrl = getAPIInvocationURLHttp("");
 
     }
 
@@ -102,7 +99,9 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
-        Thread.sleep(2000);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         /*HttpResponse youTubeResponse = HttpRequestUtil.doGet(
                   getApiInvocationURLHttp("youtube/1.0.0/most_popular"), requestHeaders);*/
 

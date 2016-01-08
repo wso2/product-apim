@@ -24,8 +24,10 @@ import org.apache.commons.net.telnet.TelnetClient;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.integration.common.extensions.carbonserver.MultipleServersManager;
+import org.wso2.carbon.automation.extensions.servers.carbonserver.MultipleServersManager;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -39,6 +41,7 @@ import static org.testng.Assert.assertEquals;
   This test class can be used to identify required osgi component service
   (eg: unsatisfied) in server startup
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class OSGIServerBundleStatusTestCase {
 
     private static final Log log = LogFactory.getLog(OSGIServerBundleStatusTestCase.class);
@@ -53,7 +56,7 @@ public class OSGIServerBundleStatusTestCase {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         // to start the server from a different port offset
-        serverPropertyMap.put("-DportOffset", "1");
+        serverPropertyMap.put("-DportOffset", "510");
         // start with OSGI component service
         serverPropertyMap.put("-DosgiConsole", Integer.toString(telnetPort));
         AutomationContext autoCtx = new AutomationContext();

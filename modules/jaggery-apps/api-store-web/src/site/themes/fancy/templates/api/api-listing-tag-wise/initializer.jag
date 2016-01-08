@@ -1,8 +1,0 @@
-<%
-jagg.initializer("api/api-listing-tag-wise", {
-
-    preInitialize:function () {
-
-    }
-});
-%>

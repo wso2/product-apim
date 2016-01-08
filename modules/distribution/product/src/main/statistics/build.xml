@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="create-toolboxes" default="zip" basedir=".">
+<project name="create-capp" default="zip" basedir=".">
 
 	<property name="project-name" value="${ant.project.name}" />
 	<property name="target-dir" value="target" />
 
-	<property name="API_Manager_Analytics_dir" value="API_Manager_Analytics" />
-	<property name="API_Manager_Analytics_oracle_dir" value="API_Manager_Analytics_Oracle" />
+	<property name="API_Manager_Analytics_dir" value="API_Manager_Analytics_REST" />
+	<property name="API_Manager_Analytics_rdbms_dir" value="API_Manager_Analytics_RDBMS" />
+	<property name="migration-1.9.0_to_1.10.0_dir" value="APIM_MIGRATION-1.9.0_to_1.10.0" />
+
+	<property name="stream_definition_dir" value="streams" />
+	<property name="rest_scripts_dir" value="scripts/rest" />
+	<property name="rdbms_scripts_dir" value="scripts/rdbms" />
+	<property name="migration_scripts_dir" value="scripts/migration/APIM_Migration_1.9.0_to_1.10.0" />
 
 	<target name="clean">
 		<delete dir="${target-dir}" />
@@ -17,11 +23,16 @@
 	</target>
 
 	<target name="zip" depends="clean,pre-configure">
-		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.tbox">
-		  	<zipfileset dir="${API_Manager_Analytics_dir}" prefix="${API_Manager_Analytics_dir}"/> 
+		<zip destfile="${target-dir}/${API_Manager_Analytics_dir}.car">
+		  	<zipfileset dir="${stream_definition_dir}" />
+			<zipfileset dir="${rest_scripts_dir}" />
 		</zip>
-                <zip destfile="${target-dir}/${API_Manager_Analytics_oracle_dir}.tbox">
-		  	<zipfileset dir="${API_Manager_Analytics_oracle_dir}" prefix="${API_Manager_Analytics_oracle_dir}"/> 
+		<zip destfile="${target-dir}/${API_Manager_Analytics_rdbms_dir}.car">
+			<zipfileset dir="${stream_definition_dir}" />
+			<zipfileset dir="${rdbms_scripts_dir}" />
+		</zip>
+		<zip destfile="${target-dir}/${migration-1.9.0_to_1.10.0_dir}.car">
+			<zipfileset dir="${migration_scripts_dir}" />
 		</zip>
 	</target>
 

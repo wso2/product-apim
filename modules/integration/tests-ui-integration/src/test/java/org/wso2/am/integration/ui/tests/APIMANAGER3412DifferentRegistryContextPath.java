@@ -76,8 +76,8 @@ public class APIMANAGER3412DifferentRegistryContextPath extends APIMIntegrationU
         WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.get(getLoginURL());
         LoginPage login = new LoginPage(driver);
-        login.loginAs(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword());
+        login.loginAs(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                      gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         TenantHomePage addNewTenantHome = new TenantHomePage(driver);
 
         String firstName = "admin";

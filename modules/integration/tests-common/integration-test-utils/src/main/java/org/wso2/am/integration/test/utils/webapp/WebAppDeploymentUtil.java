@@ -23,7 +23,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.List;
@@ -98,6 +102,42 @@ public class WebAppDeploymentUtil {
             }
         }
         return isWebAppDeployed;
+    }
+
+    /**
+     * Verify whether AM_MONITORING_WEB_APP is deployed or not
+     * @param webAppURL - Backend URL of the webApp (not need to include webApp name or context)
+     *
+     */
+    public static void isMonitoringAppDeployed(String webAppURL) {
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + (WEB_APP_DEPLOYMENT_DELAY);
+        HttpResponse response = null;
+
+        while (waitTime > System.currentTimeMillis()) {
+            try {
+                response = HttpRequestUtil.sendGetRequest(
+                        webAppURL + "/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
+                        "/web_app_status/webapp-info/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", null);
+
+            } catch (IOException ignore) {
+                log.info("WAIT for webapp deployment  :" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
+                         " with expected response : " + APIMIntegrationConstants.IS_WEB_APP_EXISTS);
+            }
+
+            if (response != null) {
+                if (response.getData().contains(APIMIntegrationConstants.IS_WEB_APP_EXISTS)) {
+                    log.info("WEB_APP :" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
     }
 
 }

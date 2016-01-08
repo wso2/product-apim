@@ -30,6 +30,8 @@ import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -45,6 +47,7 @@ import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;
@@ -64,8 +67,8 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         ServerConfigurationManager serverConfigurationManager;
         super.init();
 
-        userName = gatewayContext.getContextTenant().getTenantAdmin().getUserName();
-        password = gatewayContext.getContextTenant().getTenantAdmin().getPassword();
+        userName = keyManagerContext.getContextTenant().getTenantAdmin().getUserName();
+        password = keyManagerContext.getContextTenant().getTenantAdmin().getPassword();
 
 
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -77,7 +80,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String userMgtXml = getAMResourceLocation() + File.separator + "configFiles/emailusernamejwttest/" +
                             "user-mgt.xml";
 
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContext);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(apiManagerXml));
         serverConfigurationManager.applyConfiguration(new File(userMgtXml));
 
@@ -111,7 +114,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String requestBody =
                 "grant_type=password&username=" + userName + "&password=" +
                 password;
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse =
                 new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                                                               consumerSecret, requestBody,
@@ -122,7 +125,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -156,13 +159,13 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String userName = "admin@wso2.com";
         String password = "admin123";
         UserManagementClient userManagementClient =
-                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "admin", "admin");
+                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "admin", "admin");
         userManagementClient
                 .addUser(userName, password, new String[]{"Internal/subscriber"}, "admin2");
         String requestBody = "grant_type=password&username=" + userName + "@" +
                              MultitenantConstants.SUPER_TENANT_DOMAIN_NAME + "&password=" +
                              password;
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse =
                 new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                                                               consumerSecret, requestBody,
@@ -173,7 +176,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -213,15 +216,15 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String fullUserName = userName + "@" + domainName;
         boolean isSuccessful =
                 createTenantWithEmailUserName(userName, password,
-                                              domainName, gatewayContext.getContextUrls().getBackEndUrl());
+                                              domainName, keyManagerContext.getContextUrls().getBackEndUrl());
         assertEquals(isSuccessful, true);
         UserManagementClient userManagementClient =
-                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), fullUserName, password);
+                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), fullUserName, password);
         userManagementClient
                 .addRemoveRolesOfUser(fullUserName, new String[]{"Internal/subscriber"}, null);
         String requestBody =
                 "grant_type=password&username=" + fullUserName + "&password=" + password;
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse =
                 new JSONObject(apiStore.generateUserAccessKey(consumerKey,
                                                               consumerSecret, requestBody,
@@ -232,7 +235,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -272,13 +275,13 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String domainName = "adc.com";
         String fullUserName = userNameWithEmail + "@" + domainName;
         UserManagementClient userManagementClient =
-                new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
+                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
         userManagementClient
                 .addUser(userNameWithEmail, password, new String[]{"Internal/subscriber"},
                          "abc");
         String requestBody =
                 "grant_type=password&username=" + fullUserName + "&password=" + password;
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
 
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
@@ -289,7 +292,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
         WireMonitorServer wireServer = new WireMonitorServer(6789);
         wireServer.start();
-        HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
+        HttpRequestUtil.doGet(gatewayUrlsWrk.getWebAppURLNhttp() + "test/1.0.0/", requestHeaders);
         String wireLog = wireServer.getCapturedMessage();
         if (wireLog.contains("JWT-Assertion: ")) {
             wireLog = wireLog.split("JWT-Assertion: ")[1];
@@ -349,18 +352,14 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
             if (!tenantInfoBeanGet.getActive() && tenantInfoBeanGet.getTenantId() != 0) {
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName + " Activated successfully");
                 log.info("Tenant domain " + domainName + " Activated successfully");
 
             } else if (!tenantInfoBeanGet.getActive()) {
                 tenantMgtAdminServiceStub.addTenant(tenantInfoBean);
                 tenantMgtAdminServiceStub.activateTenant(domainName);
-                System.out.println("Tenant domain " + domainName +
-                                   " created and activated successfully");
                 log.info("Tenant domain " + domainName + " created and activated successfully");
                 isSuccess = true;
             } else {
-                System.out.println("Tenant domain " + domainName + " already registered");
                 log.info("Tenant domain " + domainName + " already registered");
             }
         } catch (RemoteException e) {
@@ -375,7 +374,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
     }
 
 }

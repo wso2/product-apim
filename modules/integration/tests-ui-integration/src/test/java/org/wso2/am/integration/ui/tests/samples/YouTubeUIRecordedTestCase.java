@@ -70,9 +70,9 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
         WebDriverWait wait = new WebDriverWait(driver, 60);
         driver.findElement(By.id("username")).clear();
-        driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+        driver.findElement(By.id("username")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("pass")).clear();
-        driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        driver.findElement(By.id("pass")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         driver.findElement(By.id("loginButton")).click();
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add")));
@@ -135,9 +135,9 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("login-link")));
         driver.findElement(By.id("login-link")).click();
         driver.findElement(By.id("username")).clear();
-        driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+        driver.findElement(By.id("username")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getUserName());
         driver.findElement(By.id("password")).clear();
-        driver.findElement(By.id("password")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+        driver.findElement(By.id("password")).sendKeys(gatewayContextMgt.getContextTenant().getContextUser().getPassword());
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("loginBtn")));
         driver.findElement(By.id("loginBtn")).click();
 
@@ -223,8 +223,8 @@ public class YouTubeUIRecordedTestCase extends APIMIntegrationUiTestBase {
 
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
-        TestUtil.cleanUp(gatewayContext.getContextTenant().getContextUser().getUserName(),
-                         gatewayContext.getContextTenant().getContextUser().getPassword(),
+        TestUtil.cleanUp(gatewayContextMgt.getContextTenant().getContextUser().getUserName(),
+                         gatewayContextMgt.getContextTenant().getContextUser().getPassword(),
                          storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
         driver.quit();
     }

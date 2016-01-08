@@ -30,7 +30,7 @@ print("==");
 print(publisherHostObj.validateRoles('admin', 'admin'));
 print("==");
 //2
-print(publisherHostObj.isURLValid("https","https://www.google.com"));
+print(publisherHostObj.isURLValid("https","https://www.google.com","admin","HostObjectTestAPI","1.0.0"));
 print("==");
 //3
 print(publisherHostObj.getAPIsByProvider("admin"));
@@ -78,10 +78,10 @@ print("==");
 print(publisherHostObj.getAuthServerURL());
 print("==");
 //18
-print(publisherHostObj.getCustomInSequences());
+print(publisherHostObj.getCustomInSequences("HostObjectTestAPI", "1.0.0", "admin"));
 print("==");
 //19
-print(publisherHostObj.getCustomOutSequences());
+print(publisherHostObj.getCustomOutSequences("HostObjectTestAPI", "1.0.0", "admin"));
 print("==");
 //20
 print(publisherHostObj.getHTTPsURL());

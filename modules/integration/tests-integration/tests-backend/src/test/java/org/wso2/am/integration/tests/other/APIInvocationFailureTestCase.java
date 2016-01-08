@@ -21,6 +21,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -48,14 +49,14 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init();
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
         // create a tenant
         TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
+                publisherContext.getContextUrls().getBackEndUrl(), createSession(publisherContext));
 
         tenantManagementServiceClient.addTenant(tenantDomain,
-                gatewayContext.getContextTenant().getTenantAdmin().getPassword(),
-                gatewayContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+                publisherContext.getContextTenant().getTenantAdmin().getPassword(),
+                publisherContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
     }
 
 
@@ -89,10 +90,12 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
 
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
-        Thread.sleep(2000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + "t/" + tenantDomain + "/" +
-                APIContext + "/" + APIVersion + "/most_popular", requestHeaders);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
+                                                             + "/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("900901"), "Error code mismach");
@@ -107,11 +110,11 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
         String tags = "youtube, token, media";
         String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
         String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName();
+        String providerName = publisherContext.getSuperTenant().getTenantAdmin().getUserName();
         String APIVersion = "1.0.0";
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getTenantAdmin().getUserName(),
-                publisherContext.getContextTenant().getTenantAdmin().getPassword());
+        apiPublisher.login(publisherContext.getSuperTenant().getTenantAdmin().getUserName(),
+                publisherContext.getSuperTenant().getTenantAdmin().getPassword());
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
@@ -127,10 +130,13 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
-        Thread.sleep(2000);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrls.getWebAppURLNhttp() + APIContext +
-                "/" + APIVersion + "/most_popular", requestHeaders);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
+
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
+                                                             + "/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                 "Response code mismatched when api invocation");
         assertTrue(youTubeResponse.getData().contains("900901"), "Error code mismach");
@@ -139,8 +145,6 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
     }
 }

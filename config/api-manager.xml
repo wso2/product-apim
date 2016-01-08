@@ -56,7 +56,13 @@
         <!--
             Admin password for the Authentication manager.
         -->
-        <Password>${admin.password}</Password>
+	<Password>${admin.password}</Password>
+
+	<!-- 
+	   Indicates whether the permissions checking of the user (on the Publisher and Store) should be done
+	   via a remote service. The check will be done on the local server when false.	
+	-->
+	<CheckPermissionsRemotely>false</CheckPermissionsRemotely>
     </AuthManager>
 
     <!--
@@ -101,10 +107,19 @@
 	 -->
 	<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.JWTGenerator</TokenGeneratorImpl>
 
+        <!--
+            This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
+        Token generation the implementation is provided in URLSafeJWTGenerator
+        -->
+    <!--<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.URLSafeJWTGenerator</TokenGeneratorImpl>-->
+
 	<!--
 		Remove OAuth headers from outgoing message or keep with it.
 	-->
 	<!--RemoveOAuthHeadersFromOutMessage>true</RemoveOAuthHeadersFromOutMessage-->
+
+        <!-- Provide the claims Cache expiry in seconds -->
+        <!--APIMClaimCacheExpiry>900</APIMClaimCacheExpiry-->
     </APIConsumerAuthentication>
 
     <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
@@ -130,7 +145,8 @@
 		<!-- Environments can be of different types. Allowed values are 'hybrid', 'production' and 'sandbox'.
 		     An API deployed on a 'production' type gateway will only support production keys
 		     An API deployed on a 'sandbox' type gateway will only support sandbox keys
-		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys -->
+		     An API deployed on a 'hybrid' type gateway will support both production and sandbox keys. -->
+		<!-- api-console element specifies whether the environment should be listed in API Console or not -->
                 <Environment type="hybrid" api-console="true">
                         <Name>Production and Sandbox</Name>
                     <Description> Description of environment</Description>
@@ -171,15 +187,58 @@
     </APIGateway>
 
      <!--
-	    Enable/Disable Usage metering and billing for api usage
+	    From API Manager 1.10 onward billing sample will not zip with product anymore.
+	    We suggest users to use new monotization extensions provided.
+	    So removed billing sample and its configuration from pack
      -->
-     <EnableBillingAndUsage>false</EnableBillingAndUsage>
 
     <!--
-        API usage tracker configuration used by the BAM data publisher and
+        API usage tracker configuration used by the DAS data publisher and
         Google Analytics publisher in API gateway.
     -->
     <APIUsageTracking>
+
+        <!--
+            Below property is used to enable API Manager analytics configuration via api-manager.xml
+            Enabling analytics via a configuration file can be useful in scenarios such as automated deployments where
+            UI integration is inconvenient.
+
+            If you uncomment this property, analytics configurations added via admin-dashboard UI will
+            get overwritten by tha configuration details provided below when you restart the server.
+        -->
+        <!--Enabled>false</Enabled-->
+
+        <!--
+            Server URL of the remote DAS/CEP server used to collect statistics. Must
+            be specified in protocol://hostname:port/ format.
+
+            An event can also be published to multiple Receiver Groups each having 1 or more receivers. Receiver
+            Groups are delimited by curly braces whereas receivers are delimited by commas.
+        Ex - Multiple Receivers within a single group
+         tcp://localhost:7612/,tcp://localhost:7613/,tcp://localhost:7614/
+        Ex - Multiple Receiver Groups with two receivers each
+                 {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/}
+        -->
+        <DASServerURL>{tcp://localhost:7612/}</DASServerURL>
+
+        <!--
+            Administrator username to login to the remote DAS server.
+        -->
+        <DASUsername>admin</DASUsername>
+
+        <!--
+            Administrator password to login to the remote DAS server.
+        -->
+        <DASPassword>admin</DASPassword>
+
+        <!--
+            DAS REST API configuration
+                Set the values if .'org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl'
+                is used as Statistic Client
+        -->
+        <DASRestApiURL>https://localhost:9444</DASRestApiURL>
+        <DASRestApiUsername>admin</DASRestApiUsername>
+        <DASRestApiPassword>admin</DASRestApiPassword>
 
         <!--
             Below property is used to skip trying to connect to event receiver nodes when publishing events even if
@@ -250,17 +309,14 @@
             Admin password for API key manager.
         -->
         <Password>${admin.password}</Password>
-        <!--
-            Enable/Disable JWT caching.
-        -->
-        <EnableJWTCache>false</EnableJWTCache>
 
         <!--
             Enable/Disable API key validation information caching at key-management server
         -->
 
         <EnableKeyMgtValidationInfoCache>false</EnableKeyMgtValidationInfoCache>
-
+        <!-- Expiry time for the apim key mgt validation info cache -->
+        <!--APIMKeyCacheExpiry>900</APIMKeyCacheExpiry-->
         <!--
         Configurations related to enable thrift support for key-management related communication.
         If you want to switch back to Web Service Client, change the value of "KeyValidatorClientType" to "WSClient".
@@ -300,7 +356,6 @@
             <Scope>^device_.*</Scope>
             <Scope>openid</Scope>
         </ScopeWhitelist-->
-
 	<!-- Name of the token API -->
 	<TokenEndPointName>/oauth2/token</TokenEndPointName>
 
@@ -357,6 +412,20 @@
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
         <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
+
+	<!--
+            Server URL of the API Store.
+        -->
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <!--
+            Admin username for API Store.
+        -->
+        <Username>${admin.username}</Username>
+
+        <!--
+            Admin password for API Store.
+        -->
+        <Password>${admin.password}</Password>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
@@ -476,17 +545,6 @@
 
     </StartupAPIPublisher>
 
-
-
-    <!--
-	When an API is invoked, a list of handlers get engaged to its execution flow. This
-	property defines the position of the Extension Handler.
-	Supported values: top, bottom
-	Defaults to: bottom
-    -->
-    <!--ExtensionHandlerPosition>top|bottom</ExtensionHandlerPosition-->
-
-
     <!--Configuration to enable/disable sending CORS headers in the Gateway response
         and define the Access-Control-Allow-Origin header value.-->
     <CORSConfiguration>
@@ -499,14 +557,26 @@
 	<Access-Control-Allow-Origin>*</Access-Control-Allow-Origin>
 
 	<!--Configure Access-Control-Allow-Methods-->
-	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,OPTIONS</Access-Control-Allow-Methods>
+	<Access-Control-Allow-Methods>GET,PUT,POST,DELETE,PATCH,OPTIONS</Access-Control-Allow-Methods>
 
 	<!--Configure Access-Control-Allow-Headers-->
 	<Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
+
+    <!--Configure Access-Control-Allow-Credentials-->
+    <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.
+         It is false by default and if you set it to true then make sure that the Access-Control-Allow-Origin header does not contain the wildcard (*)
+    -->
+    <Access-Control-Allow-Credentials>false</Access-Control-Allow-Credentials>
 
     </CORSConfiguration>
    <!-- This property is there to configure velocity log output into existing Log4j carbon Logger.
  	You can enable this and set preferable Logger name. 
    -->
    <!--VelocityLogger>VELOCITY</VelocityLogger-->
+
+    <!-- For APIM implemented Statistic client for DAS REST API -->
+    <StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRestClientImpl</StatisticClientProvider>
+    <!-- For APIM implemented Statistic client for RDBMS -->
+    <!--StatisticClientProvider>org.wso2.carbon.apimgt.usage.client.impl.APIUsageStatisticsRdbmsClientImpl</StatisticClientProvider-->
+
 </APIManager>

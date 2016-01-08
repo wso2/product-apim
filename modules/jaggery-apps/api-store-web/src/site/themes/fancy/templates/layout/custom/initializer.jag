@@ -1,8 +1,0 @@
-<%
-jagg.initializer("layout/custom", {
-
-    preInitialize:function () {
-
-    }
-});
-%>

@@ -1,0 +1,136 @@
+{
+	"testCase": [
+	    {
+			"init": {
+				"scope": "apim:subscribe"
+			},
+			"data": {
+				"method": "POST",
+				"url": "/api/am/store/v0.9//applications",
+				"query-parameters": "",
+				"request-headers": {
+					"Authorization": "Bearer",
+					"Content-Type": "application/json"
+				},
+				"request-payload":
+				    "{\n
+                        \"name\": \"TestApp\",\n   \"keys\": [],\n
+                        \"applicationId\": \"9fade8f8-89b4-48a5-b1c2-12640d088020\",\n   \"status\": \"APPROVED\",\n
+                        \"description\": \"This is to test.\",\n   \"throttlingTier\": \"Unlimited\",\n
+                        \"callbackUrl\": \"testURL\",\n   \"subscriber\": \"admin\",\n
+                        \"groupId\": \"testGroup\"
+                    \n}",
+				"response-headers": "",
+				"response-payload": ""
+			},
+			"asserts": {
+				"header-asserts": {
+					"status-code": "201"
+				},
+				"body-asserts": ""
+			},
+			"preserve-list": [
+			    {
+				    "attribute-name": "applicationId",
+				    "response-location": "applicationId"
+			    }
+			]
+		},
+		{
+			"init": {
+				"scope": "apim:subscribe"
+			},
+			"data": {
+				"method": "PUT",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
+				"query-parameters": "",
+				"request-headers": {
+					"Authorization": "Bearer",
+					"Content-Type": "application/json"
+				},
+				"request-payload":
+				    "{\n
+                        \"name\": \"TestApp\",\n   \"keys\": [],\n
+                        \"applicationId\": \"9fade8f8-89b4-48a5-b1c2-12640d088020\",\n   \"status\": \"APPROVED\",\n
+                        \"description\": \"Updated description.\",\n   \"throttlingTier\": \"Unlimited\",\n
+                        \"callbackUrl\": \"testURL\",\n   \"subscriber\": \"admin\",\n
+                        \"groupId\": \"testGroup\"
+                    \n}",
+				"response-headers": "",
+				"response-payload": ""
+			},
+			"asserts": {
+				"header-asserts": {
+					"status-code": "200"
+				},
+				"body-asserts": ""
+			}
+		},
+		{
+			"init": {
+				"scope": "apim:api_create"
+			},
+			"data": {
+				"method": "GET",
+				"url": "/api/am/publisher/v0.9//applications/{applicationId}",
+				"query-parameters": "",
+				"request-headers": {
+					"Authorization": "Bearer"
+				},
+				"request-payload": "",
+				"response-headers": "",
+				"response-payload": ""
+			},
+			"asserts": {
+				"header-asserts": {
+					"status-code": "200"
+				},
+				"body-asserts": ""
+			}
+		},
+		{
+			"init": {
+				"scope": "apim:subscribe"
+			},
+			"data": {
+				"method": "GET",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
+				"query-parameters": "",
+				"request-headers": {
+					"Authorization": "Bearer"
+				},
+				"request-payload": "",
+				"response-headers": "",
+				"response-payload": ""
+			},
+			"asserts": {
+				"header-asserts": {
+					"status-code": "200"
+				},
+				"body-asserts": ""
+			}
+		},
+		{
+			"init": {
+				"scope": "apim:subscribe"
+			},
+			"data": {
+				"method": "DELETE",
+				"url": "/api/am/store/v0.9//applications/{applicationId}",
+				"query-parameters": "",
+				"request-headers": {
+					"Authorization": "Bearer"
+				},
+				"request-payload":"",
+				"response-headers": "",
+				"response-payload": ""
+			},
+			"asserts": {
+				"header-asserts": {
+					"status-code": "200"
+				},
+				"body-asserts": ""
+			}
+		}
+	]
+}

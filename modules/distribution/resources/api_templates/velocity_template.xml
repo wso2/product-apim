@@ -100,7 +100,43 @@
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', '$base64unpw')" scope="transport" />
+        #if($isEndpointAuthDigest)
+
+<property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($base64unpw)" type="STRING"/>
+<property name="BACKEND_URL" value="$util.escapeXml($endpoints.get("url"))"/>
+<property name="POSTFIX" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
+<property name="HTTP_METHOD" expression="get-property('axis2', 'HTTP_METHOD')"/>
+<property name="POST_TO_URI" value="true" scope="axis2"/>
+<property name="MessageType" expression="get-property('axis2', 'messageType')"/>
+
+<enrich>
+    <source type="body" clone="true"/>
+    <target type="property" property="MessageBody"/>
+</enrich>
+
+<call>
+    <endpoint name="$ep_name">
+        <http uri-template="$util.escapeXml($endpoints.get("url"))">
+        </http>
+    </endpoint>
+</call>
+
+<class name="org.wso2.carbon.apimgt.gateway.mediators.DigestAuthMediator"/>
+
+<property name="Authorization" expression="get-property('AuthHeader')" scope="transport"/>
+<property name="messageType" expression="get-property('MessageType')" scope="axis2"/>
+<property name="HTTP_METHOD" expression="get-property('HTTP_METHOD')" scope="axis2"/>
+<property name="REST_URL_POSTFIX" expression="$ctx:POSTFIX" scope="axis2"/>
+<property name="POST_TO_URI" value="true" scope="axis2"/>
+
+<enrich>
+    <source type="property" property="MessageBody" clone="true"/>
+    <target type="body"/>
+</enrich>
+
+        #else
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$base64unpw')" scope="transport"/>
+        #end
         #end
         #end
 <send>
@@ -172,14 +208,23 @@
         #end
         </loadbalance>
         </endpoint>
+#elseif ($endpointClass == "default")
+<endpoint name="$ep_name">
+    <default>
+    </default>
+</endpoint>
         #end
         </send>
         #if($destinationBasedStatsEnabled)
+<filter source="get-property('isStatEnabled')" regex="true">
+<then>
 <bam>
 <serverProfile name="$!profileName">
     <streamConfig name="$!streamName" version="$!streamVersion"/>
 </serverProfile>
 </bam>
+</then>
+</filter>
         #end
         #end
 
@@ -189,7 +234,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
+<resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     <payloadFactory>
         <format>
@@ -215,14 +260,14 @@
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-        uri-template="$resource.getUriTemplate()"
+        uri-template="$util.escapeXml($resource.getUriTemplate())"
         #else
         url-mapping="$resource.getUriTemplate()"
         #end
         methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
 ## check and set jwt
-#if($jwtIsEnabled)
+#if($jwtIsEnabled && ($apiStatus != 'PROTOTYPED'))
 <class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
 #end
 ## check and set response caching
