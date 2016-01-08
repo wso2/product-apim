@@ -89,7 +89,7 @@
         </extensions>
     </build>
 
-    <distributionManagement>
+    <!--<distributionManagement>
         <repository>
             <id>wso2-maven2-repository</id>
             <name>WSO2 Maven2 Repository</name>
@@ -100,7 +100,7 @@
             <name>WSO2 Maven2 Snapshot Repository</name>
             <url>scp://dist.wso2.org/home/httpd/dist.wso2.org/snapshots/maven2/</url>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement>-->
     <!--<properties>
         <apimserver.version>1.5.0</apimserver.version>
     </properties>-->

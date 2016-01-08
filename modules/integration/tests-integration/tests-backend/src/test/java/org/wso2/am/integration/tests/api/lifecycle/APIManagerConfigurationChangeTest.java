@@ -32,6 +32,7 @@ import java.io.File;
 /**
  * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
  * jaxrs_basic - Provides rest backend to run tests
+ * <p/>
  * APIStatusMonitor - Can be used to retrieve API deployment status in worker and manager nodes
  */
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
@@ -40,37 +41,45 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     @BeforeTest(alwaysRun = true)
     public void startDeployingWebAPPs() throws Exception {
         super.init();
+        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                                  File.separator + "AM" + File.separator;
 
-        String WEB_APP_FILE_NAME = "jaxrs_basic.war";
-        String WEB_APP_NAME = "jaxrs_basic";
+        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
 
-        String sourcePath =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                File.separator + "AM" + File.separator + "lifecycletest" + File.separator +
-                WEB_APP_FILE_NAME;
+        String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                                                  APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
 
-        String pathAPIStatusMonitorWar =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                File.separator + "AM" + File.separator + "war" + File.separator +
-                APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
-
-        String sessionId = createSession(gatewayContextMgt);
+        String gatewayMgtSessionId = createSession(gatewayContextMgt);
 
         WebAppAdminClient webAppAdminClient = new WebAppAdminClient(
-                gatewayContextMgt.getContextUrls().getBackEndUrl(), sessionId);
+                gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
 
-        webAppAdminClient.uploadWarFile(sourcePath);
-        webAppAdminClient.uploadWarFile(pathAPIStatusMonitorWar);
-
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      sessionId, WEB_APP_NAME);
-
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                                                      sessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
-
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
-
     }
 
     @AfterTest(alwaysRun = true)

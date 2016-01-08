@@ -1000,29 +1000,32 @@ public class APIStoreRestClient {
         long waitTime = currentTime + WAIT_TIME;
         HttpResponse response = null;
 
-        while (waitTime > System.currentTimeMillis()) {
+        if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
 
-            log.info("WAIT for swagger document of API :" + apiName + " with version: " + apiVersion
-                     + " user :" + userName + " with expected response : " + expectedResponse);
+            while (waitTime > System.currentTimeMillis()) {
 
-            try {
-                response = getSwaggerDocument(userName, apiName, apiVersion, executionMode);
-            } catch (APIManagerIntegrationTestException ignored) {
+                log.info("WAIT for swagger document of API :" + apiName + " with version: " + apiVersion
+                         + " user :" + userName + " with expected response : " + expectedResponse);
 
-            }
-            if (response != null) {
-                if (response.getData().contains(expectedResponse)) {
-                    log.info("API :" + apiName + " with version: " + apiVersion +
-                             " with expected response " + expectedResponse + " found");
-                    break;
-                }
-            } else {
                 try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {
+                    response = getSwaggerDocument(userName, apiName, apiVersion, executionMode);
+                } catch (APIManagerIntegrationTestException ignored) {
 
                 }
+                if (response != null) {
+                    if (response.getData().contains(expectedResponse)) {
+                        log.info("API :" + apiName + " with version: " + apiVersion +
+                                 " with expected response " + expectedResponse + " found");
+                        break;
+                    }
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
 
+                    }
+
+                }
             }
         }
     }

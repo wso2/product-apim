@@ -144,8 +144,6 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         endpointUrl = gatewayUrlsWrk.getWebAppURLHttp() + webApp + endpoint;
         apiProvider = publisherContext.getContextTenant().getContextUser().getUserName();
 
-
-
     }
 
     @Test(description = "Generate New Application Key")
@@ -203,16 +201,6 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         JSONObject subscriptionResponseJsonObject = new JSONObject(subscriptionResponse.getData());
         assertFalse(subscriptionResponseJsonObject.getBoolean("error"), "Subscription Response is Mismatched");
 
-        String gatewayUrl;
-        if (gatewayContextWrk.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
-        } else {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" +
-                    gatewayContextWrk.getContextTenant().getDomain() + "/";
-
-        }
-
-        String accessUrl = gatewayUrl + context + "/" + version + "/customers/123";
         APPKeyRequestGenerator appKeyRequestGenerator = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStore.generateApplicationKey(appKeyRequestGenerator).getData();
 
@@ -222,7 +210,13 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         Map<String, String> applicationHeader = new HashMap<String, String>();
         applicationHeader.put("Authorization", " Bearer " + accessToken);
         applicationHeader.put("accept", "text/xml");
-        HttpResponse apiInvokeResponse = new HttpRequestUtil().doGet(accessUrl, applicationHeader);
+
+        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),
+                apiCreationRequestBean.getName(),
+                "1.0.0",
+                APIMIntegrationConstants.IS_API_EXISTS);
+        HttpResponse apiInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp("testScopeAPI","1.0.0")
+                + "/customers/123", applicationHeader);
 
         String apiResponse = "<Customer><id>123</id><name>John</name></Customer>";
         assertEquals(apiInvokeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
