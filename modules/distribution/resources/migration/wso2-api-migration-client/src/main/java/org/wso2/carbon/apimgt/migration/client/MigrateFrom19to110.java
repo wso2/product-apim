@@ -20,30 +20,48 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
+import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
+import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
+import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
+import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.registry.api.RegistryException;
+import org.wso2.carbon.registry.core.ActionConstants;
+import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
+import org.wso2.carbon.registry.core.Resource;
+import org.wso2.carbon.registry.core.config.RegistryContext;
+import org.wso2.carbon.registry.core.jdbc.realm.RegistryAuthorizationManager;
+import org.wso2.carbon.registry.core.session.UserRegistry;
+import org.wso2.carbon.registry.core.utils.RegistryUtils;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
 import org.wso2.carbon.utils.CarbonUtils;
+import org.wso2.carbon.utils.FileUtil;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.xml.stream.XMLStreamException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -81,8 +99,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         updateAPIManangerDatabase(amScriptPath);
 
         updateAuthzUserName();
-
-        decryptEncryptedConsumerKeys();
+        
+        if (StatDBUtil.isTokenEncryptionEnabled()) {
+            decryptEncryptedConsumerKeys();
+        }
     }
 
     @Override
@@ -141,7 +161,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             while (resultSet.next()) {
                 String authzUser = resultSet.getString("AUTHZ_USER");
 
-                String usernameWithoutDomain = authzUser.split("@")[0];
+                String usernameWithoutDomain = MultitenantUtils.getTenantAwareUsername(authzUser);
 
                 AccessTokenInfo accessTokenInfo = new AccessTokenInfo(usernameWithoutDomain, authzUser);
                 updateValues.add(accessTokenInfo);
@@ -158,7 +178,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 connection = APIMgtDBUtil.getConnection();
 
                 updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ?" +
-                                                                "WHEN AUTHZ_USER = ?");
+                                                                "WHERE AUTHZ_USER = ?");
 
                 for (AccessTokenInfo accessTokenInfo : updateValues) {
                     updateStatement.setString(1, accessTokenInfo.usernameWithoutDomain);
@@ -226,33 +246,54 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             }
         }
     }
-
+    
+    
     /**
-     * This method is used to migrate rxt
+     * This method is used to migrate rxt and rxt data
      * This adds three new attributes to the api rxt
      *
      * @throws APIMigrationException
      */
     private void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager started.");
+        
+        String rxtName = "api.rxt";
+        String rxtDir = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator +
+                "19-110-migration" + File.separator + "rxts" + File.separator + rxtName;
+
+        
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start rxtMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                        
+            log.debug("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
 
-            try {
-                registryService.startTenantFlow(tenant);
-
+            try {                
+                registryService.startTenantFlow(tenant);                
+                
+                //Update api.rxt file
+                String rxt = FileUtil.readFileToString(rxtDir);
+                registryService.updateRXTResource(rxtName, rxt);                
+                log.debug("End Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                
+                log.debug("Start rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
-
                 for (GenericArtifact artifact : artifacts) {
-                    artifact.setAttribute("overview_endpointAuthType", "Basic Auth");
+                    artifact.setAttribute("overview_endpointAuthDigest", "false");
                 }
-
                 registryService.updateGenericAPIArtifacts(artifacts);
-
-                log.debug("End rxtMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.debug("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             }
             catch (GovernanceException e) {
-                log.error("Error when accessing API artifact in registry", e);
+                log.error("Error when accessing API artifact in registry for tenant "+ tenant.getId() + '(' 
+                          + tenant.getDomain() + ')', e);
+            } catch (IOException e) {
+                log.error("Error when reading api.rxt from " + rxtDir + "for tenant " + tenant.getId() + '(' 
+                          + tenant.getDomain() + ')', e);
+            } catch (org.wso2.carbon.registry.core.exceptions.RegistryException e) {
+                log.error("Error while updating api.rxt in the registry for tenant " + tenant.getId() + '(' 
+                          + tenant.getDomain() + ')', e);
+            } catch (UserStoreException e) {
+                log.error("Error while updating api.rxt in the registry for tenant " + tenant.getId() + '(' 
+                          + tenant.getDomain() + ')', e);
             }
             finally {
                 registryService.endTenantFlow();
