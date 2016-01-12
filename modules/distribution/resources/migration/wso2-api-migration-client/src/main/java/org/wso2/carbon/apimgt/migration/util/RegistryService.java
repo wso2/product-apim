@@ -21,11 +21,13 @@ package org.wso2.carbon.apimgt.migration.util;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
+import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 
 import javax.xml.stream.XMLStreamException;
+
 import java.io.FileNotFoundException;
 
 public interface RegistryService {
@@ -70,6 +72,8 @@ public interface RegistryService {
 
     void updateGovernanceRegistryResource(final String registryLocation, final String content)
             throws UserStoreException, RegistryException;
+    
+    void updateRXTResource(final String rxtName, final String content) throws UserStoreException, RegistryException;
 
     void setGovernanceRegistryResourcePermissions(String visibility, String[] roles,
                                                   String resourcePath) throws APIManagementException;
