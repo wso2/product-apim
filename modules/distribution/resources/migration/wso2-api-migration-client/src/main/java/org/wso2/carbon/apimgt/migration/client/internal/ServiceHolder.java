@@ -15,6 +15,7 @@
 */
 package org.wso2.carbon.apimgt.migration.client.internal;
 
+import org.wso2.carbon.apimgt.impl.APIManagerConfigurationService;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.registry.core.service.TenantRegistryLoader;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -29,6 +30,9 @@ public class ServiceHolder {
 
     //Tenant registry loader which is used to load tenant registry
     private static TenantRegistryLoader tenantRegLoader;
+    
+    //APIM Configuration service to read api-manager.xml
+    private static APIManagerConfigurationService amConfigurationService;
 
     /**
      * Method to get RegistryService.
@@ -82,5 +86,21 @@ public class ServiceHolder {
      */
     public static void setTenantRegLoader(TenantRegistryLoader service) {
         tenantRegLoader = service;
+    }
+    
+    /**
+     * Returns APIManagerConfigurationService
+     * @return
+     */
+    public static APIManagerConfigurationService getAPIManagerConfigurationService() {
+        return amConfigurationService;
+    }
+
+    /**
+     * Sets APIManagerConfigurationService
+     * @param amConfigurationService
+     */
+    public static void setAPIManagerConfigurationService(APIManagerConfigurationService amConfigService) {
+        amConfigurationService = amConfigService;
     }
 }

@@ -51,31 +51,39 @@ public class ResourceModifier {
 
         if (doc != null) {
             Element rootElement = doc.getDocumentElement();
+            
+            NodeList subscriptionDeletionTag = rootElement.getElementsByTagName(Constants.WF_SUBSCRIPTION_DELETION_TAG);
+            
+            if (subscriptionDeletionTag != null && subscriptionDeletionTag.getLength() == 0) {
+                Element subscriptionElement = doc.createElement(Constants.WF_SUBSCRIPTION_DELETION_TAG);
+                subscriptionElement.setAttribute(Constants.WF_EXECUTOR_ATTRIBUTE, Constants.WF_SUBSCRIPTION_DELETION_CLASS);
+                Comment subscriptionTagComment = doc.createComment(Constants.WF_SUBSCRIPTION_DELETION_TAG_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_SUBSCRIPTION_SERVICE_ENDPOINT_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_USERNAME_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_PASSWORD_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_CALLBACK_URL_COMMENT +
+                        System.lineSeparator() + Constants.WF_SUBSCRIPTION_DELETION_CLOSING_TAG_COMMENT);
+    
+    
+                rootElement.appendChild(subscriptionElement);
+                rootElement.appendChild(subscriptionTagComment);
+            }
 
-            Element subscriptionElement = doc.createElement(Constants.WF_SUBSCRIPTION_DELETION_TAG);
-            subscriptionElement.setAttribute(Constants.WF_EXECUTOR_ATTRIBUTE, Constants.WF_SUBSCRIPTION_DELETION_CLASS);
-            Comment subscriptionTagComment = doc.createComment(Constants.WF_SUBSCRIPTION_DELETION_TAG_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_SUBSCRIPTION_SERVICE_ENDPOINT_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_USERNAME_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_PASSWORD_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_CALLBACK_URL_COMMENT +
-                    System.lineSeparator() + Constants.WF_SUBSCRIPTION_DELETION_CLOSING_TAG_COMMENT);
-
-
-            rootElement.appendChild(subscriptionElement);
-            rootElement.appendChild(subscriptionTagComment);
-
-            Element applicationElement = doc.createElement(Constants.WF_APPLICATION_DELETION_TAG);
-            applicationElement.setAttribute(Constants.WF_EXECUTOR_ATTRIBUTE, Constants.WF_APPLICATION_DELETION_CLASS);
-            Comment applicationTagComment = doc.createComment(Constants.WF_APPLICATION_DELETION_TAG_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_APPLICATION_SERVICE_ENDPOINT_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_USERNAME_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_PASSWORD_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_CALLBACK_URL_COMMENT +
-                    System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_APPLICATION_DELETION_CLOSING_TAG_COMMENT);
-
-            rootElement.appendChild(applicationElement);
-            rootElement.appendChild(applicationTagComment);
+            NodeList applicationDeletionTag = rootElement.getElementsByTagName(Constants.WF_APPLICATION_DELETION_TAG);
+            
+            if (applicationDeletionTag != null && applicationDeletionTag.getLength() == 0) {
+                Element applicationElement = doc.createElement(Constants.WF_APPLICATION_DELETION_TAG);
+                applicationElement.setAttribute(Constants.WF_EXECUTOR_ATTRIBUTE, Constants.WF_APPLICATION_DELETION_CLASS);
+                Comment applicationTagComment = doc.createComment(Constants.WF_APPLICATION_DELETION_TAG_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_APPLICATION_SERVICE_ENDPOINT_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_USERNAME_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_PASSWORD_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_CALLBACK_URL_COMMENT +
+                        System.lineSeparator() + Constants.WF_COMMENT_INDENT + Constants.WF_APPLICATION_DELETION_CLOSING_TAG_COMMENT);
+    
+                rootElement.appendChild(applicationElement);
+                rootElement.appendChild(applicationTagComment);
+            }
             try {
                 doc.getDocumentElement().normalize();
                 Transformer transformer = TransformerFactory.newInstance().newTransformer();
