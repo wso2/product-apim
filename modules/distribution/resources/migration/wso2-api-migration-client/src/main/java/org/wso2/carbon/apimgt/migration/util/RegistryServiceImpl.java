@@ -18,8 +18,6 @@
 
 package org.wso2.carbon.apimgt.migration.util;
 
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
@@ -33,9 +31,10 @@ import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
-import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
 import org.wso2.carbon.governance.lcm.util.CommonUtil;
+import org.wso2.carbon.identity.base.IdentityException;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.registry.core.ActionConstants;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
@@ -46,15 +45,10 @@ import org.wso2.carbon.registry.core.jdbc.realm.RegistryAuthorizationManager;
 import org.wso2.carbon.registry.core.utils.RegistryUtils;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.utils.CarbonUtils;
-import org.wso2.carbon.utils.FileUtil;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.charset.Charset;
 
 
@@ -71,6 +65,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
         PrivilegedCarbonContext.startTenantFlow();
         PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
         this.tenant = tenant;
     }
 
@@ -268,7 +263,7 @@ public class RegistryServiceImpl implements RegistryService {
         String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).
                 getRealmConfiguration().getAdminUserName();
         log.debug("Tenant admin username : " + adminName);
-        //ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
+        ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
         return ServiceHolder.getRegistryService().getConfigUserRegistry(adminName, tenant.getId());
     }
 
@@ -282,7 +277,7 @@ public class RegistryServiceImpl implements RegistryService {
         String adminName = ServiceHolder.getRealmService().getTenantUserRealm(tenant.getId()).
                 getRealmConfiguration().getAdminUserName();
         log.debug("Tenant admin username : " + adminName);
-        //ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
+        ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
         return ServiceHolder.getRegistryService().getGovernanceUserRegistry(adminName, tenant.getId());
     }
 
@@ -296,7 +291,7 @@ public class RegistryServiceImpl implements RegistryService {
             throw new IllegalStateException("The tenant flow has not been started, "
                                             + "'RegistryService.startTenantFlow(Tenant tenant)' needs to be called");
         }
-        //ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
+        ServiceHolder.getTenantRegLoader().loadTenantRegistry(tenant.getId());
 
         Registry registry = ServiceHolder.getRegistryService().getGovernanceSystemRegistry(tenant.getId());
 
@@ -318,14 +313,12 @@ public class RegistryServiceImpl implements RegistryService {
                                                                                           .getAuthorizationManager();
 
         if (registry.resourceExists(govRelativePath)) {     
-            registry.delete(govRelativePath);
-        } 
-        Resource resource = registry.newResource();
-        resource.setContent(rxtPayload.getBytes(Charset.defaultCharset()));
-        resource.setMediaType(APIConstants.RXT_MEDIA_TYPE);
-        registry.put(govRelativePath, resource); 
-        authManager.authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
-        
+            Resource resource = registry.get(govRelativePath);
+            resource.setContent(rxtPayload.getBytes(Charset.defaultCharset()));
+            resource.setMediaType(APIConstants.RXT_MEDIA_TYPE);
+            registry.put(govRelativePath, resource); 
+            authManager.authorizeRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
+        }                
         
         //Update RXT UI Configuration
         Registry configRegistry = ServiceHolder.getRegistryService().getConfigSystemRegistry(tenant.getId());
