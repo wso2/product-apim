@@ -176,6 +176,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             try {
                 connection = APIMgtDBUtil.getConnection();
+                connection.setAutoCommit(false);
 
                 updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ?" +
                                                                 "WHERE AUTHZ_USER = ?");
@@ -228,6 +229,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             try {
                 connection = APIMgtDBUtil.getConnection();
+                connection.setAutoCommit(false);
                 updateStatement = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
                                                                     "WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
 
@@ -262,13 +264,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 "19-110-migration" + File.separator + "rxts" + File.separator + rxtName;
 
         
-        for (Tenant tenant : getTenantsArray()) {
-                        
-            log.debug("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
-
+        for (Tenant tenant : getTenantsArray()) {       
             try {                
                 registryService.startTenantFlow(tenant);                
                 
+                log.debug("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 //Update api.rxt file
                 String rxt = FileUtil.readFileToString(rxtDir);
                 registryService.updateRXTResource(rxtName, rxt);                
@@ -281,8 +281,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 }
                 registryService.updateGenericAPIArtifacts(artifacts);
                 log.debug("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
-            }
-            catch (GovernanceException e) {
+            
+            } catch (GovernanceException e) {
                 log.error("Error when accessing API artifact in registry for tenant "+ tenant.getId() + '(' 
                           + tenant.getDomain() + ')', e);
             } catch (IOException e) {
@@ -310,9 +310,9 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
      * @throws APIMigrationException
      */
     private void workflowExtensionsMigration() throws APIMigrationException {
-        log.info("workflow extensions migration for API Manager started.");
+        log.info("Workflow Extensions configuration file migration for API Manager started.");
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start workflow extensions migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.debug("Start workflow extensions configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
 
             try {
                 registryService.startTenantFlow(tenant);
@@ -328,25 +328,29 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 registryService.updateGovernanceRegistryResource(
                                                     APIConstants.WORKFLOW_EXECUTOR_LOCATION, updatedWorkFlowExtensions);
             } catch (RegistryException e) {
-                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+                log.error("Error occurred while accessing the registry for tenant " + tenant.getId() + 
+                          '(' + tenant.getDomain() + ')', e);
             } catch (UserStoreException e) {
-                ResourceUtil.handleException("Error occurred while accessing the user store", e);
+                log.error("Error occurred while accessing the user store " + tenant.getId() + 
+                          '(' + tenant.getDomain() + ')', e);
             }
             finally {
                 registryService.endTenantFlow();
             }
 
-            log.debug("End workflow extensions for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.debug("End workflow extensions configuration migration for tenant " + tenant.getId() 
+                      + '(' + tenant.getDomain() + ')');
         }
 
-        log.info("workflow extensions migration done for all the tenants");
+        log.info("Workflow Extensions configuration file migration done for all the tenants");
     }
 
     private void updateTiers() throws APIMigrationException {
-        log.info("tier migration for API Manager started.");
+        log.info("Tiers configuration migration for API Manager started.");
 
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start tier migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.debug("Start tiers configuration migration for tenant " + tenant.getId() 
+                      + '(' + tenant.getDomain() + ')');
 
             try {
                 registryService.startTenantFlow(tenant);
@@ -379,19 +383,22 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                                                     APIConstants.RES_TIER_LOCATION, apiTiers, "application/xml");
                 }
             } catch (UserStoreException e) {
-                ResourceUtil.handleException("Error occurred while accessing the user store", e);
+                log.error("Error occurred while accessing the user store " + + tenant.getId() + 
+                          '(' + tenant.getDomain() + ')', e);
             } catch (RegistryException e) {
-                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+                log.error("Error occurred while accessing the registry " + + tenant.getId() + 
+                                             '(' + tenant.getDomain() + ')', e);
             }
             finally {
                 registryService.endTenantFlow();
             }
+            log.debug("End tiers configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
-        log.info("tier migration for API Manager completed.");
+        log.info("Tiers configuration migration for API Manager completed.");
     }
 
     private void migrateLifeCycles() throws APIMigrationException {
-        log.info("migrating life cycles for API Manager started.");
+        log.info("Life Cycles executor migration for API Manager started.");
 
         String apiLifeCycleXMLPath = CarbonUtils.getCarbonHome() + File.separator + APIConstants.RESOURCE_FOLDER_LOCATION +
                 File.separator + Constants.LIFE_CYCLES_FOLDER + File.separator +
@@ -413,6 +420,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 APIConstants.API_LIFE_CYCLE;
 
         for (Tenant tenant : getTenantsArray()) {
+            log.debug("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             try {
                 registryService.startTenantFlow(tenant);
 
@@ -425,12 +433,15 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             finally {
                 registryService.endTenantFlow();
             }
+            log.debug("End life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
+        log.info("Life Cycles executor migration for API Manager completed.");
     }
 
     private void addExecutorlessLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath,
                                           String executorlessApiLifeCycle) throws APIMigrationException {
         try {
+            log.debug("Adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             if (!registryService.isConfigRegistryResourceExists(apiLifeCycleRegistryPath)) {
                 registryService.addConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle,
                         "application/xml");
@@ -438,11 +449,12 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             else {
                 registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle);
             }
+            log.debug("Completed adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         } catch (UserStoreException e) {
-            ResourceUtil.handleException("Error occurred while accessing the user store when adding executorless " +
+            log.error("Error occurred while accessing the user store when adding executorless " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while accessing the registry when adding executorless " +
+            log.error("Error occurred while accessing the registry when adding executorless " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         }
     }
@@ -455,7 +467,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         statuses.put(APIStatus.DEPRECATED.toString(), new String[]{"Publish", "Deprecate"});
         statuses.put(APIStatus.RETIRED.toString(), new String[]{"Publish", "Deprecate", "Retire"});
 
-        log.debug("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        log.debug("Updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         try {
             registryService.addDefaultLifecycles();
             GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
@@ -472,30 +484,33 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                     }
                 }
             }
+            log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }  catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while accessing the registry when updating " +
+            log.error("Error occurred while accessing the registry when updating " +
                     "API life cycles for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (XMLStreamException e) {
-            ResourceUtil.handleException("XMLStreamException while adding default life cycles if " +
+            log.error("XMLStreamException while adding default life cycles if " +
                     "not available for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (FileNotFoundException e) {
-            ResourceUtil.handleException("FileNotFoundException while adding default life cycles if " +
+            log.error("FileNotFoundException while adding default life cycles if " +
                     "not available for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (UserStoreException e) {
-            ResourceUtil.handleException("UserStoreException while adding default life cycles if " +
+            log.error("UserStoreException while adding default life cycles if " +
                     "not available for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         }
     }
 
     private void updateWithCompleteLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath, String apiLifeCycle)
                                                                 throws APIMigrationException {
+        log.debug("Update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         try {
             registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, apiLifeCycle);
+            log.debug("Completed update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         } catch (UserStoreException e) {
-            ResourceUtil.handleException("Error occurred while accessing the user store when adding complete " +
+            log.error("Error occurred while accessing the user store when adding complete " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (RegistryException e) {
-            ResourceUtil.handleException("Error occurred while accessing the registry when adding complete " +
+            log.error("Error occurred while accessing the registry when adding complete " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         }
     }

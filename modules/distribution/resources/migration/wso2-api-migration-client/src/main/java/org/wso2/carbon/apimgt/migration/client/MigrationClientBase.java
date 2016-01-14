@@ -138,6 +138,7 @@ public abstract class MigrationClientBase {
         BufferedReader bufferedReader = null;
         try {
             connection = APIMgtDBUtil.getConnection();
+            connection.setAutoCommit(false);
             String dbType = MigrationDBCreator.getDatabaseType(connection);
 
             InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");

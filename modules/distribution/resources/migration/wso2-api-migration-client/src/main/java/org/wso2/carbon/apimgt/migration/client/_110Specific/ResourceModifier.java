@@ -283,7 +283,7 @@ public class ResourceModifier {
             Element existingThrottleHandler = SynapseUtil.getHandler(synapseDTO.getDocument(),
                     Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER);
 
-            if (!isThrottleHandlerUpdated(existingThrottleHandler)) {
+            if (existingThrottleHandler != null && !isThrottleHandlerUpdated(existingThrottleHandler)) {
                 Element updatedThrottleHandler = SynapseUtil.createHandler(synapseDTO.getDocument(),
                         Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER, propertyDTOs);
                 SynapseUtil.updateHandler(synapseDTO.getDocument(),
