@@ -26,6 +26,13 @@
             </includes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}/src/main/resources/19to110Migration/rxts</directory>
+            <outputDirectory>migration-scripts/19-110-migration/rxts</outputDirectory>
+            <includes>
+                <include>*.rxt</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.directory}</directory>
             <outputDirectory></outputDirectory>
             <includes>

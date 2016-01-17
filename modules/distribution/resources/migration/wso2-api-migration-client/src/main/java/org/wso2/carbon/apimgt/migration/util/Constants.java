@@ -16,6 +16,9 @@
 
 package org.wso2.carbon.apimgt.migration.util;
 
+import org.wso2.carbon.governance.api.util.GovernanceConstants;
+import org.wso2.carbon.registry.core.RegistryConstants;
+
 public class Constants {
 
     public static final String VERSION_1_8 = "1.8.0";
@@ -33,6 +36,9 @@ public class Constants {
             ".governance";
     public static final String RXT_PATH = "/repository/resources/rxts/api.rxt";
     public static final String DATA_SOURCE_NAME = "DataSourceName";
+    public static final String RXT_REG_PATH = GovernanceConstants.RXT_CONFIGS_PATH;
+    public static final String GOVERNANCE_ARTIFACT_CONFIGURATION_PATH =
+            RegistryConstants.GOVERNANCE_COMPONENT_PATH + "/configuration/";
 
     // Migration client argument property names
     public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
@@ -182,6 +188,8 @@ public class Constants {
     public static final String LIFE_CYCLES_FOLDER = "lifecycles";
     public static final String API_LIFE_CYCLE_STATE_TAG = "state";
     public static final String API_LIFE_CYCLE_DATA_MODEL_TAG = "datamodel";
+    public static final String API_LIFE_CYCLE_DATA_TAG = "data";
+    public static final String API_LIFE_CYCLE_EXECUTORS_TAG = "transitionExecution";
 
     //default Swagger v2 response parameter
     public static final String DEFAULT_RESPONSE = "{ " +
