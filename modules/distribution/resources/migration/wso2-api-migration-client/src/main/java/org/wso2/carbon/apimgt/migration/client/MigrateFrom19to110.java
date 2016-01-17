@@ -268,19 +268,19 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             try {                
                 registryService.startTenantFlow(tenant);                
                 
-                log.debug("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 //Update api.rxt file
                 String rxt = FileUtil.readFileToString(rxtDir);
                 registryService.updateRXTResource(rxtName, rxt);                
-                log.debug("End Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("End Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 
-                log.debug("Start rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("Start rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
                     artifact.setAttribute("overview_endpointAuthDigest", "false");
                 }
                 registryService.updateGenericAPIArtifacts(artifacts);
-                log.debug("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                log.info("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             
             } catch (GovernanceException e) {
                 log.error("Error when accessing API artifact in registry for tenant "+ tenant.getId() + '(' 
@@ -312,7 +312,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private void workflowExtensionsMigration() throws APIMigrationException {
         log.info("Workflow Extensions configuration file migration for API Manager started.");
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start workflow extensions configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("Start workflow extensions configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
 
             try {
                 registryService.startTenantFlow(tenant);
@@ -338,7 +338,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 registryService.endTenantFlow();
             }
 
-            log.debug("End workflow extensions configuration migration for tenant " + tenant.getId() 
+            log.info("End workflow extensions configuration migration for tenant " + tenant.getId() 
                       + '(' + tenant.getDomain() + ')');
         }
 
@@ -349,7 +349,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         log.info("Tiers configuration migration for API Manager started.");
 
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start tiers configuration migration for tenant " + tenant.getId() 
+            log.info("Start tiers configuration migration for tenant " + tenant.getId() 
                       + '(' + tenant.getDomain() + ')');
 
             try {
@@ -392,7 +392,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             finally {
                 registryService.endTenantFlow();
             }
-            log.debug("End tiers configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("End tiers configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
         log.info("Tiers configuration migration for API Manager completed.");
     }
@@ -420,7 +420,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 APIConstants.API_LIFE_CYCLE;
 
         for (Tenant tenant : getTenantsArray()) {
-            log.debug("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
             try {
                 registryService.startTenantFlow(tenant);
 
@@ -433,7 +433,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             finally {
                 registryService.endTenantFlow();
             }
-            log.debug("End life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("End life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }
         log.info("Life Cycles executor migration for API Manager completed.");
     }
@@ -474,15 +474,23 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             for (GenericArtifact artifact : artifacts) {
                 String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
+                //Check whether API is already migrated
+                if (currentState != null && !currentState.equalsIgnoreCase(artifact.getLifecycleState())) {                    
+                    artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
+                    String[] actions = statuses.get(currentState);
 
-                artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
-                String[] actions = statuses.get(currentState);
-
-                if (actions != null) {
-                    for (String action : actions) {
-                        artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
+                    if (actions != null) {
+                        for (String action : actions) {
+                            artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
+                            if (log.isDebugEnabled()) {
+                                log.debug("Target LC Status : " + currentState + ". Performing LC Action : " + action);
+                            }
+                        }
                     }
-                }
+                } else {
+                    log.info("API is already in target LC state: " + currentState + ". Skipping migration for API " +
+                            artifact.getAttribute(APIConstants.API_OVERVIEW_NAME));
+                }                
             }
             log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
         }  catch (RegistryException e) {
