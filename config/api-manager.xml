@@ -483,6 +483,12 @@
                domain or only visible to API doc creator
       -->
         <!--EnableAPIDocVisibilityLevels>true</EnableAPIDocVisibilityLevels-->
+        <!--
+          Uncomment this to limit the number of APIs in api the API Store
+      -->
+        <!--APIsPerPage>30</APIsPerPage-->
+
+
     </APIPublisher>
 
     <!--
