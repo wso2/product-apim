@@ -104,6 +104,13 @@
     </handler>    
 
 
+    <!-- This handler use to index APIs when there change in Api artifact-->
+    <handler class="org.wso2.carbon.registry.indexing.IndexingHandler">
+            <filter class="org.wso2.carbon.registry.core.jdbc.handlers.filters.MediaTypeMatcher">
+                 <property name="mediaType">application/vnd.wso2-api+xml</property>
+            </filter>
+        </handler>
+
    <!--This handler delete the subscription hierarcy generated in the notifications path when a subscription is deleted directly -->
 
     <handler class="org.wso2.carbon.registry.extensions.handlers.DeleteHierarchyHandler">

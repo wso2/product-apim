@@ -15,6 +15,8 @@
 */
 package org.wso2.carbon.apimgt.migration.util;
 
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
@@ -26,17 +28,20 @@ import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
+import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -482,6 +487,30 @@ public class ResourceUtil {
         }
 
         return true;
+    }
+    
+    /**
+     * Returns the content configuration from a RXT file
+     * @param payload
+     * @return content element
+     * @throws RegistryException
+     */
+    public static String getArtifactUIContentFromConfig(String payload) throws RegistryException {
+        try {
+            OMElement element = AXIOMUtil.stringToOM(payload);
+            element.build();
+            OMElement content = element.getFirstChildWithName(new QName("content"));
+            if(content != null) {
+              return content.toString();
+            } else {
+              return null;
+            }
+        } catch (Exception e) {
+            String message = "Unable to parse the XML configuration. Please validate the XML configuration";
+            log.error(message, e);
+            throw new RegistryException(message, e);
+        }
+        
     }
 
 }
