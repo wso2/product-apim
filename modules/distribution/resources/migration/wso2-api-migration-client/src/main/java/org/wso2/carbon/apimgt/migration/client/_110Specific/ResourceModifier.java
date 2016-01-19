@@ -23,6 +23,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
@@ -37,6 +38,7 @@ import org.wso2.carbon.core.util.CryptoUtil;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -172,15 +174,25 @@ public class ResourceModifier {
             Element rootElement = doc.getDocumentElement();
 
             NodeList stateTags = rootElement.getElementsByTagName(Constants.API_LIFE_CYCLE_STATE_TAG);
-
+            
             for (int i = 0; i < stateTags.getLength(); ++i) {
                 Element stateTag = (Element) stateTags.item(i);
 
                 NodeList dataModelTags = stateTag.getElementsByTagName(Constants.API_LIFE_CYCLE_DATA_MODEL_TAG);
-
+                
                 if (dataModelTags.getLength() > 0) {
                     Element dataModelTag = (Element) dataModelTags.item(0);
-                    dataModelTag.getParentNode().removeChild(dataModelTag);
+                    if (APIStatus.CREATED.toString().equalsIgnoreCase(stateTag.getAttribute("id"))) {
+                        NodeList dataTags = dataModelTag.getElementsByTagName(Constants.API_LIFE_CYCLE_DATA_TAG);
+                        for (int j=0; j < dataTags.getLength(); j++) {
+                            Element dataTag = (Element) dataTags.item(j);
+                            if (Constants.API_LIFE_CYCLE_EXECUTORS_TAG.equals(dataTag.getAttribute("name"))) {
+                                dataTag.getParentNode().removeChild(dataTag);
+                            }
+                        }
+                    } else {
+                        dataModelTag.getParentNode().removeChild(dataModelTag);
+                    }
                 }
             }
 
