@@ -18,7 +18,7 @@ under the License.
     <parent>
         <artifactId>test-artifacts</artifactId>
         <groupId>org.wso2.am</groupId>
-        <version>1.10.1-SNAPSHOT</version>
+        <version>1.11.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
