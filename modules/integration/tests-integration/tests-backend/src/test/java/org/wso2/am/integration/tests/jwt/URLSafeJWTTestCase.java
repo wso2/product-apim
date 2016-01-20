@@ -228,7 +228,7 @@ public class URLSafeJWTTestCase
 
         assertTrue("JWT claim invalid  claim received", bExceptionOccured);
         Thread.sleep(20000);
-        serverConfigurationManager.restartGracefully();
+        //serverConfigurationManager.restartGracefully();
         Thread.sleep(20000);
     }
 
@@ -378,6 +378,7 @@ public class URLSafeJWTTestCase
             //Sometimes when server restarts, Pass-through HTTPS listner port 8743 does not get closed properly
             //Would see a "Address already in use" in the server log. 
             // doing a restart of the server again and doing the restart again
+            log.info("Restarting server for 'connection refuse issue'");
             serverConfigurationManager.restartGracefully();
             super.init();
             Thread.sleep(10000);
@@ -414,7 +415,7 @@ public class URLSafeJWTTestCase
         apiStoreRestClient.removeApplication(applicationName);
         
         Thread.sleep(20000);   
-        serverConfigurationManager.restartGracefully();
+        //serverConfigurationManager.restartGracefully();
         Thread.sleep(20000);
 
     }
