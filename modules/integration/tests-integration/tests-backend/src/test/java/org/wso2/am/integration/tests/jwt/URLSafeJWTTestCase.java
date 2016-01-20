@@ -53,7 +53,8 @@ import java.util.Map;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class URLSafeJWTTestCase
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) 
+public class URLSafeJWTTestCase
         extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
@@ -174,6 +175,16 @@ import static org.testng.AssertJUnit.assertTrue;
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
+        if(response.getJSONObject("data") == null){
+            //Sometimes when server restarts, Pass-through HTTPS listner port 8743 does not get closed properly
+            //Would see a "Address already in use" in the server log. 
+            // doing a restart of the server again and doing the restart again
+            serverConfigurationManager.restartGracefully();
+           
+            Thread.sleep(10000);
+            responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
+            response = new JSONObject(responseString);
+        }
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
         String url = gatewayUrlsWrk.getWebAppURLNhttp() + "urlSafeTokenTest/1.0.0";
@@ -216,6 +227,9 @@ import static org.testng.AssertJUnit.assertTrue;
         }
 
         assertTrue("JWT claim invalid  claim received", bExceptionOccured);
+        Thread.sleep(20000);
+        serverConfigurationManager.restartGracefully();
+        Thread.sleep(20000);
     }
 
     /**
@@ -360,6 +374,16 @@ import static org.testng.AssertJUnit.assertTrue;
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
+        if(response.getJSONObject("data") == null){
+            //Sometimes when server restarts, Pass-through HTTPS listner port 8743 does not get closed properly
+            //Would see a "Address already in use" in the server log. 
+            // doing a restart of the server again and doing the restart again
+            serverConfigurationManager.restartGracefully();
+            super.init();
+            Thread.sleep(10000);
+            responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
+            response = new JSONObject(responseString);
+        }
         accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
         String url = gatewayUrlsWrk.getWebAppURLNhttp() + "urlSafeTokenTest/1.0.0/";
@@ -388,6 +412,10 @@ import static org.testng.AssertJUnit.assertTrue;
 
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
+        
+        Thread.sleep(20000);   
+        serverConfigurationManager.restartGracefully();
+        Thread.sleep(20000);
 
     }
 
