@@ -283,7 +283,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         assertTrue(isApisAvailable,"Response Error in Apis");
     }
 
-    @Test(description = "Remove Subscription by Application Name")
+    @Test(description = "Remove Subscription by Application Name", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppName() throws Exception{
 
         providerName=storeContext.getContextTenant().getContextUser().getUserName();
@@ -321,7 +321,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 //        }
     }
 
-    @Test(description = "Remove Subscription By Application Id")
+    @Test(description = "Remove Subscription By Application Id", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppId() throws Exception{
 
         defaultAppListIndex=numberOfApis-2;
