@@ -315,8 +315,7 @@ public class APIMTestCaseUtils {
             OMElement sequence = (OMElement) sequences.next();
             String sqn = sequence.getAttributeValue(new QName(NAME));
             boolean isSequenceExist = ArrayUtils.contains(sequenceAdminClient.getSequences(), sqn);
-            if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) &&
-                isSequenceExist) {
+            if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) && isSequenceExist) {
                 sequenceAdminClient.updateSequence(sequence);
             } else {
                 if (isSequenceExist) {
