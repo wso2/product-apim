@@ -26,12 +26,12 @@ import static org.testng.Assert.assertTrue;
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
-    private final String API_NAME = "AddNewMediationAndInvokeAPITest";
-    private final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+    private final String API_NAME = "AddDynamicEndpointAndInvokeAPITest";
+    private final String API_CONTEXT = "AddDynamicEndpointAndInvokeAPI";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
+    private final String APPLICATION_NAME = "AddDynamicEndpointAndInvokeAPI";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
