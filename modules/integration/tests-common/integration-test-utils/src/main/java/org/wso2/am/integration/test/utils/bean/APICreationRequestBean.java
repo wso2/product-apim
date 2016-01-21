@@ -329,7 +329,7 @@ public class APICreationRequestBean extends AbstractRequest {
     }
 
     /**
-     * constructor of the APICreationRequestBean class without endpoint
+     * constructor of the APICreationRequestBean class with default endpoint
      *
      * @param apiName     - Name of the APi
      * @param context     - API context

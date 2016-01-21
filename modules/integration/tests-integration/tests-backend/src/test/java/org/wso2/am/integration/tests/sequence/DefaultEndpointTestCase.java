@@ -62,19 +62,14 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
-
-        String sessionId = createSession(gatewayContextMgt);
-
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the default endpoint")
     public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
         String gatewaySessionCookie = createSession(gatewayContextMgt);
-
         String apiUser = gatewayContextMgt.getContextTenant().getContextUser().getUserName();
 
-        //createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
 
