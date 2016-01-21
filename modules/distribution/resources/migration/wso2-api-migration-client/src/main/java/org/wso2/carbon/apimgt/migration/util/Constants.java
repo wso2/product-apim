@@ -188,6 +188,8 @@ public class Constants {
     public static final String LIFE_CYCLES_FOLDER = "lifecycles";
     public static final String API_LIFE_CYCLE_STATE_TAG = "state";
     public static final String API_LIFE_CYCLE_DATA_MODEL_TAG = "datamodel";
+    public static final String API_LIFE_CYCLE_DATA_TAG = "data";
+    public static final String API_LIFE_CYCLE_EXECUTORS_TAG = "transitionExecution";
 
     //default Swagger v2 response parameter
     public static final String DEFAULT_RESPONSE = "{ " +
