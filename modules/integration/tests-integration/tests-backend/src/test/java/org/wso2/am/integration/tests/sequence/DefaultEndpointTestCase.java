@@ -66,7 +66,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the default endpoint")
-    public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
+    public void testAPIInvocationAfterAddingDynamicEndpoint() throws Exception  {
         String gatewaySessionCookie = createSession(gatewayContextMgt);
         String apiUser = gatewayContextMgt.getContextTenant().getContextUser().getUserName();
 
