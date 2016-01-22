@@ -176,7 +176,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
             JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
             assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
-
+            //giving some time to complete the API creation before create the next one
+            Thread.sleep(10000);
             count++;
         }
 
@@ -208,7 +209,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
                          "Subscription Response Code is Mismatched");
             JSONObject subscriptionResponseJsonObject = new JSONObject(subscriptionResponse.getData());
             assertFalse(subscriptionResponseJsonObject.getBoolean("error"), "Subscription Response is Mismatched");
-
+            //giving some time to complete before create the next one
+            Thread.sleep(3000);
         }
         //create Application
         HttpResponse createNewAppResponse = apiStore.addApplication(newApplicationName, tier, "", "");
@@ -231,7 +233,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
                          "Subscription Response Code is Mismatched");
             JSONObject subscriptionResponseJsonObject = new JSONObject(subscriptionResponseDefaultApp.getData());
             assertFalse(subscriptionResponseJsonObject.getBoolean("error"), "Subscription Response is Mismatched");
-
+            //giving some time to complete before create the next one
+            Thread.sleep(3000);
         }
     }
     @Test(description = "List all Subscriptions By Application Name")
@@ -280,7 +283,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         assertTrue(isApisAvailable,"Response Error in Apis");
     }
 
-    @Test(description = "Remove Subscription by Application Name")
+    @Test(description = "Remove Subscription by Application Name", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppName() throws Exception{
 
         providerName=storeContext.getContextTenant().getContextUser().getUserName();
@@ -292,6 +295,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             JSONObject removeSubscriptionByAppNameJsonObject=new JSONObject(removeSubscriptionByAppName.getData());
             assertFalse(removeSubscriptionByAppNameJsonObject.getBoolean("error"),
                         "Error in Remove Subscription By Application Name: "+ applicationName);
+          //giving some time to complete before removing next one
+          Thread.sleep(3000);
         }
         //verify subscription exists
         HttpResponse verifySubscriptionResponse=apiStore.getPublishedAPIsByApplication(applicationName);
@@ -316,7 +321,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 //        }
     }
 
-    @Test(description = "Remove Subscription By Application Id")
+    @Test(description = "Remove Subscription By Application Id", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppId() throws Exception{
 
         defaultAppListIndex=numberOfApis-2;
@@ -340,6 +345,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
                 JSONObject removeSubscriptionByIdJsonObject=new JSONObject(removeSubscriptionByIdResponse.getData());
                 assertFalse(removeSubscriptionByIdJsonObject.getBoolean("error"),
                             "Error in Removal Subscription By Application Id");
+                //giving some time to complete before removing next one
+                Thread.sleep(2000);
             }
         }
     }
@@ -367,6 +374,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             apiPublisher.deleteAPI(apiNameList.get(defaultAppListIndex),version,providerName);
             isApisDeleted=true;
             defaultAppListIndex++;
+            //giving some time to complete removing before going to the next one
+            Thread.sleep(5000);
         }
         assertTrue(isApisDeleted,"Error in Application Deleted: " + applicationName);
 
