@@ -328,6 +328,38 @@ public class APICreationRequestBean extends AbstractRequest {
         }
     }
 
+    /**
+     * constructor of the APICreationRequestBean class with default endpoint
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider)
+            throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+
+        try {
+            this.endpoint = new JSONObject();
+            this.endpoint.put("production_endpoints", new JSONObject("{\"url\":" + "\""
+                                                                     + "Default" + "\",\"config\":null}"));
+            this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
+                                                                 + "Default" + "\",\"config\":null}"));
+            this.endpoint.put("endpoint_type", "default");
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
 
     @Override
     public void setAction() {
