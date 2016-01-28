@@ -552,6 +552,45 @@ public class APIStoreRestClient {
     }
 
     /**
+     * Get all subscriptions of Application. This is a method to get the subscription of a given application. As
+     * there is no application name is given, then only the subscriptions of first applications are returned.
+     *
+     * @return - http response of get all subscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
+     */
+    public HttpResponse getAllSubscriptionsOfApplication() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                            "action=getAllSubscriptionsOfApplication"), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+
+        }
+    }
+
+    /**
+     * Get all subscriptions of Application. This is a method to get the subscription of a given application. If no
+     * application name is given, then only the subscriptions of first applications are returned.
+     *
+     * @return - http response of get all subscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
+     */
+    public HttpResponse getAllSubscriptionsOfApplication(String selectedApplication)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                            "action=getAllSubscriptionsOfApplication&selectedApp=" + selectedApplication), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+
+        }
+    }
+
+    /**
      * Get subscribed Apis by application name
      * @param applicationName - Application Name
      */
