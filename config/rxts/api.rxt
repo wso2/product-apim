@@ -163,6 +163,9 @@
          <field type="text">
             <name>Environments</name>
          </field>
+        <field type="text-area">
+            <name>Cors Configuration</name>
+         </field>
         <field type="options">
             <name label="Response Caching">Response Caching</name>
             <values>

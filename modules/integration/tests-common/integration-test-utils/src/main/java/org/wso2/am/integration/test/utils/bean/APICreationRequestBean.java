@@ -67,6 +67,16 @@ public class APICreationRequestBean extends AbstractRequest {
     private String bizOwnerMail = "";
     private String techOwner = "";
     private String techOwnerMail = "";
+    private JSONObject corsConfiguration;
+    private String environment = "Production and Sandbox";
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -146,6 +156,13 @@ public class APICreationRequestBean extends AbstractRequest {
                 this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
                         + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                         + endpointUrl.getProtocol() + "\"}");
+                this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                        "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                        "\"accessControlAllowCredentials\" : true, " +
+                                                        "\"accessControlAllowHeaders\" : " +
+                                                        "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                        "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -176,6 +193,13 @@ public class APICreationRequestBean extends AbstractRequest {
                 this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
                         + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                         + endpointUrl.getProtocol() + "\"}");
+                this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                        "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                        "\"accessControlAllowCredentials\" : true, " +
+                                                        "\"accessControlAllowHeaders\" : " +
+                                                        "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                        "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -221,7 +245,13 @@ public class APICreationRequestBean extends AbstractRequest {
                     "\"sessionManagement\":\"none\",\"implementation_status\":\"managed\"," +
                     "\"endpoint_type\":\"load_balance\"}");
 
-
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -264,6 +294,13 @@ public class APICreationRequestBean extends AbstractRequest {
                         + sandboxUrl + "\",\"config\":null}"));
                 this.endpoint.put("endpoint_type", sandboxUrl.getProtocol());
             }
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
 
         } catch (JSONException e) {
             log.error("JSON construct error", e);
@@ -321,7 +358,13 @@ public class APICreationRequestBean extends AbstractRequest {
                         sandBoxEndpoints + "]," +
                         "\"implementation_status\":\"managed\"," +
                         "\"endpoint_type\":\"load_balance\"}");
-
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -353,6 +396,13 @@ public class APICreationRequestBean extends AbstractRequest {
             this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
                                                                  + "Default" + "\",\"config\":null}"));
             this.endpoint.put("endpoint_type", "default");
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
 
         } catch (JSONException e) {
             log.error("JSON construct error", e);
@@ -434,6 +484,8 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("bizOwnerMail",bizOwnerMail);
         addParameter("techOwner",techOwner);
         addParameter("techOwnerMail",techOwnerMail);
+        addParameter("environments",getEnvironment());
+        addParameter("corsConfiguration",getCorsConfiguration().toString());
 
     }
 
@@ -635,5 +687,12 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setFaultSequence(String faultSequence) {
         this.faultSequence = faultSequence;
+    }
+    public JSONObject getCorsConfiguration() {
+        return corsConfiguration;
+    }
+
+    public void setCorsConfiguration(JSONObject corsConfiguration) {
+        this.corsConfiguration = corsConfiguration;
     }
 }
