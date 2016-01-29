@@ -63,6 +63,16 @@ public class APIRequest extends AbstractRequest {
     private String default_version_checked = "";
     private String sandbox = "";
     private String provider = "admin";
+    private JSONObject corsConfiguration;
+    private String environment = "Production and Sandbox";
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
 
     public String getSandbox() {
         return sandbox;
@@ -104,6 +114,13 @@ public class APIRequest extends AbstractRequest {
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
                                    + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                                    + endpointUrl.getProtocol() + "\"}");
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
@@ -129,6 +146,13 @@ public class APIRequest extends AbstractRequest {
                                    + productionEndpointUrl + "\",\"config\":null}, \"sandbox_endpoints\":{\"url\":\""
                                    + sandboxEndpointUrl + "\",\"config\":null},\"endpoint_type\":\""
                                    + productionEndpointUrl.getProtocol() + "\"}");
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                                                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                                                    "\"accessControlAllowCredentials\" : true, " +
+                                                    "\"accessControlAllowHeaders\" : " +
+                                                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
@@ -172,6 +196,8 @@ public class APIRequest extends AbstractRequest {
         addParameter("uriTemplate-0", getUriTemplate());
         addParameter("default_version", getDefault_version());
         addParameter("default_version_checked", getDefault_version_checked());
+        addParameter("environments",getEnvironment());
+        addParameter("corsConfiguration",getCorsConfiguration().toString());
         if (roles.length() > 1) {
             addParameter("roles", getRoles());
         }
@@ -340,4 +366,11 @@ public class APIRequest extends AbstractRequest {
         this.default_version_checked = default_version_checked;
     }
 
+    public JSONObject getCorsConfiguration() {
+        return corsConfiguration;
+    }
+
+    public void setCorsConfiguration(JSONObject corsConfiguration) {
+        this.corsConfiguration = corsConfiguration;
+    }
 }
