@@ -167,28 +167,6 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>create-API-manager-database</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <path id="h2.classpath">
-                                    <path refid="maven.compile.classpath" />
-                                </path>
-                                <echo message="########### Creating API Manager Database ##############" />
-                                <sql driver="org.h2.Driver" url="jdbc:h2:${basedir}/target/repository/database/WSO2AM_DB" userid="wso2carbon" password="wso2carbon" autocommit="true" onerror="continue">
-                                    <classpath>
-                                        <path refid="h2.classpath" />
-                                    </classpath>
-                                    <fileset file="${basedir}/../resources/sql/h2.sql" />
-                                </sql>
-                                <echo message="##################### END ########################" />
-                            </tasks>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
 

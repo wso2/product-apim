@@ -105,6 +105,20 @@
                 <include>**/Saxon-HE-9.4.jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <includes>
+                <include>**/api-manager.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/database</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
+            <includes>
+                <include>**/*.h2.db</include>
+            </includes>
+        </fileSet>
         <!--fileSet>
             <directory>./src/main/resources</directory>
             <outputDirectory>wso2am-${pom.version}/lib/endorsed</outputDirectory>
@@ -126,13 +140,6 @@
                 <include>**/encoder-1.1.jar</include>
             </includes>
         </fileSet-->
-	<fileSet>
-            <directory>../../distribution/product/target/repository/database</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/database</outputDirectory>
-            <includes>
-                <include>**/WSO2AM_DB.h2.db</include>
-            </includes>
-        </fileSet>
         <!--fileSet>
           <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/security</directory>
           <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
@@ -185,7 +192,7 @@
         </fileSet>
         <fileSet>
             <directory>
-                ../resources/sql/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/dbscripts/apimgt/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
             <includes>
@@ -744,12 +751,6 @@
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
-        <file>
-            <source>../../../config/api-manager.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>755</fileMode>
         </file>
         <file>
             <source>../../../config/bam.xml</source>
