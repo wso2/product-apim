@@ -196,8 +196,8 @@ public class APIRequest extends AbstractRequest {
         addParameter("uriTemplate-0", getUriTemplate());
         addParameter("default_version", getDefault_version());
         addParameter("default_version_checked", getDefault_version_checked());
-        addParameter("environments",getEnvironment());
-        addParameter("corsConfiguration",getCorsConfiguration().toString());
+        addParameter("environments", getEnvironment());
+        addParameter("corsConfiguration", getCorsConfiguration().toString());
         if (roles.length() > 1) {
             addParameter("roles", getRoles());
         }

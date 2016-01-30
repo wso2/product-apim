@@ -161,7 +161,8 @@ public class APICreationRequestBean extends AbstractRequest {
                                                         "\"accessControlAllowCredentials\" : true, " +
                                                         "\"accessControlAllowHeaders\" : " +
                                                         "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : " +
+                                                        "[\"POST\", " +
                                                         "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
@@ -198,7 +199,8 @@ public class APICreationRequestBean extends AbstractRequest {
                                                         "\"accessControlAllowCredentials\" : true, " +
                                                         "\"accessControlAllowHeaders\" : " +
                                                         "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : " +
+                                                        "[\"POST\", " +
                                                         "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
@@ -484,8 +486,8 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("bizOwnerMail",bizOwnerMail);
         addParameter("techOwner",techOwner);
         addParameter("techOwnerMail",techOwnerMail);
-        addParameter("environments",getEnvironment());
-        addParameter("corsConfiguration",getCorsConfiguration().toString());
+        addParameter("environments", getEnvironment());
+        addParameter("corsConfiguration", getCorsConfiguration().toString());
 
     }
 
@@ -688,6 +690,7 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setFaultSequence(String faultSequence) {
         this.faultSequence = faultSequence;
     }
+
     public JSONObject getCorsConfiguration() {
         return corsConfiguration;
     }
