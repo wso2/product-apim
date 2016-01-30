@@ -17,13 +17,11 @@
 */
 package org.wso2.am.integration.tests.other;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -41,116 +39,121 @@ import javax.ws.rs.core.Response;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.testng.Assert.assertEquals;
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE})
+
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
-	private final Log log = LogFactory.getLog(APIMANAGER3965TestCase.class);
-	private APIPublisherRestClient apiPublisher;
-	private APIStoreRestClient apiStore;
-	private String apiName = "APIMANAGER3965";
-	private String apiContext = "apimanager3965";
-	private String appName = "apimanager3965";
-	private Map<String, String> requestHeaders = new HashMap<String, String>();
-	APIRequest apiRequest;
-	@Factory(dataProvider = "userModeDataProvider")
-	public APIMANAGER3965TestCase(TestUserMode userMode) {
-		this.userMode = userMode;
-	}
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
+    private String apiName = "APIMANAGER3965";
+    private String apiContext = "apimanager3965";
+    private Map<String, String> requestHeaders = new HashMap<String, String>();
+    APIRequest apiRequest;
 
-	@BeforeClass(alwaysRun = true)
-	public void setEnvironment() throws Exception {
-		super.init(userMode);
-		String publisherURLHttp = getPublisherURLHttp();
-		String storeURLHttp = getStoreURLHttp();
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIMANAGER3965TestCase(TestUserMode userMode) {
+        this.userMode = userMode;
+    }
 
-		apiStore = new APIStoreRestClient(storeURLHttp);
-		apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+    @BeforeClass(alwaysRun = true)
+    public void setEnvironment() throws Exception {
+        super.init(userMode);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
 
-		apiPublisher.login(user.getUserName(), user.getPassword());
-		apiStore.login(user.getUserName(), user.getPassword());
-		String backendEndPoint = getBackendEndServiceEndPointHttp("jaxrs_basic/services/customers/customerservice");
-		apiRequest= new APIRequest(apiName, apiContext,
-		                 new URL(backendEndPoint));
-	}
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
-	@Test(groups = { "wso2.am" }, description = "Sample API creation")
-	public void testAPICreationWithOutCorsConfiguration() throws Exception {
-		apiRequest.setProvider(user.getUserName());
-		apiPublisher.addAPI(apiRequest);
-		APILifeCycleStateRequest updateRequest =
-				new APILifeCycleStateRequest(apiName, user.getUserName(),
-				                             APILifeCycleState.PUBLISHED);
-		apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        apiPublisher.login(user.getUserName(), user.getPassword());
+        apiStore.login(user.getUserName(), user.getPassword());
+        String backendEndPoint = getBackendEndServiceEndPointHttp("jaxrs_basic/services/customers/customerservice");
+        apiRequest = new APIRequest(apiName, apiContext,
+                                    new URL(backendEndPoint));
+    }
 
-		waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-		                         APIMIntegrationConstants.IS_API_EXISTS);
-		String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
+    @Test(groups = { "wso2.am" }, description = "Sample API creation")
+    public void testAPICreationWithOutCorsConfiguration() throws Exception {
+        apiRequest.setProvider(user.getUserName());
+        apiPublisher.addAPI(apiRequest);
+        APILifeCycleStateRequest updateRequest =
+                new APILifeCycleStateRequest(apiName, user.getUserName(),
+                                             APILifeCycleState.PUBLISHED);
+        apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpUriRequest option = new HttpOptions(apiInvocationUrl);
-		option.addHeader("Origin", "http://localhost:9443");
-		HttpResponse serviceResponse = httpclient.execute(option);
-		String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
-		String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
-		String accessControlAllowMethods = serviceResponse.getFirstHeader("Access-Control-Allow-Methods").getValue();
-		assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-		             "Response code mismatched when api invocation");
-		assertEquals(accessControlAllowOrigin,"*","Access Control allow origin values get mismatched in option Call");
-		assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type",
-		             "Access Control allow Headers values get mismatched in option Call");
-		assertEquals(accessControlAllowMethods, "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-		             "Access Control allow Method values get mismatched in option Call");
-	}
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+        String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
 
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpUriRequest option = new HttpOptions(apiInvocationUrl);
+        option.addHeader("Origin", "http://localhost:9443");
+        HttpResponse serviceResponse = httpclient.execute(option);
+        String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
+        String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
+        String accessControlAllowMethods = serviceResponse.getFirstHeader("Access-Control-Allow-Methods").getValue();
+        assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                     "Response code mismatched when api invocation");
+        assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
+        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type",
+                     "Access Control allow Headers values get mismatched in option Call");
+        assertEquals(accessControlAllowMethods, "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+                     "Access Control allow Method values get mismatched in option Call");
+    }
 
-	@Test(groups = { "wso2.am" }, description = "Sample API creation",dependsOnMethods ="testAPICreationWithOutCorsConfiguration" )
-	public void testAPICreationWithCorsConfiguration() throws Exception {
-		JSONObject corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : true, " +
-		                                              "\"accessControlAllowOrigins\" : [\"https://localhost:9443," +
-		                                              "http://localhost:8080\"], " +
-		                                              "\"accessControlAllowCredentials\" : true, " +
-		                                              "\"accessControlAllowHeaders\" : " +
-		                                              "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-		                                              "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\"," +
-		                                              " " +
-		                                              "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
-		apiRequest.setCorsConfiguration(corsConfiguration);
-		apiRequest.setProvider(user.getUserName());
-		apiPublisher.updateAPI(apiRequest);
-		waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-		                         APIMIntegrationConstants.IS_API_EXISTS);
-		String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
-		HttpClient httpclient = new DefaultHttpClient();
-		HttpUriRequest option = new HttpOptions(apiInvocationUrl);
-		option.addHeader("Origin", "http://localhost:8080");
-		HttpResponse serviceResponse = httpclient.execute(option);
-		String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
-		String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
-		String accessControlAllowMethods = serviceResponse.getFirstHeader("Access-Control-Allow-Methods").getValue();
-		String accessControlAllowCredentials = serviceResponse.getFirstHeader("Access-Control-Allow-Credentials").getValue();
+    @Test(groups = {
+            "wso2.am" }, description = "Sample API creation", dependsOnMethods =
+            "testAPICreationWithOutCorsConfiguration")
+    public void testAPICreationWithCorsConfiguration() throws Exception {
+        JSONObject corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : true, " +
+                                                      "\"accessControlAllowOrigins\" : [\"https://localhost:9443," +
+                                                      "http://localhost:8080\"], " +
+                                                      "\"accessControlAllowCredentials\" : true, " +
+                                                      "\"accessControlAllowHeaders\" : " +
+                                                      "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                                                      "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\"," +
+                                                      " " +
+                                                      "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+        apiRequest.setCorsConfiguration(corsConfiguration);
+        apiRequest.setProvider(user.getUserName());
+        apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+        String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpUriRequest option = new HttpOptions(apiInvocationUrl);
+        option.addHeader("Origin", "http://localhost:8080");
+        HttpResponse serviceResponse = httpclient.execute(option);
+        String accessControlAllowOrigin = serviceResponse.getFirstHeader("Access-Control-Allow-Origin").getValue();
+        String accessControlAllowHeaders = serviceResponse.getFirstHeader("Access-Control-Allow-Headers").getValue();
+        String accessControlAllowMethods = serviceResponse.getFirstHeader("Access-Control-Allow-Methods").getValue();
+        String accessControlAllowCredentials =
+                serviceResponse.getFirstHeader("Access-Control-Allow-Credentials").getValue();
 
-		assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-		             "Response code mismatched when api invocation");
-		assertEquals(accessControlAllowOrigin, "http://localhost:8080", "Access Control allow origin values get mismatched in option " +
-		                                            "Call");
-		assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type",
-		             "Access Control allow Headers values get mismatched in option Call");
-		assertEquals(accessControlAllowMethods, "POST,PATCH,GET,DELETE,OPTIONS,PUT",
-		             "Access Control allow Method values get mismatched in option Call");
-		assertEquals(accessControlAllowCredentials, "true",
-		             "Access Control allow Credentials values get mismatched in option Call");
-	}
-	@AfterClass(alwaysRun = true)
-	public void destroy() throws Exception {
-		super.cleanUp();
-	}
+        assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                     "Response code mismatched when api invocation");
+        assertEquals(accessControlAllowOrigin, "http://localhost:8080",
+                     "Access Control allow origin values get mismatched in option " +
+                     "Call");
+        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type",
+                     "Access Control allow Headers values get mismatched in option Call");
+        assertEquals(accessControlAllowMethods, "POST,PATCH,GET,DELETE,OPTIONS,PUT",
+                     "Access Control allow Method values get mismatched in option Call");
+        assertEquals(accessControlAllowCredentials, "true",
+                     "Access Control allow Credentials values get mismatched in option Call");
+    }
 
-	@DataProvider
-	public static Object[][] userModeDataProvider() {
-		return new Object[][] {
-				new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-				new Object[] { TestUserMode.TENANT_ADMIN },
-		};
-	}
+    @AfterClass(alwaysRun = true)
+    public void destroy() throws Exception {
+        super.cleanUp();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] {
+                new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN },
+        };
+    }
 }
 
