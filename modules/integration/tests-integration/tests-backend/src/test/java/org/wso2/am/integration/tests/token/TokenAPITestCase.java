@@ -255,17 +255,8 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                      "Response code mismatched while token API test case");
         //TODO handle this in automation core level
         try {
-            StringBuilder soapRequest = new StringBuilder(
-                    "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
-            soapRequest.append(" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" ");
-            soapRequest
-                    .append("xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body>");
-            soapRequest
-                    .append("<GetMyName xmlns=\"http://tempuri.org/\"><name>Sam</name></GetMyName>");
-            soapRequest.append("</soap:Body></soap:Envelope>");
             errorResponse = HttpRequestUtil
-                    .doPost(new URL(getAPIInvocationURLHttp("tokenTestAPI/1.0.0/most_popular")),
-                            soapRequest.toString(), requestHeaders);
+                    .doGet(getAPIInvocationURLHttp("tokenTestAPI/1.0.0/most_popular"), requestHeaders);
             log.info("Error Response " + errorResponse);
         } catch (Exception e) {
             //handle error
