@@ -3,13 +3,17 @@
   <Name>APIM_STAT_SCRIPT_THROTTLE</Name>
   <Script>
 
-    create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
+  <!--create temp table for throttle out summary table in RDBMS-->
+  create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_DB", tableName "API_THROTTLED_OUT_SUMMARY");
 
-    create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
+  <!--create temp table for Throttle event stream data-->
+  create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
 
-    create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
+  <!--create temp table for Request event stream data-->
+  create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
 
-    CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
+  <!--create table for throttle out summary in DAL-->
+  CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
     schema "api string -i,
     api_version string -i,
     context string -i,
@@ -29,8 +33,8 @@
     primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
     );
 
-    insert into table THROTTLED_OUT_FINAL_SUMMARY select
-
+  <!--inserting API throttle out summary data-->
+  insert into table THROTTLED_OUT_FINAL_SUMMARY select
     COALESCE(a.api,b.api),
     COALESCE(a.api_version,b.api_version),
     COALESCE(a.context,b.context),

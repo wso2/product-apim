@@ -3,8 +3,10 @@
     <Name>APIM_1_10_X_MIGRATION_H2_ORACLE</Name>
 <Script>
 
-  <!--setting Throttle Summary data-->
+  <!--create temp table for throttle out summary table in RDBMS-->
   create temporary table APIThrottleSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_THROTTLED_OUT_SUMMARY");
+
+  <!--create table for throttle out summary in DAL-->
   CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
     schema "api string -i,
     api_version string -i,
@@ -25,6 +27,7 @@
     primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
   );
 
+  <!--inserting API throttle out summary data to DAL from RDBMS-->
   insert into table THROTTLED_OUT_FINAL_SUMMARY select
   API,API_VERSION,CONTEXT,APIPUBLISHER,APPLICATIONNAME,TENANTDOMAIN,YEAR,MONTH,
   DAY,FIRST(WEEK),FIRST(TIME),SUM(SUCCESS_REQUEST_COUNT),SUM(THROTTLEOUT_COUNT),
@@ -32,9 +35,7 @@
   APPLICATIONNAME from APIThrottleSummaryData GROUP BY API,API_VERSION,CONTEXT,APIPUBLISHER,APPLICATIONNAME,TENANTDOMAIN,YEAR,MONTH,DAY;
 
 
-
-  <!--setting Request Summary data-->
-
+  <!--create table for request summary in DAL-->
   CREATE TEMPORARY TABLE API_REQUEST_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_SUMMARY",
   schema "api string -i,
   api_version string -i,
@@ -58,8 +59,10 @@
   primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
   );
 
+  <!--create temp table for request summary table in RDBMS-->
   create temporary table APIRequestSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_REQUEST_SUMMARY");
 
+  <!--inserting request summary data in RDBMS to DAL-->
   insert into table API_REQUEST_SUMMARY_FINAL select API, API_VERSION,VERSION, APIPUBLISHER,
   COALESCE(CONSUMERKEY,'-'),
   USERID,
@@ -79,10 +82,10 @@
   from APIRequestSummaryData GROUP BY API, API_VERSION,VERSION, APIPUBLISHER,CONSUMERKEY,USERID,CONTEXT,HOSTNAME,YEAR,MONTH,DAY;
 
 
-  <!--setting API Version Summary data-->
-
+  <!--create temp table for API version usage summary table in RDBMS-->
   create temporary table APIVersionUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_VERSION_USAGE_SUMMARY");
 
+  <!--create table for API Version usage summary in DAL-->
   CREATE TEMPORARY TABLE API_VERSION_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_VERSION_USAGE_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -99,15 +102,17 @@
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
+  <!--inserting api version usage summary data in RDBMS to DAL-->
   insert into table API_VERSION_USAGE_SUMMARY_FINAL select API,VERSION,APIPUBLISHER,CONTEXT,SUM(TOTAL_REQUEST_COUNT),HOSTNAME,
   YEAR,  MONTH,  DAY,  MAX(TIME),  timestamp(MAX(TIME)),
   facet3(API,VERSION,CONTEXT)
   from APIVersionUsageSummaryData GROUP BY API,VERSION,APIPUBLISHER,CONTEXT,HOSTNAME,YEAR,MONTH,DAY;
 
 
-  <!--setting API Resource Summary data-->
+  <!--create temp table for API resource usage summary table in RDBMS-->
   create temporary table APIResourcePathUsageSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_Resource_USAGE_SUMMARY");
 
+  <!--create table for API resource summary in DAL-->
   CREATE TEMPORARY TABLE API_Resource_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_Resource_USAGE_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -128,6 +133,7 @@
   primaryKeys "api,version,apiPublisher,consumerKey,context,resourcePath,method,hostName,year,month,day"
   );
 
+  <!--inserting resource usage summary data in RDBMS to DAL-->
   insert into table API_Resource_USAGE_SUMMARY_FINAL select
   API,VERSION,APIPUBLISHER,COALESCE(CONSUMERKEY,'-'),
   RESOURCEPATH,CONTEXT,METHOD,SUM(TOTAL_REQUEST_COUNT),HOSTNAME,
@@ -138,10 +144,10 @@
   from APIResourcePathUsageSummaryData GROUP BY API,VERSION,APIPUBLISHER,CONSUMERKEY,RESOURCEPATH,CONTEXT,METHOD,HOSTNAME,YEAR,MONTH,DAY;
 
 
-
-  <!--setting Response Summary data-->
+  <!--create temp table for response summary table in RDBMS-->
   create temporary table APIResponseSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_RESPONSE_SUMMARY");
 
+  <!--create table for response summary in DAL-->
   CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
   schema "api_version string -i,
   apiPublisher string -i,
@@ -158,6 +164,7 @@
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
+  <!--inserting response summary data in RDBMS to DAL-->
   insert into table API_RESPONSE_SUMMARY_FINAL select
   API_VERSION,  COALESCE(APIPUBLISHER,'-'),  CONTEXT,  SUM(SERVICETIME),  SUM(TOTAL_RESPONSE_COUNT),
   HOSTNAME,  YEAR,  MONTH,  DAY,  MAX(TIME),  timestamp(MAX(TIME)),
@@ -165,9 +172,10 @@
   from APIResponseSummaryData GROUP BY API_VERSION,APIPUBLISHER,CONTEXT,HOSTNAME,YEAR,MONTH,DAY;
 
 
-  <!--setting Fault Summary data-->
+  <!--create temp table for fault summary table in RDBMS-->
   create temporary table APIFaultSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_FAULT_SUMMARY");
 
+  <!--create table for fault summary in DAL-->
   CREATE TEMPORARY TABLE API_FAULT_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_FAULT_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -186,6 +194,7 @@
   primaryKeys "api,version,apiPublisher,consumerKey,context,hostName,year,month,day"
   );
 
+  <!--inserting fault summary data in RDBMS to DAL-->
   insert into table API_FAULT_SUMMARY_FINAL select
   API,VERSION,APIPUBLISHER,COALESCE(CONSUMERKEY,'-'),CONTEXT,  SUM(TOTAL_FAULT_COUNT),
   HOSTNAME,YEAR,  MONTH,  DAY,  MAX(TIME), timestamp(MAX(TIME)),
@@ -194,8 +203,10 @@
   from APIFaultSummaryData GROUP BY API,VERSION,APIPUBLISHER,CONSUMERKEY,CONTEXT,HOSTNAME,YEAR,MONTH,DAY;
 
 
-  <!--setting Destination Summary data-->
+  <!--create temp table for destination summary table in RDBMS-->
   create temporary table APIDestinationDataSummaryData using CarbonJDBC options (dataSource "WSO2AM_STATS_MIG_DB", tableName "API_DESTINATION_SUMMARY");
+
+  <!--create table for destination summary in DAL-->
   CREATE TEMPORARY TABLE API_DESTINATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_DESTINATION_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -213,13 +224,12 @@
   primaryKeys "api,version,apiPublisher,context,destination,hostName,year,month,day"
   );
 
+  <!--inserting destination summary data in RDBMS to DAL -->
   insert into table API_DESTINATION_SUMMARY_FINAL select
   API,VERSION,APIPUBLISHER, CONTEXT,COALESCE(DESTINATION,'-'),SUM(TOTAL_REQUEST_COUNT),HOSTNAME,
   YEAR,  MONTH,  DAY,  MAX(TIME), timestamp(MAX(TIME)),
   facet4(API, VERSION, CONTEXT, COALESCE(DESTINATION,'-'))
   from APIDestinationDataSummaryData GROUP BY API,VERSION,APIPUBLISHER,CONTEXT,DESTINATION,HOSTNAME,YEAR,MONTH,DAY;
-
-     
                                                                                                                                                         
 </Script>
    
