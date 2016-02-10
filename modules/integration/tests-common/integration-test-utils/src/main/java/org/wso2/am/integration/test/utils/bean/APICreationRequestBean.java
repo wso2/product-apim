@@ -140,7 +140,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         this.tiersCollection=apiTier;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resourceTier, "/*"));
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, resourceTier, "/*"));
         if(endpointUrl != null) {
             try {
                 this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
@@ -169,7 +170,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         if(endpointUrl != null) {
             try {
@@ -202,7 +204,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints = "";
@@ -249,7 +252,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         try{
 
@@ -291,7 +295,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints="";

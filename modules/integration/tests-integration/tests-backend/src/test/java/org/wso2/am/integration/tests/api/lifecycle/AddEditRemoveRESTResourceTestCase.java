@@ -160,9 +160,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
 
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
-        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
@@ -206,9 +208,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         //apiCreationRequestBean.setVersion(API_VERSION_1_0_0);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}");
-        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
@@ -264,7 +268,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);

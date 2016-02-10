@@ -96,7 +96,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -133,7 +134,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -166,7 +168,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -203,7 +206,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "None",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_NONE,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);

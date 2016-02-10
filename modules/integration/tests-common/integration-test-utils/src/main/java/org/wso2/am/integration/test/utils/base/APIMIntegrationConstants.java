@@ -56,6 +56,14 @@ public class APIMIntegrationConstants {
     public static final String SANDBOXEP2_WEB_APP_NAME = "name-check2_SB";
     public static final String SANDBOXEP3_WEB_APP_NAME = "name-check3_SB";
 
+    public static final String RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER = "Application & Application User";
+    public static final String RESOURCE_AUTH_TYPE_APPLICATION = "Application";
+    public static final String RESOURCE_AUTH_TYPE_APPLICATION_USER = "Application User";
+    public static final String RESOURCE_AUTH_TYPE_NONE = "None";
+
+    public static final String HTTP_VERB_GET = "GET";
+    public static final String HTTP_VERB_POST = "POST";
+
     public static final class APPLICATION_TIER {
         public static final String UNLIMITED = "Unlimited";
         public static final String LARGE = "Large";
