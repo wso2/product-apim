@@ -136,8 +136,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
             assertTrue(tags.contains(tag), "API tag data mismatched");
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
-        apiStore.addApplication("hostObjectTestApplicationName", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                "", "this-is-test");
+        apiStore.addApplication(hostObjectTestApplicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
         subscriptionRequest.setApplicationName(hostObjectTestApplicationName);
