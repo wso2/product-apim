@@ -149,6 +149,9 @@
 
     <test name="rest-api-tests" preserve-order="true" parallel="false">
         <classes>
+            <!-- This should be uncommented only when APIM is released under a kernel version which have
+            CARBON-15759 fixed -->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCase"/>-->
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
@@ -156,6 +159,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
+
         </classes>
     </test>
 
