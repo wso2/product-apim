@@ -29,48 +29,57 @@ under the License.
     <modelVersion>4.0.0</modelVersion>
 
 
+
+    <repositories>
+        <repository>
+            <id>wso2-nexus</id>
+            <name>WSO2 internal Repository</name>
+            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.cxf.wso2</groupId>
             <artifactId>cxf-bundle</artifactId>
+            <version>2.6.1.wso2v2</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging</artifactId>
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
+            <version>1.6.1.wso2v12</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
+            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api</artifactId>
+            <version>4.2.2</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
+            <version>4.6.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.utils</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 
 
@@ -84,23 +93,19 @@ under the License.
                 </configuration>
                 <version>2.3.2</version>
             </plugin>
-
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/modules/addressing-1.6.1-wso2v11.mar,WEB-INF/lib/</packagingExcludes>
-                    <!--<webResources>-->
-                        <!--<resource>-->
-                            <!--&lt;!&ndash; this is relative to the pom.xml directory &ndash;&gt;-->
-                            <!--&lt;!&ndash;<directory>src/main/webapp</directory>&ndash;&gt;-->
-                        <!--</resource>-->
-                    <!--</webResources>-->
+                    <webResources>
+                        <resource>
+                            <!-- this is relative to the pom.xml directory -->
+                            <directory>src/main/webapp</directory>
+                        </resource>
+                    </webResources>
                     <warName>APIStatusMonitor</warName>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-
 </project>
