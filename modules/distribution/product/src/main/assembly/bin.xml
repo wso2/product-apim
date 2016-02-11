@@ -356,6 +356,14 @@
                 <include>**/**.xml</include>
             </includes>
         </fileSet>
+         <!-- Throttling policy related templates -->
+ 	<fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/resources/templates</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/throttle_policy_template.xml</include>
+            </includes>
+        </fileSet>
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
