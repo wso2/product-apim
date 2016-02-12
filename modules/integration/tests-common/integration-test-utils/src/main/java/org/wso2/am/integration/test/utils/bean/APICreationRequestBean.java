@@ -24,8 +24,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.generic.Utils;
 
-import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,9 +144,10 @@ public class APICreationRequestBean extends AbstractRequest {
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, resourceTier, "/*"));
         if(endpointUrl != null) {
             try {
-                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                        + endpointUrl.getProtocol() + "\"}");
+                //generate endpoint configuration as a JSON String
+                String endpointJson = Utils
+                        .generateProductionEndpoints(endpointUrl.toString(), null, endpointUrl.getProtocol());
+                this.endpoint = new JSONObject(endpointJson);
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
