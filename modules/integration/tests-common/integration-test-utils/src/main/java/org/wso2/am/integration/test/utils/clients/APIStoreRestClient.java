@@ -29,11 +29,13 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -1109,10 +1111,12 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpRequestUtil.doPost(new URL(backendURL + APIMIntegrationConstants.STORE_APPLICATION_REST_URL), "",
                     requestHeaders);
-
-        } catch (Exception e) {
+        } catch (APIManagerIntegrationTestException e) {
+            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first", e);
+        } catch (MalformedURLException e) {
+            throw new APIManagerIntegrationTestException("Unable to get application page, URL is not valid", e);
+        } catch (AutomationFrameworkException e) {
             throw new APIManagerIntegrationTestException("Unable to get application page", e);
-
         }
     }
 }
