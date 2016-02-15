@@ -36,6 +36,7 @@
             <!--&lt;!&ndash;https://wso2.org/jira/browse/TA-970&ndash;&gt;-->
             <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
@@ -143,11 +144,16 @@
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
         </classes>
     </test>
 
     <test name="rest-api-tests" preserve-order="true" parallel="false">
         <classes>
+            <!-- Following two test cases should be uncommented only when APIM is released under a kernel version which have
+            CARBON-15759 and ESBJAVA-4386 fixed -->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCase"/>-->
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
@@ -155,6 +161,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
+
         </classes>
     </test>
 

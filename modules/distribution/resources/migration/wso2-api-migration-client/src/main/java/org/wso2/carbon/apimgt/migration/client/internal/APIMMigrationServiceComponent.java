@@ -200,6 +200,7 @@ public class APIMMigrationServiceComponent {
      */
     protected void setApiManagerConfig(APIManagerConfigurationService apiManagerConfig) {
         log.info("Setting APIManager configuration");
+        ServiceHolder.setAPIManagerConfigurationService(apiManagerConfig);
     }
 
     /**
@@ -209,6 +210,7 @@ public class APIMMigrationServiceComponent {
      */
     protected void unsetApiManagerConfig(APIManagerConfigurationService apiManagerConfig) {
         log.info("Un-setting APIManager configuration");
+        ServiceHolder.setAPIManagerConfigurationService(null);
     }
 
 }

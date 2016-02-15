@@ -25,14 +25,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -545,6 +548,45 @@ public class APIStoreRestClient {
             return HttpRequestUtil.doPost(
                     new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptions"), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+
+        }
+    }
+
+    /**
+     * Get all subscriptions of Application. This is a method to get the subscription of a given application. As
+     * there is no application name is given, then only the subscriptions of first applications are returned.
+     *
+     * @return - http response of get all subscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
+     */
+    public HttpResponse getAllSubscriptionsOfApplication() throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                            "action=getAllSubscriptionsOfApplication"), "", requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+
+        }
+    }
+
+    /**
+     * Get all subscriptions of Application. This is a method to get the subscription of a given application. If no
+     * application name is given, then only the subscriptions of first applications are returned.
+     *
+     * @return - http response of get all subscription request
+     * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if get all subscriptions fails
+     */
+    public HttpResponse getAllSubscriptionsOfApplication(String selectedApplication)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(
+                    new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
+                            "action=getAllSubscriptionsOfApplication&selectedApp=" + selectedApplication), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
 
@@ -1067,12 +1109,14 @@ public class APIStoreRestClient {
     public HttpResponse getApplicationPage() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil
-                    .doPost(new URL(backendURL + "store/site/pages/applications.jag"), "", requestHeaders);
-
-        } catch (Exception e) {
+            return HttpRequestUtil.doPost(new URL(backendURL + APIMIntegrationConstants.STORE_APPLICATION_REST_URL), "",
+                    requestHeaders);
+        } catch (APIManagerIntegrationTestException e) {
+            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first", e);
+        } catch (MalformedURLException e) {
+            throw new APIManagerIntegrationTestException("Unable to get application page, URL is not valid", e);
+        } catch (AutomationFrameworkException e) {
             throw new APIManagerIntegrationTestException("Unable to get application page", e);
-
         }
     }
 }

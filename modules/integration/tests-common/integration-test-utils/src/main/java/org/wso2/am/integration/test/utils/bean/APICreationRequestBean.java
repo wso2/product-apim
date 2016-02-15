@@ -24,8 +24,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.generic.Utils;
 
-import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,12 +140,14 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         this.tiersCollection=apiTier;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resourceTier, "/*"));
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, resourceTier, "/*"));
         if(endpointUrl != null) {
             try {
-                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                        + endpointUrl.getProtocol() + "\"}");
+                //generate endpoint configuration as a JSON String
+                String endpointJson = Utils
+                        .generateProductionEndpoints(endpointUrl.toString(), null, endpointUrl.getProtocol());
+                this.endpoint = new JSONObject(endpointJson);
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -169,7 +171,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         if(endpointUrl != null) {
             try {
@@ -202,7 +205,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints = "";
@@ -249,7 +253,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         try{
 
@@ -291,7 +296,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints="";
@@ -321,6 +327,38 @@ public class APICreationRequestBean extends AbstractRequest {
                         sandBoxEndpoints + "]," +
                         "\"implementation_status\":\"managed\"," +
                         "\"endpoint_type\":\"load_balance\"}");
+
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
+        }
+    }
+
+    /**
+     * constructor of the APICreationRequestBean class with default endpoint
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider)
+            throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        this.version = version;
+        this.provider = provider;
+        resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+
+        try {
+            this.endpoint = new JSONObject();
+            this.endpoint.put("production_endpoints", new JSONObject("{\"url\":" + "\""
+                                                                     + "Default" + "\",\"config\":null}"));
+            this.endpoint.put("sandbox_endpoints",new JSONObject("{\"url\":" + "\""
+                                                                 + "Default" + "\",\"config\":null}"));
+            this.endpoint.put("endpoint_type", "default");
 
         } catch (JSONException e) {
             log.error("JSON construct error", e);

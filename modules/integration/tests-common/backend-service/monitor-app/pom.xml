@@ -21,9 +21,8 @@ under the License.
         <version>1.10.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <groupId>ArtifactDeploymentMonitor</groupId>
-    <artifactId>ArtifactDeploymentMonitor</artifactId>
+    
+    <artifactId>artifact-deployment-monitor</artifactId>
     <name>WSO2 API Manager - ArtifactDeploymentMonitor WebApp</name>
     <packaging>war</packaging>
     <modelVersion>4.0.0</modelVersion>

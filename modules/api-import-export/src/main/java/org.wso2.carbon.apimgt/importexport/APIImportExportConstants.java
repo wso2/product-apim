@@ -27,6 +27,8 @@ public final class APIImportExportConstants {
 
     //system dependent default path separator character, represented as a string
     public static final String DIRECTORY_SEPARATOR = File.separator;
+    //System independent file separator for zip files
+    public static final String ZIP_FILE_SEPARATOR = "/";
     //string representing the false state when preserving the provider
     public static final String STATUS_FALSE = "FALSE";
     //length of the name of the temporary directory
