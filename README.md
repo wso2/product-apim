@@ -1,4 +1,6 @@
         ================================================================================
+
+[![Join the chat at https://gitter.im/wso2/product-apim](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/wso2/product-apim?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
                                         WSO2 API Manager
         ================================================================================
         
