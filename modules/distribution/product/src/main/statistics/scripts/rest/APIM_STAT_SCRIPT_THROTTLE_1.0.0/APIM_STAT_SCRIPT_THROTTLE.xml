@@ -3,11 +3,13 @@
     <Name>APIM_STAT_SCRIPT_THROTTLE</Name>
 <Script>
 
+  <!--create temp table for Throttle event stream data-->
+  create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
 
-create temporary table APIThrottleData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_THROTTLE");
+  <!--create temp table for Request event stream data-->
+  create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
 
-create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");  
-
+  <!--create table for throttle out summary in DAL-->
 CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS (tableName "API_THROTTLED_OUT_SUMMARY",
   schema "api string -i,
   api_version string -i,
@@ -28,8 +30,8 @@ CREATE TEMPORARY TABLE THROTTLED_OUT_FINAL_SUMMARY USING CarbonAnalytics OPTIONS
   primaryKeys "api,api_version,context,apiPublisher,applicationName,tenantDomain,year,month,day"
 );
 
+  <!--inserting API throttle out summary data-->
   insert into table THROTTLED_OUT_FINAL_SUMMARY select
-
   COALESCE(a.api,b.api),
   COALESCE(a.api_version,b.api_version),
   COALESCE(a.context,b.context),

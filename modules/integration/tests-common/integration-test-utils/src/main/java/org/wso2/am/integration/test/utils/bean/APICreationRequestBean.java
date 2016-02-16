@@ -24,8 +24,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.generic.Utils;
 
-import javax.xml.ws.handler.MessageContext;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -150,20 +150,14 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         this.tiersCollection=apiTier;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User", resourceTier, "/*"));
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, resourceTier, "/*"));
         if(endpointUrl != null) {
             try {
-                this.endpoint = new JSONObject("{\"production_endpoints\":{\"url\":\""
-                        + endpointUrl + "\",\"config\":null},\"endpoint_type\":\""
-                        + endpointUrl.getProtocol() + "\"}");
-                this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
-                                                        "\"accessControlAllowOrigins\" : [\"*\"], " +
-                                                        "\"accessControlAllowCredentials\" : true, " +
-                                                        "\"accessControlAllowHeaders\" : " +
-                                                        "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                                                        "\"Content-Type\"], \"accessControlAllowMethods\" : " +
-                                                        "[\"POST\", " +
-                                                        "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+                //generate endpoint configuration as a JSON String
+                String endpointJson = Utils
+                        .generateProductionEndpoints(endpointUrl.toString(), null, endpointUrl.getProtocol());
+                this.endpoint = new JSONObject(endpointJson);
             } catch (JSONException e) {
                 log.error("JSON construct error", e);
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
@@ -187,7 +181,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         if(endpointUrl != null) {
             try {
@@ -228,7 +223,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints = "";
@@ -281,7 +277,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         try{
 
@@ -330,7 +327,8 @@ public class APICreationRequestBean extends AbstractRequest {
         this.version = version;
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         String prodEndpoints="";
