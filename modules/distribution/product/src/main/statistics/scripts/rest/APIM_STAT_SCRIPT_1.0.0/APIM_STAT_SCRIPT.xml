@@ -3,12 +3,15 @@
     <Name>APIM_STAT_SCRIPT</Name>
 <Script>
 
+  <!--create API_UTIL Table in DAS-->
   CREATE TEMPORARY TABLE API_UTIL USING CarbonAnalytics OPTIONS (tableName "API_UTIL",
   schema "first_access_time long -i"
   );
 
+  <!--create temp table for request stream table-->
   create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
 
+  <!--create table for request summary in DAL-->
   CREATE TEMPORARY TABLE API_REQUEST_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_SUMMARY",
   schema "api string -i,
   api_version string -i,
@@ -32,6 +35,7 @@
   primaryKeys "api,api_version,version,apiPublisher,consumerKey,userId,context,hostName,year,month,day"
   );
 
+  <!--summarised request event and insert into summary table -->
   insert into table API_REQUEST_SUMMARY_FINAL select api, api_version,version, apiPublisher,
   COALESCE(consumerKey,'-'),
   userId,context,
@@ -53,23 +57,11 @@
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
 
+  <!--insert the first access time of the API into table-->
   insert overwrite TABLE API_UTIL select min(max_request_time) from API_REQUEST_SUMMARY_FINAL;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  <!--create table for API version usage summary in DAL-->
   CREATE TEMPORARY TABLE API_VERSION_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_VERSION_USAGE_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -86,37 +78,22 @@
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
+  <!--insert API version usage summary -->
   insert into table API_VERSION_USAGE_SUMMARY_FINAL select api,version,apiPublisher,context,sum(request) as total_request_count,hostName,
-
   substring(cast(first(requestTime)/1000 as timestamp),0,4),
   substring(cast(first(requestTime)/1000 as timestamp),6,2),
   substring(cast(first(requestTime)/1000 as timestamp),9,2),
   substring(cast(first(requestTime)/1000 as timestamp),0,16),
   max(requestTime),
   facet3(api,version,context)
-
   from APIRequestData where
-
   context is not NULL group by api,version,apiPublisher,context,hostName,
-
   substring(cast(requestTime/1000 as timestamp),0,4),
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  <!--create table for API resource usage summary in DAL-->
   CREATE TEMPORARY TABLE API_Resource_USAGE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_Resource_USAGE_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -137,10 +114,10 @@
   primaryKeys "api,version,apiPublisher,consumerKey,context,resourcePath,method,hostName,year,month,day"
   );
 
+  <!--inserting API resource usage summary data-->
   insert into table API_Resource_USAGE_SUMMARY_FINAL select
   api,version,apiPublisher,COALESCE(consumerKey,'-'),
   resourcePath,context,method,sum(request) as total_request_count,hostName,
-
   substring(cast(first(requestTime)/1000 as timestamp),0,4),
   substring(cast(first(requestTime)/1000 as timestamp),6,2),
   substring(cast(first(requestTime)/1000 as timestamp),9,2),
@@ -150,18 +127,15 @@
   facet4(api,version,context,method)
   from APIRequestData where
   context is not NULL group by api,version,apiPublisher,consumerKey,resourcePath,context,method,hostName,
-
   substring(cast(requestTime/1000 as timestamp),0,4),
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
 
 
-
-
-
-
+  <!--create temp table for Response event stream data-->
   create temporary table APIResponseData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_RESPONSE");
 
+  <!--create table for Response summary in DAL-->
   CREATE TEMPORARY TABLE API_RESPONSE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_RESPONSE_SUMMARY",
   schema "api_version string -i,
   apiPublisher string -i,
@@ -178,35 +152,27 @@
   primaryKeys "api,version,apiPublisher,context,hostName,year,month,day"
   );
 
+  <!--inserting API Response usage summary data-->
   insert into table API_RESPONSE_SUMMARY_FINAL select
-  api_version,
-  COALESCE(apiPublisher,''),
-  context,
+  api_version, COALESCE(apiPublisher,''), context,
   sum(serviceTime) as avg_service_time,
-  sum(response) as total_response_count,
-  hostName,
+  sum(response) as total_response_count, hostName,
   substring(cast(first(eventTime)/1000 as timestamp),0,4),
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   substring(cast(first(eventTime)/1000 as timestamp),0,16),
-  max(eventTime),
-  facet2(api_version,context)
-  from APIResponseData
-  where
+  max(eventTime), facet2(api_version,context)
+  from APIResponseData where
   context is not NULL group by api_version,apiPublisher,context,hostName,
   substring(cast(eventTime/1000 as timestamp),0,4),
   substring(cast(eventTime/1000 as timestamp),6,2),
   substring(cast(eventTime/1000 as timestamp),9,2);
 
 
-
-
-
-
-
-
+  <!--create temp table for Fault event stream data-->
   create temporary table APIFaultData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_FAULT");
 
+  <!--create table for Fault summary in DAL-->
   CREATE TEMPORARY TABLE API_FAULT_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_FAULT_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -225,6 +191,7 @@
   primaryKeys "api,version,apiPublisher,consumerKey,context,hostName,year,month,day"
   );
 
+  <!--inserting API Fault summary data-->
   insert into table API_FAULT_SUMMARY_FINAL select
   api,version,apiPublisher,COALESCE(consumerKey,'-'),context,
   count(errorMessage) as total_fault_count,
@@ -238,23 +205,15 @@
   facet4(api,version,apiPublisher,context)
   from APIFaultData where
   context is not NULL group by api,version,apiPublisher,consumerKey ,context,hostName,
-
   substring(cast(requestTime/1000 as timestamp),0,4),
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
 
 
-
-
-
-
-
-
-
-
-
+  <!--create temp table for Destination event stream data-->
   create temporary table APIDestinationData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_DESTINATION");
 
+  <!--create table for destination summary in DAL-->
   CREATE TEMPORARY TABLE API_DESTINATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_DESTINATION_SUMMARY",
   schema "api string -i,
   version string -i,
@@ -272,9 +231,9 @@
   primaryKeys "api,version,apiPublisher,context,destination,hostName,year,month,day"
   );
 
+  <!--inserting API Destination usage summary data-->
   insert into table API_DESTINATION_SUMMARY_FINAL select
   api,version,apiPublisher, context,COALESCE(destination,'-'), sum(request) as total_request_count,hostName,
-
   substring(cast(first(requestTime)/1000 as timestamp),0,4),
   substring(cast(first(requestTime)/1000 as timestamp),6,2),
   substring(cast(first(requestTime)/1000 as timestamp),9,2),
@@ -283,13 +242,12 @@
   facet4(api,version,context,COALESCE(destination,'-'))
   from APIDestinationData
   where context is not NULL group by api,version,apiPublisher,context,destination,hostName,
-
   substring(cast(requestTime/1000 as timestamp),0,4),
   substring(cast(requestTime/1000 as timestamp),6,2),
   substring(cast(requestTime/1000 as timestamp),9,2);
 
 
-
+  <!--create table for API last access time summary in DAL-->
   CREATE TEMPORARY TABLE API_LAST_ACCESS_TIME_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_LAST_ACCESS_TIME_SUMMARY",
   schema "tenantDomain string -i,
   apiPublisher string -i,
@@ -301,6 +259,7 @@
   primaryKeys "tenantDomain,apiPublisher,api"
   );
 
+  <!--inserting API last access time summary data-->
   insert into table API_LAST_ACCESS_TIME_SUMMARY_FINAL select tenantDomain, apiPublisher, api, version, userId, context, requestTime from APIRequestData order by requestTime ASC;
 
 

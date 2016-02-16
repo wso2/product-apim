@@ -61,6 +61,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
     private Log log = LogFactory.getLog(getClass());
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private final String hostObjectTestApplicationName = "HostObjectTestAPI-Application";
 
     @Factory(dataProvider = "userModeDataProvider")
     public HostObjectTestCase(TestUserMode userMode) {
@@ -87,7 +88,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication("HostObjectTestAPI-Application");
+        apiStore.removeApplication(hostObjectTestApplicationName);
         super.cleanUp();
     }
 
@@ -135,16 +136,18 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
             assertTrue(tags.contains(tag), "API tag data mismatched");
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
-        apiStore.addApplication("HostObjectTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
-                "", "this-is-test");
+        apiStore.addApplication(hostObjectTestApplicationName, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
+                "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, providerName);
-        subscriptionRequest.setApplicationName("HostObjectTestAPI-Application");
+        subscriptionRequest.setApplicationName(hostObjectTestApplicationName);
         apiStore.subscribe(subscriptionRequest);
-        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name", "How To", "Inline", "url-no-need",
+        apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc-Name",
+                APIMIntegrationConstants.API_DOCUMENT_TYPE_HOW_TO, APIMIntegrationConstants.API_DOCUMENT_SOURCE_INLINE,
+                "url-no-need",
                 "summary", "","","");
         APPKeyRequestGenerator generateAppKeyRequest =
-                new APPKeyRequestGenerator("HostObjectTestAPI-Application");
+                new APPKeyRequestGenerator(hostObjectTestApplicationName);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken =
