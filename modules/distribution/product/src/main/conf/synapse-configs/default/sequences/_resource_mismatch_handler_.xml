@@ -17,8 +17,5 @@
   ~  under the License.
   -->
 <sequence xmlns="http://ws.apache.org/ns/synapse" name="_resource_mismatch_handler_">
-    <property name="ERROR_CODE" value="403"/>
-    <property name="ERROR_MESSAGE" value="No matching resource found in the API for the given request"/>
-    <property name="CUSTOM_HTTP_SC" value="403"/>
     <sequence key="fault"/>
 </sequence>
