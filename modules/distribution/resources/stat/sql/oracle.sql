@@ -29,4 +29,36 @@ CREATE TABLE API_LAST_ACCESS_TIME_SUMMARY (
     PRIMARY KEY (tenantDomain,apiPublisher,api)
 );
 
+CREATE TABLE API_EXECUTION_TIME_SUMMARY (
+  api VARCHAR2(100),
+  version VARCHAR2(100),
+  apiPublisher VARCHAR2(100),
+  context VARCHAR2(100),
+  mediationName VARCHAR2(100),
+  executionTime NUMBER(30),
+  year NUMBER(5),
+  month NUMBER(5),
+  day NUMBER(5),
+  hour NUMBER(5),
+  minutes NUMBER(5),
+  time NUMBER(19),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,minutes,mediationName)
+);
+CREATE TABLE API_EXECUTION_TIME_MINUTE_SUMMARY (
+  api VARCHAR2(100),
+  version VARCHAR2(100),
+  apiPublisher VARCHAR2(100),
+  context VARCHAR2(100),
+  mediationName VARCHAR2(100),
+  executionTime NUMBER(10),
+  year NUMBER(5),
+  month NUMBER(5),
+  day NUMBER(5),
+  hour NUMBER(5),
+  minutes NUMBER(5),
+  seconds NUMBER(5),
+  time NUMBER(19),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,minutes,seconds,mediationName)
+);
+
 
