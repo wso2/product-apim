@@ -146,6 +146,7 @@
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
         </classes>
     </test>
 
