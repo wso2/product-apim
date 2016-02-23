@@ -42,6 +42,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
