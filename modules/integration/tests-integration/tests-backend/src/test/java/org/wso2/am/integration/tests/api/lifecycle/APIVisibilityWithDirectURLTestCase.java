@@ -21,13 +21,14 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
@@ -36,16 +37,19 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This test case test the API visibility by roles. When the API is access with direct url of the API, it also preserve
+ * the role based restriction on anonymous logged users with and without specified role name.
+ */
 public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseTest {
     private final Log log = LogFactory.getLog(APIManagerLifecycleBaseTest.class);
-    private String apiName = "APIVisibilityWithDirectURLTestCaseAPIName";
-    private String APIContext = "APIVisibilityWithDirectURLTestCaseAPIContext";
-    private String apiNameTenant = "APIVisibilityWithDirectURLTestCaseAPIName";
-    private String APIContextTenant = "APIVisibilityWithDirectURLTestCaseAPIContext";
-    private String tags = "test, EndpointType";
-    private String endpointUrl;
-    private String description = "This is test API create by API manager integration test";
-    private String APIVersion = "1.0.0";
+    private final String apiName = "APIVisibilityWithDirectURLTestCaseAPIName";
+    private final String APIContext = "APIVisibilityWithDirectURLTestCaseAPIContext";
+    private final String apiNameTenant = "APIVisibilityWithDirectURLTestCaseAPIName";
+    private final String APIContextTenant = "APIVisibilityWithDirectURLTestCaseAPIContext";
+    private final String tags = "test, EndpointType";
+    private final String description = "This is test API create by API manager integration test";
+    private final String APIVersion = "1.0.0";
 
     private final String CARBON_SUPER_SUBSCRIBER_USERNAME = "directUrlUser";
     private final char[] CARBON_SUPER_SUBSCRIBER_PASSWORD = "password@123".toCharArray();
@@ -61,6 +65,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     private final char[] TENANT_SUBSCRIBER_1_PASSWORD = "password@123".toCharArray();
     private final String TENANT_DOMAIN_KEY = "wso2.com";
     private final String TENANT_DOMAIN_ADMIN_KEY = "admin";
+    private final String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
 
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     private APIRequest apiRequest;
@@ -71,18 +76,21 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     private UserManagementClient userManagementClient1;
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
+    private String publisherURLHttp;
+    private String storeURLHttp;
+    private String endpointUrl;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         //Creating CarbonSuper context
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
 
+        //adding new role and two users
         userManagementClient1 = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
                 createSession(publisherContext));
         userManagementClient1.addRole(INTERNAL_ROLE_SUBSCRIBER, null, permissions);
@@ -118,8 +126,8 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Test availability of the api without login", dependsOnMethods = "testAPICreation")
+    @Test(groups = { "wso2.am" }, description = "Test availability of the api without login",
+            dependsOnMethods = "testAPICreation")
     public void testDirectLinkAnonymous() throws Exception {
         HttpResponse a = HttpRequestUtil
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
@@ -128,8 +136,8 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
                 "API " + apiName + "is available to the restricted user");
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Test availability of the api with login", dependsOnMethods = "testDirectLinkAnonymous")
+    @Test(groups = { "wso2.am" }, description = "Test availability of the api with login",
+            dependsOnMethods = "testDirectLinkAnonymous")
     public void testDirectLink() throws Exception {
         HttpResponse response = apiStore
                 .login(CARBON_SUPER_SUBSCRIBER_USERNAME, String.valueOf(CARBON_SUPER_SUBSCRIBER_PASSWORD));
@@ -145,9 +153,11 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     @Test(groups = { "wso2.am" }, description = "Test availability of the api from user without restricted role",
             dependsOnMethods = "testDirectLinkAnonymous")
     public void testDirectLinkWithoutRestrictedRoleUser() throws Exception {
+        apiStore = new APIStoreRestClient(storeURLHttp);
         HttpResponse response = apiStore
                 .login(CARBON_SUPER_SUBSCRIBER_1_USERNAME, String.valueOf(CARBON_SUPER_SUBSCRIBER_1_PASSWORD));
         String session = response.getHeaders().get("Set-Cookie");
+        requestHeaders.clear();
         requestHeaders.put("Cookie", session);
         HttpResponse a = HttpRequestUtil
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
@@ -156,19 +166,16 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
                 "API " + apiName + "is available to the unauthorised user");
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and publishing in Tenant", dependsOnMethods = "testDirectLink")
+    @Test(groups = { "wso2.am" }, description = "Sample API creation and publishing in Tenant",
+            dependsOnMethods = "testDirectLink")
     public void testAPICreationInTenant() throws Exception {
-
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-
         init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
         //        otherDomain = storeContext.getContextTenant().getDomain();
         apiPublisherClientAdminOtherDomain = new APIPublisherRestClient(publisherURLHttp);
         apiPublisherClientAdminOtherDomain.login(publisherContext.getContextTenant().getContextUser().getUserName(),
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
+        //adding new role and two users in tenant mode
         userManagementClient2 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
 
@@ -181,7 +188,8 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
         apiStoreClientAnotherUserOtherDomain = new APIStoreRestClient(storeURLHttp);
 
-        String publisher = storeContext.getContextTenant().getContextUser().getUserName();
+        //create API with role based restriction
+        String publisher = publisherContext.getContextTenant().getContextUser().getUserName();
         apiRequestTenant = new APIRequest(apiNameTenant, APIContextTenant, new URL(endpointUrl));
         apiRequestTenant.setTags(tags);
         apiRequestTenant.setDescription(description);
@@ -201,8 +209,8 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Test availability of the api without logi in tenant", dependsOnMethods = "testAPICreationInTenant")
+    @Test(groups = { "wso2.am" }, description = "Test availability of the api without login in tenant",
+            dependsOnMethods = "testAPICreationInTenant")
     public void testDirectLinkInTenantAnonymous() throws Exception {
         requestHeaders.clear();
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
@@ -213,10 +221,9 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
                 "API " + apiNameTenant + "is available to the restricted user in Tenant");
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Test availability of the api with login in tenant", dependsOnMethods = "testDirectLinkInTenantAnonymous")
+    @Test(groups = { "wso2.am" }, description = "Test availability of the api with login in tenant",
+            dependsOnMethods = "testDirectLinkInTenantAnonymous")
     public void testDirectLinkInTenant() throws Exception {
-
         HttpResponse response = apiStoreClientAnotherUserOtherDomain
                 .login(TENANT_SUBSCRIBER_USERNAME + "@" + TENANT_DOMAIN_KEY,
                         String.valueOf(TENANT_SUBSCRIBER_PASSWORD));
@@ -234,12 +241,13 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
             "wso2.am" }, description = "Test availability of the api from user without restricted role in tenant",
             dependsOnMethods = "testDirectLinkInTenantAnonymous")
     public void testDirectLinkInTenantWithoutRestrictedRoleUser() throws Exception {
-
+        apiStoreClientAnotherUserOtherDomain = new APIStoreRestClient(storeURLHttp);
         HttpResponse response = apiStoreClientAnotherUserOtherDomain
                 .login(TENANT_SUBSCRIBER_1_USERNAME + "@" + TENANT_DOMAIN_KEY,
                         String.valueOf(TENANT_SUBSCRIBER_1_PASSWORD));
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
         String session = response.getHeaders().get("Set-Cookie");
+        requestHeaders.clear();
         requestHeaders.put("Cookie", session);
         HttpResponse a = HttpRequestUtil
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
@@ -255,7 +263,9 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         apiPublisherClientAdminOtherDomain.deleteAPI(apiNameTenant, APIVersion, publisher);
 
         userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
+        userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_1_USERNAME);
         userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
+        userManagementClient2.deleteUser(TENANT_SUBSCRIBER_1_USERNAME);
 
         super.cleanUp();
     }
