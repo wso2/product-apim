@@ -20,11 +20,7 @@ package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.NoHttpResponseException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
@@ -47,11 +43,13 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
-public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class APIEndpointTypeUpdateTestCase
+        extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIEndpointTypeUpdateTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private APIPublisherRestClient apiPublisherTenant;
+    private APIStoreRestClient apiStoreTenant;
 
     private String apiName = "APIEndpointTypeUpdateTestCaseAPIName";
     private String APIContext = "APIEndpointTypeUpdateTestCaseAPIContext";
@@ -62,6 +60,17 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
     private String appName = "APIEndpointTypeUpdateTestCaseAPIApp";
     private Map<String, String> requestHeaders = new HashMap<String, String>();
     private APIRequest apiRequest;
+    private APIRequest apiRequestTenant;
+
+    private String CARBON_SUPER_ADMIN = "admin";
+    private String CARBON_SUPER_ADMIN_PASS = "admin";
+    private String TENANT_WSO2_ADMIN = "admin@wso2.com";
+    private String TENANT_WSO2_ADMIN_PASS = "admin";
+    private String TENANT_WSO2 = "wso2.com";
+    String publisherURLHttp;
+    String storeURLHttp;
+    String ApiHTTPInvocationURLTenant;
+    String ApiHTTPSInvocationURLTenant;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIEndpointTypeUpdateTestCase(TestUserMode userMode) {
@@ -72,12 +81,12 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
+        publisherURLHttp = getPublisherURLHttp();
+        storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
-        apiStore = new APIStoreRestClient(storeURLHttp);
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
+        apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
 
     }
@@ -131,33 +140,23 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
     public void testHTTPTransportBeforeUpdate() throws Exception {
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                 APIMIntegrationConstants.IS_API_EXISTS);
-        Map<String, String> had = new HashMap<String, String>();
 
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(user.getUserName(), user.getPassword());
         //invoke HTTP transport
         HttpResponse serviceResponse = HttpRequestUtil
                 .doGet(getAPIInvocationURLHttp(APIContext + "/" + APIVersion), requestHeaders);
         assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
-    }
-
-    @Test(groups = {
-            "wso2.am" }, description = "Invoke HTTPS before Update", dependsOnMethods = "testHTTPTransportBeforeUpdate")
-    public void testHTTPSTransportBeforeUpdate() throws Exception {
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion));
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                requestHeaders.get(APIMIntegrationConstants.AUTHORIZATION_HEADER));
-        //invoke HTTPS transport
-        CloseableHttpResponse response = httpClient.execute(get);
-        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+        serviceResponse = HttpRequestUtil
+                .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
-
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Update to only HTTP transport and invoke", dependsOnMethods = "testHTTPSTransportBeforeUpdate")
+    @Test(groups = { "wso2.am" }, description = "Update to only HTTP transport and invoke",
+            dependsOnMethods = "testHTTPTransportBeforeUpdate")
     public void testUpdatedHTTPTransport() throws Exception {
 
         //create update request for restrict HTTPS
@@ -177,20 +176,19 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion));
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                requestHeaders.get(APIMIntegrationConstants.AUTHORIZATION_HEADER));
         //invoke HTTPS transport
-        CloseableHttpResponse response = httpClient.execute(get);
-        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.FORBIDDEN.getStatusCode(),
-                "Response code mismatched when api invocation");
-
+        try {
+            serviceResponse = HttpRequestUtil
+                    .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
+            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                    "Response code mismatched when api invocation");
+        } catch (NoHttpResponseException e) {
+            log.info("200", e);
+        }
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Update to only HTTPS transport and invoke", dependsOnMethods = "testUpdatedHTTPTransport")
+    @Test(groups = { "wso2.am" }, description = "Update to only HTTPS transport and invoke",
+            dependsOnMethods = "testUpdatedHTTPTransport")
     public void testUpdatedHTTPSTransport() throws Exception {
         //create update request for restrict HTTP
         APIRequest apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
@@ -199,20 +197,144 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         apiRequest.setHttps_checked("https");
         apiPublisher.updateAPI(apiRequest);
 
-        //invoke HTTP transport
+        try {
+            //invoke HTTP transport
+            HttpResponse serviceResponse = HttpRequestUtil
+                    .doGet(getAPIInvocationURLHttp(APIContext + "/" + APIVersion), requestHeaders);
+            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                    "Response code mismatched when api invocation");
+        } catch (NoHttpResponseException e) {
+            log.info("221", e);
+        }
+
+        //invoke HTTPS transport
         HttpResponse serviceResponse = HttpRequestUtil
-                .doGet(getAPIInvocationURLHttp(APIContext + "/" + APIVersion), requestHeaders);
-        assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion));
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                requestHeaders.get(APIMIntegrationConstants.AUTHORIZATION_HEADER));
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Update to only HTTPS transport and invoke",
+            dependsOnMethods = "testUpdatedHTTPSTransport")
+    public void testAPICreationTenant() throws Exception {
+        apiStoreTenant = new APIStoreRestClient(storeURLHttp);
+        apiStoreTenant.login(TENANT_WSO2_ADMIN, TENANT_WSO2_ADMIN_PASS);
+        apiPublisherTenant = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisherTenant.login(TENANT_WSO2_ADMIN, TENANT_WSO2_ADMIN_PASS);
+
+        apiRequestTenant = new APIRequest(apiName, APIContext, new URL(endpointUrl));
+        apiRequestTenant.setTags(tags);
+        apiRequestTenant.setDescription(description);
+        apiRequestTenant.setVersion(APIVersion);
+        apiRequestTenant.setProvider(TENANT_WSO2_ADMIN);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisherTenant.addAPI(apiRequestTenant);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, TENANT_WSO2_ADMIN,
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisherTenant.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        //add a application
+        serviceResponse = apiStoreTenant
+                .addApplication(appName, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
+        verifyResponse(serviceResponse);
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, TENANT_WSO2_ADMIN);
+        subscriptionRequest.setApplicationName(appName);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        serviceResponse = apiStoreTenant.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //generate the key for the subscription
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(appName);
+        String responseString = apiStoreTenant.generateApplicationKey(generateAppKeyRequest).getData();
+        log.info(responseString);
+        JSONObject response = new JSONObject(responseString);
+        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Assert.assertNotNull("Access Token not found " + responseString, accessToken);
+
+        requestHeaders.clear();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+
+        ApiHTTPInvocationURLTenant = getAPIInvocationURLHttp("t/" + TENANT_WSO2 + "/" + APIContext + "/") + APIVersion;
+        ApiHTTPSInvocationURLTenant =
+                getAPIInvocationURLHttps("t/" + TENANT_WSO2 + "/" + APIContext + "/") + APIVersion;
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Invoke HTTP before Update", dependsOnMethods = "testAPICreationTenant")
+    public void testHTTPTransportBeforeUpdateInTenant() throws Exception {
+        waitForAPIDeploymentSync(apiRequestTenant.getProvider(), apiRequestTenant.getName(),
+                apiRequestTenant.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+        apiStoreTenant = new APIStoreRestClient(storeURLHttp);
+        apiStoreTenant.login(TENANT_WSO2_ADMIN, TENANT_WSO2_ADMIN_PASS);
+        //invoke HTTP transport
+        HttpResponse serviceResponse = HttpRequestUtil.doGet(ApiHTTPInvocationURLTenant, requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(), serviceResponse.getData());
+
         //invoke HTTPS transport
-        CloseableHttpResponse response = httpClient.execute(get);
-        assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+        serviceResponse = HttpRequestUtil.doGet(ApiHTTPSInvocationURLTenant, requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(), serviceResponse.getData());
+
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Update to only HTTP transport and invoke",
+            dependsOnMethods = "testHTTPTransportBeforeUpdateInTenant")
+    public void testUpdatedHTTPTransportTenant() throws Exception {
+
+        //create update request for restrict HTTPS
+        APIRequest apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
+        apiRequest.setHttps_checked("");
+        apiRequest.setProvider(TENANT_WSO2_ADMIN);
+        HttpResponse serviceResponse = apiPublisherTenant.updateAPI(apiRequest);
+        assertTrue(serviceResponse.getData().contains("\"error\" : false"), apiName + " is not updated properly");
+
+        //Check whether API is updated from the above request
+        HttpResponse apiUpdateResponsePublisher = apiPublisherTenant
+                .getAPI(apiName, TENANT_WSO2_ADMIN, apiRequest.getVersion());
+
+        //invoke HTTP transport
+        serviceResponse = HttpRequestUtil.doGet(ApiHTTPInvocationURLTenant, requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response code mismatched when api invocation");
+
+        //invoke HTTPS transport
+        try {
+            serviceResponse = HttpRequestUtil.doGet(ApiHTTPSInvocationURLTenant, requestHeaders);
+            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                    "Response code mismatched when api invocation");
+        } catch (Exception ignored) {
+            //exception throw because timeout and null pointer because transport is not allowed.
+        }
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Update to only HTTPS transport and invoke",
+            dependsOnMethods = "testUpdatedHTTPTransportTenant")
+    public void testUpdatedHTTPSTransportTenant() throws Exception {
+        //create update request for restrict HTTP
+        APIRequest apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
+        apiRequest.setProvider(TENANT_WSO2_ADMIN);
+        apiRequest.setHttp_checked("");
+        apiRequest.setHttps_checked("https");
+        apiPublisherTenant.updateAPI(apiRequest);
+
+        try {
+            //invoke HTTP transport
+            HttpResponse serviceResponse = HttpRequestUtil.doGet(ApiHTTPInvocationURLTenant, requestHeaders);
+            assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
+                    "Response code mismatched when api invocation");
+        } catch (Exception ignored) {
+            //exception throw because timeout and null pointer because transport is not allowed.
+        }
+
+        //invoke HTTPS transport
+        HttpResponse serviceResponse = HttpRequestUtil.doGet(ApiHTTPSInvocationURLTenant, requestHeaders);
+        assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
 
     }
@@ -220,17 +342,15 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(appName);
+        apiStoreTenant.removeApplication(appName);
         apiPublisher.deleteAPI(apiName, APIVersion, user.getUserName());
+        apiPublisherTenant.deleteAPI(apiName, APIVersion, TENANT_WSO2_ADMIN);
 
         super.cleanUp();
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                //not for tenant now due to SYNC issue
-//                 new Object[] { TestUserMode.TENANT_ADMIN },
-        };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN }, };
     }
-
 }
