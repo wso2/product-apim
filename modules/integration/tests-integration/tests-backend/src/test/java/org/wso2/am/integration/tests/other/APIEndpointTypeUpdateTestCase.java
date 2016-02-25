@@ -127,7 +127,6 @@ import static org.testng.Assert.assertTrue;
         //generate the key for the subscription
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(appName);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
-        log.info(responseString);
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Assert.assertNotNull("Access Token not found " + responseString, accessToken);
@@ -163,7 +162,6 @@ import static org.testng.Assert.assertTrue;
         APIRequest apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
         apiRequest.setHttps_checked("");
         apiRequest.setProvider(user.getUserName());
-        System.out.println(apiRequest.getProvider());
         HttpResponse serviceResponse = apiPublisher.updateAPI(apiRequest);
         assertTrue(serviceResponse.getData().contains("\"error\" : false"), apiName + " is not updated properly");
 
@@ -182,8 +180,8 @@ import static org.testng.Assert.assertTrue;
                     .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
             assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Response code mismatched when api invocation");
-        } catch (NoHttpResponseException e) {
-            log.info("200", e);
+        } catch (Exception ignored) {
+            //exception throw because timeout and null pointer because transport is not allowed.
         }
     }
 
@@ -203,8 +201,8 @@ import static org.testng.Assert.assertTrue;
                     .doGet(getAPIInvocationURLHttp(APIContext + "/" + APIVersion), requestHeaders);
             assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Response code mismatched when api invocation");
-        } catch (NoHttpResponseException e) {
-            log.info("221", e);
+        } catch (Exception ignored) {
+            //exception throw because timeout and null pointer because transport is not allowed.
         }
 
         //invoke HTTPS transport
@@ -254,7 +252,6 @@ import static org.testng.Assert.assertTrue;
         //generate the key for the subscription
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(appName);
         String responseString = apiStoreTenant.generateApplicationKey(generateAppKeyRequest).getData();
-        log.info(responseString);
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Assert.assertNotNull("Access Token not found " + responseString, accessToken);
