@@ -172,6 +172,9 @@ public abstract class MigrationClientBase {
                 if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
                     sqlQuery = sqlQuery.replace(";", "");
                 }
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
 
                 if (isFoundQueryEnd) {
                     if (sqlQuery.length() > 0) {

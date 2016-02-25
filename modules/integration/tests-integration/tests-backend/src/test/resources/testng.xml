@@ -42,6 +42,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
@@ -99,6 +100,7 @@
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
         </classes>
     </test>
 
@@ -125,7 +127,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
-
+			<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
 
         </classes>
     </test>
@@ -146,6 +148,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
+            <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
         </classes>
     </test>
 
