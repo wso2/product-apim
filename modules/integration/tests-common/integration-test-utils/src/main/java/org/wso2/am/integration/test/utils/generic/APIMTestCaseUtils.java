@@ -1566,8 +1566,9 @@ public class APIMTestCaseUtils {
         String[] headerArray = serverMessage.split("\n");
         //tokenize  from JWT assertion header
         String[] jwtEncodedArray = headerArray[1].trim().split(":");
-        //take first part
+        //take first element
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        //Generate the jwt assertion by concatenating header and body section of the jwt token array
         return  jwtTokenArray[0].trim() + "." + jwtTokenArray[1].trim();
     }
 
@@ -1636,10 +1637,8 @@ public class APIMTestCaseUtils {
         String[] jwtEncodedArray = headerArray[1].trim().split(":");
         //take first part
         String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
-
-        // decode  JWT header
-        byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[2].getBytes());
-        return jwtByteArray;
+        // decode  JWT signature
+        return Base64.decodeBase64(jwtTokenArray[2].getBytes());
     }
 
     /**
@@ -1792,18 +1791,12 @@ public class APIMTestCaseUtils {
     }
 
     private static String hexify(byte bytes[]) {
-
-        char[] hexDigits =
-                { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-                        'e', 'f' };
-
+        char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
         StringBuilder buf = new StringBuilder(bytes.length * 2);
-
         for (byte aByte : bytes) {
             buf.append(hexDigits[(aByte & 0xf0) >> 4]);
             buf.append(hexDigits[aByte & 0x0f]);
         }
-
         return buf.toString();
     }
 }
