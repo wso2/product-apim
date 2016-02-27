@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2005-2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2005-2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -15,16 +15,54 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.apimonitorservice.beans;
+package org.wso2.am.apiMonitorService.beans;
 
-import org.wso2.carbon.rest.api.APIData;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "apiStatus")
-public class APIDeployStatus {
+public class APIStatusData {
+
     boolean isApiExists = false;
-    APIData apiData;
+    String providerName;
+    String apiName;
+    String version;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    String status;
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+
+    public String getApiName() {
+        return apiName;
+    }
+
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
+    }
+
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
 
     public void setIsApiExists(boolean isApiExists) {
         this.isApiExists = isApiExists;
@@ -34,11 +72,6 @@ public class APIDeployStatus {
         return isApiExists;
     }
 
-    public void setApiData(APIData apiData) {
-        this.apiData = apiData;
-    }
 
-    public APIData getApiData() {
-        return apiData;
-    }
+
 }
