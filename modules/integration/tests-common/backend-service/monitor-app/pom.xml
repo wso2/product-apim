@@ -76,7 +76,7 @@ under the License.
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
-            <version>4.6.1-SNAPSHOT</version>
+            <version>${carbon.deployment.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
