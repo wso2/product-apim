@@ -43,8 +43,8 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) public class APIEndpointTypeUpdateTestCase
-        extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
+public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIEndpointTypeUpdateTestCase.class);
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
@@ -67,10 +67,10 @@ import static org.testng.Assert.assertTrue;
     private String TENANT_WSO2_ADMIN = "admin@wso2.com";
     private String TENANT_WSO2_ADMIN_PASS = "admin";
     private String TENANT_WSO2 = "wso2.com";
-    String publisherURLHttp;
-    String storeURLHttp;
-    String ApiHTTPInvocationURLTenant;
-    String ApiHTTPSInvocationURLTenant;
+    private String publisherURLHttp;
+    private String storeURLHttp;
+    private String ApiHTTPInvocationURLTenant;
+    private String ApiHTTPSInvocationURLTenant;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIEndpointTypeUpdateTestCase(TestUserMode userMode) {
