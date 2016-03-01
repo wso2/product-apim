@@ -3,6 +3,7 @@
 	<Source>
 		<StreamId>org.wso2.apimgt.statistics.request:1.1.0</StreamId>
 	</Source>
+    <MergeSchema>true</MergeSchema>
 	<TableSchema>
 		<ColumnDefinition>
 			<Name>meta_clientType</Name>
