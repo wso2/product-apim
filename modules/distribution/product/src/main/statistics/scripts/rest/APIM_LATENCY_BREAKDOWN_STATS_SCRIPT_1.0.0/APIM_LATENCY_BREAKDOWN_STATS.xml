@@ -2,95 +2,99 @@
 <Analytics>
     <Name>APIM_LATENCY_BREAKDOWN_STATS</Name>
 <Script>
-  create temporary table APIExecutionTimeData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_EXECUTION_TIME");
+  CREATE TEMPORARY TABLE APIExecutionTimeData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_EXECUTION_TIME");
   CREATE TEMPORARY TABLE API_EXECUTION_TME_DAY_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TME_DAY_SUMMARY",
   schema "api string -i,
   version string -i,
   apiPublisher string -i,
   context string -i,
-  mediationName string -i,  
-  executionTime long -i,  
+  mediationName string -i,
+  executionTime long -i,
+  tenantDomain string -i,
   year int -i,
   month int -i,
   day int -i,
   time long -i",
-  primaryKeys "api,version,apiPublisher,context,year,month,day,mediationName"
+  primaryKeys "api,version,apiPublisher,context,year,month,day,mediationName,tenantDomain"
   );
-   INSERT INTO TABLE API_EXECUTION_TME_DAY_SUMMARY_FINAL select api, api_version,apiPublisher,
-  context,mediationName,avg(executionTime),
+  INSERT INTO TABLE API_EXECUTION_TME_DAY_SUMMARY_FINAL select api, api_version,apiPublisher,
+  context,mediationName,avg(executionTime),tenantDomain,
   substring(cast(first(eventTime)/1000 as timestamp),0,4),
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   first(eventTime)
-  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,
+  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,tenantDomain,
   substring(cast((eventTime)/1000 as timestamp),0,4),
   substring(cast((eventTime)/1000 as timestamp),6,2),
   substring(cast((eventTime)/1000 as timestamp),9,2);
 
-   CREATE TEMPORARY TABLE API_EXECUTION_TIME_HOUR_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_HOUR_SUMMARY",
+  CREATE TEMPORARY TABLE API_EXECUTION_TIME_HOUR_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_HOUR_SUMMARY",
   schema "api string -i,
   version string -i,
   apiPublisher string -i,
   context string -i,
-  mediationName string -i,  
-  executionTime long -i,  
+  mediationName string -i,
+  executionTime long -i,
+  tenantDomain string -i,
   year int -i,
   month int -i,
   day int -i,
   hour int -i,
   time long -i",
-  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,mediationName"
+  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,mediationName,tenantDomain"
   );
-   INSERT INTO TABLE API_EXECUTION_TIME_HOUR_SUMMARY_FINAL select api, api_version,apiPublisher,
-  context,mediationName,avg(executionTime),
+  INSERT INTO TABLE API_EXECUTION_TIME_HOUR_SUMMARY_FINAL select api, api_version,apiPublisher,
+  context,mediationName,avg(executionTime),tenantDomain,
   substring(cast(first(eventTime)/1000 as timestamp),0,4),
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   substring(cast(first(eventTime)/1000 as timestamp),12,2),
   first(eventTime)
-  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,
+  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,tenantDomain,
   substring(cast((eventTime)/1000 as timestamp),0,4),
   substring(cast((eventTime)/1000 as timestamp),6,2),
   substring(cast((eventTime)/1000 as timestamp),9,2),
   substring(cast((eventTime)/1000 as timestamp),12,2);
 
-   CREATE TEMPORARY TABLE API_EXECUTION_TIME_MINUTE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_MINUTE_SUMMARY",
+  CREATE TEMPORARY TABLE API_EXECUTION_TIME_MINUTE_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_MINUTE_SUMMARY",
   schema "api string -i,
   version string -i,
   apiPublisher string -i,
   context string -i,
-  mediationName string -i,  
-  executionTime long -i,  
+  mediationName string -i,
+  executionTime long -i,
+  tenantDomain string -i,
   year int -i,
   month int -i,
   day int -i,
   hour int -i,
   minutes int -i,
   time long -i",
-  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,minutes,mediationName"
+  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,minutes,mediationName,tenantDomain"
   );
-   INSERT INTO TABLE API_EXECUTION_TIME_MINUTE_SUMMARY_FINAL select api, api_version,apiPublisher,
-  context,mediationName,avg(executionTime),
+  INSERT INTO TABLE API_EXECUTION_TIME_MINUTE_SUMMARY_FINAL select api, api_version,apiPublisher,
+  context,mediationName,avg(executionTime),tenantDomain,
   substring(cast(first(eventTime)/1000 as timestamp),0,4),
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
   substring(cast(first(eventTime)/1000 as timestamp),12,2),
   substring(cast(first(eventTime)/1000 as timestamp),15,2),
   first(eventTime)
-  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,
+  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,tenantDomain,
   substring(cast((eventTime)/1000 as timestamp),0,4),
   substring(cast((eventTime)/1000 as timestamp),6,2),
   substring(cast((eventTime)/1000 as timestamp),9,2),
   substring(cast((eventTime)/1000 as timestamp),12,2),
   substring(cast((eventTime)/1000 as timestamp),15,2);
 
- CREATE TEMPORARY TABLE API_EXECUTION_TIME_SECONDS_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_SECONDS_SUMMARY",
+  CREATE TEMPORARY TABLE API_EXECUTION_TIME_SECONDS_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_EXECUTION_TIME_SECONDS_SUMMARY",
   schema "api string -i,
   version string -i,
   apiPublisher string -i,
   context string -i,
-  mediationName string -i,  
-  executionTime long -i,  
+  mediationName string -i,
+  executionTime long -i,
+  tenantDomain string -i,
   year int -i,
   month int -i,
   day int -i,
@@ -98,10 +102,10 @@
   minutes int -i,
   seconds int -i,
   time long -i",
-  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,minutes,seconds,mediationName"
+  primaryKeys "api,version,apiPublisher,context,year,month,day,hour,minutes,seconds,mediationName,tenantDomain"
   );
-   INSERT INTO TABLE API_EXECUTION_TIME_SECONDS_SUMMARY_FINAL select api, api_version,apiPublisher,
-  context,mediationName,avg(executionTime),
+  INSERT INTO TABLE API_EXECUTION_TIME_SECONDS_SUMMARY_FINAL select api, api_version,apiPublisher,
+  context,mediationName,avg(executionTime),tenantDomain,
   substring(cast(first(eventTime)/1000 as timestamp),0,4),
   substring(cast(first(eventTime)/1000 as timestamp),6,2),
   substring(cast(first(eventTime)/1000 as timestamp),9,2),
@@ -109,7 +113,7 @@
   substring(cast(first(eventTime)/1000 as timestamp),15,2),
   substring(cast(first(eventTime)/1000 as timestamp),18,2),
   first(eventTime)
-  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,
+  from APIExecutionTimeData where api is not NULL group by api,api_version,apiPublisher,context,mediationName,tenantDomain,
   substring(cast((eventTime)/1000 as timestamp),0,4),
   substring(cast((eventTime)/1000 as timestamp),6,2),
   substring(cast((eventTime)/1000 as timestamp),9,2),
