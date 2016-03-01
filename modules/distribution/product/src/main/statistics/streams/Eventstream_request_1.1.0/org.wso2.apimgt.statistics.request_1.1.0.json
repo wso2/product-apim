@@ -1,0 +1,93 @@
+{
+  "name": "org.wso2.apimgt.statistics.request",
+  "version": "1.1.0",
+  "nickName": "API Manager Request Data",
+  "description": "Request Data",
+  "metaData": [
+    {
+      "name": "clientType",
+      "type": "STRING"
+    }
+  ],
+  "payloadData": [
+    {
+      "name": "consumerKey",
+      "type": "STRING"
+    },
+    {
+      "name": "context",
+      "type": "STRING"
+    },
+    {
+      "name": "api_version",
+      "type": "STRING"
+    },
+    {
+      "name": "api",
+      "type": "STRING"
+    },
+    {
+      "name": "resourcePath",
+      "type": "STRING"
+    },
+    {
+      "name": "resourceTemplate",
+      "type": "STRING"
+    },
+    {
+      "name": "method",
+      "type": "STRING"
+    },
+    {
+      "name": "version",
+      "type": "STRING"
+    },
+    {
+      "name": "request",
+      "type": "INT"
+    },
+    {
+      "name": "requestTime",
+      "type": "LONG"
+    },
+    {
+      "name": "userId",
+      "type": "STRING"
+    },
+    {
+      "name": "tenantDomain",
+      "type": "STRING"
+    },
+    {
+      "name": "hostName",
+      "type": "STRING"
+    },
+    {
+      "name": "apiPublisher",
+      "type": "STRING"
+    },
+    {
+      "name": "applicationName",
+      "type": "STRING"
+    },
+    {
+      "name": "applicationId",
+      "type": "STRING"
+    },
+    {
+      "name": "userAgent",
+      "type": "STRING"
+    },
+    {
+      "name": "tier",
+      "type": "STRING"
+    },
+    {
+      "name": "throttledOut",
+      "type": "BOOL"
+    }
+  ]
+}
+	
+
+				                                    		

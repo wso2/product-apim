@@ -4,7 +4,7 @@
 
 	<dependency artifact="Eventstream_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_fault" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
-	<dependency artifact="Eventstream_request" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="Eventstream_request" version="1.1.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_response" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_workflow" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstream_throttle" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
@@ -12,14 +12,14 @@
 	
 	<dependency artifact="Eventstore_Destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstore_fault" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
-	<dependency artifact="Eventstore_request" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="Eventstore_request" version="1.1.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstore_response" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstore_workflow" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventstore_throttle" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 
 	<dependency artifact="Eventreceiver_destination" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_fault" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
-	<dependency artifact="Eventreceiver_request" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
+	<dependency artifact="Eventreceiver_request" version="1.1.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_response" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_workflow" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
 	<dependency artifact="Eventreceiver_throttle" version="1.0.0" include="true" serverRole="DataAnalyticsServer"/>
