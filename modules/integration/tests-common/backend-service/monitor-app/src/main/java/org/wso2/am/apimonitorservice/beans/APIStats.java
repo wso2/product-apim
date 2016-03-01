@@ -15,7 +15,7 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.apimonitorservice.beans;
+package org.wso2.am.apiMonitorService.beans;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
