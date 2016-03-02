@@ -37,6 +37,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +67,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     private static String apiProvider;
 
+    private String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIScopeTestCase(TestUserMode userMode) {
@@ -86,6 +88,14 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
         apiStore = new APIStoreRestClient(storeURLHttp);
+
+        gatewaySessionCookie = createSession(gatewayContextMgt);
+        //Load the back-end dummy API
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
+                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
+                                                  + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
@@ -116,7 +126,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         // Adding API
         String apiContext = "testScopeAPI";
         String tags = "thomas-bayer, testing, rest-Apis";
-        String url = "http://www.thomas-bayer.com/sqlrest/";
+        String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
         apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
@@ -191,21 +201,15 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
-        // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
-
-        //TODO - Remove the second request below. This is a temporary workaround to avoid the issue caused by a bug in
-        // carbon-mediation 4.4.11-SNAPSHOT See the thread "[Dev] [ESB] EmptyStackException when resuming a paused
-        // message processor" on dev@wso2.org for information about the bug.
         Thread.sleep(5000);
-        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
 
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the GET Method");
 
         // Accessing POST method
-        endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/PRODUCT/35");
-        response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
+        endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/test");
+        response = HttpRequestUtil.doPost(endPointURL, "", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the POST Method");
 
@@ -221,14 +225,14 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "User John cannot access the GET Method");
 
         try {
             // Accessing POST method
-            endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/PRODUCT/35");
-            response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
+            endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/test");
+            response = HttpRequestUtil.doPost(endPointURL, "", requestHeaders);
             assertTrue(response.getResponseCode() != Response.Status.OK.getStatusCode(),
                        "testRole John can access the POST Method");
 
