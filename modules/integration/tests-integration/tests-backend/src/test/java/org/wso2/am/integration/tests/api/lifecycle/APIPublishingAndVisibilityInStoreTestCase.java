@@ -133,7 +133,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in the store after API publish.",
             dependsOnMethods = "testAPIPublishing")
     public void testVisibilityOfAPIInStoreAfterPublishing() throws APIManagerIntegrationTestException {
-        //Verify the API in API Store : API should not be available in the store.
+        //Verify the API in API Store : API should be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifier, apiStoreAPIIdentifierList),

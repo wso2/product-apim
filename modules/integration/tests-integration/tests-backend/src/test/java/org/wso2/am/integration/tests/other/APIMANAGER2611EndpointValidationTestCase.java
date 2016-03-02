@@ -25,15 +25,19 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
 import java.net.URL;
 
-public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBaseTest {
+public class APIMANAGER2611EndpointValidationTestCase extends APIManagerLifecycleBaseTest {
+
+    private APIIdentifier apiIdentifier;
+    private APIPublisherRestClient apiPublisherRestClient;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIMANAGER2611EndpointValidationTestCase(TestUserMode userMode) {
@@ -52,21 +56,19 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBas
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        apiPublisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
+        apiPublisherRestClient.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Validate endpoint with Http Head not support End point")
     public void checkEndpointValidation() throws Exception {
-
-        APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
-
-        apiPublisherRestClient.login(user.getUserName(), user.getPassword());
-
         String APIName = "APIMANAGER2611testAPI";
         String APIContext = "/testEndpointValid";
         //Service which does not support HTTP HEAD
         String endPointToValidate = getGatewayURLHttp() + "oauth2/token";
         String providerName = user.getUserName();
         String APIVersion = "1.0.0";
+        apiIdentifier = new APIIdentifier(providerName, APIName, APIVersion);
 
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(endPointToValidate));
         apiRequest.setVersion(APIVersion);
@@ -87,6 +89,6 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIMIntegrationBas
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
+        deleteAPI(apiIdentifier, apiPublisherRestClient);
     }
 }
