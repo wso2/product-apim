@@ -21,8 +21,8 @@
     <xsl:template match="xs:instance[@name='gateway-wrk']/xs:hosts/xs:host/text()">gateway.am.wso2.com</xsl:template>
 
     <!--setting ports-->
-    <xsl:template match="xs:instance/xs:ports/xs:port[@type='http']/text()">80</xsl:template>
-    <xsl:template match="xs:instance/xs:ports/xs:port[@type='https']/text()">443</xsl:template>
+    <xsl:template match="xs:instance/xs:ports/xs:port[@type='http']/text()">9763</xsl:template>
+    <xsl:template match="xs:instance/xs:ports/xs:port[@type='https']/text()">9443</xsl:template>
     <xsl:template match="xs:instance/xs:ports/xs:port[@type='nhttp']/text()">8280</xsl:template>
     <xsl:template match="xs:instance/xs:ports/xs:port[@type='nhttps']/text()">8243</xsl:template>
 

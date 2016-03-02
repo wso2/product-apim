@@ -60,6 +60,7 @@ public class APIMIntegrationConstants {
     public static final String RESOURCE_AUTH_TYPE_APPLICATION = "Application";
     public static final String RESOURCE_AUTH_TYPE_APPLICATION_USER = "Application User";
     public static final String RESOURCE_AUTH_TYPE_NONE = "None";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
 
     public static final String HTTP_VERB_GET = "GET";
     public static final String HTTP_VERB_POST = "POST";

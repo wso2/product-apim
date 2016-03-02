@@ -323,7 +323,7 @@ public class APIMIntegrationBaseTest {
     }
 
     protected String getAPIInvocationURLHttps(String apiContext) throws XPathExpressionException {
-        return gatewayContextWrk.getContextUrls().getSecureServiceUrl() + "/" + apiContext;
+        return gatewayContextWrk.getContextUrls().getSecureServiceUrl().replace("/services", "") + "/" + apiContext;
     }
 
     protected String getBackendEndServiceEndPointHttp(String serviceName) {
