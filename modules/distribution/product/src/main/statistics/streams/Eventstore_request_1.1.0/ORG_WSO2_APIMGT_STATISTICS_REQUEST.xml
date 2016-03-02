@@ -145,5 +145,12 @@
 			<EnableScoreParam>false</EnableScoreParam>
 			<Type>BOOLEAN</Type>
 		</ColumnDefinition>
+		<ColumnDefinition>
+			<Name>clientIp</Name>
+			<EnableIndexing>true</EnableIndexing>
+			<IsPrimaryKey>false</IsPrimaryKey>
+			<EnableScoreParam>false</EnableScoreParam>
+			<Type>STRING</Type>
+		</ColumnDefinition>
 	</TableSchema>
 </EventStoreConfiguration>

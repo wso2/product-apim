@@ -85,6 +85,9 @@
     {
       "name": "throttledOut",
       "type": "BOOL"
+    },   {
+      "name": "clientIp",
+      "type": "STRING"
     }
   ]
 }
