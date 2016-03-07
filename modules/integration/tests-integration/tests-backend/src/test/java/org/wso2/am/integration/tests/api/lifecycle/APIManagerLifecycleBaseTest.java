@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -34,6 +35,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -271,6 +273,11 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             log.info("API Created :" + getAPIIdentifierString(apiIdentifier));
+            try {
+                Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
+            } catch (InterruptedException e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
@@ -366,6 +373,12 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                                   APIStoreRestClient storeRestClient, String applicationName)
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
+        try {
+            waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                                     APIMIntegrationConstants.IS_API_EXISTS);
+        } catch (XPathExpressionException ex){
+            throw new APIManagerIntegrationTestException(ex.getMessage(), ex);
+        }
         HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(httpResponseSubscribeAPI, "error").equals("false"))) {

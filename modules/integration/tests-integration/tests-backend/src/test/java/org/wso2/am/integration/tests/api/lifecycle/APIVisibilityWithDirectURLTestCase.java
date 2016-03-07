@@ -24,6 +24,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -91,8 +92,8 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         //adding new role and two users
-        userManagementClient1 = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                createSession(publisherContext));
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                createSession(keyManagerContext));
         userManagementClient1.addRole(INTERNAL_ROLE_SUBSCRIBER, null, permissions);
         userManagementClient1.addRole(INTERNAL_ROLE_SUBSCRIBER_1, null, permissions);
         userManagementClient1
@@ -151,7 +152,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     }
 
     @Test(groups = { "wso2.am" }, description = "Test availability of the api from user without restricted role",
-            dependsOnMethods = "testDirectLinkAnonymous")
+            dependsOnMethods = "testDirectLink")
     public void testDirectLinkWithoutRestrictedRoleUser() throws Exception {
         apiStore = new APIStoreRestClient(storeURLHttp);
         HttpResponse response = apiStore
@@ -167,7 +168,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation and publishing in Tenant",
-            dependsOnMethods = "testDirectLink")
+            dependsOnMethods = "testDirectLinkWithoutRestrictedRoleUser")
     public void testAPICreationInTenant() throws Exception {
         init(TENANT_DOMAIN_KEY, TENANT_DOMAIN_ADMIN_KEY);
         //        otherDomain = storeContext.getContextTenant().getDomain();
@@ -239,7 +240,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
     @Test(groups = {
             "wso2.am" }, description = "Test availability of the api from user without restricted role in tenant",
-            dependsOnMethods = "testDirectLinkInTenantAnonymous")
+            dependsOnMethods = "testDirectLinkInTenant")
     public void testDirectLinkInTenantWithoutRestrictedRoleUser() throws Exception {
         apiStoreClientAnotherUserOtherDomain = new APIStoreRestClient(storeURLHttp);
         HttpResponse response = apiStoreClientAnotherUserOtherDomain
@@ -253,20 +254,22 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiNameTenant + "&version=" + APIVersion
                         + "&provider=" + publisher + "&tenant=" + TENANT_DOMAIN_KEY, requestHeaders);
         Assert.assertTrue(a.getData().contains("user is not authorized to view the API"),
-                "API " + apiNameTenant + "is not available to the unauthorised user in Tenant");
+                "API " + apiNameTenant + "is available to the unauthorised user in Tenant");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(apiName, APIVersion, user.getUserName());
+        apiPublisher.deleteAPI(apiName, APIVersion, SUPER_ADMIN_USERNAME);
         String publisher = storeContext.getContextTenant().getContextUser().getUserName();
         apiPublisherClientAdminOtherDomain.deleteAPI(apiNameTenant, APIVersion, publisher);
-
+        userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+        userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER_1);
         userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);
         userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_1_USERNAME);
+        userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+        userManagementClient2.deleteRole(INTERNAL_ROLE_SUBSCRIBER_1);
         userManagementClient2.deleteUser(TENANT_SUBSCRIBER_USERNAME);
         userManagementClient2.deleteUser(TENANT_SUBSCRIBER_1_USERNAME);
-
         super.cleanUp();
     }
 
