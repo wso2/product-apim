@@ -83,13 +83,13 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
                     .addRole(SECOND_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
             userManagementClient.addUser(FIRST_USER, USER_PASSWORD, new String[] { FIRST_ROLE }, FIRST_USER);
         } catch (APIManagerIntegrationTestException e) {
-            assertTrue(false, "Error occurred while initializing testcase.");
+            assertTrue(false, "Error occurred while initializing testcase: " + e.getMessage());
         } catch (RemoteException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            assertTrue(false, "Error occurred while adding new users: " + e.getMessage());
         } catch (UserAdminUserAdminException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            assertTrue(false, "Error occurred while adding new users: " + e.getMessage());
         } catch (XPathExpressionException e) {
-            assertTrue(false, "Error occurred while retrieving context.");
+            assertTrue(false, "Error occurred while retrieving context: " + e.getMessage());
         }
     }
 
