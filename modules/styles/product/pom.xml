@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-styles-parent</artifactId>
-        <version>1.11.0-SNAPSHOT</version>
+        <version>2.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
