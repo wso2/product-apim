@@ -119,3 +119,68 @@ CREATE TABLE IF NOT EXISTS API_LAST_ACCESS_TIME_SUMMARY (
   PRIMARY KEY (tenantDomain,apiPublisher,api)
 )/
 
+CREATE TABLE IF NOT EXISTS API_EXECUTION_TME_DAY_SUMMARY (
+  api varchar(100) NOT NULL DEFAULT '',
+  version varchar(100) NOT NULL DEFAULT '',
+  apiPublisher varchar(100) NOT NULL DEFAULT '',
+  context varchar(100) NOT NULL DEFAULT '',
+  mediationName varchar(100) NOT NULL DEFAULT '',
+  executionTime int(11) DEFAULT NULL,
+  year smallint(6) DEFAULT NULL,
+  month smallint(6) DEFAULT NULL,
+  day smallint(6) DEFAULT NULL,
+  time bigint(20),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,mediationName)
+)/
+
+
+CREATE TABLE IF NOT EXISTS API_EXECUTION_TIME_HOUR_SUMMARY (
+  api varchar(100) NOT NULL DEFAULT '',
+  version varchar(100) NOT NULL DEFAULT '',
+  apiPublisher varchar(100) NOT NULL DEFAULT '',
+  context varchar(100) NOT NULL DEFAULT '',
+  mediationName varchar(100) NOT NULL DEFAULT '',
+  executionTime int(11) DEFAULT NULL,
+  year smallint(6) DEFAULT NULL,
+  month smallint(6) DEFAULT NULL,
+  day smallint(6) DEFAULT NULL,
+  hour smallint(6) DEFAULT NULL,
+  time bigint(20),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,mediationName)
+)/
+
+
+CREATE TABLE IF NOT EXISTS API_EXECUTION_TIME_MINUTE_SUMMARY (
+  api varchar(100) NOT NULL DEFAULT '',
+  version varchar(100) NOT NULL DEFAULT '',
+  apiPublisher varchar(100) NOT NULL DEFAULT '',
+  context varchar(100) NOT NULL DEFAULT '',
+  mediationName varchar(100) NOT NULL DEFAULT '',
+  executionTime int(11) DEFAULT NULL,
+  year smallint(6) DEFAULT NULL,
+  month smallint(6) DEFAULT NULL,
+  day smallint(6) DEFAULT NULL,
+  hour smallint(6) DEFAULT NULL,
+  minutes smallint(6) DEFAULT NULL,
+  time bigint(20),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,minutes,mediationName)
+)/
+
+
+CREATE TABLE IF NOT EXISTS API_EXECUTION_TIME_SECONDS_SUMMARY (
+  api varchar(100) NOT NULL DEFAULT '',
+  version varchar(100) NOT NULL DEFAULT '',
+  apiPublisher varchar(100) NOT NULL DEFAULT '',
+  context varchar(100) NOT NULL DEFAULT '',
+  mediationName varchar(100) NOT NULL DEFAULT '',
+  executionTime int(11) DEFAULT NULL,
+  year smallint(6) DEFAULT NULL,
+  month smallint(6) DEFAULT NULL,
+  day smallint(6) DEFAULT NULL,
+  hour smallint(6) DEFAULT NULL,
+  minutes smallint(6) DEFAULT NULL,
+  seconds smallint(6) DEFAULT NULL,
+  time bigint(20),
+  PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,minutes,seconds,mediationName)
+)/
+
