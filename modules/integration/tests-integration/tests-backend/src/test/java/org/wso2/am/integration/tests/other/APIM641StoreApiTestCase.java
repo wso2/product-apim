@@ -26,9 +26,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import static org.testng.Assert.*;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
@@ -38,6 +39,10 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
 /*APIM2-641- Login to the API store
 APIM-2-642 - Logout API store
 APIM2-647 - sign up user to store*/
@@ -46,6 +51,11 @@ public class APIM641StoreApiTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIM641StoreApiTestCase.class);
     private APIStoreRestClient apiStore;
+
+    @BeforeClass(alwaysRun = true)
+    public void init() throws APIManagerIntegrationTestException {
+        super.init();
+    }
 
     @DataProvider(name = "validLogin")
     public static Object[][] apiLoginCredentialsDataProvider() throws Exception {
@@ -180,17 +190,11 @@ public class APIM641StoreApiTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //delete created users
-        AutomationContext storeContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_STORE_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
-
         int deletedUserCount = 0;
         int beforeDeleteUserCount = storeUserSignUpCredentialsDataProvider().length;
         for (int i = 0; i < storeUserSignUpCredentialsDataProvider().length; i++) {
-
             userManagementClient.deleteUser(storeUserSignUpCredentialsDataProvider()[i][0].toString());
             deletedUserCount++;
-
         }
         assertEquals(deletedUserCount,beforeDeleteUserCount,"Error in user Deletion");
     }
