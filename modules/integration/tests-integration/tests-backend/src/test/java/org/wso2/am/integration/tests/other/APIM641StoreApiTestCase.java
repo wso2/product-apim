@@ -184,11 +184,6 @@ public class APIM641StoreApiTestCase extends APIMIntegrationBaseTest {
         AutomationContext storeContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_STORE_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
 
-        UserManagementClient userManagementClient = new UserManagementClient
-                (storeContext.getContextUrls().getBackEndUrl(),
-                        storeContext.getSuperTenant().getTenantAdmin().getUserName(),
-                        storeContext.getSuperTenant().getTenantAdmin().getPassword());
-
         int deletedUserCount = 0;
         int beforeDeleteUserCount = storeUserSignUpCredentialsDataProvider().length;
         for (int i = 0; i < storeUserSignUpCredentialsDataProvider().length; i++) {

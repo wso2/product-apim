@@ -59,8 +59,6 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;
 
-    private UserManagementClient userManagementClient = null;
-
     private static final String API_NAME = "DefaultVersionScopeAPI";
 
     private static final String API_VERSION = "1.0.0";
@@ -96,8 +94,6 @@ public class DefaultVersionWithScopesTestCase extends APIMIntegrationBaseTest {
 
         //Add a user called mike and assign him to the subscriber role.
         try {
-            userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "admin",
-                                                            "admin");
             //adding new role subscriber
             userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
                                                                                        "/permission/admin/manage/api/subscribe"});
