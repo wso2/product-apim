@@ -38,6 +38,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
 
+/**
+ * Verify the behaviour of API store when debug logs are enabled
+ */
 public class APIMANAGER4167StoreDebugEnabledTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
     private String publisherURL;
