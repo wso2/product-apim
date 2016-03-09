@@ -19,6 +19,7 @@
 package org.wso2.am.apiMonitorService.beans;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Set;
 
 /**
  * Bean class to store web-app information

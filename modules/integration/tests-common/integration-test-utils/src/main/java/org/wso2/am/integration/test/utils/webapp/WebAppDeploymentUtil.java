@@ -121,8 +121,6 @@ public class WebAppDeploymentUtil {
                 response = HttpRequestUtil.sendGetRequest(
                         webAppURL + "/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
                         "webAppStatus/webappInfo/" +
-                        MultitenantConstants.SUPER_TENANT_DOMAIN_NAME + "/" +
-                        MultitenantConstants.SUPER_TENANT_ID + "/" +
                         APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", null);
 
             } catch (IOException ignore) {
