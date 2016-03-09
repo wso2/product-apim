@@ -46,7 +46,7 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
     
     private String publisherURLHttp;
     private String storeURLHttp;
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private String invalidUserName;
     private String subscriberUser;
     //private String subscriberRole;
@@ -69,10 +69,10 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
-     
 
-        userManagementClient = new UserManagementClient(
-                storeContext.getContextUrls().getBackEndUrl(), createSession(storeContext));
+
+        userManagementClient1 = new UserManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
 
         if (storeContext.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             invalidUserName = storeContext.getContextTenant().getContextUser().getUserName() + "invalid";
@@ -109,17 +109,17 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         //Try login to publisher with subscriber user
         APIPublisherRestClient apiPublisherRestClient = new APIPublisherRestClient(publisherURLHttp);
         
-        if(!userManagementClient.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)){
+        if(!userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)){
             String[] subscriberPermissions = {
                     "/permission/admin/login",
                     "/permission/admin/manage/api/subscribe"};
-            userManagementClient.addInternalRole(ROLE_SUBSCRIBER, null, subscriberPermissions);
+            userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, null, subscriberPermissions);
         }
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists(INTERNAL_ROLE_SUBSCRIBER, "subscriberUser")) {
-            userManagementClient.addUser("subscriberUser", "password@123",
-                                         new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, "subscriberUser")) {
+            userManagementClient1.addUser("subscriberUser", "password@123",
+                                          new String[]{INTERNAL_ROLE_SUBSCRIBER}, null);
         }
 
         HttpResponse httpResponse = apiPublisherRestClient.login(subscriberUser,
@@ -150,28 +150,28 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
                 "/permission/admin/login",
                 "/permission/admin/manage/api/create"};
 
-        if (!userManagementClient.roleNameExists(APICreatorRole)) {
-            userManagementClient.addRole(APICreatorRole, null, createPermissions);
+        if (!userManagementClient1.roleNameExists(APICreatorRole)) {
+            userManagementClient1.addRole(APICreatorRole, null, createPermissions);
         }
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists(APICreatorRole, APICreatorUser)) {
-            userManagementClient.addUser(APICreatorUser, password,
-                                         new String[]{APICreatorRole}, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists(APICreatorRole, APICreatorUser)) {
+            userManagementClient1.addUser(APICreatorUser, password,
+                                          new String[]{APICreatorRole}, null);
         }
 
         String[] publishPermissions = {
                 "/permission/admin/login",
                 "/permission/admin/manage/api/publish"};
 
-        if (!userManagementClient.roleNameExists(APIPublisherRole)) {
-            userManagementClient.addRole(APIPublisherRole, null, publishPermissions);
+        if (!userManagementClient1.roleNameExists(APIPublisherRole)) {
+            userManagementClient1.addRole(APIPublisherRole, null, publishPermissions);
         }
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists(APIPublisherRole, APIPublisherUser)) {
-            userManagementClient.addUser(APIPublisherUser, password,
-                                         new String[]{APIPublisherRole}, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists(APIPublisherRole, APIPublisherUser)) {
+            userManagementClient1.addUser(APIPublisherUser, password,
+                                          new String[]{APIPublisherRole}, null);
         }
 
         HttpResponse httpResponse = apiStoreRestClient.login("invaliduser", "invaliduser@123");

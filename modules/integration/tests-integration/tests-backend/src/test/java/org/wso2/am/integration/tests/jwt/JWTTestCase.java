@@ -57,7 +57,7 @@ import static org.testng.AssertJUnit.assertTrue;
 public class JWTTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
     private String publisherURLHttp;
@@ -91,7 +91,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                                                                "configFiles/tokenTest/" + "log4j.properties"));
 
 
-        userManagementClient = new UserManagementClient(
+        userManagementClient1 = new UserManagementClient(
                 keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getContextUser().getUserName(),
                 keyManagerContext.getContextTenant().getContextUser().getPassword());
@@ -330,10 +330,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String password = "password@123";
         String accessToken;
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, password,
-                                         new String[]{"Internal/subscriber"}, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
+            userManagementClient1.addUser(subscriberUser, password,
+                                          new String[]{"Internal/subscriber"}, null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =

@@ -49,8 +49,6 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 		super.init();
 		gatewaySessionCookie = createSession(gatewayContextMgt);
 		// Create tenant
-		TenantManagementServiceClient tenantManagementServiceClient =
-				new TenantManagementServiceClient(keyManagerContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
 		tenantManagementServiceClient.addTenant("abc.com", "abc123", "abc", "demo");
 
 		// Upload the synapse

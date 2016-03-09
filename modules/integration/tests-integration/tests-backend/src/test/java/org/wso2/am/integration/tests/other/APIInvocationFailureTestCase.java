@@ -50,10 +50,6 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init();
         publisherURLHttp = getPublisherURLHttp();
-        // create a tenant
-        TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                publisherContext.getContextUrls().getBackEndUrl(), createSession(publisherContext));
-
         tenantManagementServiceClient.addTenant(tenantDomain,
                 publisherContext.getContextTenant().getTenantAdmin().getPassword(),
                 publisherContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
