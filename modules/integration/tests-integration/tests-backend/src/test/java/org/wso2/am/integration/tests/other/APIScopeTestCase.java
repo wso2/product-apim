@@ -53,7 +53,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;
 
-    private UserManagementClient userManagementClient = null;
+    private UserManagementClient userManagementClient1 = null;
 
     private static final String API_NAME = "APIScopeTestAPI";
 
@@ -102,13 +102,13 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
     public void testSetScopeToResourceTestCase() throws Exception {
 
 
-        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                        keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                                                        keyManagerContext.getContextTenant().getContextUser().getPassword());
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                         keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                                                         keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         // adding new role subscriber
-        userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                                                                                   "/permission/admin/manage/api/subscribe"});
+        userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
+                                                                                    "/permission/admin/manage/api/subscribe"});
 
         // crating user john
         String userJohn;
@@ -120,7 +120,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
             userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
         }
-        userManagementClient.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
+        userManagementClient1.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
 
 
         // Adding API
@@ -253,9 +253,9 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
         }
 
-        if (userManagementClient != null) {
-            userManagementClient.deleteUser(USER_JOHN);
-            userManagementClient.deleteRole(SUBSCRIBER_ROLE);
+        if (userManagementClient1 != null) {
+            userManagementClient1.deleteUser(USER_JOHN);
+            userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
         super.cleanUp();
     }

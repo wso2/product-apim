@@ -373,12 +373,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                                   APIStoreRestClient storeRestClient, String applicationName)
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
-        try {
-            waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                                      APIMIntegrationConstants.IS_API_EXISTS);
-        } catch (XPathExpressionException ex){
-            throw new APIManagerIntegrationTestException(ex.getMessage(), ex);
-        }
         HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(httpResponseSubscribeAPI, "error").equals("false"))) {
