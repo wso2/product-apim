@@ -16,12 +16,14 @@
 
 package org.wso2.am.integration.tests.other;
 
+import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpStatus;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -56,6 +58,8 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
     private final String HEALTHY_API = "healthyAPI";
     private final String EP_URL = "http://gdata.youtube.com/feeds/api/standardfeeds";
     private final String API_VERSION = "1.0.0";
+    private final String RESTRICTED = "restricted";
+    private final String TAG_UPDATED = "updated";
     private String contextUsername = "admin";
     private String contextUserPassword = "admin";
     private UserManagementClient userManagementClient;
@@ -83,13 +87,13 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
                     .addRole(SECOND_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
             userManagementClient.addUser(FIRST_USER, USER_PASSWORD, new String[] { FIRST_ROLE }, FIRST_USER);
         } catch (APIManagerIntegrationTestException e) {
-            assertTrue(false, "Error occurred while initializing testcase.");
+            Assert.fail("Error occurred while initializing testcase.");
         } catch (RemoteException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            Assert.fail("Error occurred while adding new users.");
         } catch (UserAdminUserAdminException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            Assert.fail("Error occurred while adding new users.");
         } catch (XPathExpressionException e) {
-            assertTrue(false, "Error occurred while retrieving context.");
+            Assert.fail("Error occurred while retrieving context.");
         }
     }
 
@@ -100,7 +104,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         APIRequest brokenApiRequest = new APIRequest(BROKEN_API, BROKEN_API, new URL(EP_URL));
         brokenApiRequest.setVersion(API_VERSION);
         brokenApiRequest.setProvider(contextUsername);
-        brokenApiRequest.setVisibility("restricted");
+        brokenApiRequest.setVisibility(RESTRICTED);
         brokenApiRequest.setRoles(FIRST_ROLE);
         apiPublisher.addAPI(brokenApiRequest);
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(BROKEN_API, contextUsername,
@@ -110,7 +114,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         APIRequest healthyApiRequest = new APIRequest(HEALTHY_API, HEALTHY_API, new URL(EP_URL));
         healthyApiRequest.setVersion(API_VERSION);
         healthyApiRequest.setProvider(contextUsername);
-        healthyApiRequest.setVisibility("restricted");
+        healthyApiRequest.setVisibility(RESTRICTED);
         healthyApiRequest.setRoles(FIRST_ROLE);
         apiPublisher.addAPI(healthyApiRequest);
         updateRequest = new APILifeCycleStateRequest(HEALTHY_API, contextUsername, APILifeCycleState.PUBLISHED);
@@ -119,7 +123,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         // subscribe both apis
         apiStoreRestClient.login(FIRST_USER, USER_PASSWORD);
 
-        apiStoreRestClient.addApplication(APP_NAME, "Unlimited", "", "");
+        apiStoreRestClient.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(BROKEN_API, contextUsername);
         subscriptionRequest.setApplicationName(APP_NAME);
         apiStoreRestClient.subscribe(subscriptionRequest);
@@ -128,7 +132,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         apiStoreRestClient.subscribe(subscriptionRequest);
 
         brokenApiRequest.setRoles(SECOND_ROLE);
-        brokenApiRequest.setTags("updated");
+        brokenApiRequest.setTags(TAG_UPDATED);
         Thread.sleep(1000);
         apiPublisher.updateAPI(brokenApiRequest);
 
