@@ -33,8 +33,6 @@ import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
 import org.wso2.carbon.governance.lcm.util.CommonUtil;
-import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.registry.core.ActionConstants;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
@@ -60,20 +58,30 @@ public class RegistryServiceImpl implements RegistryService {
     @Override
     public void startTenantFlow(Tenant tenant) {
         if (this.tenant != null) {
+            log.error("Start tenant flow called without ending previous tenant flow");
             throw new IllegalStateException("Previous tenant flow has not been ended, " +
                                                 "'RegistryService.endTenantFlow()' needs to be called");
         }
-        PrivilegedCarbonContext.startTenantFlow();
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
-        this.tenant = tenant;
+        else {
+            PrivilegedCarbonContext.startTenantFlow();
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
+            this.tenant = tenant;
+        }
     }
 
     @Override
     public void endTenantFlow() {
-        PrivilegedCarbonContext.endTenantFlow();
-        this.tenant = null;
-        this.apiProvider = null;
+        if (this.tenant == null) {
+            log.error("End tenant flow called even though tenant flow has already been ended or was not started");
+            throw new IllegalStateException("Previous tenant flow has already been ended, " +
+                    "unnecessary additional RegistryService.endTenantFlow()' call has been detected");
+        }
+        else {
+            PrivilegedCarbonContext.endTenantFlow();
+            this.tenant = null;
+            this.apiProvider = null;
+        }
     }
 
     @Override

@@ -98,7 +98,7 @@ public class ServiceHolder {
 
     /**
      * Sets APIManagerConfigurationService
-     * @param amConfigurationService
+     * @param amConfigService
      */
     public static void setAPIManagerConfigurationService(APIManagerConfigurationService amConfigService) {
         amConfigurationService = amConfigService;
