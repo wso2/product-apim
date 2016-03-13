@@ -57,7 +57,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     private String publisherURLHttp;
     private APIPublisherRestClient apiPublisher;
     private URL tagListUrl;
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private APIRequest apiRequestPublic, apiRequestRestricted;
     private String endpointUrl;
 
@@ -93,10 +93,10 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         //adding new role and user
-        userManagementClient = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                createSession(publisherContext));
-        userManagementClient.addRole(role, null, permissions);
-        userManagementClient.addUser(allowedUser, String.valueOf(allowedUserPass), new String[] { role }, null);
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                         createSession(keyManagerContext));
+        userManagementClient1.addRole(role, null, permissions);
+        userManagementClient1.addUser(allowedUser, String.valueOf(allowedUserPass), new String[] {role }, null);
         tagListUrl = new URL(getStoreURLHttp() + "store/site/blocks/tag/tag-cloud/ajax/list.jag");
     }
 
@@ -189,6 +189,8 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiPublisher.deleteAPI(apiNamePublic, APIVersion, user.getUserName());
         apiPublisher.deleteAPI(apiNameRestricted, APIVersion, user.getUserName());
+        userManagementClient1.deleteRole(role);
+        userManagementClient1.deleteUser(allowedUser);
     }
 
     @DataProvider

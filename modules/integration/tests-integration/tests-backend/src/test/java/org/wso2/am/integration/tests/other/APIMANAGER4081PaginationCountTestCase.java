@@ -66,11 +66,6 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         try {
             super.init();
             publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
-            // create a tenant
-            TenantManagementServiceClient tenantManagementServiceClient = new TenantManagementServiceClient(
-                    keyManagerContext.getContextUrls().getBackEndUrl(), createSession(keyManagerContext));
-
             tenantManagementServiceClient.addTenant(tenantDomain,
                     keyManagerContext.getContextTenant().getTenantAdmin().getPassword(),
                     keyManagerContext.getContextTenant().getTenantAdmin().getUserName(), "demo");

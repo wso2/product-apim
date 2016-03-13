@@ -50,7 +50,8 @@ public class APIStatusProvider {
         Collection<API> apiList = this.getSynapseConfiguration(tenantDomain, tenantId).getAPIs();
         boolean deployed = false;
         for (API currentApi : apiList) {
-            if (currentApi.getName().split("--")[1].equals(apiName+":v"+version)) {
+            if (currentApi.getName().contains("--")
+                && currentApi.getName().split("--")[1].equals(apiName+":v"+version)) {
                 apistatusData.setIsApiExists(true);
                 apistatusData.setApiName(currentApi.getAPIName());
                 apistatusData.setProviderName(currentApi.getFileName());
