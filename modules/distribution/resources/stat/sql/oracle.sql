@@ -90,4 +90,18 @@ CREATE TABLE API_EXECUTION_TIME_SECONDS_SUMMARY (
   time NUMBER(19),
   PRIMARY KEY (api,version,apiPublisher,context,year,month,day,hour,minutes,seconds,mediationName)
 );
+CREATE TABLE IF NOT EXISTS API_REQUEST_GEO_LOCATION_SUMMARY (
+  api VARCHAR2(100) NUMBER,
+  version VARCHAR2(100) NUMBER,
+  apiPublisher VARCHAR2(100) NUMBER,
+  tenantDomain VARCHAR2(100) NUMBER,
+  total_request_count int(11),
+  year NUMBER(6),
+  month NUMBER(6),
+  day NUMBER(6),
+  requestTime NUMBER(20),
+  country VARCHAR2(200) NOT NULL,
+  city VARCHAR2(200) NOT NULL
+  PRIMARY KEY (api,version,apiPublisher,year,month,day,tenantDomain,country,city)
+);
 
