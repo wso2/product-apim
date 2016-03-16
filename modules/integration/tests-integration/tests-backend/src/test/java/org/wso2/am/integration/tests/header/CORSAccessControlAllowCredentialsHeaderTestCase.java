@@ -80,12 +80,13 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIMIntegra
     @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
     public void APIInvocationFailure() throws Exception {
         String providerName = user.getUserName();
-        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(url));
+        String endpointUrl = getGatewayURLNhttp() + "response";
+        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
         apiRequest.setTags(TAGS);
         apiRequest.setProvider(providerName);
         apiRequest.setDescription(DESCRIPTION);
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setSandbox(url);
+        apiRequest.setSandbox(endpointUrl);
         apiRequest.setResourceMethod("GET");
 
         //add test api
@@ -104,7 +105,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIMIntegra
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(apiContext, apiVersion)
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)
                                                              + "/most_popular", requestHeaders);
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
                      "Response code mismatched when api invocation");
@@ -124,7 +125,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIMIntegra
     }
 
     @Factory(dataProvider = "userModeDataProvider")
-    public APIInvocationFailureTestCase(TestUserMode userMode) {
+    public CORSAccessControlAllowCredentialsHeaderTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 }
