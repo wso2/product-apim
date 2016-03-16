@@ -100,7 +100,7 @@ public class URLSafeJWTTestCase
         wireMonitorURL = "http://" + url.getHost() + ":" + hostPort;
 
         server = new WireMonitorServer(hostPort);
-        server.setReadTimeOut(300);
+        server.setReadTimeOut(30000);
         server.start();
 
         String gatewaySessionCookie = createSession(gatewayContextMgt);

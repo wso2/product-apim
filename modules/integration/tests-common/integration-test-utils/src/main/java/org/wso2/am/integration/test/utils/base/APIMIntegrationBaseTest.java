@@ -38,9 +38,11 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.xml.stream.XMLStreamException;
@@ -59,14 +61,15 @@ import java.util.regex.Matcher;
 public class APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
-    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt, gatewayContextWrk, backEndServer;
+    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
     protected OMElement synapseConfiguration;
     protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
     protected String executionMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected User user;
-    private static final long WAIT_TIME = 90 * 1000;
+    private static final long WAIT_TIME = 45 * 1000;
     protected APIPublisherRestClient apiPublisher;
     protected APIStoreRestClient apiStore;
     protected UserManagementClient userManagementClient;
@@ -74,6 +77,7 @@ public class APIMIntegrationBaseTest {
     protected String publisherURLHttp;
     protected String storeURLHttp;
     protected String keymanagerSessionCookie;
+    protected String keymanagerSuperTenantSessionCookie;
 
     /**
      * This method will initialize test environment
@@ -84,20 +88,6 @@ public class APIMIntegrationBaseTest {
     protected void init() throws APIManagerIntegrationTestException {
         userMode = TestUserMode.SUPER_TENANT_ADMIN;
         init(userMode);
-        keymanagerSessionCookie = createSession(keyManagerContext);
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
-
-        try {
-            userManagementClient = new UserManagementClient(
-                    keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
-            tenantManagementServiceClient = new TenantManagementServiceClient(
-                    keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException(e.getMessage(), e);
-        }
     }
 
     /**
@@ -145,6 +135,26 @@ public class APIMIntegrationBaseTest {
             executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
 
             user = storeContext.getContextTenant().getContextUser();
+
+            superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                                                      TestUserMode.SUPER_TENANT_ADMIN);
+
+            keymanagerSessionCookie = createSession(keyManagerContext);
+            publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            storeURLHttp = storeUrls.getWebAppURLHttp();
+            apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+            apiStore = new APIStoreRestClient(storeURLHttp);
+
+            try {
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                userManagementClient = new UserManagementClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSuperTenantSessionCookie);
+            } catch (Exception e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
 
         } catch (XPathExpressionException e) {
             log.error("APIM test environment initialization failed", e);
