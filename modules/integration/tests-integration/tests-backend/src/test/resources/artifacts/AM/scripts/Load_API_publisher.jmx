@@ -1,0 +1,2438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.6" jmeter="2.11.20141024">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Tenant_User_details" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="tenantDomainName" elementType="Argument">
+            <stringProp name="Argument.name">tenantDomainName</stringProp>
+            <stringProp name="Argument.value">carbon.super</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">ex: JmeterTenant1.com</stringProp>
+          </elementProp>
+          <elementProp name="numberOfTenants" elementType="Argument">
+            <stringProp name="Argument.name">numberOfTenants</stringProp>
+            <stringProp name="Argument.value">0</stringProp>
+            <stringProp name="Argument.desc">No of tenants</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="numberOfPublishers" elementType="Argument">
+            <stringProp name="Argument.name">numberOfPublishers</stringProp>
+            <stringProp name="Argument.value">2</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">No of publishers per tenant</stringProp>
+          </elementProp>
+          <elementProp name="publisherName_prefix" elementType="Argument">
+            <stringProp name="Argument.name">publisherName_prefix</stringProp>
+            <stringProp name="Argument.value">pub5sp</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">pub1, pub2 etc. Every tenant has the same publisher names...</stringProp>
+          </elementProp>
+          <elementProp name="publisherPassword" elementType="Argument">
+            <stringProp name="Argument.name">publisherPassword</stringProp>
+            <stringProp name="Argument.value">pub@123</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">every publisher has the same password</stringProp>
+          </elementProp>
+          <elementProp name="numberOfSubscribers" elementType="Argument">
+            <stringProp name="Argument.name">numberOfSubscribers</stringProp>
+            <stringProp name="Argument.value">2</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">No of subscribers per tenant</stringProp>
+          </elementProp>
+          <elementProp name="subscriberName_prefix" elementType="Argument">
+            <stringProp name="Argument.name">subscriberName_prefix</stringProp>
+            <stringProp name="Argument.value">sub5sp</stringProp>
+            <stringProp name="Argument.desc">sub1, sub2 etc</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="subscribePassword" elementType="Argument">
+            <stringProp name="Argument.name">subscribePassword</stringProp>
+            <stringProp name="Argument.value">sub@123</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Server Parameter variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="publisherIP" elementType="Argument">
+            <stringProp name="Argument.name">publisherIP</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="publisherPort" elementType="Argument">
+            <stringProp name="Argument.name">publisherPort</stringProp>
+            <stringProp name="Argument.value">9763</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="publisherSSLPort" elementType="Argument">
+            <stringProp name="Argument.name">publisherSSLPort</stringProp>
+            <stringProp name="Argument.value">9443</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="storeIP" elementType="Argument">
+            <stringProp name="Argument.name">storeIP</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="storePort" elementType="Argument">
+            <stringProp name="Argument.name">storePort</stringProp>
+            <stringProp name="Argument.value">9763</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="storeSSLPort" elementType="Argument">
+            <stringProp name="Argument.name">storeSSLPort</stringProp>
+            <stringProp name="Argument.value">9443</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="gatewayServer" elementType="Argument">
+            <stringProp name="Argument.name">gatewayServer</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="gatewayPort" elementType="Argument">
+            <stringProp name="Argument.name">gatewayPort</stringProp>
+            <stringProp name="Argument.value">8280</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="gatewayHttpsPort" elementType="Argument">
+            <stringProp name="Argument.name">gatewayHttpsPort</stringProp>
+            <stringProp name="Argument.value">9443</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="APIdetails" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="numberOfAPIs" elementType="Argument">
+            <stringProp name="Argument.name">numberOfAPIs</stringProp>
+            <stringProp name="Argument.value">1500</stringProp>
+            <stringProp name="Argument.desc">Number of APIs per tenant</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="apiname" elementType="Argument">
+            <stringProp name="Argument.name">apiname</stringProp>
+            <stringProp name="Argument.value">test10</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="apicontext" elementType="Argument">
+            <stringProp name="Argument.name">apicontext</stringProp>
+            <stringProp name="Argument.value">/test10</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="endpoint" elementType="Argument">
+            <stringProp name="Argument.name">endpoint</stringProp>
+            <stringProp name="Argument.value">http://192.168.18.78:10763/jaxrs_basic/services/customers/customerservice</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">must fill in here</stringProp>
+          </elementProp>
+          <elementProp name="version" elementType="Argument">
+            <stringProp name="Argument.name">version</stringProp>
+            <stringProp name="Argument.value">1.0.0</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Tennant Creation" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1342532280000</longProp>
+        <longProp name="ThreadGroup.end_time">1342532280000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+          <stringProp name="CookieManager.policy">rfc2109</stringProp>
+        </CookieManager>
+        <hashTree/>
+        <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Login to Carbon Console" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+          <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;aut:login&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:username&gt;Adminu&lt;/aut:username&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:password&gt;adminpw&lt;/aut:password&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:remoteAddress&gt;${publisherIP}&lt;/aut:remoteAddress&gt;
+      &lt;/aut:login&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+          <stringProp name="SoapSampler.xml_data_file"></stringProp>
+          <stringProp name="SoapSampler.SOAP_ACTION">urn:login</stringProp>
+          <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+        </SoapSampler>
+        <hashTree/>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">${numberOfTenants}</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">${numberOfTenants}</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">tennant_number</stringProp>
+            <stringProp name="CounterConfig.format">#</stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Check Tenant Availability" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:ser=&quot;http://services.mgt.tenant.carbon.wso2.org&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;ser:getTenant&gt;
+         &lt;!--Optional:--&gt;
+         &lt;ser:tenantDomain&gt;${tenantDomainName}${tennant_number}.com&lt;/ser:tenantDomain&gt;
+      &lt;/ser:getTenant&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+            <stringProp name="SoapSampler.xml_data_file"></stringProp>
+            <stringProp name="SoapSampler.SOAP_ACTION">urn:getTenant</stringProp>
+            <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          </SoapSampler>
+          <hashTree>
+            <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor" enabled="true">
+              <stringProp name="XPathExtractor.default">undefined</stringProp>
+              <stringProp name="XPathExtractor.refname">tenant_exists</stringProp>
+              <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;active&apos;]/text()</stringProp>
+              <boolProp name="XPathExtractor.validate">false</boolProp>
+              <boolProp name="XPathExtractor.tolerant">false</boolProp>
+              <boolProp name="XPathExtractor.namespace">true</boolProp>
+              <stringProp name="Scope.variable">tenant_exists</stringProp>
+            </XPathExtractor>
+            <hashTree/>
+            <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+              <boolProp name="displayJMeterProperties">false</boolProp>
+              <boolProp name="displayJMeterVariables">true</boolProp>
+              <boolProp name="displaySamplerProperties">true</boolProp>
+              <boolProp name="displaySystemProperties">false</boolProp>
+            </DebugPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If Controller" enabled="false">
+            <stringProp name="IfController.condition">${tenant_exists}==false</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+          </IfController>
+          <hashTree/>
+          <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Add Tennant" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/TenantMgtAdminService.TenantMgtAdminServiceHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:ser=&quot;http://services.mgt.tenant.carbon.wso2.org&quot; xmlns:xsd=&quot;http://beans.common.stratos.carbon.wso2.org/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;ser:addTenant&gt;
+         &lt;!--Optional:--&gt;
+         &lt;ser:tenantInfoBean&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:active&gt;1&lt;/xsd:active&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:admin&gt;admin&lt;/xsd:admin&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:adminPassword&gt;admin123&lt;/xsd:adminPassword&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:createdDate&gt;2013-05-05T08:22:54&lt;/xsd:createdDate&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:email&gt;asanthi@wso2.com&lt;/xsd:email&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:firstname&gt;Jmeter&lt;/xsd:firstname&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:lastname&gt;Test&lt;/xsd:lastname&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:tenantDomain&gt;${tenantDomainName}${tennant_number}.com&lt;/xsd:tenantDomain&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:tenantId&gt;0&lt;/xsd:tenantId&gt;
+            &lt;!--Optional:--&gt;
+            &lt;xsd:usagePlan&gt;Demo&lt;/xsd:usagePlan&gt;
+         &lt;/ser:tenantInfoBean&gt;
+      &lt;/ser:addTenant&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+            <stringProp name="SoapSampler.xml_data_file"></stringProp>
+            <stringProp name="SoapSampler.SOAP_ACTION">urn:addTenant</stringProp>
+            <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          </SoapSampler>
+          <hashTree/>
+        </hashTree>
+        <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Log Out - Super Tennant" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+          <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;aut:logout/&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+          <stringProp name="SoapSampler.xml_data_file"></stringProp>
+          <stringProp name="SoapSampler.SOAP_ACTION">urn:logout</stringProp>
+          <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+        </SoapSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49588">202</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>true</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="User Creation" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1363957740000</longProp>
+        <longProp name="ThreadGroup.end_time">1363957740000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Tenant Iteration Loop" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">1</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">tenant_counter</stringProp>
+            <stringProp name="CounterConfig.format">#</stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Login to Carbon Console" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;aut:login&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:username&gt;SECOND/spload&lt;/aut:username&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:password&gt;admin&lt;/aut:password&gt;
+         &lt;!--Optional:--&gt;
+         &lt;aut:remoteAddress&gt;${publisherIP}&lt;/aut:remoteAddress&gt;
+      &lt;/aut:login&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+            <stringProp name="SoapSampler.xml_data_file"></stringProp>
+            <stringProp name="SoapSampler.SOAP_ACTION">urn:login</stringProp>
+            <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          </SoapSampler>
+          <hashTree/>
+          <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Check if publisher role Exists" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:getAllRolesNames&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:filter&gt;publisher&lt;/xsd:filter&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:limit&gt;0&lt;/xsd:limit&gt;
+      &lt;/xsd:getAllRolesNames&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+            <stringProp name="SoapSampler.xml_data_file"></stringProp>
+            <stringProp name="SoapSampler.SOAP_ACTION">urn:getAllRolesNames</stringProp>
+            <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          </SoapSampler>
+          <hashTree>
+            <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor" enabled="true">
+              <stringProp name="XPathExtractor.default">undefined</stringProp>
+              <stringProp name="XPathExtractor.refname">role_exists</stringProp>
+              <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;itemName&apos;]/text()=&apos;publisher&apos;</stringProp>
+              <boolProp name="XPathExtractor.validate">false</boolProp>
+              <boolProp name="XPathExtractor.tolerant">false</boolProp>
+              <boolProp name="XPathExtractor.namespace">true</boolProp>
+            </XPathExtractor>
+            <hashTree/>
+            <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+              <boolProp name="displayJMeterProperties">false</boolProp>
+              <boolProp name="displayJMeterVariables">true</boolProp>
+              <boolProp name="displaySamplerProperties">true</boolProp>
+              <boolProp name="displaySystemProperties">false</boolProp>
+            </DebugPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If (publisher_role Doesnt Exist)" enabled="false">
+            <stringProp name="IfController.condition">${role_exists}==false</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+          </IfController>
+          <hashTree>
+            <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Create publisher_role" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addRole&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:roleName&gt;publisher&lt;/xsd:roleName&gt;
+         &lt;xsd:userList&gt;admin&lt;/xsd:userList&gt;
+         &lt;!--Zero or more repetitions:--&gt;      
+         &lt;xsd:permissions&gt;/permission/admin/login&lt;/xsd:permissions&gt;
+         &lt;xsd:permissions&gt;/permission/admin/manage/api/create&lt;/xsd:permissions&gt;
+         &lt;xsd:permissions&gt;/permission/admin/manage/api/publish&lt;/xsd:permissions&gt;
+         &lt;xsd:isSharedRole&gt;false&lt;/xsd:isSharedRole&gt;
+      &lt;/xsd:addRole&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+</stringProp>
+              <stringProp name="SoapSampler.xml_data_file"></stringProp>
+              <stringProp name="SoapSampler.SOAP_ACTION">urn:addRole</stringProp>
+              <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            </SoapSampler>
+            <hashTree/>
+            <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Create subscriber_role" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addRole&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:roleName&gt;subscriber&lt;/xsd:roleName&gt;
+         &lt;xsd:userList&gt;admin&lt;/xsd:userList&gt;
+         &lt;!--Zero or more repetitions:--&gt;      
+         &lt;xsd:permissions&gt;/permission/admin/login&lt;/xsd:permissions&gt;
+         &lt;xsd:permissions&gt;/permission/admin/manage/api/subscribe&lt;/xsd:permissions&gt;
+         &lt;xsd:isSharedRole&gt;false&lt;/xsd:isSharedRole&gt;
+      &lt;/xsd:addRole&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+</stringProp>
+              <stringProp name="SoapSampler.xml_data_file"></stringProp>
+              <stringProp name="SoapSampler.SOAP_ACTION">urn:addRole</stringProp>
+              <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            </SoapSampler>
+            <hashTree/>
+            <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Create subscriber_role2" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addRole&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:roleName&gt;subscriber2&lt;/xsd:roleName&gt;
+         &lt;xsd:userList&gt;admin&lt;/xsd:userList&gt;
+         &lt;!--Zero or more repetitions:--&gt;      
+         &lt;xsd:permissions&gt;/permission/admin/login&lt;/xsd:permissions&gt;
+         &lt;xsd:permissions&gt;/permission/admin/manage/api/subscribe&lt;/xsd:permissions&gt;
+         &lt;xsd:isSharedRole&gt;false&lt;/xsd:isSharedRole&gt;
+      &lt;/xsd:addRole&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+</stringProp>
+              <stringProp name="SoapSampler.xml_data_file"></stringProp>
+              <stringProp name="SoapSampler.SOAP_ACTION">urn:addRole</stringProp>
+              <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            </SoapSampler>
+            <hashTree/>
+          </hashTree>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Create publisher loop" enabled="true">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">1000</stringProp>
+          </LoopController>
+          <hashTree>
+            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+              <stringProp name="CounterConfig.start">1</stringProp>
+              <stringProp name="CounterConfig.end">1000</stringProp>
+              <stringProp name="CounterConfig.incr">1</stringProp>
+              <stringProp name="CounterConfig.name">pub_ref</stringProp>
+              <stringProp name="CounterConfig.format">#</stringProp>
+              <boolProp name="CounterConfig.per_user">false</boolProp>
+              <stringProp name="TestPlan.comments">					</stringProp>
+            </CounterConfig>
+            <hashTree/>
+            <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Check if user exists" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:listUsers&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:filter&gt;${publisherName_prefix}${pub_ref}&lt;/xsd:filter&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:limit&gt;0&lt;/xsd:limit&gt;
+      &lt;/xsd:listUsers&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+
+</stringProp>
+              <stringProp name="SoapSampler.xml_data_file"></stringProp>
+              <stringProp name="SoapSampler.SOAP_ACTION">urn:listUsers</stringProp>
+              <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            </SoapSampler>
+            <hashTree>
+              <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor" enabled="true">
+                <stringProp name="XPathExtractor.default">false</stringProp>
+                <stringProp name="XPathExtractor.refname">user_exists</stringProp>
+                <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;return&apos;]/text()=&apos;tennant${tenant_counter}_user${user_ref}&apos;</stringProp>
+                <boolProp name="XPathExtractor.validate">false</boolProp>
+                <boolProp name="XPathExtractor.tolerant">false</boolProp>
+                <boolProp name="XPathExtractor.namespace">true</boolProp>
+              </XPathExtractor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">false</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If (publisher doesnt exist)" enabled="true">
+              <stringProp name="IfController.condition">${user_exists}==false</stringProp>
+              <boolProp name="IfController.evaluateAll">false</boolProp>
+            </IfController>
+            <hashTree>
+              <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Sign Up publisher" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+                <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot; xmlns:xsd1=&quot;http://common.mgt.user.carbon.wso2.org/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addUser&gt;
+         &lt;xsd:userName&gt;${publisherName_prefix}${pub_ref}&lt;/xsd:userName&gt;
+         &lt;xsd:password&gt;pub@123&lt;/xsd:password&gt;
+         &lt;xsd:roles&gt;publisher&lt;/xsd:roles&gt;
+       &lt;/xsd:addUser&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;
+</stringProp>
+                <stringProp name="SoapSampler.xml_data_file"></stringProp>
+                <stringProp name="SoapSampler.SOAP_ACTION">urn:addUser</stringProp>
+                <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+                <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+              </SoapSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Create subscribers loop" enabled="false">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">${numberOfSubscribers}</stringProp>
+          </LoopController>
+          <hashTree>
+            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+              <stringProp name="CounterConfig.start">1</stringProp>
+              <stringProp name="CounterConfig.end">1000</stringProp>
+              <stringProp name="CounterConfig.incr">1</stringProp>
+              <stringProp name="CounterConfig.name">sub_ref</stringProp>
+              <stringProp name="CounterConfig.format">#</stringProp>
+              <boolProp name="CounterConfig.per_user">false</boolProp>
+              <stringProp name="TestPlan.comments">					</stringProp>
+            </CounterConfig>
+            <hashTree/>
+            <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Check if user exists" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+              <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:listUsers&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:filter&gt;${subscriberName_prefix}${sub_ref}&lt;/xsd:filter&gt;
+         &lt;!--Optional:--&gt;
+         &lt;xsd:limit&gt;0&lt;/xsd:limit&gt;
+      &lt;/xsd:listUsers&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+              <stringProp name="SoapSampler.xml_data_file"></stringProp>
+              <stringProp name="SoapSampler.SOAP_ACTION">urn:listUsers</stringProp>
+              <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+              <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            </SoapSampler>
+            <hashTree>
+              <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="XPath Extractor" enabled="true">
+                <stringProp name="XPathExtractor.default">false</stringProp>
+                <stringProp name="XPathExtractor.refname">user_exists</stringProp>
+                <stringProp name="XPathExtractor.xpathQuery">//*[local-name()=&apos;return&apos;]/text()=&apos;tennant${tenant_counter}_user${user_ref}&apos;</stringProp>
+                <boolProp name="XPathExtractor.validate">false</boolProp>
+                <boolProp name="XPathExtractor.tolerant">false</boolProp>
+                <boolProp name="XPathExtractor.namespace">true</boolProp>
+              </XPathExtractor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">false</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If (subscriber doesnt exist)" enabled="true">
+              <stringProp name="IfController.condition">${user_exists}==false</stringProp>
+              <boolProp name="IfController.evaluateAll">false</boolProp>
+            </IfController>
+            <hashTree>
+              <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Sign Up subscriber" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+                <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot; xmlns:xsd1=&quot;http://common.mgt.user.carbon.wso2.org/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addUser&gt;
+         &lt;xsd:userName&gt;${subscriberName_prefix}${sub_ref}&lt;/xsd:userName&gt;
+         &lt;xsd:password&gt;sub@123&lt;/xsd:password&gt;
+         &lt;xsd:roles&gt;subscriber&lt;/xsd:roles&gt;
+       &lt;/xsd:addUser&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+                <stringProp name="SoapSampler.xml_data_file"></stringProp>
+                <stringProp name="SoapSampler.SOAP_ACTION">urn:addUser</stringProp>
+                <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+                <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+              </SoapSampler>
+              <hashTree/>
+              <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Sign Up subscribers_to_role2" enabled="false">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/UserAdmin.UserAdminHttpsSoap11Endpoint/</stringProp>
+                <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;http://org.apache.axis2/xsd&quot; xmlns:xsd1=&quot;http://common.mgt.user.carbon.wso2.org/xsd&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;xsd:addUser&gt;
+         &lt;xsd:userName&gt;new${subscriberName_prefix}${sub_ref}&lt;/xsd:userName&gt;
+         &lt;xsd:password&gt;sub@123&lt;/xsd:password&gt;
+         &lt;xsd:roles&gt;subscriber2&lt;/xsd:roles&gt;
+       &lt;/xsd:addUser&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+                <stringProp name="SoapSampler.xml_data_file"></stringProp>
+                <stringProp name="SoapSampler.SOAP_ACTION">urn:addUser</stringProp>
+                <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+                <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+              </SoapSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <SoapSampler guiclass="SoapSamplerGui" testclass="SoapSampler" testname="Log Out of Tenant" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="SoapSampler.URL_DATA">https://${publisherIP}:${publisherSSLPort}/services/AuthenticationAdmin.AuthenticationAdminHttpsSoap11Endpoint/</stringProp>
+            <stringProp name="HTTPSamper.xml_data">&lt;soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:aut=&quot;http://authentication.services.core.carbon.wso2.org&quot;&gt;
+   &lt;soapenv:Header/&gt;
+   &lt;soapenv:Body&gt;
+      &lt;aut:logout/&gt;
+   &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</stringProp>
+            <stringProp name="SoapSampler.xml_data_file"></stringProp>
+            <stringProp name="SoapSampler.SOAP_ACTION">urn:logout</stringProp>
+            <stringProp name="SoapSampler.SEND_SOAP_ACTION">true</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          </SoapSampler>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>true</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename">/home/ace/Desktop/results_multi_user_multi_tenancy_report.jtl</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Publisher - Add APIs" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <longProp name="ThreadGroup.start_time">1342532280000</longProp>
+        <longProp name="ThreadGroup.end_time">1342532280000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Tenant Iteration Loop" enabled="false">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">10</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">tennant_number</stringProp>
+            <stringProp name="CounterConfig.format">#</stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
+        </hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="API Creation - Simple controller" enabled="true"/>
+        <hashTree>
+          <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+            <collectionProp name="CookieManager.cookies"/>
+            <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+            <stringProp name="CookieManager.policy">rfc2109</stringProp>
+          </CookieManager>
+          <hashTree/>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Add API Loop" enabled="true">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">400</stringProp>
+          </LoopController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Logintopublisher" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">login</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="username" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">admin</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">username</stringProp>
+                  </elementProp>
+                  <elementProp name="password" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">admin</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">password</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${publisherIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${publisherSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/publisher/site/blocks/user/login/ajax/login.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+              <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+                <boolProp name="ResultCollector.error_logging">false</boolProp>
+                <objProp>
+                  <name>saveConfig</name>
+                  <value class="SampleSaveConfiguration">
+                    <time>true</time>
+                    <latency>true</latency>
+                    <timestamp>true</timestamp>
+                    <success>true</success>
+                    <label>true</label>
+                    <code>true</code>
+                    <message>true</message>
+                    <threadName>true</threadName>
+                    <dataType>true</dataType>
+                    <encoding>false</encoding>
+                    <assertions>true</assertions>
+                    <subresults>true</subresults>
+                    <responseData>false</responseData>
+                    <samplerData>false</samplerData>
+                    <xml>false</xml>
+                    <fieldNames>false</fieldNames>
+                    <responseHeaders>false</responseHeaders>
+                    <requestHeaders>false</requestHeaders>
+                    <responseDataOnError>false</responseDataOnError>
+                    <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                    <assertionsResultsToSave>0</assertionsResultsToSave>
+                    <bytes>true</bytes>
+                    <threadCounts>true</threadCounts>
+                  </value>
+                </objProp>
+                <stringProp name="filename"></stringProp>
+              </ResultCollector>
+              <hashTree/>
+            </hashTree>
+            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="APICounter" enabled="true">
+              <stringProp name="CounterConfig.start">1</stringProp>
+              <stringProp name="CounterConfig.end">400</stringProp>
+              <stringProp name="CounterConfig.incr">1</stringProp>
+              <stringProp name="CounterConfig.name">api_number</stringProp>
+              <stringProp name="CounterConfig.format">#</stringProp>
+              <boolProp name="CounterConfig.per_user">true</boolProp>
+              <boolProp name="CounterConfig.reset_on_tg_iteration">true</boolProp>
+            </CounterConfig>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="ADD Api" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">addAPI</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="name" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${apiname}${api_number}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">name</stringProp>
+                  </elementProp>
+                  <elementProp name="visibility" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">public</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">visibility</stringProp>
+                  </elementProp>
+                  <elementProp name="context" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${apicontext}${api_number}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">context</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">1.0.0</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                  <elementProp name="default_version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">default_version</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">default_version</stringProp>
+                  </elementProp>
+                  <elementProp name="default_version_checked" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">default_version</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">default_version_checked</stringProp>
+                  </elementProp>
+                  <elementProp name="description" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">this api has been added with jmeter</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">description</stringProp>
+                  </elementProp>
+                  <elementProp name="endpointType" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">nonsecured</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">endpointType</stringProp>
+                  </elementProp>
+                  <elementProp name="http_checked" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">http</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">http_checked</stringProp>
+                  </elementProp>
+                  <elementProp name="https_checked" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">https</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">https_checked</stringProp>
+                  </elementProp>
+                  <elementProp name="wsdl" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value"></stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">wsdl</stringProp>
+                  </elementProp>
+                  <elementProp name="tier" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tier</stringProp>
+                  </elementProp>
+                  <elementProp name="tiersCollection" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Gold,Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tiersCollection</stringProp>
+                  </elementProp>
+                  <elementProp name="endpoint_config" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;production_endpoints&quot;:{&quot;url&quot;:&quot;http://en.wikipedia.org/w/api.php&quot;,&quot;config&quot;:null},&quot;endpoint_type&quot;:&quot;http&quot;}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">endpoint_config</stringProp>
+                  </elementProp>
+                  <elementProp name="resource_config" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">{&quot;resources&quot;:[{&quot;url_pattern&quot;:&quot;*&quot;,&quot;http_verbs&quot;:{&quot;GET&quot;:{&quot;auth_type&quot;:&quot;Application&quot;,&quot;throttling_tier&quot;:&quot;Unlimited&quot;},&quot;POST&quot;:{&quot;auth_type&quot;:&quot;Application&quot;,&quot;throttling_tier&quot;:&quot;Unlimited&quot;},&quot;PUT&quot;:{&quot;auth_type&quot;:&quot;Application&quot;,&quot;throttling_tier&quot;:&quot;Unlimited&quot;},&quot;DELETE&quot;:{&quot;auth_type&quot;:&quot;Application&quot;,&quot;throttling_tier&quot;:&quot;Unlimited&quot;},&quot;OPTIONS&quot;:{&quot;auth_type&quot;:&quot;Application&quot;,&quot;throttling_tier&quot;:&quot;Unlimited&quot;}},&quot;idx&quot;:0,&quot;missing&quot;:[]}],&quot;scopes&quot;:[]}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">resource_config</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${publisherIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${publisherSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/publisher/site/blocks/item-add/ajax/add.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Message" enabled="true">
+                <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+                <stringProp name="RegexExtractor.refname">regEx_message</stringProp>
+                <stringProp name="RegexExtractor.regex">&quot;message&quot; : &quot;(.+?)&quot;</stringProp>
+                <stringProp name="RegexExtractor.template">$1$</stringProp>
+                <stringProp name="RegexExtractor.default">REGEX_FAILED</stringProp>
+                <stringProp name="RegexExtractor.match_number">0</stringProp>
+              </RegexExtractor>
+              <hashTree/>
+              <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Error" enabled="true">
+                <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+                <stringProp name="RegexExtractor.refname">regEx_error</stringProp>
+                <stringProp name="RegexExtractor.regex">&quot;error&quot; : (.+)\b</stringProp>
+                <stringProp name="RegexExtractor.template">$1$</stringProp>
+                <stringProp name="RegexExtractor.default">REGEX_FAILED</stringProp>
+                <stringProp name="RegexExtractor.match_number">0</stringProp>
+              </RegexExtractor>
+              <hashTree/>
+              <BeanShellAssertion guiclass="BeanShellAssertionGui" testclass="BeanShellAssertion" testname="BeanShell Assertion" enabled="true">
+                <stringProp name="BeanShellAssertion.query">String message = vars.get(&quot;regEx_message&quot;);
+String error = vars.get(&quot;regEx_error&quot;);
+		
+if(error.equalsIgnoreCase(&quot;false&quot;) || (error.equalsIgnoreCase(&quot;true&quot;) &amp;&amp; message.contains(&quot;A duplicate API already exists&quot;))){
+Failure=false;
+}else{
+Failure=true;
+}</stringProp>
+                <stringProp name="BeanShellAssertion.filename"></stringProp>
+                <stringProp name="BeanShellAssertion.parameters"></stringProp>
+                <boolProp name="BeanShellAssertion.resetInterpreter">false</boolProp>
+              </BeanShellAssertion>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">false</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="publishAPI" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="name" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${apiname}${api_number}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">name</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">1.0.0</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                  <elementProp name="provider" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">admin</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">provider</stringProp>
+                  </elementProp>
+                  <elementProp name="status" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">PUBLISHED</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">status</stringProp>
+                  </elementProp>
+                  <elementProp name="publishToGateway" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">true</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">publishToGateway</stringProp>
+                  </elementProp>
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">updateStatus</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${publisherIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${publisherSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/publisher/site/blocks/life-cycles/ajax/life-cycles.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+                <stringProp name="ConstantTimer.delay">400</stringProp>
+              </ConstantTimer>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Logout_publisher" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">logout</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${publisherIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${publisherSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/publisher/site/blocks/user/login/ajax/login.jag</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>true</xml>
+                <fieldNames>false</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Subscribe to APIs" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1398342000000</longProp>
+        <longProp name="ThreadGroup.end_time">1398342000000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="tenant iteration loop" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="UserCounter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">1</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">tennant_number</stringProp>
+            <stringProp name="CounterConfig.format">#</stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+            <collectionProp name="CookieManager.cookies"/>
+            <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+            <stringProp name="CookieManager.policy">rfc2109</stringProp>
+          </CookieManager>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login_to_store" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="action" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">login</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">action</stringProp>
+                </elementProp>
+                <elementProp name="username" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">admin</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">username</stringProp>
+                </elementProp>
+                <elementProp name="password" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">admin</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">password</stringProp>
+                </elementProp>
+                <elementProp name="tenant" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">carbon.super</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">tenant</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">10.100.5.40</stringProp>
+            <stringProp name="HTTPSampler.port">9443</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/store/site/blocks/user/login/ajax/login.jag</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.implementation">Java</stringProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="getDefaultAppId" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="action" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">getApplications</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">action</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+            <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/store/site/blocks/application/application-list/ajax/application-list.jag</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.implementation">Java</stringProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+              <boolProp name="resetInterpreter">true</boolProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="script">
+String resp = prev.getResponseDataAsString();
+int def = resp.indexOf(&quot;id&quot;);
+String subresp =  resp.substring(resp.indexOf(&quot;id&quot; ));
+String defAppId = subresp.substring(def+6, subresp.indexOf(&quot;,&quot; ));
+vars.put(&quot;applicationId&quot;, &quot;10&quot;);
+System.out.println(defAppId);</stringProp>
+            </BeanShellPostProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+            <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+              <boolProp name="displayJMeterProperties">false</boolProp>
+              <boolProp name="displayJMeterVariables">true</boolProp>
+              <boolProp name="displaySamplerProperties">true</boolProp>
+              <boolProp name="displaySystemProperties">false</boolProp>
+            </DebugPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="API Iterate Loop" enabled="false">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">${numberOfAPIs}</stringProp>
+          </LoopController>
+          <hashTree>
+            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="APICounter" enabled="true">
+              <stringProp name="CounterConfig.start">1</stringProp>
+              <stringProp name="CounterConfig.end">50</stringProp>
+              <stringProp name="CounterConfig.incr">1</stringProp>
+              <stringProp name="CounterConfig.name">api_number</stringProp>
+              <stringProp name="CounterConfig.format">#</stringProp>
+              <boolProp name="CounterConfig.per_user">false</boolProp>
+            </CounterConfig>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Subscribe" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">addSubscription</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="applicationId" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">38</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">applicationId</stringProp>
+                  </elementProp>
+                  <elementProp name="name" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${tenantDomainName}${tennant_number}_${apiname}${api_number}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">name</stringProp>
+                  </elementProp>
+                  <elementProp name="provider" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">tenant3@tenant3.com</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">provider</stringProp>
+                  </elementProp>
+                  <elementProp name="tier" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tier</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">1.0.0</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+                <stringProp name="ConstantTimer.delay">100</stringProp>
+              </ConstantTimer>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="getAccessTokenForDefaultApp" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">generateApplicationKey</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="application" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">DefaultApplication</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">application</stringProp>
+                  </elementProp>
+                  <elementProp name="keytype" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">PRODUCTION</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">keytype</stringProp>
+                  </elementProp>
+                  <elementProp name="provider" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${publisherName_prefix}1-AT-${tenantDomainName}${subsCount}.com</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">provider</stringProp>
+                  </elementProp>
+                  <elementProp name="tier" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tier</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${version}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                  <elementProp name="callbackUrl" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value"></stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">callbackUrl</stringProp>
+                  </elementProp>
+                  <elementProp name="authorizedDomains" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value"></stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">authorizedDomains</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <boolProp name="resetInterpreter">false</boolProp>
+                <stringProp name="script">String jsonResponse = prev.getResponseDataAsString();
+
+         int acc = jsonResponse.indexOf(&quot;accessToken&quot;);
+         int col = jsonResponse.indexOf(&quot;:&quot;, acc);
+         String token = jsonResponse.substring(col+3, jsonResponse.indexOf(&quot;\&quot;&quot;,col+10 ));
+
+   System.out.println(token);
+          try{
+              //  &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; change the csv file path below &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; 
+             String filePath = &quot;C:\\WSO2\\tokens3.csv&quot;;
+             FileWriter fstream = new FileWriter(filePath, true);
+             BufferedWriter out = new BufferedWriter(fstream);
+             out.write(token);
+             out.newLine();
+             out.close();
+               }catch (Exception e){//Catch exception if any
+                System.err.println(&quot;Error: &quot; + e.getMessage());
+                }
+        
+  //      int consumerKeyIndex = jsonResponse.indexOf(&quot;consumerKey&quot;);
+  //      int consumerKeyStart =jsonResponse.indexOf(&quot;:&quot;,consumerKeyIndex);
+   //     String consumerKey = jsonResponse.substring(consumerKeyStart+3,consumerKeyStart+31);
+
+     //   int consumerSecretIndex = jsonResponse.indexOf(&quot;consumerSecret&quot;);
+     //   int consumerSecretStart =jsonResponse.indexOf(&quot;:&quot;,consumerSecretIndex);
+     //   String consumerSecret = jsonResponse.substring(consumerSecretStart+3,consumerSecretStart+31);
+        
+//  System.out.println(token);
+//  vars.put(&quot;token&quot;, token); 
+//  vars.put(&quot;consumerKey&quot;,consumerKey);
+//  vars.put(&quot;consumerSecret&quot;,consumerSecret);</stringProp>
+              </BeanShellPostProcessor>
+              <hashTree/>
+              <BSFPostProcessor guiclass="TestBeanGUI" testclass="BSFPostProcessor" testname="BSF PostProcessor" enabled="false">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="script">var _keyStr = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=&quot;;
+
+function encode64(input) {
+    var output = &quot;&quot;;
+    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+    var i = 0;
+
+    input = _utf8_encode(input);
+
+    while (i &lt; input.length) {
+
+        chr1 = input.charCodeAt(i++);
+        chr2 = input.charCodeAt(i++);
+        chr3 = input.charCodeAt(i++);
+
+        enc1 = chr1 &gt;&gt; 2;
+        enc2 = ((chr1 &amp; 3) &lt;&lt; 4) | (chr2 &gt;&gt; 4);
+        enc3 = ((chr2 &amp; 15) &lt;&lt; 2) | (chr3 &gt;&gt; 6);
+        enc4 = chr3 &amp; 63;
+
+        if (isNaN(chr2)) {
+            enc3 = enc4 = 64;
+        } else if (isNaN(chr3)) {
+            enc4 = 64;
+        }
+
+        output = output +
+        this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+        this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+
+    }
+
+    return output;
+}
+
+function _utf8_encode(string) {
+    string = string.replace(/\r\n/g,&quot;\n&quot;);
+    var utftext = &quot;&quot;;
+
+    for (var n = 0; n &lt; string.length; n++) {
+
+        var c = string.charCodeAt(n);
+
+        if (c &lt; 128) {
+            utftext += String.fromCharCode(c);
+        }
+        else if((c &gt; 127) &amp;&amp; (c &lt; 2048)) {
+            utftext += String.fromCharCode((c &gt;&gt; 6) | 192);
+            utftext += String.fromCharCode((c &amp; 63) | 128);
+        }
+        else {
+            utftext += String.fromCharCode((c &gt;&gt; 12) | 224);
+            utftext += String.fromCharCode(((c &gt;&gt; 6) &amp; 63) | 128);
+            utftext += String.fromCharCode((c &amp; 63) | 128);
+        }
+
+    }
+
+    return utftext;
+}
+
+var combinedKey = vars.get(&quot;consumerKey&quot;)+&quot;:&quot;+vars.get(&quot;consumerSecret&quot;);
+vars.put(&quot;combinedKey&quot;,combinedKey);
+var encodedKey = encode64(combinedKey); 
+vars.put(&quot;encodedKey&quot;,encodedKey);</stringProp>
+                <stringProp name="scriptLanguage">javascript</stringProp>
+              </BSFPostProcessor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">true</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="generateUserToken" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">grant_type=password&amp;username=tennant${input_value}_user${subsCount}@domain${input_value}.com&amp;password=1qaz2wsx@&amp;scope=PRODUCTION</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${gatewayServer}</stringProp>
+              <stringProp name="HTTPSampler.port">${gatewayPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/token</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${encodedKey}</stringProp>
+                  </elementProp>
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Content-Type</stringProp>
+                    <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <boolProp name="resetInterpreter">false</boolProp>
+                <stringProp name="script">String jsonResponse = prev.getResponseDataAsString();
+
+String tenant_count = vars.get(&quot;input_value&quot;);
+String user_count = vars.get(&quot;subsCount&quot;);
+        
+        int accessTokenIndex = jsonResponse.indexOf(&quot;access_token&quot;);
+        int accessTokenStart =jsonResponse.indexOf(&quot;:&quot;,accessTokenIndex);
+        String accessToken =jsonResponse.substring(jsonResponse.indexOf(&quot;\&quot;&quot;,accessTokenStart)+1,jsonResponse.indexOf(&quot;\&quot;&quot;,accessTokenStart+10 ));
+
+vars.put(&quot;accessToken&quot;, accessToken);
+
+String currentDir = System.getProperty(&quot;user.dir&quot;);
+
+vars.put(&quot;current_directory&quot; , currentDir);
+
+String context = vars.get(&quot;context&quot;);
+String apiID = vars.get(&quot;api_id&quot;);
+
+String report_path = vars.get(&quot;report_path&quot;);
+f = new FileOutputStream(report_path, true);
+
+p = new PrintStream(f); 
+
+this.interpreter.setOut(p);
+
+print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + accessToken +&quot;@@@&quot; + context+apiID);</stringProp>
+              </BeanShellPostProcessor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">true</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Call" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${gatewayServer}</stringProp>
+              <stringProp name="HTTPSampler.port">${gatewayPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/t/domain${input_value}.com${context}${api_id}/${version}/search.atom?q=wso2&amp;rpp=1</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${accessToken}</stringProp>
+                  </elementProp>
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Content-Type</stringProp>
+                    <stringProp name="Header.value">application/xml</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-1498428454">xmlns=&quot;http://www.w3.org/2005/Atom&quot;</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Add application" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1398342000000</longProp>
+        <longProp name="ThreadGroup.end_time">1398342000000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="tenant iteration loop" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">${numberOfTenants}</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="UserCounter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">${numberOfTenants}</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">tennant_number</stringProp>
+            <stringProp name="CounterConfig.format">#</stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+            <collectionProp name="CookieManager.cookies"/>
+            <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+            <stringProp name="CookieManager.policy">rfc2109</stringProp>
+          </CookieManager>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login_to_store" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="action" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">login</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">action</stringProp>
+                </elementProp>
+                <elementProp name="username" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">tenant3@tenant3.com</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">username</stringProp>
+                </elementProp>
+                <elementProp name="password" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">tenant3</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">password</stringProp>
+                </elementProp>
+                <elementProp name="tenant" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">tenant3.com</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">tenant</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+            <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/store/site/blocks/user/login/ajax/login.jag</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.implementation">Java</stringProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="API Iterate Loop" enabled="true">
+            <boolProp name="LoopController.continue_forever">true</boolProp>
+            <stringProp name="LoopController.loops">${numberOfAPIs}</stringProp>
+          </LoopController>
+          <hashTree>
+            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="APICounter" enabled="true">
+              <stringProp name="CounterConfig.start">1</stringProp>
+              <stringProp name="CounterConfig.end">50</stringProp>
+              <stringProp name="CounterConfig.incr">1</stringProp>
+              <stringProp name="CounterConfig.name">api_number</stringProp>
+              <stringProp name="CounterConfig.format">#</stringProp>
+              <boolProp name="CounterConfig.per_user">false</boolProp>
+            </CounterConfig>
+            <hashTree/>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Subscribe" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">addSubscription</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="applicationId" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">20</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">applicationId</stringProp>
+                  </elementProp>
+                  <elementProp name="name" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${tenantDomainName}${tennant_number}_${apiname}${api_number}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">name</stringProp>
+                  </elementProp>
+                  <elementProp name="provider" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">tenant3@tenant3.com</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">provider</stringProp>
+                  </elementProp>
+                  <elementProp name="tier" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tier</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">1.0.0</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+                <stringProp name="ConstantTimer.delay">100</stringProp>
+              </ConstantTimer>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="getAccessTokenForDefaultApp" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="action" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">generateApplicationKey</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">action</stringProp>
+                  </elementProp>
+                  <elementProp name="application" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">DefaultApplication</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">application</stringProp>
+                  </elementProp>
+                  <elementProp name="keytype" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">PRODUCTION</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">keytype</stringProp>
+                  </elementProp>
+                  <elementProp name="provider" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${publisherName_prefix}1-AT-${tenantDomainName}${subsCount}.com</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">provider</stringProp>
+                  </elementProp>
+                  <elementProp name="tier" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">Unlimited</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">tier</stringProp>
+                  </elementProp>
+                  <elementProp name="version" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">${version}</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">version</stringProp>
+                  </elementProp>
+                  <elementProp name="callbackUrl" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value"></stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">callbackUrl</stringProp>
+                  </elementProp>
+                  <elementProp name="authorizedDomains" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value"></stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                    <stringProp name="Argument.name">authorizedDomains</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${storeIP}</stringProp>
+              <stringProp name="HTTPSampler.port">${storeSSLPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <boolProp name="resetInterpreter">false</boolProp>
+                <stringProp name="script">String jsonResponse = prev.getResponseDataAsString();
+
+         int acc = jsonResponse.indexOf(&quot;accessToken&quot;);
+         int col = jsonResponse.indexOf(&quot;:&quot;, acc);
+         String token = jsonResponse.substring(col+3, jsonResponse.indexOf(&quot;\&quot;&quot;,col+10 ));
+
+   System.out.println(token);
+          try{
+              //  &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; change the csv file path below &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp; 
+             String filePath = &quot;C:\\WSO2\\tokens3.csv&quot;;
+             FileWriter fstream = new FileWriter(filePath, true);
+             BufferedWriter out = new BufferedWriter(fstream);
+             out.write(token);
+             out.newLine();
+             out.close();
+               }catch (Exception e){//Catch exception if any
+                System.err.println(&quot;Error: &quot; + e.getMessage());
+                }
+        
+  //      int consumerKeyIndex = jsonResponse.indexOf(&quot;consumerKey&quot;);
+  //      int consumerKeyStart =jsonResponse.indexOf(&quot;:&quot;,consumerKeyIndex);
+   //     String consumerKey = jsonResponse.substring(consumerKeyStart+3,consumerKeyStart+31);
+
+     //   int consumerSecretIndex = jsonResponse.indexOf(&quot;consumerSecret&quot;);
+     //   int consumerSecretStart =jsonResponse.indexOf(&quot;:&quot;,consumerSecretIndex);
+     //   String consumerSecret = jsonResponse.substring(consumerSecretStart+3,consumerSecretStart+31);
+        
+//  System.out.println(token);
+//  vars.put(&quot;token&quot;, token); 
+//  vars.put(&quot;consumerKey&quot;,consumerKey);
+//  vars.put(&quot;consumerSecret&quot;,consumerSecret);</stringProp>
+              </BeanShellPostProcessor>
+              <hashTree/>
+              <BSFPostProcessor guiclass="TestBeanGUI" testclass="BSFPostProcessor" testname="BSF PostProcessor" enabled="false">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="script">var _keyStr = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=&quot;;
+
+function encode64(input) {
+    var output = &quot;&quot;;
+    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+    var i = 0;
+
+    input = _utf8_encode(input);
+
+    while (i &lt; input.length) {
+
+        chr1 = input.charCodeAt(i++);
+        chr2 = input.charCodeAt(i++);
+        chr3 = input.charCodeAt(i++);
+
+        enc1 = chr1 &gt;&gt; 2;
+        enc2 = ((chr1 &amp; 3) &lt;&lt; 4) | (chr2 &gt;&gt; 4);
+        enc3 = ((chr2 &amp; 15) &lt;&lt; 2) | (chr3 &gt;&gt; 6);
+        enc4 = chr3 &amp; 63;
+
+        if (isNaN(chr2)) {
+            enc3 = enc4 = 64;
+        } else if (isNaN(chr3)) {
+            enc4 = 64;
+        }
+
+        output = output +
+        this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+        this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+
+    }
+
+    return output;
+}
+
+function _utf8_encode(string) {
+    string = string.replace(/\r\n/g,&quot;\n&quot;);
+    var utftext = &quot;&quot;;
+
+    for (var n = 0; n &lt; string.length; n++) {
+
+        var c = string.charCodeAt(n);
+
+        if (c &lt; 128) {
+            utftext += String.fromCharCode(c);
+        }
+        else if((c &gt; 127) &amp;&amp; (c &lt; 2048)) {
+            utftext += String.fromCharCode((c &gt;&gt; 6) | 192);
+            utftext += String.fromCharCode((c &amp; 63) | 128);
+        }
+        else {
+            utftext += String.fromCharCode((c &gt;&gt; 12) | 224);
+            utftext += String.fromCharCode(((c &gt;&gt; 6) &amp; 63) | 128);
+            utftext += String.fromCharCode((c &amp; 63) | 128);
+        }
+
+    }
+
+    return utftext;
+}
+
+var combinedKey = vars.get(&quot;consumerKey&quot;)+&quot;:&quot;+vars.get(&quot;consumerSecret&quot;);
+vars.put(&quot;combinedKey&quot;,combinedKey);
+var encodedKey = encode64(combinedKey); 
+vars.put(&quot;encodedKey&quot;,encodedKey);</stringProp>
+                <stringProp name="scriptLanguage">javascript</stringProp>
+              </BSFPostProcessor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">true</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-322762919">&quot;error&quot; : false</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="generateUserToken" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments">
+                  <elementProp name="" elementType="HTTPArgument">
+                    <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                    <stringProp name="Argument.value">grant_type=password&amp;username=tennant${input_value}_user${subsCount}@domain${input_value}.com&amp;password=1qaz2wsx@&amp;scope=PRODUCTION</stringProp>
+                    <stringProp name="Argument.metadata">=</stringProp>
+                    <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  </elementProp>
+                </collectionProp>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${gatewayServer}</stringProp>
+              <stringProp name="HTTPSampler.port">${gatewayPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/token</stringProp>
+              <stringProp name="HTTPSampler.method">POST</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${encodedKey}</stringProp>
+                  </elementProp>
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Content-Type</stringProp>
+                    <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="BeanShell PostProcessor" enabled="true">
+                <stringProp name="filename"></stringProp>
+                <stringProp name="parameters"></stringProp>
+                <boolProp name="resetInterpreter">false</boolProp>
+                <stringProp name="script">String jsonResponse = prev.getResponseDataAsString();
+
+String tenant_count = vars.get(&quot;input_value&quot;);
+String user_count = vars.get(&quot;subsCount&quot;);
+        
+        int accessTokenIndex = jsonResponse.indexOf(&quot;access_token&quot;);
+        int accessTokenStart =jsonResponse.indexOf(&quot;:&quot;,accessTokenIndex);
+        String accessToken =jsonResponse.substring(jsonResponse.indexOf(&quot;\&quot;&quot;,accessTokenStart)+1,jsonResponse.indexOf(&quot;\&quot;&quot;,accessTokenStart+10 ));
+
+vars.put(&quot;accessToken&quot;, accessToken);
+
+String currentDir = System.getProperty(&quot;user.dir&quot;);
+
+vars.put(&quot;current_directory&quot; , currentDir);
+
+String context = vars.get(&quot;context&quot;);
+String apiID = vars.get(&quot;api_id&quot;);
+
+String report_path = vars.get(&quot;report_path&quot;);
+f = new FileOutputStream(report_path, true);
+
+p = new PrintStream(f); 
+
+this.interpreter.setOut(p);
+
+print(&quot;domain&quot;+ tenant_count+&quot;.com&quot; + &quot;@@@&quot; + accessToken +&quot;@@@&quot; + context+apiID);</stringProp>
+              </BeanShellPostProcessor>
+              <hashTree/>
+              <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+                <boolProp name="displayJMeterProperties">true</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySamplerProperties">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugPostProcessor>
+              <hashTree/>
+            </hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Call" enabled="false">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">${gatewayServer}</stringProp>
+              <stringProp name="HTTPSampler.port">${gatewayPort}</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">https</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">/t/domain${input_value}.com${context}${api_id}/${version}/search.atom?q=wso2&amp;rpp=1</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <stringProp name="HTTPSampler.implementation">Java</stringProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${accessToken}</stringProp>
+                  </elementProp>
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Content-Type</stringProp>
+                    <stringProp name="Header.value">application/xml</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+                <collectionProp name="Asserion.test_strings">
+                  <stringProp name="-1498428454">xmlns=&quot;http://www.w3.org/2005/Atom&quot;</stringProp>
+                </collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <boolProp name="Assertion.assume_success">false</boolProp>
+                <intProp name="Assertion.test_type">2</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>true</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>true</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+        <boolProp name="useGroupName">true</boolProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

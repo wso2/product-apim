@@ -30,7 +30,6 @@ import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -39,7 +38,12 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
+import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
@@ -47,8 +51,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
-
 
 /**
  * Base class for all API Manager integration tests
@@ -57,15 +61,23 @@ import java.util.regex.Matcher;
 public class APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
-    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt, gatewayContextWrk, backEndServer;
+    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
     protected OMElement synapseConfiguration;
     protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
     protected String executionMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected User user;
-    private static final long WAIT_TIME = 90 * 1000;
-
+    private static final long WAIT_TIME = 45 * 1000;
+    protected APIPublisherRestClient apiPublisher;
+    protected APIStoreRestClient apiStore;
+    protected UserManagementClient userManagementClient;
+    protected TenantManagementServiceClient tenantManagementServiceClient;
+    protected String publisherURLHttp;
+    protected String storeURLHttp;
+    protected String keymanagerSessionCookie;
+    protected String keymanagerSuperTenantSessionCookie;
 
     /**
      * This method will initialize test environment
@@ -123,6 +135,26 @@ public class APIMIntegrationBaseTest {
             executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
 
             user = storeContext.getContextTenant().getContextUser();
+
+            superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                                                      TestUserMode.SUPER_TENANT_ADMIN);
+
+            keymanagerSessionCookie = createSession(keyManagerContext);
+            publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            storeURLHttp = storeUrls.getWebAppURLHttp();
+            apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+            apiStore = new APIStoreRestClient(storeURLHttp);
+
+            try {
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                userManagementClient = new UserManagementClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSuperTenantSessionCookie);
+            } catch (Exception e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
 
         } catch (XPathExpressionException e) {
             log.error("APIM test environment initialization failed", e);
@@ -411,24 +443,26 @@ public class APIMIntegrationBaseTest {
      * @param apiName          - API name
      * @param apiVersion       - API version
      * @param expectedResponse - Expected response
-     * @throws XPathExpressionException - Throws if something goes wrong
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
      */
     protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
                                             String expectedResponse)
-            throws XPathExpressionException {
+            throws APIManagerIntegrationTestException {
 
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
 
         if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
 
+            String tenantIdentifier = getTenantIdentifier(apiProvider);
+
             while (waitTime > System.currentTimeMillis()) {
                 HttpResponse response = null;
                 try {
                     response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
-                                                              "APIStatusMonitor/api_status/api-data/" +
-                                                              apiProvider + "--" + apiName +
-                                                              ":v" + apiVersion, null);
+                                                              "APIStatusMonitor/apiInformation/api/" +
+                                                              tenantIdentifier +
+                                                              apiName + "/" + apiVersion, null);
                 } catch (IOException ignored) {
                     log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
                 }
@@ -462,39 +496,66 @@ public class APIMIntegrationBaseTest {
      * @param apiName          - API name
      * @param apiVersion       - API version
      * @param expectedResponse - Expected response
-     * @throws XPathExpressionException - Throws if something goes wrong
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
      */
     protected void waitForAPIUnDeploymentSync(String apiProvider, String apiName, String apiVersion,
                                               String expectedResponse)
-            throws IOException, XPathExpressionException {
+            throws APIManagerIntegrationTestException {
 
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
 
         if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
 
+            String tenantIdentifier = getTenantIdentifier(apiProvider);
+
             while (waitTime > System.currentTimeMillis()) {
-                HttpResponse response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
-                                                                       "APIStatusMonitor/api_status/api-data/" +
-                                                                       apiProvider + "--" + apiName +
-                                                                       ":v" + apiVersion, null);
+                HttpResponse response = null;
+                try{
+                    response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                                                              "APIStatusMonitor/apiInformation/api/" +
+                                                              tenantIdentifier +
+                                                              apiName + "/" + apiVersion, null);
+                    } catch (IOException ignored) {
+                        log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
+                    }
 
                 log.info("WAIT for meta data sync of API :" + apiName + " with version: " + apiVersion + " with provider: " + apiProvider +
                          " without entry : " + expectedResponse);
 
-                if (!response.getData().contains(expectedResponse)) {
-                    log.info("API :" + apiName + " with version: " + apiVersion +
-                             " with expected response " + expectedResponse + " not found");
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ignored) {
+                if (response != null) {
+                    if (!response.getData().contains(expectedResponse)) {
+                        log.info("API :" + apiName + " with version: " + apiVersion +
+                                 " with expected response " + expectedResponse + " not found");
+                        break;
+                    } else {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ignored) {
 
+                        }
                     }
                 }
             }
         }
     }
+
+    /**
+     * This returns "tenatDomain/tenantId/" string
+     * @param apiProvider
+     */
+    private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
+        String tenantId;
+        String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
+        String tenantName = providerTenantDomain + "/";
+        try{
+            tenantId = tenantManagementServiceClient.getTenant(providerTenantDomain).getTenantId() + "/";
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException(e.getMessage(), e);
+        }
+
+        return tenantName + tenantId;
+    }
+
 }
 

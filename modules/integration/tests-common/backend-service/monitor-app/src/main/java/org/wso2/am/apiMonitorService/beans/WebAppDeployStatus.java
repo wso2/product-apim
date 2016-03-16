@@ -15,28 +15,30 @@
 *specific language governing permissions and limitations
 *under the License.
 */
-package org.wso2.am.apimonitorservice.beans;
+package org.wso2.am.apiMonitorService.beans;
+
+import org.wso2.carbon.webapp.mgt.WebApplication;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "APIStats")
-public class APIStats {
-    int deployedApiCount;
-    String[] listOfApiNames;
+@XmlRootElement(name = "WebAppDeployStatus")
+public class WebAppDeployStatus {
+    boolean isWebAppExists = false;
+    WebAppData webAppData;
 
-    public void setDeployedApiCount(int count) {
-        deployedApiCount = count;
+    public void setIsWebAppExists(boolean isWebAppExists) {
+        this.isWebAppExists = isWebAppExists;
     }
 
-    public void setListOfApiNames(String[] names) {
-        listOfApiNames = names;
+    public boolean getIsWebAppExists() {
+        return isWebAppExists;
     }
 
-    public String[] getListOfApiNames() {
-        return listOfApiNames;
+    public void setWebAppData(WebAppData webAppData) {
+        this.webAppData = webAppData;
     }
 
-    public int getDeployedApiCount() {
-        return deployedApiCount;
+    public WebAppData getWebAppData() {
+        return webAppData;
     }
 }

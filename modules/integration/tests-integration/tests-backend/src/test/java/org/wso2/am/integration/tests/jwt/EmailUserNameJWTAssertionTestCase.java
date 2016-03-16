@@ -26,7 +26,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.client.utils.AuthenticateStub;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
@@ -43,7 +47,11 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.io.File;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 
@@ -158,10 +166,7 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
     public void emailUserNameInSuperTenantJWTTokenTestCase() throws Exception {
         String userName = "admin@wso2.com";
         String password = "admin123";
-        UserManagementClient userManagementClient =
-                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "admin", "admin");
-        userManagementClient
-                .addUser(userName, password, new String[]{"Internal/subscriber"}, "admin2");
+        userManagementClient.addUser(userName, password, new String[]{"Internal/subscriber"}, "admin2");
         String requestBody = "grant_type=password&username=" + userName + "@" +
                              MultitenantConstants.SUPER_TENANT_DOMAIN_NAME + "&password=" +
                              password;
@@ -218,9 +223,9 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
                 createTenantWithEmailUserName(userName, password,
                                               domainName, keyManagerContext.getContextUrls().getBackEndUrl());
         assertEquals(isSuccessful, true);
-        UserManagementClient userManagementClient =
+        UserManagementClient userManagementClient1 =
                 new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), fullUserName, password);
-        userManagementClient
+        userManagementClient1
                 .addRemoveRolesOfUser(fullUserName, new String[]{"Internal/subscriber"}, null);
         String requestBody =
                 "grant_type=password&username=" + fullUserName + "&password=" + password;
@@ -274,11 +279,9 @@ public class EmailUserNameJWTAssertionTestCase extends APIMIntegrationBaseTest {
         String password = "admin123";
         String domainName = "adc.com";
         String fullUserName = userNameWithEmail + "@" + domainName;
-        UserManagementClient userManagementClient =
-                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
-        userManagementClient
-                .addUser(userNameWithEmail, password, new String[]{"Internal/subscriber"},
-                         "abc");
+        UserManagementClient userManagementClient1 = new UserManagementClient(
+                keyManagerContext.getContextUrls().getBackEndUrl(), "tenant@adc.com", "admin123");
+        userManagementClient1.addUser(userNameWithEmail, password, new String[]{"Internal/subscriber"}, "abc");
         String requestBody =
                 "grant_type=password&username=" + fullUserName + "&password=" + password;
         URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");

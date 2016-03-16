@@ -60,7 +60,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
     private APIStoreRestClient apiStore;
 
-    private UserManagementClient userManagementClient = null;
+    private UserManagementClient userManagementClient1 = null;
 
     private static final String API_NAME = "TokenEncryptionAPI";
 
@@ -140,18 +140,18 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
     public void testTokenEncryptionWithScopes() {
 
         try {
-            userManagementClient = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                                                            publisherContext.getContextTenant().getContextUser().getUserName(),
-                                                            publisherContext.getContextTenant().getContextUser().getPassword());
+            userManagementClient1 = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
+                                                             publisherContext.getContextTenant().getContextUser().getUserName(),
+                                                             publisherContext.getContextTenant().getContextUser().getPassword());
             //adding new role subscriber
-            userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                                                                                       "/permission/admin/manage/api/subscribe"});
+            userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
+                                                                                        "/permission/admin/manage/api/subscribe"});
 
             //creating user sam
-            userManagementClient.addUser(USER_SAM, "sam123", new String[]{SUBSCRIBER_ROLE}, "sam");
+            userManagementClient1.addUser(USER_SAM, "sam123", new String[]{SUBSCRIBER_ROLE}, "sam");
 
             //creating user mike
-            userManagementClient.addUser(APP_DEV_USER, APP_DEV_PWD, new String[]{SUBSCRIBER_ROLE}, APP_DEV_USER);
+            userManagementClient1.addUser(APP_DEV_USER, APP_DEV_PWD, new String[]{SUBSCRIBER_ROLE}, APP_DEV_USER);
 
         } catch (AxisFault axisFault) {
             log.error("Error while creating UserManagementClient " + axisFault.getMessage());
@@ -282,10 +282,10 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
         }
 
-        if (userManagementClient != null) {
-            userManagementClient.deleteUser(USER_SAM);
-            userManagementClient.deleteUser(APP_DEV_USER);
-            userManagementClient.deleteRole(SUBSCRIBER_ROLE);
+        if (userManagementClient1 != null) {
+            userManagementClient1.deleteUser(USER_SAM);
+            userManagementClient1.deleteUser(APP_DEV_USER);
+            userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
 
         serverManager.restoreToLastConfiguration();

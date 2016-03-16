@@ -66,6 +66,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <!-- Commenting this test since its required to setup BAM and the DBs to run this
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">

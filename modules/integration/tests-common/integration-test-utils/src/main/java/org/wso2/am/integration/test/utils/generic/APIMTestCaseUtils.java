@@ -55,11 +55,25 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.Signature;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.testng.Assert.assertTrue;
@@ -1546,7 +1560,64 @@ public class APIMTestCaseUtils {
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
     }
-    
+
+    public static String getJWTAssertion(String serverMessage) throws UnsupportedEncodingException {
+        // result comes as header values
+        String[] headerArray = serverMessage.split("\n");
+        //tokenize  from JWT assertion header
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        //take first element
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        //Generate the jwt assertion by concatenating header and body section of the jwt token array
+        return  jwtTokenArray[0].trim() + "." + jwtTokenArray[1].trim();
+    }
+
+    public static boolean isJwtSignatureValid(String jwtAssertion, byte[] jwtSignature, String jsonHeader) throws UnsupportedEncodingException {
+        KeyStore keyStore = null;
+        String thumbPrint = null;
+        String signatureAlgorithm = null;
+        JSONObject jsonHeaderObject = null;
+        try {
+            jsonHeaderObject = new JSONObject(jsonHeader);
+            thumbPrint = new String(Base64.decodeBase64(((String) jsonHeaderObject.get("x5t")).getBytes()));
+            signatureAlgorithm = (String) jsonHeaderObject.get("alg");
+        } catch (JSONException e) {
+            log.error("Error while parsing json" + e);
+        }
+
+        if("RS256".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA256withRSA";
+        } else if("RS515".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA512withRSA";
+        } else if("RS384".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA384withRSA";
+        } else {
+            //Default algorithm
+            signatureAlgorithm = "SHA256withRSA";
+        }
+
+        if(jwtAssertion != null && jwtSignature != null && thumbPrint != null) {
+            try {
+                String trustStore = TestConfigurationProvider.getTrustStoreLocation();
+                String trustStorePassword = TestConfigurationProvider.getTrustStorePassword();
+                keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keyStore.load(new FileInputStream(trustStore), trustStorePassword.toCharArray());
+                String alias = getAliasForX509CertThumb(thumbPrint.getBytes(), keyStore);
+                Certificate certificate = keyStore.getCertificate(alias);
+                Signature signature = Signature.getInstance(signatureAlgorithm);
+                signature.initVerify(certificate);
+                signature.update(jwtAssertion.getBytes());
+                return signature.verify(jwtSignature);
+            } catch (Exception e) {
+                log.error("Error occurred while validating signature", e);
+                return false;
+            }
+        } else {
+            log.debug("JWT Signature is empty");
+            return false;
+        }
+    }
+
     public static String getDecodedJWTHeader(String serverMessage) throws UnsupportedEncodingException {
         // result comes as header values
         String[] headerArray = serverMessage.split("\n");
@@ -1557,6 +1628,17 @@ public class APIMTestCaseUtils {
         // decode  JWT header
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[0].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
+    }
+
+    public static byte[] getDecodedJWTSignature(String serverMessage) throws UnsupportedEncodingException {
+        // result comes as header values
+        String[] headerArray = serverMessage.split("\n");
+        //tokenize  from JWT assertion header
+        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+        //take first part
+        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        // decode  JWT signature
+        return Base64.decodeBase64(jwtTokenArray[2].getBytes());
     }
 
     /**
@@ -1678,5 +1760,43 @@ public class APIMTestCaseUtils {
      */
     public static String getPayloadForPasswordGrant(String username, String password){
         return "grant_type=password&username=" + username + "&password=" + password;
+    }
+
+    private static String getAliasForX509CertThumb(byte[] thumb, KeyStore keyStore) {
+        Certificate cert = null;
+        MessageDigest sha = null;
+        try {
+            sha = MessageDigest.getInstance("SHA-1");
+            for (Enumeration e = keyStore.aliases(); e.hasMoreElements();) {
+                String alias = (String) e.nextElement();
+                Certificate[] certs = keyStore.getCertificateChain(alias);
+                if (certs == null || certs.length == 0) {
+                    cert = keyStore.getCertificate(alias);
+                    if (cert == null) {
+                        return null;
+                    }
+                } else {
+                    cert = certs[0];
+                }
+                sha.update(cert.getEncoded());
+                byte[] data = sha.digest();
+                if (new String(thumb).equals(hexify(data))) {
+                    return alias;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error while getting the alias", e);
+        }
+        return null;
+    }
+
+    private static String hexify(byte bytes[]) {
+        char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+        StringBuilder buf = new StringBuilder(bytes.length * 2);
+        for (byte aByte : bytes) {
+            buf.append(hexDigits[(aByte & 0xf0) >> 4]);
+            buf.append(hexDigits[aByte & 0x0f]);
+        }
+        return buf.toString();
     }
 }

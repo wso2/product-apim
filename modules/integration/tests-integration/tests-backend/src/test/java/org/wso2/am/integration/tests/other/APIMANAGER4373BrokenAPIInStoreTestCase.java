@@ -17,11 +17,13 @@
 package org.wso2.am.integration.tests.other;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -58,7 +60,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
     private final String API_VERSION = "1.0.0";
     private String contextUsername = "admin";
     private String contextUserPassword = "admin";
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStoreRestClient;
     private String publisherURLHttp;
@@ -72,24 +74,24 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
             storeURLHttp = storeUrls.getWebAppURLHttp();
             apiPublisher = new APIPublisherRestClient(publisherURLHttp);
             apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
-            contextUsername = publisherContext.getContextTenant().getContextUser().getUserName();
-            contextUserPassword = publisherContext.getContextTenant().getContextUser().getPassword();
-            userManagementClient = new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                    contextUsername, contextUserPassword);
+            contextUsername = keyManagerContext.getContextTenant().getContextUser().getUserName();
+            contextUserPassword = keyManagerContext.getContextTenant().getContextUser().getPassword();
+            userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                             contextUsername, contextUserPassword);
 
-            userManagementClient
+            userManagementClient1
                     .addRole(FIRST_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
-            userManagementClient
+            userManagementClient1
                     .addRole(SECOND_ROLE, new String[] {}, new String[] { PERMISSION_LOGIN, PERMISSION_API_SUBSCRIBE });
-            userManagementClient.addUser(FIRST_USER, USER_PASSWORD, new String[] { FIRST_ROLE }, FIRST_USER);
+            userManagementClient1.addUser(FIRST_USER, USER_PASSWORD, new String[] {FIRST_ROLE }, FIRST_USER);
         } catch (APIManagerIntegrationTestException e) {
-            assertTrue(false, "Error occurred while initializing testcase.");
+            assertTrue(false, "Error occurred while initializing testcase: " + e.getCause());
         } catch (RemoteException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            assertTrue(false, "Error occurred while adding new users: " + e.getCause());
         } catch (UserAdminUserAdminException e) {
-            assertTrue(false, "Error occurred while adding new users.");
+            assertTrue(false, "Error occurred while adding new users: " + e.getCause());
         } catch (XPathExpressionException e) {
-            assertTrue(false, "Error occurred while retrieving context.");
+            assertTrue(false, "Error occurred while retrieving context: " + e.getCause());
         }
     }
 
@@ -116,6 +118,8 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         updateRequest = new APILifeCycleStateRequest(HEALTHY_API, contextUsername, APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
+        waitForAPIDeploymentSync(contextUsername, HEALTHY_API, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
         // subscribe both apis
         apiStoreRestClient.login(FIRST_USER, USER_PASSWORD);
 
@@ -139,7 +143,9 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
             // Expectation of this test case is to test whether permitted apis are returned to the store.
             // therefore exception thrown from the registry for unauthorized api is not handled here.
         }
-        assertTrue(response.getData().contains(HEALTHY_API), "Subscription retrieval failed when one API is broken");
+        LogFactory.getLog(APIMANAGER4373BrokenAPIInStoreTestCase.class).error(response.getData());
+        assertTrue(response.getData().contains(HEALTHY_API), "Subscription retrieval failed when one API is broken: "
+        + response.getData());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -152,10 +158,10 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
             apiPublisher.deleteAPI(BROKEN_API, API_VERSION, contextUsername);
             apiPublisher.deleteAPI(HEALTHY_API, API_VERSION, contextUsername);
         }
-        if (userManagementClient != null) {
-            userManagementClient.deleteUser(FIRST_USER);
-            userManagementClient.deleteRole(FIRST_ROLE);
-            userManagementClient.deleteRole(SECOND_ROLE);
+        if (userManagementClient1 != null) {
+            userManagementClient1.deleteUser(FIRST_USER);
+            userManagementClient1.deleteRole(FIRST_ROLE);
+            userManagementClient1.deleteRole(SECOND_ROLE);
         }
         super.cleanUp();
     }
