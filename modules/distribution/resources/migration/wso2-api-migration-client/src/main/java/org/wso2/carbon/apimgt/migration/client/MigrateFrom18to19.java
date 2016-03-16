@@ -400,7 +400,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 String apiVersion = apiIdentifier.getVersion();
                 String apiProviderName = apiIdentifier.getProviderName();
                 try {
-                    registryService.startTenantFlow(tenant);
                     String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
 
                     // Create swagger 2.0 doc only if it does not exist
@@ -443,9 +442,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 } catch (APIManagementException e) {
                     log.error("Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 }
-                finally {
-                    registryService.endTenantFlow();
-                }
             }
         }
     }
@@ -469,7 +465,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         String swagger12BasePath = null;
 
         try {
-            registryService.startTenantFlow(tenant);
             Object rawResource = registryService.getGovernanceRegistryResource(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
             String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
@@ -520,9 +515,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             return swagger2Doc.toJSONString();
         } catch (UnsupportedEncodingException e) {
             log.error("Error while reading swagger resource", e);
-        }
-        finally {
-            registryService.endTenantFlow();
         }
 
         return null;
