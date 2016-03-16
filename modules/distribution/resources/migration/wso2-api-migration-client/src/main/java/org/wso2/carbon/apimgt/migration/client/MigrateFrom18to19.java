@@ -430,7 +430,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                             .authorizeRole(APIConstants.EVERYONE_ROLE,
                                     "_system/governance" + swagger2location, ActionConstants.GET);
                     */
-                    registryService.setGovernanceRegistryResourcePermissions(null, null, swagger2location);
+                    registryService.setGovernanceRegistryResourcePermissions(apiProviderName, null, null, swagger2location);
                 } catch (RegistryException e) {
                     log.error("Registry error encountered for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (ParseException e) {
