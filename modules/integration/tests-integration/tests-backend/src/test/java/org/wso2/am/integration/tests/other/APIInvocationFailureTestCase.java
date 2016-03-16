@@ -19,6 +19,8 @@ package org.wso2.am.integration.tests.other;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
@@ -26,9 +28,9 @@ import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 
 import javax.ws.rs.core.Response;
 import java.net.URL;
@@ -44,92 +46,49 @@ import static org.testng.Assert.assertTrue;
 public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     private String publisherURLHttp;
-    private String tenantDomain = "testwso2.com";
+    private APIPublisherRestClient apiPublisher;
+
+    private String APIName = "TokenInvocationTestAPI";
+    private String APIContext = "tokenInvocationTestAPI";
+    private String tags = "youtube, token, media";
+    private String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private String description = "This is test API create by API manager integration test";
+    private String APIVersion = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-        super.init();
+        super.init(userMode);
         publisherURLHttp = getPublisherURLHttp();
-        tenantManagementServiceClient.addTenant(tenantDomain,
-                publisherContext.getContextTenant().getTenantAdmin().getPassword(),
-                publisherContext.getContextTenant().getTenantAdmin().getUserName(), "demo");
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Invalid token for tenant user api")
-    public void APIInvocationFailureForTenant() throws Exception {
-
-        String APIName = "TokenInvocationTestAPI";
-        String APIContext = "tokenInvocationTestAPI";
-        String tags = "youtube, token, media";
-        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
-        String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getContextTenant().getTenantAdmin().getUserName() + "@" + tenantDomain;
-        String APIVersion = "1.0.0";
-
-        APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getTenantAdmin().getUserName() + "@" + tenantDomain,
-                publisherContext.getContextTenant().getTenantAdmin().getPassword());
-
+    @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
+    public void APIInvocationFailure() throws Exception {
+        String providerName = user.getUserName();
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
-        apiRequest.setDescription(description);
-        apiRequest.setVersion(APIVersion);
-        apiRequest.setSandbox(url);
-        apiRequest.setResourceMethod("GET");
         apiRequest.setProvider(providerName);
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
-                providerName, APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
-
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-
-        requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
-
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
-
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
-                                                             + "/most_popular", requestHeaders);
-        assertEquals(youTubeResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
-                "Response code mismatched when api invocation");
-        assertTrue(youTubeResponse.getData().contains("900901"), "Error code mismach");
-
-    }
-
-    @Test(groups = {"wso2.am"}, description = "Invalid token for tenant user api")
-    public void APIInvocationFailureForSuperTenant() throws Exception {
-
-        String APIName = "TokenInvocationTestAPI";
-        String APIContext = "tokenInvocationTestAPI";
-        String tags = "youtube, token, media";
-        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
-        String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getSuperTenant().getTenantAdmin().getUserName();
-        String APIVersion = "1.0.0";
-        APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getSuperTenant().getTenantAdmin().getUserName(),
-                publisherContext.getSuperTenant().getTenantAdmin().getPassword());
-
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
-        apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
         apiRequest.setResourceMethod("GET");
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
-                providerName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, user.getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
 
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
-
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
                                                              + "/most_popular", requestHeaders);
@@ -142,5 +101,16 @@ public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][] { new Object[] {TestUserMode.SUPER_TENANT_ADMIN },
+                                new Object[] { TestUserMode.TENANT_ADMIN }, };
+    }
+
+    @Factory(dataProvider = "userModeDataProvider")
+    public APIInvocationFailureTestCase(TestUserMode userMode) {
+        this.userMode = userMode;
     }
 }
