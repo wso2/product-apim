@@ -46,45 +46,49 @@ import static org.testng.Assert.assertTrue;
 public class APIInvocationFailureTestCase extends APIMIntegrationBaseTest {
 
     private String publisherURLHttp;
+    private APIPublisherRestClient apiPublisher;
+
+    private String APIName = "TokenInvocationTestAPI";
+    private String APIContext = "tokenInvocationTestAPI";
+    private String tags = "youtube, token, media";
+    private String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
+    private String description = "This is test API create by API manager integration test";
+    private String APIVersion = "1.0.0";
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
         publisherURLHttp = getPublisherURLHttp();
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
     public void APIInvocationFailure() throws Exception {
-
-        String APIName = "TokenInvocationTestAPI";
-        String APIContext = "tokenInvocationTestAPI";
-        String tags = "youtube, token, media";
-        String url = "http://gdata.youtube.com/feeds/api/standardfeeds";
-        String description = "This is test API create by API manager integration test";
-        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        String APIVersion = "1.0.0";
-        APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
-
+        String providerName = user.getUserName();
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setTags(tags);
+        apiRequest.setProvider(providerName);
         apiRequest.setDescription(description);
         apiRequest.setVersion(APIVersion);
         apiRequest.setSandbox(url);
         apiRequest.setResourceMethod("GET");
-        apiPublisher.addAPI(apiRequest);
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName,
-                providerName,
-                APILifeCycleState.PUBLISHED);
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, user.getUserName(),
+                                                                              APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
 
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
-
 
         HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(APIContext, APIVersion)
                                                              + "/most_popular", requestHeaders);
