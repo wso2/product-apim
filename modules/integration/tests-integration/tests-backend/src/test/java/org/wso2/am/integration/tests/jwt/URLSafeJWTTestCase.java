@@ -58,7 +58,7 @@ public class URLSafeJWTTestCase
         extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private static final Log log = LogFactory.getLog(URLSafeJWTTestCase.class);
 
     private String publisherURLHttp;
@@ -92,15 +92,15 @@ public class URLSafeJWTTestCase
         serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator +
                 "configFiles/tokenTest/urlSafeTokenTest/" + "log4j.properties"));
 
-        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                keyManagerContext.getContextTenant().getContextUser().getPassword());
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                         keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                                                         keyManagerContext.getContextTenant().getContextUser().getPassword());
 
         URL url = new URL(gatewayUrlsWrk.getWebAppURLHttp());
         wireMonitorURL = "http://" + url.getHost() + ":" + hostPort;
 
         server = new WireMonitorServer(hostPort);
-        server.setReadTimeOut(300);
+        server.setReadTimeOut(30000);
         server.start();
 
         String gatewaySessionCookie = createSession(gatewayContextMgt);
@@ -340,9 +340,9 @@ public class URLSafeJWTTestCase
         String password = "password@123";
         String accessToken;
 
-        if ((userManagementClient != null) && !userManagementClient
+        if ((userManagementClient1 != null) && !userManagementClient1
                 .userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, password, new String[] { "Internal/subscriber" }, null);
+            userManagementClient1.addUser(subscriberUser, password, new String[] {"Internal/subscriber" }, null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(

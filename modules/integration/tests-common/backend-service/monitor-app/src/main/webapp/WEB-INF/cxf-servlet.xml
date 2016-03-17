@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
   ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
@@ -26,15 +25,12 @@
 
     <jaxrs:server id="ApiStatusMonitorService" address="/">
         <jaxrs:serviceBeans>
-            <ref bean="apiStatusMonitor"/>
             <ref bean="webAppStatusMonitor"/>
+            <ref bean="apiInfoservice"/>
         </jaxrs:serviceBeans>
     </jaxrs:server>
-
-    <bean id="apiStatusMonitor"
-          class="org.wso2.am.apimonitorservice.ApiStatusMonitorService"/>
     <bean id="webAppStatusMonitor"
-          class="org.wso2.am.apimonitorservice.WebAppStatusMonitorService"/>
-
-
+          class="org.wso2.am.apiMonitorService.WebAppInformationService"/>
+    <bean id="apiInfoservice"
+          class="org.wso2.am.apiMonitorService.ApiInformationService"/>
 </beans>

@@ -128,8 +128,8 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         // create new user in CarbonSuper with only subscriber role and login to the Store
         userManagementClient1 =
-                new UserManagementClient(publisherContext.getContextUrls().getBackEndUrl(),
-                                         createSession(publisherContext));
+                new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                         createSession(keyManagerContext));
 
         if (userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, CARBON_SUPER_SUBSCRIBER_USERNAME)) {
             userManagementClient1.deleteUser(CARBON_SUPER_SUBSCRIBER_USERNAME);

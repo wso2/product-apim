@@ -69,8 +69,7 @@ public class TestConfigurationProvider {
     }
 
     public static String getTrustStorePassword() throws XPathExpressionException {
-        return getResourceLocation() + File.separator +
-               instance.context.getConfigurationValue("//truststore/password/text()");
+        return instance.context.getConfigurationValue("//truststore/password/text()");
     }
 
     public static String getTrustStoreType() throws XPathExpressionException {

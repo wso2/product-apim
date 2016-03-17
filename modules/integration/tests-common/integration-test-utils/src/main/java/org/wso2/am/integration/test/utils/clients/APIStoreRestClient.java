@@ -25,14 +25,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +104,7 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag"),
                     subscriptionRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("subscript to api fails", e);
+            throw new APIManagerIntegrationTestException("Subscription to api fails. Error: " + e.getMessage(), e);
         }
     }
 
@@ -125,7 +128,7 @@ public class APIStoreRestClient {
                     generateAppKeyRequest.generateRequestParameters(), requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("subscript to api fails", e);
+            throw new APIManagerIntegrationTestException("Key generation fails. Error: " + e.getMessage(), e);
         }
 
     }
@@ -143,7 +146,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs"),
                     "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to retrieve API information ", e);
+            throw new APIManagerIntegrationTestException("Unable to retrieve API information. " +
+                                                         "Error: " + e.getMessage(), e);
         }
 
     }
@@ -192,7 +196,8 @@ public class APIStoreRestClient {
             return HttpRequestUtil.doPost(tokenEndpointURL, messageBody, authenticationRequestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to generate API access token ", e);
+            throw new APIManagerIntegrationTestException("Unable to generate API access token. " +
+                                                         "Error: " + e.getMessage(), e);
         }
     }
 
@@ -209,7 +214,8 @@ public class APIStoreRestClient {
                     backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs",
                     requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get retrieve all published APIs ", e);
+            throw new APIManagerIntegrationTestException("Unable to get retrieve all published APIs. " +
+                                                         "Error: " + e.getMessage(), e);
         }
     }
 
@@ -227,7 +233,8 @@ public class APIStoreRestClient {
                     "application-list.jag?action=getApplications",
                     requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to retrieve all applications ", e);
+            throw new APIManagerIntegrationTestException("Unable to retrieve all applications. " +
+                                                         "Error: " + e.getMessage(), e);
         }
     }
 
@@ -249,8 +256,8 @@ public class APIStoreRestClient {
                     applicationName, requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " +
-                                                         applicationName, e);
+            throw new APIManagerIntegrationTestException("Unable to retrieve the application -  " + applicationName
+                                                         + ". Error: " + e.getMessage(), e);
         }
 
     }
@@ -274,7 +281,8 @@ public class APIStoreRestClient {
                     "action=addRating&name=" + apiName + "&version=" + version + "&provider=" +
                     provider + "&rating=" + rating, requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to rate API -  " + apiName, e);
+            throw new APIManagerIntegrationTestException("Unable to rate API -  " + apiName
+                                                         + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -298,8 +306,8 @@ public class APIStoreRestClient {
                     "&provider=" + provider, requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " +
-                                                         apiName, e);
+            throw new APIManagerIntegrationTestException("Unable to remove rating of API -  " + apiName
+                                                         + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -316,7 +324,8 @@ public class APIStoreRestClient {
                     backendURL + "store/site/blocks/api/api-info/ajax/api-info.jag?" +
                     "action=isRatingActivated", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved", e);
+            throw new APIManagerIntegrationTestException("Rating status cannot be retrieved."
+                                                         + " Error: " + e.getMessage(), e);
         }
     }
 
@@ -340,7 +349,7 @@ public class APIStoreRestClient {
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-                                                         apiName, e);
+                                                         apiName + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -360,7 +369,7 @@ public class APIStoreRestClient {
 
         }catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve documentation for - " +
-                    apiName, e);
+                    apiName + ". Error: " + e.getMessage(), e);
 
         }
 
@@ -388,8 +397,8 @@ public class APIStoreRestClient {
                                          "action=getAllPaginatedPublishedAPIs&tenant=" + tenant +
                                          "&start=" + start + "&end=" + end, requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
-                                                         "APIs for tenant - " + tenant, e);
+            throw new APIManagerIntegrationTestException("Unable to retrieve paginated published APIs for tenant - "
+                                                         + tenant + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -412,7 +421,7 @@ public class APIStoreRestClient {
                     "&start=" + start + "&end=" + end, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to retrieve paginated published " +
-                    "APIs for tenant - " + tenant, e);
+                    "APIs for tenant - " + tenant + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -432,8 +441,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/api/listing/ajax/list.jag?action=getAllPublishedAPIs&tenant=" +
                             tenant), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to retrieve published" +
-                                                         "APIs for tenant - " + tenant, e);
+            throw new APIManagerIntegrationTestException("Unable to retrieve published APIs for tenant - " + tenant
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -461,7 +470,8 @@ public class APIStoreRestClient {
                             "&application=" + application), "", requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to add application - " + application, e);
+            throw new APIManagerIntegrationTestException("Unable to add application - " + application
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -479,7 +489,7 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/application/application-list/ajax/" +
                             "application-list.jag?action=getApplications"), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get applications", e);
+            throw new APIManagerIntegrationTestException("Unable to get applications. Error: " + e.getMessage(), e);
 
         }
     }
@@ -499,7 +509,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/application/application-remove/ajax/application-remove.jag?" +
                             "action=removeApplication&application=" + application), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to remove application - " + application, e);
+            throw new APIManagerIntegrationTestException("Unable to remove application - " + application
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -527,7 +538,8 @@ public class APIStoreRestClient {
                             descriptionNew + "&tier=" + tier), "", requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld, e);
+            throw new APIManagerIntegrationTestException("Unable to update application - " + applicationOld
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
 
@@ -546,7 +558,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptions"), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions."
+                                                         + " Error: " + e.getMessage(), e);
 
         }
     }
@@ -565,7 +578,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptionsOfApplication"), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions. " +
+                                                         "Error: " + e.getMessage(), e);
 
         }
     }
@@ -585,7 +599,8 @@ public class APIStoreRestClient {
                     new URL(backendURL + "store/site/blocks/subscription/subscription-list/ajax/subscription-list.jag?" +
                             "action=getAllSubscriptionsOfApplication&selectedApp=" + selectedApplication), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -605,7 +620,8 @@ public class APIStoreRestClient {
                             "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
                             + applicationName), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -629,7 +645,8 @@ public class APIStoreRestClient {
                             "ajax/subscription-list.jag?action=getAllSubscriptions&selectedApp="
                             + applicationName + "&tenant="+domain), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscribed APIs"
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -656,7 +673,8 @@ public class APIStoreRestClient {
                             "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
                             "&applicationId=" + applicationId), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -682,7 +700,8 @@ public class APIStoreRestClient {
                             "action=removeSubscription&name=" + API + "&version=" + version + "&provider=" + provider +
                             "&applicationName=" + applicationName), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all subscriptions", e);
+            throw new APIManagerIntegrationTestException("Unable to get all subscriptions"
+                                                         + ". Error: " + e.getMessage(), e);
 
         }
     }
@@ -710,7 +729,8 @@ public class APIStoreRestClient {
 
         } catch(Exception e){
             throw new APIManagerIntegrationTestException("Unable to remove subscriptions API:" + API +
-                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName , e);
+                    " Version: " + version + "Provider: " + provider + "App Name: "+ appName +
+                    ". Error: " + e.getMessage(), e);
 
         }
 
@@ -731,7 +751,7 @@ public class APIStoreRestClient {
                     "", requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get all tags", e);
+            throw new APIManagerIntegrationTestException("Unable to get all tags. Error: " + e.getMessage(), e);
         }
 
     }
@@ -756,7 +776,8 @@ public class APIStoreRestClient {
                             "action=addComment&name=" + apiName + "&version=" + version + "&provider=" +
                             provider + "&comment=" + comment), "", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable add a comment in to API - " + apiName, e);
+            throw new APIManagerIntegrationTestException("Unable add a comment in to API - " + apiName
+                    + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -773,7 +794,8 @@ public class APIStoreRestClient {
                     backendURL + "store/site/blocks/comment/comment-add/ajax/comment-add.jag?" +
                     "action=isCommentActivated", requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Failed to get comment activation status", e);
+            throw new APIManagerIntegrationTestException("Failed to get comment activation status"
+                                                         + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -795,7 +817,7 @@ public class APIStoreRestClient {
                             tenant + "&limit=" + limit), "", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Failed to get recently added APIs from tenant - " +
-                                                         tenant, e);
+                                                         tenant + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -813,7 +835,8 @@ public class APIStoreRestClient {
                 }
             }
         } catch (JSONException e) {
-            throw new APIManagerIntegrationTestException("getting application Id failed ", e);
+            throw new APIManagerIntegrationTestException("getting application Id failed"
+                                                         + ". Error: " + e.getMessage(), e);
         }
         return applicationId;
     }
@@ -832,7 +855,8 @@ public class APIStoreRestClient {
             checkAuthentication();
             return HttpRequestUtil.sendGetRequest(backendURL + "/store/apis/list", "tag=" + apiTag + "&tenant=carbon.super");
         } catch (IOException ex) {
-            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
+            throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+                                                         + ". Error: " + ex.getMessage(), ex);
         }
     }
 
@@ -855,7 +879,8 @@ public class APIStoreRestClient {
                                                   "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag")
                     , subscriptionRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception ex) {
-            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API", ex);
+            throw new APIManagerIntegrationTestException("Exception when Subscribing to a API"
+                                                         + ". Error: " + ex.getMessage(), ex);
         }
     }
 
@@ -891,10 +916,10 @@ public class APIStoreRestClient {
             return httpResponse;
         } catch (IOException ioE) {
             throw new APIManagerIntegrationTestException(
-                    "Exception when retrieve the API list as anonymous user", ioE);
-
+                    "Exception when retrieve the API list as anonymous user. Error: " + ioE.getMessage(), ioE);
         } catch (JSONException e) {
-            throw new APIManagerIntegrationTestException("Response message is not JSON Response");
+            throw new APIManagerIntegrationTestException("Response message is not JSON Response"
+                                                         + ". Error: " + e.getMessage(), e);
         }
     }
 
@@ -910,7 +935,7 @@ public class APIStoreRestClient {
             return HttpRequestUtil.doPost(new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
                     "action=logout", requestHeaders);
         }catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Error in store app logout ", e);
+            throw new APIManagerIntegrationTestException("Error in store app logout. Error: " + e.getMessage(), e);
         }
     }
 
@@ -932,7 +957,7 @@ public class APIStoreRestClient {
                     "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
                             "|" + lastName + "|" + email, requestHeaders);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Error in user sign up ", e);
+            throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
         }
     }
 
@@ -950,7 +975,7 @@ public class APIStoreRestClient {
                     + "tenant=" +tenant , requestHeaders);
 
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get prototype APIs", e);
+            throw new APIManagerIntegrationTestException("Unable to get prototype APIs. Error: " + e.getMessage(), e);
         }
 
     }
@@ -1090,7 +1115,8 @@ public class APIStoreRestClient {
                 response = HttpRequestUtil.sendGetRequest(backendURL + "store/api-docs/" + userName + "/" +
                                                           apiName + "/" + apiVersion, null);
             } catch (IOException ex) {
-                throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag", ex);
+                throw new APIManagerIntegrationTestException("Exception when get APO page filtered by tag"
+                                                             + ". Error: " + ex.getMessage(), ex);
             }
 
         }
@@ -1106,12 +1132,16 @@ public class APIStoreRestClient {
     public HttpResponse getApplicationPage() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil
-                    .doPost(new URL(backendURL + "store/site/pages/applications.jag"), "", requestHeaders);
-
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to get application page", e);
-
+            return HttpRequestUtil.doPost(new URL(backendURL + APIMIntegrationConstants.STORE_APPLICATION_REST_URL), "",
+                    requestHeaders);
+        } catch (APIManagerIntegrationTestException e) {
+            throw new APIManagerIntegrationTestException("No Session Cookie found. Please login first. "
+                                                         + "Error: " + e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            throw new APIManagerIntegrationTestException("Unable to get application page, URL is not valid. "
+                                                         + "Error: " + e.getMessage(), e);
+        } catch (AutomationFrameworkException e) {
+            throw new APIManagerIntegrationTestException("Unable to get application page. Error: " + e.getMessage(), e);
         }
     }
 }

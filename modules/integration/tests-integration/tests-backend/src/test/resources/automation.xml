@@ -100,7 +100,7 @@
         -->
         <truststore name="wso2">
             <!--  trust-store file location  -->
-            <fileName>client-truststore.jks</fileName>
+            <fileName>keystores/products/client-truststore.jks</fileName>
             <!--  trust-store type (JKS/PKCS12 etc.)  -->
             <type>JKS</type>
             <!--  trust-store password  -->

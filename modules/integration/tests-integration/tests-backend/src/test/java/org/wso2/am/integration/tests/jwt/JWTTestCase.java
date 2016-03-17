@@ -57,7 +57,7 @@ import static org.testng.AssertJUnit.assertTrue;
 public class JWTTestCase extends APIMIntegrationBaseTest {
 
     private ServerConfigurationManager serverConfigurationManager;
-    private UserManagementClient userManagementClient;
+    private UserManagementClient userManagementClient1;
     private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
     private String publisherURLHttp;
@@ -91,7 +91,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                                                                "configFiles/tokenTest/" + "log4j.properties"));
 
 
-        userManagementClient = new UserManagementClient(
+        userManagementClient1 = new UserManagementClient(
                 keyManagerContext.getContextUrls().getBackEndUrl(),
                 keyManagerContext.getContextTenant().getContextUser().getUserName(),
                 keyManagerContext.getContextTenant().getContextUser().getPassword());
@@ -330,10 +330,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String password = "password@123";
         String accessToken;
 
-        if ((userManagementClient != null) &&
-            !userManagementClient.userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient.addUser(subscriberUser, password,
-                                         new String[]{"Internal/subscriber"}, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
+            userManagementClient1.addUser(subscriberUser, password,
+                                          new String[]{"Internal/subscriber"}, null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient =
@@ -387,6 +387,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         // check claims
         String claim = jsonObject.getString("iss");
         assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
+        String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(serverMessage);
+        byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(serverMessage);
+        String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(serverMessage);
+        boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+        assertTrue("JWT signature verification failed", isSignatureValid);
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
         assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("subscriberUser"));
@@ -467,7 +472,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim, claim.contains("/t/wso2.com/tokenTest"));
-
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, provider, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
         apiPublisherRestClient.deleteAPI(apiName, apiVersion, provider);
