@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.util.Constants;
-import org.wso2.carbon.base.MultitenantConstants;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
@@ -81,6 +81,8 @@ public abstract class MigrationClientBase {
             superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
             tenantsArray.add(superTenant);
         }
+
+        setAdminUserName(tenantManager);
     }
 
 
@@ -129,6 +131,20 @@ public abstract class MigrationClientBase {
         }
     }
 
+    private void setAdminUserName(TenantManager tenantManager) throws UserStoreException {
+        log.debug("Setting tenant admin names");
+
+        for (int i = 0; i < tenantsArray.size(); ++i) {
+            Tenant tenant = tenantsArray.get(i);
+            if (tenant.getId() == MultitenantConstants.SUPER_TENANT_ID) {
+                tenant.setAdminName("admin");
+            }
+            else {
+                tenantsArray.set(i, tenantManager.getTenant(tenant.getId()));
+            }
+        }
+    }
+
     protected List<Tenant> getTenantsArray() { return tenantsArray; }
 
     protected void updateAPIManangerDatabase(String sqlScriptPath) throws SQLException {
@@ -170,6 +186,9 @@ public abstract class MigrationClientBase {
                 }
 
                 if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
                     sqlQuery = sqlQuery.replace(";", "");
                 }
 

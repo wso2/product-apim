@@ -50,31 +50,12 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-    private UserManagementClient userManagementClient;
-    private TenantManagementServiceClient tenantManagementServiceClient;
-    //move to base class
-    private String publisherURLHttp;
-    private String storeURLHttp;
-    private String gatewaySessionCookie;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws APIManagerIntegrationTestException, IOException,
             XPathExpressionException, URISyntaxException, SAXException, XMLStreamException,
             LoginAuthenticationExceptionException {
         super.init();
-        gatewaySessionCookie = createSession(gatewayContextWrk);
-        publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        storeURLHttp = storeUrls.getWebAppURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiStore = new APIStoreRestClient(storeURLHttp);
-
-        userManagementClient = new UserManagementClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
-
-        tenantManagementServiceClient = new TenantManagementServiceClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(), gatewaySessionCookie);
     }
 
     @Test(groups = {"wso2.am"}, description = "API Life cycle test case")

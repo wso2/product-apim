@@ -42,6 +42,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
@@ -65,6 +66,8 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
             <!-- Commenting this test since its required to setup BAM and the DBs to run this
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
@@ -99,6 +102,7 @@
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
         </classes>
     </test>
 
@@ -125,7 +129,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
-
+			<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
 
         </classes>
     </test>
@@ -143,13 +147,19 @@
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
+            <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
         </classes>
     </test>
 
     <test name="rest-api-tests" preserve-order="true" parallel="false">
         <classes>
+            <!-- Following two test cases should be uncommented only when APIM is released under a kernel version which have
+            CARBON-15759 and ESBJAVA-4386 fixed -->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCase"/>-->
             <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
@@ -157,6 +167,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
+
         </classes>
     </test>
 

@@ -26,6 +26,8 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -118,7 +120,8 @@ public class WebAppDeploymentUtil {
             try {
                 response = HttpRequestUtil.sendGetRequest(
                         webAppURL + "/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
-                        "/web_app_status/webapp-info/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", null);
+                        "webAppStatus/webappInfo/" +
+                        APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", null);
 
             } catch (IOException ignore) {
                 log.info("WAIT for webapp deployment  :" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +

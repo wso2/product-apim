@@ -62,6 +62,9 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     private final String INVALID_URL = "/invalid";
     private final String INVALID_URL_INVOKE_RESPONSE =
             "No matching resource found in the API for the given request";
+    private final String INVALID_RESOURCE_INVOCATION =
+            "No matching resource found for given API Request";
+
     private String apiEndPointUrl;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
@@ -139,7 +142,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (AutomationFrameworkException e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 403"), "Not Return IOException with 403 when accessing a " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 403 when accessing a " +
                                                                   "POST resource which is not define yet. "
                                                                   + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
@@ -157,9 +160,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
 
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
-        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
@@ -203,9 +208,11 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         //apiCreationRequestBean.setVersion(API_VERSION_1_0_0);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/{id}");
-        APIResourceBean apiResourceBeanPOST = new APIResourceBean("POST", "Application & Application User",
+        APIResourceBean apiResourceBeanPOST = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/customers/name");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiResourceBeansList.add(apiResourceBeanPOST);
@@ -234,9 +241,9 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         HttpResponse httpResponseGetInvalidUrl =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD +
                                       INVALID_URL, requestHeadersGet);
-        assertEquals(httpResponseGetInvalidUrl.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN, "Invocation is not " +
+        assertEquals(httpResponseGetInvalidUrl.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND, "Invocation is not " +
                                                                                                 "forbidden when try to invoke GET resource  via invalid url pattern");
-        assertTrue(httpResponseGetInvalidUrl.getData().contains(INVALID_URL_INVOKE_RESPONSE), "Invocation is not" +
+        assertTrue(httpResponseGetInvalidUrl.getData().contains(INVALID_RESOURCE_INVOCATION), "Invocation is not" +
                                                                                               " forbidden when try to invoke GET resource  via invalid url pattern. Expected value :\"" +
                                                                                               RESPONSE_GET + "\" not contains in response data:\"" + httpResponseGetInvalidUrl.getData() + "\"");
         //Send POST Request
@@ -261,7 +268,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User",
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
@@ -293,7 +301,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (Exception e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 403"), "Not Return IOException " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException " +
                                           "with 403 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
