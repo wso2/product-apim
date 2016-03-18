@@ -102,6 +102,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         
         if (StatDBUtil.isTokenEncryptionEnabled()) {
             decryptEncryptedConsumerKeys();
+            decryptIdnOAuthConsumerApps();
         }
     }
 
@@ -197,7 +198,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     }
 
     private void decryptEncryptedConsumerKeys() throws SQLException {
-        log.info("Decrypting encrypted consumer keys for API Manager started");
+        log.info("Decrypting encrypted consumer keys for AM_APPLICATION_KEY_MAPPING started");
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -237,6 +238,57 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                     updateStatement.setString(1, appKeyMappingDTO.getConsumerKey());
                     updateStatement.setString(2, appKeyMappingDTO.getApplicationId());
                     updateStatement.setString(3, appKeyMappingDTO.getKeyType());
+                    updateStatement.addBatch();
+                }
+
+                updateStatement.executeBatch();
+
+                connection.commit();
+            } finally {
+                APIMgtDBUtil.closeAllConnections(updateStatement, connection, null);
+            }
+        }
+    }
+
+    private void decryptIdnOAuthConsumerApps() throws SQLException {
+        log.info("Decrypting encrypted consumer keys for IDN_OAUTH_CONSUMER_APPS");
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<AppKeyMappingDTO> appKeyMappingDTOs = new ArrayList<>();
+
+        try {
+            String query = "SELECT ID, CONSUMER_KEY FROM IDN_OAUTH_CONSUMER_APPS";
+
+            connection = APIMgtDBUtil.getConnection();
+            preparedStatement = connection.prepareStatement(query);
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                AppKeyMappingDTO appKeyMappingDTO = new AppKeyMappingDTO();
+                appKeyMappingDTO.setApplicationId(resultSet.getString("ID"));
+                appKeyMappingDTO.setConsumerKey(resultSet.getString("CONSUMER_KEY"));
+
+                appKeyMappingDTOs.add(appKeyMappingDTO);
+            }
+
+            ResourceModifier.decryptConsumerKeyIfEncrypted(appKeyMappingDTOs);
+        } finally {
+            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
+        }
+
+        if (!appKeyMappingDTOs.isEmpty()) {
+            PreparedStatement updateStatement = null;
+
+            try {
+                connection = APIMgtDBUtil.getConnection();
+                connection.setAutoCommit(false);
+                updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH_CONSUMER_APPS SET CONSUMER_KEY = ?" +
+                        "WHERE ID = ?");
+
+                for (AppKeyMappingDTO appKeyMappingDTO : appKeyMappingDTOs) {
+                    updateStatement.setString(1, appKeyMappingDTO.getConsumerKey());
+                    updateStatement.setString(2, appKeyMappingDTO.getApplicationId());
                     updateStatement.addBatch();
                 }
 
