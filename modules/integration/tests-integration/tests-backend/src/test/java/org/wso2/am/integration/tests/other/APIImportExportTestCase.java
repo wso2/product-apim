@@ -50,46 +50,49 @@ import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.*;
 
+/**
+ * This test case is used to test the API Manager Import Export tool
+ */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
 public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIImportExportTestCase.class);
-    private APIPublisherRestClient apiPublisher;
-    private APIStoreRestClient apiStore;
-
-    private String apiName = "APIImportExportTestCaseAPIName";
-    private String newApiName = "NewAPIImportExportTestCaseAPIName";
-    private String APIContext = "APIImportExportTestCaseContext";
-    private String NEWAPIContext = "NewAPIImportExportTestCaseContext";
-    private String tags;
-    private String tag1 = "import";
-    private String tag2 = "export";
-    private String tag3 = "test";
-    private String tierCollection;
-    private String endpointUrl;
-    private String description = "This is test API create by API manager integration test";
-    private String APIVersion = "1.0.0";
-    private String appName = "APIImportExportTestCaseApp";
-    private Map<String, String> requestHeaders = new HashMap<String, String>();
-    private APIRequest apiRequest;
-
-    private String publisherURLHttp;
-    private String storeURLHttp;
-    private File zipTempDir, apiZip, newApiZip;
-    private String importUrl = "https://localhost:9443/api-import-export-1.0.1/import-api";
-    private String exportUrl = "https://localhost:9443/api-import-export-1.0.1/export-api";
-    private APICreationRequestBean apiCreationRequestBean;
-    private List<APIResourceBean> resList;
-    private UserManagementClient userManagementClient1;
+    private final String API_NAME = "APIImportExportTestCaseAPIName";
+    private final String NEW_API_NAME = "NewAPIImportExportTestCaseAPIName";
+    private final String API_CONTEXT = "APIImportExportTestCaseContext";
+    private final String NEW_API_CONTEXT = "NewAPIImportExportTestCaseContext";
     private final String ALLOWED_ROLE = "allowedRole";
+    private final String VISIBILITY_ROLE = "visibilityRole";
     private final String NOT_ALLOWED_ROLE = "denyRole";
-    private final String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
+    private final String[] PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
     private final String ALLOWED_USER = "allowedUser";
     private final char[] ALLOWED_USER_PASS = "pass@123".toCharArray();
     private final String DENIED_USER = "deniedUser";
     private final char[] DENIED_USER_PASS = "pass@123".toCharArray();
     private final String SCOPE_NAME = "ImportExportScope";
+    private final String TAG1 = "import";
+    private final String TAG2 = "export";
+    private final String TAG3 = "test";
+    private final String DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION = "1.0.0";
+    private final String APP_NAME = "APIImportExportTestCaseApp";
+    private final String NEW_APP_NAME = "newAPIImportExportTestCaseApp";
+
+    private String publisherURLHttp;
+    private String storeURLHttp;
+    private File zipTempDir, apiZip, newApiZip;
+    private String importUrl;
+    private String exportUrl;
+    private APICreationRequestBean apiCreationRequestBean;
+    private List<APIResourceBean> resList;
+    private String tags;
+    private String tierCollection;
+    private String endpointUrl;
+    private Map<String, String> requestHeaders = new HashMap<String, String>();
+    private APIPublisherRestClient apiPublisher;
+    private APIStoreRestClient apiStore;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIImportExportTestCase(TestUserMode userMode) {
@@ -98,61 +101,45 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
-        //        super.init();
-        /*ContextUrls contextUrls = new ContextUrls();
-        contextUrls.setWebAppURL("http://localhost:9763/");
-        contextUrls.setWebAppURLHttps("https://localhost:9443/");
-        contextUrls.setServiceUrl("http://localhost:9470/");
-        contextUrls.setSecureServiceUrl("http://localhost:9470/");
-        contextUrls.setBackEndUrl("http://localhost:9470/");
-
-        APIMURLBean bean = new APIMURLBean(contextUrls);
-        publisherUrls = bean;
-        storeUrls = bean;
-
-        User user = new User();
-        user.setUserName("admin");
-        user.setPassword("admin");
-        super.user = user;*/
-
         super.init(userMode);
 
-        publisherURLHttp = getPublisherURLHttps();//set s
+        publisherURLHttp = getPublisherURLHttps();
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
-        apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(user.getUserName(), user.getPassword());
 
-        tags = tag1 + "," + tag2 + "," + tag3;
+        //concat tags
+        tags = TAG1 + "," + TAG2 + "," + TAG3;
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
         importUrl = publisherURLHttp + "api-import-export-1.0.1/import-api";
         exportUrl = publisherURLHttp + "api-import-export-1.0.1/export-api";
 
-        //adding new role and two users
-        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+        //adding new 3 roles and two users
+        userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                 createSession(keyManagerContext));
-        userManagementClient1.addRole(ALLOWED_ROLE, null, permissions);
-        userManagementClient1.addRole(NOT_ALLOWED_ROLE, null, permissions);
-        userManagementClient1
-                .addUser(ALLOWED_USER, String.valueOf(ALLOWED_USER_PASS), new String[] { ALLOWED_ROLE }, null);
-        userManagementClient1
-                .addUser(DENIED_USER, String.valueOf(DENIED_USER_PASS), new String[] { NOT_ALLOWED_ROLE }, null);
+        userManagementClient.addRole(ALLOWED_ROLE, null, PERMISSIONS);
+        userManagementClient.addRole(NOT_ALLOWED_ROLE, null, PERMISSIONS);
+        userManagementClient.addRole(VISIBILITY_ROLE, null, PERMISSIONS);
+
+        userManagementClient.addUser(ALLOWED_USER, String.valueOf(ALLOWED_USER_PASS),
+                new String[] { ALLOWED_ROLE, VISIBILITY_ROLE }, null);
+        userManagementClient.addUser(DENIED_USER, String.valueOf(DENIED_USER_PASS),
+                new String[] { NOT_ALLOWED_ROLE, VISIBILITY_ROLE }, null);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation and subscribe")
+    @Test(groups = { "wso2.am" }, description = "Sample API creation")
     public void testAPICreation() throws Exception {
         String providerName = user.getUserName();
 
-        apiCreationRequestBean = new APICreationRequestBean(apiName, APIContext, APIVersion, providerName,
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
                 new URL(exportUrl));
         apiCreationRequestBean.setTags(tags);
-        apiCreationRequestBean.setDescription(description);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setTiersCollection(tierCollection);
 
+        //define resources
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean res1 = new APIResourceBean("POST",
                 APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
@@ -189,36 +176,42 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         verifyResponse(serviceResponse);
 
         //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
 
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testAPICreation")
+    @Test(groups = { "wso2.am" }, description = "Exported Sample API", dependsOnMethods = "testAPICreation")
     public void testAPIExport() throws Exception {
 
-        System.setProperty("javax.net.ssl.trustStore", "/home/rukshan/wso2-jks/wso2carbon.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
-
+        //construct export API url
         URL exportRequest = new URL(
-                exportUrl + "?name=" + apiName + "&version=" + APIVersion + "&provider=" + user.getUserName());
+                exportUrl + "?name=" + API_NAME + "&version=" + API_VERSION + "&provider=" + user.getUserName());
         zipTempDir = Files.createTempDir();
 
-        String fileName = user.getUserDomain() + "_" + apiName;
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + API_NAME;
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
 
+        //open a client connection and save the file
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader("Authorization",
+        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
         CloseableHttpResponse response = client.execute(get);
         HttpEntity entity = response.getEntity();
         if (entity != null) {
-            FileOutputStream outStream = new FileOutputStream(apiZip);
-            entity.writeTo(outStream);
+            FileOutputStream outStream = null;
+            try {
+                outStream = new FileOutputStream(apiZip);
+                entity.writeTo(outStream);
+            } finally {
+                if (outStream != null) {
+                    outStream.close();
+                }
+            }
 
         }
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
@@ -226,12 +219,14 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testAPIExport")
+    @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
     public void testAPIImport() throws Exception {
 
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(apiName, APIVersion, user.getUserName());
+        //delete exported API before import
+        HttpResponse serviceResponse = apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
 
+        //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
@@ -242,7 +237,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         multipartEntity.addPart("file", fileBody);
 
         connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
-        connection.setRequestProperty("Authorization",
+        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
         OutputStream out = connection.getOutputStream();
         try {
@@ -252,48 +247,54 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         }
         int status = connection.getResponseCode();
         BufferedReader read = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String response = "", s;
-        while ((s = read.readLine()) != null) {
-            response += s;
+        String temp;
+        StringBuilder response = new StringBuilder();
+        while ((temp = read.readLine()) != null) {
+            response.append(temp);
         }
         Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response);
-        Assert.assertEquals(response, "API imported successfully.", "API importing is not successfully");
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testAPIImport")
+    @Test(groups = {
+            "wso2.am" }, description = "Checking status of the imported API", dependsOnMethods = "testAPIImport")
     public void testAPIState() throws Exception {
-        HttpResponse response = apiPublisher.getAPI(apiName, user.getUserName(), APIVersion);
+        //get the imported API information
+        HttpResponse response = apiPublisher.getAPI(API_NAME, user.getUserName(), API_VERSION);
         verifyResponse(response);
         JSONObject responseObj = new JSONObject(response.getData());
         JSONObject apiObj = responseObj.getJSONObject("api");
 
         String state = apiObj.getString("status");
         Assert.assertEquals(state, APILifeCycleState.CREATED.getState(), "Imported API not in Created state");
-        Assert.assertEquals(apiName, apiObj.getString("name"), "Imported API not in Created state");
-        Assert.assertEquals(APIVersion, apiObj.getString("version"), "Imported API not in Created state");
-        Assert.assertEquals(description, apiObj.getString("description"), "Imported API not in Created state");
-        Assert.assertTrue(tags.contains(tag1), "Imported API not in Created state");
-        Assert.assertTrue(tags.contains(tag2), "Imported API not in Created state");
-        Assert.assertTrue(tags.contains(tag3), "Imported API not in Created state");
+        Assert.assertEquals(API_NAME, apiObj.getString("name"), "Imported API Name is incorrect");
+        Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
+        Assert.assertEquals(DESCRIPTION, apiObj.getString("description"), "Imported API description is incorrect");
+        Assert.assertTrue(tags.contains(TAG1), "Imported API not contain tag: " + TAG1);
+        Assert.assertTrue(tags.contains(TAG2), "Imported API not contain tag: " + TAG2);
+        Assert.assertTrue(tags.contains(TAG3), "Imported API not contain tag: " + TAG3);
         Assert.assertTrue(
                 apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.GOLD),
-                "Imported API not in Created state");
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.GOLD);
         Assert.assertTrue(
                 apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.BRONZE),
-                "Imported API not in Created state");
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.BRONZE);
         Assert.assertTrue(
                 apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.SILVER),
-                "Imported API not in Created state");
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.SILVER);
         Assert.assertTrue(
                 apiObj.getString("availableTiersDisplayNames").contains(APIMIntegrationConstants.API_TIER.UNLIMITED),
-                "Imported API not in Created state");
-        Assert.assertEquals("checked", apiObj.getString("transport_http"), "Imported API not in Created state");
-        Assert.assertEquals("checked", apiObj.getString("transport_https"), "Imported API not in Created state");
-        Assert.assertEquals("Disabled", apiObj.getString("responseCache"), "Imported API not in Created state");
-        Assert.assertEquals("Disabled", apiObj.getString("destinationStats"), "Imported API not in Created state");
-        Assert.assertEquals("Disabled", apiObj.getString("responseCache"), "Imported API not in Created state");
-        Assert.assertEquals("public", apiObj.getString("visibility"), "Imported API not in Created state");
-        Assert.assertEquals("false", apiObj.getString("isDefaultVersion"), "Imported API not in Created state");
+                "Imported API not contain Tier: " + APIMIntegrationConstants.API_TIER.UNLIMITED);
+        Assert.assertEquals("checked", apiObj.getString("transport_http"),
+                "Imported API HTTP transport status is incorrect");
+        Assert.assertEquals("checked", apiObj.getString("transport_https"),
+                "Imported API HTTPS transport status is incorrect");
+        Assert.assertEquals("Disabled", apiObj.getString("responseCache"),
+                "Imported API response Cache status is incorrect");
+        Assert.assertEquals("Disabled", apiObj.getString("destinationStats"),
+                "Imported API destination Stats status is incorrect");
+        Assert.assertEquals("public", apiObj.getString("visibility"), "Imported API visibility is incorrect");
+        Assert.assertEquals("false", apiObj.getString("isDefaultVersion"),
+                "Imported API Default Version status is incorrect");
 
         JSONArray resourcesList = new JSONArray(apiObj.getString("resources"));
 
@@ -311,119 +312,124 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 tier = resProp.getString("throttling_tier");
             }
             urlPattern = resourcesList.getJSONObject(i).getString("url_pattern");
-            Assert.assertEquals(res.getResourceMethod(), method, "Imported API not in Created state");
-            Assert.assertEquals(res.getResourceMethodAuthType(), authType, "Imported API not in Created state");
-            Assert.assertEquals(res.getResourceMethodThrottlingTier(), tier, "Imported API not in Created state");
-            Assert.assertEquals(res.getUriTemplate(), urlPattern, "Imported API not in Created state");
+            Assert.assertEquals(res.getResourceMethod(), method, "Imported API Resource method is incorrect");
+            Assert.assertEquals(res.getResourceMethodAuthType(), authType,
+                    "Imported API Resource Auth Type is incorrect");
+            Assert.assertEquals(res.getResourceMethodThrottlingTier(), tier, "Imported API Resource Tier is incorrect");
+            Assert.assertEquals(res.getUriTemplate(), urlPattern, "Imported API Resource URL template is incorrect");
         }
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testAPIState")
+    @Test(groups = {
+            "wso2.am" }, description = "Implementing sample api for scope test", dependsOnMethods = "testAPIState")
     public void testNewAPICreation() throws Exception {
         String providerName = user.getUserName();
 
-        apiCreationRequestBean = new APICreationRequestBean(newApiName, NEWAPIContext, APIVersion, providerName,
+        apiCreationRequestBean = new APICreationRequestBean(NEW_API_NAME, NEW_API_CONTEXT, API_VERSION, providerName,
                 new URL(endpointUrl));
 
-        String swagger = "{\n" + "\t\"paths\": {\n" + "\t\t\"/ADD\": {\t\t\t\n" + "\t\t\t\"get\": {\n"
-                + "\t\t\t\t\"x-auth-type\": \""
-                + APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER + "\",\n"
-                + "\t\t\t\t\"x-throttling-tier\": \"" + APIMIntegrationConstants.API_TIER.UNLIMITED + "\",\n"
-                + "\t\t\t\t\"x-scope\": \"" + SCOPE_NAME + "\",\n" + "\t\t\t\t\"responses\": {\n"
-                + "\t\t\t\t\t\"200\": {}\n" + "\t\t\t\t},\n" + "\t\t\t\t\"parameters\": [{\n"
-                + "\t\t\t\t\t\"name\": \"x\",\n" + "\t\t\t\t\t\"paramType\": \"query\",\n"
-                + "\t\t\t\t\t\"required\": false,\n" + "\t\t\t\t\t\"type\": \"string\",\n"
-                + "\t\t\t\t\t\"description\": \"First value\",\n" + "\t\t\t\t\t\"in\": \"query\"\n" + "\t\t\t\t}, {\n"
-                + "\t\t\t\t\t\"name\": \"y\",\n" + "\t\t\t\t\t\"paramType\": \"query\",\n"
-                + "\t\t\t\t\t\"required\": false,\n" + "\t\t\t\t\t\"type\": \"string\",\n"
-                + "\t\t\t\t\t\"description\": \"Second Value\",\n" + "\t\t\t\t\t\"in\": \"query\"\n" + "\t\t\t\t}]\n"
-                + "\t\t\t}\n" + "\t\t}\n" + "\t},\n" + "\t\"swagger\": \"2.0\",\n" + "\t\"x-wso2-security\": {\n"
-                + "\t\t\"apim\": {\n" + "\t\t\t\"x-wso2-scopes\": [{\n" + "\t\t\t\t\"description\": \"Sample Scope\",\n"
-                + "\t\t\t\t\"name\": \"" + SCOPE_NAME + "\",\n" + "\t\t\t\t\"roles\": \"" + ALLOWED_ROLE + "\",\n"
-                + "\t\t\t\t\"key\": \"" + SCOPE_NAME + "\"\n" + "\t\t\t}]\n" + "\t\t}\n" + "\t},\n" + "\t\"info\": {\n"
-                + "\t\t\"title\": \"" + newApiName + "\",\n" + "\t\t\"" + APIVersion + "\": \"1.0.0\"\n" + "\t}\n"
-                + "}";
+        //adding resources using swagger
+        String swagger = "{" + "\"paths\": {" + "\"/add\": {" + "\"get\": {" + "\"x-auth-type\": \"" + URLEncoder
+                .encode(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, "UTF-8") + "\","
+                + "\"x-throttling-tier\": \"" + APIMIntegrationConstants.API_TIER.UNLIMITED + "\"," + "\"x-scope\": \""
+                + SCOPE_NAME + "\"," + "\"responses\": {" + "\"200\": {}" + "}," + "\"parameters\": [{"
+                + "\"name\": \"x\"," + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
+                + "\"description\": \"First value\"," + "\"in\": \"query\"" + "}, {" + "\"name\": \"y\","
+                + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
+                + "\"description\": \"Second Value\"," + "\"in\": \"query\"" + "}]" + "}" + "}" + "},"
+                + "\"swagger\": \"2.0\"," + "\"x-wso2-security\": {" + "\"apim\": {" + "\"x-wso2-scopes\": [{"
+                + "\"description\": \"Sample Scope\"," + "\"name\": \"" + SCOPE_NAME + "\"," + "\"roles\": \""
+                + ALLOWED_ROLE + "\"," + "\"key\": \"" + SCOPE_NAME + "\"" + "}]" + "}" + "}," + "\"info\": {"
+                + "\"title\": \"" + NEW_API_NAME + "\"," + "\"" + API_VERSION + "\": \"1.0.0\"" + "}" + "}";
 
         apiCreationRequestBean.setSwagger(swagger);
         apiCreationRequestBean.setVisibility("restricted");
-        apiCreationRequestBean.setRoles(ALLOWED_ROLE);
+        apiCreationRequestBean.setRoles(VISIBILITY_ROLE);
 
         //add test api
         HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
         verifyResponse(serviceResponse);
 
         //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(newApiName, user.getUserName(),
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NEW_API_NAME, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
 
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testNewAPICreation")
+    @Test(groups = { "wso2.am" }, description = "Invoke the API before export", dependsOnMethods = "testNewAPICreation")
     public void testNewAPIInvoke() throws Exception {
 
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(ALLOWED_USER, String.valueOf(ALLOWED_USER_PASS));
         //add a application
         HttpResponse serviceResponse = apiStore
-                .addApplication(appName, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
+                .addApplication(APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
         verifyResponse(serviceResponse);
 
         String provider = user.getUserName();
 
         //subscribe to the api
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(newApiName, provider);
-        subscriptionRequest.setApplicationName(appName);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(NEW_API_NAME, provider);
+        subscriptionRequest.setApplicationName(APP_NAME);
         subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         serviceResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(serviceResponse);
 
         //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(appName);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
         generateAppKeyRequest.setTokenScope(SCOPE_NAME);
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
         Assert.assertNotNull("Access Token not found " + responseString, accessToken);
 
+        //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
-        String invokeURL = getAPIInvocationURLHttp(NEWAPIContext, APIVersion);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL, requestHeaders);
-        System.out.println(serviceResponse.getResponseCode());
+        String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
+        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testNewAPIInvoke")
+            "wso2.am" }, description = "Exporting above created new API", dependsOnMethods = "testNewAPIInvoke")
     public void testNewAPIExport() throws Exception {
 
+        //export api
         URL exportRequest = new URL(
-                exportUrl + "?name=" + newApiName + "&version=" + APIVersion + "&provider=" + user.getUserName());
-        String fileName = user.getUserDomain() + "_" + newApiName;
+                exportUrl + "?name=" + NEW_API_NAME + "&version=" + API_VERSION + "&provider=" + user.getUserName());
+        String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader("Authorization",
+        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
         CloseableHttpResponse response = client.execute(get);
         HttpEntity entity = response.getEntity();
         if (entity != null) {
             FileOutputStream outStream = new FileOutputStream(newApiZip);
-            entity.writeTo(outStream);
-
+            try {
+                entity.writeTo(outStream);
+            } finally {
+                outStream.close();
+            }
         }
         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
                 "Response code is not as expected");
 
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testNewAPIExport")
+    @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
     public void testNewAPIImport() throws Exception {
-
-        HttpResponse serviceResponse = apiPublisher.deleteAPI(newApiName, APIVersion, user.getUserName());
+        //remove existing application and api
+        HttpResponse serviceResponse = apiStore.removeApplication(APP_NAME);
+        verifyResponse(serviceResponse);
+        serviceResponse = apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
 
+        //deploy exported API
         URL url = new URL(importUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
@@ -434,7 +440,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         multipartEntity.addPart("file", fileBody);
 
         connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
-        connection.setRequestProperty("Authorization",
+        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
                 "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
         OutputStream out = connection.getOutputStream();
         try {
@@ -444,49 +450,97 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         }
         int status = connection.getResponseCode();
         BufferedReader read = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String response = "", s;
-        while ((s = read.readLine()) != null) {
-            response += s;
+        String temp;
+        StringBuilder response = new StringBuilder();
+        while ((temp = read.readLine()) != null) {
+            response.append(temp);
         }
-        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response);
-        Assert.assertEquals(response, "API imported successfully.", "API importing is not successfully");
+        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response.toString());
+        Assert.assertEquals(response.toString(), "API imported successfully.", "API importing is not successfully");
     }
 
     @Test(groups = {
-            "wso2.am" }, description = "Sample API creation and subscribe", dependsOnMethods = "testNewAPIImport")
+            "wso2.am" }, description = "Checking newly imported API status", dependsOnMethods = "testNewAPIImport")
     public void testNewAPIState() throws Exception {
-        HttpResponse response = apiPublisher.getAPI(newApiName, user.getUserName(), APIVersion);
+        //get the API information
+        HttpResponse response = apiPublisher.getAPI(NEW_API_NAME, user.getUserName(), API_VERSION);
         verifyResponse(response);
         JSONObject responseObj = new JSONObject(response.getData());
         JSONObject apiObj = responseObj.getJSONObject("api");
 
         String state = apiObj.getString("status");
         Assert.assertEquals(state, APILifeCycleState.CREATED.getState(), "Imported API not in Created state");
-        Assert.assertEquals(newApiName, apiObj.getString("name"), "Imported API not in Created state");
-        Assert.assertEquals(APIVersion, apiObj.getString("version"), "Imported API not in Created state");
-        Assert.assertEquals("restricted", apiObj.getString("visibility"), "Imported API not in Created state");
+        Assert.assertEquals(NEW_API_NAME, apiObj.getString("name"), "Imported API name is incorrect");
+        Assert.assertEquals(API_VERSION, apiObj.getString("version"), "Imported API version is incorrect");
+        Assert.assertEquals("restricted", apiObj.getString("visibility"), "Imported API Visibility is incorrect");
         String endpointConfig = apiObj.getString("endpointConfig");
         Assert.assertEquals(endpointUrl,
                 new JSONObject(endpointConfig).getJSONObject("production_endpoints").getString("url"),
-                "Imported API not in Created state");
+                "Imported API Endpoint url is incorrect");
 
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Invoke the newly imported API", dependsOnMethods = "testNewAPIState")
+    public void testNewAPIInvokeAfterImport() throws Exception {
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NEW_API_NAME, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        HttpResponse serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        apiStore = new APIStoreRestClient(storeURLHttp);
+        apiStore.login(DENIED_USER, String.valueOf(DENIED_USER_PASS));
+
+        //add a application
+        serviceResponse = apiStore
+                .addApplication(NEW_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
+        verifyResponse(serviceResponse);
+
+        String provider = user.getUserName();
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(NEW_API_NAME, provider);
+        subscriptionRequest.setApplicationName(NEW_APP_NAME);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        serviceResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //generate the key for the subscription
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(NEW_APP_NAME);
+        generateAppKeyRequest.setTokenScope(SCOPE_NAME);
+        String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
+        JSONObject response = new JSONObject(responseString);
+        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        Assert.assertNotNull("Access Token not found " + responseString, accessToken);
+
+        //invoke the API
+        requestHeaders.clear();
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
+        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        Assert.assertEquals(HttpStatus.SC_FORBIDDEN, serviceResponse.getResponseCode(),
+                "Imported API not in Created state");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        //        apiStore.removeApplication(appName);
-        apiPublisher.deleteAPI(apiName, APIVersion, user.getUserName());
-        apiPublisher.deleteAPI(newApiName, APIVersion, user.getUserName());
-        apiZip.delete();
-        newApiZip.delete();
-        zipTempDir.delete();
+
+        apiStore.removeApplication(NEW_APP_NAME);
+        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
+        boolean deleteStatus;
+        deleteStatus = apiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = newApiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = zipTempDir.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                //                                new Object[] { TestUserMode.TENANT_ADMIN },
-        };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN }, };
     }
 
     /**
