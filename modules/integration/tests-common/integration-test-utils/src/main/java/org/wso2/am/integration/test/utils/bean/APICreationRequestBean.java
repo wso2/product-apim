@@ -67,6 +67,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String bizOwnerMail = "";
     private String techOwner = "";
     private String techOwnerMail = "";
+    private String swagger;
 
     public void setName(String name) {
         this.name = name;
@@ -367,7 +368,7 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
-                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         try {
             this.endpoint = new JSONObject();
@@ -444,6 +445,10 @@ public class APICreationRequestBean extends AbstractRequest {
                     apiResourceBean.getResourceMethodThrottlingTier());
             addParameter("uriTemplate-" + resourceIndex, apiResourceBean.getUriTemplate());
             resourceIndex++;
+        }
+
+        if (swagger != null && !swagger.isEmpty()) {
+            addParameter("swagger", swagger);
         }
         addParameter("default_version", getDefaultVersion());
         addParameter("default_version_checked", getDefaultVersionChecked());
@@ -658,5 +663,13 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setFaultSequence(String faultSequence) {
         this.faultSequence = faultSequence;
+    }
+
+    public String getSwagger() {
+        return swagger;
+    }
+
+    public void setSwagger(String swagger) {
+        this.swagger = swagger;
     }
 }
