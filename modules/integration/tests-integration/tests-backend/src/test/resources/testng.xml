@@ -152,6 +152,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
         </classes>
     </test>
 
