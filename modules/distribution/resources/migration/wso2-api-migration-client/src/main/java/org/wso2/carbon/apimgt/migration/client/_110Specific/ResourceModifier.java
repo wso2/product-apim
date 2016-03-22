@@ -42,8 +42,8 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class ResourceModifier {
     public static String modifyWorkFlowExtensions(String xmlContent) throws APIMigrationException {
@@ -323,7 +323,7 @@ public class ResourceModifier {
     }
 
     public static void decryptConsumerKeyIfEncrypted(List<AppKeyMappingDTO> appKeyMappingDTOs) {
-        Iterator<AppKeyMappingDTO> iterator = appKeyMappingDTOs.iterator();
+        ListIterator<AppKeyMappingDTO> iterator = appKeyMappingDTOs.listIterator();
         while (iterator.hasNext()) {
             try {
                 AppKeyMappingDTO appKeyMappingDTO = iterator.next();
@@ -334,6 +334,7 @@ public class ResourceModifier {
 
                 if (ResourceUtil.isConsumerKeyValid(decryptedValue)) {
                     appKeyMappingDTO.setConsumerKey(decryptedValue);
+                    iterator.set(appKeyMappingDTO);
                 }
                 else {
                     iterator.remove(); // Remove objects with consumer keys that do not require decryption
