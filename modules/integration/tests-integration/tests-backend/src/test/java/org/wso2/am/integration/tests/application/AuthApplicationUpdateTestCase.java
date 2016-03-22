@@ -112,8 +112,8 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         verifyResponse(response);
     }
 
-    @Test(groups = {
-            "wso2.am" }, description = "Sample Auth Application Properties check", dependsOnMethods = "testApplicationUpdate")
+    @Test(groups = { "wso2.am" }, description = "Sample Auth Application Properties check",
+            dependsOnMethods = "testApplicationUpdate")
     public void testApplicationGrantTypeAfterUpdate() throws Exception {
         OAuthConsumerAppDTO authApp = getAuthAppDetails(consumerKey);
         String grantTypes = authApp.getGrantTypes();

@@ -555,7 +555,7 @@ public class APIStoreRestClient {
      * @param jsonParams        json parameters for grant type
      * @param callbackUrl       call back url
      * @return Http response of the update request
-     * @throws APIManagerIntegrationTestException org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - throws if update application fails
+     * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
      */
     public HttpResponse updateClientApplication(String application, String keyType, String authorizedDomains,
             String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
