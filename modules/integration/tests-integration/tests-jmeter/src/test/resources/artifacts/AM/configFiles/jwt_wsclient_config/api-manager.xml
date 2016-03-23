@@ -45,7 +45,7 @@
         <!--
             Server URL of the Authentication service
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
         <!--
             Admin username for the Authentication manager.
         -->
@@ -114,7 +114,7 @@
                 <!--
                             Server URL of the API gateway.
                     -->
-                <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
+                <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
                 <!--
                             Admin username for the API gateway.
                     -->
@@ -127,7 +127,7 @@
                             Endpoint URLs for the APIs hosted in this API gateway.
                     -->
                 <GatewayEndpoint>
-                    http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}
+                    http://localhost:${http.nio.port},https://localhost:${https.nio.port}
                 </GatewayEndpoint>
             </Environment>
         </Environments>
@@ -228,7 +228,7 @@
         <!--
             Server URL of the API key manager
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
 
         <!--
             Admin username for API key manager.
