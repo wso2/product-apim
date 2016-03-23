@@ -48,9 +48,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
 
 /**
@@ -67,9 +65,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final String VISIBILITY_ROLE = "visibilityRole";
     private final String NOT_ALLOWED_ROLE = "denyRole";
     private final String[] PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
-    private final String ALLOWED_USER = "allowedUser";
+    private String ALLOWED_USER = "allowedUser";
     private final char[] ALLOWED_USER_PASS = "pass@123".toCharArray();
-    private final String DENIED_USER = "deniedUser";
+    private String DENIED_USER = "deniedUser";
     private final char[] DENIED_USER_PASS = "pass@123".toCharArray();
     private final String SCOPE_NAME = "ImportExportScope";
     private final String TAG1 = "import";
@@ -113,8 +111,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         tags = TAG1 + "," + TAG2 + "," + TAG3;
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
-        importUrl = publisherURLHttp + "api-import-export-1.0.1/import-api";
-        exportUrl = publisherURLHttp + "api-import-export-1.0.1/export-api";
+        importUrl = publisherURLHttp + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
+        exportUrl = publisherURLHttp + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
 
         //adding new 3 roles and two users
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
@@ -127,6 +125,12 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 new String[] { ALLOWED_ROLE, VISIBILITY_ROLE }, null);
         userManagementClient.addUser(DENIED_USER, String.valueOf(DENIED_USER_PASS),
                 new String[] { NOT_ALLOWED_ROLE, VISIBILITY_ROLE }, null);
+
+        if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
+            ALLOWED_USER = ALLOWED_USER + "@" + keyManagerContext.getContextTenant().getDomain();
+            DENIED_USER = DENIED_USER + "@" + keyManagerContext.getContextTenant().getDomain();
+        }
+
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample API creation")
@@ -180,7 +184,6 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
-
     }
 
     @Test(groups = { "wso2.am" }, description = "Exported Sample API", dependsOnMethods = "testAPICreation")
@@ -194,65 +197,17 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         //set the export file name with tenant prefix
         String fileName = user.getUserDomain() + "_" + API_NAME;
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
-
-        //open a client connection and save the file
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        CloseableHttpResponse response = client.execute(get);
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            FileOutputStream outStream = null;
-            try {
-                outStream = new FileOutputStream(apiZip);
-                entity.writeTo(outStream);
-            } finally {
-                if (outStream != null) {
-                    outStream.close();
-                }
-            }
-
-        }
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
-
+        //save the exported API
+        saveFile(exportRequest, apiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
     public void testAPIImport() throws Exception {
-
         //delete exported API before import
         HttpResponse serviceResponse = apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
-
-        //open import API url connection and deploy the exported API
-        URL url = new URL(importUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-
-        FileBody fileBody = new FileBody(apiZip);
-        MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.STRICT);
-        multipartEntity.addPart("file", fileBody);
-
-        connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
-        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        OutputStream out = connection.getOutputStream();
-        try {
-            multipartEntity.writeTo(out);
-        } finally {
-            out.close();
-        }
-        int status = connection.getResponseCode();
-        BufferedReader read = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String temp;
-        StringBuilder response = new StringBuilder();
-        while ((temp = read.readLine()) != null) {
-            response.append(temp);
-        }
-        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response);
+        //upload the exported zip
+        uploadFile(importUrl, apiZip);
     }
 
     @Test(groups = {
@@ -299,7 +254,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         JSONArray resourcesList = new JSONArray(apiObj.getString("resources"));
 
         Assert.assertEquals(resList.size(), resourcesList.length(), "Imported API not in Created state");
-        String method = null, authType = null, tier = null, urlPattern = null;
+        String method = null, authType = null, tier = null, urlPattern;
         APIResourceBean res;
         for (int i = 0; i < resourcesList.length(); i++) {
             res = resList.get(i);
@@ -395,30 +350,13 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {
             "wso2.am" }, description = "Exporting above created new API", dependsOnMethods = "testNewAPIInvoke")
     public void testNewAPIExport() throws Exception {
-
         //export api
         URL exportRequest = new URL(
                 exportUrl + "?name=" + NEW_API_NAME + "&version=" + API_VERSION + "&provider=" + user.getUserName());
         String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
-
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        CloseableHttpResponse response = client.execute(get);
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            FileOutputStream outStream = new FileOutputStream(newApiZip);
-            try {
-                entity.writeTo(outStream);
-            } finally {
-                outStream.close();
-            }
-        }
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
-
+        //save the exported API
+        saveFile(exportRequest, newApiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
@@ -428,35 +366,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         verifyResponse(serviceResponse);
         serviceResponse = apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
-
         //deploy exported API
-        URL url = new URL(importUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestMethod("POST");
-
-        FileBody fileBody = new FileBody(newApiZip);
-        MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.STRICT);
-        multipartEntity.addPart("file", fileBody);
-
-        connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
-        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        OutputStream out = connection.getOutputStream();
-        try {
-            multipartEntity.writeTo(out);
-        } finally {
-            out.close();
-        }
-        int status = connection.getResponseCode();
-        BufferedReader read = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String temp;
-        StringBuilder response = new StringBuilder();
-        while ((temp = read.readLine()) != null) {
-            response.append(temp);
-        }
-        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response.toString());
-        Assert.assertEquals(response.toString(), "API imported successfully.", "API importing is not successfully");
+        uploadFile(importUrl, newApiZip);
     }
 
     @Test(groups = {
@@ -482,7 +393,6 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Invoke the newly imported API", dependsOnMethods = "testNewAPIState")
     public void testNewAPIInvokeAfterImport() throws Exception {
-
         //publish the api
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NEW_API_NAME, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
@@ -491,14 +401,12 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(DENIED_USER, String.valueOf(DENIED_USER_PASS));
-
         //add a application
         serviceResponse = apiStore
                 .addApplication(NEW_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
         verifyResponse(serviceResponse);
 
         String provider = user.getUserName();
-
         //subscribe to the api
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(NEW_API_NAME, provider);
         subscriptionRequest.setApplicationName(NEW_APP_NAME);
@@ -525,7 +433,6 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-
         apiStore.removeApplication(NEW_APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
@@ -535,12 +442,13 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         deleteStatus = newApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = zipTempDir.delete();
-        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        Assert.assertTrue(deleteStatus, "temp directory delete not successful");
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
-        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN }, };
+        return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN }, };
     }
 
     /**
@@ -556,4 +464,70 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
         return new String(encodedBytes);
     }
+
+    /**
+     * Save file from a given URL
+     *
+     * @param exportRequest URL of the file location
+     * @param fileName      expected File to be saved
+     * @throws URISyntaxException throws if URL is malformed
+     * @throws IOException        throws if connection issues occurred
+     */
+    private void saveFile(URL exportRequest, File fileName) throws URISyntaxException, IOException {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpGet get = new HttpGet(exportRequest.toURI());
+        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+        CloseableHttpResponse response = client.execute(get);
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+            FileOutputStream outStream = new FileOutputStream(fileName);
+            try {
+                entity.writeTo(outStream);
+            } finally {
+                outStream.close();
+            }
+        }
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
+                "Response code is not as expected");
+        Assert.assertTrue(fileName.exists(), "File save was not successful");
+    }
+
+    /**
+     * Upload a file to the given URL
+     *
+     * @param importUrl URL to be file upload
+     * @param fileName  Name of the file to be upload
+     * @throws IOException throws if connection issues occurred
+     */
+    private void uploadFile(String importUrl, File fileName) throws IOException {
+        //open import API url connection and deploy the exported API
+        URL url = new URL(importUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+
+        FileBody fileBody = new FileBody(fileName);
+        MultipartEntity multipartEntity = new MultipartEntity(HttpMultipartMode.STRICT);
+        multipartEntity.addPart("file", fileBody);
+
+        connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
+        connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+        OutputStream out = connection.getOutputStream();
+        try {
+            multipartEntity.writeTo(out);
+        } finally {
+            out.close();
+        }
+        int status = connection.getResponseCode();
+        BufferedReader read = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String temp;
+        StringBuilder response = new StringBuilder();
+        while ((temp = read.readLine()) != null) {
+            response.append(temp);
+        }
+        Assert.assertEquals(status, HttpStatus.SC_CREATED, "Response code is not as expected : " + response);
+    }
+
 }
