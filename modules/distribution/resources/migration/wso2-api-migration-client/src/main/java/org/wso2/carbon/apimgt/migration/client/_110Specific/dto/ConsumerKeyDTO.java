@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *   Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *   WSO2 Inc. licenses this file to you under the Apache License,
  *   Version 2.0 (the "License"); you may not use this file except
@@ -18,33 +18,24 @@
 
 package org.wso2.carbon.apimgt.migration.client._110Specific.dto;
 
-public class AppKeyMappingDTO {
-    private String applicationId;
-    private String consumerKey;
-    private String keyType;
+public class ConsumerKeyDTO {
+    private String encryptedConsumerKey;
+    private String decryptedConsumerKey;
 
-    public String getApplicationId() {
-        return applicationId;
+
+    public String getEncryptedConsumerKey() {
+        return encryptedConsumerKey;
     }
 
-    public void setApplicationId(String applicationId) {
-        this.applicationId = applicationId;
+    public void setEncryptedConsumerKey(String encryptedConsumerKey) {
+        this.encryptedConsumerKey = encryptedConsumerKey;
     }
 
-    public String getConsumerKey() {
-        return consumerKey;
+    public String getDecryptedConsumerKey() {
+        return decryptedConsumerKey;
     }
 
-    public void setConsumerKey(String consumerKey) {
-        this.consumerKey = consumerKey;
+    public void setDecryptedConsumerKey(String decryptedConsumerKey) {
+        this.decryptedConsumerKey = decryptedConsumerKey;
     }
-
-    public String getKeyType() {
-        return keyType;
-    }
-
-    public void setKeyType(String keyType) {
-        this.keyType = keyType;
-    }
-
 }
