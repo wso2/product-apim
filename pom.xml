@@ -50,7 +50,8 @@
         <module>modules/p2-profile</module>
         <module>/modules/distribution/product/src/main/statistics</module>
         <module>modules/distribution</module>
-        <module>modules/integration</module>        
+        <module>modules/api-import-export</module>
+        <module>modules/integration</module>
     </modules>
 
     <scm>
