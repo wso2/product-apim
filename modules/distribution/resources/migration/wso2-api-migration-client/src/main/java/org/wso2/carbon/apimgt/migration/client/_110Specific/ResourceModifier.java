@@ -26,7 +26,8 @@ import org.w3c.dom.NodeList;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
-import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingTableDTO;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.ConsumerKeyDTO;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.HandlerPropertyDTO;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -322,26 +323,23 @@ public class ResourceModifier {
         return false;
     }
 
-    public static void decryptConsumerKeyIfEncrypted(List<AppKeyMappingDTO> appKeyMappingDTOs) {
-        ListIterator<AppKeyMappingDTO> iterator = appKeyMappingDTOs.listIterator();
-        while (iterator.hasNext()) {
-            try {
-                AppKeyMappingDTO appKeyMappingDTO = iterator.next();
-                byte[] decryptedKey =  CryptoUtil.getDefaultCryptoUtil().
-                                            base64DecodeAndDecrypt(appKeyMappingDTO.getConsumerKey());
+    public static boolean decryptConsumerKeyIfEncrypted(ConsumerKeyDTO consumerKeyDTO) {
+        try {
+            byte[] decryptedKey =  CryptoUtil.getDefaultCryptoUtil().
+                                        base64DecodeAndDecrypt(consumerKeyDTO.getEncryptedConsumerKey());
 
-                String decryptedValue = new String(decryptedKey, Charset.defaultCharset());
+            String decryptedValue = new String(decryptedKey, Charset.defaultCharset());
 
-                if (ResourceUtil.isConsumerKeyValid(decryptedValue)) {
-                    appKeyMappingDTO.setConsumerKey(decryptedValue);
-                    iterator.set(appKeyMappingDTO);
-                }
-                else {
-                    iterator.remove(); // Remove objects with consumer keys that do not require decryption
-                }
-            } catch (CryptoException e) {  // CryptoException indicates value being decrypted was not encrypted
-                iterator.remove(); // Remove objects with consumer keys that do not require decryption
+            if (ResourceUtil.isConsumerKeyValid(decryptedValue)) {
+                consumerKeyDTO.setDecryptedConsumerKey(decryptedValue);
             }
+            else {
+                return false; // Decrypted consumer key is not a valid base64 encoded value
+            }
+        } catch (CryptoException e) {  // CryptoException indicates value being decrypted was not encrypted
+            return false;
         }
+
+        return true;
     }
 }
