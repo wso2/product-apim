@@ -801,7 +801,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-agent-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/data-bridge/</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/context.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
