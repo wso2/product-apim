@@ -50,7 +50,8 @@
         <module>modules/p2-profile</module>
         <module>/modules/distribution/product/src/main/statistics</module>
         <module>modules/distribution</module>
-        <module>modules/integration</module>        
+        <module>modules/api-import-export</module>
+        <module>modules/integration</module>
     </modules>
 
     <scm>
@@ -863,6 +864,12 @@
                 <groupId>com.github.dblock.waffle.wso2</groupId>
                 <artifactId>waffle-jna</artifactId>
                 <version>${waffle-jna.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.identity</groupId>
+                <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
+                <version>${carbon.identity.version}</version>
             </dependency>
 
         </dependencies>
