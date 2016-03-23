@@ -48,7 +48,7 @@
         <!--
             Server URL of the Authentication service
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
         <!--
             Admin username for the Authentication manager.
         -->
@@ -129,7 +129,7 @@
 			<!--
             			Server URL of the API gateway.
         		-->
-                        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+                        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
 			<!--
             			Admin username for the API gateway.
         		-->
@@ -141,7 +141,7 @@
 			<!--
             			Endpoint URLs for the APIs hosted in this API gateway.
         		-->
-                        <GatewayEndpoint>http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}</GatewayEndpoint>
+                        <GatewayEndpoint>http://localhost:${http.nio.port},https://localhost:${https.nio.port}</GatewayEndpoint>
                 </Environment>
         </Environments>
         
@@ -228,7 +228,7 @@
         <!--
             Server URL of the API key manager
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
 
         <!--
             Admin username for API key manager.
@@ -259,7 +259,7 @@
         -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
         -->
 
-        <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
+        <KeyValidatorClientType>WSClient</KeyValidatorClientType>
         <ThriftClientPort>10397</ThriftClientPort>
         <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
         <ThriftServerPort>10397</ThriftServerPort>
@@ -295,7 +295,7 @@
 	     In distributed deployment we should configure this property in key manager node by pointing 
 	     gateway https url. Also please note that we should point gateway revoke service to key manager
 	-->
-	<RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
+	<RevokeAPIURL>https://localhost:${https.nio.port}/revoke</RevokeAPIURL>
 	
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
@@ -341,7 +341,7 @@
 	<!--This property is used to indicate how we do user name comparision for token generation https://wso2.org/jira/browse/APIMANAGER-2225-->
 	<CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
-        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
+        <URL>https://localhost:${mgt.transport.https.port}/store</URL>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
@@ -382,7 +382,7 @@
 
     <APIPublisher>
         <DisplayURL>false</DisplayURL>
-        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/publisher</URL>
+        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
         <!--
                This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
                By default any document associate with an API will have the same permissions set as the API.With enabling below
@@ -415,7 +415,7 @@
 	
 	<!--
 	Configuration to create APIs for local endpoints. 
-	Endpoint will be computed as http://${carbon.local.ip}:${mgt.transport.http.port}/Context.
+	Endpoint will be computed as http://localhost:${mgt.transport.http.port}/Context.
 	Define many LocalAPI elements as below to create many APIs
 	for local Endpoints.
 	IconPath should be relative to CARBON_HOME.
