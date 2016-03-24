@@ -498,6 +498,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.event-processing:org.wso2.carbon.event.throttler.feature:${carbon.throttle.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1028,6 +1031,10 @@
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
+                                </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1336,6 +1343,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -1665,6 +1676,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -2083,6 +2098,10 @@
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2492,6 +2511,10 @@
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
+                                </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2869,6 +2892,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
+                                    <version>${carbon.throttle.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>

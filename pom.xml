@@ -1006,7 +1006,8 @@
         <google.guava.version>16.0.1</google.guava.version>
 
         <carbon.metrics.version>1.1.0</carbon.metrics.version>
-	
+        <carbon.throttle.version>2.0.13-SNAPSHOT</carbon.throttle.version>
+
 	<project.scm.id>scm-server</project.scm.id>
     </properties>
 
