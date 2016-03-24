@@ -59,16 +59,20 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIImportExportTestCase.class);
     private final String API_NAME = "APIImportExportTestCaseAPIName";
     private final String NEW_API_NAME = "NewAPIImportExportTestCaseAPIName";
+    private final String PRESERVE_PUBLISHER_API_NAME = "preserveNewAPIImportExportAPIName";
+    private final String NOT_PRESERVE_PUBLISHER_API_NAME = "notPreserveNewAPIImportExportAPIName";
+    private final String PRESERVE_PUBLISHER_API_CONTEXT = "preserveAPIImportExportContext";
+    private final String NOT_PRESERVE_PUBLISHER_API_CONTEXT = "notPreserveAPIImportExportContext";
     private final String API_CONTEXT = "APIImportExportTestCaseContext";
     private final String NEW_API_CONTEXT = "NewAPIImportExportTestCaseContext";
     private final String ALLOWED_ROLE = "allowedRole";
     private final String VISIBILITY_ROLE = "visibilityRole";
     private final String NOT_ALLOWED_ROLE = "denyRole";
+    private final String ADMIN_ROLE = "admin";
     private final String[] PERMISSIONS = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
-    private String ALLOWED_USER = "allowedUser";
     private final char[] ALLOWED_USER_PASS = "pass@123".toCharArray();
-    private String DENIED_USER = "deniedUser";
     private final char[] DENIED_USER_PASS = "pass@123".toCharArray();
+    private final char[] PUBLISHER_USER_PASS = "pass@123".toCharArray();
     private final String SCOPE_NAME = "ImportExportScope";
     private final String TAG1 = "import";
     private final String TAG2 = "export";
@@ -77,10 +81,12 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "APIImportExportTestCaseApp";
     private final String NEW_APP_NAME = "newAPIImportExportTestCaseApp";
-
+    private String allowedUser = "allowedUser";
+    private String deniedUser = "deniedUser";
+    private String publisherUser = "importExportPublisher";
     private String publisherURLHttp;
     private String storeURLHttp;
-    private File zipTempDir, apiZip, newApiZip;
+    private File zipTempDir, apiZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
     private String importUrl;
     private String exportUrl;
     private APICreationRequestBean apiCreationRequestBean;
@@ -121,14 +127,18 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         userManagementClient.addRole(NOT_ALLOWED_ROLE, null, PERMISSIONS);
         userManagementClient.addRole(VISIBILITY_ROLE, null, PERMISSIONS);
 
-        userManagementClient.addUser(ALLOWED_USER, String.valueOf(ALLOWED_USER_PASS),
-                new String[] { ALLOWED_ROLE, VISIBILITY_ROLE }, null);
-        userManagementClient.addUser(DENIED_USER, String.valueOf(DENIED_USER_PASS),
+        userManagementClient
+                .addUser(allowedUser, String.valueOf(ALLOWED_USER_PASS), new String[] { ALLOWED_ROLE, VISIBILITY_ROLE },
+                        null);
+        userManagementClient.addUser(deniedUser, String.valueOf(DENIED_USER_PASS),
                 new String[] { NOT_ALLOWED_ROLE, VISIBILITY_ROLE }, null);
+        userManagementClient
+                .addUser(publisherUser, String.valueOf(PUBLISHER_USER_PASS), new String[] { ADMIN_ROLE }, null);
 
         if (!keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
-            ALLOWED_USER = ALLOWED_USER + "@" + keyManagerContext.getContextTenant().getDomain();
-            DENIED_USER = DENIED_USER + "@" + keyManagerContext.getContextTenant().getDomain();
+            allowedUser = allowedUser + "@" + keyManagerContext.getContextTenant().getDomain();
+            deniedUser = deniedUser + "@" + keyManagerContext.getContextTenant().getDomain();
+            publisherUser = publisherUser + "@" + keyManagerContext.getContextTenant().getDomain();
         }
 
     }
@@ -198,7 +208,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         String fileName = user.getUserDomain() + "_" + API_NAME;
         apiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        saveFile(exportRequest, apiZip);
+        exportAPI(exportRequest, apiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testAPIExport")
@@ -207,7 +217,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         HttpResponse serviceResponse = apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
         //upload the exported zip
-        uploadFile(importUrl, apiZip);
+        importAPI(importUrl, apiZip, user.getUserName(), user.getPassword().toCharArray());
     }
 
     @Test(groups = {
@@ -317,7 +327,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     public void testNewAPIInvoke() throws Exception {
 
         apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(ALLOWED_USER, String.valueOf(ALLOWED_USER_PASS));
+        apiStore.login(allowedUser, String.valueOf(ALLOWED_USER_PASS));
         //add a application
         HttpResponse serviceResponse = apiStore
                 .addApplication(APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
@@ -356,7 +366,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         String fileName = user.getUserDomain() + "_" + NEW_API_NAME;
         newApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
         //save the exported API
-        saveFile(exportRequest, newApiZip);
+        exportAPI(exportRequest, newApiZip);
     }
 
     @Test(groups = { "wso2.am" }, description = "Importing new API", dependsOnMethods = "testNewAPIExport")
@@ -367,7 +377,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         serviceResponse = apiPublisher.deleteAPI(NEW_API_NAME, API_VERSION, user.getUserName());
         verifyResponse(serviceResponse);
         //deploy exported API
-        uploadFile(importUrl, newApiZip);
+        importAPI(importUrl, newApiZip, user.getUserName(), user.getPassword().toCharArray());
     }
 
     @Test(groups = {
@@ -400,7 +410,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         verifyResponse(serviceResponse);
 
         apiStore = new APIStoreRestClient(storeURLHttp);
-        apiStore.login(DENIED_USER, String.valueOf(DENIED_USER_PASS));
+        apiStore.login(deniedUser, String.valueOf(DENIED_USER_PASS));
         //add a application
         serviceResponse = apiStore
                 .addApplication(NEW_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "", "this-is-test");
@@ -431,6 +441,154 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 "Imported API not in Created state");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Sample API creation", dependsOnMethods = "testNewAPIInvokeAfterImport")
+    public void testPreserveProviderTrueAPICreation() throws Exception {
+        String providerName = user.getUserName();
+
+        apiCreationRequestBean = new APICreationRequestBean(PRESERVE_PUBLISHER_API_NAME, PRESERVE_PUBLISHER_API_CONTEXT,
+                API_VERSION, providerName, new URL(exportUrl));
+        apiCreationRequestBean.setTags(tags);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        //define resources
+        resList = new ArrayList<APIResourceBean>();
+        APIResourceBean resource = new APIResourceBean("POST",
+                APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+        resList.add(resource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(PRESERVE_PUBLISHER_API_NAME,
+                user.getUserName(), APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+    }
+
+    @Test(groups = {
+            "wso2.am" }, description = "Exported Sample API", dependsOnMethods = "testPreserveProviderTrueAPICreation")
+    public void testPreserveProviderTrueApiExport() throws Exception {
+
+        //construct export API url
+        URL exportRequest = new URL(
+                exportUrl + "?name=" + PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION + "&provider=" + user
+                        .getUserName());
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + PRESERVE_PUBLISHER_API_NAME;
+        preservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportAPI(exportRequest, preservePublisherApiZip);
+        HttpResponse serviceResponse = apiPublisher
+                .deleteAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
+        verifyResponse(serviceResponse);
+    }
+
+    @Test(groups = {
+            "wso2.am" }, description = "Importing exported API", dependsOnMethods = "testPreserveProviderTrueApiExport")
+    public void testPreserveProviderTrueSameProviderApiImport() throws Exception {
+        //import the exported zip on same publisher
+        importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, user.getUserName(),
+                user.getPassword().toCharArray());
+
+        //get the imported file information
+        HttpResponse response = apiPublisher.getAPI(PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
+        verifyResponse(response);
+        JSONObject responseObj = new JSONObject(response.getData());
+        JSONObject apiObj = responseObj.getJSONObject("api");
+        String provider = apiObj.getString("provider");
+        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
+
+        //delete the existing API to import it again
+        HttpResponse serviceResponse = apiPublisher
+                .deleteAPI(PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
+        verifyResponse(serviceResponse);
+
+        //import the exported zip on different publisher
+        importAPI(importUrl + "?preserveProvider=true", preservePublisherApiZip, publisherUser, PUBLISHER_USER_PASS);
+        //get the imported file information
+        response = apiPublisher.getAPI(PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
+        verifyResponse(response);
+        responseObj = new JSONObject(response.getData());
+        apiObj = responseObj.getJSONObject("api");
+        provider = apiObj.getString("provider");
+        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=true");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Sample API creation",
+            dependsOnMethods = "testPreserveProviderTrueSameProviderApiImport")
+    public void testPreserveProviderFalseAPICreation() throws Exception {
+        String providerName = user.getUserName();
+
+        apiCreationRequestBean = new APICreationRequestBean(NOT_PRESERVE_PUBLISHER_API_NAME,
+                NOT_PRESERVE_PUBLISHER_API_CONTEXT, API_VERSION, providerName, new URL(exportUrl));
+        apiCreationRequestBean.setTags(tags);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        //define resources
+        resList = new ArrayList<APIResourceBean>();
+        APIResourceBean resource = new APIResourceBean("POST",
+                APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/post");
+        resList.add(resource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(NOT_PRESERVE_PUBLISHER_API_NAME,
+                user.getUserName(), APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Exported Sample API",
+            dependsOnMethods = "testPreserveProviderFalseAPICreation")
+    public void testPreserveProviderFalseApiExport() throws Exception {
+
+        //construct export API url
+        URL exportRequest = new URL(
+                exportUrl + "?name=" + NOT_PRESERVE_PUBLISHER_API_NAME + "&version=" + API_VERSION + "&provider=" + user
+                        .getUserName());
+        //set the export file name with tenant prefix
+        String fileName = user.getUserDomain() + "_" + NOT_PRESERVE_PUBLISHER_API_NAME;
+        notPreservePublisherApiZip = new File(zipTempDir.getAbsolutePath() + File.separator + fileName + ".zip");
+        //save the exported API
+        exportAPI(exportRequest, notPreservePublisherApiZip);
+        HttpResponse serviceResponse = apiPublisher
+                .deleteAPI(NOT_PRESERVE_PUBLISHER_API_NAME, API_VERSION, user.getUserName());
+        verifyResponse(serviceResponse);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Importing exported API",
+            dependsOnMethods = "testPreserveProviderFalseApiExport")
+    public void testPreserveProviderFalseSameProviderApiImport() throws Exception {
+        //import the exported zip on same publisher
+        importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, user.getUserName(),
+                user.getPassword().toCharArray());
+        //get the imported file information
+        HttpResponse response = apiPublisher.getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, user.getUserName(), API_VERSION);
+        verifyResponse(response);
+        JSONObject responseObj = new JSONObject(response.getData());
+        JSONObject apiObj = responseObj.getJSONObject("api");
+        String provider = apiObj.getString("provider");
+        Assert.assertEquals(provider, user.getUserName(), "Provider is not as expected when 'preserveProvider'=false");
+
+        //import the exported zip on different publisher
+        importAPI(importUrl + "?preserveProvider=false", notPreservePublisherApiZip, publisherUser,
+                PUBLISHER_USER_PASS);
+        //get the imported file information
+        response = apiPublisher.getAPI(NOT_PRESERVE_PUBLISHER_API_NAME, publisherUser, API_VERSION);
+        verifyResponse(response);
+        responseObj = new JSONObject(response.getData());
+        apiObj = responseObj.getJSONObject("api");
+        provider = apiObj.getString("provider");
+        Assert.assertEquals(provider, publisherUser, "Provider is not as expected when 'preserveProvider'=false");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(NEW_APP_NAME);
@@ -440,6 +598,10 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         deleteStatus = apiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = newApiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = preservePublisherApiZip.delete();
+        Assert.assertTrue(deleteStatus, "temp file delete not successful");
+        deleteStatus = notPreservePublisherApiZip.delete();
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = zipTempDir.delete();
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
@@ -473,7 +635,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @throws URISyntaxException throws if URL is malformed
      * @throws IOException        throws if connection issues occurred
      */
-    private void saveFile(URL exportRequest, File fileName) throws URISyntaxException, IOException {
+    private void exportAPI(URL exportRequest, File fileName) throws URISyntaxException, IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet get = new HttpGet(exportRequest.toURI());
         get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
@@ -500,7 +662,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @param fileName  Name of the file to be upload
      * @throws IOException throws if connection issues occurred
      */
-    private void uploadFile(String importUrl, File fileName) throws IOException {
+    private void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
         //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -513,7 +675,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
 
         connection.setRequestProperty("Content-Type", multipartEntity.getContentType().getValue());
         connection.setRequestProperty(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+                "Basic " + encodeCredentials(user, pass));
         OutputStream out = connection.getOutputStream();
         try {
             multipartEntity.writeTo(out);
