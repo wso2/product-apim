@@ -50,6 +50,9 @@
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
 
                 <!-- Remove multiple versions of same jar for 1.10.x-->
+                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.core_4.5.3.SNAPSHOT.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.ws_4.5.3.SNAPSHOT.jar</exclude>
+
                 <exclude>**/repository/components/plugins/js_1.6.0.R7-wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v9.jar</exclude>
@@ -621,10 +624,10 @@
         <!--End of claim management feature-->
 
 
-	    <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/event-broker.xml</source>
+	    <!-- using the event-broker config file from carbon mediation>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-        </file>
+        </file-->
         <file>
             <source>src/main/conf/axis2.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
@@ -807,7 +810,7 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/thrift-agent-config.xml</source>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/data-bridge/data-agent-config.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/data-bridge/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
@@ -881,6 +884,11 @@
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2METRICS_DB.h2.db</source>
             <outputDirectory>${project.artifactId}-${project.version}/repository/database/</outputDirectory>
             <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/event-broker.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+            <destName>event-broker.xml</destName>
         </file>
     </files>
 </assembly>
