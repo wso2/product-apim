@@ -75,6 +75,44 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>unpack-rest-publisher</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.publisher.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-rest-store</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.store.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -145,6 +183,12 @@
                                         <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
+                                <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/"
+                                     includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/"></zip>
+                                <zip destfile="target/site/store-api-docs.zip" basedir="target/features/"
+                                     includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/"></zip>
+                                <delete dir="features" />
+                                <delete dir="plugins" />
                                 <delete dir="${tempdir}" />
                             </tasks>
                         </configuration>
@@ -275,7 +319,7 @@
 			        <replacement>
 				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
 				    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
-				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>	
+				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>
 			        </replacement>
                                 <replacement>
                                     <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
@@ -291,7 +335,7 @@
                             </replacements>
                         </configuration>
 		    </execution>
-		    <!-- Replace the Datasource in the thrift-authentication.xml file -->	
+		    <!-- Replace the Datasource in the thrift-authentication.xml file -->
                     <execution>
                         <id>replace-for-thrift</id>
                         <phase>prepare-package</phase>
@@ -327,7 +371,7 @@
 			<configuration>
 			    <failOnMissingXpath>false</failOnMissingXpath>
                             <transformations>
-                                   <transformation>    
+                                   <transformation>
                                         <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</input>
 					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</output>
                                         <config>identity_config_change.xml</config>
