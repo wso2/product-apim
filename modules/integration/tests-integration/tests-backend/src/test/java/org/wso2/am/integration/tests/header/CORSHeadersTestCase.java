@@ -17,6 +17,8 @@
  */
 package org.wso2.am.integration.tests.header;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -36,12 +38,15 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -54,7 +59,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private APIPublisherRestClient apiPublisher;
 
     private static final String API_NAME = "CorsHeadersTestAPI";
-    private static final String APPLICATION_NAME = "CorsHApp";
+    private static final String APPLICATION_NAME = "CorsHeadersApp";
     private static final String API_CONTEXT = "corsHeadersTestAPI";
     private static final String API_VERSION = "1.0.0";
     private static final String TAGS = "cors, test";
@@ -64,15 +69,19 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE = "*";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "POST";
+    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES = "GET,PUT,POST,DELETE,PATCH,OPTIONS";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE
             = "authorization,Access-Control-Allow-Origin,Content-Type";
+    private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
 
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
     private APIIdentifier apiIdentifier;
     private String accessToken;
+
+    Log log = LogFactory.getLog(CORSHeadersTestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -90,7 +99,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         String providerName = user.getUserName();
-        URL endpointUrl = new URL(getAPIInvocationURLHttp("response") + "/1.0.0");
+        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
         ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
@@ -112,21 +121,66 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-    }
 
-    @Test(groups = {"wso2.am"}, description = "Checking CORS headers in response")
-    public void APIInvocationFailure() throws Exception {
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
                                        apiStoreClientUser1, APPLICATION_NAME);
-
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+    }
 
+    @Test(groups = {"wso2.am"}, description = "Checking CORS headers in pre-flight response")
+    public void CheckCORSHeadersInPreFlightResponse() throws Exception {
+        URL url = new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("OPTIONS");
+        connection.setRequestProperty("Origin", "http://localhost");
+        Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+
+        log.info("Response Headers: CheckCORSHeadersInPreFlightResponse");
+        for (String header : responseHeaders.keySet()) {
+            log.info(header + " : " + responseHeaders.get(header).get(0));
+        }
+
+        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
+                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER).get(0),
+                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
+                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
+
+        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_METHODS_HEADER),
+                   ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
+        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_METHODS_HEADER).get(0),
+                     ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
+                     ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
+
+        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_HEADERS_HEADER),
+                   ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
+        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_HEADERS_HEADER).get(0),
+                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
+                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
+
+        assertFalse(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
+                    "but it should not be.");
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Checking CORS headers in response",
+            dependsOnMethods = "CheckCORSHeadersInPreFlightResponse")
+    public void CheckCORSHeadersInResponse() throws Exception {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Origin", "http://localhost");
 
         HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
                                                              requestHeaders);
         assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        log.info("Response Headers: CheckCORSHeadersInResponse");
+        Map<String, String> headers = response.getHeaders();
+        for (String header : headers.keySet()) {
+            log.info(header + ":" + headers.get(header));
+        }
+
         assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
                    ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
         assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
@@ -145,6 +199,10 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
                      ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
 
+        assertFalse(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
+                    "but it should not be.");
+
     }
 
     @AfterClass(alwaysRun = true)
@@ -155,7 +213,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] {TestUserMode.SUPER_TENANT_ADMIN },
-                                new Object[] { TestUserMode.TENANT_ADMIN }, };
+                                new Object[] { TestUserMode.TENANT_ADMIN } };
     }
 
     @Factory(dataProvider = "userModeDataProvider")
