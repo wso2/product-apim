@@ -48,7 +48,7 @@
         <!--
             Server URL of the Authentication service
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
         <!--
             Admin username for the Authentication manager.
         -->
@@ -153,7 +153,7 @@
                 <!--
                             Server URL of the API gateway.
                     -->
-                <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+                <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
                 <!--
                             Admin username for the API gateway.
                     -->
@@ -165,7 +165,7 @@
                 <!--
                             Endpoint URLs for the APIs hosted in this API gateway.
                     -->
-                <GatewayEndpoint>http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}</GatewayEndpoint>
+                <GatewayEndpoint>http://localhost:${http.nio.port},https://localhost:${https.nio.port}</GatewayEndpoint>
             </Environment>
         </Environments>
 
@@ -298,7 +298,7 @@
         <!--
             Server URL of the API key manager
         -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
 
         <!--
             Admin username for API key manager.
@@ -365,7 +365,7 @@
              gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
              Also please note that we should point gateway revoke service to key manager
         -->
-        <RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
+        <RevokeAPIURL>https://localhost:${https.nio.port}/revoke</RevokeAPIURL>
 
         <!-- Whether to encrypt tokens when storing in the Database
         Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
@@ -382,11 +382,11 @@
     <!--APIKeyManager>
         <KeyManagerClientImpl>org.wso2.carbon.apimgt.keymgt.AMDefaultKeyManagerImpl</KeyManagerClientImpl>
         <Configuration>
-            <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+            <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
             <Username>${admin.username}</Username>
             <Password>${admin.password}</Password>
-            <TokenURL>https://${carbon.local.ip}:${https.nio.port}/token</TokenURL>
-            <RevokeURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeURL>
+            <TokenURL>https://localhost:${https.nio.port}/token</TokenURL>
+            <RevokeURL>https://localhost:${https.nio.port}/revoke</RevokeURL>
         </Configuration>
     </APIKeyManager-->
 
@@ -411,12 +411,12 @@
         <!--GroupingExtractor>org.wso2.carbon.apimgt.impl.DefaultGroupIDExtractorImpl</GroupingExtractor-->
         <CompareCaseInsensitively>true</CompareCaseInsensitively>
         <DisplayURL>false</DisplayURL>
-        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
+        <URL>https://localhost:${mgt.transport.https.port}/store</URL>
 
         <!--
                 Server URL of the API Store.
             -->
-        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
+        <ServerURL>https://localhost:${mgt.transport.https.port}${carbon.context}/services/</ServerURL>
         <!--
             Admin username for API Store.
         -->
@@ -475,7 +475,7 @@
 
     <APIPublisher>
         <DisplayURL>false</DisplayURL>
-        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/publisher</URL>
+        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
         <!--
                This parameter specifies enabling the capability of setting API documentation level granular visibility levels.
                By default any document associate with an API will have the same permissions set as the API.With enabling below
