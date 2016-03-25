@@ -48,6 +48,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
                                                   APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
+        String APIImportExportWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + ".war";
 
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
 
@@ -62,6 +64,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
+        webAppAdminClient.uploadWarFile(APIImportExportWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
