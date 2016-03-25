@@ -151,7 +151,8 @@ public class APIMIntegrationBaseTest {
                 userManagementClient = new UserManagementClient(
                         keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
                 tenantManagementServiceClient = new TenantManagementServiceClient(
-                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSuperTenantSessionCookie);
+                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSuperTenantSessionCookie);
             } catch (Exception e) {
                 throw new APIManagerIntegrationTestException(e.getMessage(), e);
             }
@@ -366,6 +367,12 @@ public class APIMIntegrationBaseTest {
         return backEndServerUrl.getWebAppURLHttps() + serviceName;
     }
 
+    protected String getSuperTenantAPIInvocationURLHttp(String apiContext, String version)
+            throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "")
+                       .replace("/t/" + user.getUserDomain(), "") + "/" + apiContext + "/" + version;
+    }
+
     /**
      * Cleaning up the API manager by removing all APIs and applications other than default application
      *
@@ -545,16 +552,22 @@ public class APIMIntegrationBaseTest {
      * @param apiProvider
      */
     private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
-        String tenantId;
+        int tenantId = -1234;
         String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
-        String tenantName = providerTenantDomain + "/";
         try{
-            tenantId = tenantManagementServiceClient.getTenant(providerTenantDomain).getTenantId() + "/";
+            if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+                TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
+                if(tenant == null){
+                    log.info("tenant is null: " + providerTenantDomain);
+                } else {
+                    tenantId = tenant.getTenantId();
+                }
+            }
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException(e.getMessage(), e);
         }
 
-        return tenantName + tenantId;
+        return providerTenantDomain + "/" + tenantId + "/";
     }
 
 }

@@ -17,104 +17,198 @@
  */
 package org.wso2.am.integration.tests.header;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
+import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.api.lifecycle.APIManagerLifecycleBaseTest;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Test CORS functionality
+ * Test CORS Access-Control-Allow-Credentials functionality
  */
-public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIMIntegrationBaseTest {
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
+public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerLifecycleBaseTest {
 
     private String publisherURLHttp;
     private APIPublisherRestClient apiPublisher;
 
-    private static final String API_NAME = "CorsHeadersTestAPI";
-    private static final String API_CONTEXT = "corsHeadersTestAPI";
+    private static final String API_NAME = "CorsACACHeadersTestAPI";
+    private static final String APPLICATION_NAME = "CorsACACApp";
+    private static final String API_CONTEXT = "corsACACHeadersTestAPI";
     private static final String API_VERSION = "1.0.0";
-    private static final String TAGS = "cors, test";
+    private static final String TAGS = "ACAC, cors, test";
     private static final String DESCRIPTION = "This is test API create by API manager integration test";
+
+    private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
+    private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL = "*";
+    private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST = "http://localhost";
+    private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
+
+    private APIPublisherRestClient apiPublisherClientUser1;
+    private APIStoreRestClient apiStoreClientUser1;
+    private APICreationRequestBean apiCreationRequestBean;
+    private APIIdentifier apiIdentifier;
+    private String accessToken;
+    private ServerConfigurationManager serverConfigurationManager;
+
+    Log log = LogFactory.getLog(CORSAccessControlAllowCredentialsHeaderTestCase.class);
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        //Load the back-end dummy API
+
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             String gatewaySessionCookie = createSession(gatewayContextMgt);
+            //Load the back-end dummy API
             loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
                                                   + File.separator + "synapseconfigs" + File.separator + "rest"
                                                   + File.separator + "dummy_api.xml", gatewayContextMgt,
                                                   gatewaySessionCookie);
-
-            //Enable CORS
-            ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfigurationWithoutRestart(
-                    new File(getAMResourceLocation() + File.separator + "configFiles/corsACACTest/api-manager.xml"));
         }
+
+        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
+
         publisherURLHttp = getPublisherURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
+
+        String providerName = user.getUserName();
+        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
+                                                            endpointUrl, resourceBeanList);
+        apiCreationRequestBean.setTags(TAGS);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        //Login to API Publisher with admin
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION);
+        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        //Create application
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                                       apiStoreClientUser1, APPLICATION_NAME);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Calling API with invalid token")
-    public void APIInvocationFailure() throws Exception {
-        String providerName = user.getUserName();
-        String endpointUrl = getGatewayURLNhttp() + "response";
-        APIRequest apiRequest = new APIRequest(API_NAME, API_CONTEXT, new URL(endpointUrl));
-        apiRequest.setTags(TAGS);
-        apiRequest.setProvider(providerName);
-        apiRequest.setDescription(DESCRIPTION);
-        apiRequest.setVersion(API_VERSION);
-        apiRequest.setSandbox(endpointUrl);
-        apiRequest.setResourceMethod("GET");
+    @Test(groups = {"wso2.am"}, description = "Checking Access-Control-Allow-Credentials header in response " +
+                                              "when Access-Control-Allow-Origin is '*'")
+    public void CheckAccessControlAllowCredentialsHeadersWithAnyOrigin() throws Exception {
+        //Enable CORS Access Control Allow Credentials with Origin *
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator + "corsACACTest" + File.separator
+                    + "withOriginAny" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.restartGracefully();
+        }
 
-        //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiRequest);
-        verifyResponse(serviceResponse);
-
-        //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                                                                              APILifeCycleState.PUBLISHED);
-        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
-        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer xxxxxxxxxxxx");
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
 
-        waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+        HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
+                                                       requestHeaders);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)
-                                                             + "/most_popular", requestHeaders);
-        assertEquals(youTubeResponse.getResponseCode(), Response.Status.UNAUTHORIZED.getStatusCode(),
-                     "Response code mismatched when api invocation");
-        assertTrue(youTubeResponse.getData().contains("900901"), "Error code mismach");
+        log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithAnyOrigin");
+        Map<String, String> headers = response.getHeaders();
+        for (String header : headers.keySet()) {
+            log.info(header + ":" + headers.get(header));
+        }
 
+        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
+                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
+                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL,
+                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
+
+        assertFalse(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
+                    "but it should not be.");
+
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Checking Access-Control-Allow-Credentials header in response " +
+            "when Access-Control-Allow-Origin is 'http://localhost'",
+            dependsOnMethods = "CheckAccessControlAllowCredentialsHeadersWithAnyOrigin")
+    public void CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin() throws Exception {
+        //Enable CORS Access Control Allow Credentials with Origin 'http://localhost'
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator
+                    + "corsACACTest" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.restartGracefully();
+        }
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        requestHeaders.put("Authorization", "Bearer " + accessToken);
+        requestHeaders.put("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
+
+        HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
+                                                       requestHeaders);
+        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin");
+        Map<String, String> headers = response.getHeaders();
+        for (String header : headers.keySet()) {
+            log.info(header + ":" + headers.get(header));
+        }
+
+//        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
+//                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+//        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
+//                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST,
+//                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
+
+        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                   ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is not available in the response.");
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator
+                    + "corsACACTest" + File.separator + "original" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.restartGracefully();
+        }
         super.cleanUp();
     }
 
