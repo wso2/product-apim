@@ -105,6 +105,7 @@
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
         </classes>
     </test>
 
