@@ -546,6 +546,36 @@ public class APIStoreRestClient {
     }
 
     /**
+     * Update given Auth application
+     *
+     * @param application       auth application name
+     * @param keyType           type of the key
+     * @param authorizedDomains authorized domains
+     * @param retryAfterFailure retry after fail
+     * @param jsonParams        json parameters for grant type
+     * @param callbackUrl       call back url
+     * @return Http response of the update request
+     * @throws APIManagerIntegrationTestException APIManagerIntegrationTestException - throws if update application fail
+     */
+    public HttpResponse updateClientApplication(String application, String keyType, String authorizedDomains,
+            String retryAfterFailure, String jsonParams, String callbackUrl) throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            return HttpRequestUtil.doPost(new URL(backendURL
+                            + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+                            "action=updateClientApplication&application=" + application + "&keytype=" +
+                            keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
+                            retryAfterFailure + "&jsonParams=" + jsonParams + "&callbackUrl=" + callbackUrl), "",
+                    requestHeaders);
+
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException(
+                    "Unable to update application - " + application + ". Error: " + e.getMessage(), e);
+
+        }
+    }
+
+    /**
      * Get all subscriptions
      *
      * @return - http response of get all subscription request

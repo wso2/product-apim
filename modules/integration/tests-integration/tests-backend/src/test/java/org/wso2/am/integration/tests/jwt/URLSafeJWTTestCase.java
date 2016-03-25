@@ -392,7 +392,8 @@ public class URLSafeJWTTestCase
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
 
-        Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"), "JWT assertion not in the header");
+        Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"),
+                "JWT assertion not in the header : " + serverMessage);
 
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
 
