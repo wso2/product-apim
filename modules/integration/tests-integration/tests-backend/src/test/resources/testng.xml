@@ -40,7 +40,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
             <!--Disable the test case because of APIMANAGER-3378-->
@@ -68,6 +68,8 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
@@ -75,7 +77,7 @@
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
+            <!--class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/-->
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
@@ -83,10 +85,10 @@
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
+            <!--class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/-->
             <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
             <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
@@ -96,13 +98,15 @@
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
-            <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
+            <!--class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
         </classes>
     </test>
 
@@ -151,6 +155,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
         </classes>
     </test>
 
