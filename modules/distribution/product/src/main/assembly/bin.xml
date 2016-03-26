@@ -402,7 +402,7 @@
                 <include>**/*.*</include>
             </includes>
         </fileSet>
- 
+
         <!-- API Custom Sequences -->
 	<fileSet>
             <directory>../resources/customsequences</directory>
@@ -889,6 +889,11 @@
             <source>src/main/conf/event-broker.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <destName>event-broker.xml</destName>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
+            <filtered>false</filtered>
         </file>
     </files>
 </assembly>

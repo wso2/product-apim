@@ -68,6 +68,8 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
@@ -103,6 +105,8 @@
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
             <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
         </classes>
     </test>
 
@@ -151,6 +155,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
         </classes>
     </test>
 

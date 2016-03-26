@@ -77,6 +77,7 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setEnvironment(String environment) {
         this.environment = environment;
     }
+    private String swagger;
 
     public void setName(String name) {
         this.name = name;
@@ -202,6 +203,23 @@ public class APICreationRequestBean extends AbstractRequest {
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
             }
         }
+    }
+
+    /**
+     * constructor of the APICreationRequestBean class only with production url
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @param endpointUrl - Endpoint URL of the API
+     * @param resourceBeans - Resource list
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider, URL endpointUrl,
+                                  List<APIResourceBean> resourceBeans)
+            throws APIManagerIntegrationTestException {
+        this(apiName, context, version, provider, endpointUrl);
+        resourceBeanList = resourceBeans;
     }
 
 
@@ -387,7 +405,7 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
-                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         try {
             this.endpoint = new JSONObject();
@@ -471,6 +489,10 @@ public class APICreationRequestBean extends AbstractRequest {
                     apiResourceBean.getResourceMethodThrottlingTier());
             addParameter("uriTemplate-" + resourceIndex, apiResourceBean.getUriTemplate());
             resourceIndex++;
+        }
+
+        if (swagger != null && !swagger.isEmpty()) {
+            addParameter("swagger", swagger);
         }
         addParameter("default_version", getDefaultVersion());
         addParameter("default_version_checked", getDefaultVersionChecked());
@@ -695,5 +717,13 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setCorsConfiguration(JSONObject corsConfiguration) {
         this.corsConfiguration = corsConfiguration;
+    }
+
+    public String getSwagger() {
+        return swagger;
+    }
+
+    public void setSwagger(String swagger) {
+        this.swagger = swagger;
     }
 }
