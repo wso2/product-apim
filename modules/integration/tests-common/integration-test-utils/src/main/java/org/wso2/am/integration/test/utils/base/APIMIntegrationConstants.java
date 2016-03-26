@@ -49,6 +49,7 @@ public class APIMIntegrationConstants {
     public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
     public static final String JAXRS_BASIC_WEB_APP_NAME = "jaxrs_basic";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
+    public static final String AM_IMPORT_EXPORT_WEB_APP_NAME = "api-import-export-1.0.2";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";
@@ -102,5 +103,20 @@ public class APIMIntegrationConstants {
         public static final int ULTIMATE_LIMIT = 20;
         public static final int PLUS_LIMIT = 5;
         public static final int BASIC_LIMIT = 1;
+    }
+
+    public enum ResourceAuthTypes {
+        APPLICATION_USER("Application_User"), NONE("None"), APPLICATION("Application"),
+        APPLICATION_AND_APPLICATION_USER("Any");
+
+        private String authType;
+
+        ResourceAuthTypes(String authType) {
+            this.authType = authType;
+        }
+
+        public String getAuthType() {
+            return authType;
+        }
     }
 }
