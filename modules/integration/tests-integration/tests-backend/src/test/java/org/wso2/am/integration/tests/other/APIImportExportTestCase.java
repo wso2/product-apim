@@ -84,7 +84,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private String allowedUser = "allowedUser";
     private String deniedUser = "deniedUser";
     private String publisherUser = "importExportPublisher";
-    private String publisherURLHttp;
+    private String publisherURLHttps;
     private String storeURLHttp;
     private File zipTempDir, apiZip, newApiZip, preservePublisherApiZip, notPreservePublisherApiZip;
     private String importUrl;
@@ -107,18 +107,18 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
-        publisherURLHttp = getPublisherURLHttps();
+        publisherURLHttps = publisherUrls.getWebAppURLHttps();
         storeURLHttp = getStoreURLHttp();
         endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         //concat tags
         tags = TAG1 + "," + TAG2 + "," + TAG3;
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
-        importUrl = publisherURLHttp + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
-        exportUrl = publisherURLHttp + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
+        importUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
+        exportUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
 
         //adding new 3 roles and two users
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
