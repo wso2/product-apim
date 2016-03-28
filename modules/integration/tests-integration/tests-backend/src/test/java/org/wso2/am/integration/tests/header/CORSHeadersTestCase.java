@@ -19,6 +19,13 @@ package org.wso2.am.integration.tests.header;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -34,20 +41,14 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.File;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 /**
  * Test CORS functionality
@@ -101,7 +102,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         String providerName = user.getUserName();
         URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
         ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
@@ -129,80 +130,77 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
     @Test(groups = {"wso2.am"}, description = "Checking CORS headers in pre-flight response")
     public void CheckCORSHeadersInPreFlightResponse() throws Exception {
-        URL url = new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("OPTIONS");
-        connection.setRequestProperty("Origin", "http://localhost");
-        Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpUriRequest option = new HttpOptions(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        option.addHeader("Origin", "http://localhost");
+        HttpResponse response = httpclient.execute(option);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        Header[] responseHeaders = response.getAllHeaders();
 
         log.info("Response Headers: CheckCORSHeadersInPreFlightResponse");
-        for (String header : responseHeaders.keySet()) {
-            log.info(header + " : " + responseHeaders.get(header).get(0));
+        for (Header header : responseHeaders) {
+            log.info(header.getName() + " : " + header.getValue());
         }
 
-        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
-        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER).get(0),
-                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
+        Header header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
 
-        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_METHODS_HEADER),
-                   ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_METHODS_HEADER).get(0),
-                     ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
+        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
                      ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
-        assertTrue(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_HEADERS_HEADER),
-                   ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
-        assertEquals(responseHeaders.get(ACCESS_CONTROL_ALLOW_HEADERS_HEADER).get(0),
-                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
+        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
 
-        assertFalse(responseHeaders.containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+        assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
                     ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
                     "but it should not be.");
-
     }
 
     @Test(groups = {"wso2.am"}, description = "Checking CORS headers in response",
             dependsOnMethods = "CheckCORSHeadersInPreFlightResponse")
     public void CheckCORSHeadersInResponse() throws Exception {
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("Origin", "http://localhost");
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        get.addHeader("Origin", "http://localhost");
+        get.addHeader("Authorization", "Bearer " + accessToken);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
-                                                             requestHeaders);
-        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        HttpResponse response = httpclient.execute(get);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        Header[] responseHeaders = response.getAllHeaders();
 
         log.info("Response Headers: CheckCORSHeadersInResponse");
-        Map<String, String> headers = response.getHeaders();
-        for (String header : headers.keySet()) {
-            log.info(header + ":" + headers.get(header));
+        for (Header header : responseHeaders) {
+            log.info(header.getName() + " : " + header.getValue());
         }
 
-        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
-        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
+        Header header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
 
-        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_METHODS_HEADER),
-                   ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_METHODS_HEADER),
-                     ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE,
+        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
                      ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
-        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_HEADERS_HEADER),
-                   ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
-        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_HEADERS_HEADER),
-                     ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
+        header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_HEADERS_HEADER + " header value mismatch.");
 
-        assertFalse(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
-                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
-                    "but it should not be.");
-
+        assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                   ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
+                   "but it should not be.");
     }
 
     @AfterClass(alwaysRun = true)
