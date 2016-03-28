@@ -102,7 +102,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         String providerName = user.getUserName();
         URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
         ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_POST,
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
