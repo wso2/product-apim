@@ -19,6 +19,10 @@ package org.wso2.am.integration.tests.header;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -46,6 +50,8 @@ import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -137,29 +143,30 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        get.addHeader("Origin", "http://localhost");
+        get.addHeader("Authorization", "Bearer " + accessToken);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
-                                                       requestHeaders);
-        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        org.apache.http.HttpResponse response = httpclient.execute(get);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        Header[] responseHeaders = response.getAllHeaders();
 
         log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithAnyOrigin");
-        Map<String, String> headers = response.getHeaders();
-        for (String header : headers.keySet()) {
-            log.info(header + ":" + headers.get(header));
+        for (Header header : responseHeaders) {
+            log.info(header.getName() + " : " + header.getValue());
         }
 
-        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
-        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL,
+        Header header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_ALL,
                      ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
 
-        assertFalse(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
-                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
-                    "but it should not be.");
+        assertNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+                   ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is available in the response, " +
+                   "but it should not be.");
 
     }
 
@@ -177,27 +184,28 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
+        get.addHeader("Authorization", "Bearer " + accessToken);
 
-        HttpResponse response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION)), "",
-                                                       requestHeaders);
-        assertEquals(response.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        org.apache.http.HttpResponse response = httpclient.execute(get);
 
-        log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithSpecificOrigin");
-        Map<String, String> headers = response.getHeaders();
-        for (String header : headers.keySet()) {
-            log.info(header + ":" + headers.get(header));
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+
+        Header[] responseHeaders = response.getAllHeaders();
+
+        log.info("Response Headers: CheckAccessControlAllowCredentialsHeadersWithAnyOrigin");
+        for (Header header : responseHeaders) {
+            log.info(header.getName() + " : " + header.getValue());
         }
 
-//        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-//                   ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
-//        assertEquals(response.getHeaders().get(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER),
-//                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST,
-//                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
+        Header header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER);
+        assertNotNull(header, ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header is not available in the response.");
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST,
+                     ACCESS_CONTROL_ALLOW_ORIGIN_HEADER + " header value mismatch.");
 
-        assertTrue(response.getHeaders().containsKey(ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
+        assertNotNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is not available in the response.");
     }
 
