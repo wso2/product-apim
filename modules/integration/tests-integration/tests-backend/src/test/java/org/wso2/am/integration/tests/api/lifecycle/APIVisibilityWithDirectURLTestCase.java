@@ -83,6 +83,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
+        super.init();
         //Creating CarbonSuper context
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
         storeURLHttp = getStoreURLHttp();
