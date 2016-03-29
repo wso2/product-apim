@@ -69,7 +69,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE = "*";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
-    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "POST";
+    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "GET";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES = "GET,PUT,POST,DELETE,PATCH,OPTIONS";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE
@@ -190,7 +190,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);
