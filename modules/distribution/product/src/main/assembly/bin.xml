@@ -43,6 +43,7 @@
                 <exclude>**/carbon.xml</exclude>
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/identity.xml</exclude>
+                <exclude>**/event-broker.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
         	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
@@ -590,6 +591,18 @@
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
+        <!-- messaging related configs -->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf
+            </outputDirectory>
+            <includes>
+                <include>**/broker.xml</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
@@ -915,11 +928,9 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml
-            </source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
+            <source>src/main/conf/event-broker.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+            <destName>event-broker.xml</destName>
         </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
