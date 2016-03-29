@@ -108,7 +108,8 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         
     }
     
-    @Test(groups = {"wso2.am"}, description = "Test LC state change visibility in the LC tab in publisher")
+    @Test(groups = {"wso2.am"}, description = "Test LC state change visibility in the LC tab in publisher",
+            dependsOnMethods = "testChecklistItemsVisibility")
     public void testLCStateChengeVisibility() throws Exception {
        
         //get the info page from the publisher
