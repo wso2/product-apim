@@ -1012,7 +1012,10 @@
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <google.guava.version>16.0.1</google.guava.version>
 
-        <carbon.metrics.version>1.1.0</carbon.metrics.version>
+        <carbon.metrics.version>1.2.0</carbon.metrics.version>
+        <!-- MB Features -->
+        <carbon.messaging.version>3.5.0-SNAPSHOT</carbon.messaging.version>
+        <product.mb.version>3.5.0-SNAPSHOT</product.mb.version>
         <carbon.throttle.version>2.0.13-SNAPSHOT</carbon.throttle.version>
 
 	<project.scm.id>scm-server</project.scm.id>

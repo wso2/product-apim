@@ -509,6 +509,20 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.event-processing:org.wso2.carbon.event.throttler.feature:${carbon.throttle.version}
                                 </featureArtifactDef>
+
+                                <!-- MB Features -->
+                                <featureArtifactDef>
+                                    org.wso2.carbon.messaging:org.wso2.carbon.andes.feature:${carbon.messaging.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.mb:org.wso2.mb.styles.feature:${product.mb.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.mb:org.wso2.stratos.mb.dashboard.ui.feature:${product.mb.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
+                                </featureArtifactDef>
                             </featureArtifacts>
                         </configuration>
                     </execution>
@@ -1053,6 +1067,19 @@
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <!-- MB features -->
+                                <feature>
+                                    <id>org.wso2.carbon.messaging.andes.feature.group</id>
+                                    <version>${carbon.messaging.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.mb.styles.feature.group</id>
+                                    <version>${product.mb.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.stratos.mb.dashboard.ui.feature.group</id>
+                                    <version>${product.mb.version}</version>
                                 </feature>
                             </features>
                         </configuration>
