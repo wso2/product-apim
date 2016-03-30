@@ -298,7 +298,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
      * @param attribute name of the attribute
      * @return attribute value as String
      */
-    public static String getURLParameter(String url, String attribute) {
+    private String getURLParameter(String url, String attribute) {
         try {
             Pattern p = Pattern.compile(attribute + "=([^&]+)");
             Matcher m = p.matcher(url);
