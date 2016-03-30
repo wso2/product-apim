@@ -155,6 +155,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
         </classes>
     </test>
 
