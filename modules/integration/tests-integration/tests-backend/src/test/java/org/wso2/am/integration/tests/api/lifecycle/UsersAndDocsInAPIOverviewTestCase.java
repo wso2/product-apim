@@ -101,15 +101,15 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
                 apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse1.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when retrieving the Publisher Overview page");
-        assertEquals(getUserStringInOverview(publisherOverviewPageResponse1.getData()),
-                "1 User", "User count is not equal to 1 , when only one user subscription is available");
+        assertEquals(getUserStringInOverview(publisherOverviewPageResponse1.getData()).contains("1 User")
+                , "User count is not equal to 1 , when only one user subscription is available");
         // subscribe 2nd user
         subscribeToAPI(this.apiIdentifier, APPLICATION_NAME, apiStoreClientUser2);
         HttpResponse publisherOverviewPageResponse2 =
                 apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(publisherOverviewPageResponse2.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched");
-        assertEquals(getUserStringInOverview(publisherOverviewPageResponse2.getData()),
-                "2 Users", "User count is not equal to 2 , when only one user subscription is available");
+        assertEquals(getUserStringInOverview(publisherOverviewPageResponse2.getData()).contains("2 Users")
+                , "User count is not equal to 2 , when only one user subscription is available");
     }
 
 
