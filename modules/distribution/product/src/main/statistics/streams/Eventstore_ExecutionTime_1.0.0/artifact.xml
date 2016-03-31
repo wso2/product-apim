@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="Eventstore_ExecutionTime" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
+    <file>ORG_WSO2_APIMGT_STATISTICS_EXECUTION_TIME.xml</file>
+</artifact> 

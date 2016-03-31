@@ -18,6 +18,7 @@
 package org.wso2.am.integration.test.utils.base;
 
 import org.apache.axiom.om.OMElement;
+import org.apache.http.Header;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +52,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 
 /**
@@ -570,5 +570,16 @@ public class APIMIntegrationBaseTest {
         return providerTenantDomain + "/" + tenantId + "/";
     }
 
+    protected Header pickHeader(Header[] headers, String requiredHeader){
+        if (requiredHeader == null){
+            return null;
+        }
+        for (Header header : headers) {
+            if(requiredHeader.equals(header.getName())){
+                return header;
+            }
+        }
+        return null;
+    }
 }
 
