@@ -889,7 +889,7 @@
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.11-SNAPSHOT</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.0.12-SNAPSHOT</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -1017,6 +1017,7 @@
         <carbon.messaging.version>3.5.0-SNAPSHOT</carbon.messaging.version>
         <product.mb.version>3.5.0-SNAPSHOT</product.mb.version>
         <carbon.throttle.version>2.0.13-SNAPSHOT</carbon.throttle.version>
+        <carbon.event-processing.version>2.0.13-SNAPSHOT</carbon.event-processing.version>
 
 	<project.scm.id>scm-server</project.scm.id>
     </properties>

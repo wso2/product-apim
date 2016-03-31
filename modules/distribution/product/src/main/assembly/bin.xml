@@ -51,8 +51,8 @@
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
 
                 <!-- Remove multiple versions of same jar for 1.10.x-->
-                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.core_4.5.3.SNAPSHOT.jar</exclude>
-                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.ws_4.5.3.SNAPSHOT.jar</exclude>
+                <!--<exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.core_4.5.3.SNAPSHOT.jar</exclude>-->
+                <!--<exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.ws_4.5.3.SNAPSHOT.jar</exclude>-->
 
                 <exclude>**/repository/components/plugins/js_1.6.0.R7-wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
@@ -928,11 +928,6 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>src/main/conf/event-broker.xml</source>
-            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
-            <destName>event-broker.xml</destName>
-        </file>
-        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
             <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
             <filtered>false</filtered>
@@ -955,9 +950,34 @@
             <fileMode>644</fileMode>
         </file>
         <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/registry-event-broker.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database/WSO2MB_DB.h2.db</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/database/</outputDirectory>
             <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/input-event-adapters.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf
+            </outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-processor.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/
+            </outputDirectory>
+            <filtered>true</filtered>
         </file>
     </files>
 </assembly>
