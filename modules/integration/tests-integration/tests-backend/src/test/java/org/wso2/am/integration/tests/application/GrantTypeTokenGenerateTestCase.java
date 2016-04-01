@@ -62,7 +62,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     private final String APPLICATION_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private final String LOCATION_HEADER = "Location";
     private final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
-    private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.GOLD;
+    private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.UNLIMITED;
     private String publisherURLHttps;
     private String storeURLHttp;
     private APICreationRequestBean apiCreationRequestBean;
@@ -139,7 +139,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
         //subscribe to the api
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
         subscriptionRequest.setApplicationName(APP_NAME);
-        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         serviceResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(serviceResponse);
 
@@ -302,7 +302,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
         try {
             Pattern p = Pattern.compile(attribute + "=([^&]+)");
             Matcher m = p.matcher(url);
-            while (m.find()) {
+            if (m.find()) {
                 return m.group(1);
             }
         } catch (PatternSyntaxException ignore) {
