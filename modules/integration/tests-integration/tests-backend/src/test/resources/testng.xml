@@ -89,8 +89,8 @@
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
+            <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
