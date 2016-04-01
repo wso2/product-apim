@@ -39,9 +39,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This test case is used to test the API Store search API by API's TAG
@@ -66,7 +64,6 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private String tags;
     private String tierCollection;
     private String endpointUrl;
-    private Map<String, String> requestHeaders = new HashMap<String, String>();
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
 
