@@ -161,7 +161,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 connection.setAutoCommit(false);
 
                 updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ?" +
-                                                                "WHERE AUTHZ_USER = ?");
+                                                                " WHERE AUTHZ_USER = ?");
 
                 for (AccessTokenInfo accessTokenInfo : updateValues) {
                     updateStatement.setString(1, accessTokenInfo.usernameWithoutDomain);
@@ -236,7 +236,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             if (isDecrypted) {
                 preparedStatement = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
-                        "WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
+                        " WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
 
                 for (AppKeyMappingTableDTO appKeyMappingTableDTO : appKeyMappingTableDTOs) {
                     preparedStatement.setString(1, appKeyMappingTableDTO.getConsumerKey().getDecryptedConsumerKey());
