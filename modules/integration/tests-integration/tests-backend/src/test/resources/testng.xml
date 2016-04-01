@@ -88,9 +88,9 @@
             <!--class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/-->
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
-            <!--class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/-->
-            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
+            <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
@@ -107,6 +107,7 @@
             <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
         </classes>
     </test>
 
@@ -156,6 +157,7 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
         </classes>
     </test>
 
