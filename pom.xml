@@ -882,7 +882,16 @@
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.wso2.andes.wso2</groupId>
+                <artifactId>andes-client</artifactId>
+                <version>${andes.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.geronimo.specs.wso2</groupId>
+                <artifactId>geronimo-jms_1.1_spec</artifactId>
+                <version>${orbit.version.geronimo-jms_1.1_spec}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1018,7 +1027,8 @@
         <product.mb.version>3.5.0-SNAPSHOT</product.mb.version>
         <carbon.throttle.version>2.0.13-SNAPSHOT</carbon.throttle.version>
         <carbon.event-processing.version>2.0.13-SNAPSHOT</carbon.event-processing.version>
-
+        <andes.version>3.5.0-SNAPSHOT</andes.version>
+        <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
 	<project.scm.id>scm-server</project.scm.id>
     </properties>
 
