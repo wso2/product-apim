@@ -44,7 +44,7 @@ under the License.
             <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.commons</groupId>
+            <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
         </dependency>
         <dependency>
@@ -188,7 +188,7 @@ under the License.
             <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.commons</groupId>
+            <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
         </dependency>
         <dependency>

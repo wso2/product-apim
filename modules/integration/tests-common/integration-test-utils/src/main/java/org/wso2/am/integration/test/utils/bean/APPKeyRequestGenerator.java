@@ -31,6 +31,7 @@ public class APPKeyRequestGenerator extends AbstractRequest {
     private String authorizedDomains = "ALL";
     private int validityTime = 360000;
     private String appId = "1";
+    private String tokenScope;
 
     public APPKeyRequestGenerator(String application) {
         this.application = application;
@@ -49,6 +50,9 @@ public class APPKeyRequestGenerator extends AbstractRequest {
         addParameter("authorizedDomains", authorizedDomains);
         addParameter("validityTime", String.valueOf(validityTime));
         addParameter("selectedAppID", appId);
+        if (tokenScope != null) {
+            addParameter("tokenScope", tokenScope);
+        }
     }
 
     public String getApplication() {
@@ -93,5 +97,13 @@ public class APPKeyRequestGenerator extends AbstractRequest {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public String getTokenScope() {
+        return tokenScope;
+    }
+
+    public void setTokenScope(String tokenScope) {
+        this.tokenScope = tokenScope;
     }
 }

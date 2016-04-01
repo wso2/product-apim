@@ -297,7 +297,7 @@ public class APIM34InvokeAPIWithSandboxTokenTestCase extends APIMIntegrationBase
 
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(apiNameTest3, apiContextTest3, apiVersion,
-                        apiProviderName, new URL(apiProductionEndPointUrl), null);
+                        apiProviderName, new URL(apiProductionEndPointUrl));
         apiCreationRequestBean.setTags(apiTag);
         apiCreationRequestBean.setDescription(apiDescription);
 

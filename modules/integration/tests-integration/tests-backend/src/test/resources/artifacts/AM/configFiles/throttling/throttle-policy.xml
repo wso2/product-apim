@@ -25,10 +25,4 @@
             </wsp:Policy>
         </wsp:Policy>
 
-
-        <throttle:MaximumConcurrentAccess>1000</throttle:MaximumConcurrentAccess>
-        <wsp:Policy>
-            <throttle:ID throttle:type="IP">other</throttle:ID>
-        </wsp:Policy>
-
     </throttle:MediatorThrottleAssertion></wsp:Policy>
