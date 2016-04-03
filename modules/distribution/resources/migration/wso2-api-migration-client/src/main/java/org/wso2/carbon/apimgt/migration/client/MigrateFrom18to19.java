@@ -463,45 +463,45 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             throws MalformedURLException, ParseException, RegistryException, UserStoreException {
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
         JSONParser parser = new JSONParser();
-        String swagger12BasePath = null;
 
-            Object rawResource = registryService.getGovernanceRegistryResource(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
-            String swaggerRes = ResourceUtil.getResourceContent(rawResource);
+        Object rawResource =
+                             registryService.getGovernanceRegistryResource(swagger12location +
+                                                                           APIConstants.API_DOC_1_2_RESOURCE_NAME);
+        String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
-            JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
+        JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
 
-            Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
-            
-            JSONArray pathConfigs = (JSONArray) swagger12doc.get(APIConstants.API_ARRAY_NAME);
-            
-            for (Object pathConfig : pathConfigs) {
-                JSONObject jsonObjPathConfig = (JSONObject) pathConfig;
-                String pathName = (String) jsonObjPathConfig.get(APIConstants.DOCUMENTATION_SEARCH_PATH_FIELD);
-                pathName = pathName.startsWith("/") ? pathName : ("/" + pathName);
+        Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
 
-                Object pathResource = registryService.getGovernanceRegistryResource(swagger12location + pathName);
-                String swaggerDocContent = ResourceUtil.getResourceContent(pathResource);
+        JSONArray pathConfigs = (JSONArray) swagger12doc.get(APIConstants.API_ARRAY_NAME);
 
-                log.debug("swaggerDocContent : " + swaggerDocContent);
+        for (Object pathConfig : pathConfigs) {
+            JSONObject jsonObjPathConfig = (JSONObject) pathConfig;
+            String pathName = (String) jsonObjPathConfig.get(APIConstants.DOCUMENTATION_SEARCH_PATH_FIELD);
+            pathName = pathName.startsWith("/") ? pathName : ("/" + pathName);
 
-                JSONObject apiDef = (JSONObject) parser.parse(swaggerDocContent);
-                //get the base path. this is same for all api definitions.
-                swagger12BasePath = (String) apiDef.get("basePath");
-                if (apiDef.containsKey("apis")) {
-                    JSONArray apiArray = (JSONArray) apiDef.get("apis");
-                    for (Object anApiArray : apiArray) {
-                        JSONObject apiObject = (JSONObject) anApiArray;
-                        String path = (String) apiObject.get("path");
-                        JSONArray operations = (JSONArray) apiObject.get("operations");
-                        //set the operations object inside each api definition and set it in a map against its resource path
-                        apiDefPaths.put(path, operations);
-                    }
-                } else {
-                    log.error("Cannot find resources in swagger v1.2 document");
+            Object pathResource = registryService.getGovernanceRegistryResource(swagger12location + pathName);
+            String swaggerDocContent = ResourceUtil.getResourceContent(pathResource);
+
+            log.debug("swaggerDocContent : " + swaggerDocContent);
+
+            JSONObject apiDef = (JSONObject) parser.parse(swaggerDocContent);
+            if (apiDef.containsKey("apis")) {
+                JSONArray apiArray = (JSONArray) apiDef.get("apis");
+                for (Object anApiArray : apiArray) {
+                    JSONObject apiObject = (JSONObject) anApiArray;
+                    String path = (String) apiObject.get("path");
+                    JSONArray operations = (JSONArray) apiObject.get("operations");
+                    // set the operations object inside each api definition and
+                    // set it in a map against its resource path
+                    apiDefPaths.put(path, operations);
                 }
+            } else {
+                log.error("Cannot find resources in swagger v1.2 document");
             }
-            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
-            return swagger2Doc.toJSONString();
+        }
+        JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
+        return swagger2Doc.toJSONString();
     }
 
 
