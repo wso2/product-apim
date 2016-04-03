@@ -67,6 +67,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -464,34 +465,22 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         JSONParser parser = new JSONParser();
         String swagger12BasePath = null;
 
-        try {
             Object rawResource = registryService.getGovernanceRegistryResource(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
             String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
             JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
 
             Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
+            
+            JSONArray pathConfigs = (JSONArray) swagger12doc.get(APIConstants.API_ARRAY_NAME);
+            
+            for (Object pathConfig : pathConfigs) {
+                JSONObject jsonObjPathConfig = (JSONObject) pathConfig;
+                String pathName = (String) jsonObjPathConfig.get(APIConstants.DOCUMENTATION_SEARCH_PATH_FIELD);
+                pathName = pathName.startsWith("/") ? pathName : ("/" + pathName);
 
-            String[] apiDefinitions = (String[]) registryService.getGovernanceRegistryResource(swagger12location);
-
-            //get each resource in the 1.2 folder except the api-doc resource
-            for (String apiDefinition : apiDefinitions) {
-
-                String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf('/'));
-                //skip if api-doc file
-                if (APIConstants.API_DOC_1_2_RESOURCE_NAME.equals(resourceName)) {
-                    continue;
-                }
-
-                Object resource = registryService.getGovernanceRegistryResource(apiDefinition);
-
-                String swaggerDocContent;
-
-                if (resource instanceof String[]) {
-                    swaggerDocContent = Arrays.toString((String[]) resource);
-                } else {
-                    swaggerDocContent = new String((byte[]) resource, "UTF8");
-                }
+                Object pathResource = registryService.getGovernanceRegistryResource(swagger12location + pathName);
+                String swaggerDocContent = ResourceUtil.getResourceContent(pathResource);
 
                 log.debug("swaggerDocContent : " + swaggerDocContent);
 
@@ -513,11 +502,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             }
             JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
             return swagger2Doc.toJSONString();
-        } catch (UnsupportedEncodingException e) {
-            log.error("Error while reading swagger resource", e);
-        }
-
-        return null;
     }
 
 
