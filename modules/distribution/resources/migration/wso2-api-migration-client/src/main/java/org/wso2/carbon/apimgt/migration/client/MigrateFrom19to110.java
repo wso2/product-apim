@@ -80,7 +80,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
         updateAPIManangerDatabase(amScriptPath);
 
-        updateAuthzUserName();
+        //updateAuthzUserName();
         
         if (StatDBUtil.isTokenEncryptionEnabled()) {
             decryptEncryptedConsumerKeys();

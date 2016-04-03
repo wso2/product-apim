@@ -67,6 +67,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -462,62 +463,45 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             throws MalformedURLException, ParseException, RegistryException, UserStoreException {
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
         JSONParser parser = new JSONParser();
-        String swagger12BasePath = null;
 
-        try {
-            Object rawResource = registryService.getGovernanceRegistryResource(swagger12location + APIConstants.API_DOC_1_2_RESOURCE_NAME);
-            String swaggerRes = ResourceUtil.getResourceContent(rawResource);
+        Object rawResource =
+                             registryService.getGovernanceRegistryResource(swagger12location +
+                                                                           APIConstants.API_DOC_1_2_RESOURCE_NAME);
+        String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
-            JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
+        JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
 
-            Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
+        Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
 
-            String[] apiDefinitions = (String[]) registryService.getGovernanceRegistryResource(swagger12location);
+        JSONArray pathConfigs = (JSONArray) swagger12doc.get(APIConstants.API_ARRAY_NAME);
 
-            //get each resource in the 1.2 folder except the api-doc resource
-            for (String apiDefinition : apiDefinitions) {
+        for (Object pathConfig : pathConfigs) {
+            JSONObject jsonObjPathConfig = (JSONObject) pathConfig;
+            String pathName = (String) jsonObjPathConfig.get(APIConstants.DOCUMENTATION_SEARCH_PATH_FIELD);
+            pathName = pathName.startsWith("/") ? pathName : ("/" + pathName);
 
-                String resourceName = apiDefinition.substring(apiDefinition.lastIndexOf('/'));
-                //skip if api-doc file
-                if (APIConstants.API_DOC_1_2_RESOURCE_NAME.equals(resourceName)) {
-                    continue;
+            Object pathResource = registryService.getGovernanceRegistryResource(swagger12location + pathName);
+            String swaggerDocContent = ResourceUtil.getResourceContent(pathResource);
+
+            log.debug("swaggerDocContent : " + swaggerDocContent);
+
+            JSONObject apiDef = (JSONObject) parser.parse(swaggerDocContent);
+            if (apiDef.containsKey("apis")) {
+                JSONArray apiArray = (JSONArray) apiDef.get("apis");
+                for (Object anApiArray : apiArray) {
+                    JSONObject apiObject = (JSONObject) anApiArray;
+                    String path = (String) apiObject.get("path");
+                    JSONArray operations = (JSONArray) apiObject.get("operations");
+                    // set the operations object inside each api definition and
+                    // set it in a map against its resource path
+                    apiDefPaths.put(path, operations);
                 }
-
-                Object resource = registryService.getGovernanceRegistryResource(apiDefinition);
-
-                String swaggerDocContent;
-
-                if (resource instanceof String[]) {
-                    swaggerDocContent = Arrays.toString((String[]) resource);
-                } else {
-                    swaggerDocContent = new String((byte[]) resource, "UTF8");
-                }
-
-                log.debug("swaggerDocContent : " + swaggerDocContent);
-
-                JSONObject apiDef = (JSONObject) parser.parse(swaggerDocContent);
-                //get the base path. this is same for all api definitions.
-                swagger12BasePath = (String) apiDef.get("basePath");
-                if (apiDef.containsKey("apis")) {
-                    JSONArray apiArray = (JSONArray) apiDef.get("apis");
-                    for (Object anApiArray : apiArray) {
-                        JSONObject apiObject = (JSONObject) anApiArray;
-                        String path = (String) apiObject.get("path");
-                        JSONArray operations = (JSONArray) apiObject.get("operations");
-                        //set the operations object inside each api definition and set it in a map against its resource path
-                        apiDefPaths.put(path, operations);
-                    }
-                } else {
-                    log.error("Cannot find resources in swagger v1.2 document");
-                }
+            } else {
+                log.error("Cannot find resources in swagger v1.2 document");
             }
-            JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
-            return swagger2Doc.toJSONString();
-        } catch (UnsupportedEncodingException e) {
-            log.error("Error while reading swagger resource", e);
         }
-
-        return null;
+        JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
+        return swagger2Doc.toJSONString();
     }
 
 
