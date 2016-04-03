@@ -57,6 +57,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private final String TAG_NOT_EXIST = "no_such_tag";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
+    private static final long WAIT_TIME = 45 * 1000;
     private String publisherURLHttps;
     private String storeURLHttp;
     private APICreationRequestBean apiCreationRequestBean;
@@ -115,6 +116,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_1, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         //implement API 2
         apiCreationRequestBean = new APICreationRequestBean(API_NAME_2, API_CONTEXT_2, API_VERSION, user.getUserName(),
@@ -134,6 +136,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         updateRequest = new APILifeCycleStateRequest(API_NAME_2, user.getUserName(), APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_2, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @AfterClass(alwaysRun = true)
@@ -148,6 +151,9 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         HttpResponse response;
         JSONObject results;
         JSONArray resultArray;
+
+        //wait for APIs to appear in Search API
+        watForAPIsAvailableOnSearchApi();
 
         //search for common tags
         searchTerm = "tag:" + TAG_API;
@@ -176,6 +182,34 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         results = new JSONObject(response.getData());
         resultArray = results.getJSONArray("result");
         Assert.assertEquals(resultArray.length(), 0, "Search API return invalid APIs");
+    }
+
+    /**
+     * Used to wait until published apis are appear in the Store API search API
+     *
+     * @throws Exception if search API throws any exceptions
+     */
+    public void watForAPIsAvailableOnSearchApi() throws Exception {
+        String searchTerm = "";
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        HttpResponse response;
+        while (waitTime > System.currentTimeMillis()) {
+            response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
+            verifyResponse(response);
+            log.info("WAIT for availability of API : " + API_NAME_1 + " and " + API_NAME_2
+                    + " found on Store search API");
+            if (response != null) {
+                if (response.getData().contains(API_NAME_1) && response.getData().contains(API_NAME_2)) {
+                    log.info("API :" + API_NAME_1 + " and " + API_NAME_2 + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
     }
 
     @DataProvider
