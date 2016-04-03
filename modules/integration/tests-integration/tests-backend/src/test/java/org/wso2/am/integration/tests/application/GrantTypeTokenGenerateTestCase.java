@@ -58,7 +58,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "GrantTypeTokenGenerateApp";
-    private final String CALLBACK_URL_UPDATE_APP_NAME_ = "GrantTypeTokenGenerateCallbackApp";
+    private final String CALLBACK_URL_UPDATE_APP_NAME = "GrantTypeTokenGenerateCallbackApp";
     private final String CALLBACK_URL = "https://localhost:9443/store/";
     private final String TAGS = "grantType,implicitly,code";
     private final String APPLICATION_CONTENT_TYPE = "application/x-www-form-urlencoded";
@@ -284,23 +284,21 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Test Application Creation without callback URL",
             dependsOnMethods = "testImplicit")
     public void testApplicationCreationWithoutCallBackURL() throws Exception {
-
         //add a application
         HttpResponse serviceResponse = apiStore
-                .addApplication(CALLBACK_URL_UPDATE_APP_NAME_, APIThrottlingTier.UNLIMITED.getState(), "",
+                .addApplication(CALLBACK_URL_UPDATE_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "",
                         "this-is-test");
         verifyResponse(serviceResponse);
 
         //subscribe to the api
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
-        subscriptionRequest.setApplicationName(CALLBACK_URL_UPDATE_APP_NAME_);
+        subscriptionRequest.setApplicationName(CALLBACK_URL_UPDATE_APP_NAME);
         subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
         serviceResponse = apiStore.subscribe(subscriptionRequest);
         verifyResponse(serviceResponse);
 
         //generate the key for the subscription
-        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(CALLBACK_URL_UPDATE_APP_NAME_);
-        //        generateAppKeyRequest.setCallbackUrl(CALLBACK_URL);
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(CALLBACK_URL_UPDATE_APP_NAME);
         serviceResponse = apiStore.generateApplicationKey(generateAppKeyRequest);
         verifyResponse(serviceResponse);
         JSONObject response = new JSONObject(serviceResponse.getData());
@@ -335,7 +333,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
                 + "refresh_token client_credentials authorization_code password\"}";
 
         HttpResponse response = apiStore
-                .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME_, keyType, authorizedDomains, retryAfterFailure,
+                .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME, keyType, authorizedDomains, retryAfterFailure,
                         URLEncoder.encode(jsonParams, "UTF8"), CALLBACK_URL);
         verifyResponse(response);
 
@@ -348,7 +346,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME);
-        apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME_);
+        apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
     }
 

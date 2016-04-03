@@ -151,7 +151,6 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         HttpResponse response;
         JSONObject results;
         JSONArray resultArray;
-
         //wait for APIs to appear in Search API
         watForAPIsAvailableOnSearchApi();
 
