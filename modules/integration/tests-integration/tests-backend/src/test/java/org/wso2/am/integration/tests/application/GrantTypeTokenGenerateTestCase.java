@@ -38,6 +38,7 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "GrantTypeTokenGenerateApp";
+    private final String CALLBACK_URL_UPDATE_APP_NAME = "GrantTypeTokenGenerateCallbackApp";
     private final String CALLBACK_URL = "https://localhost:9443/store/";
     private final String TAGS = "grantType,implicitly,code";
     private final String APPLICATION_CONTENT_TYPE = "application/x-www-form-urlencoded";
@@ -166,9 +168,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
                         + CALLBACK_URL;
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        String LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String sessionDataKey = getURLParameter(LocationHeader, "sessionDataKey");
+        String locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionDataKey = getURLParameter(locationHeader, "sessionDataKey");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKey from the Location Header");
 
         //Login to the Identity with user/pass
@@ -181,9 +183,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String sessionDataKeyConsent = getURLParameter(LocationHeader, "sessionDataKeyConsent");
+        locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionDataKeyConsent = getURLParameter(locationHeader, "sessionDataKeyConsent");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKeyConsent from the Location Header");
 
         //approve the application by logged user
@@ -196,9 +198,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String tempCode = getURLParameter(LocationHeader, "code");
+        locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String tempCode = getURLParameter(locationHeader, "code");
         Assert.assertNotNull(tempCode, "Couldn't found auth code from the Location Header");
 
         //get accessToken
@@ -236,9 +238,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
                         + CALLBACK_URL;
         HttpResponse res = HTTPSClientUtils.doGet(url, headers);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        String LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String sessionDataKey = getURLParameter(LocationHeader, "sessionDataKey");
+        String locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionDataKey = getURLParameter(locationHeader, "sessionDataKey");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKey from the Location Header");
 
         //Login to the Identity with user/pass
@@ -251,9 +253,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String sessionDataKeyConsent = getURLParameter(LocationHeader, "sessionDataKeyConsent");
+        locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String sessionDataKeyConsent = getURLParameter(locationHeader, "sessionDataKeyConsent");
         Assert.assertNotNull(sessionDataKey, "Couldn't found sessionDataKeyConsent from the Location Header");
 
         //approve the application by logged user
@@ -266,9 +268,9 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         res = HTTPSClientUtils.doPost(identityLoginURL, headers, urlParameters);
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
-        LocationHeader = res.getHeaders().get(LOCATION_HEADER);
-        Assert.assertNotNull(LocationHeader, "Couldn't found Location Header");
-        String accessToken = getURLParameter(LocationHeader, "access_token");
+        locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        String accessToken = getURLParameter(locationHeader, "access_token");
         Assert.assertNotNull(accessToken, "Couldn't found auth code from the Location Header");
 
         //invoke the api with generate token
@@ -279,9 +281,72 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Test Application Creation without callback URL",
+            dependsOnMethods = "testImplicit")
+    public void testApplicationCreationWithoutCallBackURL() throws Exception {
+        //add a application
+        HttpResponse serviceResponse = apiStore
+                .addApplication(CALLBACK_URL_UPDATE_APP_NAME, APIThrottlingTier.UNLIMITED.getState(), "",
+                        "this-is-test");
+        verifyResponse(serviceResponse);
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
+        subscriptionRequest.setApplicationName(CALLBACK_URL_UPDATE_APP_NAME);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        serviceResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //generate the key for the subscription
+        APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(CALLBACK_URL_UPDATE_APP_NAME);
+        serviceResponse = apiStore.generateApplicationKey(generateAppKeyRequest);
+        verifyResponse(serviceResponse);
+        JSONObject response = new JSONObject(serviceResponse.getData());
+        consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
+        consumerSecret = response.getJSONObject("data").getJSONObject("key").get("consumerSecret").toString();
+        Assert.assertNotNull(consumerKey, "Consumer Key not found");
+        Assert.assertNotNull(consumerSecret, "Consumer Secret not found ");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",
+            dependsOnMethods = "testApplicationCreationWithoutCallBackURL")
+    public void testAuthRequestWithoutCallbackURL() throws Exception {
+        headers.clear();
+        //Sending first request to approve grant authorization to app
+        headers.put("Content-Type", APPLICATION_CONTENT_TYPE);
+        String url =
+                authorizeURL + "?response_type=code&" + "client_id=" + consumerKey + "&scope=PRODUCTION&redirect_uri=";
+        HttpResponse res = HTTPSClientUtils.doGet(url, headers);
+        Assert.assertEquals(res.getResponseCode(), HttpStatus.SC_MOVED_TEMPORARILY, "Response code is not as expected");
+        String locationHeader = res.getHeaders().get(LOCATION_HEADER);
+        Assert.assertNotNull(locationHeader, "Couldn't found Location Header");
+        Assert.assertTrue(locationHeader.contains("oauthErrorCode"), "Redirection page should be a error page");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test authorization_code token generation",
+            dependsOnMethods = "testAuthRequestWithoutCallbackURL")
+    public void testApplicationUpdateAndTestKeyGeneration() throws Exception {
+        String keyType = "PRODUCTION";
+        String authorizedDomains = "ALL";
+        String retryAfterFailure = String.valueOf(false);
+        String jsonParams = "{\"grant_types\":\"urn:ietf:params:oauth:grant-type:saml2-bearer iwa:ntlm implicit "
+                + "refresh_token client_credentials authorization_code password\"}";
+
+        HttpResponse response = apiStore
+                .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME, keyType, authorizedDomains, retryAfterFailure,
+                        URLEncoder.encode(jsonParams, "UTF8"), CALLBACK_URL);
+        verifyResponse(response);
+
+        //Test the Authorization Code key generation with updates values
+        testAuthCode();
+        //Test the Implicit key generation with updates values
+        testImplicit();
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME);
+        apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
     }
 
