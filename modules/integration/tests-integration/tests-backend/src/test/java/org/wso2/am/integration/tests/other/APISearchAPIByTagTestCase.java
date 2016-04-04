@@ -198,6 +198,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
             log.info("WAIT for availability of API : " + API_NAME_1 + " and " + API_NAME_2
                     + " found on Store search API");
             if (response != null) {
+                log.info("Data: " + response.getData());
                 if (response.getData().contains(API_NAME_1) && response.getData().contains(API_NAME_2)) {
                     log.info("API :" + API_NAME_1 + " and " + API_NAME_2 + " found");
                     break;
