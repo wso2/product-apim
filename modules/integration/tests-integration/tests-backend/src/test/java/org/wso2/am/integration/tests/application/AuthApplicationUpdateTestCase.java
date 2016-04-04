@@ -27,7 +27,7 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(AuthApplicationUpdateTestCase.class);
     private final String APP_NAME = "AuthApplicationUpdateApp";
+    private final String APP_NAME_TO_UPDATE = "AuthApplicationNameToUpdateApp";
     private final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
     private final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
     private final String GRANT_TYPE_PASSWORD = "password";
@@ -124,6 +125,15 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         Assert.assertFalse(grantTypes.contains(GRANT_TYPE_REFRESH_TOKEN));
         Assert.assertFalse(grantTypes.contains(GRANT_TYPE_IMPLICIT));
         Assert.assertEquals(authApp.getCallbackUrl(), UPDATE_APP_CALLBACK_URL);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test Application name update after key generate",
+            dependsOnMethods = "testApplicationGrantTypeAfterUpdate")
+    public void testApplicationUpdateAndTestKeyGeneration() throws Exception {
+        HttpResponse response = apiStore
+                .updateApplication(APP_NAME, APP_NAME_TO_UPDATE, UPDATE_APP_CALLBACK_URL, APP_DESCRIPTION,
+                        APIMIntegrationConstants.APPLICATION_TIER.LARGE);
+        verifyResponse(response);
     }
 
     @AfterClass(alwaysRun = true)
