@@ -514,7 +514,7 @@
 
         <!--
         Configuration to create APIs for local endpoints.
-        Endpoint will be computed as http://${carbon.local.ip}:${mgt.transport.http.port}/Context.
+        Endpoint will be computed as http://localhost:${mgt.transport.http.port}/Context.
         Define many LocalAPI elements as below to create many APIs
         for local Endpoints.
         IconPath should be relative to CARBON_HOME.
