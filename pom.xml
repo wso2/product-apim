@@ -896,7 +896,7 @@
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.5.3-SNAPSHOT</carbon.registry.version>
+        <carbon.registry.version>4.5.3-beta</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.8, 4.6.0)</carbon.registry.package.import.version.range>
 
 
