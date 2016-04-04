@@ -137,7 +137,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         //Invoke  new context
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, API2_END_POINT_URL);
+        waitForAPIDeployment();
 
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0),
