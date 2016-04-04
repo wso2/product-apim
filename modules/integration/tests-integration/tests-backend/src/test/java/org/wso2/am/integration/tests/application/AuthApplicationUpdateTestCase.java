@@ -23,12 +23,15 @@ import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.transport.http.HttpTransportProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -38,7 +41,12 @@ import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,10 +66,14 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     private final String APP_DESCRIPTION = "description";
     private final String APP_CALLBACK_URL = "http://wso2.com/";
     private final String UPDATE_APP_CALLBACK_URL = "https://www.google.lk/";
+    private final String API_VERSION = "1.0.0";
+    private final String API_NAME = "AuthApplicationUpdateAPIName";
+    private final String API_CONTEXT = "AuthApplicationUpdateContext";
 
     private String storeURLHttp;
     private APIStoreRestClient apiStore;
     private String consumerKey;
+    private String publisherURLHttps;
 
     @Factory(dataProvider = "userModeDataProvider")
     public AuthApplicationUpdateTestCase(TestUserMode userMode) {
@@ -72,8 +84,11 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         storeURLHttp = getStoreURLHttp();
+        publisherURLHttps = publisherUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
+        apiPublisher = new APIPublisherRestClient(publisherURLHttps);
+        apiPublisher.login(user.getUserName(), user.getPassword());
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")
@@ -129,16 +144,65 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Test Application name update after key generate",
             dependsOnMethods = "testApplicationGrantTypeAfterUpdate")
-    public void testApplicationUpdateAndTestKeyGeneration() throws Exception {
+    public void testApplicationNameUpdateAfterKeyGeneration() throws Exception {
+        String tierCollection = APIMIntegrationConstants.API_TIER.UNLIMITED;
+        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION,
+                user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+
+        //define resources
+        List<APIResourceBean> resList = new ArrayList<APIResourceBean>();
+        APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/add");
+        resList.add(res1);
+
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
+        subscriptionRequest.setApplicationName(APP_NAME);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        serviceResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //change the application name
         HttpResponse response = apiStore
                 .updateApplication(APP_NAME, APP_NAME_TO_UPDATE, UPDATE_APP_CALLBACK_URL, APP_DESCRIPTION,
                         APIMIntegrationConstants.APPLICATION_TIER.LARGE);
         verifyResponse(response);
     }
 
+    @Test(groups = { "wso2.am" }, description = "Test Subscription after Application name update",
+            dependsOnMethods = "testApplicationNameUpdateAfterKeyGeneration")
+    public void testSubscriptionAfterApplicationNameUpdate() throws Exception {
+        //Test the Subscription UI
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Cookie", apiStore.getSession());
+        HttpResponse response = HttpRequestUtil.doGet(storeURLHttp + "/store/site/pages/subscriptions.jag", headers);
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
+                "subscription page have error after update application page");
+        //Test the subscription list after update app name
+        response = apiStore.getAllSubscriptionsOfApplication(APP_NAME_TO_UPDATE);
+        verifyResponse(response);
+        Assert.assertTrue(response.getData().contains(API_NAME), "Subscribe API not included after App name updated");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(APP_NAME);
+        apiStore.removeApplication(APP_NAME_TO_UPDATE);
+        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
     }
 
     @DataProvider
