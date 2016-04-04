@@ -48,25 +48,15 @@ import static org.testng.Assert.assertTrue;
 public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIScopeTestCase.class);
-
     private APIPublisherRestClient apiPublisher;
-
     private APIStoreRestClient apiStore;
-
     private UserManagementClient userManagementClient1 = null;
-
     private static final String API_NAME = "APIScopeTestAPI";
-
     private static final String API_VERSION = "1.0.0";
-
     private static final String APP_NAME = "NewApplication";
-
     private static final String USER_JOHN = "john";
-
     private static final String SUBSCRIBER_ROLE = "subscriber";
-
     private static String apiProvider;
-
     private String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -76,39 +66,29 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
-
         apiProvider = user.getUserName();
-
         String publisherURLHttp = getPublisherURLHttp();
-
         String storeURLHttp = getStoreURLHttp();
-
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
         apiStore = new APIStoreRestClient(storeURLHttp);
-
         gatewaySessionCookie = createSession(gatewayContextMgt);
         //Load the back-end dummy API
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
-                                                  + File.separator + "synapseconfigs" + File.separator + "rest"
-                                                  + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
         }
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
     public void testSetScopeToResourceTestCase() throws Exception {
-
-
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                         keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                                                         keyManagerContext.getContextTenant().getContextUser().getPassword());
-
+                keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                keyManagerContext.getContextTenant().getContextUser().getPassword());
         // adding new role subscriber
-        userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                                                                                    "/permission/admin/manage/api/subscribe"});
+        userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[] {},
+                new String[] { "/permission/admin/login", "/permission/admin/manage/api/subscribe" });
 
         // crating user john
         String userJohn;
@@ -117,11 +97,11 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
             gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
             userJohn = USER_JOHN;
         } else {
-            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
+            gatewayUrl =
+                    gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
             userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
         }
         userManagementClient1.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
-
 
         // Adding API
         String apiContext = "testScopeAPI";
@@ -140,9 +120,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
         //publishing API
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, apiProvider,
-                                                                              APILifeCycleState.PUBLISHED);
+                APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
-
 
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
