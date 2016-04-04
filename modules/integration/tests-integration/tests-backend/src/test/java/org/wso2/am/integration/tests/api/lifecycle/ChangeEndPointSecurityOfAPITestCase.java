@@ -150,7 +150,7 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
         assertEquals(updateAPIHTTPResponse.getData(), "{\"error\" : false}", "Update APi with new Resource information fail");
         //Send GET request
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, encodedUserNamePassword);
+        waitForAPIDeployment();
 
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/sec",
