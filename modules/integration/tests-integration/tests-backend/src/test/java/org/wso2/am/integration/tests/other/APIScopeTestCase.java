@@ -262,6 +262,20 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
     }
 
+    @Test(groups = { "wso2.am" }, description = "Testing Update api with scopes assigned",
+            dependsOnMethods = "testCopyApiWithScopes")
+    public void testUpdateApiWithScopes() throws Exception {
+        String tierCollection = APIMIntegrationConstants.API_TIER.GOLD;
+        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME_WITH_SCOPE,
+                API_CONTEXT_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        apiCreationRequestBean.setDescription("test api description");
+
+        HttpResponse updateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
+        verifyResponse(updateResponse);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
