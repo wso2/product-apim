@@ -487,8 +487,10 @@ public class APIMIntegrationBaseTest {
                 log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
             }
 
-            log.info("WAIT for availability of API :" + apiName + " with version: " + apiVersion + " with provider: " + apiProvider +
-                     " with expected response : " + expectedResponse);
+            log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
+                     + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
+                     + " with expected response : " + expectedResponse);
+            log.info("Data :" + response.getData());
 
             if (response != null) {
                 if (response.getData().contains(expectedResponse)) {
