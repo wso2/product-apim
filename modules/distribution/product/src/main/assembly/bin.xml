@@ -50,9 +50,6 @@
                 <exclude>**/repository/components/plugins/saxon*.jar</exclude>
 
                 <!-- Remove multiple versions of same jar for 1.10.x-->
-                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.core_4.5.3.SNAPSHOT.jar</exclude>
-                <exclude>**/repository/components/plugins/org.wso2.carbon.registry.event.ws_4.5.3.SNAPSHOT.jar</exclude>
-
                 <exclude>**/repository/components/plugins/js_1.6.0.R7-wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/json_1.0.0.wso2v1.jar</exclude>
                 <exclude>**/repository/components/plugins/wss4j_1.5.11.wso2v9.jar</exclude>
@@ -878,9 +875,14 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>src/main/conf/event-broker.xml</source>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
             <destName>event-broker.xml</destName>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/registry-event-broker.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/</outputDirectory>
+            <destName>registry-event-broker.xml</destName>
         </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
