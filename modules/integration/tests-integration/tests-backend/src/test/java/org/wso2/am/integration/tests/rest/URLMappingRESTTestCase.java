@@ -72,9 +72,7 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 				+ File.separator + "synapseconfigs" + File.separator + "rest"
                 + File.separator + synapseConfFile, gatewayContextMgt, gatewaySessionCookie);
 
-        waitForAPIDeploymentSync(gatewayContextWrk.getContextTenant().getContextUser().getUserName(),
-                                 "stockquote", "1.0.0",
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), "stockquote", "1.0.0", APIMIntegrationConstants.IS_API_EXISTS);
 	}
 
 	@Test(groups = { "wso2.am" },
