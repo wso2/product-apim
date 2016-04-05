@@ -166,7 +166,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         updateRequest.setVersion(API_VERSION_2_0_0);
         apiPublisherClientUser1.changeAPILifeCycleStatus(updateRequest);
         
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeployment();
         
         //get the info page from the publisher
         resp = apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_2_0_0);
