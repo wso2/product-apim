@@ -450,6 +450,8 @@ public class APIMIntegrationBaseTest {
         try {
             if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
                 Thread.sleep(WAIT_TIME);
+            } else {
+                Thread.sleep(15000);
             }
         } catch (InterruptedException ignored) {
 
@@ -567,6 +569,10 @@ public class APIMIntegrationBaseTest {
         String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
         try{
             if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSuperTenantSessionCookie);
                 TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
                 if(tenant == null){
                     log.info("tenant is null: " + providerTenantDomain);
