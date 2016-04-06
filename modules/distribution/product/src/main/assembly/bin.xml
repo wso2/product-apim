@@ -88,8 +88,6 @@
 	    <excludes>
                 <exclude>**/wso2server.sh</exclude>
 	    </excludes>
-
-
             <fileMode>755</fileMode>
         </fileSet>
 	<fileSet>
