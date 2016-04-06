@@ -48,7 +48,7 @@
         <!--
             Server URL of the Authentication service
         -->
-        <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
         <!--
             Admin username for the Authentication manager.
         -->
@@ -129,7 +129,7 @@
 			<!--
             			Server URL of the API gateway.
         		-->
-                        <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
+                        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
 			<!--
             			Admin username for the API gateway.
         		-->
@@ -141,7 +141,7 @@
 			<!--
             			Endpoint URLs for the APIs hosted in this API gateway.
         		-->
-                        <GatewayEndpoint>http://localhost:${http.nio.port},https://localhost:${https.nio.port}</GatewayEndpoint>
+                        <GatewayEndpoint>http://${carbon.local.ip}:${http.nio.port},https://${carbon.local.ip}:${https.nio.port}</GatewayEndpoint>
                 </Environment>
         </Environments>
         
@@ -241,7 +241,7 @@
         <!--
             Server URL of the API key manager
         -->
-        <ServerURL>https://localhost:${mgt.transport.https.port}/services/</ServerURL>
+        <ServerURL>https://${carbon.local.ip}:${mgt.transport.https.port}/services/</ServerURL>
 
         <!--
             Admin username for API key manager.
@@ -298,7 +298,7 @@
          gateway https( /http, we recommend users to use 'https' endpoints for security purpose) url.
          Also please note that we should point gateway revoke service to key manager
     -->
-    <RevokeAPIURL>https://localhost:${https.nio.port}/revoke</RevokeAPIURL>
+    <RevokeAPIURL>https://${carbon.local.ip}:${https.nio.port}/revoke</RevokeAPIURL>
 	
 	<!-- Whether to encrypt tokens when storing in the Database
 	Note: If changing this value to true, change the value of <TokenPersistenceProcessor> to
@@ -353,7 +353,7 @@
     <APIStore>
 
         <DisplayURL>false</DisplayURL>
-        <URL>https://localhost:${mgt.transport.https.port}/store</URL>
+        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/store</URL>
         <!--
             This parameter specifies whether to display multiple versions of same
             API or only showing the latest version of an API.
@@ -394,7 +394,7 @@
 
     <APIPublisher>
         <DisplayURL>false</DisplayURL>
-        <URL>https://localhost:${mgt.transport.https.port}/publisher</URL>
+        <URL>https://${carbon.local.ip}:${mgt.transport.https.port}/publisher</URL>
     </APIPublisher>
 
     <!--

@@ -133,7 +133,7 @@ public class AccessibilityOfBlockAPITestCase extends APIManagerLifecycleBaseTest
     @Test(groups = {"wso2.am"}, description = "Invocation og the APi after block",
             dependsOnMethods = "testChangeAPILifecycleToBlock")
     public void testInvokeAPIAfterChangeAPILifecycleToBlock() throws Exception {
-        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_BLOCKED);
+        waitForAPIDeployment();
 
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =

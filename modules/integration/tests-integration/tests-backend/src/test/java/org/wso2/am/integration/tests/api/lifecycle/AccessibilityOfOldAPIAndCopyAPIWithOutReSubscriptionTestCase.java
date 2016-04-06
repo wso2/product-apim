@@ -121,16 +121,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase extend
     @Test(groups = {"wso2.am"}, description = "Test publishing of copied API with out re-subscription required",
             dependsOnMethods = "testSubscriptionOfOldAPI")
     public void testPublishCopiedAPIWithOutReSubscriptionRequired() throws APIManagerIntegrationTestException, XPathExpressionException {
-        // Copy  API
+        //Copy  API
         copyAPI(apiIdentifierAPI1Version1, API_VERSION_2_0_0, apiPublisherClientUser1);
-        //Publish  version 2.0.0 with re-subscription required
-        APILifeCycleStateRequest publishUpdateRequest =
-                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.PUBLISHED);
-        publishUpdateRequest.setVersion(API_VERSION_2_0_0);
-        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),
-                apiCreationRequestBean.getName(),
-                API_VERSION_2_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
+        //Publish  version 2.0.0 without re-subscription required
         HttpResponse publishAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifierAPI1Version2, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
