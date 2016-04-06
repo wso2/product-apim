@@ -88,6 +88,8 @@
 	    <excludes>
                 <exclude>**/wso2server.sh</exclude>
 	    </excludes>
+
+
             <fileMode>755</fileMode>
         </fileSet>
 	<fileSet>
@@ -752,6 +754,21 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+
+        <file>
+            <source>target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/config/wso2server.sh</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
+        <file>
+            <source>target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/config/wso2server.bat</source>
+            <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+
         <file>
             <source>../../../config/bam.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/etc</outputDirectory>
