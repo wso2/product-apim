@@ -902,6 +902,7 @@
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
+        <apim.feature.version>6.0.0.SNAPSHOT</apim.feature.version>
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
