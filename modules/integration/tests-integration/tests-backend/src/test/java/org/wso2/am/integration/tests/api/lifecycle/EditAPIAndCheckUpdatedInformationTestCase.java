@@ -98,8 +98,7 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
 
-        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
-                                 apiIdentifier.getVersion(), NEW_API_DESCRIPTION);
+        waitForAPIDeployment();
 
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));

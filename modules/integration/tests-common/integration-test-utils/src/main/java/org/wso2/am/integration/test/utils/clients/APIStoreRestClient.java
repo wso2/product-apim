@@ -161,6 +161,15 @@ public class APIStoreRestClient {
     }
 
     /**
+     * Get the current session cookies
+     *
+     * @return current Cookie
+     */
+    public String getSession() {
+        return requestHeaders.get("Cookie");
+    }
+
+    /**
      * Check whether the user is logged in
      *
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - If session cookie not found in the request header
