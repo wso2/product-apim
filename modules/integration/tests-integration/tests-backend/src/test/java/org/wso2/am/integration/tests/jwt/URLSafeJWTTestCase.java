@@ -291,18 +291,18 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         server.start();
 
         String subscriberUser = "subscriberUser@" + user.getUserDomain();
+        String subscriberUserWithoutDomain = "subscriberUser";
         String password = "password@123";
         String accessToken;
 
-        if ((userManagementClient1 != null) && !userManagementClient1
-                .userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient1.addUser(subscriberUser, password, new String[] {"Internal/subscriber" }, null);
+        if ((userManagementClient1 != null) &&
+            !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
+            userManagementClient1.addUser(subscriberUserWithoutDomain, password, new String[] {"Internal/subscriber" },
+                                          null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
-                keyManagerContext.getContextUrls().getBackEndUrl(),
-                keyManagerContext.getContextTenant().getContextUser().getUserName(),
-                keyManagerContext.getContextTenant().getContextUser().getPassword());
+                keyManagerContext.getContextUrls().getBackEndUrl(), user.getUserName(), user.getPassword());
 
         String profile = "default";
 
