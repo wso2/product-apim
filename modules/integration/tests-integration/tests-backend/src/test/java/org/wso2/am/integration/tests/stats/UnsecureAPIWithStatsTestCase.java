@@ -111,6 +111,7 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
                 " to :" + masterDatasourceConfigLocation);
 
         serverManager.restartGracefully();
+        super.init();
 
         //Initialize publisher and store.
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -209,7 +210,6 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
         }
 
         serverManager.restoreToLastConfiguration();
-        serverManager.restartGracefully();
         log.info("Restored configuration and restarted gracefully...");
     }
 

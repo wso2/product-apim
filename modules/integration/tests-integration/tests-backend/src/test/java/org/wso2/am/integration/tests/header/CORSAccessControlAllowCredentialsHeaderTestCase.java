@@ -139,6 +139,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                     + File.separator + "configFiles" + File.separator + "corsACACTest" + File.separator
                     + "withOriginAny" + File.separator + "api-manager.xml"));
             serverConfigurationManager.restartGracefully();
+            super.init();
         }
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
@@ -180,6 +181,7 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                     + File.separator + "configFiles" + File.separator
                     + "corsACACTest" + File.separator + "api-manager.xml"));
             serverConfigurationManager.restartGracefully();
+            super.init();
         }
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);

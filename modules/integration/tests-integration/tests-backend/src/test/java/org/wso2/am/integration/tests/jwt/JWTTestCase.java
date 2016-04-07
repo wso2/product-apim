@@ -161,6 +161,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         // restart the server since updated claims not picked unless cache expired
         serverConfigurationManager.restartGracefully();
+        super.init();
 
         addAPI(apiName, apiVersion, apiContext,description,wireMonitorURL,tags,providerName);
 
