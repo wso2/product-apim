@@ -18,10 +18,10 @@
 package org.wso2.am.integration.test.utils.base;
 
 import org.apache.axiom.om.OMElement;
-import org.apache.http.Header;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -492,7 +492,7 @@ public class APIMIntegrationBaseTest {
             log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
                      + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
                      + " with expected response : " + expectedResponse);
-            log.info("Data :" + response.getData());
+            log.info("Data: " + response == null ? "null" : response.getData());
 
             if (response != null) {
                 if (response.getData().contains(expectedResponse)) {

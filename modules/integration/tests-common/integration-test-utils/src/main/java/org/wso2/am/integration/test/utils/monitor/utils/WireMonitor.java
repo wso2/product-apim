@@ -54,7 +54,7 @@ class WireMonitor extends Thread {
             StringBuffer headerBuffer = new StringBuffer();
             Long time = System.currentTimeMillis();
             int contentLength = -1;
-            while ((ch = in.read()) != 1) {
+            while ((ch = in.read()) != 1 && in.available() > 0) {
                 buffer.append((char) ch);
                 //message headers end with
                 if (contentLength == -1 && buffer.toString().endsWith("\r\n\r\n")) {
