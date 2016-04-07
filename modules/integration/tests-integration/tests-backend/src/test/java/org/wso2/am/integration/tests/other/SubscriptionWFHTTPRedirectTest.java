@@ -62,6 +62,7 @@ public class SubscriptionWFHTTPRedirectTest  extends APIManagerLifecycleBaseTest
                 + File.separator + "configFiles" + File.separator + "workflowHTTPRedirect" + File.separator +
                 "SubscriptionCreationCustomWorkflowExecutor-1.0.0.jar"));
         serverConfigurationManager.restartGracefully();
+        super.init();
 
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();

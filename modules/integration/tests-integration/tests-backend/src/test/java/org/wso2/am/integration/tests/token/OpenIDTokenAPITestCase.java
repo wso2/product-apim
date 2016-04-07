@@ -54,15 +54,7 @@ import java.util.Map;
  */
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
-    private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private String APIName = "openIDTokenTestAPI";
-    private String APIContext = "openIDTokenTestAPI";
-    private String tags = "calc, token, media";
-    private String url;
-    private String description = "This is test API create by API manager integration test";
-    private String providerName = "admin";
-    private String APIVersion = "1.0.0";
     private String consumerKey;
     private String consumerSecret;
     private String userAccessToken;
@@ -75,31 +67,9 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiStore = new APIStoreRestClient(storeURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-        url = gatewayUrlsMgt.getWebAppURLHttps() + "am/sample/calculator/v1/api/add";
-        APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
-        apiRequest.setTags(tags);
-        apiRequest.setDescription(description);
-        apiRequest.setVersion(APIVersion);
-        apiRequest.setSandbox(url);
-        apiPublisher.addAPI(apiRequest);
-
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
-                                                                              APILifeCycleState.PUBLISHED);
-
-        waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
-
-        apiPublisher.changeAPILifeCycleStatus(updateRequest);
-
         apiStore.login(user.getUserName(), user.getPassword());
         apiStore.addApplication("OpenIDTokenTestAPIApplication", "Gold", "", "this-is-test");
-
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, user.getUserName());
-        subscriptionRequest.setApplicationName("OpenIDTokenTestAPIApplication");
-        subscriptionRequest.setTier("Gold");
-        apiStore.subscribe(subscriptionRequest);
 
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("OpenIDTokenTestAPIApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
@@ -128,9 +98,9 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
-        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrlsMgt.getWebAppURLNhttp()
+        HttpResponse userInfoResponse = HttpRequestUtil.doGet(gatewayUrlsMgt.getWebAppURLNhttp()
                                                              + "oauth2/userinfo?schema=openid", requestHeaders);
-        Assert.assertEquals(youTubeResponse.getResponseCode(), 200, "Response code mismatched");
+        Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 
     @AfterClass(alwaysRun = true)

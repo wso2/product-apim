@@ -11,7 +11,7 @@
         <log/>
         <drop/>
     </sequence>
-    <api name="stockquote" context="/stockquote">
+    <api name="stockquote" context="/stockquote/1.0.0">
         <resource methods="GET" uri-template="/test">
             <inSequence>
                 <header name="To" action="remove"/>
