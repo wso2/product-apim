@@ -816,14 +816,14 @@
         </file>
 
         <file>
-            <source>target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/config/wso2server.sh</source>
+            <source>src/main/startup-scripts/wso2server.sh</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
 
         <file>
-            <source>target/wso2carbon-core-${carbon.platform.version}/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/config/wso2server.bat</source>
+            <source>src/main/startup-scripts/wso2server.bat</source>
             <outputDirectory>wso2am-${pom.version}/bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>755</fileMode>
