@@ -129,6 +129,7 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
                 //restart again and retry
                 Thread.sleep(20000);
                 serverConfigurationManager.restartGracefully();
+                super.init();
                 Thread.sleep(20000);
                 try {
                     response = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp("Weather/1.0.0")), payload,
