@@ -49,7 +49,7 @@
                 <version>2.2</version>
                 <configuration>
                     <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
-                    <warName>${project.artifactId}</warName>
+                    <warName>${project.artifactId}-${version}-v0</warName>
                 </configuration>
             </plugin>
             <plugin>
@@ -113,7 +113,7 @@
                                     <tasks>
                                         <copy todir="${basedir}/../../../repository/deployment/server/webapps" overwrite="true">
                                             <fileset dir="${basedir}/target">
-                                                <include name="${project.artifactId}.war"/>
+                                                <include name="${project.artifactId}-${parent.version}-v0.war"/>
                                             </fileset>
                                         </copy>
                                     </tasks>
@@ -193,6 +193,11 @@
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.api</artifactId>
             <version>${carbon.apimgt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.governance</groupId>
+            <artifactId>org.wso2.carbon.governance.lcm</artifactId>
+            <version>${carbon.governance.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
