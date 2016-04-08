@@ -492,9 +492,9 @@ public class APIMIntegrationBaseTest {
             log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
                      + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
                      + " with expected response : " + expectedResponse);
-            log.info("Data: " + response == null ? "null" : response.getData());
 
             if (response != null) {
+                log.info("Data: " + response.getData());
                 if (response.getData().contains(expectedResponse)) {
                     log.info("API :" + apiName + " with version: " + apiVersion +
                              " with expected response " + expectedResponse + " found");
