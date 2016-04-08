@@ -83,7 +83,7 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 
-		HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("stockquote/test/"), null);
+		HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("stockquote/1.0.0/test/"), null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 //    Commenting out the test case until synapse is upgraded.
