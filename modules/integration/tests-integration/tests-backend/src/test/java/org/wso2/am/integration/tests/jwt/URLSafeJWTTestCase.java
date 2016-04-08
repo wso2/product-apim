@@ -291,7 +291,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         server.start();
 
         String subscriberUser = "subscriberUser@" + user.getUserDomain();
-        String subscriberUserWithoutDomain = "subscriberUser";
         String password = "password@123";
         String accessToken;
 
@@ -406,4 +405,8 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     public URLSafeJWTTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> master
