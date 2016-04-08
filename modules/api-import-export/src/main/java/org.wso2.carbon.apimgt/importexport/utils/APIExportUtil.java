@@ -37,20 +37,20 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.api.model.Documentation;
 import org.wso2.carbon.apimgt.api.model.Scope;
-import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.context.RegistryType;
+import org.wso2.carbon.governance.lcm.util.CommonUtil;
 import org.wso2.carbon.registry.api.Registry;
 import org.wso2.carbon.registry.api.RegistryException;
 import org.wso2.carbon.registry.api.Resource;
 import org.wso2.carbon.registry.core.RegistryConstants;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+import org.wso2.carbon.registry.core.service.RegistryService;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -103,10 +103,20 @@ public class APIExportUtil {
         APIProvider provider;
         try {
             provider = APIManagerFactory.getInstance().getAPIProvider(userName);
-
             if (log.isDebugEnabled()) {
                 log.debug("Current provider retrieved successfully");
             }
+
+            //If user is authorized, add default life cycle for the user and load its
+            // tenant registry.
+            int tenantId = APIUtil.getTenantId(userName);
+
+            CarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+            RegistryService registryService =
+                    (RegistryService) carbonContext.getOSGiService(RegistryService.class, null);
+
+            CommonUtil.addDefaultLifecyclesIfNotAvailable(registryService.getConfigSystemRegistry(tenantId),
+                                                          CommonUtil.getRootSystemRegistry(tenantId));
 
             return provider;
 
@@ -114,38 +124,35 @@ public class APIExportUtil {
             String errorMessage = "Error while retrieving provider";
             log.error( errorMessage, e);
             throw new APIExportException(errorMessage, e);
+        } catch (XMLStreamException e) {
+            String errorMessage = "Error while loading logged in user's tenant registry";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (FileNotFoundException e) {
+            String errorMessage = "Error while loading logged in user's tenant registry";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
+        } catch (org.wso2.carbon.registry.core.exceptions.RegistryException e) {
+            String errorMessage = "Error while loading logged in user's tenant registry";
+            log.error(errorMessage, e);
+            throw new APIExportException(errorMessage, e);
         }
-
     }
 
     /**
      * Retrieve registry for the current tenant
      *
-     * @param userName user name of the tenant
      * @return Registry registry of the current tenant
      */
-    public static Registry getRegistry(String userName) {
-        boolean isTenantFlowStarted = false;
-        String tenantDomain = MultitenantUtils.getTenantDomain(userName);
-        try {
-            if (tenantDomain != null && !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
-                isTenantFlowStarted = true;
-                PrivilegedCarbonContext.startTenantFlow();
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
-            }
-            Registry registry = CarbonContext.getThreadLocalCarbonContext().
-                    getRegistry(RegistryType.SYSTEM_GOVERNANCE);
+    public static Registry getRegistry() {
 
-            if (log.isDebugEnabled()) {
-                log.debug("Registry of logged in user retrieved successfully");
-            }
-            return registry;
+        Registry registry = CarbonContext.getThreadLocalCarbonContext().
+                getRegistry(RegistryType.SYSTEM_GOVERNANCE);
 
-        } finally {
-            if (isTenantFlowStarted) {
-                PrivilegedCarbonContext.endTenantFlow();
-            }
+        if (log.isDebugEnabled()) {
+            log.debug("Registry of logged in user retrieved successfully");
         }
+        return registry;
     }
 
     /**
@@ -165,7 +172,7 @@ public class APIExportUtil {
         //initializing provider
         APIProvider provider = getProvider(userName);
         //registry for the current user
-        Registry registry = APIExportUtil.getRegistry(userName);
+        Registry registry = APIExportUtil.getRegistry();
 
         int tenantId = APIUtil.getTenantId(userName);
 
@@ -177,9 +184,8 @@ public class APIExportUtil {
         } catch (APIManagementException e) {
             String errorMessage = "Unable to retrieve API";
             log.error(errorMessage, e);
-            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage)
-                    .type(MediaType.APPLICATION_JSON).
-                            build();
+            return Response.status(Response.Status.NOT_FOUND).entity(errorMessage).type(MediaType.APPLICATION_JSON).
+                    build();
         }
 
         //export thumbnail
@@ -207,7 +213,7 @@ public class APIExportUtil {
         }
 
         //export sequences
-        exportSequences(apiToReturn, apiID, tenantId, registry);
+        exportSequences(apiToReturn, apiID, registry);
 
         //set API status to created
         apiToReturn.setStatus(APIStatus.CREATED);
@@ -237,7 +243,7 @@ public class APIExportUtil {
         InputStream imageDataStream = null;
         OutputStream outputStream = null;
         String archivePath = archiveBasePath.concat(File.separator + apiIdentifier.getApiName() +
-                "-" + apiIdentifier.getVersion());
+                '-' + apiIdentifier.getVersion());
         try {
             if (registry.resourceExists(thumbnailUrl)) {
                 Resource icon = registry.get(thumbnailUrl);
@@ -325,22 +331,40 @@ public class APIExportUtil {
 
                     //check whether resource exists in the registry
                     Resource docFile = registry.get(filePath);
-                    String localFilePath = File.separator + "Docs" + File.separator + fileName;
+                    String localDirectoryPath = File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY +
+                                                File.separator + APIImportExportConstants.FILE_DOCUMENT_DIRECTORY;
+                    createDirectory(archivePath + File.separator + localDirectoryPath);
+                    String localFilePath = localDirectoryPath+ File.separator + fileName;
                     outputStream = new FileOutputStream(archivePath + localFilePath);
                     fileInputStream = docFile.getContentStream();
 
                     IOUtils.copy(fileInputStream, outputStream);
 
-                    doc.setFilePath(localFilePath);
+                    doc.setFilePath(fileName);
 
                     if (log.isDebugEnabled()) {
                         log.debug(fileName + " retrieved successfully");
                     }
+                } else if (Documentation.DocumentSourceType.INLINE.toString().equalsIgnoreCase
+                        (sourceType)) {
+                    createDirectory(archivePath + File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY
+                                    + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY);
+                    String contentPath = APIUtil.getAPIDocPath(apiIdentifier) + RegistryConstants.PATH_SEPARATOR
+                                         + APIImportExportConstants.INLINE_DOC_CONTENT_REGISTRY_DIRECTORY
+                                         + RegistryConstants.PATH_SEPARATOR + doc.getName();
+                    Resource docFile = registry.get(contentPath);
+                    String localFilePath = File.separator + APIImportExportConstants.DOCUMENT_DIRECTORY
+                                           + File.separator + APIImportExportConstants.INLINE_DOCUMENT_DIRECTORY
+                                           + File.separator + doc.getName();
+                    outputStream = new FileOutputStream(archivePath + localFilePath);
+                    fileInputStream = docFile.getContentStream();
+
+                    IOUtils.copy(fileInputStream, outputStream);
                 }
             }
 
             String json = gson.toJson(docList);
-            writeFile(archivePath + File.separator + "Docs" + File.separator + "docs.json", json);
+            writeFile(archivePath + APIImportExportConstants.DOCUMENT_FILE_LOCATION, json);
 
             if (log.isDebugEnabled()) {
                 log.debug("API Documentation retrieved successfully");
@@ -417,7 +441,7 @@ public class APIExportUtil {
      * @param registry      current tenant registry
      * @throws APIExportException If an error occurs while exporting sequences
      */
-    public static void exportSequences(API api, APIIdentifier apiIdentifier, int tenantId, Registry registry)
+    public static void exportSequences(API api, APIIdentifier apiIdentifier, Registry registry)
         throws APIExportException {
 
         Map<String, String> sequences = new HashMap<String, String>();
@@ -521,11 +545,12 @@ public class APIExportUtil {
             if (seqCollection != null) {
                 String[] childPaths = seqCollection.getChildren();
 
-                for (int i = 0; i < childPaths.length; i++) {
-                    Resource sequence = registry.get(childPaths[i]);
+                for (String childPath : childPaths) {
+                    Resource sequence = registry.get(childPath);
                     OMElement seqElment = APIUtil.buildOMElement(sequence.getContentStream());
                     if (sequenceName.equals(seqElment.getAttributeValue(new QName("name")))) {
-                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().lastIndexOf('/'));
+                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().
+                                lastIndexOf(RegistryConstants.PATH_SEPARATOR));
                         sequenceDetails = new AbstractMap.SimpleEntry<String, OMElement>(sequenceFileName, seqElment);
                         return sequenceDetails;
                     }
@@ -558,31 +583,24 @@ public class APIExportUtil {
     private static AbstractMap.SimpleEntry<String, OMElement> getAPISpecificSequence(APIIdentifier api,String sequenceName, String type, Registry registry) throws APIExportException {
         AbstractMap.SimpleEntry<String, OMElement> sequenceDetails;
 
-        org.wso2.carbon.registry.api.Collection seqCollection = null;
+        org.wso2.carbon.registry.api.Collection seqCollection;
 
-        String regPath="/apimgt/applicationdata/provider/"+api.getProviderName()+File.separator+api.getApiName()+File.separator+api.getVersion()+File.separator+type;
+        String regPath = APIConstants.API_ROOT_LOCATION + RegistryConstants.PATH_SEPARATOR + api
+                .getProviderName() + RegistryConstants.PATH_SEPARATOR + api.getApiName() +
+                         RegistryConstants.PATH_SEPARATOR + api.getVersion() + RegistryConstants.PATH_SEPARATOR + type;
 
         try {
-            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_IN.equals(type)) {
-                seqCollection = (org.wso2.carbon.registry.api.Collection)
-                        registry.get(regPath);
-            } else if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT.equals(type)) {
-                seqCollection = (org.wso2.carbon.registry.api.Collection)
-                        registry.get(regPath);
-            } else
-            if (APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT.equals(type)) {
-                seqCollection = (org.wso2.carbon.registry.api.Collection)
-                        registry.get(regPath);
-            }
+            seqCollection = (org.wso2.carbon.registry.api.Collection) registry.get(regPath);
 
             if (seqCollection != null) {
                 String[] childPaths = seqCollection.getChildren();
 
-                for (int i = 0; i < childPaths.length; i++) {
-                    Resource sequence = registry.get(childPaths[i]);
+                for (String childPath : childPaths) {
+                    Resource sequence = registry.get(childPath);
                     OMElement seqElment = APIUtil.buildOMElement(sequence.getContentStream());
                     if (sequenceName.equals(seqElment.getAttributeValue(new QName("name")))) {
-                        String sequenceFileName = sequence.getPath().substring(sequence.getPath().lastIndexOf('/'));
+                        String sequenceFileName = sequence.getPath().
+                                substring(sequence.getPath().lastIndexOf(RegistryConstants.PATH_SEPARATOR));
                         sequenceDetails = new AbstractMap.SimpleEntry<String, OMElement>(sequenceFileName, seqElment);
                         return sequenceDetails;
                     }
