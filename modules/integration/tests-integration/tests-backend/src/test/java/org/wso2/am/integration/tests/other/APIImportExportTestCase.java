@@ -267,7 +267,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(resList.size(), resourcesList.length(), "Imported API not in Created state");
         String method = null, authType = null, tier = null, urlPattern = null;
         APIResourceBean res;
-        for (int i = 0; i < resourcesList.length(); i++) {
+        for (int i = 0; i < resList.size(); i++) {
             res = resList.get(i);
             for (int j = 0; j < resourcesList.length(); j++) {
                 JSONObject verb = resourcesList.getJSONObject(j).getJSONObject("http_verbs");
@@ -616,8 +616,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                //TODO: enable for tenant when tenant issue is fixed
-                //                new Object[] { TestUserMode.TENANT_ADMIN },
+                new Object[] { TestUserMode.TENANT_ADMIN },
         };
     }
 
