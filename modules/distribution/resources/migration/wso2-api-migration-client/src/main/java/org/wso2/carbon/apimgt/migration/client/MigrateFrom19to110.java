@@ -57,6 +57,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
     private RegistryService registryService;
+    private boolean removeDecryptionFailedKeysFromDB;
 
     private static class AccessTokenInfo {
         AccessTokenInfo(String usernameWithoutDomain, String authzUser) {
@@ -67,10 +68,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         public String authzUser;
     }
 
-    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments,
-                              RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments, RegistryService registryService,
+            TenantManager tenantManager, boolean removeDecryptionFailedKeysFromDB) throws UserStoreException {
         super(tenantArguments, blackListTenantArguments, tenantManager);
         this.registryService = registryService;
+        this.removeDecryptionFailedKeysFromDB = removeDecryptionFailedKeysFromDB;
     }
 
     @Override
@@ -202,14 +204,18 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private boolean updateAMApplicationKeyMapping(Connection connection) throws SQLException {
         log.info("Updating consumer keys in AM_APPLICATION_KEY_MAPPING");
-        PreparedStatement preparedStatement = null;
+        PreparedStatement preparedStatementUpdate = null;
+        PreparedStatement preparedStatementDelete = null;
         Statement statement = null;
         ResultSet resultSet = null;
-        boolean isDecrypted = true;
+        boolean continueUpdatingDB = true;
+        long totalRecords = 0;
+        long decryptionFailedRecords = 0;
 
         try {
             String query = "SELECT APPLICATION_ID, CONSUMER_KEY, KEY_TYPE FROM AM_APPLICATION_KEY_MAPPING";
             ArrayList<AppKeyMappingTableDTO> appKeyMappingTableDTOs = new ArrayList<>();
+            ArrayList<AppKeyMappingTableDTO> appKeyMappingTableDTOsFailed = new ArrayList<>();
 
             statement = connection.createStatement();
             statement.setFetchSize(50);
@@ -219,40 +225,65 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
                 consumerKeyDTO.setEncryptedConsumerKey(resultSet.getString("CONSUMER_KEY"));
 
+                AppKeyMappingTableDTO appKeyMappingTableDTO = new AppKeyMappingTableDTO();
+                appKeyMappingTableDTO.setApplicationId(resultSet.getString("APPLICATION_ID"));
+                appKeyMappingTableDTO.setConsumerKey(consumerKeyDTO);
+                appKeyMappingTableDTO.setKeyType(resultSet.getString("KEY_TYPE"));
+                totalRecords ++;
                 if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
-                    AppKeyMappingTableDTO appKeyMappingTableDTO = new AppKeyMappingTableDTO();
-                    appKeyMappingTableDTO.setApplicationId(resultSet.getString("APPLICATION_ID"));
-                    appKeyMappingTableDTO.setConsumerKey(consumerKeyDTO);
-                    appKeyMappingTableDTO.setKeyType(resultSet.getString("KEY_TYPE"));
 
                     appKeyMappingTableDTOs.add(appKeyMappingTableDTO);
-                }
-                else {
+                    log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
+                            + " as : " + consumerKeyDTO.getDecryptedConsumerKey()
+                            + " in AM_APPLICATION_KEY_MAPPING table");
+                } else {
                     log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
                             " in AM_APPLICATION_KEY_MAPPING table");
-                    isDecrypted = false;
+                    decryptionFailedRecords++;
+                    appKeyMappingTableDTOsFailed.add(appKeyMappingTableDTO);
+
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
                 }
             }
 
-            if (isDecrypted) {
-                preparedStatement = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
+            if (continueUpdatingDB) {
+                preparedStatementUpdate = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
                         " WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
 
                 for (AppKeyMappingTableDTO appKeyMappingTableDTO : appKeyMappingTableDTOs) {
-                    preparedStatement.setString(1, appKeyMappingTableDTO.getConsumerKey().getDecryptedConsumerKey());
-                    preparedStatement.setString(2, appKeyMappingTableDTO.getApplicationId());
-                    preparedStatement.setString(3, appKeyMappingTableDTO.getKeyType());
-                    preparedStatement.addBatch();
+                    preparedStatementUpdate.setString(1, appKeyMappingTableDTO.getConsumerKey().getDecryptedConsumerKey());
+                    preparedStatementUpdate.setString(2, appKeyMappingTableDTO.getApplicationId());
+                    preparedStatementUpdate.setString(3, appKeyMappingTableDTO.getKeyType());
+                    preparedStatementUpdate.addBatch();
                 }
-                preparedStatement.executeBatch();
+                preparedStatementUpdate.executeBatch();
+
+                //deleting rows where consumer key decryption was unsuccessful
+                preparedStatementDelete = connection.prepareStatement("DELETE FROM AM_APPLICATION_KEY_MAPPING WHERE CONSUMER_KEY = ?");
+
+                for (AppKeyMappingTableDTO appKeyMappingTableDTO : appKeyMappingTableDTOsFailed) {
+                    preparedStatementDelete.setString(1, appKeyMappingTableDTO.getConsumerKey().getEncryptedConsumerKey());
+                    preparedStatementDelete.addBatch();
+                }
+                preparedStatementDelete.executeBatch();
+                log.info("AM_APPLICATION_KEY_MAPPING table updated with " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries deleted as they cannot be decrypted");
+            } else {
+                log.error("AM_APPLICATION_KEY_MAPPING table not updated as " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries cannot be decrypted");
             }
         } finally {
-            if (preparedStatement != null) preparedStatement.close();
+            if (preparedStatementUpdate != null) preparedStatementUpdate.close();
+            if (preparedStatementDelete != null) preparedStatementDelete.close();
             if (statement != null) statement.close();
             if (resultSet != null) resultSet.close();
         }
 
-        return isDecrypted;
+        return continueUpdatingDB;
     }
 
     private boolean updateAMAppKeyDomainMapping(Connection connection) throws SQLException {
@@ -261,7 +292,9 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         Statement deleteStatement = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        boolean isDecrypted = true;
+        boolean continueUpdatingDB = true;
+        long totalRecords = 0;
+        long decryptionFailedRecords = 0;
 
         try {
             ArrayList<KeyDomainMappingTableDTO> keyDomainMappingTableDTOs = new ArrayList<>();
@@ -270,11 +303,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             selectStatement = connection.createStatement();
             selectStatement.setFetchSize(50);
             resultSet = selectStatement.executeQuery(query);
-
             while (resultSet.next()) {
                 ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
                 consumerKeyDTO.setEncryptedConsumerKey(resultSet.getString("CONSUMER_KEY"));
-
+                totalRecords++;
                 if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
                     KeyDomainMappingTableDTO keyDomainMappingTableDTO = new KeyDomainMappingTableDTO();
                     keyDomainMappingTableDTO.setConsumerKey(consumerKeyDTO);
@@ -285,11 +317,16 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 else {
                     log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
                                             " in AM_APP_KEY_DOMAIN_MAPPING table");
-                    isDecrypted = false;
+                    decryptionFailedRecords++;
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
                 }
             }
 
-            if (isDecrypted) { // Modify table only if decryption is successful
+            if (continueUpdatingDB) { // Modify table only if decryption is successful
                 preparedStatement = connection.prepareStatement("INSERT INTO AM_APP_KEY_DOMAIN_MAPPING " +
                                                                         "(CONSUMER_KEY, AUTHZ_DOMAIN) VALUES (?, ?)");
 
@@ -303,6 +340,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 deleteStatement.execute("DELETE FROM AM_APP_KEY_DOMAIN_MAPPING");
 
                 preparedStatement.executeBatch();
+                log.info("AM_APP_KEY_DOMAIN_MAPPING table updated with " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries deleted as they cannot be decrypted");
+            } else {
+                log.error("AM_APP_KEY_DOMAIN_MAPPING table not updated as " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries" + " cannot be decrypted");
             }
         }
         finally {
@@ -312,7 +354,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             if (resultSet != null) resultSet.close();
         }
 
-        return isDecrypted;
+        return continueUpdatingDB;
     }
 
 
@@ -321,10 +363,12 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         Statement consumerAppsLookup = null;
         PreparedStatement consumerAppsDelete = null;
         PreparedStatement consumerAppsInsert = null;
+        PreparedStatement consumerAppsDeleteFailedRecords = null;
         PreparedStatement accessTokenUpdate = null;
+        PreparedStatement accessTokenDelete = null;
 
         ResultSet consumerAppsResultSet = null;
-        boolean isDecrypted = true;
+        boolean continueUpdatingDB = true;
 
         try {
             String consumerAppsQuery = "SELECT * FROM IDN_OAUTH_CONSUMER_APPS";
@@ -333,33 +377,40 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             consumerAppsResultSet = consumerAppsLookup.executeQuery(consumerAppsQuery);
 
             ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOs = new ArrayList<>();
+            ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOsFailed = new ArrayList<>();
 
 
             while (consumerAppsResultSet.next()) {
                 ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
                 consumerKeyDTO.setEncryptedConsumerKey(consumerAppsResultSet.getString("CONSUMER_KEY"));
 
+                ConsumerAppsTableDTO consumerAppsTableDTO = new ConsumerAppsTableDTO();
+                consumerAppsTableDTO.setConsumerKey(consumerKeyDTO);
+                consumerAppsTableDTO.setConsumerSecret(consumerAppsResultSet.getString("CONSUMER_SECRET"));
+                consumerAppsTableDTO.setUsername(consumerAppsResultSet.getString("USERNAME"));
+                consumerAppsTableDTO.setTenantID(consumerAppsResultSet.getInt("TENANT_ID"));
+                consumerAppsTableDTO.setAppName(consumerAppsResultSet.getString("APP_NAME"));
+                consumerAppsTableDTO.setOauthVersion(consumerAppsResultSet.getString("OAUTH_VERSION"));
+                consumerAppsTableDTO.setCallbackURL(consumerAppsResultSet.getString("CALLBACK_URL"));
+                consumerAppsTableDTO.setGrantTypes(consumerAppsResultSet.getString("GRANT_TYPES"));
                 if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
-                    ConsumerAppsTableDTO consumerAppsTableDTO = new ConsumerAppsTableDTO();
-                    consumerAppsTableDTO.setConsumerKey(consumerKeyDTO);
-                    consumerAppsTableDTO.setConsumerSecret(consumerAppsResultSet.getString("CONSUMER_SECRET"));
-                    consumerAppsTableDTO.setUsername(consumerAppsResultSet.getString("USERNAME"));
-                    consumerAppsTableDTO.setTenantID(consumerAppsResultSet.getInt("TENANT_ID"));
-                    consumerAppsTableDTO.setAppName(consumerAppsResultSet.getString("APP_NAME"));
-                    consumerAppsTableDTO.setOauthVersion(consumerAppsResultSet.getString("OAUTH_VERSION"));
-                    consumerAppsTableDTO.setCallbackURL(consumerAppsResultSet.getString("CALLBACK_URL"));
-                    consumerAppsTableDTO.setGrantTypes(consumerAppsResultSet.getString("GRANT_TYPES"));
-
                     consumerAppsTableDTOs.add(consumerAppsTableDTO);
+                    log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
+                            + " in IDN_OAUTH_CONSUMER_APPS table");
                 }
                 else {
+                    consumerAppsTableDTOsFailed.add(consumerAppsTableDTO);
                     log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
                                                                             " in IDN_OAUTH_CONSUMER_APPS table");
-                    isDecrypted = false;
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
                 }
             }
 
-            if (isDecrypted) {
+            if (continueUpdatingDB) {
                 // Add new entries for decrypted consumer keys into IDN_OAUTH_CONSUMER_APPS
                 consumerAppsInsert = connection.prepareStatement("INSERT INTO IDN_OAUTH_CONSUMER_APPS (CONSUMER_KEY, " +
                                                     "CONSUMER_SECRET, USERNAME, TENANT_ID, APP_NAME, OAUTH_VERSION, " +
@@ -392,16 +443,38 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 }
                 consumerAppsDelete.executeBatch();
                 log.info("Removed redundant entries in IDN_OAUTH_CONSUMER_APPS");
+
+                //deleting rows where consumer key decryption was unsuccessful from IDN_OAUTH_CONSUMER_APPS table
+                consumerAppsDeleteFailedRecords = connection.prepareStatement("DELETE FROM IDN_OAUTH_CONSUMER_APPS WHERE " +
+                        "CONSUMER_KEY = ?");
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOsFailed) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    deleteIdnConsumerApps(consumerAppsDeleteFailedRecords, consumerKeyDTO);
+                }
+                consumerAppsDeleteFailedRecords.executeBatch();
+                log.info("Removed decryption failed entries in IDN_OAUTH_CONSUMER_APPS");
+
+                //deleting rows where consumer key decryption was unsuccessful from IDN_OAUTH2_ACCESS_TOKEN table
+                accessTokenDelete = connection.prepareStatement("DELETE FROM IDN_OAUTH2_ACCESS_TOKEN " +
+                        "WHERE CONSUMER_KEY = ?");
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOsFailed) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    deleteIdnAccessToken(consumerAppsDeleteFailedRecords, consumerKeyDTO);
+                }
+                accessTokenDelete.executeBatch();
+                log.info("Removed decryption failed entries in IDN_OAUTH2_ACCESS_TOKEN");
             }
         } finally {
             if (consumerAppsLookup != null) consumerAppsLookup.close();
             if (consumerAppsDelete != null) consumerAppsDelete.close();
+            if (consumerAppsDeleteFailedRecords != null) consumerAppsDeleteFailedRecords.close();
             if (consumerAppsInsert != null) consumerAppsInsert.close();
             if (accessTokenUpdate != null) accessTokenUpdate.close();
+            if (accessTokenDelete != null) accessTokenDelete.close();
             if (consumerAppsResultSet != null) consumerAppsResultSet.close();
         }
 
-        return isDecrypted;
+        return continueUpdatingDB;
     }
 
 
@@ -420,14 +493,20 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
 
     private void updateIdnAccessToken(PreparedStatement accessTokenUpdate, ConsumerKeyDTO consumerKeyDTO)
-                                                                                                throws SQLException {
+    throws SQLException {
         accessTokenUpdate.setString(1, consumerKeyDTO.getDecryptedConsumerKey());
         accessTokenUpdate.setString(2, consumerKeyDTO.getEncryptedConsumerKey());
         accessTokenUpdate.addBatch();
     }
 
+    private void deleteIdnAccessToken(PreparedStatement accessTokenDelete, ConsumerKeyDTO consumerKeyDTO)
+            throws SQLException {
+        accessTokenDelete.setString(1, consumerKeyDTO.getEncryptedConsumerKey());
+        accessTokenDelete.addBatch();
+    }
+
     private void deleteIdnConsumerApps(PreparedStatement consumerAppsDelete, ConsumerKeyDTO consumerKeyDTO)
-                                                                                                throws SQLException{
+    throws SQLException{
         consumerAppsDelete.setString(1, consumerKeyDTO.getEncryptedConsumerKey());
         consumerAppsDelete.addBatch();
     }

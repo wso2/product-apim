@@ -35,7 +35,7 @@ public class MigrationClientFactoryTest {
         TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
         Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
 
-        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager);
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
 
         MigrationClient[] compatible18Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_8);
 
@@ -52,7 +52,7 @@ public class MigrationClientFactoryTest {
         TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
         Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
 
-        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager);
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
 
         MigrationClient[] compatible19Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_9);
 
@@ -68,7 +68,7 @@ public class MigrationClientFactoryTest {
         TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
         Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
 
-        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager);
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
 
         MigrationClient[] compatible19Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_9_1);
 
@@ -84,7 +84,7 @@ public class MigrationClientFactoryTest {
         TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
         Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
 
-        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager);
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
 
         MigrationClient[] compatibleClients = MigrationClientFactory.getAllClients("1.0");
 
@@ -99,7 +99,7 @@ public class MigrationClientFactoryTest {
         TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
         Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
 
-        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager);
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
 
         MigrationClient migrateTo18Client = MigrationClientFactory.getClient(Constants.VERSION_1_8);
         Assert.assertEquals(migrateTo18Client, null);
