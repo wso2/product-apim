@@ -889,7 +889,7 @@
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.9</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.0.11</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -905,7 +905,7 @@
         <carbon.governance.version>4.6.2-SNAPSHOT</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.4</carbon.kernel.version>
+        <carbon.kernel.version>4.4.5</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
@@ -943,7 +943,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <carbon.platform.version>4.4.4</carbon.platform.version>
+        <carbon.platform.version>4.4.5</carbon.platform.version>
         <synapse.version>2.1.7-wso2v3-SNAPSHOT</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v17</axis2.wso2.version>
