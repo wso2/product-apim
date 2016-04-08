@@ -297,7 +297,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         if ((userManagementClient1 != null) &&
             !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient1.addUser(subscriberUserWithoutDomain, password, new String[] {"Internal/subscriber" },
+            userManagementClient1.addUser(subscriberUser, password, new String[] {"Internal/subscriber" },
                                           null);
         }
 
