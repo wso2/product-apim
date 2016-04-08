@@ -405,8 +405,4 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     public URLSafeJWTTestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> master
