@@ -95,7 +95,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         resList = new ArrayList<APIResourceBean>();
         APIResourceBean addResource = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/add");
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/add");
 
         //implement API 1
         apiCreationRequestBean = new APICreationRequestBean(API_NAME_1, API_CONTEXT_1, API_VERSION, user.getUserName(),
