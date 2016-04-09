@@ -95,9 +95,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
             hostPort = 9989;
         }
 
-        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                         user.getUserName(), user.getPassword());
-
         URL url = new URL(gatewayUrlsWrk.getWebAppURLHttp());
         wireMonitorURL = "http://" + url.getHost() + ":" + hostPort;
 
@@ -294,6 +291,9 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         String password = "password@123";
         String accessToken;
 
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                                                         user.getUserName(), user.getPassword());
+
         if ((userManagementClient1 != null) &&
             !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
             userManagementClient1.addUser(subscriberUser, password, new String[] {"Internal/subscriber" },
@@ -320,6 +320,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
+        log.info("Logging to APIStoreRestClient: " + subscriberUser + ":" + password);
         apiStoreRestClient.login(subscriberUser, password);
 
         apiStoreRestClient
