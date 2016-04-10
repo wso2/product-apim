@@ -18,6 +18,7 @@
 
 package org.wso2.am.integration.tests.jwt;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -32,14 +33,17 @@ import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -54,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,6 +78,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String ROLE_SUBSCRIBER = "subscriber";
+
+    private final String PROTOTYPE_API_NAME = "JWTPrototypeAPIName";
+    private final String PROTOTYPE_API_VERSION = "1.0.0";
+    private final String PROTOTYPE_API_CONTEXT = "JWTPrototypeContext";
 
     private String apiName = "JWTTokenTestAPI";
     private String apiContext = "tokenTest";
@@ -390,7 +399,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
-                PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(wireMonitorURL));
+            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(wireMonitorURL));
         apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //define resources
@@ -415,7 +424,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
         Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_ACCEPTED,
-                "Response code is not as expected");
+                            "Response code is not as expected");
     }
 
     @AfterClass(alwaysRun = true)
