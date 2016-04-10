@@ -380,6 +380,44 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.removeApplication(applicationName);
     }
 
+    @Test(groups = { "wso2.am" }, description = "Invoking Prototype api with JWT enabled")
+    public void testPrototypeInvocationWithJWTEnabled() throws Exception {
+        server.setFinished(false);
+        server.setReadTimeOut(300);
+        server.start();
+
+        APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
+
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
+                PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(wireMonitorURL));
+        apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
+
+        //define resources
+        ArrayList<APIResourceBean> resList = new ArrayList<APIResourceBean>();
+        APIResourceBean res2 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/*");
+        resList.add(res2);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(PROTOTYPE_API_NAME, user.getUserName(),
+                APILifeCycleState.PROTOTYPED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        String invokeURL = getAPIInvocationURLHttp(PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION);
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
+        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_ACCEPTED,
+                "Response code is not as expected");
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
