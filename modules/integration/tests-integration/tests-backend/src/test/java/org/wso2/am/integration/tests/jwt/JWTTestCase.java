@@ -395,10 +395,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         //define resources
         ArrayList<APIResourceBean> resList = new ArrayList<APIResourceBean>();
-        APIResourceBean res2 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+        APIResourceBean res = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
-                APIMIntegrationConstants.RESOURCE_TIER.BASIC, "/*");
-        resList.add(res2);
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
+        resList.add(res);
         apiCreationRequestBean.setResourceBeanList(resList);
 
         //add test api
