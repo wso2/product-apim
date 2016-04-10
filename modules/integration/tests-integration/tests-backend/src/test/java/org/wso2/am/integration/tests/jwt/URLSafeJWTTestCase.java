@@ -32,7 +32,11 @@ import org.wso2.am.admin.clients.user.RemoteUserStoreManagerServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
@@ -56,7 +60,7 @@ import java.util.Map;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) 
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient1;
@@ -67,6 +71,9 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     private WireMonitorServer server;
     private int hostPort = 9988;
 
+    private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
+    private final String ROLE_SUBSCRIBER = "subscriber";
+
     private String apiName = "URLSafeJWTTokenTestAPI";
     private String apiContext = "urlSafeTokenTest";
     private String tags = "token, jwt";
@@ -76,10 +83,15 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     private String apiVersion = "1.0.0";
     private String applicationName = "URLSafeJWTTest-application";
 
+    String subscriberUser = "subscriberUser";
+    String subscriberUserWithTenantDomain;
+    String password = "password@123";
+
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
 
+        subscriberUserWithTenantDomain = subscriberUser + "@" + user.getUserDomain();
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
 
@@ -87,12 +99,13 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator
-                    + "urlSafeTokenTest" + File.separator + "api-manager.xml"));
+                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator
+                + "urlSafeTokenTest" + File.separator + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
-                    + "configFiles" + File.separator + "tokenTest" + File.separator + "urlSafeTokenTest"
-                    + File.separator + "log4j.properties"));
+                + "configFiles" + File.separator + "tokenTest" + File.separator + "urlSafeTokenTest"
+                + File.separator + "log4j.properties"));
             hostPort = 9989;
+            subscriberUserWithTenantDomain = subscriberUser;
         }
 
         URL url = new URL(gatewayUrlsWrk.getWebAppURLHttp());
@@ -139,10 +152,9 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
-
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = getAPIInvocationURLHttp("urlSafeTokenTest", "1.0.0");
+        String url = getAPIInvocationURLHttp(apiContext, apiVersion);
 
         APIMTestCaseUtils.sendGetRequest(url, accessToken);
         String serverMessage = server.getCapturedMessage();
@@ -195,7 +207,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
-            InterruptedException {
+                   InterruptedException {
 
         String applicationName = "JWTTokenCacheTestApp";
         String apiName = "JWTTokenCacheTestAPI";
@@ -211,12 +223,12 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+                                 storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient
                 .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                storeContext.getContextTenant().getContextUser().getUserName());
+                                                                          storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -240,8 +252,8 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         //Second attempt to invoke the API.
         httpResponse = HttpRequestUtil.doGet(url, headers);
         assertEquals("GET request failed for " + url +
-                        ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
-                httpResponse.getResponseCode());
+                     ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
+                     httpResponse.getResponseCode());
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject) throws JSONException {
@@ -253,18 +265,18 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("URLSafeJWTTest-application"));
+                   claim.contains(applicationName));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim,
-                claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
+                   claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim,
-                claim.contains("/urlSafeTokenTest" + "/" + jsonObject.getString("http://wso2.org/claims/version")));
+                   claim.contains("/" + apiContext + "/" + jsonObject.getString("http://wso2.org/claims/version")));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
-        assertTrue("JWT claim version invalid. Received " + claim, claim.contains("1.0.0"));
+        assertTrue("JWT claim version invalid. Received " + claim, claim.contains(apiVersion));
 
         claim = jsonObject.getString("http://wso2.org/claims/tier");
         assertTrue("JWT claim tier invalid. Received " + claim, claim.contains("Gold"));
@@ -277,7 +289,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/role");
         assertTrue("JWT claim role invalid. Received " + claim,
-                claim.contains("admin") && claim.contains("Internal/everyone"));
+                   claim.contains("admin") && claim.contains("Internal/everyone"));
     }
 
     @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
@@ -287,16 +299,22 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         server.setFinished(false);
         server.start();
 
-        String subscriberUser = "subscriberUser@" + user.getUserDomain();
-        String password = "password@123";
         String accessToken;
 
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                                          user.getUserName(), user.getPassword());
 
+        if (userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
+            userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+        }
+
+        userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
+                                              new String[]{"/permission/admin/login",
+                                                           "/permission/admin/manage/api/subscribe"});
+
         if ((userManagementClient1 != null) &&
-            !userManagementClient1.userNameExists("Internal/subscriber", subscriberUser)) {
-            userManagementClient1.addUser(subscriberUser, password, new String[] {"Internal/subscriber" },
+            !userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, subscriberUser)) {
+            userManagementClient1.addUser(subscriberUser, password, new String[] {INTERNAL_ROLE_SUBSCRIBER},
                                           null);
         }
 
@@ -306,10 +324,10 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         String profile = "default";
 
         remoteUserStoreManagerServiceClient
-                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/givenname", "subscriberUser name", profile);
+                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/givenname", "subscriber given name", profile);
 
         remoteUserStoreManagerServiceClient
-                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/lastname", "subscriberUser name", profile);
+                .setUserClaimValue(subscriberUser, "http://wso2.org/claims/lastname", "subscriber last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
         ServerConfigurationManager serverConfigManagerForTenant =
@@ -320,8 +338,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
-        log.info("Logging to APIStoreRestClient: " + subscriberUser + ":" + password);
-        apiStoreRestClient.login(subscriberUser, password);
+        apiStoreRestClient.login(subscriberUserWithTenantDomain, password);
 
         apiStoreRestClient
                 .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
@@ -342,7 +359,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         log.info("Captured message : " + serverMessage);
 
         Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"),
-                "JWT assertion not in the header : " + serverMessage);
+                          "JWT assertion not in the header : " + serverMessage);
 
         String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
 
@@ -359,7 +376,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                claim.contains("URLSafeJWTTest-application"));
+                   claim.contains("URLSafeJWTTest-application"));
 
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
@@ -368,6 +385,10 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
+        if(userManagementClient1 != null) {
+            userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+            userManagementClient1.deleteUser(subscriberUser);
+        }
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();
         }
