@@ -49,7 +49,7 @@
                 <version>2.2</version>
                 <configuration>
                     <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
-                    <warName>${project.artifactId}</warName>
+                    <warName>${project.artifactId}-${version}</warName>
                 </configuration>
             </plugin>
             <plugin>
