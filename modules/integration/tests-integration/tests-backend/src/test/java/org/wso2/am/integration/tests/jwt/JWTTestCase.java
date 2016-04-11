@@ -18,9 +18,13 @@
 
 package org.wso2.am.integration.tests.jwt;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -44,15 +48,14 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
-import org.wso2.am.integration.test.utils.monitor.utils.WireMonitorServer;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +67,6 @@ import java.util.Map;
 
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
-
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class JWTTestCase extends APIMIntegrationBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
@@ -73,11 +75,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
     private String publisherURLHttp;
     private String storeURLHttp;
-    private WireMonitorServer server;
-    private int hostPort = 9988;
 
     private final String INTERNAL_ROLE_SUBSCRIBER = "Internal/subscriber";
     private final String ROLE_SUBSCRIBER = "subscriber";
+    private final String JWT_ASSERTION_HEADER = "X-JWT-Assertion";
 
     private final String PROTOTYPE_API_NAME = "JWTPrototypeAPIName";
     private final String PROTOTYPE_API_VERSION = "1.0.0";
@@ -86,11 +87,11 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     private String apiName = "JWTTokenTestAPI";
     private String apiContext = "tokenTest";
     private String tags = "token, jwt";
-    private String wireMonitorURL;
     private String description = "This is test API created by API manager integration test";
     private String providerName;
     private String apiVersion = "1.0.0";
     private String applicationName = "JWTTest-application";
+    private String backendURL;
 
     String subscriberUser = "subscriberUser";
     String subscriberUserWithTenantDomain;
@@ -111,17 +112,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                 + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                 + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
-            hostPort = 9989;
             subscriberUserWithTenantDomain = subscriberUser;
+            //Load the back-end API
+            String gatewaySessionCookie = createSession(gatewayContextMgt);
+            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                + "synapseconfigs" + File.separator + "rest" + File.separator + "jwt_backend.xml",
+                gatewayContextMgt, gatewaySessionCookie);
         }
 
-        URL url = new URL(gatewayUrlsWrk.getWebAppURLHttp());
-        wireMonitorURL = "http://" + url.getHost() + ":" + hostPort;
-
-        server = new WireMonitorServer(hostPort);
-        server.setReadTimeOut(30000);
-        server.start();
-
+        backendURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
         providerName = user.getUserName();
     }
 
@@ -145,7 +144,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         serverConfigManagerForTenant.restartGracefully();
         super.init(userMode);
 
-        addAPI(apiName, apiVersion, apiContext, description, wireMonitorURL, tags, providerName);
+        addAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
@@ -158,28 +157,34 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        String accessToken = new JSONObject(responseString).getJSONObject("data").getJSONObject("key")
+                .get("accessToken").toString();
 
-        String url = getAPIInvocationURLHttp(apiContext, apiVersion);
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("Authorization", "Bearer " + accessToken);
 
-        APIMTestCaseUtils.sendGetRequest(url, accessToken);
-        String serverMessage = server.getCapturedMessage();
+        HttpResponse response = httpclient.execute(get);
 
-        log.info("Captured message: " + serverMessage);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                            "Response code mismatched when api invocation");
+
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
+
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
 
         //check the jwt header
-        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(serverMessage);
+        String decodedJWTHeaderString = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
 
         if (decodedJWTHeaderString != null) {
             log.debug("Decoded JWT header String = " + decodedJWTHeaderString);
             JSONObject jsonHeaderObject = new JSONObject(decodedJWTHeaderString);
             Assert.assertEquals(jsonHeaderObject.getString("typ"), "JWT");
             Assert.assertEquals(jsonHeaderObject.getString("alg"), "RS256");
-
         }
 
-        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(serverMessage);
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -249,7 +254,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
         //Invoke the API
-        HttpResponse httpResponse = HttpRequestUtil.doGet(url, headers);
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse httpResponse = HttpRequestUtil.doGet(url, headers);
         assertEquals("GET request failed for " + url, 200, httpResponse.getResponseCode());
 
         //Wait till cache is invalidated
@@ -303,9 +308,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
             dependsOnMethods = "testEnableJWTAndClaims")
     public void testSpecificUserJWTClaims() throws Exception {
 
-        server.setFinished(false);
-        server.start();
-
         String accessToken;
 
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
@@ -355,20 +357,24 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
         String responseString = apiStoreRestClient.generateApplicationKey(generateAppKeyRequest).getData();
-        JSONObject response = new JSONObject(responseString);
-        accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
+        accessToken = new JSONObject(responseString).getJSONObject("data").getJSONObject("key")
+                .get("accessToken").toString();
 
-        String url = getAPIInvocationURLHttp("urlSafeTokenTest", "1.0.0");
+        HttpClient httpclient = HttpClientBuilder.create().build();
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(apiContext, apiVersion));
+        get.addHeader("Authorization", "Bearer " + accessToken);
 
-        APIMTestCaseUtils.sendGetRequest(url, accessToken);
-        String serverMessage = server.getCapturedMessage();
+        HttpResponse response = httpclient.execute(get);
 
-        log.info("Captured message : " + serverMessage);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
+                            "Response code mismatched when api invocation");
 
-        Assert.assertTrue(serverMessage.contains("X-JWT-Assertion"),
-                          "JWT assertion not in the header : " + serverMessage);
+        Header[] responseHeaders = response.getAllHeaders();
+        Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
 
-        String decodedJWTString = APIMTestCaseUtils.getDecodedURLSafeJWT(serverMessage);
+        Assert.assertNotNull(jwtheader, JWT_ASSERTION_HEADER + " is not available in the backend request.");
+
+        String decodedJWTString = APIMTestCaseUtils.getDecodedJWT(jwtheader.getValue());
 
         log.debug("Decoded JWTString = " + decodedJWTString);
 
@@ -382,24 +388,21 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("subscriberUser"));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
-        assertTrue("JWT claim applicationname invalid. Received " + claim,
-                   claim.contains("URLSafeJWTTest-application"));
+        assertTrue("JWT claim applicationname invalid. Received " + claim, claim.contains(applicationName));
 
         apiStoreRestClient.removeAPISubscriptionByApplicationName(apiName, apiVersion, providerName, applicationName);
         apiStoreRestClient.removeApplication(applicationName);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Invoking Prototype api with JWT enabled")
+    @Test(groups = { "wso2.am" }, description = "Invoking Prototype api with JWT enabled",
+            dependsOnMethods = "testSpecificUserJWTClaims")
     public void testPrototypeInvocationWithJWTEnabled() throws Exception {
-        server.setFinished(false);
-        server.setReadTimeOut(300);
-        server.start();
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
 
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
-            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(wireMonitorURL));
+            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(backendURL));
         apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //define resources
@@ -411,7 +414,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiCreationRequestBean.setResourceBeanList(resList);
 
         //add test api
-        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse serviceResponse
+                = apiPublisher.addAPI(apiCreationRequestBean);
         verifyResponse(serviceResponse);
 
         //publish the api
@@ -423,7 +427,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String invokeURL = getAPIInvocationURLHttp(PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION);
         Map<String, String> requestHeaders = new HashMap<String, String>();
         serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
-        Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_ACCEPTED,
+        Assert.assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                             "Response code is not as expected");
     }
 
