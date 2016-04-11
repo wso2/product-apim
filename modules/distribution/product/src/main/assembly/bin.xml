@@ -491,6 +491,17 @@
             </includes>
         </fileSet>
 
+        <!-- Copy sample pizzashack api webapp-->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>am#sample#pizzashack#v1.war</include>
+            </includes>
+        </fileSet>
+
 
         <!--Multitenancy related file -->
         <fileSet>
