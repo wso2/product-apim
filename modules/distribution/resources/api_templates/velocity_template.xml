@@ -266,7 +266,10 @@
         #end
         methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-
+## check and set jwt
+#if($jwtIsEnabled && ($apiStatus != 'PROTOTYPED'))
+<class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
+#end
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.caching.digest.REQUESTHASHGenerator" timeout="$!responseCacheTimeOut">

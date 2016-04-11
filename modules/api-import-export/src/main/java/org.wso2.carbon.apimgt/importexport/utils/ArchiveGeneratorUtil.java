@@ -22,7 +22,6 @@ import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.importexport.APIImportExportConstants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -129,8 +128,6 @@ public class ArchiveGeneratorUtil {
             // Get relative path from archive directory to the specific file
             String zipFilePath = file.getCanonicalPath()
                     .substring(directoryToZip.getCanonicalPath().length() + 1, file.getCanonicalPath().length());
-            if (File.separatorChar != APIImportExportConstants.ZIP_FILE_SEPARATOR)
-                zipFilePath = zipFilePath.replace(File.separatorChar, APIImportExportConstants.ZIP_FILE_SEPARATOR);
             ZipEntry zipEntry = new ZipEntry(zipFilePath);
             zipOutputStream.putNextEntry(zipEntry);
 

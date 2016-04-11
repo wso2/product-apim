@@ -11,7 +11,7 @@
         <log/>
         <drop/>
     </sequence>
-    <api name="admin-AT-wso2.com--stockquote" context="/t/wso2.com/stockquote">
+    <api name="stockquote" context="/t/wso2.com/stockquote">
         <resource methods="GET POST" uri-template="/test">
             <inSequence>
                 <header name="To" action="remove"/>

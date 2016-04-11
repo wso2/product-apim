@@ -69,9 +69,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final String MESSAGE_THROTTLED_OUT =
             "<amt:code>900800</amt:code><amt:message>Message throttled out</amt:message><amt:description>" +
                     "You have exceeded your quota</amt:description>";
-    protected static final String MESSAGE_THROTTLED_OUT_RESOURCE =
-            "<amt:code>900802</amt:code><amt:message>Message throttled out</amt:message><amt:description>" +
-                    "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
 
