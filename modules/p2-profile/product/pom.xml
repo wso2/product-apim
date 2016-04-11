@@ -1053,7 +1053,7 @@
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
-				                <feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -2138,7 +2138,7 @@
                                     <id>org.wso2.carbon.apimgt.hostobjects.oidc.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                               
+
                                 <feature>
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
@@ -2571,7 +2571,7 @@
                                     <id>org.wso2.carbon.metrics.feature.group</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
-				                <feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
