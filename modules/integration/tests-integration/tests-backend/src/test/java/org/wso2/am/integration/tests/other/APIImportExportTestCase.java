@@ -267,8 +267,9 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(resList.size(), resourcesList.length(), "Imported API not in Created state");
         String method = null, authType = null, tier = null, urlPattern = null;
         APIResourceBean res;
-        for (int i = 0; i < resourcesList.length(); i++) {
+        for (int i = 0; i < resList.size(); i++) {
             res = resList.get(i);
+
             for (int j = 0; j < resourcesList.length(); j++) {
                 JSONObject verb = resourcesList.getJSONObject(j).getJSONObject("http_verbs");
                 Iterator it = verb.keys();

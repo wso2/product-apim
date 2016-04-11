@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Analytics>
+    <Name>APIM_GEO_LOCATION_STATS</Name>
+<Script>
+    CREATE TEMPORARY TABLE APIGeoLocationData USING CarbonJDBC OPTIONS (dataSource "WSO2AM_STATS_DB", tableName "API_REQUEST_GEO_LOCATION_SUMMARY");
+    create temporary table APIRequestData USING CarbonAnalytics OPTIONS(tableName "ORG_WSO2_APIMGT_STATISTICS_REQUEST");
+    CREATE TEMPORARY TABLE API_REQUEST_GEOIP_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_GEOIP_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    tenantDomain string -i,
+    total_request_count int -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    requestTime long -i,
+    clientIp string -i",
+    primaryKeys "api,version,apiPublisher,year,month,day,clientIp,tenantDomain"
+    );
+    insert into table API_REQUEST_GEOIP_SUMMARY_FINAL select api,version, apiPublisher,tenantDomain,
+    sum(request) as total_request_count,
+    substring(cast(first(requestTime)/1000 as timestamp),0,4),
+    substring(cast(first(requestTime)/1000 as timestamp),6,2),
+    substring(cast(first(requestTime)/1000 as timestamp),9,2),
+    first(requestTime),
+    clientIp
+    from APIRequestData group by api,version,apiPublisher,clientIp,tenantDomain,
+    substring(cast(requestTime/1000 as timestamp),0,4),
+    substring(cast(requestTime/1000 as timestamp),6,2),
+    substring(cast(requestTime/1000 as timestamp),9,2);
+
+    CREATE TEMPORARY TABLE API_REQUEST_GEO_LOCATION_SUMMARY_FINAL USING CarbonAnalytics OPTIONS (tableName "API_REQUEST_GEO_LOCATION_SUMMARY",
+    schema "api string -i,
+    version string -i,
+    apiPublisher string -i,
+    tenantDomain string -i,
+    total_request_count int -i,
+    year int -i,
+    month int -i,
+    day int -i,
+    requestTime long -i,
+    country string -i,
+    city string -i,
+    key_country_city_facet facet -i",
+    primaryKeys "api,version,apiPublisher,year,month,day,country,city,tenantDomain"
+    );
+    insert INTO table API_REQUEST_GEO_LOCATION_SUMMARY_FINAL select apidata.api,apidata.version, apidata.apiPublisher,apidata.tenantDomain,
+    sum(apidata.total_request_count) as total_request_count,apidata.year,apidata.month,apidata.day,first(requestTime),getCountry(apidata.clientIp) as country,
+    getCity(apidata.clientIp) as city,facet2(getCountry(apidata.clientIp),getCity(apidata.clientIp))
+    from API_REQUEST_GEOIP_SUMMARY_FINAL as apidata group by apidata.api,apidata.version,apidata.apiPublisher,apidata.year,apidata.month,apidata.day,apidata.clientIp,getCountry(apidata.clientIp),getCity(apidata.clientIp),apidata.tenantDomain;
+    INSERT OVERWRITE TABLE APIGeoLocationData SELECT api,version,apiPublisher,tenantDomain,total_request_count,year,month,day,requestTime,country,city FROM API_REQUEST_GEO_LOCATION_SUMMARY_FINAL;
+</Script>
+    <CronExpression>0 0/5 * 1/1 * ? *</CronExpression>
+</Analytics>
