@@ -154,7 +154,7 @@ public class HTTPSClientUtils {
      * @return String of the response body
      * @throws IOException throws if any error occurred
      */
-    private static String getResponseBody(HttpResponse response) throws IOException {
+    public static String getResponseBody(HttpResponse response) throws IOException {
         BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         String line;
         StringBuffer sb = new StringBuffer();
