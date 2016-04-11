@@ -93,7 +93,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     private String applicationName = "JWTTest-application";
     private String backendURL;
 
-    String subscriberUser = "subscriberUser";
+    String subscriberUser = "subscriberUser2";
     String subscriberUserWithTenantDomain;
     String password = "password@123";
 
@@ -313,16 +313,13 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                                          user.getUserName(), user.getPassword());
 
-        if (userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
-            userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+        if (!userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
+            userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
+                                                  new String[]{"/permission/admin/login",
+                                                               "/permission/admin/manage/api/subscribe"});
         }
 
-        userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
-                                              new String[]{"/permission/admin/login",
-                                                           "/permission/admin/manage/api/subscribe"});
-
-        if ((userManagementClient1 != null) &&
-            !userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, subscriberUser)) {
+        if (!userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, subscriberUser)) {
             userManagementClient1.addUser(subscriberUser, password, new String[] {INTERNAL_ROLE_SUBSCRIBER},
                                           null);
         }
@@ -385,7 +382,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
-        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("subscriberUser"));
+        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains(subscriberUser));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim, claim.contains(applicationName));

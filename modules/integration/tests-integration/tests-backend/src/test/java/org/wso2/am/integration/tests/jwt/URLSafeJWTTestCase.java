@@ -88,7 +88,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     private String applicationName = "URLSafeJWTTest-application";
     private String backendURL;
 
-    String subscriberUser = "subscriberUser";
+    String subscriberUser = "subscriberUser1";
     String subscriberUserWithTenantDomain;
     String password = "password@123";
 
@@ -162,8 +162,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         get.addHeader("Authorization", "Bearer " + accessToken);
 
         HttpResponse response = httpclient.execute(get);
-
-        log.info(HTTPSClientUtils.getResponseBody(response));
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                             "Response code mismatched when api invocation");
@@ -312,13 +310,11 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
                                                          user.getUserName(), user.getPassword());
 
-        if (userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
-            userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
+        if (!userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
+            userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
+                                                  new String[]{"/permission/admin/login",
+                                                               "/permission/admin/manage/api/subscribe"});
         }
-
-        userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
-                                              new String[]{"/permission/admin/login",
-                                                           "/permission/admin/manage/api/subscribe"});
 
         if ((userManagementClient1 != null) &&
             !userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, subscriberUser)) {
@@ -365,9 +361,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = httpclient.execute(get);
 
-        log.info("dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 2222");
-        log.info(HTTPSClientUtils.getResponseBody(response));
-
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                             "Response code mismatched when api invocation");
 
@@ -387,7 +380,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
-        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains("subscriberUser"));
+        assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains(subscriberUser));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim, claim.contains(applicationName));
