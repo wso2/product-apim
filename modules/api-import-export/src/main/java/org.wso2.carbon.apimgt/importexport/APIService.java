@@ -232,7 +232,7 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
-            return Response.serverError().entity(e.getMessage()).build();
+            return Response.serverError().entity(e.getErrorDescription()).build();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
