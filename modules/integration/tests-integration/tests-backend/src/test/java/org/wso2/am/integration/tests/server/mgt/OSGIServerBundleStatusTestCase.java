@@ -27,9 +27,18 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.extensions.servers.carbonserver.MultipleServersManager;
+import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
+import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -50,8 +59,8 @@ public class OSGIServerBundleStatusTestCase {
     private ArrayList<String> arrList = new ArrayList<String>();
     private ArrayList<String> unsatisfiedList = new ArrayList<String>();
     private HashMap<String, String> serverPropertyMap = new HashMap<String, String>();
-    private MultipleServersManager manager = new MultipleServersManager();
     private PrintStream out;
+    TestServerManager testServerManager;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -62,13 +71,32 @@ public class OSGIServerBundleStatusTestCase {
         AutomationContext autoCtx = new AutomationContext();
         CarbonTestServerManager server =
                 new CarbonTestServerManager(autoCtx, System.getProperty("carbon.zip"), serverPropertyMap);
-        manager.startServers(server);
+
+        testServerManager = new TestServerManager(autoCtx, null, serverPropertyMap) {
+
+            public void configureServer() throws AutomationFrameworkException {
+
+                try {
+                    File sourceFile = new File(TestConfigurationProvider.getResourceLocation() + File.separator
+                                               + "artifacts" + File.separator + "AM" + File.separator
+                                               + "configFiles" + File.separator + "osgi" + File.separator
+                                               + "api-manager.xml");
+                    //copying api-manager.xml file to conf folder
+                    FileManager.copyFile(sourceFile, this.getCarbonHome() + File.separator + "repository"
+                                                     + File.separator + "conf" + File.separator + "api-manager.xml");
+                } catch (IOException e) {
+                    throw new AutomationFrameworkException(e.getMessage(), e);
+                }
+            }
+        };
+
+        testServerManager.startServer();
     }
 
     @AfterClass(alwaysRun = true)
     public void stopServers() throws Exception {
         disconnect();  // telnet disconnection
-        manager.stopAllServers();
+        testServerManager.stopServer();
     }
 
     @Test(groups = "wso2.all", description = "Identifying and storing unsatisfied OSGI components")

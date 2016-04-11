@@ -54,7 +54,7 @@
 
         <!-- This parameter specifies which implementation should be used for generating the Token. For URL safe JWT
              Token generation the implementation is provided in URLSafeJWTGenerator -->
-        <!--<JWTGeneratorImpl>org.wso2.carbon.apimgt.impl.token.URLSafeJWTGenerator</JWTGeneratorImpl>-->
+        <!--<TokenGeneratorImpl>org.wso2.carbon.apimgt.impl.token.URLSafeJWTGenerator</TokenGeneratorImpl>-->
 
         <!-- Remove UserName from JWT Token -->
         <!-- <RemoveUserNameFromJWTForApplicationToken>true</RemoveUserNameFromJWTForApplicationToken>-->
@@ -63,14 +63,14 @@
     <!-- Primary/secondary login configuration for APIstore. If user likes to keep two login attributes in a distributed setup, to login the APIstore,
 		he should configure this section. Primary login doesn't have a claimUri associated with it. But secondary login, which is a claim attribute,
 		is associated with a claimuri.-->
-    <LoginConfig>
+    <!--LoginConfig>
             <UserIdLogin  primary="true">
         <ClaimUri></ClaimUri>
         </UserIdLogin>
         <EmailLogin  primary="false">
             <ClaimUri>http://wso2.org/claims/emailaddress</ClaimUri>
         </EmailLogin>
-    </LoginConfig>
+    </LoginConfig-->
 
     <!-- Credentials for the API gateway admin server. This configuration
          is mainly used by the API publisher and store to connect to the API gateway and
@@ -221,9 +221,9 @@
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
         <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
-        <ThriftClientPort>10397</ThriftClientPort>
+        <ThriftClientPort>10907</ThriftClientPort>
         <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <ThriftServerPort>10397</ThriftServerPort>
+        <ThriftServerPort>10907</ThriftServerPort>
         <!--ThriftServerHost>localhost</ThriftServerHost-->
         <EnableThriftServer>true</EnableThriftServer>        
 
