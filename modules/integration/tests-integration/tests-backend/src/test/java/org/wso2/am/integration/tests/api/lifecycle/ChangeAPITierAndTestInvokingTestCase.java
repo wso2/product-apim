@@ -88,7 +88,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
 
         applicationNameGold = APPLICATION_NAME + TIER_GOLD;
         apiStoreClientUser1
-                .addApplication(applicationNameGold, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+                .addApplication(applicationNameGold, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                                            new URL(apiEndPointUrl));

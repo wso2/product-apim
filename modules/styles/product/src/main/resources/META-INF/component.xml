@@ -21,13 +21,13 @@
         <context>
             <context-id>default-context</context-id>
             <context-name>publisher</context-name>
-            <protocol>https</protocol>
+            <protocol>http</protocol>
             <description>API Publisher Default Context</description>
         </context>
         <context>
             <context-id>default-additional-context</context-id>
             <context-name>store</context-name>
-            <protocol>https</protocol>
+            <protocol>http</protocol>
             <description>API Store Default Context</description>
         </context>
     </contexts>

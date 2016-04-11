@@ -31,7 +31,6 @@
                 <exclude>**/*.lock</exclude>
                 <exclude>**/.data</exclude>
                 <exclude>**/.settings</exclude>
-                <exclude>features/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>

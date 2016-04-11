@@ -89,7 +89,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                                               "Resource Tier: Unlimited.")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
         //Create publish and subscribe a API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);
@@ -213,7 +213,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
                         " Application level tier and Plus Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Plus Resource tier");
@@ -278,7 +278,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");
