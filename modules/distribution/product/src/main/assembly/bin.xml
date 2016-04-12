@@ -509,6 +509,17 @@
             </includes>
         </fileSet>
 
+        <!-- Copy sample pizzashack api webapp-->
+        <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>am#sample#pizzashack#v1.war</include>
+            </includes>
+        </fileSet>
+
 
         <!--Multitenancy related file -->
         <fileSet>
@@ -983,6 +994,11 @@
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/output-event-adapters.xml</source>
             <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/synapse-configs/default/api/LogAnalyzerRestApi-1.0.xml</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/deployment/server/synapse-configs/default/api</outputDirectory>
             <filtered>false</filtered>
         </file>
         <file>

@@ -572,6 +572,9 @@
                                     org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.portal.feature:${carbon.dashboard.version}
                                 </featureArtifactDef>
                                 <!-- END - UES Features -->
+                                <featureArtifactDef>
+                                    org.wso2.analytics.common:org.wso2.carbon.analytics.common.la.apim.feature:${analytics.common.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1196,6 +1199,10 @@
                                     <version>${carbon.dashboard.version}</version>
                                 </feature>
                                 <!-- END - UES Features -->
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.common.la.apim.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2291,6 +2298,10 @@
                                 </feature>
                                 <!-- END - UES Features -->
                                 <feature>
+                                    <id>org.wso2.carbon.analytics.common.la.apim.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.event.throttler.feature.group</id>
                                     <version>${carbon.throttle.version}</version>
                                 </feature>
@@ -2730,6 +2741,11 @@
                                     <version>${carbon.dashboard.version}</version>
                                 </feature>
                                 <!-- END - UES Features -->
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.common.la.apim.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>

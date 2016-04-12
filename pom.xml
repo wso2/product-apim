@@ -655,6 +655,11 @@
                 <version>${carbon.mediation.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.mediation</groupId>
+                <artifactId>org.wso2.carbon.rest.api</artifactId>
+                <version>${carbon.mediation.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.deployment</groupId>
                 <artifactId>org.wso2.carbon.webapp.mgt.stub</artifactId>
                 <version>${carbon.deployment.version}</version>
@@ -906,12 +911,12 @@
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.5.3-beta</carbon.registry.version>
+        <carbon.registry.version>4.5.3</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.4.8, 4.6.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.6.2-SNAPSHOT</carbon.governance.version>
+        <carbon.governance.version>4.6.2</carbon.governance.version>
 
         <!--carbon versions-->
         <carbon.kernel.version>4.4.5</carbon.kernel.version>
@@ -944,6 +949,7 @@
 
         <carbon.dashboard.version>1.0.14</carbon.dashboard.version>
         <shindig.version>1.0.0</shindig.version>
+        <analytics.common.version>1.0.0-SNAPSHOT</analytics.common.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
