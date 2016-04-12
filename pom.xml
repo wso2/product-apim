@@ -933,7 +933,7 @@
         <carbon.mediation.version>4.6.1-BETA2</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.0.8</carbon.identity.version>
+        <carbon.identity.version>5.0.9-SNAPSHOT</carbon.identity.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.6.1</carbon.deployment.version>
