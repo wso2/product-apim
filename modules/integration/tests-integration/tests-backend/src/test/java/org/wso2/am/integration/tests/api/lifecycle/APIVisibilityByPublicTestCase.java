@@ -284,8 +284,9 @@ public class APIVisibilityByPublicTestCase extends APIManagerLifecycleBaseTest {
                 log.warn("InterruptedException occurs while sleeping 500 milliseconds", e);
             }
             currentTime = System.currentTimeMillis();
-            if (apiStoreRestClient.getAPIListFromStoreAsAnonymousUser(apiCreatorStoreDomain).getData().
-                    contains(API_NAME)) {
+            String response = apiStoreRestClient.getAPIListFromStoreAsAnonymousUser(apiCreatorStoreDomain).getData();
+            log.info("Received data: " + response);
+            if (response.contains(API_NAME)) {
                 apiFound = true;
                 break;
             }
