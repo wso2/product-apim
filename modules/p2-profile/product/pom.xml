@@ -511,7 +511,7 @@
                                     org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.event-processing:org.wso2.carbon.event.throttler.feature:${carbon.throttle.version}
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttling.siddhi.extension.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
                                 <!-- MB Features -->
@@ -1118,8 +1118,8 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -1517,8 +1517,8 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -1858,8 +1858,8 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -2302,8 +2302,8 @@
                                     <version>${analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2723,8 +2723,8 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
@@ -3129,8 +3129,8 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.throttler.feature.group</id>
-                                    <version>${carbon.throttle.version}</version>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
