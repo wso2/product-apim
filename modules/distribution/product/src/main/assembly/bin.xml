@@ -929,5 +929,10 @@
             <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
             <filtered>false</filtered>
         </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/synapse-configs/default/api/LogAnalyzerRestApi-1.0.xml</source>
+            <outputDirectory>${project.artifactId}-${project.version}/repository/deployment/server/synapse-configs/default/api</outputDirectory>
+            <filtered>false</filtered>
+        </file>
     </files>
 </assembly>
