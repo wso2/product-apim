@@ -575,6 +575,9 @@
                                 <featureArtifactDef>
                                     org.wso2.analytics.common:org.wso2.carbon.analytics.common.la.apim.feature:${analytics.common.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.analytics.common:org.wso2.carbon.data.agents.log4j.feature:${analytics.common.version}
+                                </featureArtifactDef>
 
                             </featureArtifacts>
                         </configuration>
@@ -1203,6 +1206,10 @@
                                     <id>org.wso2.carbon.analytics.common.la.apim.feature.group</id>
                                     <version>${analytics.common.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1521,8 +1528,13 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1862,8 +1874,13 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
 				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2305,6 +2322,10 @@
                                     <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2745,7 +2766,10 @@
                                     <id>org.wso2.carbon.analytics.common.la.apim.feature.group</id>
                                     <version>${analytics.common.version}</version>
                                 </feature>
-
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3132,9 +3156,13 @@
                                     <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-				<feature>
+                                <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
