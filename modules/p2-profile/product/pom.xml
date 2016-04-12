@@ -1527,7 +1527,6 @@
                                     <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-				<feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1873,7 +1872,6 @@
                                     <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-				<feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.profile.feature.group</id>
                                     <version>${carbon.identity.version}</version>
