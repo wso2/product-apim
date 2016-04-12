@@ -903,7 +903,7 @@
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.12-SNAPSHOT</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.0.12-alpha</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -1034,8 +1034,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.2</carbon.messaging.version>
-        <carbon.throttle.version>2.0.13-SNAPSHOT</carbon.throttle.version>
-        <carbon.event-processing.version>2.0.13-SNAPSHOT</carbon.event-processing.version>
+        <carbon.event-processing.version>2.0.13-alpha</carbon.event-processing.version>
         <andes.version>3.1.2</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
 	<project.scm.id>scm-server</project.scm.id>
