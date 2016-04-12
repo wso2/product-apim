@@ -380,7 +380,7 @@
 
         <!-- The value of the Access-Control-Allow-Origin header. Default values are
              API Store addresses, which is needed for swagger to function. -->
-        <Access-Control-Allow-Origin>*</Access-Control-Allow-Origin>
+        <Access-Control-Allow-Origin>http://localhost</Access-Control-Allow-Origin>
 
         <!-- Configure Access-Control-Allow-Methods -->
         <Access-Control-Allow-Methods>GET,PUT,POST,DELETE,PATCH,OPTIONS</Access-Control-Allow-Methods>
