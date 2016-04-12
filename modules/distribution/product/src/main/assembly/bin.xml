@@ -499,7 +499,7 @@
 
 
         <!-- Copy sample calculator api webapp-->
-        <fileSet>
+        <!--fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
             </directory>
@@ -507,7 +507,7 @@
             <includes>
                 <include>am#sample#calculator#v1.war</include>
             </includes>
-        </fileSet>
+        </fileSet-->
 
         <!-- Copy sample pizzashack api webapp-->
         <fileSet>
@@ -634,6 +634,22 @@
             </includes>
             <fileMode>644</fileMode>
         </fileSet>
+	<fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/eventreceivers/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/eventreceivers</outputDirectory>
+            <includes>
+                <include>**/*.xml</include>
+            </includes>
+        </fileSet>
+
+	<fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/eventstreams/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/eventstreams</outputDirectory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </fileSet>
+
     </fileSets>
 
     <dependencySets>
