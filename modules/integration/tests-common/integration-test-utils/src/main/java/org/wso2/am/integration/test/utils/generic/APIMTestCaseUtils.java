@@ -1549,25 +1549,17 @@ public class APIMTestCaseUtils {
         }
     }
 
-    public static String getDecodedJWT(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getDecodedJWT(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT part
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
     }
 
-    public static String getJWTAssertion(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getJWTAssertion(String jwt) throws UnsupportedEncodingException {
         //take first element
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         //Generate the jwt assertion by concatenating header and body section of the jwt token array
         return  jwtTokenArray[0].trim() + "." + jwtTokenArray[1].trim();
     }
@@ -1618,25 +1610,17 @@ public class APIMTestCaseUtils {
         }
     }
 
-    public static String getDecodedJWTHeader(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getDecodedJWTHeader(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT header
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[0].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
     }
 
-    public static byte[] getDecodedJWTSignature(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static byte[] getDecodedJWTSignature(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT signature
         return Base64.decodeBase64(jwtTokenArray[2].getBytes());
     }
@@ -1666,25 +1650,17 @@ public class APIMTestCaseUtils {
         return Base64.decodeBase64(stringToBeDecoded.getBytes("UTF-8"));
     }
 
-    public static String getDecodedURLSafeJWT(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getDecodedURLSafeJWT(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT part
         byte[] jwtByteArray = decode(jwtTokenArray[1]);
         return new String(jwtByteArray, "UTF-8");
     }
 
-    public static String getDecodedURLSafeJWTHeader(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getDecodedURLSafeJWTHeader(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT header
         byte[] jwtByteArray = decode(jwtTokenArray[0]);
         return new String(jwtByteArray, "UTF-8");

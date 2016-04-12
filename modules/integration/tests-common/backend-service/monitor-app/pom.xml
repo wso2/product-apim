@@ -46,37 +46,31 @@ under the License.
         <dependency>
             <groupId>org.apache.cxf.wso2</groupId>
             <artifactId>cxf-bundle</artifactId>
-            <version>2.6.1.wso2v2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.logging</artifactId>
-            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.axis2.wso2</groupId>
             <artifactId>axis2</artifactId>
-            <version>1.6.1.wso2v12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
-            <version>4.3.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.rest.api</artifactId>
-            <version>4.2.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
-            <version>${carbon.deployment.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
