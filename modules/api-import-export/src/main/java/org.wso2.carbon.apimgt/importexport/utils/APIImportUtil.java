@@ -234,8 +234,21 @@ public final class APIImportUtil {
                 //Replace context to match with current provider
                 importedApi = SetCurrentProvidertoAPIProperties(importedApi, currentTenantDomain, prevTenantDomain);
             }
+
+            //Checking whether this is a duplicate API
+            if (provider.isAPIAvailable(importedApi.getId())) {
+                String errorMessage = "Error occurred while adding the API. A duplicate API already exists for " +
+                                      importedApi.getId().getApiName() + "-" + importedApi.getId().getVersion();
+                log.error(errorMessage);
+                throw new APIImportException(errorMessage);
+            }
+
         } catch (IOException e) {
             String errorMessage = "Error in reading API definition. ";
+            log.error(errorMessage, e);
+            throw new APIImportException(errorMessage, e);
+        } catch (APIManagementException e) {
+            String errorMessage = "Error in checking API existence. ";
             log.error(errorMessage, e);
             throw new APIImportException(errorMessage, e);
         }
