@@ -133,7 +133,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         String gatewayUrl = getAPIInvocationURLHttp("tokenTestAPI/1.0.0/customers/123");
 
         // Create application
-        apiStore.addApplication("TokenTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+        apiStore.addApplication("TokenTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "",
                 "this-is-test");
 
         String provider = storeContext.getContextTenant().getContextUser().getUserName();
