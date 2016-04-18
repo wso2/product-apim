@@ -69,6 +69,8 @@ public class APIMIntegrationConstants {
     public static final String API_DOCUMENT_TYPE_HOW_TO = "How To";
     public static final String API_DOCUMENT_SOURCE_INLINE = "Inline";
 
+    public static final String APPLICATION_JSON_MEDIA_TYPE = "application/json";
+
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
 
     public static final class APPLICATION_TIER {

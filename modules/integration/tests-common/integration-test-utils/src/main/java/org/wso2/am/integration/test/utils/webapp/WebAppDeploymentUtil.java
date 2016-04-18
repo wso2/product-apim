@@ -124,7 +124,7 @@ public class WebAppDeploymentUtil {
                         "/webAppStatus/webappInfo/" +
                         APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
                 Map<String, String> requestHeaders = new HashMap<String, String>();
-                requestHeaders.put("Accept", "application/json");
+                requestHeaders.put("Accept", APIMIntegrationConstants.APPLICATION_JSON_MEDIA_TYPE);
                 response = HttpRequestUtil.doGet(url, requestHeaders);
             } catch (IOException ignore) {
                 log.info("WAIT for webapp deployment  :" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +

@@ -617,9 +617,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
-                //TODO: enable for tenant when tenant issue is fixed
-                //                new Object[] { TestUserMode.TENANT_ADMIN },
-        };
+                new Object[] { TestUserMode.TENANT_ADMIN }, };
     }
 
     /**
