@@ -46,9 +46,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
-import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 /**
@@ -86,6 +87,8 @@ public class APIService {
         }
         log.info("Retrieving API for API-Id : " + name + "-" + version + "-" + providerName);
         APIIdentifier apiIdentifier;
+        boolean isTenantFlowStarted = false;
+
         try {
 
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
@@ -118,6 +121,14 @@ public class APIService {
 
             APIExportUtil.setArchiveBasePath(archiveBasePath);
 
+            //Start tenant flow for the entire export process
+            if (apiRequesterDomain != null &&
+                !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
+                PrivilegedCarbonContext.startTenantFlow();
+                PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiRequesterDomain, true);
+                isTenantFlowStarted = true;
+            }
+
             Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName);
 
             //Retrieve resources : thumbnail, meta information, wsdl, sequences and documents
@@ -138,8 +149,12 @@ public class APIService {
 
         } catch (APIExportException e) {
             log.error("APIExportException occurred while exporting ", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error")
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
                     .type(MediaType.APPLICATION_JSON).build();
+        } finally {
+            if (isTenantFlowStarted) {
+                PrivilegedCarbonContext.endTenantFlow();
+            }
         }
 
     }
@@ -161,6 +176,7 @@ public class APIService {
     String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
 
         boolean isProviderPreserved = true;
+        boolean isTenantFlowStarted = false;
 
         //Check if the URL parameter value is specified, otherwise the default value "true" is used
         if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(defaultProviderStatus)) {
@@ -194,6 +210,15 @@ public class APIService {
                     String extractedFolderName = APIImportUtil.extractArchive(
                             new File(absolutePath + uploadFileName), absolutePath);
 
+                    String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
+                    if (tenantDomain != null &&
+                        !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
+                                .equals(tenantDomain)) {
+                        PrivilegedCarbonContext.startTenantFlow();
+                        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
+                        isTenantFlowStarted = true;
+                    }
+
                     APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
 
                     importFolder.deleteOnExit();
@@ -207,8 +232,11 @@ public class APIService {
         } catch (APIExportException e) {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error in initializing API provider.\n").build();
         } catch (APIImportException e) {
-            String errorDetail = new Gson().toJson(e.getErrorDescription());
-            return Response.serverError().entity(errorDetail).build();
+            return Response.serverError().entity(e.getMessage()).build();
+        } finally {
+            if (isTenantFlowStarted) {
+                PrivilegedCarbonContext.endTenantFlow();
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ public final class APIImportExportConstants {
     //system dependent default path separator character, represented as a string
     public static final String DIRECTORY_SEPARATOR = File.separator;
     //System independent file separator for zip files
-    public static final String ZIP_FILE_SEPARATOR = "/";
+    public static final char ZIP_FILE_SEPARATOR = '/';
     //string representing the false state when preserving the provider
     public static final String STATUS_FALSE = "FALSE";
     //length of the name of the temporary directory
@@ -42,7 +42,7 @@ public final class APIImportExportConstants {
             "api.json";
     //name of the id element tag of the api.json file
     public static final String ID_ELEMENT = "id";
-    //name of the id element tag of the api.json file
+    //name of the api provider element tag of the api.json file
     public static final String PROVIDER_ELEMENT = "providerName";
     //location of the api swagger definition file
     public static final String SWAGGER_DEFINITION_LOCATION = DIRECTORY_SEPARATOR + "Meta-information" +
@@ -75,5 +75,18 @@ public final class APIImportExportConstants {
     public static final String WSDL_LOCATION = DIRECTORY_SEPARATOR + "WSDL" + DIRECTORY_SEPARATOR;
     //extension of wsdl files
     public static final String WSDL_EXTENSION = ".wsdl";
+
+    public static final String DOCUMENT_DIRECTORY = "Docs";
+
+    public static final String INLINE_DOCUMENT_DIRECTORY = "InlineContents";
+
+    public static final String FILE_DOCUMENT_DIRECTORY = "FileContents";
+
+    public static final String INLINE_DOC_CONTENT_REGISTRY_DIRECTORY = "contents";
+
+    public static final String API_REGISTRY_BASE_LOCATION =
+            "/registry/resource/_system/governance/apimgt/applicationdata/";
+
+    public static final String CHARSET = "UTF-8";
 
 }
