@@ -72,7 +72,7 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 				+ File.separator + "synapseconfigs" + File.separator + "rest"
                 + File.separator + synapseConfFile, gatewayContextMgt, gatewaySessionCookie);
 
-        waitForAPIDeploymentSync(user.getUserName(), "stockquote", "1.0.0", APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), "urlmapping", "1.0.0", APIMIntegrationConstants.IS_API_EXISTS);
 	}
 
 	@Test(groups = { "wso2.am" },
@@ -83,7 +83,7 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 
-		HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("stockquote/1.0.0/test/"), null);
+		HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("urlmapping/1.0.0/test/"), null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
 //    Commenting out the test case until synapse is upgraded.

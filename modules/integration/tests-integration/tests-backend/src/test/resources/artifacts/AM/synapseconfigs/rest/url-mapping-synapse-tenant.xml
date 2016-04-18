@@ -11,7 +11,7 @@
         <log/>
         <drop/>
     </sequence>
-    <api name="stockquote" context="/t/wso2.com/stockquote/1.0.0">
+    <api name="urlmapping" context="/t/wso2.com/urlmapping/1.0.0">
         <resource methods="GET" uri-template="/test">
             <inSequence>
                 <header name="To" action="remove"/>
