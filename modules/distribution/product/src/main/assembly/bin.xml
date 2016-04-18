@@ -650,6 +650,23 @@
             </includes>
         </fileSet>
 
+	<fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/eventpublishers/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/eventpublishers</outputDirectory>
+            <includes>
+                <include>**/*.xml</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/executionplans/</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/executionplans</outputDirectory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </fileSet>
+
+
     </fileSets>
 
     <dependencySets>
