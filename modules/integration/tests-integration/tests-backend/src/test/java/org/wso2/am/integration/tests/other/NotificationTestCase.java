@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.tests.other;
 
+import com.icegreen.greenmail.util.GreenMail;
+import com.icegreen.greenmail.util.ServerSetup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -36,7 +38,6 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.ServerConstants;
-
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,10 +46,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import javax.mail.Message;
+
 
 /**
  * This test case will test Whether a notification email is sent to existing subscribers when a new api is created
@@ -65,12 +67,19 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     private static final String APP_NAME = "NOTIFICATION_TEST_APP";
     private final String STORE_USERNAME ="sam";
     private final String STORE_PASSWORD ="admin";
-    private String gatewaySessionCookie;
-    private String storeURLHttp;
 
-    private ResourceAdminServiceClient resourceAdminServiceClient;
+    private static final String EMAIL_USERNAME = "APIM";
+    private static final String EMAIL_PASSWORD = "APIM+123";
+    private static final String USER_EMAIL_ADDRESS = "sambaheerathan@gmail.com";
+    private static final int SMTP_TEST_PORT =3025;
+
     private static final String ADAPTER_CONFIG_XML = "output-event-adapters.xml";
     private final String TENANT_CONFIG_LOCATION = "/_system/config/apimgt/applicationdata/tenant-conf.json";
+    private String gatewaySessionCookie;
+    private GreenMail greenMail;
+    private String storeURLHttp;
+    private ResourceAdminServiceClient resourceAdminServiceClient;
+
 
     @Factory(dataProvider = "userModeDataProvider")
     public NotificationTestCase(TestUserMode userMode) {
@@ -86,12 +95,17 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         apiStore = new APIStoreRestClient(storeURLHttp);
         gatewaySessionCookie = createSession(gatewayContextMgt);
 
+    }
+
+    @Test(groups = {"wso2.am"}, description = "Testing Notification Feature")
+    public void notificationTestCase() throws Exception {
+
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                         createSession(gatewayContextMgt));
 
-        String tenantConfSrcLocation = readFile(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "notification" + File.separator + "tenant-conf.json");
+        String tenantConfSrcLocation = readFile(getAMResourceLocation() + File.separator + "configFiles"
+                + File.separator + "notification" + File.separator + "tenant-conf.json");
 
         resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
 
@@ -107,18 +121,24 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         File apimConfSourceFile = new File(apimConfigArtifactLocation);
         File apimConfTargetFile = new File(apimRepositoryConfigLocation);
 
-        ServerConfigurationManager serverManager = new ServerConfigurationManager(gatewayContextWrk);
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            ServerConfigurationManager serverManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
-        serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-        log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                " to :" + apimRepositoryConfigLocation);
+            serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
+            log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
+                    " to :" + apimRepositoryConfigLocation);
 
-        serverManager.restartGracefully();
-        super.init();
-    }
+            serverManager.restartGracefully();
+            super.init();
+        }
 
-    @Test(groups = {"wso2.am"}, description = "Testing the scopes Notification Feature")
-    public void notificationTestCase() throws Exception {
+        //Setting greenMail server
+        ServerSetup setup = new ServerSetup(SMTP_TEST_PORT, "localhost", "smtp");
+        greenMail = new GreenMail(setup);
+        //Creating user in greenMail server
+        greenMail.setUser(USER_EMAIL_ADDRESS, EMAIL_USERNAME, EMAIL_PASSWORD);
+        greenMail.start();
+        log.info("green mail server started ");
 
         // Adding API
         String url = getGatewayURLNhttp() + "response";
@@ -130,27 +150,24 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(API_VERSION);
         apiRequest.setProvider(user.getUserName());
         apiPublisher.addAPI(apiRequest);
-
         //publishing API
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
-                APILifeCycleState.PUBLISHED);
+                                                                APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         // add a new store user
         AutomationContext storeContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_STORE_INSTANCE, TestUserMode.SUPER_TENANT_ADMIN);
-        HttpResponse storeSignUpResponse = signUp("sam", "admin", "sam", "siva", "sambaheerathan@gmail.com");
+        HttpResponse storeSignUpResponse = signUp(STORE_USERNAME, STORE_PASSWORD, USER_EMAIL_ADDRESS);
         log.info("Sign Up User: " + STORE_USERNAME);
         JSONObject signUpJsonObject = new JSONObject(storeSignUpResponse.getData());
         assertFalse(signUpJsonObject.getBoolean("error"), "Error in user sign up Response");
-        assertFalse(signUpJsonObject.getBoolean("showWorkflowTip"), "Error in sign up Response");
 
         //login with new user
         HttpResponse loginResponse = apiStore.login(STORE_USERNAME, STORE_PASSWORD);
         JSONObject loginJsonObject = new JSONObject(loginResponse.getData());
         assertFalse(loginJsonObject.getBoolean("error"), "Error in Login Request: User Name : " + STORE_USERNAME);
 
-        // For Admin user
         // create new application and subscribing
         apiStore.login(STORE_USERNAME, STORE_PASSWORD);
         apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
@@ -160,10 +177,19 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         apiStore.subscribe(subscriptionRequest);
 
         //Create a new Version
-        HttpResponse newVersionResponse=apiPublisher.copyAPI(user.getUserName(), API_NAME, API_VERSION, NEW_API_VERSION, "");
+        HttpResponse newVersionResponse=apiPublisher.copyAPI(user.getUserName(), API_NAME, API_VERSION,
+                                            NEW_API_VERSION, "");
         assertEquals(newVersionResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatch");
 
-        //TODO add a check to see if email is sent
+        // checking whether message is received by greenmail
+        greenMail.waitForIncomingEmail(50000, 1);
+        Message[] messages = greenMail.getReceivedMessages();
+
+        if(messages.length >0){
+            assertTrue(true,"Email received BY Greenmail server");
+        }else{
+            assertTrue(false,"Email NOT received BY Greenmail server");
+        }
     }
 
     /**
@@ -202,22 +228,20 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
      * API Store sign up
      * @param userName - store user name
      * @param password -store password
-     * @param firstName - user first name
-     * @param lastName - user's last name
      * @param email - user's email
      * @return
      * @throws APIManagerIntegrationTestException
      *
      */
-    public HttpResponse signUp(String userName, String password, String firstName, String lastName, String email) throws
+    public HttpResponse signUp(String userName, String password, String email) throws
             APIManagerIntegrationTestException {
         try {
             Map<String, String> requestHeaders = new HashMap<String, String>();
             requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
 
             return HttpRequestUtil.doPost(new URL(storeURLHttp + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
-                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" + firstName +
-                            "|" + lastName + "||||" + email, requestHeaders);
+                    "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
+                            "|||||" + email, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
         }
@@ -233,6 +257,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         if (apiPublisher != null) {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         }
+        greenMail.stop();
 
         super.cleanUp();
     }
@@ -241,7 +266,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
                 new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }
 }
