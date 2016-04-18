@@ -11,7 +11,8 @@
         <log/>
         <drop/>
     </sequence>
-    <api name="urlmapping" context="/t/wso2.com/urlmapping/1.0.0">
+    <api name="admin-AT-wso2.com--urlmapping" context="/t/wso2.com/urlmapping/1.0.0"
+         version="1.0.0" version-type="context">
         <resource methods="GET" uri-template="/test">
             <inSequence>
                 <header name="To" action="remove"/>
