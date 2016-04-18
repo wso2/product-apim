@@ -32,7 +32,9 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Util that is enabled the more utility methods for handling the WebApps
@@ -118,11 +120,12 @@ public class WebAppDeploymentUtil {
 
         while (waitTime > System.currentTimeMillis()) {
             try {
-                response = HttpRequestUtil.sendGetRequest(
-                        webAppURL + "/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
-                        "webAppStatus/webappInfo/" +
-                        APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war", null);
-
+                String url = webAppURL + "/" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
+                        "/webAppStatus/webappInfo/" +
+                        APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
+                Map<String, String> requestHeaders = new HashMap<String, String>();
+                requestHeaders.put("Accept", "application/json");
+                response = HttpRequestUtil.doGet(url, requestHeaders);
             } catch (IOException ignore) {
                 log.info("WAIT for webapp deployment  :" + APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME +
                          " with expected response : " + APIMIntegrationConstants.IS_WEB_APP_EXISTS);
