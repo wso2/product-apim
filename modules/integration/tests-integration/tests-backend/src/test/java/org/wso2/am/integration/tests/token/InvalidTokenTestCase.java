@@ -19,6 +19,7 @@
 package org.wso2.am.integration.tests.token;
 
 import junit.framework.Assert;
+import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.*;
@@ -33,11 +34,12 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +48,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Test case for testing for errors when accessing an API using an invalid access token
  */
-public class InvalidTokenTestCase  extends APIMIntegrationBaseTest {
+public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(InvalidTokenTestCase.class);
 
@@ -129,15 +131,18 @@ public class InvalidTokenTestCase  extends APIMIntegrationBaseTest {
 
             String responsePayload = httpResponse.getData();
             Assert.assertNotNull(responsePayload);
-            String[] responseArray = responsePayload.split("description=");
-            Assert.assertTrue("Error message doesn't contain a 'description'", responseArray.length > 1);
+            String description = AXIOMUtil.stringToOM(responsePayload).getFirstChildWithName
+                    (new QName("http://wso2.org/apimanager/security", "description")).getText();
+            Assert.assertNotNull("Error message doesn't contain a 'description'", description);
             Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have given the " +
-                            "correct access token' but received '" + responseArray[1] + "'",
-                    URLDecoder.decode(responseArray[1], "UTF-8").
-                            contains("Make sure you have given the correct access token"));
+                            "correct access token' but received '" + description + "'",
+                    description.contains("Make sure you have given the correct access token"));
         } catch (IOException e) {
             log.error("Error sending request to endpoint " + apiInvocationUrl, e);
             Assert.assertTrue("Could not send request to endpoint " + apiInvocationUrl + ": " + e.getMessage(), false);
+        } catch (XMLStreamException e) {
+            log.error("Error parsing response XML ", e);
+            Assert.assertTrue("Error parsing response XML " + e.getMessage(), false);
         }
     }
 
