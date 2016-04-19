@@ -19,9 +19,12 @@
 package org.wso2.am.integration.tests.token;
 
 import junit.framework.Assert;
+import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.util.AXIOMUtil;
+import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jaxen.JaxenException;
 import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -34,7 +37,6 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
@@ -131,9 +133,13 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
 
             String responsePayload = httpResponse.getData();
             Assert.assertNotNull(responsePayload);
-            String description = AXIOMUtil.stringToOM(responsePayload).getFirstChildWithName
-                    (new QName("http://wso2.org/apimanager/security", "description")).getText();
-            Assert.assertNotNull("Error message doesn't contain a 'description'", description);
+            OMElement element = AXIOMUtil.stringToOM(responsePayload);
+            AXIOMXPath xpath = new AXIOMXPath("/soapenv:Envelope/soapenv:Body/ams:fault/ams:description");
+            xpath.addNamespace("soapenv", "http://www.w3.org/2003/05/soap-envelope");
+            xpath.addNamespace("ams", "http://wso2.org/apimanager/security");
+            Object descriptionElement = xpath.selectSingleNode(element);
+            Assert.assertNotNull("Error message doesn't contain a 'description'", descriptionElement);
+            String description = ((OMElement)descriptionElement).getText();
             Assert.assertTrue("Unexpected error response string. Expected to have 'Make sure you have given the " +
                             "correct access token' but received '" + description + "'",
                     description.contains("Make sure you have given the correct access token"));
@@ -143,6 +149,9 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         } catch (XMLStreamException e) {
             log.error("Error parsing response XML ", e);
             Assert.assertTrue("Error parsing response XML " + e.getMessage(), false);
+        } catch (JaxenException e) {
+            log.error("XPath error when searching for 'description' element ", e);
+            Assert.assertTrue("XPath error when searching for 'description' element " + e.getMessage(), false);
         }
     }
 
