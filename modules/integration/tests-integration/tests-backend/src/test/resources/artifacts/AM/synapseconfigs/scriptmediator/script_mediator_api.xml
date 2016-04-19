@@ -134,8 +134,7 @@
         </out>
     </sequence>
     <api xmlns="http://ws.apache.org/ns/synapse"
-         name="ScriptMediatorAPI"
-         context="/script/1.0">
+         name="admin--ScriptMediatorAPI" context="/script/1.0" version="1.0" version-type="context">
         <resource methods="GET" url-mapping="/test" faultSequence="fault">
             <inSequence>
                 <script language="js">

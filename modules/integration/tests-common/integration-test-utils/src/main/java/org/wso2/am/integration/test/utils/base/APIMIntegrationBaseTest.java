@@ -40,6 +40,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.base.MultitenantConstants;
+import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
@@ -579,11 +580,12 @@ public class APIMIntegrationBaseTest {
                 } else {
                     tenantId = tenant.getTenantId();
                 }
+                //forced tenant loading
+                new LoginLogoutClient(gatewayContextWrk).login();
             }
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException(e.getMessage(), e);
         }
-
         return providerTenantDomain + "/" + tenantId + "/";
     }
 
