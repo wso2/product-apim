@@ -59,8 +59,7 @@ public class ScriptMediatorTestCase extends APIMIntegrationBaseTest {
 
         String endpoint = getGatewayURLNhttp() + "script/1.0/test";
 
-        waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion + "/test",
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
         //Access the deployed API.
         HttpResponse response = HttpRequestUtil.doGet(endpoint, new HashMap<String, String>());
 

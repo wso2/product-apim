@@ -17,8 +17,6 @@
 */
 package org.wso2.am.apiMonitorService.beans;
 
-import org.wso2.carbon.webapp.mgt.WebApplication;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "WebAppDeployStatus")

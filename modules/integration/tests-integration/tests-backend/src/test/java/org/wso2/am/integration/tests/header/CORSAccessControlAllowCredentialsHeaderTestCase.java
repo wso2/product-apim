@@ -142,6 +142,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
             super.init();
         }
 
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
         get.addHeader("Origin", "http://localhost");
@@ -181,6 +183,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
             serverConfigurationManager.restartGracefully();
             super.init();
         }
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));

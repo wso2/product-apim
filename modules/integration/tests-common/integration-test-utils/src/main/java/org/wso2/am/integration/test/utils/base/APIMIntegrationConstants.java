@@ -49,7 +49,7 @@ public class APIMIntegrationConstants {
     public static final String IS_API_NOT_EXISTS = "\"isApiExists\":false";
     public static final String JAXRS_BASIC_WEB_APP_NAME = "jaxrs_basic";
     public static final String AM_MONITORING_WEB_APP_NAME = "APIStatusMonitor";
-    public static final String AM_IMPORT_EXPORT_WEB_APP_NAME = "api-import-export-2.0.0-SNAPSHOT-v0";
+    public static final String AM_IMPORT_EXPORT_WEB_APP_NAME = "api-import-export-test";
     public static final String PRODEP1_WEB_APP_NAME = "name-checkOne";
     public static final String PRODEP2_WEB_APP_NAME = "name-checkTwo";
     public static final String PRODEP3_WEB_APP_NAME = "name-checkThree";
@@ -68,6 +68,8 @@ public class APIMIntegrationConstants {
 
     public static final String API_DOCUMENT_TYPE_HOW_TO = "How To";
     public static final String API_DOCUMENT_SOURCE_INLINE = "Inline";
+
+    public static final String APPLICATION_JSON_MEDIA_TYPE = "application/json";
 
     public static final String STORE_APPLICATION_REST_URL = "store/site/pages/applications.jag";
 
