@@ -49,7 +49,7 @@
                 <version>2.2</version>
                 <configuration>
                     <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
-                    <warName>${project.artifactId}-${version}-v0</warName>
+                    <warName>${project.artifactId}-${project.version}-v0</warName>
                 </configuration>
             </plugin>
             <plugin>
@@ -66,7 +66,7 @@
                         <configuration>
                             <target>
                                 <copy overwrite="true"
-                                      file="${project.build.directory}/${project.artifactId}-${version}-v0.war"
+                                      file="${project.build.directory}/${project.artifactId}-${project.version}-v0.war"
                                       tofile="${basedir}/../../modules/integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/war/api-import-export-test.war"/>
                             </target>
                         </configuration>
