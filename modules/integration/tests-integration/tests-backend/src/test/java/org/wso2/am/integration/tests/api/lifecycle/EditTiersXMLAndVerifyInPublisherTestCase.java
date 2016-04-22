@@ -23,12 +23,16 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.admin.clients.registry.ResourceAdminServiceClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -66,12 +70,23 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private String newTiersXML;
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
-
+    private ServerConfigurationManager serverConfigurationManager;
+    protected AutomationContext superTenantKeyManagerContext;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
-            RemoteException, ResourceAdminServiceExceptionException, MalformedURLException {
+    public void initialize() throws Exception {
         super.init();
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
+                File.separator + "api-manager.xml"));
+
+        serverConfigurationManager.restartGracefully();
+
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =

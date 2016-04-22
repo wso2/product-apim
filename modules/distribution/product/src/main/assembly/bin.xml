@@ -500,7 +500,7 @@
 
 
         <!-- Copy sample calculator api webapp-->
-        <!--fileSet>
+        <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/deployment/server/webapps
             </directory>
@@ -508,7 +508,7 @@
             <includes>
                 <include>am#sample#calculator#v1.war</include>
             </includes>
-        </fileSet-->
+        </fileSet>
 
         <!-- Copy sample pizzashack api webapp-->
         <fileSet>
