@@ -70,6 +70,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
