@@ -65,12 +65,12 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     private static final String API_VERSION = "1.0.0";
     private static final String NEW_API_VERSION = "2.0.0";
     private static final String APP_NAME = "NOTIFICATION_TEST_APP";
-    private final String STORE_USERNAME ="sam";
+    private final String STORE_USERNAME ="api_store";
     private final String STORE_PASSWORD ="admin";
 
     private static final String EMAIL_USERNAME = "APIM";
     private static final String EMAIL_PASSWORD = "APIM+123";
-    private static final String USER_EMAIL_ADDRESS = "sambaheerathan@gmail.com";
+    private static final String USER_EMAIL_ADDRESS = "apim@gmail.com";
     private static final int SMTP_TEST_PORT =3025;
 
     private static final String ADAPTER_CONFIG_XML = "output-event-adapters.xml";
