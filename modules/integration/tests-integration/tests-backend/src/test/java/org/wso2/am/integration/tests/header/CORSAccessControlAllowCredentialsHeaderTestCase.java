@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
@@ -38,11 +39,14 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,9 +67,12 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
     private String publisherURLHttp;
     private APIPublisherRestClient apiPublisher;
 
-    private static final String API_NAME = "CorsACACHeadersTestAPI";
-    private static final String APPLICATION_NAME = "CorsACACApp";
-    private static final String API_CONTEXT = "corsACACHeadersTestAPI";
+    private static final String API_NAME_1 = "CorsACACHeadersTestAPI_1";
+    private static final String API_NAME_2 = "CorsACACHeadersTestAPI_2";
+    private static final String APPLICATION_NAME_1 = "CorsACACApp_1";
+    private static final String APPLICATION_NAME_2 = "CorsACACApp_2";
+    private static final String API_CONTEXT_1 = "corsACACHeadersTestAPI_1";
+    private static final String API_CONTEXT_2 = "corsACACHeadersTestAPI_2";
     private static final String API_VERSION = "1.0.0";
     private static final String TAGS = "ACAC, cors, test";
     private static final String DESCRIPTION = "This is test API create by API manager integration test";
@@ -97,36 +104,6 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
                                                   gatewaySessionCookie);
         }
 
-        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
-
-        publisherURLHttp = getPublisherURLHttp();
-        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-        apiPublisher.login(user.getUserName(), user.getPassword());
-
-        String providerName = user.getUserName();
-        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
-        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
-                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
-                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION, providerName,
-                                                            endpointUrl, resourceBeanList);
-        apiCreationRequestBean.setTags(TAGS);
-        apiCreationRequestBean.setDescription(DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION);
-        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
-        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                                       apiStoreClientUser1, APPLICATION_NAME);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
     }
 
@@ -142,10 +119,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
             super.init();
         }
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        accessToken = createPublishAndSubscribeToApi(user, API_NAME_1, API_CONTEXT_1, API_VERSION, APPLICATION_NAME_1);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT_1, API_VERSION));
         get.addHeader("Origin", "http://localhost");
         get.addHeader("Authorization", "Bearer " + accessToken);
 
@@ -184,10 +161,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
             super.init();
         }
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+        accessToken = createPublishAndSubscribeToApi(user, API_NAME_2, API_CONTEXT_2, API_VERSION, APPLICATION_NAME_2);
 
         HttpClient httpclient = HttpClientBuilder.create().build();
-        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION));
+        HttpGet get = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT_2, API_VERSION));
         get.addHeader("Origin", ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE_LOCALHOST);
         get.addHeader("Authorization", "Bearer " + accessToken);
 
@@ -210,6 +187,41 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         assertNotNull(pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER),
                    ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER + " header is not available in the response.");
     }
+
+    private String createPublishAndSubscribeToApi(User user, String apiName, String apiContext, String apiVersion,
+                                                  String appName)
+            throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+        publisherURLHttp = getPublisherURLHttp();
+        apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+        apiPublisher.login(user.getUserName(), user.getPassword());
+
+        String providerName = user.getUserName();
+        URL endpointUrl = new URL(getSuperTenantAPIInvocationURLHttp("response", "1.0.0"));
+        ArrayList<APIResourceBean> resourceBeanList = new ArrayList<APIResourceBean>();
+        resourceBeanList.add(new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                                                 APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+        apiCreationRequestBean = new APICreationRequestBean(apiName, apiContext, apiVersion, providerName,
+                                                            endpointUrl, resourceBeanList);
+        apiCreationRequestBean.setTags(TAGS);
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
+        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+        //Login to API Publisher with admin
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+        //Login to API Store with  admin
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+        apiIdentifier = new APIIdentifier(providerName, apiName, apiVersion);
+        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        //Create application
+        apiStoreClientUser1.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
+                                       apiStoreClientUser1, appName);
+        return generateApplicationKeys(apiStoreClientUser1, appName).getAccessToken();
+    }
+
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
