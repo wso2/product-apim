@@ -221,9 +221,9 @@
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
         <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
-        <ThriftClientPort>10907</ThriftClientPort>
+        <ThriftClientPort>10397</ThriftClientPort>
         <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <ThriftServerPort>10907</ThriftServerPort>
+        <ThriftServerPort>10397</ThriftServerPort>
         <!--ThriftServerHost>localhost</ThriftServerHost-->
         <EnableThriftServer>true</EnableThriftServer>        
 
@@ -441,7 +441,7 @@
     </RESTAPI>
 
     <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>true</EnableAdvanceThrottling>
+        <EnableAdvanceThrottling>false</EnableAdvanceThrottling>
         <DataPublisher>
             <Type>Binary</Type>
             <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>

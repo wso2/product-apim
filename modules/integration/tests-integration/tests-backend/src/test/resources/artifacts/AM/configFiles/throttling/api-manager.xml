@@ -28,7 +28,7 @@
 
     <JWTConfiguration>
         <!-- Enable/Disable JWT generation. Default is false. -->
-        <!-- EnableJWTGeneration>false</EnableJWTGeneration-->
+        <EnableJWTGeneration>true</EnableJWTGeneration>
         
         <!-- Name of the security context header to be added to the validated requests. -->
         <JWTHeader>X-JWT-Assertion</JWTHeader>
@@ -37,7 +37,7 @@
              to be appended to the JWT. If not specified no claims will be appended.If user wants to add all user claims in the
              jwt token, he needs to enable this parameter.
              The DefaultClaimsRetriever class adds user claims from the default carbon user store. -->
-        <!--ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass-->
+        <ClaimsRetrieverImplClass>org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever</ClaimsRetrieverImplClass>
 
         <!-- The dialectURI under which the claimURIs that need to be appended to the
              JWT are defined. Not used with custom ClaimsRetriever implementations. The
@@ -136,7 +136,7 @@
              
              Ex - Multiple Receiver Groups with two receivers each
              {tcp://localhost:7612/,tcp://localhost:7613},{tcp://localhost:7712/,tcp://localhost:7713/} -->
-        <DASServerURL>{tcp://localhost:7612}</DASServerURL>
+        <DASServerURL>{tcp://localhost:7612/}</DASServerURL>
         <!-- Administrator username to login to the remote DAS server. -->
         <DASUsername>admin</DASUsername>
         <!-- Administrator password to login to the remote DAS server. -->
@@ -221,9 +221,9 @@
              -ThriftServerHost - Allows to configure a hostname for the thrift server. It uses the carbon hostname by default.
 	         -The Gateway uses this parameter to connect to the key validation thrift service. -->
         <KeyValidatorClientType>ThriftClient</KeyValidatorClientType>
-        <ThriftClientPort>10907</ThriftClientPort>
+        <ThriftClientPort>10397</ThriftClientPort>
         <ThriftClientConnectionTimeOut>10000</ThriftClientConnectionTimeOut>
-        <ThriftServerPort>10907</ThriftServerPort>
+        <ThriftServerPort>10397</ThriftServerPort>
         <!--ThriftServerHost>localhost</ThriftServerHost-->
         <EnableThriftServer>true</EnableThriftServer>        
 
@@ -294,11 +294,11 @@
         <Password>${admin.password}</Password>
         <!-- This parameter specifies whether to display multiple versions of same
              API or only showing the latest version of an API. -->
-        <DisplayMultipleVersions>false</DisplayMultipleVersions>
+        <DisplayMultipleVersions>true</DisplayMultipleVersions>
         <!-- This parameter specifies whether to display all the APIs
              [which are having DEPRECATED/PUBLISHED status] or only display the APIs
              with having their status is as 'PUBLISHED' -->
-        <DisplayAllAPIs>false</DisplayAllAPIs>
+        <DisplayAllAPIs>true</DisplayAllAPIs>
         <!-- Uncomment this to limit the number of APIs in api the API Store -->
         <!--APIsPerPage>5</APIsPerPage-->
 
@@ -440,71 +440,4 @@
         </WhiteListedURIs>
     </RESTAPI>
 
-    <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>true</EnableAdvanceThrottling>
-        <DataPublisher>
-            <Type>Binary</Type>
-            <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>
-            <AuthUrlGroup>ssl://${carbon.local.ip}:${auth.url.port}</AuthUrlGroup>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
-            <DataPublisherPool>
-                <MaxIdle>1000</MaxIdle>
-                <InitIdleCapacity>200</InitIdleCapacity>
-            </DataPublisherPool>
-            <DataPublisherThreadPool>
-                <CorePoolSize>1000</CorePoolSize>
-                <MaxmimumPoolSize>200</MaxmimumPoolSize>
-                <KeepAliveTime>200</KeepAliveTime>
-            </DataPublisherThreadPool>
-        </DataPublisher>
-        <PolicyDeployer>
-            <ServiceURL>https://${carbon.local.ip}:${mgt.transport.https.port}${carbon.context}/services/</ServiceURL>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
-        </PolicyDeployer>
-        <BlockCondition>
-            <ServiceURL>http://${carbon.local.ip}:${mgt.transport.http.port}/throttle/data/v1</ServiceURL>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
-            <!--InitDelay>300000</InitDelay>
-            <Period>3600000</Period-->
-        </BlockCondition>
-        <GlobalPolicyEngineWSConnectionDetails>
-            <ServiceURL>http://${carbon.local.ip}:${mgt.transport.http.port}/throttle/data/v1</ServiceURL>
-            <Username>${admin.username}</Username>
-            <Password>${admin.password}</Password>
-            <!--InitDelay>300000</InitDelay-->
-        </GlobalPolicyEngineWSConnectionDetails>
-        <JMSConnectionDetails>
-            <ServiceURL>tcp://127.0.0.1:52556</ServiceURL>
-            <Username>admin</Username>
-            <Password>admin</Password>
-            <Destination>throttleData</Destination>
-            <InitDelay>300000</InitDelay>
-            <JMSConnectionParameters>
-                <transport.jms.ConnectionFactoryJNDIName>TopicConnectionFactory</transport.jms.ConnectionFactoryJNDIName>
-                <transport.jms.DestinationType>topic</transport.jms.DestinationType>
-                <java.naming.factory.initial>org.wso2.andes.jndi.PropertiesFileInitialContextFactory</java.naming.factory.initial>
-                <connectionfactory.TopicConnectionFactory>amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://${carbon.local.ip}:${jms.port}'</connectionfactory.TopicConnectionFactory>
-            </JMSConnectionParameters>
-            <JMSTaskManager>
-                <MinThreadPoolSize>100</MinThreadPoolSize>
-                <MaxThreadPoolSize>20</MaxThreadPoolSize>
-                <KeepAliveTimeInMillis>1000</KeepAliveTimeInMillis>
-                <JobQueueSize>10</JobQueueSize>
-            </JMSTaskManager>
-        </JMSConnectionDetails>
-        <EnableUnlimitedTier>true</EnableUnlimitedTier>
-        <EnableSubscriptionSpikeArrest>false</EnableSubscriptionSpikeArrest>
-    </ThrottlingConfigurations>
-
-    <SwaggerCodegen>
-        <ClientGeneration>
-            <GroupId>org.wso2</GroupId>
-            <ArtifactId>org.wso2.client.</ArtifactId>
-            <ModelPackage>org.wso2.client.model.</ModelPackage>
-            <ApiPackage>org.wso2.client.api.</ApiPackage>
-        </ClientGeneration>
-    </SwaggerCodegen>
 </APIManager>
