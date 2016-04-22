@@ -30,6 +30,7 @@ import org.wso2.am.integration.tests.restapi.utils.RESTAPITestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
@@ -37,7 +38,7 @@ import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TierTestCase extends APIMIntegrationBaseTest {
-
+    ServerConfigurationManager serverConfigurationManager;
     @Factory(dataProvider = "userModeDataProvider")
     public TierTestCase(TestUserMode userMode) {
         this.userMode = userMode;
@@ -53,6 +54,11 @@ public class TierTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
+        serverConfigurationManager.restartGracefully();
+
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Tier handling test case")
@@ -72,6 +78,7 @@ public class TierTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 }
