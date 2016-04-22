@@ -71,6 +71,7 @@
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">

@@ -50,6 +50,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
     private String tiersCollection = APIMIntegrationConstants.API_TIER.GOLD;
+    private String subPolicyCollection = APIMIntegrationConstants.API_TIER.GOLD;
     private String resourceCount = "0";
     private String roles = "";
     private String wsdl = "";
@@ -508,6 +509,7 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("techOwnerMail",techOwnerMail);
         addParameter("environments", getEnvironment());
         addParameter("corsConfiguration", getCorsConfiguration().toString());
+        addParameter("subPolicyCollection",getSubPolicyCollection());
 
     }
 
@@ -726,4 +728,12 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setSwagger(String swagger) {
         this.swagger = swagger;
     }
+    
+	public String getSubPolicyCollection() {
+		return subPolicyCollection;
+	}
+
+	public void setSubPolicyCollection(String subPolicyCollection) {
+		this.subPolicyCollection = subPolicyCollection;
+	}
 }
