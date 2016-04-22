@@ -107,12 +107,12 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "api-manager.xml"));
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
-                + "configFiles" + File.separator + "throttling" + File.separator + "log4j.properties"));*/
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));
+                + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "api-manager.xml"));
+            /*serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
+                + "configFiles" + File.separator + "throttling" + File.separator + "log4j.properties"));
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));*/
             subscriberUserWithTenantDomain = subscriberUser;
             //Load the back-end API
             String gatewaySessionCookie = createSession(gatewayContextMgt);
@@ -211,15 +211,15 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 	
 	private void checkThrottling(String accessToken, String invokeURL, Map<String, String> requestHeaders){
 		int count = 0;
-		int numberOfIterations = 5;
+		int numberOfIterations = 1;
 		for(; count < numberOfIterations; ++count){
 			try {
 				log.info(" =================================== Number of time API Invoked : "+ count);
-				if(count == 4){
+				if(count == 0){
 					Thread.sleep(10000);
 				}
 				HttpResponse serviceResponse = callAPI(accessToken, invokeURL, requestHeaders);
-				if(count == 4){
+				if(count == 0){
 					Assert.assertEquals(serviceResponse.getResponseCode(), 429, "Response code is not as expected");
 				}else{
 					Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
