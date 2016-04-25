@@ -28,7 +28,6 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3374&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>

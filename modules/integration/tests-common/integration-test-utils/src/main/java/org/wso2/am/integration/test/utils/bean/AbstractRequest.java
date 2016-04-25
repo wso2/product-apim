@@ -18,6 +18,8 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,10 +42,12 @@ public abstract class AbstractRequest {
         bufferAppender.append(requestParams);
         for (Object o : parameterMap.keySet()) {
             String key = (String) o;
-            bufferAppender.append("&");
-            bufferAppender.append(key);
-            bufferAppender.append("=");
-            bufferAppender.append(parameterMap.get(key));
+            if(!StringUtils.isEmpty(parameterMap.get(key))) {
+                bufferAppender.append("&");
+                bufferAppender.append(key);
+                bufferAppender.append("=");
+                bufferAppender.append(parameterMap.get(key));
+            }
         }
         return bufferAppender.toString();
     }
