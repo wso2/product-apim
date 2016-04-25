@@ -83,6 +83,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
             serverConfigurationManager.restartGracefully();
+            super.init();
         }
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
