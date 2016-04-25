@@ -94,7 +94,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     private String providerName;
     private String apiVersion = "1.0.0";
     private String applicationName = "JWTTest-application";
-    private String backendURL;
 
     String subscriberUsername = "subscriberUser2";
     String subscriberUserWithTenantDomain;
@@ -116,14 +115,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                 + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
             subscriberUserWithTenantDomain = subscriberUsername;
-            //Load the back-end API
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                + "synapseconfigs" + File.separator + "rest" + File.separator + "jwt_backend.xml",
-                gatewayContextMgt, gatewaySessionCookie);
         }
 
-        backendURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
         providerName = user.getUserName();
     }
 
@@ -147,7 +140,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         serverConfigManagerForTenant.restartGracefully();
         super.init(userMode);
 
-        addAndSubscribeToAPI(apiName1, apiVersion, apiContext1, description, backendURL, tags, providerName, user);
+        addAndSubscribeToAPI(apiName1, apiVersion, apiContext1, description, tags, providerName, user);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
@@ -222,12 +215,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String apiContext = "JWTTokenCacheTestAPI";
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
-        String endpointURL = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
-        String apiTier = APIMIntegrationConstants.API_TIER.GOLD;
         String tags = "token,jwt,cache";
         int waitingSecs = 900;
 
-        addAndSubscribeToAPI(apiName, apiVersion, apiContext, description, endpointURL, tags, providerName, user);
+        addAndSubscribeToAPI(apiName, apiVersion, apiContext, description, tags, providerName, user);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
@@ -340,7 +331,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         User subscriberUser = new User();
         subscriberUser.setUserName(subscriberUserWithTenantDomain);
         subscriberUser.setPassword(subscriberUserPassword);
-        addAndSubscribeToAPI(apiName2, apiVersion, apiContext2, description, backendURL, tags, providerName, subscriberUser);
+        addAndSubscribeToAPI(apiName2, apiVersion, apiContext2, description, tags, providerName, subscriberUser);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(subscriberUserWithTenantDomain, subscriberUserPassword);
@@ -391,8 +382,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
 
+        //Load the back-end API
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                                              + "synapseconfigs" + File.separator + "rest" + File.separator
+                                              + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
+        String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
+
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
-            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(backendURL));
+            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(endpointURL));
         apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //define resources
@@ -434,8 +432,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     }
 
     private void addAndSubscribeToAPI(String apiName, String apiVersion, String apiContext, String description,
-                                      String endpointURL, String tags, String providerName, User subscriber)
+                                      String tags, String providerName, User subscriber)
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException {
+
+        //Load the back-end API
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                                              + "synapseconfigs" + File.separator + "rest" + File.separator
+                                              + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
+        String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
