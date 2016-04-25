@@ -158,9 +158,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0) +  "/" +
                         API_END_POINT_METHOD, requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN,
                 "Response code mismatched when invoke new api before subscribe the new version");
-        assertTrue(oldVersionInvokeResponse.getData().contains(UNCLASSIFIED_AUTHENTICATION_FAILURE),
+        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_FORBIDDEN),
                 "Response data mismatched when invoke new API version before subscribe the new version." +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }
