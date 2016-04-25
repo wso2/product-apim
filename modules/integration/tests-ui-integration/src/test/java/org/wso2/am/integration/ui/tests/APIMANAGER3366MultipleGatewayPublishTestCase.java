@@ -22,6 +22,7 @@
 package org.wso2.am.integration.ui.tests;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -212,6 +213,52 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		driver.findElement(By.id("publish_api")).click();
 		Assert.assertTrue(!isAPIPublished("publishWithEnvironments3", "1.0.0"),
 		                  "API is Successfully published with de select environment in environment section");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
+		driver.findElement(By.linkText("Browse")).click();
+		driver.findElement(By.linkText("publishWithEnvironments3")).click();
+		driver.findElement(By.linkText("Edit")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("go_to_implement")));
+		Assert.assertTrue(!elementIsVisible(By.id("editAPIWarn")),
+		                  "Warning message for API without subscriptions is not Shown Successfully");
+		driver.findElement(By.id("userMenu")).click();
+		driver.findElement(By.cssSelector("button.btn.btn-danger")).click();
+	}
+
+	@Test(groups = "wso2.am", description = "Warning Message when Publish API Having subscribers", dependsOnMethods = {
+			"testPublishApiWithOutEnvironmentTabSelection" })
+	public void testWarningMessageWhenPublishAPIHavingSubscribers() throws Exception {
+		driver.get(getStoreURL() + "/?tenant=carbon.super");
+		driver.findElement(By.id("login-link")).click();
+		driver.findElement(By.id("username")).clear();
+		driver.findElement(By.id("username")).sendKeys("admin");
+		driver.findElement(By.id("password")).clear();
+		driver.findElement(By.id("password")).sendKeys("admin");
+		driver.findElement(By.id("loginBtn")).click();
+		while (true) {
+			driver.findElement(By.linkText("APIs")).click();
+			Thread.sleep(3000);
+			boolean apiElement = elementIsVisible(By.linkText("publishWithEnvironments1-1.0.0"));
+			if (apiElement) {
+				break;
+			}
+		}
+		driver.findElement(By.linkText("publishWithEnvironments1-1.0.0")).click();
+		driver.findElement(By.id("subscribe-button")).click();
+		driver.findElement(By.linkText("Stay on this page")).click();
+		driver.findElement(By.linkText("admin")).click();
+		driver.findElement(By.id("logout-link")).click();
+		driver.get(getPublisherURL());
+		driver.findElement(By.id("username")).clear();
+		driver.findElement(By.id("username")).sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		driver.findElement(By.id("pass")).clear();
+		driver.findElement(By.id("pass")).sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+		driver.findElement(By.id("loginButton")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Browse")));
+		driver.findElement(By.linkText("Browse")).click();
+		driver.findElement(By.linkText("publishWithEnvironments1")).click();
+		driver.findElement(By.linkText("Edit")).click();
+		WebElement warning = driver.findElement(By.id("editAPIWarn"));
+		Assert.assertTrue(warning.isDisplayed(), "Warning message for subscribed API is Shown Successful");
 		driver.findElement(By.id("userMenu")).click();
 		driver.findElement(By.cssSelector("button.btn.btn-danger")).click();
 	}
@@ -235,6 +282,15 @@ public class APIMANAGER3366MultipleGatewayPublishTestCase extends APIMIntegratio
 		if (lastLine != null && (lastLine.contains("INFO {org.apache.synapse.rest.API}"))) {
 			return true;
 		} else {
+			return false;
+		}
+	}
+
+	public boolean elementIsVisible(By elementToFind) {
+		try {
+			driver.findElement(elementToFind);
+			return true;
+		} catch (NoSuchElementException ex) {
 			return false;
 		}
 	}
