@@ -1,0 +1,139 @@
+<!--
+  ~ Copyright (c) 2005 - 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy
+  ~ of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed
+  ~ under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+  ~ CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations under the License.
+  -->
+
+<outputEventAdaptersConfig>
+
+    <adapterConfig type="rdbms">
+        <property key="string">VARCHAR(255)</property>
+        <property key="double">DOUBLE</property>
+        <property key="integer">INT</property>
+        <property key="long">BIGINT</property>
+        <property key="float">FLOAT</property>
+        <property key="boolean">BOOL</property>
+        <property key="createTable">CREATE TABLE $TABLE_NAME ($COLUMN_TYPES)</property>
+        <property key="insertDataToTable">INSERT INTO $TABLE_NAME ($COLUMNS) VALUES ($VALUES)</property>
+        <property key="isTableExist">SELECT * FROM $TABLE_NAME limit 1</property>
+        <property key="updateTableRow">UPDATE $TABLE_NAME SET $COLUMN_VALUES WHERE $CONDITION</property>
+        <property key="comma">,</property>
+        <property key="questionMark">?</property>
+        <property key="equal">=</property>
+        <property key="and">AND</property>
+        <property key="selectAllColumnsDataTypeInTable">SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$TABLE_NAME'</property>
+        <property key="selectFromTable">SELECT $COLUMNS FROM $TABLE_NAME</property>
+        <property key="oracle.string">varchar2(255)</property>
+        <property key="oracle.long">CLOB</property>
+        <property key="oracle.double">BINARY_DOUBLE</property>
+        <property key="oracle.isTableExist">SELECT * FROM $TABLE_NAME WHERE ROWNUM = 1</property>
+        <property key="oracle.selectAllColumnsDataTypeInTable">SELECT COLUMN_NAME, DATA_TYPE FROM USER_TAB_COLS WHERE TABLE_NAME = '$TABLE_NAME'</property>
+        <property key="mssql.string">varchar2(255)</property>
+        <property key="mssql.isTableExist">SELECT TOP 1 * FROM $TABLE_NAME</property>
+        <property key="mssql.selectAllColumnsDataTypeInTable">SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$TABLE_NAME'</property>
+        <property key="h2.integer">varchar2(255)</property>
+        <property key="h2.long">REAL</property>
+        <property key="h2.selectAllColumnsDataTypeInTable">SHOW COLUMNS FROM $TABLE_NAME</property>
+    </adapterConfig>
+
+    <adapterConfig type="http">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+        <!-- HTTP Client Pool Related Properties -->
+        <property key="defaultMaxConnectionsPerHost">50</property>
+        <property key="maxTotalConnections">1000</property>
+    </adapterConfig>
+
+    <adapterConfig type="jms">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="mqtt">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+        <property key="connectionKeepAliveInterval">60</property>
+    </adapterConfig>
+
+    <adapterConfig type="kafka">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="email">
+    <!-- Comment mail.smtp.user and mail.smtp.password properties to support connecting SMTP servers which use trust
+    based authentication rather username/password authentication -->
+    <property key="mail.smtp.from">APIM.com</property>
+    <property key="mail.smtp.user">APIM</property>
+    <property key="mail.smtp.password">APIM+123</property>
+    <property key="mail.smtp.host">localhost</property>
+    <property key="mail.smtp.port">3025</property>
+    <property key="mail.smtp.starttls.enable">false</property>
+    <property key="mail.smtp.auth">true</property>
+    <!-- Thread Pool Related Properties -->
+    <property key="minThread">8</property>
+    <property key="maxThread">100</property>
+    <property key="keepAliveTimeInMillis">20000</property>
+    <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="ui">
+        <property key="eventQueueSize">30</property>
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="websocket-local">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="websocket">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+    </adapterConfig>
+
+    <adapterConfig type="soap">
+        <!-- Thread Pool Related Properties -->
+        <property key="minThread">8</property>
+        <property key="maxThread">100</property>
+        <property key="keepAliveTimeInMillis">20000</property>
+        <property key="jobQueueSize">10000</property>
+        <!-- Axis2 Client Connection Related Properties -->
+        <property key="axis2ClientConnectionTimeout">10000</property>
+        <property key="reuseHTTPClient">true</property>
+        <property key="autoReleaseConnection">true</property>
+        <property key="maxConnectionsPerHost">50</property>
+    </adapterConfig>
+
+</outputEventAdaptersConfig>
