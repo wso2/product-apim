@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -98,6 +99,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifierAPI1Version1, apiCreationRequestBean, apiPublisherClientUser1, false);
+
+        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
         // Subscribe old api version (1.0.0)
         HttpResponse oldVersionSubscribeResponse =
                 subscribeToAPI(apiIdentifierAPI1Version1, APPLICATION_NAME, apiStoreClientUser1);
@@ -127,6 +131,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
                 "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
                         "Response Data:" + publishAPIResponse.getData());
+
+        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
 
@@ -141,7 +147,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
                                       API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke old api before subscribe the new version");
@@ -156,11 +162,11 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     public void testInvokeNewAPIBeforeSubscribeTheNewVersion() throws Exception {
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0) +  "/" +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN,
                 "Response code mismatched when invoke new api before subscribe the new version");
-        assertTrue(oldVersionInvokeResponse.getData().contains(UNCLASSIFIED_AUTHENTICATION_FAILURE),
+        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_FORBIDDEN),
                 "Response data mismatched when invoke new API version before subscribe the new version." +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }
