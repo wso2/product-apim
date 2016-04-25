@@ -1,5 +1,5 @@
 /*
-*Copyright (c) 2010-2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 *
 *WSO2 Inc. licenses this file to you under the Apache License,
 *Version 2.0 (the "License"); you may not use this file except
@@ -33,8 +33,7 @@ import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import java.io.File;
 import java.util.HashMap;
 
-public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
-        extends APIMIntegrationBaseTest {
+public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMIntegrationBaseTest {
 
     private SimpleSocketServer simpleSocketServer;
 
@@ -42,14 +41,14 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
     public void setEnvironment() throws Exception {
         super.init();
 
-        AuthenticatorClient login = new AuthenticatorClient(gatewayContext.getContextUrls().getBackEndUrl());
+        AuthenticatorClient login = new AuthenticatorClient(gatewayContextWrk.getContextUrls().getBackEndUrl());
         String session = login.login("admin", "admin", "localhost");
         // Upload the synapse
         String file = "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" +
                       File.separator + "property" + File.separator +
                       "duplicate_transfer_encoding.xml";
         OMElement synapseConfig = apimTestCaseUtils.loadResource(file);
-        apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContext.getContextUrls().getBackEndUrl(),
+        apimTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextWrk.getContextUrls().getBackEndUrl(),
                                                      session);
 
         int port = 9785;
@@ -73,22 +72,16 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
     @Test(groups = "wso2.am", description = "Test for reading the duplicate transfer-encoding header in the response")
     public void testDuplicateTransferEncodingPropertyTest() throws Exception {
 
-        String endPoint = "http://localhost:8280/helloService";
-        try {
+        String endPoint = getAPIInvocationURLHttp("helloService");
 
-            HttpResponse httpResponse = HttpRequestUtil.doGet(endPoint, new HashMap<String, String>());
-            Assert.assertNotNull(httpResponse, "Response should be available");
-            Assert.assertEquals(httpResponse.getResponseCode(), 200, "Response should be success");
-
-        } catch (Exception e) {
-            Assert.fail("Cannot thrown the exception");
-        }
-
+        HttpResponse httpResponse = HttpRequestUtil.doGet(endPoint, new HashMap<String, String>());
+        Assert.assertNotNull(httpResponse, "Response should be available");
+        Assert.assertEquals(httpResponse.getResponseCode(), 200, "Response should be success");
     }
 
     @AfterClass(alwaysRun = true)
     public void stop() throws Exception {
         simpleSocketServer.shutdown();
-        cleanup();
+        super.cleanUp();
     }
 }
