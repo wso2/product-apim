@@ -42,12 +42,10 @@ public abstract class AbstractRequest {
         bufferAppender.append(requestParams);
         for (Object o : parameterMap.keySet()) {
             String key = (String) o;
-            if(!StringUtils.isEmpty(parameterMap.get(key))) {
-                bufferAppender.append("&");
-                bufferAppender.append(key);
-                bufferAppender.append("=");
-                bufferAppender.append(parameterMap.get(key));
-            }
+            bufferAppender.append("&");
+            bufferAppender.append(key);
+            bufferAppender.append("=");
+            bufferAppender.append(parameterMap.get(key));
         }
         return bufferAppender.toString();
     }
