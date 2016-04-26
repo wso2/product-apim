@@ -121,7 +121,6 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
         assertEquals(publisherOverviewPageResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when retrieving the Publisher Overview page");
         assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
-        assertTrue(isUserAvailableInActiveSubscriptionInUserTab(publisherOverviewPageResponse.getData(), providerName), "");
 
     }
 
