@@ -25,118 +25,118 @@
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
-            <!--class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
-            <!--&lt;!&ndash;https://wso2.org/jira/browse/TA-970&ndash;&gt;-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>
-            <!--Disable the test case because of APIMANAGER-3378-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
-            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-4191&ndash;&gt;&ndash;&gt;-->
-            <!-- <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because ofAPIMANAGER-3515&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3377&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
-            <class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>
-            <!-- Commenting this test since its required to setup BAM and the DBs to run this
-            <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
-            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>-->
+            <!--&lt;!&ndash;class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;https://wso2.org/jira/browse/TA-970&ndash;&gt;&ndash;&gt;-->
+            <!--&lt;!&ndash;<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewHandlerAndInvokeAPITestCase"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.sequence.DefaultEndpointTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIPublishingAndVisibilityInStoreTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByDomainTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByPublicTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityByRoleTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APIVisibilityWithDirectURLTestCase"/>-->
+            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3378&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-4191&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
+            <!--&lt;!&ndash; <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAuthTypeOfResourceTestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because ofAPIMANAGER-3515&ndash;&gt;&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed&ndash;&gt;&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-3377&ndash;&gt;&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>-->
+            <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.ScriptMediatorTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.RegistryLifeCycleInclusionTest"/>-->
+            <!--&lt;!&ndash; Commenting this test since its required to setup BAM and the DBs to run this-->
+            <!--<class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> &ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>-->
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
-            <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
-            <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
-            <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
-            <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.DAOTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>-->
+            <!--&lt;!&ndash;<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
-            <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
-            <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>
-            <class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>
-            <class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>
-            <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
-            <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
-            <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
-	    <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>-->
+            <!--&lt;!&ndash;class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>-->
+            <!--&lt;!&ndash;  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.RelativeUrlLocationHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.hostobject.HostObjectTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4081PaginationCountTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.rest.SearchPaginatedAPIsWithMultipleStatusTestCase"/>-->
+            <!--&lt;!&ndash; <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> &ndash;&gt;-->
+	    <!--<class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>-->
         </classes>
     </test>
 
     <test name="apim-publisher-tests" preserve-order="true" parallel="false">
 
         <classes>
-            <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
-            <!--Disable the test case due to APIMANAGER-4039-->
-            <class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
-			<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>-->
+            <!--&lt;!&ndash;Disable the test case due to APIMANAGER-4039&ndash;&gt;-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM627AddDocumentationToAnAPIWithDocTypeOtherThroughPublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>-->
+			<!--<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>-->
 
         </classes>
     </test>
@@ -145,21 +145,21 @@
     <test name="apim-store-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.APIM710AllSubscriptionsByApplicationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>
-            <class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM684GenerateApplicationKeyTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
-            <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
-            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.CopyNewVersionTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.NewCopyWithDefaultVersion"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.SameVersionAPITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIM684GenerateApplicationKeyTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>-->
         </classes>
     </test>
 
@@ -169,13 +169,13 @@
             CARBON-15759 and ESBJAVA-4386 fixed -->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCase"/>-->
-            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
-            <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>-->
 
         </classes>
     </test>
