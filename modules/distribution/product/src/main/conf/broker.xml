@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied. See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<!-- This is the root configuration file of WSO2 Message Broker (MB). Links to configurations of 
+associated libraries are also specified here. 
+
+[Note for developers] - If you intend to rename or modify a property name, remember to update 
+relevant, org.wso2.andes.configuration.enums.AndesConfiguration, enum value using the Xpath 
+expression of the property.
+
+This file is ciphertool compliant. Refer PRODUCT_HOME/repository/conf/security/cipher-text.properties for examples.-->
+<broker>
+
+    <coordination>
+        <!-- You can override the cluster node identifier of this MB node using the nodeID. 
+        If it is left as "default", the default node ID will be generated for it. (Using IP + UUID).
+        The node ID of each member should ALWAYS be unique.-->
+        <nodeID>default</nodeID>
+
+        <!-- Thrift is used to maintain and sync slot (message groups) ranges between MB nodes. -->
+        <thriftServerHost>localhost</thriftServerHost>
+        <thriftServerPort>7611</thriftServerPort>
+        <!--Thrift server reconnect timeout. Value specified in SECONDS-->
+        <thriftServerReconnectTimeout>5</thriftServerReconnectTimeout>
+        <!-- Hazelcast reliable topics are used to share all notifications across the MB cluster (e.g. subscription
+        changes), And this property defines the time-to-live for a notification since its creation. (in Seconds) -->
+        <clusterNotificationTimeout>10</clusterNotificationTimeout>
+    </coordination>
+
+    <!-- You can enable/disable specific messaging transports in this section. By default all 
+    transports are enabled. This section also allows you to customize the messaging flows used 
+    within WSO2 MB. NOT performance related, but logic related. -->
+    <transports>
+        <amqp enabled="true">
+            <bindAddress>0.0.0.0</bindAddress>
+
+            <defaultConnection enabled="true" port="5672" />
+
+            <sslConnection enabled="true" port="8672">
+                <keyStore>
+                     <location>repository/resources/security/wso2carbon.jks</location>
+                     <password>wso2carbon</password>
+                </keyStore>
+                <trustStore>
+                    <location>repository/resources/security/client-truststore.jks</location>
+                    <password>wso2carbon</password>
+                </trustStore>
+            </sslConnection>
+
+            <maximumRedeliveryAttempts>10</maximumRedeliveryAttempts>
+            <allowSharedTopicSubscriptions>false</allowSharedTopicSubscriptions>
+            <allowStrictNameValidation>true</allowStrictNameValidation>
+
+            <!-- Refer repository/conf/advanced/qpid-config.xml for further AMQP-specific configurations.-->
+        </amqp>
+        <mqtt enabled="false">
+            <bindAddress>0.0.0.0</bindAddress>
+
+            <defaultConnection enabled="true" port="1883" />
+
+            <sslConnection enabled="true" port="8883">
+                <keyStore>
+                    <location>repository/resources/security/wso2carbon.jks</location>
+                    <password>wso2carbon</password>
+                </keyStore>
+                <trustStore>
+                    <location>repository/resources/security/client-truststore.jks</location>
+                    <password>wso2carbon</password>
+                </trustStore>
+            </sslConnection>
+
+            <!--All receiving events/messages will be in this ring buffer. Ring buffer size
+            of MQTT inbound event disruptor. Default is set to 32768 (1024 * 32)
+            Having a large ring buffer will have a increase memory usage and will improve performance
+            and vise versa -->
+            <inboundBufferSize>32768</inboundBufferSize>
+
+            <!-- Messages delivered to clients will be placed in this ring buffer. 
+            Ring buffer size of MQTT delivery event disruptor. Default is set to 32768 (1024 * 32)
+            Having a large ring buffer will have a increase memory usage and will improve performance
+            and vise versa -->
+            <deliveryBufferSize>32768</deliveryBufferSize>
+            
+
+            <security>
+                   <!--
+                       Instructs the MQTT server whether clients should always send credentials
+                       when establishing a connection.
+                       Possible values:
+                        OPTIONAL: This is the default value. MQTT clients may or may not send 
+                                  credentials. If a client sends credentials server will 
+                                  validates it. 
+                                  If client doesn't send credentials then server will not 
+                                  authenticate, but allows client to establish the connection. 
+                                  This behavior adheres to MQTT 3.1 specification.
+                        REQUIRED: Clients should always provide credentials when connecting. 
+                                  If client doesn't send credentials or they are invalid 
+                                  server rejects the connection.
+                   -->
+                   <authentication>OPTIONAL</authentication>
+                  
+                   <!--Class name of the authenticator to use. class should 
+                       inherit from org.dna.mqtt.moquette.server.IAuthenticator
+                       Note: default implementation authenticates against carbon user store
+                       based on supplied username/password
+                   --> 
+                   <authenticator class="org.wso2.carbon.andes.authentication.andes.CarbonBasedMQTTAuthenticator"/>
+                    <!--authenticator class="org.wso2.carbon.andes.authentication.andes.OAuth2BasedMQTTAuthenticator">
+                        <property name="hostURL">https://localhost:9443/services/OAuth2TokenValidationService</property>
+                        <property name="username">admin</property>
+                        <property name="password">admin</property>
+                        <property name="maxConnectionsPerHost">10</property>
+                        <property name="maxTotalConnections">150</property>
+                    </authenticator-->
+
+                    <!--
+                       Instructs the MQTT server whether clients should be authorized before either publishing or subscribing
+                       Possible values:
+                        NOT_REQUIRED: This is the default value. MQTT clients will skip the authorization check
+                        REQUIRED: Clients will authorized before publishing. this will execute the class given in authorzier
+                        Note: authentication should be REQUIRED for authorization to be REQUIRED.
+                   -->
+                    <authorization>NOT_REQUIRED</authorization>
+
+                    <!--Class name of the authorizer to use. class should
+                        inherit from org.dna.mqtt.moquette.server.IAutherizer
+                        Note: default implementation authorizes against carbon permission with the topic.
+                    -->
+                    <!--connectionPermission is required for a user to connect to broker-->
+                    <authorizer class="org.wso2.carbon.andes.authorization.andes.CarbonPermissionBasedMQTTAuthorizer">
+                        <property name="connectionPermission">/permission/admin/mqtt/connect</property>
+                    </authorizer>
+            </security>
+        </mqtt>
+
+    </transports>
+
+    <!-- Depending on the database type selected in master-datasources.xml, you must enable the
+    relevant Data access classes here. Currently WSO2 MB Supports RDBMS(any RDBMS store). 
+	These stores are accessed for two purposes.
+	
+    1. For message persistence ("messageStore")
+    2. To persist and access other information relevant to messaging protocols.("contextStore").-->
+
+    <!-- By default WSO2 MB runs with H2 persistent store. If you plan to use a different
+    store, point to the relevant dataSource or uncomment the database appropriately.
+
+    RDBMS
+    =====
+    If you are running an RDBMS you can use the existing RDBMS implementation of stores
+    by pointing to the correct data source by updating the property "dataSource".
+
+    Data source entry should be present in
+    <MB_HOME>/repository/conf/datasources/master-datasources.xml.
+
+    -->
+    <persistence>
+
+        <!-- RDBMS MB Store Configuration -->
+
+        <messageStore class="org.wso2.andes.store.rdbms.RDBMSMessageStoreImpl">
+            <property name="dataSource">WSO2MBStoreDB</property>
+            <property name="storeUnavailableSQLStateClasses">08</property>
+            <property name="integrityViolationSQLStateClasses">23,27,44</property>
+            <property name="dataErrorSQLStateClasses">21,22</property>
+            <property name="transactionRollbackSQLStateClasses">40</property>
+        </messageStore>
+
+        <contextStore class="org.wso2.andes.store.rdbms.RDBMSAndesContextStoreImpl">
+            <property name="dataSource">WSO2MBStoreDB</property>
+            <property name="storeUnavailableSQLStateClasses">08</property>
+            <property name="integrityViolationSQLStateClasses">23,27,44</property>
+            <property name="dataErrorSQLStateClasses">21,22</property>
+            <property name="transactionRollbackSQLStateClasses">40</property>
+        </contextStore>
+
+        <cache>
+            <!-- Size of the messages cache in MBs. Setting '0' will disable the cache. -->
+            <size>256</size>
+            <!-- Expected concurrency for the cache (4 is guava default) -->					
+            <concurrencyLevel>4</concurrencyLevel>
+            <!--Number of seconds cache will keep messages after they are 
+                              added (unless they are consumed and deleted).-->					
+            <expirySeconds>2</expirySeconds>
+
+            <!--Reference type used to hold messages in memory.
+                    weak   - Using java weak references ( - results higher cache misses)
+                    strong - ordinary references ( - higher cache hits, but not good if server 
+                             is going to run with limited heap size + under severe load).
+            -->
+            <valueReferenceType>strong</valueReferenceType>
+
+            <!--Prints cache statistics in 2 minute intervals 
+                                                   in carbon log ( and console)-->					
+            <printStats>false</printStats>
+        </cache>
+
+        <!-- This class decides how unique IDs are generated for the MB node. This id generator is
+        expected to be thread safe and a implementation of interface
+        org.wso2.andes.server.cluster.coordination.MessageIdGenerator
+
+        NOTE: This is NOT used in MB to generate message IDs. -->
+        <idGenerator>org.wso2.andes.server.cluster.coordination.TimeStampBasedMessageIdGenerator</idGenerator>
+
+        <!-- This is the Task interval (in SECONDS) to check whether communication 
+        is healthy between message store (/Database) and this server instance. -->
+        <storeHealthCheckInterval>10</storeHealthCheckInterval>
+    </persistence>
+
+    <!--Publisher transaction related configurations.-->
+    <transaction>
+
+        <!--Maximum batch size (Messages) for a transaction. Exceeding this limit will result
+        in a failure in the subsequent commit request. Default is set to 10MB. Limit is
+        calculated considering the payload of messages-->
+        <maxBatchSizeInBytes>10000000</maxBatchSizeInBytes>
+    </transaction>
+
+    <!-- This section allows you to tweak memory and processor allocations used by WSO2 MB.
+    Broken down by critical processes so you have a clear view of which parameters to change in
+    different scenarios.  -->
+    <performanceTuning>
+
+        <slots>
+            <!--
+                If message publishers are slow, time taken to fill the slot (up to <windowSize>) will be longer.
+                This will add an latency to messages. Therefore broker will mark the slot as 
+                ready to deliver before even the slot is entirely filled after specified time.
+                NOTE: specified in milliseconds.
+            -->
+            <messageAccumulationTimeout>2000</messageAccumulationTimeout>
+
+            <!--Rough estimate for size of a slot-->
+            <windowSize>1000</windowSize>
+
+            <!-- Time interval which broker check for slots that can be marked as 'ready to deliver' 
+                 (- slots which have a aged more than 'messageAccumulationTimeout')
+                 NOTE: specified in milliseconds.
+            -->
+            <timerPeriod>1000</timerPeriod>
+
+            <!--Number of SlotDeliveryWorker threads that should be started-->
+            <workerThreadCount>5</workerThreadCount>
+
+        </slots>
+
+        <delivery>
+            <!-- Maximum number of undelivered messages that can have in memory. Increasing this
+            value increase the possibility of out of memory scenario but performance will be
+            improved -->
+            <maxNumberOfReadButUndeliveredMessages>1000</maxNumberOfReadButUndeliveredMessages>
+
+            <!-- This is the ring buffer size of the delivery disruptor. This value should be a
+            power of 2 (E.g. 1024, 2048, 4096). Use a small ring size if you want to reduce the
+            memory usage. -->
+            <ringBufferSize>4096</ringBufferSize>
+
+            <!--Number of parallel readers used to used to read content from message store.
+            Increasing this value will speed-up the message sending mechanism. But the load
+            on the data store will increase. -->
+            <parallelContentReaders>5</parallelContentReaders>
+
+            <!-- Number of parallel decompression handlers used to decompress messages before send to subscribers.
+            Increasing this value will speed-up the message decompressing mechanism. But the system load
+            will increase. -->
+            <parallelDecompressionHandlers>5</parallelDecompressionHandlers>
+
+            <!-- Number of parallel delivery handlers used to send messages to subscribers.
+            Increasing this value will speed-up the message sending mechanism. But the system load
+            will increase. -->
+            <parallelDeliveryHandlers>5</parallelDeliveryHandlers>
+
+            <!-- The size of the batch represents, at a given time the number of messages that could 
+            be retrieved from the database. -->
+            <contentReadBatchSize>65000</contentReadBatchSize>
+
+            <contentCache>
+                <!-- Specify the maximum number of entries the cache may contain. -->
+                <maximumSize>100</maximumSize>
+                <!-- Specify the time in seconds that each entry should be 
+                     automatically removed from the cache after the entry's creation. -->
+                <expiryTime>120</expiryTime>
+            </contentCache>
+
+            <!--When delivering topic messages to multiple topic 
+                subscribers one of following stratigies can be choosen.
+            
+               1. DISCARD_NONE     - Broker do not loose any message to any subscriber. 
+                                     When there are slow subscribers this can cause broker 
+                                     go Out of Memory.
+
+               2. SLOWEST_SUB_RATE - Broker deliver to the speed of the slowest
+                                     topic subscriber. This can cause fast subscribers
+                                     to starve. But eliminate Out of Memory issue.
+
+               3. DISCARD_ALLOWED  - Broker will try best to deliver. To eliminate Out
+                                     of Memory threat broker limits sent but not acked message 
+                                     count to <maxUnackedMessages>. 
+                                     If it is breached, and <deliveryTimeout> is also 
+                                     breached message can either be lost or actually 
+                                     sent but ack is not honoured.
+            -->
+            <topicMessageDeliveryStrategy>
+                <strategyName>DISCARD_NONE</strategyName>
+                <!-- If you choose DISCARD_ALLOWED topic message delivery strategy, 
+                     broker keep messages in memory until ack is done until this timeout.
+                     If an ack is not received under this timeout, ack will be simulated 
+                     internally and real acknowledgement is discarded.
+                     deliveryTimeout is in seconds -->
+                <deliveryTimeout>60</deliveryTimeout>
+            </topicMessageDeliveryStrategy>
+        </delivery>
+
+        <ackHandling>
+            <!--Number of message acknowledgement handlers to process acknowledgements concurrently.
+            These acknowledgement handlers will batch and process acknowledgements.  -->
+            <ackHandlerCount>1</ackHandlerCount>
+
+            <!--Maximum batch size of the acknowledgement handler. Andes process acknowledgements in
+            batches using Disruptor Increasing the batch size reduces the number of calls made to
+            database by MB. Depending on the database optimal batch size this value should be set.
+            Batches will be of the maximum batch size mostly in high throughput scenarios.
+            Underlying implementation use Disruptor for batching hence will batch message at a
+            lesser value than this in low throughput scenarios -->
+            <ackHandlerBatchSize>100</ackHandlerBatchSize>
+
+            <!-- Message delivery from server to the client will be paused temporarily if number of
+            delivered but unacknowledged message count reaches this size. Should be set considering
+            message consume rate. This is to avoid overwhelming slow subscribers. -->
+            <maxUnackedMessages>1000</maxUnackedMessages>
+        </ackHandling>
+
+        <contentHandling>
+
+            <!-- Within Andes there are content chunk handlers which convert incoming large content
+            chunks into max content chunk size allowed by Andes core. These handlers run in parallel
+            converting large content chunks to smaller chunks.
+
+            If the protocol specific content chunk size is different from the max chunk size allowed
+            by Andes core and there are significant number of large messages published, then having
+            multiple handlers will increase performance. -->
+            <contentChunkHandlerCount>3</contentChunkHandlerCount>
+
+            <!-- Andes core will store message content chunks according to this chunk size. Different
+            database will have limits and performance gains by tuning this parameter.
+
+            For instance in MySQL the maximum table column size for content is less than 65534, which
+            is the default chunk size of AMQP. By changing this parameter to a lesser value we can
+            store large content chunks converted to smaller content chunks within the DB with this
+            parameter. -->
+            <maxContentChunkSize>65500</maxContentChunkSize>
+
+            <!-- This is the configuration to allow compression of message contents, before store messages
+            into the database.-->
+            <allowCompression>false</allowCompression>
+
+            <!-- This is the configuration to change the value of the content compression threshold (in bytes).
+            Message contents less than this value will not compress, even compression is enabled. The recommended
+            message size of the smallest message before compression is 13bytes. Compress messages smaller than
+            13bytes will expand the message size by 0.4% -->
+            <contentCompressionThreshold>1000</contentCompressionThreshold>
+
+        </contentHandling>
+
+        <inboundEvents>
+            <!--Number of parallel writers used to write content to message store. Increasing this
+            value will speed-up the message receiving mechanism. But the load on the data store will
+            increase.-->
+            <parallelMessageWriters>1</parallelMessageWriters>
+
+            <!--Size of the Disruptor ring buffer for inbound event handling. For publishing at
+            higher rates increasing the buffer size may give some advantage on keeping messages in
+            memory and write.
+
+            NOTE: Buffer size should be a value of power of two -->
+            <bufferSize>65536</bufferSize>
+
+            <!--Maximum batch size of the batch write operation for inbound messages. MB internals
+            use Disruptor to batch events. Hence this batch size is set to avoid database requests
+            with high load (with big batch sizes) to write messages. This need to be configured in
+            high throughput messaging scenarios to regulate the hit on database from MB -->
+            <messageWriterBatchSize>70</messageWriterBatchSize>
+
+            <!--Timeout for waiting for a queue purge event to end to get the purged count. Doesn't
+            affect actual purging. If purge takes time, increasing the value will improve the
+            possibility of retrieving the correct purged count. Having a lower value doesn't stop
+            purge event. Getting the purged count is affected by this -->
+            <purgedCountTimeout>180</purgedCountTimeout>
+
+            <!--Number of parallel writers used to write content to message store for transaction
+            based publishing. Increasing this value will speedup commit duration for a transaction.
+            But the load on the data store will increase.-->
+            <transactionMessageWriters>1</transactionMessageWriters>
+        </inboundEvents>
+
+    </performanceTuning>
+
+    <!-- This section is about how you want to view messaging statistics from the admin console and
+    how you plan to interact with it. -->
+    <managementConsole>
+        <!--Maximum number of messages to be fetched per page using Andes message browser when browsing
+        queues/dlc -->
+        <messageBrowsePageSize>100</messageBrowsePageSize>
+
+        <!-- This property defines the maximum message content length that can be displayed at the
+        management console when browsing queues. If the message length exceeds the value, a
+        truncated content will be displayed with a statement "message content too large to display."
+        at the end. default value is 100000 (can roughly display a 100KB message.)
+        * NOTE : Increasing this value could cause delays when loading the message content page.-->
+        <maximumMessageDisplayLength>100000</maximumMessageDisplayLength>
+
+    </managementConsole>
+
+    <!-- Memory and resource exhaustion is something we should prevent and recover from.
+    This section allows you to specify the threshold at which to reduce/stop frequently intensive
+    operations within MB temporarily. -->
+	<!--
+	highLimit - flow control is enabled when message chunk pending to be handled by inbound 
+	 disruptor reaches above this limit
+    lowLimit - flow control is disabled (if enabled) when message chunk pending to be handled
+	 by inbound disruptor reaches below this limit	
+	-->	
+    <flowControl>
+        <!-- This is the global buffer limits which enable/disable the flow control globally -->
+        <global>
+            <lowLimit>800</lowLimit>
+            <highLimit>8000</highLimit>
+        </global>
+
+        <!-- This is the channel specific buffer limits which enable/disable the flow control locally.
+		-->
+        <bufferBased>
+            <lowLimit>100</lowLimit>
+            <highLimit>1000</highLimit>
+        </bufferBased>
+    </flowControl>
+
+    <slotManagement>
+        <!--Set slot storage mode (RDBMS/HazelCast)-->
+        <storage>RDBMS</storage>
+    </slotManagement>
+	
+    <!--
+    Message broker keeps track of all messages it has received as groups. These groups are termed
+    'Slots' (To know more information about Slots and message broker install please refer to online wiki).
+    Size of a slot is loosely determined by the configuration <windowSize> (and the number of
+    parallel publishers for specific topic/queue). Message broker cluster (or in single node) keeps
+    track of slots which constitutes for a large part of operating state before the cluster went down.
+	When first message broker node of the cluster starts up, it will read the database to recreate
+    the internal state to previous state. 
+    -->
+    <recovery>
+        <!--
+        There could be multiple storage queues worked before entire cluster (or single node) went down.
+        We need to recover all remaining messages of each storage queue when first node startup and we can
+        read remaining message concurrently of each storage queue. Default value to set here to 5. You can
+        increase this value based on number of storage queues exist. Please use optimal value based on
+        number of storage queues to speed up warm startup.
+        -->
+        <concurrentStorageQueueReads>5</concurrentStorageQueueReads>
+
+        <!-- Virtual host sync interval seconds in for the Virtual host syncing Task which will
+            sync the Virtual host details across the cluster -->
+        <vHostSyncTaskInterval>900</vHostSyncTaskInterval>
+    </recovery>
+
+</broker>
