@@ -419,10 +419,10 @@ public class APIPublisherRestClient {
                     new APILifeCycleStateRequest(apiIdentifier.getApiName(), apiIdentifier.getProviderName(),
                             APILifeCycleState.PUBLISHED);
             publishUpdateRequest.setVersion(apiIdentifier.getVersion());
-            String requestParameters = publishUpdateRequest.generateRequestParameters();
             if (isRequireReSubscription) {
-                requestParameters += "&requireResubscription=true";
+                publishUpdateRequest.setRequireResubscription("true");
             }
+            String requestParameters = publishUpdateRequest.generateRequestParameters();
             return HttpRequestUtil.doPost(
                     new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
                     requestHeaders);
