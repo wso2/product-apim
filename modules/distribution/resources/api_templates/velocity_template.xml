@@ -273,7 +273,7 @@
     <implementation type="memory" maxSize="500"/>
 </cache>
 #end
-
+<property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
 #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
@@ -284,8 +284,7 @@
 #if($apiStatus != 'PROTOTYPED')
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-        #end
-        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+        #end        
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
