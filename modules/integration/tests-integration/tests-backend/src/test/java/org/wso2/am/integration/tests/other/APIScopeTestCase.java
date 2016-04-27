@@ -157,7 +157,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token?tenantDomain="
+                                       + user.getUserDomain());
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
