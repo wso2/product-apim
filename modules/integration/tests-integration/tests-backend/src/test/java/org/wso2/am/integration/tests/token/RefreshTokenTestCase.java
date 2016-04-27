@@ -160,7 +160,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
         String consumerSecret =
                 response.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token?tenantDomain=" + user.getUserDomain());
 
         //Get an Access Token from the user who is logged into the API Store. See APIMANAGER-3152.
         String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(
