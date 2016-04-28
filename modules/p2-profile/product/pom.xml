@@ -1541,6 +1541,10 @@
                                     <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
                                     <version>${analytics.common.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1884,6 +1888,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
                                     <version>${analytics.common.version}</version>
                                 </feature>
                             </features>
@@ -3166,6 +3174,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
                                     <version>${analytics.common.version}</version>
                                 </feature>
                             </features>
