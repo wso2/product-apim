@@ -209,6 +209,11 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
 	}
 	
+	/**
+	 * @param accessToken
+	 * @param invokeURL
+	 * @param requestHeaders
+	 */
 	private void checkThrottling(String accessToken, String invokeURL, Map<String, String> requestHeaders){
 		int count = 0;
 		int limit = 4;
