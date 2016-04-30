@@ -25,10 +25,7 @@ import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
@@ -86,10 +83,6 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
-       ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));
-        serverConfigurationManager.restartGracefully();
     }
 
     @AfterTest(alwaysRun = true)
