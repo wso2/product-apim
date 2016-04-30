@@ -129,7 +129,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
             String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
             JSONObject response = new JSONObject(responseString);
-
+            log.info("Token response: " + response.toString());
             applicationKeyBean.setAccessToken(response.getJSONObject("data").getJSONObject("key").
                     get("accessToken").toString());
             applicationKeyBean.setConsumerKey(response.getJSONObject("data").getJSONObject("key").
