@@ -28,6 +28,8 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -46,6 +48,7 @@ import static org.testng.Assert.*;
 /**
  * Change the tiers.xml file  with new tier added and check the new tier availability in publisher.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycleBaseTest {
     private final String API_NAME = "EditTiersXMLAndVerifyInPublisherTest";
     private final String API_CONTEXT = "EditTiersXMLAndVerifyInPublisher";
@@ -193,6 +196,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, originalTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, originalAppTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, originalResTiersXML);
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 
