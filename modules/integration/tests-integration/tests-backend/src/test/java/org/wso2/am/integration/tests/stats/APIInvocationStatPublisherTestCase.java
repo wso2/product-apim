@@ -34,10 +34,11 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.am.integration.test.utils.thrift.DASThriftTestServer;
 import org.wso2.am.integration.test.utils.thrift.StreamDefinitions;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.databridge.commons.Event;
-import org.wso2.carbon.databridge.core.exception.DataBridgeException;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
@@ -50,6 +51,7 @@ import java.util.Map;
 /**
  * This class is used to test APIM statistics event publish to the DAS
  */
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APIInvocationStatPublisherTestCase.class);
     private final String API_NAME = "APIInvocationStatPublisherAPIName";
@@ -128,6 +130,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = { "wso2.am" }, description = "Test API invocation", dependsOnMethods = "testAPICreation")
@@ -160,14 +163,15 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
 
+        //testing request event stream
         testRequestEvent();
+        //testing response event stream
         testResponseEvent();
     }
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiStore.removeApplication(APP_NAME);
-        apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
         thriftTestServer.stop();
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();
@@ -301,7 +305,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         }
         for (int i = 0; i < result.length; i++) {
             String key = payloadData.getJSONObject(i).getString("name");
-            System.out.println(key + "," + result[i]);
             map.put(key, result[i]);
         }
         return map;
