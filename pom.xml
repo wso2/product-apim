@@ -949,7 +949,7 @@
 
         <carbon.dashboard.version>1.0.15</carbon.dashboard.version>
         <shindig.version>1.0.0</shindig.version>
-        <analytics.common.version>1.0.0-SNAPSHOT</analytics.common.version>
+        <analytics.common.version>1.0.0-alpha1</analytics.common.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
