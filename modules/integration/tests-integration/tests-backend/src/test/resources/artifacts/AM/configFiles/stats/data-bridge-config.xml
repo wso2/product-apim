@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright 2005-2011 WSO2, Inc. (http://wso2.com)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the License);
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an AS IS BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<dataBridgeConfiguration>
+
+    <workerThreads>10</workerThreads>
+
+    <!--Maximum amount of messages that can be queued internally in MB-->
+    <maxEventBufferCapacity>10</maxEventBufferCapacity>
+
+    <!-- Queue size; the maximum number of events that can be stored in the queue -->
+    <eventBufferSize>2000</eventBufferSize>
+    <clientTimeoutMin>30</clientTimeoutMin>
+
+    <dataReceiver name="Thrift">
+        <config name="tcpPort">7611</config>
+        <config name="sslPort">7711</config>
+    </dataReceiver>
+
+    <dataReceiver name="Binary">
+        <config name="tcpPort">9611</config>
+        <config name="sslPort">9711</config>
+        <config name="sslReceiverThreadPoolSize">100</config>
+        <config name="tcpReceiverThreadPoolSize">100</config>
+    </dataReceiver>
+
+</dataBridgeConfiguration>
