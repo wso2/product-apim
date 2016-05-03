@@ -21,6 +21,8 @@ package org.wso2.am.integration.test.utils.clients;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +30,7 @@ import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
@@ -37,10 +40,10 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import static org.testng.Assert.assertFalse;
 
 /**
  * Provides set of method to invoke publisher API
@@ -70,11 +73,15 @@ public class APIStoreRestClient {
             throws APIManagerIntegrationTestException {
         HttpResponse response;
         log.info("Login to Store " + backendURL + " as the user " + userName);
+
+        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+        urlParameters.add(new BasicNameValuePair("action", "login"));
+        urlParameters.add(new BasicNameValuePair("username", userName));
+        urlParameters.add(new BasicNameValuePair("password", password));
+
         try {
-            response = HttpRequestUtil.doPost(
-                    new URL(backendURL + "store/site/blocks/user/login/ajax/login.jag"),
-                    "action=login&username=" + userName + "&password=" + password + "",
-                    requestHeaders);
+            response = HTTPSClientUtils.doPost(
+                    backendURL + "store/site/blocks/user/login/ajax/login.jag", requestHeaders, urlParameters);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to login to the store app ", e);
         }

@@ -20,14 +20,19 @@ package org.wso2.am.integration.test.utils.clients;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class APIPublisherRestClient {
@@ -60,16 +65,17 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         HttpResponse response;
         log.info("Login to Publisher " + backendURL + " as the user " + userName);
-        try {
-            response =
-                    HttpRequestUtil.doPost(
-                            new URL(backendURL + URL_SUFFIX + "/user/login/ajax/login.jag"),
-                            "action=login&username=" + userName + "&password=" + password + "",
-                            requestHeaders);
 
+        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+        urlParameters.add(new BasicNameValuePair("action", "login"));
+        urlParameters.add(new BasicNameValuePair("username", userName));
+        urlParameters.add(new BasicNameValuePair("password", password));
+
+        try {
+            response = HTTPSClientUtils.doPost(
+                    backendURL + URL_SUFFIX + "/user/login/ajax/login.jag", requestHeaders, urlParameters);
         } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Unable to login to the publisher"
-                                                         + ". Error: " + e.getMessage(), e);
+            throw new APIManagerIntegrationTestException("Unable to login to the publisher app ", e);
         }
 
         String session = getSession(response.getHeaders());
