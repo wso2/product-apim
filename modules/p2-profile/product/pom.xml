@@ -1598,7 +1598,14 @@
                                     <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-
+                                <feature>
+                                    <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -2009,7 +2016,14 @@
                                     <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-
+                                <feature>
+                                    <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
