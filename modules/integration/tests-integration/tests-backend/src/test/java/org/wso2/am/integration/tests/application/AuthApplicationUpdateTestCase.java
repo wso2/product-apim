@@ -25,13 +25,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -190,7 +199,7 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         //Test the Subscription UI
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Cookie", apiStore.getSession());
-        HttpResponse response = HttpRequestUtil.doGet(storeURLHttp + "/store/site/pages/subscriptions.jag", headers);
+        HttpResponse response = HTTPSClientUtils.doGet(storeURLHttp + "/store/site/pages/subscriptions.jag", headers);
         Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
                 "subscription page have error after update application page");
         //Test the subscription list after update app name

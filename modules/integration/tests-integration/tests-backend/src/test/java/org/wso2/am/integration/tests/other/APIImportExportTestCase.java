@@ -35,22 +35,44 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This test case is used to test the API Manager Import Export tool
@@ -360,7 +382,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
     }
 
@@ -443,7 +465,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         requestHeaders.clear();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_FORBIDDEN, serviceResponse.getResponseCode(),
                 "Imported API not in Created state");
     }

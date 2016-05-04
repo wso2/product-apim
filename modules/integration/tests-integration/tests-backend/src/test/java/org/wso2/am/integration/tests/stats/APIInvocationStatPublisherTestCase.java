@@ -25,13 +25,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.am.integration.test.utils.thrift.DASThriftTestServer;
 import org.wso2.am.integration.test.utils.thrift.StreamDefinitions;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -160,7 +170,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
 
         //testing request event stream
