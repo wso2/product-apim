@@ -56,7 +56,7 @@ import java.util.*;
  */
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase extends APIMIntegrationBaseTest {
-    private final Log log = LogFactory.getLog(APIInvocationStatPublisherTestCase.class);
+    private final Log log = LogFactory.getLog(APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase.class);
     private final String API_NAME = "APIInvocationStatPublisherAPIName";
     private final String API_CONTEXT = "APIInvocationStatPublisherContext";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
@@ -181,7 +181,6 @@ public class APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase extends API
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        String consumerKey = response.getJSONObject("data").getJSONObject("key").get("consumerKey").toString();
         Assert.assertNotNull("Access Token not found " + responseString, accessToken);
 
         //invoke api
