@@ -73,7 +73,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES = "GET,PUT,POST,DELETE,PATCH,OPTIONS";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE
-            = "authorization,Access-Control-Allow-Origin,Content-Type";
+            = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction";
     private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
 
     private APIPublisherRestClient apiPublisherClientUser1;
