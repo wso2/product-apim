@@ -430,6 +430,9 @@ under the License.
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.wso2.carbon.analytics</groupId>
+            <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
+        </dependency>
     </dependencies>
 </project>
