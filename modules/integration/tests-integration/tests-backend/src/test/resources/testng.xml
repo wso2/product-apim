@@ -161,7 +161,7 @@
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <!--disable test case since it need to configure DAS -->
-            <class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
         </classes>
     </test>
 
