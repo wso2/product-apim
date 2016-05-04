@@ -29,8 +29,8 @@ import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -113,7 +113,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application & Application User");
@@ -146,7 +146,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +  API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +  API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application");
@@ -186,7 +186,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         requestHeadersGet.put("Authorization", "Bearer " + accessTokenGenerationResponse.getString("access_token"));
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application User");
@@ -217,8 +217,8 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" + API_GET_ENDPOINT_METHOD,
-                        requestHeadersGet);
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" + API_GET_ENDPOINT_METHOD,
+                                       requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type None");
         assertTrue(httpResponseGet.getData().contains(RESPONSE_GET), "Response Data not match for GET request for" +

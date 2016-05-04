@@ -28,10 +28,10 @@ import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -89,8 +89,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
-        HttpResponse userInfoResponse = HttpRequestUtil.doGet(gatewayUrlsMgt.getWebAppURLNhttp()
-                                                             + "oauth2/userinfo?schema=openid", requestHeaders);
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(gatewayUrlsMgt.getWebAppURLNhttp()
+                                                               + "oauth2/userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 

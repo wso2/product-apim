@@ -31,6 +31,8 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
@@ -55,6 +57,7 @@ import javax.mail.Message;
 /**
  * This test case will test Whether a notification email is sent to existing subscribers when a new api is created
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class NotificationTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(NotificationTestCase.class);
