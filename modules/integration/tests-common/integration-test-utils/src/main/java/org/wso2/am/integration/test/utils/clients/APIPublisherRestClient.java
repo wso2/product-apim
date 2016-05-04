@@ -23,10 +23,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIDesignBean;
+import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -95,7 +100,7 @@ public class APIPublisherRestClient {
      */
     public HttpResponse logout() throws APIManagerIntegrationTestException {
         try {
-            return HttpRequestUtil.doGet(
+            return HTTPSClientUtils.doGet(
                     backendURL + URL_SUFFIX + "/user/login/ajax/login.jag?action=logout",
                     requestHeaders);
         } catch (Exception e) {
@@ -114,7 +119,7 @@ public class APIPublisherRestClient {
     public HttpResponse addAPI(APIRequest apiRequest) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                     apiRequest.generateRequestParameters(),
                     requestHeaders);
@@ -140,7 +145,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + URL_SUFFIX + "/overview/ajax/overview.jag"),
                     "action=createNewAPI&provider=" + provider + "&apiName=" + apiName + "&version="
                     + oldVersion + "&newVersion=" + newVersion + "&isDefaultVersion=" + isDefaultVersion,
@@ -163,10 +168,9 @@ public class APIPublisherRestClient {
             throws Exception {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                                           apiRequest.generateRequestParameters("updateAPI"),
                                           requestHeaders);
-
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to update API. Error: " + e.getMessage(), e);
         }
@@ -184,7 +188,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/life-cycles/ajax/life-cycles.jag"),
                     updateRequest.generateRequestParameters(),
                     requestHeaders);
@@ -207,7 +211,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=1.0.0&provider=" + provider + "",
                     requestHeaders);
@@ -231,7 +235,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/item-add/ajax/remove.jag"),
                     "action=removeAPI&name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
@@ -277,7 +281,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag"),
                     "action=removeDocumentation" + "&provider=" + provider + "&apiName=" +
                     apiName + "&version=" + version + "&docName=" + docName + "&docType=" +
@@ -301,7 +305,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/tokens/ajax/revokeToken.jag"),
                     "action=revokeAccessToken" + "&accessToken=" + accessToken + "&authUser=" +
                     authUser + "&consumerKey=" + consumerKey, requestHeaders);
@@ -325,7 +329,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/tiers/ajax/tiers.jag"),
                     "action=updatePermissions" + "&tierName=" + tierName + "&permissiontype=" +
                     permissionType + "&roles=" + roles, requestHeaders);
@@ -351,7 +355,7 @@ public class APIPublisherRestClient {
         try {
             checkAuthentication();
             this.requestHeaders.put("Content-Type", "application/x-www-form-urlencoded");
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/item-design/ajax/add.jag"),
                     "action=manage" + "&provider=" + provider + "&name=" + apiName + "&version=" +
                     version + "&swagger=" + swaggerRes, requestHeaders);
@@ -375,7 +379,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/listing/ajax/item-list.jag"),
                     "action=getAPI&name=" + apiName + "&version=" + version + "&provider=" + provider + "",
                     requestHeaders);
@@ -398,7 +402,7 @@ public class APIPublisherRestClient {
             String apiVersion) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + "publisher/site/blocks/item-add/ajax/add.jag"),
                     "action=isURLValid&" + "type=" + type + "&url=" + endpointUrl + "&providerName=" + providerName
                             + "&apiName=" + apiName + "&apiVersion=" + apiVersion, requestHeaders);
         } catch (Exception e) {
@@ -429,7 +433,7 @@ public class APIPublisherRestClient {
                 publishUpdateRequest.setRequireResubscription("true");
             }
             String requestParameters = publishUpdateRequest.generateRequestParameters();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/life-cycles/ajax/life-cycles.jag"), requestParameters,
                     requestHeaders);
         } catch (Exception e) {
@@ -452,7 +456,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag"), "action=getAPI&name=" +
                             apiName + "&version=" + version + "&provider=" + provider + "", requestHeaders);
         } catch (Exception e) {
@@ -466,12 +470,12 @@ public class APIPublisherRestClient {
      *
      * @return HttpResponse - Response that contains the Tier Permission Page
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doGet() method call
+     *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getTierPermissionsPage() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(backendURL + "/publisher/site/pages/tiers.jag", requestHeaders);
+            return HTTPSClientUtils.doGet(backendURL + "/publisher/site/pages/tiers.jag", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                                                          + ". Error: " + e.getMessage(), e);
@@ -486,13 +490,13 @@ public class APIPublisherRestClient {
      * @param version  - Version of the API.
      * @return HttpResponse - Response that contains the API Manage Page
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doGet() method call
+     *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getAPIManagePage(String apiName, String provider, String version)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(
+            return HTTPSClientUtils.doGet(
                     backendURL + "/publisher/manage?name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
@@ -510,18 +514,14 @@ public class APIPublisherRestClient {
      * @param version  - Version of the API.
      * @return HttpResponse - Response that contains the API Information Page
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doGet() method call
+     *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getAPIInformationPage(String apiName, String provider, String version)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-           /* return HttpRequestUtil.doGet(
-                    backendURL + "/publisher/info?name=" + apiName + "&version=" + version + "&provider=" + provider,
-                    requestHeaders); */
-            HttpResponse resp = HttpRequestUtil.doPost(new URL(backendURL + "/publisher/info"), 
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/info"),
                     "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
-            return resp;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page"
                                                          + ". Error: " + e.getMessage(), e);
@@ -542,18 +542,19 @@ public class APIPublisherRestClient {
      * @param docLocation - Document Location
      * @return HttpResponse - Response  with Document adding result.
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
                                     String sourceType, String docUrl, String summary, String docLocation,String mimeType, String newType)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "publisher/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
-                            "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType+ "&newType=" + newType, requestHeaders);
+                            "&summary=" + summary + "&docLocation=" + docLocation + "&mimeType=" + mimeType+ "&newType="
+                    + newType, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API"
                                                          + ". Error: " + e.getMessage(), e);
@@ -576,14 +577,14 @@ public class APIPublisherRestClient {
      * @param docLocation - Document Location
      * @return HttpResponse - Response  with Document adding result.
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse addDocument(String apiName, String version, String provider, String docName, String docType,
                                     String sourceType, String docUrl, String summary, String docLocation)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + provider + "&apiName=" + apiName + "&version=" + version +
                             "&docName=" + docName + "&docType=" + docType + "&sourceType=" + sourceType + "&docUrl=" + docUrl +
@@ -601,12 +602,12 @@ public class APIPublisherRestClient {
      * @param addDocRequestBean - Bean that contains all the values that needed to create a Document.
      * @return HttpResponse -  Response  with Document adding result.
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse addDocument(AddDocumentRequestBean addDocRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/documentation/ajax/docs.jag"),
                     "action=addDocumentation&provider=" + addDocRequestBean.getApiProvider() + "&apiName=" +
                             addDocRequestBean.getApiName() + "&version=" + addDocRequestBean.getApiVersion() + "&docName=" +
@@ -614,7 +615,8 @@ public class APIPublisherRestClient {
                             addDocRequestBean.getDocSourceType() + "&docUrl=" + addDocRequestBean.getDocUrl() + "=&summary=" +
                             addDocRequestBean.getDocSummary() + "&docLocation=" + addDocRequestBean.getDocLocation() +
                             "&mimeType=" + addDocRequestBean.getMimeType() +
-                            "&optionsRadios=" + addDocRequestBean.getDocType() + "&optionsRadios1=" + addDocRequestBean.getDocSourceType(), requestHeaders);
+                            "&optionsRadios=" + addDocRequestBean.getDocType() + "&optionsRadios1=" +
+                    addDocRequestBean.getDocSourceType(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding document to a API"
                                                          + ". Error: " + e.getMessage(), e);
@@ -627,12 +629,12 @@ public class APIPublisherRestClient {
      *
      * @return HttpResponse - Response that contains all available APIs for the user
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doGet() method call
+     *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getAllAPIs() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(
+            return HTTPSClientUtils.doGet(
                     backendURL + "/publisher/site/blocks/listing/ajax/item-list.jag?action=getAllAPIs", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Retrieve the All APIs available for " +
@@ -647,12 +649,12 @@ public class APIPublisherRestClient {
      * @param creationRequestBean - Instance of APICreationRequestBean object with all needed information to create the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse addAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
@@ -667,12 +669,12 @@ public class APIPublisherRestClient {
      * @param creationRequestBean - Instance of APICreationRequestBean object with all needed information to Update the API.
      * @return HttpResponse - Response that contains the result of APi creation activity.
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse updateAPI(APICreationRequestBean creationRequestBean) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters("updateAPI"), requestHeaders);
         } catch (Exception e) {
@@ -688,13 +690,13 @@ public class APIPublisherRestClient {
      * @param designBean -Instance of APIDesignBean object with all needed information to create an API up to design level.
      * @return HttpResponse -Response that contains the results of API creation up to design level
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doPost() method call
+     *                                            HTTPSClientUtils.doPost() method call
      */
     public HttpResponse designAPI(APIDesignBean designBean)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag"),
                     designBean.generateRequestParameters("design"), requestHeaders);
         } catch (Exception e) {
@@ -707,7 +709,7 @@ public class APIPublisherRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "/publisher/site/blocks/item-design/ajax/add.jag?"),
                     implementationBean.generateRequestParameters("implement"), requestHeaders);
         } catch (Exception e) {
@@ -724,13 +726,13 @@ public class APIPublisherRestClient {
      * @param version  -Version of the API
      * @return - Response that contains the implementation page of the API
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication() method and
-     *                                            HttpRequestUtil.doGet() method call
+     *                                            HTTPSClientUtils.doGet() method call
      */
     public HttpResponse getAPIImplementPage(String apiName, String provider, String version)
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doGet(
+            return HTTPSClientUtils.doGet(
                     backendURL + "/publisher/prototype?name=" + apiName + "&version=" + version + "&provider=" + provider,
                     requestHeaders);
         } catch (Exception e) {
@@ -744,12 +746,12 @@ public class APIPublisherRestClient {
      * @param apiName - Name of the API
      * @return - Response that contains the API is valid or not..
      * @throws APIManagerIntegrationTestException - Exception throws from checkAuthentication()
-     *                                           method and HttpRequestUtil.doPost() method call
+     *                                           method and HTTPSClientUtils.doPost() method call
      */
     public HttpResponse checkValidAPIName(String apiName) throws APIManagerIntegrationTestException{
         try {
             checkAuthentication();
-            return  HttpRequestUtil.doPost( new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+            return  HTTPSClientUtils.doPost( new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     "action=isAPINameExist&apiName=" + apiName , requestHeaders);
         }catch (Exception e){
             throw new APIManagerIntegrationTestException("Exeption when adding a new API with existing API name"
@@ -765,7 +767,8 @@ public class APIPublisherRestClient {
     public HttpResponse getTiers() throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),"action=getTiers" ,requestHeaders);
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                                           "action=getTiers" ,requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                                                          + ". Error: " + e.getMessage(), e);
@@ -774,14 +777,15 @@ public class APIPublisherRestClient {
 
     /**
      *
-     * @param role
-     * @return
+     * @param role role
+     * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
     public HttpResponse validateRoles(String role) throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),"action=validateRoles&roles=" + role ,requestHeaders);
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                                           "action=validateRoles&roles=" + role ,requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the Tier Permissions page"
                                                          + ". Error: " + e.getMessage(), e);

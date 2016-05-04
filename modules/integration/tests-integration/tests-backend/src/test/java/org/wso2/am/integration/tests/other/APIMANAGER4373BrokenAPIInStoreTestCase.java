@@ -135,6 +135,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         brokenApiRequest.setTags("updated");
         Thread.sleep(1000);
         apiPublisher.updateAPI(brokenApiRequest);
+        waitForAPIDeployment();
 
         HttpResponse response = new HttpResponse("", HttpStatus.SC_INTERNAL_SERVER_ERROR);
         try {
