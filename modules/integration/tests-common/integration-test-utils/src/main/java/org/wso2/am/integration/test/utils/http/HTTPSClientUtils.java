@@ -27,10 +27,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +73,30 @@ public class HTTPSClientUtils {
         CloseableHttpClient httpClient = getHttpsClient();
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
+    }
+
+    /**
+     * do HTTP POST operation for the given URL
+     *
+     * @param url           request URL
+     * @param headers       headers to be send
+     * @param urlParams parameter string to be sent as payload
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(URL url, String urlParams,
+            Map<String, String> headers) throws IOException {
+        List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+        if(urlParams != null && urlParams.contains("=")){
+            String[] paramList = urlParams.split("&");
+            for (String pair : paramList) {
+                if(pair.contains("=")) {
+                    String[] pairList = pair.split("=");
+                    urlParameters.add(new BasicNameValuePair(pairList[0], pairList[1]));
+                }
+            }
+        }
+        return doPost(url.toString(), headers, urlParameters);
     }
 
     /**
