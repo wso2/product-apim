@@ -18,8 +18,7 @@
 
 package org.wso2.am.integration.test.utils.bean;
 
-import org.apache.commons.lang.StringUtils;
-
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ public abstract class AbstractRequest {
      *
      * @return - request parameters
      */
-    public String generateRequestParameters() {
+    public String generateRequestParameters() throws Exception {
         parameterMap.clear();
         setAction();
         init();
@@ -45,7 +44,7 @@ public abstract class AbstractRequest {
             bufferAppender.append("&");
             bufferAppender.append(key);
             bufferAppender.append("=");
-            bufferAppender.append(parameterMap.get(key));
+            bufferAppender.append(URLEncoder.encode(parameterMap.get(key), "UTF-8"));
         }
         return bufferAppender.toString();
     }

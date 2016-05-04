@@ -29,9 +29,15 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
-import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.net.URL;
 
 /**
@@ -63,7 +69,7 @@ public class ContentLengthHeaderTestCase extends APIMIntegrationBaseTest {
 
         APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig, gatewayContextWrk.getContextUrls().getBackEndUrl(),
                                                      session);
-		Thread.sleep(5000);
+		waitForAPIDeployment();
 
 		// Start wireserver
 		wireServer = new WireMonitorServer(8991);

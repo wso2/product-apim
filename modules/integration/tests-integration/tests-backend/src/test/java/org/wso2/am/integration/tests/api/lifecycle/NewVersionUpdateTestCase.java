@@ -132,6 +132,7 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
         apiUpdateRequest.setVersion(APIVersionNew);
         HttpResponse serviceResponse = apiPublisher.updateAPI(apiUpdateRequest);
         verifyResponse(serviceResponse);
+        waitForAPIDeployment();
 
         //test the updated api endpoint
         serviceResponse = apiPublisher.getAPI(apiRequest.getName(), apiRequest.getProvider(), APIVersionNew);

@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +93,9 @@ public class HTTPSClientUtils {
             for (String pair : paramList) {
                 if(pair.contains("=")) {
                     String[] pairList = pair.split("=");
-                    urlParameters.add(new BasicNameValuePair(pairList[0], pairList[1]));
+                    String key = pairList[0];
+                    String value = (pairList.length > 1) ? pairList[1] : "";
+                    urlParameters.add(new BasicNameValuePair(key, URLDecoder.decode(value, "UTF-8")));
                 }
             }
         }

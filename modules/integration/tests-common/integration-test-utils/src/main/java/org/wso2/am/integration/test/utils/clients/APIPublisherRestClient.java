@@ -23,8 +23,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APIDesignBean;
+import org.wso2.am.integration.test.utils.bean.APIImplementationBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.AddDocumentRequestBean;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -35,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class APIPublisherRestClient extends APIMIntegrationBaseTest{
+public class APIPublisherRestClient {
     private static final Log log = LogFactory.getLog(APIPublisherRestClient.class);
     private String backendURL;
     private static final String URL_SUFFIX = "publisher/site/blocks";
@@ -115,7 +120,7 @@ public class APIPublisherRestClient extends APIMIntegrationBaseTest{
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(getPublisherURLHttp() + URL_SUFFIX + "/item-add/ajax/add.jag"),
+                    new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                     apiRequest.generateRequestParameters(),
                     requestHeaders);
 
@@ -163,12 +168,9 @@ public class APIPublisherRestClient extends APIMIntegrationBaseTest{
             throws Exception {
         try {
             checkAuthentication();
-            HttpResponse response = HTTPSClientUtils.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
+            return HTTPSClientUtils.doPost(new URL(backendURL + URL_SUFFIX + "/item-add/ajax/add.jag"),
                                           apiRequest.generateRequestParameters("updateAPI"),
                                           requestHeaders);
-            waitForAPIDeployment();
-            return response;
-
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to update API. Error: " + e.getMessage(), e);
         }
@@ -518,12 +520,8 @@ public class APIPublisherRestClient extends APIMIntegrationBaseTest{
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-           /* return HTTPSClientUtils.doGet(
-                    backendURL + "/publisher/info?name=" + apiName + "&version=" + version + "&provider=" + provider,
-                    requestHeaders); */
-            HttpResponse resp = HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/info"), 
+            return HTTPSClientUtils.doPost(new URL(backendURL + "/publisher/info"),
                     "name=" + apiName + "&version=" + version + "&provider=" + provider, requestHeaders);
-            return resp;
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when retrieving the API Information page"
                                                          + ". Error: " + e.getMessage(), e);
@@ -657,7 +655,7 @@ public class APIPublisherRestClient extends APIMIntegrationBaseTest{
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(getPublisherURLHttp() + "/publisher/site/blocks/item-add/ajax/add.jag"),
+                    new URL(backendURL + "/publisher/site/blocks/item-add/ajax/add.jag"),
                     creationRequestBean.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Exception when Adding the New API. "
@@ -779,8 +777,8 @@ public class APIPublisherRestClient extends APIMIntegrationBaseTest{
 
     /**
      *
-     * @param role
-     * @return
+     * @param role role
+     * @return HttpResponse
      * @throws APIManagerIntegrationTestException
      */
     public HttpResponse validateRoles(String role) throws APIManagerIntegrationTestException {

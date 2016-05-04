@@ -117,6 +117,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         apiRequest.setCorsConfiguration(corsConfiguration);
         apiRequest.setProvider(user.getUserName());
         apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
