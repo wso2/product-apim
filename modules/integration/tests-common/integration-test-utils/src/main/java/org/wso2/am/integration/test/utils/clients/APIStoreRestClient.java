@@ -38,6 +38,7 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -576,11 +577,12 @@ public class APIStoreRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(new URL(backendURL
-                            + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
-                            "action=updateClientApplication&application=" + application + "&keytype=" +
-                            keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
-                            retryAfterFailure + "&jsonParams=" + jsonParams + "&callbackUrl=" + callbackUrl), "",
-                    requestHeaders);
+                                                   + "/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag?" +
+                                                   "action=updateClientApplication&application=" + application + "&keytype=" +
+                                                   keyType + "&authorizedDomains=" + authorizedDomains + "&retryAfterFailure=" +
+                                                   retryAfterFailure + "&jsonParams=" + URLEncoder.encode(jsonParams, "UTF-8")
+                                                    + "&callbackUrl=" + callbackUrl), "",
+                                           requestHeaders);
 
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException(
