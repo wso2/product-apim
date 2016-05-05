@@ -29,6 +29,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -177,7 +178,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
 
         //invoke HTTPS transport
         try {
-            serviceResponse = HttpRequestUtil
+            serviceResponse = HTTPSClientUtils
                     .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
             assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Response code mismatched when api invocation");
