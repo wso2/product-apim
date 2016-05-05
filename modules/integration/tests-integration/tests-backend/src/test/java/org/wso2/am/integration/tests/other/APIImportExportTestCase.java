@@ -24,14 +24,9 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -665,22 +660,19 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @throws IOException        throws if connection issues occurred
      */
     private void exportAPI(URL exportRequest, File fileName) throws URISyntaxException, IOException {
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet get = new HttpGet(exportRequest.toURI());
-        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        CloseableHttpResponse response = client.execute(get);
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                           "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+        HttpResponse response = HTTPSClientUtils.doGet(exportRequest.toString(), requestHeaders);
+        String data = response.getData();
+        if (data != null) {
             FileOutputStream outStream = new FileOutputStream(fileName);
             try {
-                entity.writeTo(outStream);
+                outStream.write(data.getBytes());
             } finally {
                 outStream.close();
             }
         }
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
+        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
         Assert.assertTrue(fileName.exists(), "File save was not successful");
     }
 
