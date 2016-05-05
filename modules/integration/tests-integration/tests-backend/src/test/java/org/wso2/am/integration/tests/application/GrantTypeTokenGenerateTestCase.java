@@ -334,7 +334,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = apiStore
                 .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME, keyType, authorizedDomains, retryAfterFailure,
-                        URLEncoder.encode(jsonParams, "UTF8"), CALLBACK_URL);
+                        jsonParams, CALLBACK_URL);
         verifyResponse(response);
 
         //Test the Authorization Code key generation with updates values
