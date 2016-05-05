@@ -1045,16 +1045,6 @@
             <filtered>false</filtered>
         </file>
         <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/common_throttle_config.xml</source>
-            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
-            <filtered>false</filtered>
-        </file>
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/global-CEP-config.xml</source>
-            <outputDirectory>${project.artifactId}-${project.version}/repository/conf/</outputDirectory>
-            <filtered>false</filtered>
-        </file>
-        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/messaging-event-broker.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
