@@ -24,9 +24,13 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -53,6 +57,9 @@ import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -660,19 +667,22 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @throws IOException        throws if connection issues occurred
      */
     private void exportAPI(URL exportRequest, File fileName) throws URISyntaxException, IOException {
-        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                           "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
-        HttpResponse response = HTTPSClientUtils.doGet(exportRequest.toString(), requestHeaders);
-        String data = response.getData();
-        if (data != null) {
+        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
+        HttpGet get = new HttpGet(exportRequest.toURI());
+        get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
+                      "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+        CloseableHttpResponse response = client.execute(get);
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
             FileOutputStream outStream = new FileOutputStream(fileName);
             try {
-                outStream.write(data.getBytes());
+                entity.writeTo(outStream);
             } finally {
                 outStream.close();
             }
         }
-        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
         Assert.assertTrue(fileName.exists(), "File save was not successful");
     }
 
@@ -686,7 +696,13 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
         //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        });
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
 
