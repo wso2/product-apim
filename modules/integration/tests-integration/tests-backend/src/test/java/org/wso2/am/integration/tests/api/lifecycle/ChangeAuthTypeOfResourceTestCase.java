@@ -144,6 +144,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Send GET request
         HttpResponse httpResponseGet =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +  API_GET_ENDPOINT_METHOD,
@@ -177,6 +178,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Generate User Access Key
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
         URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
@@ -215,6 +217,7 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Send GET request
         HttpResponse httpResponseGet =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" + API_GET_ENDPOINT_METHOD,

@@ -152,6 +152,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             //Update API with Edited Tags
             HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+            waitForAPIDeployment();
             assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Update API Response Code is invalid. API Name:" + apiName);
             assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
