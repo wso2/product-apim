@@ -386,7 +386,7 @@
         <Access-Control-Allow-Methods>GET,PUT,POST,DELETE,PATCH,OPTIONS</Access-Control-Allow-Methods>
 
         <!-- Configure Access-Control-Allow-Headers -->
-        <Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type</Access-Control-Allow-Headers>
+        <Access-Control-Allow-Headers>authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction</Access-Control-Allow-Headers>
 
         <!-- Configure Access-Control-Allow-Credentials -->
         <!-- Specifying this header to true means that the server allows cookies (or other user credentials) to be included on cross-origin requests.

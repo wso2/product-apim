@@ -123,7 +123,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
         apiCreationRequestBean.setOutSequence("xml_to_json_out_message");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
-
+        waitForAPIDeployment();
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization" , "Bearer " + accessToken);
@@ -140,6 +140,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void testAPIInvocationBeforeRemovingNewMediation() throws Exception {
         apiCreationRequestBean.setOutSequence("");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
         //Send GET Request
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
