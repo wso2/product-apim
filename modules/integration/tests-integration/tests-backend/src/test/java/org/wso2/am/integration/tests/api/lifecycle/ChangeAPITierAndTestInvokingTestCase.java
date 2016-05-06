@@ -196,6 +196,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         apiCreationRequestBean.setTiersCollection(TIER_SILVER);
         //Update API with Edited information with Tier Silver
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Update API Response Code is" +
                      " invalid. Updating of API information fail" + getAPIIdentifierString(apiIdentifier));

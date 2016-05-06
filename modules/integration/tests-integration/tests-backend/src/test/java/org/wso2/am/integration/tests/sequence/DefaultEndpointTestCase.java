@@ -90,6 +90,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         apiCreationRequestBean.setInSequence("default_endpoint");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
 
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));

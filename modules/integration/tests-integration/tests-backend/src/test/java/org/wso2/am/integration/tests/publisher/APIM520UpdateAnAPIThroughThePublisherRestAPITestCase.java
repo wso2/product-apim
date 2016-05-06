@@ -126,6 +126,7 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
         HttpResponse apiUpdateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
         assertTrue(apiUpdateResponse.getData().contains("\"error\" : false"),
                 apiNameTest + " is not updated properly");
+        waitForAPIDeployment();
 
         //Check whether API is updated from the above request
         HttpResponse apiUpdateResponsePublisher = apiPublisher.getAPI
