@@ -330,7 +330,7 @@
             <directory>../../jaggery</directory>
             <outputDirectory>wso2am-${pom.version}/modules</outputDirectory>
             <includes>
-                <include>**/**.xml</include>
+                <include>**/**</include>
             </includes>
         </fileSet>
 	<!-- Copying styles for tenants -->
