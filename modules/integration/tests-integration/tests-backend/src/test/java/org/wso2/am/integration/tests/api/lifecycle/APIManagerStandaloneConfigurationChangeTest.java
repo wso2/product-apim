@@ -48,6 +48,9 @@ public class APIManagerStandaloneConfigurationChangeTest extends APIManagerLifec
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "corsACACTest" + File.separator + "original" +
+                File.separator + "api-manager.xml"));
         serverConfigurationManager.restartGracefully();
     }
 
