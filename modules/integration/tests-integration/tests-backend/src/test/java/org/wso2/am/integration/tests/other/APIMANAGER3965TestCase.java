@@ -95,7 +95,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched when api invocation");
         assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
-        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type",
+        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
         assertEquals(accessControlAllowMethods, "GET,PUT,POST,DELETE,PATCH,OPTIONS",
                      "Access Control allow Method values get mismatched in option Call");
@@ -111,8 +111,8 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
                                                       "\"accessControlAllowCredentials\" : true, " +
                                                       "\"accessControlAllowHeaders\" : " +
                                                       "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                                                      "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\"," +
-                                                      " " +
+                                                      "\"Content-Type\", \"SOAPAction\"], " +
+                                                      "\"accessControlAllowMethods\" : [\"POST\", " +
                                                       "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         apiRequest.setCorsConfiguration(corsConfiguration);
         apiRequest.setProvider(user.getUserName());
@@ -136,7 +136,7 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(accessControlAllowOrigin, "http://localhost:8080",
                      "Access Control allow origin values get mismatched in option " +
                      "Call");
-        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type",
+        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
         assertEquals(accessControlAllowMethods, "POST,PATCH,GET,DELETE,OPTIONS,PUT",
                      "Access Control allow Method values get mismatched in option Call");
