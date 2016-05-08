@@ -467,14 +467,15 @@
             <ServiceURL>http://${carbon.local.ip}:${mgt.transport.http.port}/throttle/data/v1</ServiceURL>
             <Username>${admin.username}</Username>
             <Password>${admin.password}</Password>
-            <!--InitDelay>300000</InitDelay>
-            <Period>3600000</Period-->
+            <InitDelay>300000</InitDelay>
+            <Period>3600000</Period>
         </BlockCondition>
         <GlobalPolicyEngineWSConnectionDetails>
             <ServiceURL>http://${carbon.local.ip}:${mgt.transport.http.port}/throttle/data/v1</ServiceURL>
             <Username>${admin.username}</Username>
             <Password>${admin.password}</Password>
-            <!--InitDelay>300000</InitDelay-->
+            <InitDelay>300000</InitDelay>
+            <Period>3600000</Period>
         </GlobalPolicyEngineWSConnectionDetails>
         <JMSConnectionDetails>
             <ServiceURL>tcp://127.0.0.1:52556</ServiceURL>
