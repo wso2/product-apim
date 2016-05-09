@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<artifact name="Eventstore_response" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
-    <file>ORG_WSO2_APIMGT_STATISTICS_RESPONSE.xml</file>
-</artifact> 
