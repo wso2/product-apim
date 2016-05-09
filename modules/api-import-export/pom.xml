@@ -110,7 +110,7 @@
                                     <tasks>
                                         <copy todir="${basedir}/../../../repository/deployment/server/webapps" overwrite="true">
                                             <fileset dir="${basedir}/target">
-                                                <include name="${project.artifactId}-${parent.version}-v0.war"/>
+                                                <include name="${project.artifactId}-${project.version}-v0.war"/>
                                             </fileset>
                                         </copy>
                                     </tasks>
