@@ -128,7 +128,7 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(httpResponse.getData());
 
         assertTrue(response.getString("error").toString().equals("true")
-                   && response.getString("message").toString().contains("Login failed.Insufficient privileges"),
+                   && response.getString("message").toString().contains("Login failed. Insufficient privileges"),
                    "Invalid subscriber can login to the API publisher");
     }
 
@@ -180,7 +180,7 @@ public class LoginValidationTestCase extends APIMIntegrationBaseTest {
 
         assertTrue(response.getString("error").toString().equals("true")
                    && response.getString("message").toString().contains(
-                           "Login failed.Please recheck the username and password and try again"),
+                           "Login failed. Please recheck the username and password and try again"),
                    "Invalid user can login to the API store");
 
     }
