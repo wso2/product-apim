@@ -940,7 +940,7 @@
         <carbon.identity.version>5.1.0</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>5.1.0</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.0</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-saml2.version>5.0.9-SNAPSHOT</carbon.identity-inbound-auth-saml2.version>
+        <carbon.identity-inbound-auth-saml2.version>5.1.0</carbon.identity-inbound-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.1.0</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>5.1.0</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.0</carbon.identity-outbound-auth-samlsso.version>
