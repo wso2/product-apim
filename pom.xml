@@ -75,7 +75,7 @@
             <repository>
                 <id>wso2-staging</id>
                 <name>WSO2 staging Repository</name>
-                <url>https://maven.wso2.org/nexus/content/repositories/orgjaggeryjs-1002/</url>
+                <url>https://maven.wso2.org/nexus/content/repositories/orgjaggeryjs-1004/</url>
                 <releases>
                     <enabled>true</enabled>
                     <updatePolicy>daily</updatePolicy>
@@ -824,7 +824,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
                 <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
-                <version>${carbon.identity.version}</version>
+                <version>${carbon.identity-user-ws.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rampart</groupId>
@@ -890,7 +890,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
-                <version>${carbon.identity.version}</version>
+                <version>${carbon.identity-inbound-auth-oauth.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.andes.wso2</groupId>
@@ -928,8 +928,7 @@
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
-
-	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
+	<cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
         <carbon.commons.version>4.5.2</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
@@ -938,7 +937,13 @@
         <carbon.mediation.version>4.6.1-BETA2</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.0.9-SNAPSHOT</carbon.identity.version>
+        <carbon.identity.version>5.1.0</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>5.1.0</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-user-ws.version>5.1.0</carbon.identity-user-ws.version>
+        <carbon.identity-inbound-auth-saml2.version>5.0.9-SNAPSHOT</carbon.identity-inbound-auth-saml2.version>
+        <carbon.identity-inbound-auth-openid.version>5.1.0</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-local-auth-basicauth.version>5.1.0</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.0</carbon.identity-outbound-auth-samlsso.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.6.2-SNAPSHOT</carbon.deployment.version>
@@ -947,7 +952,7 @@
         <carbon.analytics.version>1.0.5</carbon.analytics.version>
 
         <!--jaggery-->
-        <org.jaggery.version>0.12.4</org.jaggery.version>
+        <org.jaggery.version>0.12.5</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.5.1</carbon.multitenancy.version>
@@ -1031,7 +1036,6 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
-        <identity.core.version>4.2.7</identity.core.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
         <google.guava.version>16.0.1</google.guava.version>
