@@ -105,6 +105,8 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         //Modify the resources to add the PATCH resource method to the API
         apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
+        waitForAPIDeploymentSync(providerName, APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
         //Login to the API Store
         apiStore.login(user.getUserName(), user.getPassword());
 
