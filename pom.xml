@@ -930,7 +930,7 @@
 	
 	<cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
-        <carbon.commons.version>4.5.2</carbon.commons.version>
+        <carbon.commons.version>4.5.3</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -955,7 +955,7 @@
         <org.jaggery.version>0.12.5</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.5.1</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.15</carbon.dashboard.version>
         <shindig.version>1.0.0</shindig.version>
