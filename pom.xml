@@ -930,7 +930,7 @@
 	
 	<cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
-        <carbon.commons.version>4.5.2</carbon.commons.version>
+        <carbon.commons.version>4.5.3</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
@@ -940,7 +940,7 @@
         <carbon.identity.version>5.1.0</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>5.1.0</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.0</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-saml2.version>5.0.9-SNAPSHOT</carbon.identity-inbound-auth-saml2.version>
+        <carbon.identity-inbound-auth-saml2.version>5.1.0</carbon.identity-inbound-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.1.0</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>5.1.0</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.0</carbon.identity-outbound-auth-samlsso.version>
@@ -955,7 +955,7 @@
         <org.jaggery.version>0.12.5</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.5.1</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.15</carbon.dashboard.version>
         <shindig.version>1.0.0</shindig.version>
