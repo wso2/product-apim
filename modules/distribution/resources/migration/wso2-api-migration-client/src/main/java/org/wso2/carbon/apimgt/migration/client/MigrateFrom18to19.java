@@ -269,7 +269,12 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         artifact.setAttribute("overview_contextTemplate", api.getContext() +
                                 RegistryConstants.PATH_SEPARATOR + "{version}");
                         artifact.setAttribute("overview_environments", "");
-                        artifact.setAttribute("overview_versionType", "");
+                        //artifact.setAttribute("overview_versionType", "");
+                        artifact.setAttribute("overview_endpointURL", null); // this is set to stop creating new
+                        // endpoints when saving an existing API
+                        artifact.setAttribute("overview_versionType", "context"); // new rxt field is introduced in 1.9
+                        // version. Keep this field empty would force to give a value while editing from management
+                        // console
 
                         artifactManager.updateGenericArtifact(artifact);
                     }
