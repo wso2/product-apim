@@ -171,8 +171,6 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
         //add test api
         HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
         verifyResponse(serviceResponse);
-        waitForAPIDeploymentSync(user.getUserName(), TEMPLATE_API_NAME, API_VERSION_1_0_0,
-                APIMIntegrationConstants.IS_API_EXISTS);
 
         //add a application
         serviceResponse = apiStore
@@ -185,6 +183,9 @@ public class APIResourceWithTemplateTestCase extends APIManagerLifecycleBaseTest
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
+
+        waitForAPIDeploymentSync(user.getUserName(), TEMPLATE_API_NAME, API_VERSION_1_0_0,
+                                 APIMIntegrationConstants.IS_API_EXISTS);
 
         //subscribe to the api
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(TEMPLATE_API_NAME, user.getUserName());
