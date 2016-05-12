@@ -2452,6 +2452,11 @@
                                     <version>${analytics.common.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
                                 <!-- MB features -->
                                 <feature>
                                     <id>org.wso2.carbon.messaging.andes.feature.group</id>
@@ -2960,6 +2965,11 @@
                                     <version>${analytics.common.version}</version>
                                 </feature>
 
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
                                 <!-- MB features -->
                                 <feature>
                                     <id>org.wso2.carbon.messaging.andes.feature.group</id>
@@ -3420,6 +3430,11 @@
                                 <feature>
                                     <id>org.wso2.analytics.common.la.apim.feature.group</id>
                                     <version>${analytics.common.version}</version>
+                                </feature>
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
                                 <!-- MB features -->
