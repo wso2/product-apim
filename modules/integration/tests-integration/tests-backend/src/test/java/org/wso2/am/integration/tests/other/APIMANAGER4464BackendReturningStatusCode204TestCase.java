@@ -103,7 +103,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
         String apiName = "Test_API" + userMode;
         String apiVersion = "1.0.0";
         String apiContext = "/somecontext" + userMode;
-        String endpointUrl = gatewayUrlsMgt.getWebAppURLNhttp() + "response";
+        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -113,7 +113,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
             log.error("Error creating APIRequest " + e.getMessage());
             Assert.assertTrue(false);
         } catch (MalformedURLException e) {
-            log.error("Invalid URL " + gatewayUrlsMgt.getWebAppURLNhttp() + "response", e);
+            log.error("Invalid URL " + gatewayUrlsWrk.getWebAppURLNhttp() + "response", e);
             Assert.assertTrue(false);
         }
 
@@ -155,9 +155,9 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
             String apiInvocationUrl;
             if (userMode == TestUserMode.TENANT_ADMIN || userMode == TestUserMode.TENANT_USER) {
-                apiInvocationUrl = gatewayUrlsMgt.getWebAppURLNhttp() + "/t/wso2.com" + apiContext + "/" + apiVersion;
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "/t/wso2.com" + apiContext + "/" + apiVersion;
             } else {
-                apiInvocationUrl = gatewayUrlsMgt.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
             }
 
             HttpClient httpclient = new DefaultHttpClient();
