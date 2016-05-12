@@ -142,8 +142,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         tags = TAG1 + "," + TAG2 + "," + TAG3;
         tierCollection = APIMIntegrationConstants.API_TIER.BRONZE + "," + APIMIntegrationConstants.API_TIER.GOLD + ","
                 + APIMIntegrationConstants.API_TIER.SILVER + "," + APIMIntegrationConstants.API_TIER.UNLIMITED;
-        importUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
-        exportUrl = publisherURLHttps + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
+        importUrl = getGatewayURLHttps() + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/import-api";
+        exportUrl = getGatewayURLHttps() + APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + "/export-api";
 
         //adding new 3 roles and two users
         userManagementClient = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
