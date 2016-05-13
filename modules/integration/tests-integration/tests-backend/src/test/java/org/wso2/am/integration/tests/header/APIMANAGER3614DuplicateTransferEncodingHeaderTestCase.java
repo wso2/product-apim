@@ -33,6 +33,7 @@ import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
 import java.io.File;
 import java.util.HashMap;
 
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMIntegrationBaseTest {
 
     private SimpleSocketServer simpleSocketServer;
@@ -68,7 +69,6 @@ public class APIMANAGER3614DuplicateTransferEncodingHeaderTestCase extends APIMI
         Thread.sleep(10000);
     }
 
-    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
     @Test(groups = "wso2.am", description = "Test for reading the duplicate transfer-encoding header in the response")
     public void testDuplicateTransferEncodingPropertyTest() throws Exception {
 
