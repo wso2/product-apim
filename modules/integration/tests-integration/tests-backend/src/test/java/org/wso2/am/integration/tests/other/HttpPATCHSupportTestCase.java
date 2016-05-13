@@ -96,6 +96,8 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
+        waitForAPIDeploymentSync(providerName, APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
+
         String modifiedResource = "{\"paths\":{ \"/*\":{\"patch\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
                 "\"x-throttling-tier\":\"Unlimited\" },\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
                 "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"HttpPatchAPI\",\"version\":\"1.0.0\"}," +
@@ -105,7 +107,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         //Modify the resources to add the PATCH resource method to the API
         apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
 
-        waitForAPIDeploymentSync(providerName, APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
 
         //Login to the API Store
         apiStore.login(user.getUserName(), user.getPassword());
