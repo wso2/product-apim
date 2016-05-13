@@ -66,7 +66,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
 
-        WebAppAdminClient webAppAdminClientForPublisher = new WebAppAdminClient(getPublisherURLHttps(), publisherSessionId);
+        WebAppAdminClient webAppAdminClientForPublisher = new WebAppAdminClient(
+                publisherContext.getContextUrls().getBackEndUrl(), publisherSessionId);
         webAppAdminClientForPublisher.uploadWarFile(APIImportExportWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
@@ -86,7 +87,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(publisherContext.getContextUrls().getBackEndUrl(),
-                                                      gatewayMgtSessionId, APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
+                                                      publisherSessionId, APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
     }
 
