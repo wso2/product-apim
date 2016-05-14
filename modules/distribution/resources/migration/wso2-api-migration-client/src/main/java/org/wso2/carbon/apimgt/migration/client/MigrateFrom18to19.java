@@ -41,6 +41,7 @@ import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
@@ -247,31 +248,39 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     GovernanceUtils.loadGovernanceArtifacts((UserRegistry) registry);
                     GenericArtifact[] artifacts = artifactManager.getAllGenericArtifacts();
                     for (GenericArtifact artifact : artifacts) {
-                        API api = APIUtil.getAPI(artifact, registry);
+                        try {
+                            API api = APIUtil.getAPI(artifact, registry);
 
-                        if (api == null) {
-                            log.error("Cannot find corresponding api for registry artifact " +
-                                    artifact.getAttribute("overview_name") + '-' +
-                                    artifact.getAttribute("overview_version") + '-' +
-                                    artifact.getAttribute("overview_provider") +
-                                    " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ") in AM_DB");
-                            continue;
+                            if (api == null) {
+                                log.error("Cannot find corresponding api for registry artifact " +
+                                        artifact.getAttribute("overview_name") + '-' +
+                                        artifact.getAttribute("overview_version") + '-' +
+                                        artifact.getAttribute("overview_provider") +
+                                        " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ") in AM_DB");
+                                continue;
+                            }
+
+                            APIIdentifier apiIdentifier = api.getId();
+                            String apiVersion = apiIdentifier.getVersion();
+
+                            if (!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
+                                artifact.setAttribute("overview_context", api.getContext() +
+                                        RegistryConstants.PATH_SEPARATOR + apiVersion);
+                            }
+
+                            artifact.setAttribute("overview_contextTemplate", api.getContext() +
+                                    RegistryConstants.PATH_SEPARATOR + "{version}");
+                            artifact.setAttribute("overview_environments", "");
+                            artifact.setAttribute("overview_versionType", "");
+
+                            artifactManager.updateGenericArtifact(artifact);
+                        } catch (Exception e) {
+                            // we log the error and continue to the next resource.
+                            log.error("Unable to migrate api metadata definition of API : " +
+                                      artifact.getAttribute("overview_name") + '-' +
+                                      artifact.getAttribute("overview_version") + '-' +
+                                      artifact.getAttribute("overview_provider"), e);
                         }
-
-                        APIIdentifier apiIdentifier = api.getId();
-                        String apiVersion = apiIdentifier.getVersion();
-
-                        if (!(api.getContext().endsWith(RegistryConstants.PATH_SEPARATOR + apiVersion))) {
-                            artifact.setAttribute("overview_context", api.getContext() +
-                                    RegistryConstants.PATH_SEPARATOR + apiVersion);
-                        }
-
-                        artifact.setAttribute("overview_contextTemplate", api.getContext() +
-                                RegistryConstants.PATH_SEPARATOR + "{version}");
-                        artifact.setAttribute("overview_environments", "");
-                        artifact.setAttribute("overview_versionType", "");
-
-                        artifactManager.updateGenericArtifact(artifact);
                     }
                 } else {
                     log.debug("No api artifacts found in registry for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
@@ -442,6 +451,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     log.error("Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 } catch (APIManagementException e) {
                     log.error("Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
+                } catch (Exception e){
+                    log.error("Error occurred while creating swagger doc for api " + apiName + '-' + apiVersion + '-'
+                              + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
                 }
             }
         }
@@ -669,88 +681,103 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
 
         for (Map.Entry<String, JSONArray> entry : apiDefinitionPaths.entrySet()) {
-            String key = entry.getKey();
-            JSONArray operations = entry.getValue();
-            JSONObject pathItemObj = new JSONObject();
-            for (Object operation : operations) {
-                JSONObject operationObject = (JSONObject) operation;
-                if (operationObject.containsKey("method")) {
-                    String method = (String) operationObject.get("method");
-                    if (operationObject.containsKey("parameters")) {
-                        JSONArray swagger2ParamObjects = (JSONArray) operationObject.get("parameters");
-                        JSONObject swagger2OperationsObj = new JSONObject();
-                        JSONArray newParameters = new JSONArray();
-                        for (Object swagger2ParamObj : swagger2ParamObjects) {
-                            JSONObject oldParam = (JSONObject) swagger2ParamObj;
-                            JSONObject paramObj = new JSONObject();
-                            paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
+            try {
+                String key = entry.getKey();
+                JSONArray operations = entry.getValue();
+                JSONObject pathItemObj = new JSONObject();
+                for (Object operation : operations) {
+                    JSONObject operationObject = (JSONObject) operation;
+                    if (operationObject.containsKey("method")) {
+                        String method = (String) operationObject.get("method");
+                        if (operationObject.containsKey("parameters")) {
+                            JSONObject swagger2OperationsObj = null;
+                            JSONArray newParameters = null;
+                            Object swagger2Params = operationObject.get("parameters");
+                            if(swagger2Params == null){
+                                // this means that we can not move further in here. Hence continuing
+                                continue;
+                            }
 
-                            paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
-                            if (Constants.SWAGGER_PARAM_TYPE_BODY.equals(oldParam.get("paramType"))) {
-                                JSONObject refObject = new JSONObject();
-                                refObject.put(Constants.SWAGGER_REF, "#/definitions/sampleItem");
-                                paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
-                            } else {
-                                if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
-                                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
-                                } else {
-                                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                            if (swagger2Params instanceof JSONArray) {
+                                JSONArray swagger2ParamObjects = (JSONArray) swagger2Params;
+                                swagger2OperationsObj = new JSONObject();
+                                newParameters = new JSONArray();
+                                for (Object swagger2ParamObj : swagger2ParamObjects) {
+                                    JSONObject oldParam = (JSONObject) swagger2ParamObj;
+                                    JSONObject paramObj = new JSONObject();
+                                    paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
+
+                                    paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
+                                    if (Constants.SWAGGER_PARAM_TYPE_BODY.equals(oldParam.get("paramType"))) {
+                                        JSONObject refObject = new JSONObject();
+                                        refObject.put(Constants.SWAGGER_REF, "#/definitions/sampleItem");
+                                        paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
+                                    } else {
+                                        if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
+                                            paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
+                                        } else {
+                                            paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                                        }
+                                    }
+
+                                    if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
+                                        paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
+                                    } else {
+                                        paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
+                                    }
+                                    if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
+                                        paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
+                                    } else {
+                                        paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
+                                    }
+                                    newParameters.add(paramObj);
                                 }
                             }
 
-                            if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
-                                paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
-                            } else {
-                                paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
-                            }
-                            if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
-                                paramObj.put(Constants.SWAGGER_DESCRIPTION, oldParam.get(Constants.SWAGGER_DESCRIPTION));
-                            } else {
-                                paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
-                            }
-                            newParameters.add(paramObj);
-                        }
+                            //generate the Operation object
+                            // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject)
+                            swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
+                            //setting operation level params
+                            swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
 
-                        //generate the Operation object
-                        // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject)
-                        swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
-                        //setting operation level params
-                        swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
-
-                        //Add auth_type and throttling_tier
-                        if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
-                            swagger2OperationsObj.put(Constants.SWAGGER_X_AUTH_TYPE, operationObject.get(Constants.SWAGGER_AUTH_TYPE));
-                        }
-                        if (operationObject.containsKey(Constants.SWAGGER_THROTTLING_TIER)) {
-                            swagger2OperationsObj.put(Constants.SWAGGER_X_THROTTLING_TIER, operationObject.get(Constants.SWAGGER_THROTTLING_TIER));
-                        }
-
-                        if (operationObject.containsKey("notes")) {
-                            swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
-                        }
-                        if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
-                            swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY, operationObject.get(Constants.SWAGGER_SUMMARY));
-                        }
-                        //set pathItem object for the resource
-                        //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject)
-                        pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
-                        //set the responseObject
-                        //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject)
-                        if (operationObject.containsKey("responseMessages")) {
-                            responseObject = new JSONObject();
-                            JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
-                            for (Object responseMessage : responseMessages) {
-                                JSONObject errorObj = (JSONObject) responseMessage;
-                                responseObject.put(errorObj.get("code"), errorObj.get("message"));
+                            //Add auth_type and throttling_tier
+                            if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
+                                swagger2OperationsObj.put(Constants.SWAGGER_X_AUTH_TYPE, operationObject.get(Constants.SWAGGER_AUTH_TYPE));
                             }
+                            if (operationObject.containsKey(Constants.SWAGGER_THROTTLING_TIER)) {
+                                swagger2OperationsObj.put(Constants.SWAGGER_X_THROTTLING_TIER, operationObject.get(Constants.SWAGGER_THROTTLING_TIER));
+                            }
+
+                            if (operationObject.containsKey("notes")) {
+                                swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
+                            }
+                            if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
+                                swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY, operationObject.get(Constants.SWAGGER_SUMMARY));
+                            }
+                            //set pathItem object for the resource
+                            //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject)
+                            pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
+                            //set the responseObject
+                            //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject)
+                            if (operationObject.containsKey("responseMessages")) {
+                                responseObject = new JSONObject();
+                                JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
+                                for (Object responseMessage : responseMessages) {
+                                    JSONObject errorObj = (JSONObject) responseMessage;
+                                    responseObject.put(errorObj.get("code"), errorObj.get("message"));
+                                }
+                            }
+                            swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
                         }
-                        swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
+                    } else {
+                        log.error("Needed parameter method does not exists in swagger v1.2 doc");
                     }
-                } else {
-                    log.error("Needed parameter method does not exists in swagger v1.2 doc");
                 }
+                pathsObj.put(key, pathItemObj);
+            } catch (Exception e) {
+                log.error("Error occurred while doing the swagger paths migration. key : " + entry.getKey() + " value" +
+                          " : " + entry.getValue().toString(), e);
             }
-            pathsObj.put(key, pathItemObj);
         }
         return pathsObj;
     }
