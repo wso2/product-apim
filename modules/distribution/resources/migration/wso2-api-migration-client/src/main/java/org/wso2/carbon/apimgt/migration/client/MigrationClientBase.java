@@ -43,22 +43,22 @@ public abstract class MigrationClientBase {
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
             tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
-            tenantsArray = new ArrayList();
+            tenantsArray = new ArrayList<Tenant>();
 
             buildTenantList(tenantManager, tenantsArray, tenantArguments);
         } else if (blackListTenantArguments != null) {
             blackListTenantArguments = blackListTenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
-            List<Tenant> blackListTenants = new ArrayList();
+            List<Tenant> blackListTenants = new ArrayList<Tenant>();
             buildTenantList(tenantManager, blackListTenants, blackListTenantArguments);
 
-            List<Tenant> allTenants = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
+            List<Tenant> allTenants = new ArrayList<Tenant>(Arrays.asList(tenantManager.getAllTenants()));
             Tenant superTenant = new Tenant();
             superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
             superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
             allTenants.add(superTenant);
 
-            tenantsArray = new ArrayList();
+            tenantsArray = new ArrayList<Tenant>();
 
             for (Tenant tenant : allTenants) {
                 boolean isBlackListed = false;
@@ -73,26 +73,24 @@ public abstract class MigrationClientBase {
                     tenantsArray.add(tenant);
                 }
             }
-
         } else {  // Load all tenants
-            tenantsArray = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
+            tenantsArray = new ArrayList<Tenant>(Arrays.asList(tenantManager.getAllTenants()));
             Tenant superTenant = new Tenant();
             superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
             superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
             tenantsArray.add(superTenant);
         }
-
         setAdminUserName(tenantManager);
     }
 
-
-    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments) throws UserStoreException {
+    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments)
+            throws UserStoreException {
         if (tenantArguments.contains(",")) { // Multiple arguments specified
             String[] parts = tenantArguments.split(",");
 
-            for (int i = 0; i < parts.length; ++i) {
-                if (parts[i].length() > 0) {
-                    populateTenants(tenantManager, tenantList, parts[i]);
+            for (String part : parts) {
+                if (part.length() > 0) {
+                    populateTenants(tenantManager, tenantList, part);
                 }
             }
         } else { // Only single argument provided
@@ -100,9 +98,11 @@ public abstract class MigrationClientBase {
         }
     }
 
-
     private void populateTenants(TenantManager tenantManager, List<Tenant> tenantList, String argument) throws UserStoreException {
-        log.debug("Argument provided : " + argument);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Argument provided : " + argument);
+        }
 
         if (argument.contains("@")) { // Username provided as argument
             int tenantID = tenantManager.getTenantId(argument);
@@ -147,8 +147,9 @@ public abstract class MigrationClientBase {
 
     protected List<Tenant> getTenantsArray() { return tenantsArray; }
 
-    protected void updateAPIManangerDatabase(String sqlScriptPath) throws SQLException {
+    protected void updateAPIManagerDatabase(String sqlScriptPath) throws SQLException {
         log.info("Database migration for API Manager started");
+
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         BufferedReader bufferedReader = null;
@@ -180,7 +181,6 @@ public abstract class MigrationClientBase {
                 }
 
                 sqlQuery += ' ' + line;
-
                 if (line.contains(";")) {
                     isFoundQueryEnd = true;
                 }
@@ -194,7 +194,10 @@ public abstract class MigrationClientBase {
 
                 if (isFoundQueryEnd) {
                     if (sqlQuery.length() > 0) {
-                        log.debug("SQL to be executed : " + sqlQuery);
+                        if (log.isDebugEnabled()) {
+                            log.debug("SQL to be executed : " + sqlQuery);
+                        }
+
                         preparedStatement = connection.prepareStatement(sqlQuery.trim());
                         preparedStatement.execute();
                         connection.commit();
@@ -207,7 +210,6 @@ public abstract class MigrationClientBase {
             }
 
             bufferedReader.close();
-
         } catch (IOException e) {
             //Errors logged to let user know the state of the db migration and continue other resource migrations
             log.error("Error occurred while migrating databases", e);
@@ -232,7 +234,6 @@ public abstract class MigrationClientBase {
      *
      * @param sqlScriptPath path of sql script
      * @throws SQLException
-     * @throws IOException
      */
     protected void dropFKConstraint(String sqlScriptPath) throws SQLException {
         Connection connection = null;
@@ -240,7 +241,8 @@ public abstract class MigrationClientBase {
         ResultSet resultSet = null;
         Statement statement = null;
         try {
-            String queryToExecute = IOUtils.toString(new FileInputStream(new File(sqlScriptPath + "drop-fk.sql")), "UTF-8");
+            String queryToExecute = IOUtils.toString(new FileInputStream(new File(sqlScriptPath + "drop-fk.sql")),
+                                                     "UTF-8");
             String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
 
             connection = APIMgtDBUtil.getConnection();
@@ -283,9 +285,12 @@ public abstract class MigrationClientBase {
             log.error("Error occurred while deleting foreign key", e);
         } finally {
             if (statement != null) {
-                statement.close();
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.error("Unable to close the statement", e);
+                }
             }
-
             APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
         }
     }
