@@ -343,6 +343,32 @@
                             </replacements>
                         </configuration>
 		    </execution>
+            <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
+            <!-- Disable MQTT as it's not needed -->
+            <execution>
+                <id>replace-for-broker</id>
+                <phase>prepare-package</phase>
+                <goals>
+                    <goal>replace</goal>
+                </goals>
+                <configuration>
+                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/broker.xml</file>
+                    <replacements>
+                        <replacement>
+                            <xpath>/broker/transports/mqtt/@enabled</xpath>
+                            <token>(true)</token>
+                            <value>false</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/windowSize</xpath>
+                            <token>(1000)</token>
+                            <value>1</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </execution>
+            <!-- End disabling MQTT -->
+
 		    <!-- Replace the Datasource in the thrift-authentication.xml file -->
                     <execution>
                         <id>replace-for-thrift</id>
