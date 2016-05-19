@@ -23,8 +23,10 @@ package org.wso2.am.integration.test.utils.thrift;
  */
 public class StreamDefinitions {
     public static final String APIMGT_STATISTICS_RESPONSE_STREAM_ID = "org.wso2.apimgt.statistics.response:1.1.0";
+    public static final String APIMGT_STATISTICS_DESTINATION_STREAM_ID = "org_wso2_apimgt_statistics_destination:1.0.0";
     public static final String APIMGT_STATISTICS_REQUEST_STREAM_ID = "org.wso2.apimgt.statistics.request:1.1.0";
-    public static final String APIMGT_STATISTICS_EXECUTION_TIME_STREAM_ID = "org.wso2.apimgt.statistics.execution.time:1.0.0";
+    public static final String APIMGT_STATISTICS_EXECUTION_TIME_STREAM_ID =
+            "org.wso2.apimgt.statistics.execution.time:" + "1.0.0";
     public static final String APIMGT_STATISTICS_WORKFLOW_STREAM_ID = "org.wso2.apimgt.statistics.workflow:1.0.0";
 
     public static String getStreamDefinitionResponse() {
@@ -191,6 +193,43 @@ public class StreamDefinitions {
                 "    {" +
                 "      'name': 'updatedTime'," +
                 "      'type': 'LONG'" + "    }" +
+                "  ]" +
+                "}";
+    }
+
+    public static String getStreamDefinitionDestination() {
+        return "{" +
+                "  'name': 'org_wso2_apimgt_statistics_destination'," +
+                "  'version': '1.0.0'," +
+                "  'nickName': 'destination_statistics'," +
+                "  'description': 'Stream for API Manager destination based statistics'," +
+                "  'metaData': [" +
+                "    {'name': 'tenant_id','type': 'INT'}," +
+                "    {'name': 'http_method','type':'STRING'}," +
+                "    {'name': 'character_set_encoding','type': 'STRING'}," +
+                "    {'name': 'remote_address','type': 'STRING'}," +
+                "    {'name': 'transport_in_url','type': 'STRING'}," +
+                "    {'name': 'message_type','type': 'STRING'}," +
+                "    {'name': 'remote_host','type': 'STRING'}," +
+                "    {'name': 'service_prefix','type': 'STRING'}," +
+                "    {'name': 'host','type': 'STRING'}" +
+                "  ]," +
+                "  'correlationData': [" +
+                "    {'name': 'activity_id','type': 'STRING'}" +
+                "  ]," +
+                "  'payloadData': [" +
+                "    {'name': 'message_direction','type': 'STRING'}," +
+                "    {'name': 'operation_name','type': 'STRING'}," +
+                "    {'name': 'message_id','type': 'STRING'}," +
+                "    {'name': 'timestamp','type': 'LONG'}," +
+                "    {'name': 'api','type': 'STRING'}," +
+                "    {'name': 'version','type': 'STRING'}," +
+                "    {'name': 'request','type': 'INT'}," +
+                "    {'name': 'apiPublisher','type': 'STRING'}," +
+                "    {'name': 'context','type': 'STRING'}," +
+                "    {'name': 'destination','type': 'STRING'}," +
+                "    {'name': 'requestTime','type': 'LONG'}," +
+                "    {'name': 'hostName','type': 'STRING'}" +
                 "  ]" +
                 "}";
     }
