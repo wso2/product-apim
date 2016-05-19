@@ -205,19 +205,20 @@ public class StreamDefinitions {
                 "  'description': 'Stream for API Manager destination based statistics'," +
                 "  'metaData': [" +
                 "    {'name': 'tenant_id','type': 'INT'}," +
-                "    {'name': 'http_method'," +
-                "'type':'STRING'" +
-                "}," +
+                "    {'name': 'http_method','type':'STRING'}," +
                 "    {'name': 'character_set_encoding','type': 'STRING'}," +
                 "    {'name': 'remote_address','type': 'STRING'}," +
                 "    {'name': 'transport_in_url','type': 'STRING'}," +
                 "    {'name': 'message_type','type': 'STRING'}," +
                 "    {'name': 'remote_host','type': 'STRING'}," +
                 "    {'name': 'service_prefix','type': 'STRING'}," +
-                "    {'name': 'host','type': 'STRING'}" + "  ]," +
+                "    {'name': 'host','type': 'STRING'}" +
+                "  ]," +
                 "  'correlationData': [" +
-                "    {'name': 'activity_id','type': 'STRING'}" + "  ]," +
-                "  'payloadData': [" + "    {'name': 'message_direction','type': 'STRING'}," +
+                "    {'name': 'activity_id','type': 'STRING'}" +
+                "  ]," +
+                "  'payloadData': [" +
+                "    {'name': 'message_direction','type': 'STRING'}," +
                 "    {'name': 'operation_name','type': 'STRING'}," +
                 "    {'name': 'message_id','type': 'STRING'}," +
                 "    {'name': 'timestamp','type': 'LONG'}," +
