@@ -295,20 +295,22 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Map<String, Object> map = convertToMap(responseTable.get(0).getPayloadData(),
                 StreamDefinitions.getStreamDefinitionResponse());
 
-        String context, resourcePath, username;
+        String context, resourcePath, username, apiVersion;
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             context = "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName() + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/add?x=1&y=1";
             username = user.getUserName() + "@" + user.getUserDomain();
         } else {
             context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName().replace("@", "-AT-") + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/" + API_CONTEXT + "/" + API_VERSION + "/add?x=1&y=1";
             username = user.getUserName();
         }
 
         Assert.assertEquals(consumerKey, map.get("consumerKey").toString(), "Wrong consumer key is received");
         Assert.assertEquals(context, map.get("context").toString(), "Wrong context received");
-        Assert.assertEquals(API_NAME + ":v" + API_VERSION, map.get("api_version").toString(),
+        Assert.assertEquals(apiVersion, map.get("api_version").toString(),
                 "Wrong api_version received");
         Assert.assertEquals(API_NAME, map.get("api").toString(), "Wrong api name received");
         Assert.assertEquals(resourcePath, map.get("resourcePath").toString(), "Wrong resourcePath received");
