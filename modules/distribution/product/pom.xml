@@ -362,7 +362,12 @@
                         <replacement>
                             <xpath>/broker/performanceTuning/slots/windowSize</xpath>
                             <token>(1000)</token>
-                            <value>1</value>
+                            <value>50</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/messageAccumulationTimeout</xpath>
+                            <token>(2000)</token>
+                            <value>50</value>
                         </replacement>
                     </replacements>
                 </configuration>
