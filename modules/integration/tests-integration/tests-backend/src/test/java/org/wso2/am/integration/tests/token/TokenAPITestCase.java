@@ -156,7 +156,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         //Obtain user access token
         Thread.sleep(2000);
         String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=admin&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token?tenantDomain=" + user.getUserDomain());
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
         /*Response would be like -
