@@ -162,7 +162,7 @@ Documentation
 ==============
 
 On-line product documentation is available at:
-        https://docs.wso2.com/display/AM1100/WSO2+API+Manager+Documentation
+        https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation
 
 Support
 ==================================
