@@ -132,8 +132,9 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
         //Copy api with same version
         HttpResponse copyAPIResponse=apiPublisher.copyAPI(providerName,API_NAME,version,newVersion,"");
         assertEquals(copyAPIResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatched");
-        assertTrue(copyAPIResponse.getData().contains("\"error\" : true, \"message\" : \" API already exists with version: "
-                + version), "Response Data Mismatched");
+        assertTrue(copyAPIResponse.getData().contains("\"error\" : true"), "Response Data Mismatched. No error thrown.");
+        assertTrue(copyAPIResponse.getData().contains("API already exists with version: " + version),
+                   "Response Data Mismatched.");
 
     }
 
