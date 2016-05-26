@@ -77,8 +77,9 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = { "wso2.am" }, description = "Create sample API and set the state as Prototype")
-    public void testAPICreation() throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Create new version and publish")
+
+    public void testAPINewVersionCreation() throws Exception {
         String providerName = user.getUserName();
 
         apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
@@ -97,13 +98,8 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
 
-    }
-
-    @Test(groups = { "wso2.am" }, description = "Create new version and publish",
-            dependsOnMethods = "testAPICreation")
-    public void testAPINewVersionCreation() throws Exception {
-        //add test api
-        HttpResponse serviceResponse = apiPublisher
+        //copy test api
+        serviceResponse = apiPublisher
                 .copyAPI(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(), APIVersionNew, null);
         verifyResponse(serviceResponse);
 
@@ -115,7 +111,7 @@ public class NewVersionUpdateTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(version, APIVersionNew);
 
         //publish the api
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
+        updateRequest = new APILifeCycleStateRequest(apiName, user.getUserName(),
                 APILifeCycleState.PUBLISHED);
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);

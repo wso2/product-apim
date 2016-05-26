@@ -105,8 +105,9 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
                         new String[] { INTERNAL_ROLE_SUBSCRIBER_1 }, null);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Sample API creation and publishing")
-    public void testAPICreation() throws Exception {
+    @Test(groups = { "wso2.am" }, description = "Test availability of the api without login")
+    public void testDirectLinkAnonymous() throws Exception {
+
         String providerName = user.getUserName();
 
         apiRequest = new APIRequest(apiName, APIContext, new URL(endpointUrl));
@@ -126,11 +127,7 @@ public class APIVisibilityWithDirectURLTestCase extends APIManagerLifecycleBaseT
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
 
-    }
 
-    @Test(groups = { "wso2.am" }, description = "Test availability of the api without login",
-            dependsOnMethods = "testAPICreation")
-    public void testDirectLinkAnonymous() throws Exception {
         HttpResponse a = HttpRequestUtil
                 .doGet(getStoreURLHttps() + "/store/apis/info?name=" + apiName + "&version=" + APIVersion + "&provider="
                         + SUPER_ADMIN_USERNAME + "&tenant=" + SUPER_ADMIN_DOMAIN, requestHeaders);
