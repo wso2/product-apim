@@ -16,14 +16,12 @@
 
 package org.wso2.am.integration.ui.tests;
 
-import org.apache.ftpserver.command.impl.PASS;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -38,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
 
+/**
+ * Verify the publisher behaviour when debug logs are enabled
+ */
 public class APIMANAGER4279PublisherDebugEnabledTestCase extends APIMIntegrationUiTestBase {
     private WebDriver driver;
     private String publisherURL;
