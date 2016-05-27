@@ -34,6 +34,7 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SwaggerInfoDTO;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
@@ -74,7 +75,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -502,7 +505,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
 
         JSONParser parser = new JSONParser();
-        Map<String, JSONArray> apiDefPaths = new HashMap<String, JSONArray>();
+        Map<String, SwaggerInfoDTO> apiDefPaths = new HashMap<String, SwaggerInfoDTO>();
 
         Object rawResource = registryService.getGovernanceRegistryResource(swagger12location + APIConstants
                 .API_DOC_1_2_RESOURCE_NAME);
@@ -524,22 +527,87 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             }
 
             JSONObject apiDef = (JSONObject) parser.parse(swaggerDocContent);
-            if (apiDef.containsKey("apis")) {
-                JSONArray apiArray = (JSONArray) apiDef.get("apis");
-                for (Object anApiArray : apiArray) {
-                    JSONObject apiObject = (JSONObject) anApiArray;
-                    String path = (String) apiObject.get("path");
-                    JSONArray operations = (JSONArray) apiObject.get("operations");
-                    // set the operations object inside each api definition and
-                    // set it in a map against its resource path
-                    apiDefPaths.put(path, operations);
-                }
-            } else {
-                log.error("Cannot find resources in swagger v1.2 document");
-            }
+            generateAPIDefinitionPaths(apiDefPaths, apiDef, pathName);
         }
         JSONObject swagger2Doc = generateSwagger2Document(swagger12doc, apiDefPaths, api);
         return swagger2Doc.toJSONString();
+    }
+
+    protected void generateAPIDefinitionPaths(Map<String, SwaggerInfoDTO> apiDefPaths, JSONObject apiDef,
+                                              String resourcePathName) {
+        if (apiDef.containsKey("apis")) {
+            JSONArray apiArray = (JSONArray) apiDef.get("apis");
+
+            JSONArray producesMimeArray = extractProducesObject(apiDef);
+            JSONArray consumesMimeArray = extractConsumesObject(apiDef);
+            for (Object anApiArray : apiArray) {
+                JSONObject apiObject = (JSONObject) anApiArray;
+                String path = (String) apiObject.get("path");
+                JSONArray operations = (JSONArray) apiObject.get("operations");
+
+                /*
+                 * This is done to fix the following scenario.
+                 * We have came across swagger 1.2 docs where paths are defined as follows.
+                 * "apis": [
+                    {
+                      "path": "/invoices",
+                      "operations": [
+                        {
+                          ...
+                          "method": "GET",
+                          "parameters": [
+                            ...
+                          ],
+                        },
+                        {
+                          ...
+                          "method": "OPTIONS",
+                          "parameters": [
+                            ...
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "path": "/invoices",
+                      "operations": [
+                        {
+                          ...
+                          "method": "POST",
+                          "parameters": [
+                            ...
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                */
+                if (apiDefPaths.containsKey(path)) {
+                    SwaggerInfoDTO swaggerInfoDTO = apiDefPaths.get(path);
+                    swaggerInfoDTO.getOperationList().add(operations);
+                } else {
+                    SwaggerInfoDTO swaggerInfoDTO = new SwaggerInfoDTO();
+
+                    //Adding the produces and consumes elements as they are there for all the resources
+                    swaggerInfoDTO.setProducesList(producesMimeArray);
+                    swaggerInfoDTO.setConsumeList(consumesMimeArray);
+
+                    // Setting the tag name as the resource path
+                    if(resourcePathName.startsWith("/")){
+                        resourcePathName = resourcePathName.substring(1);
+                    }
+                    swaggerInfoDTO.setTagName(resourcePathName);
+
+                    swaggerInfoDTO.getOperationList().add(operations);
+                    apiDefPaths.put(path, swaggerInfoDTO);
+                }
+                // set the operations object inside each api definition and
+                // set it in a map against its resource path
+//                apiDefPaths.put(path, operations);
+            }
+        } else {
+            log.error("Cannot find resources in swagger v1.2 document");
+        }
     }
 
     /**
@@ -552,8 +620,9 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @throws MalformedURLException
      */
 
-    private static JSONObject generateSwagger2Document(JSONObject swagger12doc, Map<String, JSONArray> apiDefPaths,
-                                                       API api) throws ParseException, MalformedURLException {
+    protected JSONObject generateSwagger2Document(JSONObject swagger12doc,
+                                                       Map<String, SwaggerInfoDTO> apiDefPaths, API api)
+            throws ParseException, MalformedURLException {
         log.debug("Calling generateSwagger2Document");
 
         //create swagger 2.0 doc
@@ -569,7 +638,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         swagger20doc.put(Constants.SWAGGER_INFO, info);
 
         //set the paths object
-        JSONObject pathObj = generatePathsObj(apiDefPaths);
+        JSONObject pathObj = generatePathsObj(swagger12doc, apiDefPaths);
 
         //JSONObject pathObj = generatePathsObj(api);
         swagger20doc.put(Constants.SWAGGER_PATHS, pathObj);
@@ -697,118 +766,133 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @return swagger v2 paths object
      * @throws ParseException
      */
-    private static JSONObject generatePathsObj(Map<String, JSONArray> apiDefinitionPaths) throws ParseException {
+    private static JSONObject generatePathsObj(JSONObject swagger12doc, Map<String, SwaggerInfoDTO> apiDefinitionPaths)
+            throws ParseException {
         JSONObject pathsObj = new JSONObject();
+
+        // Extract produces element
+        JSONArray producesMimeArray = extractProducesObject(swagger12doc);
+
+        // Extract consumes element
+        JSONArray consumesMimeArray = extractConsumesObject(swagger12doc);
 
         String defaultType = "string";
         //add default response
-        JSONObject responseObject = new JSONObject();
-        JSONObject status200 = new JSONObject();
-        status200.put(Constants.SWAGGER_DESCRIPTION, "OK");
-        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
+        JSONObject responseObject = getDefaultResponseObject();
+        JSONObject optionsResponseObject = getOptionsResponseObject();
 
-        for (Map.Entry<String, JSONArray> entry : apiDefinitionPaths.entrySet()) {
+        for (Map.Entry<String, SwaggerInfoDTO> entry : apiDefinitionPaths.entrySet()) {
             try {
                 String key = entry.getKey();
-                JSONArray operations = entry.getValue();
+                List<JSONArray> operationsList = entry.getValue().getOperationList();
+
                 JSONObject pathItemObj = new JSONObject();
-                for (Object operation : operations) {
-                    JSONObject operationObject = (JSONObject) operation;
-                    if (operationObject.containsKey("method")) {
-                        String method = (String) operationObject.get("method");
-                        if (operationObject.containsKey("parameters")) {
-                            JSONObject swagger2OperationsObj;
-                            JSONArray newParameters;
+                String tagName = entry.getValue().getTagName();
 
-                            Object swagger2Params = operationObject.get("parameters");
-                            if (swagger2Params == null || !(swagger2Params instanceof JSONArray)) {
-                                // this means that we can not move further in here. Hence continuing to next resource
-                                continue;
-                            }
+                for (JSONArray operations : operationsList) {
+                    for (Object operation : operations) {
+                        JSONObject operationObject = (JSONObject) operation;
+                        if (operationObject.containsKey("method")) {
+                            String method = (String) operationObject.get("method");
+                            if (operationObject.containsKey("parameters")) {
+                                JSONObject swagger2OperationsObj;
+                                JSONArray newParameters;
 
-                            JSONArray swagger2ParamObjects = (JSONArray) swagger2Params;
-                            swagger2OperationsObj = new JSONObject();
-                            newParameters = new JSONArray();
+                                Object swagger2Params = operationObject.get("parameters");
+                                if (swagger2Params == null || !(swagger2Params instanceof JSONArray)) {
+                                    // this means that we can not move further in here. Hence continuing to next
+                                    // resource
+                                    continue;
+                                }
 
-                            for (Object swagger2ParamObj : swagger2ParamObjects) {
-                                JSONObject oldParam = (JSONObject) swagger2ParamObj;
-                                JSONObject paramObj = new JSONObject();
+                                JSONArray swagger2ParamObjects = (JSONArray) swagger2Params;
+                                swagger2OperationsObj = new JSONObject();
+                                newParameters = new JSONArray();
 
-                                paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
-                                paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
+                                // Process the method parameters and move them to swagger 2.0 format
+                                generateSwagger2OperationParameters(defaultType, newParameters, swagger2ParamObjects);
 
-                                if (Constants.SWAGGER_PARAM_TYPE_BODY.equals(oldParam.get("paramType"))) {
-                                    JSONObject refObject = new JSONObject();
-                                    refObject.put(Constants.SWAGGER_REF, "#/definitions/sampleItem");
-                                    paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
-                                } else {
-                                    if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
-                                        paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
-                                    } else {
-                                        paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                                //generate the Operation object
+                                // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0
+                                // .md#operationObject)
+                                swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID,
+                                                          operationObject.get("nickname"));
+
+                                //setting operation level params
+                                swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
+
+                                //Add auth_type and throttling_tier
+                                if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
+                                    swagger2OperationsObj.put(Constants.SWAGGER_X_AUTH_TYPE,
+                                                              operationObject.get(Constants.SWAGGER_AUTH_TYPE));
+                                }
+                                if (operationObject.containsKey(Constants.SWAGGER_THROTTLING_TIER)) {
+                                    swagger2OperationsObj.put(Constants.SWAGGER_X_THROTTLING_TIER,
+                                                              operationObject.get(Constants.SWAGGER_THROTTLING_TIER));
+                                }
+
+                                if (operationObject.containsKey("notes")) {
+                                    swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION,
+                                                              operationObject.get("notes"));
+                                }
+                                if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
+                                    swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY,
+                                                              operationObject.get(Constants.SWAGGER_SUMMARY));
+                                }
+
+                                // Add the produces mime types
+                                if(entry.getValue().getProducesList() != null){
+                                    swagger2OperationsObj.put(Constants.SWAGGER_PRODUCES,
+                                                              entry.getValue().getProducesList());
+                                }else if(producesMimeArray != null){
+                                    swagger2OperationsObj.put(Constants.SWAGGER_PRODUCES, producesMimeArray);
+                                }
+
+                                // Add the consumes mime types
+                                if(entry.getValue().getConsumeList() != null){
+                                    swagger2OperationsObj.put(Constants.SWAGGER_CONSUMES,
+                                                              entry.getValue().getConsumeList());
+                                }else if(consumesMimeArray != null){
+                                    swagger2OperationsObj.put(Constants.SWAGGER_CONSUMES, consumesMimeArray);
+                                }
+
+                                //set the responseObject
+                                //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0
+                                // .md#responsesObject)
+                                if (operationObject.containsKey("responseMessages")) {
+                                    responseObject = new JSONObject();
+                                    JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
+                                    for (Object responseMessage : responseMessages) {
+                                        JSONObject errorObj = (JSONObject) responseMessage;
+                                        responseObject.put(errorObj.get("code"), errorObj.get("message"));
                                     }
                                 }
-
-                                if (paramObj.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
-                                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM,
-                                                 oldParam.get(Constants.SWAGGER_REQUIRED_PARAM));
-                                } else {
-                                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
+                                if (method.toLowerCase().equals("options")) {
+                                    swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, optionsResponseObject);
+                                } else{
+                                    swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
                                 }
-                                if (paramObj.containsKey(Constants.SWAGGER_DESCRIPTION)) {
-                                    paramObj.put(Constants.SWAGGER_DESCRIPTION,
-                                                 oldParam.get(Constants.SWAGGER_DESCRIPTION));
-                                } else {
-                                    paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
+
+                                // Setting the tags based on the resource path. Otherwise all the resources would be
+                                // shown as "default"
+                                if (tagName != null) {
+                                    JSONArray tagsArray = new JSONArray();
+                                    tagsArray.add(tagName);
+                                    swagger2OperationsObj.put("tags", tagsArray);
                                 }
-                                newParameters.add(paramObj);
-                            }
 
-                            //generate the Operation object
-                            // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operationObject)
-                            swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID, operationObject.get("nickname"));
-
-                            //setting operation level params
-                            swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
-
-                            //Add auth_type and throttling_tier
-                            if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
-                                swagger2OperationsObj.put(Constants.SWAGGER_X_AUTH_TYPE,
-                                                          operationObject.get(Constants.SWAGGER_AUTH_TYPE));
+                                //set pathItem object for the resource
+                                //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0
+                                // .md#pathItemObject)
+                                pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
                             }
-                            if (operationObject.containsKey(Constants.SWAGGER_THROTTLING_TIER)) {
-                                swagger2OperationsObj.put(Constants.SWAGGER_X_THROTTLING_TIER,
-                                                          operationObject.get(Constants.SWAGGER_THROTTLING_TIER));
-                            }
-
-                            if (operationObject.containsKey("notes")) {
-                                swagger2OperationsObj.put(Constants.SWAGGER_DESCRIPTION, operationObject.get("notes"));
-                            }
-                            if (operationObject.containsKey(Constants.SWAGGER_SUMMARY)) {
-                                swagger2OperationsObj.put(Constants.SWAGGER_SUMMARY,
-                                                          operationObject.get(Constants.SWAGGER_SUMMARY));
-                            }
-
-                            //set pathItem object for the resource
-                            //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject)
-                            pathItemObj.put(method.toLowerCase(), swagger2OperationsObj);
-
-                            //set the responseObject
-                            //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject)
-                            if (operationObject.containsKey("responseMessages")) {
-                                responseObject = new JSONObject();
-                                JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
-                                for (Object responseMessage : responseMessages) {
-                                    JSONObject errorObj = (JSONObject) responseMessage;
-                                    responseObject.put(errorObj.get("code"), errorObj.get("message"));
-                                }
-                            }
-                            swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
+                        } else {
+                            log.error("Needed parameter method does not exists in swagger v1.2 doc");
                         }
-                    } else {
-                        log.error("Needed parameter method does not exists in swagger v1.2 doc");
                     }
                 }
+
+                // Adding the constructed paths element
                 pathsObj.put(key, pathItemObj);
             } catch (Exception e) {
                 log.error("Error occurred while doing the swagger paths migration. key : " + entry.getKey() + " value" +
@@ -816,6 +900,142 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             }
         }
         return pathsObj;
+    }
+
+    // TODO: not needed. Remove
+    /**
+     * This method will extract the last path segment of the given resource to be used as the tag name.
+     * @param path The resourcePath
+     * @return The last path segment excluding any path parameters and query parameters.
+     * */
+    private static String extractTagResource(String path){
+        // We check whether path is one of the following
+        // '/', '/*', /{foo}
+        if(path.equals("/") || path.equals("/*") || path.startsWith("/{")){
+            return null;
+        }
+
+        String lastPathSegment = path.substring(path.lastIndexOf("/") + 1);
+
+        // We check whether this is a parameter that ia defined as the past path segment.
+        if(lastPathSegment.startsWith("{")){
+            return extractTagResource(path.substring(0, path.lastIndexOf("/")));
+        }
+
+        // We check whether there is any query parameters that is defined.
+        if(lastPathSegment.contains("?")){
+            return lastPathSegment.substring(0, lastPathSegment.indexOf("?"));
+        }else if(lastPathSegment.contains("*")){
+            return lastPathSegment.substring(0, lastPathSegment.indexOf("*"));
+        }
+        return lastPathSegment;
+    }
+
+    private static JSONObject getDefaultResponseObject() {
+        JSONObject responseObject = new JSONObject();
+        JSONObject status200 = new JSONObject();
+        status200.put(Constants.SWAGGER_DESCRIPTION, "No response was specified");
+
+        // Adding the default schema type for the response object
+        JSONObject schemaObject = new JSONObject();
+        schemaObject.put("type", "string");
+        status200.put("schema", schemaObject);
+
+        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
+        return responseObject;
+    }
+
+    private static JSONObject getOptionsResponseObject() {
+        JSONObject responseObject = new JSONObject();
+        JSONObject status200 = new JSONObject();
+        status200.put(Constants.SWAGGER_DESCRIPTION, "No response was specified");
+
+        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
+        return responseObject;
+    }
+
+    private static void generateSwagger2OperationParameters(String defaultType, JSONArray newParameters,
+                                                            JSONArray swagger2ParamObjects) {
+        for (Object swagger2ParamObj : swagger2ParamObjects) {
+            JSONObject oldParam = (JSONObject) swagger2ParamObj;
+            JSONObject paramObj = new JSONObject();
+
+            paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
+            paramObj.put(Constants.SWAGGER_PARAM_TYPE_IN, oldParam.get("paramType"));
+
+            if (Constants.SWAGGER_PARAM_TYPE_BODY.equals(oldParam.get("paramType"))) {
+                JSONObject refObject = new JSONObject();
+                // refObject.put(Constants.SWAGGER_REF,
+                // "#/definitions/sampleItem");
+                if (oldParam.containsKey("type")) {
+                    refObject.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
+                } else {
+                    refObject.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                }
+                paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
+            } else {
+                if (oldParam.containsKey("type")) {
+                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
+                } else {
+                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                }
+            }
+
+            if (oldParam.containsKey(Constants.SWAGGER_REQUIRED_PARAM)) {
+                String oldRequiredParam = oldParam.get(Constants.SWAGGER_REQUIRED_PARAM).toString();
+                if (oldRequiredParam.equalsIgnoreCase("true")) {
+                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.TRUE);
+                } else {
+                    paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
+                }
+            } else {
+                paramObj.put(Constants.SWAGGER_REQUIRED_PARAM, Boolean.FALSE);
+            }
+            if (oldParam.containsKey(Constants.SWAGGER_DESCRIPTION)) {
+                paramObj.put(Constants.SWAGGER_DESCRIPTION,
+                             oldParam.get(Constants.SWAGGER_DESCRIPTION));
+            } else {
+                paramObj.put(Constants.SWAGGER_DESCRIPTION, "");
+            }
+            newParameters.add(paramObj);
+        }
+    }
+
+    /**
+     * The purpose of this method is to extract the produces element from the swagger 1.2 documentation.
+     * We expect that the element to be an json array. If it is not, we return an array with the default mediatype -
+     * application/json.
+     *
+     * */
+    private static JSONArray extractProducesObject(JSONObject swagger12doc){
+
+        if(swagger12doc.containsKey(Constants.SWAGGER_PRODUCES)){
+            Object producesRawObject = swagger12doc.get(Constants.SWAGGER_PRODUCES);
+            if(producesRawObject instanceof JSONArray){
+                return (JSONArray) producesRawObject;
+            }
+        }else{
+            log.debug("No produces object found in swagger doc.");
+        }
+        return null;
+    }
+
+    /**
+     * The purpose of this method is to extract the consumes element from the swagger 1.2 documentation.
+     * We expect that the element to be an json array. If it is not, we return an array with the default mediatype -
+     * application/json.
+     *
+     * */
+    private static JSONArray extractConsumesObject(JSONObject swagger12doc){
+        if(swagger12doc.containsKey(Constants.SWAGGER_CONSUMES)){
+            Object consumesRawObject = swagger12doc.get(Constants.SWAGGER_CONSUMES);
+            if(consumesRawObject instanceof JSONArray){
+                return (JSONArray) consumesRawObject;
+            }
+        }else{
+            log.debug("No consumes object found in swagger doc." );
+        }
+        return null;
     }
 
     /**
