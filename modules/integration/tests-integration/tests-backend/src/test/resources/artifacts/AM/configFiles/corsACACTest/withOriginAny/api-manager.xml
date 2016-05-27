@@ -453,7 +453,7 @@
                 <InitIdleCapacity>200</InitIdleCapacity>
             </DataPublisherPool>
             <DataPublisherThreadPool>
-                <CorePoolSize>1000</CorePoolSize>
+
                 <MaxmimumPoolSize>200</MaxmimumPoolSize>
                 <KeepAliveTime>200</KeepAliveTime>
             </DataPublisherThreadPool>
