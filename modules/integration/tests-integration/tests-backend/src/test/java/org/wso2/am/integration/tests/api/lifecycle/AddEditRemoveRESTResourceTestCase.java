@@ -142,7 +142,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (AutomationFrameworkException e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 403 when accessing a " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 405 when accessing a " +
                                                                   "POST resource which is not define yet. "
                                                                   + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
@@ -298,7 +298,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
             exceptionMessage = e.getMessage();
         } finally {
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException " +
-                                          "with 403 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
+                                          "with 405 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
     }
