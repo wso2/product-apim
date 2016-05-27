@@ -143,8 +143,12 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
                      "Call");
         assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
-        assertEquals(accessControlAllowMethods, "POST,PATCH,GET,DELETE,OPTIONS,PUT",
-                     "Access Control allow Method values get mismatched in option Call");
+        assertTrue(accessControlAllowMethods.contains("GET")
+                   && !accessControlAllowMethods.contains("POST")
+                   && !accessControlAllowMethods.contains("DELETE")
+                   && !accessControlAllowMethods.contains("PUT")
+                   && !accessControlAllowMethods.contains("PATCH"),
+                   "Access Control allow Method values get mismatched in option Call");
         assertEquals(accessControlAllowCredentials, "true",
                      "Access Control allow Credentials values get mismatched in option Call");
     }
