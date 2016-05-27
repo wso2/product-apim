@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
@@ -97,8 +98,12 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
         assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
-        assertEquals(accessControlAllowMethods, "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-                     "Access Control allow Method values get mismatched in option Call");
+        assertTrue(accessControlAllowMethods.contains("GET")
+                   && accessControlAllowMethods.contains("POST")
+                   && !accessControlAllowMethods.contains("DELETE")
+                   && !accessControlAllowMethods.contains("PUT")
+                   && !accessControlAllowMethods.contains("PATCH"),
+                   "Access Control allow Method values get mismatched in option Call");
     }
 
     @Test(groups = {
