@@ -119,7 +119,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         dropFKConstraint(constraintsScriptPath);
     }
 
-
     /**
      * This method is used to migrate all registry resources
      * This migrates swagger resources and rxts
@@ -128,7 +127,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      */
     @Override
     public void registryResourceMigration() throws APIMigrationException {
-        //copyNewRxtFileToRegistry();
         swaggerResourceMigration();
         rxtMigration();
         externalStoreMigration();
@@ -156,16 +154,16 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                                                  modifiedConfig);
 
             } catch (RegistryException e) {
-                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+                log.error("Error occurred while accessing the registry", e);
                 try {
                     registryService.rollbackGovernanceRegistryTransaction();
                 } catch (org.wso2.carbon.registry.core.exceptions.RegistryException ex) {
-                    ResourceUtil.handleException("Error occurred while accessing the registry", ex);
+                    log.error("Error occurred while accessing the registry", ex);
                 } catch (UserStoreException ex) {
-                    ResourceUtil.handleException("Error occurred while reading tenant information", ex);
+                    log.error("Error occurred while reading tenant information", ex);
                 }
             } catch (UserStoreException e) {
-                ResourceUtil.handleException("Error occurred while reading tenant information", e);
+                log.error("Error occurred while reading tenant information", e);
             } finally {
                 registryService.endTenantFlow();
             }
@@ -230,6 +228,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      */
     private void rxtMigration() throws APIMigrationException {
         log.info("Rxt migration for API Manager " + Constants.VERSION_1_9 + " started.");
+
         boolean isTenantFlowStarted = false;
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
@@ -310,11 +309,11 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     }
                 }
             } catch (APIManagementException e) {
-                ResourceUtil.handleException("Error occurred while reading API from the artifact ", e);
+                log.error("Error occurred while reading API from the artifact ", e);
             } catch (RegistryException e) {
-                ResourceUtil.handleException("Error occurred while accessing the registry", e);
+                log.error("Error occurred while accessing the registry", e);
             } catch (UserStoreException e) {
-                ResourceUtil.handleException("Error occurred while reading tenant information", e);
+                log.error("Error occurred while reading tenant information", e);
             } finally {
                 if (isTenantFlowStarted) {
                     PrivilegedCarbonContext.endTenantFlow();
@@ -328,6 +327,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
     }
 
 
+    //TODO: cehck and remove
     /**
      * This method is used to copy new rxt to the registry
      * This copies rxt from the file system to registry
@@ -399,8 +399,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
 
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
-                log.debug("Start swaggerResourceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() +
-                          ')');
+                log.debug("Start swaggerResourceMigration for tenant " + tenant.getId()
+                          + '(' + tenant.getDomain() + ')');
             }
 
             try {
@@ -436,25 +436,25 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 String apiVersion = apiIdentifier.getVersion();
                 String apiProviderName = apiIdentifier.getProviderName();
                 try {
-                    String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion,
-                                                                                       apiProviderName);
-
-                    // Create swagger 2.0 doc only if it does not exist
-                    /*if (registry.resourceExists(swagger2location)) {
-                        continue;
-                    }*/
-
-                    String swagger12location = ResourceUtil.getSwagger12ResourceLocation(apiName, apiVersion,
-                                                                                         apiProviderName);
                     String swagger2Document;
 
+                    String swagger2location = ResourceUtil.getSwagger2ResourceLocation(apiName, apiVersion,
+                                                                                       apiProviderName);
+                    String swagger12location = ResourceUtil.getSwagger12ResourceLocation(apiName,
+                                                                                         apiVersion,
+                                                                                         apiProviderName);
+
                     if (!registryService.isGovernanceRegistryResourceExists(swagger12location)) {
-                        log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + '-' + apiVersion +
-                                  '-' + apiProviderName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Creating swagger v2.0 resource from scratch for : " + apiName + '-' + apiVersion +
+                                      '-' + apiProviderName);
+                        }
                         swagger2Document = definitionFromSwagger20.generateAPIDefinition(api);
                     } else {
-                        log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + '-' + apiVersion +
-                                  '-' + apiProviderName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + '-' + apiVersion +
+                                      '-' + apiProviderName);
+                        }
                         swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger12location,
                                                                                          api);
                     }
@@ -533,8 +533,16 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         return swagger2Doc.toJSONString();
     }
 
-    protected void generateAPIDefinitionPaths(Map<String, SwaggerInfoDTO> apiDefPaths, JSONObject apiDef,
-                                              String resourcePathName) {
+    /**
+     * This method populates the map of path and corresponding {@link SwaggerInfoDTO} by extracting information from
+     * the swagger 1.2 document
+     *
+     * @param apiDefPaths      The map to be populated
+     * @param apiDef           The API definition swagger
+     * @param resourcePathName The resource path of the swagger doc
+     */
+    private void generateAPIDefinitionPaths(Map<String, SwaggerInfoDTO> apiDefPaths, JSONObject apiDef,
+                                            String resourcePathName) {
         if (apiDef.containsKey("apis")) {
             JSONArray apiArray = (JSONArray) apiDef.get("apis");
 
@@ -601,9 +609,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     swaggerInfoDTO.getOperationList().add(operations);
                     apiDefPaths.put(path, swaggerInfoDTO);
                 }
-                // set the operations object inside each api definition and
-                // set it in a map against its resource path
-//                apiDefPaths.put(path, operations);
             }
         } else {
             log.error("Cannot find resources in swagger v1.2 document");
@@ -620,8 +625,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
      * @throws MalformedURLException
      */
 
-    protected JSONObject generateSwagger2Document(JSONObject swagger12doc,
-                                                       Map<String, SwaggerInfoDTO> apiDefPaths, API api)
+    private JSONObject generateSwagger2Document(JSONObject swagger12doc, Map<String, SwaggerInfoDTO> apiDefPaths,
+                                                API api)
             throws ParseException, MalformedURLException {
         log.debug("Calling generateSwagger2Document");
 
@@ -776,11 +781,6 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         // Extract consumes element
         JSONArray consumesMimeArray = extractConsumesObject(swagger12doc);
 
-        String defaultType = "string";
-        //add default response
-        JSONObject responseObject = getDefaultResponseObject();
-        JSONObject optionsResponseObject = getOptionsResponseObject();
-
         for (Map.Entry<String, SwaggerInfoDTO> entry : apiDefinitionPaths.entrySet()) {
             try {
                 String key = entry.getKey();
@@ -795,31 +795,27 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                         if (operationObject.containsKey("method")) {
                             String method = (String) operationObject.get("method");
                             if (operationObject.containsKey("parameters")) {
-                                JSONObject swagger2OperationsObj;
+                                JSONObject swagger2OperationsObj = new JSONObject();
                                 JSONArray newParameters;
 
-                                Object swagger2Params = operationObject.get("parameters");
-                                if (swagger2Params == null || !(swagger2Params instanceof JSONArray)) {
-                                    // this means that we can not move further in here. Hence continuing to next
-                                    // resource
-                                    continue;
+                                Object swagger12Params = operationObject.get("parameters");
+                                if (swagger12Params != null && (swagger12Params instanceof JSONArray)) {
+                                    // There is no parameters defined. We can proceed with the rest
+                                    JSONArray swagger12ParamObjects = (JSONArray) swagger12Params;
+                                    newParameters = new JSONArray();
+
+                                    // Process the method parameters and move them to swagger 2.0 format
+                                    generateSwagger2OperationParameters(newParameters, swagger12ParamObjects);
+
+                                    //setting operation level params
+                                    swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
                                 }
-
-                                JSONArray swagger2ParamObjects = (JSONArray) swagger2Params;
-                                swagger2OperationsObj = new JSONObject();
-                                newParameters = new JSONArray();
-
-                                // Process the method parameters and move them to swagger 2.0 format
-                                generateSwagger2OperationParameters(defaultType, newParameters, swagger2ParamObjects);
 
                                 //generate the Operation object
                                 // (https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0
                                 // .md#operationObject)
                                 swagger2OperationsObj.put(Constants.SWAGGER_OPERATION_ID,
                                                           operationObject.get("nickname"));
-
-                                //setting operation level params
-                                swagger2OperationsObj.put(Constants.SWAGGER_PARAMETERS, newParameters);
 
                                 //Add auth_type and throttling_tier
                                 if (operationObject.containsKey(Constants.SWAGGER_AUTH_TYPE)) {
@@ -857,21 +853,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                 }
 
                                 //set the responseObject
-                                //(https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0
-                                // .md#responsesObject)
-                                if (operationObject.containsKey("responseMessages")) {
-                                    responseObject = new JSONObject();
-                                    JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
-                                    for (Object responseMessage : responseMessages) {
-                                        JSONObject errorObj = (JSONObject) responseMessage;
-                                        responseObject.put(errorObj.get("code"), errorObj.get("message"));
-                                    }
-                                }
-                                if (method.toLowerCase().equals("options")) {
-                                    swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, optionsResponseObject);
-                                } else{
-                                    swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
-                                }
+                                buildResponseObject(operationObject, swagger2OperationsObj);
 
                                 // Setting the tags based on the resource path. Otherwise all the resources would be
                                 // shown as "default"
@@ -902,62 +884,59 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         return pathsObj;
     }
 
-    // TODO: not needed. Remove
+    private static void buildResponseObject(JSONObject operationObject, JSONObject swagger2OperationsObj){
+        JSONObject responseObject = new JSONObject();
+
+        if (operationObject.containsKey("responseMessages")) {
+            JSONArray responseMessages = (JSONArray) operationObject.get("responseMessages");
+            for (Object responseMessage : responseMessages) {
+                JSONObject response = new JSONObject();
+                JSONObject messageObject = (JSONObject) responseMessage;
+
+                // If there is a message object, we set that as the description
+                if (messageObject.containsKey("message")) {
+                    response.put(Constants.SWAGGER_DESCRIPTION, messageObject.get("message"));
+                }else {
+                    response.put(Constants.SWAGGER_DESCRIPTION, "Description was not specified");
+                }
+
+                // If there is a responseModel defined, we add that as the schema object
+                if(messageObject.containsKey("responseModel")){
+                    JSONObject schemaObject = new JSONObject();
+                    schemaObject.put(Constants.SWAGGER_PARAM_TYPE, messageObject.get("responseModel"));
+
+                    response.put(Constants.SWAGGER_BODY_SCHEMA, schemaObject);
+                }
+                responseObject.put(messageObject.get("code"), response);
+            }
+            swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
+        }
+
+        // We check whether 200 status is already defined. If not we add the default one.
+        if(!responseObject.containsKey(Constants.SWAGGER_RESPONSE_200)){
+            JSONObject status200 = new JSONObject();
+            status200.put(Constants.SWAGGER_DESCRIPTION, "No response was specified");
+
+            if(operationObject.containsKey(Constants.SWAGGER_PARAM_TYPE)){
+                JSONObject schemaObject = new JSONObject();
+                schemaObject.put(Constants.SWAGGER_PARAM_TYPE, operationObject.get(Constants.SWAGGER_PARAM_TYPE));
+                status200.put(Constants.SWAGGER_BODY_SCHEMA, schemaObject);
+            }
+            responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
+            swagger2OperationsObj.put(Constants.SWAGGER_RESPONSES, responseObject);
+        }
+    }
+
     /**
-     * This method will extract the last path segment of the given resource to be used as the tag name.
-     * @param path The resourcePath
-     * @return The last path segment excluding any path parameters and query parameters.
-     * */
-    private static String extractTagResource(String path){
-        // We check whether path is one of the following
-        // '/', '/*', /{foo}
-        if(path.equals("/") || path.equals("/*") || path.startsWith("/{")){
-            return null;
-        }
-
-        String lastPathSegment = path.substring(path.lastIndexOf("/") + 1);
-
-        // We check whether this is a parameter that ia defined as the past path segment.
-        if(lastPathSegment.startsWith("{")){
-            return extractTagResource(path.substring(0, path.lastIndexOf("/")));
-        }
-
-        // We check whether there is any query parameters that is defined.
-        if(lastPathSegment.contains("?")){
-            return lastPathSegment.substring(0, lastPathSegment.indexOf("?"));
-        }else if(lastPathSegment.contains("*")){
-            return lastPathSegment.substring(0, lastPathSegment.indexOf("*"));
-        }
-        return lastPathSegment;
-    }
-
-    private static JSONObject getDefaultResponseObject() {
-        JSONObject responseObject = new JSONObject();
-        JSONObject status200 = new JSONObject();
-        status200.put(Constants.SWAGGER_DESCRIPTION, "No response was specified");
-
-        // Adding the default schema type for the response object
-        JSONObject schemaObject = new JSONObject();
-        schemaObject.put("type", "string");
-        status200.put("schema", schemaObject);
-
-        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
-        return responseObject;
-    }
-
-    private static JSONObject getOptionsResponseObject() {
-        JSONObject responseObject = new JSONObject();
-        JSONObject status200 = new JSONObject();
-        status200.put(Constants.SWAGGER_DESCRIPTION, "No response was specified");
-
-        responseObject.put(Constants.SWAGGER_RESPONSE_200, status200);
-        return responseObject;
-    }
-
-    private static void generateSwagger2OperationParameters(String defaultType, JSONArray newParameters,
-                                                            JSONArray swagger2ParamObjects) {
-        for (Object swagger2ParamObj : swagger2ParamObjects) {
-            JSONObject oldParam = (JSONObject) swagger2ParamObj;
+     * This method generates the swagger 2.0 parameter object
+     *
+     * @param newParameters         The parameter object to be populated
+     * @param swagger12ParamObjects The parameter definition of the swagger 1.2 document
+     */
+    private static void generateSwagger2OperationParameters(JSONArray newParameters,
+                                                            JSONArray swagger12ParamObjects) {
+        for (Object swagger12ParamObj : swagger12ParamObjects) {
+            JSONObject oldParam = (JSONObject) swagger12ParamObj;
             JSONObject paramObj = new JSONObject();
 
             paramObj.put(Constants.SWAGGER_NAME, oldParam.get(Constants.SWAGGER_NAME));
@@ -970,14 +949,14 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                 if (oldParam.containsKey("type")) {
                     refObject.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
                 } else {
-                    refObject.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                    refObject.put(Constants.SWAGGER_PARAM_TYPE, Constants.DEFAULT_DATA_TYPE);
                 }
                 paramObj.put(Constants.SWAGGER_BODY_SCHEMA, refObject);
             } else {
                 if (oldParam.containsKey("type")) {
                     paramObj.put(Constants.SWAGGER_PARAM_TYPE, oldParam.get("type"));
                 } else {
-                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, defaultType);
+                    paramObj.put(Constants.SWAGGER_PARAM_TYPE, Constants.DEFAULT_DATA_TYPE);
                 }
             }
 

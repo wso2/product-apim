@@ -224,4 +224,5 @@ public class Constants {
 
 
     public static final String SWAGGER_CONSUMES = "consumes";
+    public static final String DEFAULT_DATA_TYPE = "string";
 }
