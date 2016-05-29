@@ -516,6 +516,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.jms.listener.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.scxml.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
 
                                 <!-- MB Features -->
                                 <featureArtifactDef>
@@ -1228,6 +1231,7 @@
                                     <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
+
                                 <!-- Output Adapter -->
                                 <feature>
                                     <id>org.wso2.carbon.event.output.adapter.server.feature.group</id>
@@ -1243,7 +1247,13 @@
                                     <id>org.wso2.carbon.application.mgt.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
-                                
+
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.scxml.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+
+
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
                                     <version>${carbon.commons.version}</version>

@@ -70,7 +70,7 @@
 		        <exclude>**/repository/components/plugins/org.wso2.carbon.hostobjects.sso_4.3.2.jar</exclude>
 		        <exclude>**/repository/components/plugins/com.google.guava_15.0.0.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
-		        <!--<exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>-->
+		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/compass_2.0.1.wso2v2.jar</exclude>-->
                 <!--<exclude>**/repository/components/plugins/poi_3.9.0.wso2v1.jar</exclude>-->
@@ -710,7 +710,7 @@
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
-                <include>commons-digester.wso2:commons-digester:jar</include>
+                <!--<include>commons-digester.wso2:commons-digester:jar</include>-->
                 <include>org.apache.geronimo.specs.wso2:geronimo-jms_1.1_spec:jar</include>
                 <include>org.wso2.securevault:org.wso2.securevault:jar</include>
                 <include>org.wso2.andes.wso2:andes-client:jar</include>
