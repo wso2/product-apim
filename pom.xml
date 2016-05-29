@@ -902,6 +902,11 @@
                 <artifactId>geronimo-jms_1.1_spec</artifactId>
                 <version>${orbit.version.geronimo-jms_1.1_spec}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-digester.wso2</groupId>
+                <artifactId>commons-digester</artifactId>
+                <version>${commons-digester.version}.wso2v1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -1046,7 +1051,10 @@
         <carbon.event-processing.version>2.0.13-SNAPSHOT</carbon.event-processing.version>
         <andes.version>3.1.5</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
-	<project.scm.id>scm-server</project.scm.id>
+        <commons-digester.version>1.8.1</commons-digester.version>
+	    <project.scm.id>scm-server</project.scm.id>
+        <product.cep.version>4.1.1.SNAPSHOT</product.cep.version>
+        <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
     </properties>
 
 </project>

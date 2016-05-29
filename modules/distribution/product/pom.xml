@@ -43,6 +43,10 @@
             <artifactId>geronimo-jms_1.1_spec</artifactId>
         </dependency>
         <dependency>
+            <groupId>commons-digester.wso2</groupId>
+            <artifactId>commons-digester</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.h2database.wso2</groupId>
             <artifactId>h2-database-engine</artifactId>
             <exclusions>

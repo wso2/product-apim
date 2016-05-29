@@ -710,13 +710,13 @@
         <dependencySet>
             <outputDirectory>wso2am-${pom.version}/repository/components/lib</outputDirectory>
             <includes>
-                <include>org.wso2.andes.wso2:andes-client:jar</include>
+                <!--<include>commons-digester.wso2:commons-digester:jar</include>-->
                 <include>org.apache.geronimo.specs.wso2:geronimo-jms_1.1_spec:jar</include>
                 <include>org.wso2.securevault:org.wso2.securevault:jar</include>
+                <include>org.wso2.andes.wso2:andes-client:jar</include>
             </includes>
         </dependencySet>
     </dependencySets>
-
     <files>
         <!--start of claim management feature-->
         <file>
