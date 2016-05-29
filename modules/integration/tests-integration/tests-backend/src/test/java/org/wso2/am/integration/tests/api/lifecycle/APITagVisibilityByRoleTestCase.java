@@ -101,7 +101,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and publish two apis with public and role based visibility")
-    public void testAPICreation() throws Exception {
+    public void testAPICreationWithVisibility() throws Exception {
         String providerName = user.getUserName();
 
         //API request for public visible API
@@ -140,7 +140,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Test the API tag visibility as a anonymous user",
-            dependsOnMethods = "testAPICreation")
+            dependsOnMethods = "testAPICreationWithVisibility")
     public void testAPITagVisibilityAnonymousUser() throws Exception {
         requestHeaders.clear();
 
