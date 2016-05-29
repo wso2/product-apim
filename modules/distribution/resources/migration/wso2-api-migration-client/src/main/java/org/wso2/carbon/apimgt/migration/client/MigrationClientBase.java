@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.registry.indexing.AsyncIndexer;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -37,6 +38,9 @@ import java.util.StringTokenizer;
 public abstract class MigrationClientBase {
     private static final Log log = LogFactory.getLog(MigrationClientBase.class);
     private List<Tenant> tenantsArray;
+    private static final String IS_MYSQL_SESION_MODE_EXISTS = "SELECT COUNT(@@SESSION.sql_mode)";
+    private static final String GET_MYSQL_SESSION_MODE = "SELECT @@SESSION.sql_mode AS MODE";
+    private  static final String NO_ZERO_DATE_MODE = "NO_ZERO_DATE";
 
     public MigrationClientBase(String tenantArguments, String blackListTenantArguments, TenantManager tenantManager)
                                                                                             throws UserStoreException {
@@ -152,72 +156,64 @@ public abstract class MigrationClientBase {
 
         Connection connection = null;
         PreparedStatement preparedStatement = null;
-        BufferedReader bufferedReader = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
         try {
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(false);
             String dbType = MigrationDBCreator.getDatabaseType(connection);
 
-            InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
-            bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
-            String sqlQuery = "";
-            boolean isFoundQueryEnd = false;
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                line = line.trim();
-                if (line.startsWith("//") || line.startsWith("--")) {
-                    continue;
-                }
-                StringTokenizer stringTokenizer = new StringTokenizer(line);
-                if (stringTokenizer.hasMoreTokens()) {
-                    String token = stringTokenizer.nextToken();
-                    if ("REM".equalsIgnoreCase(token)) {
-                        continue;
-                    }
-                }
+            if (Constants.DB_TYPE_MYSQL.equals(dbType)) {
+                statement = connection.createStatement();
+                resultSet = statement.executeQuery(GET_MYSQL_SESSION_MODE);
 
-                if (line.contains("\\n")) {
-                    line = line.replace("\\n", "");
-                }
+                if (resultSet.next()) {
+                    String mode = resultSet.getString("MODE");
 
-                sqlQuery += ' ' + line;
-                if (line.contains(";")) {
-                    isFoundQueryEnd = true;
-                }
+                    log.info("MySQL Server SQL Mode is : " + mode);
 
-                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
-                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
+                    if (mode.contains(NO_ZERO_DATE_MODE)) {
+                        File timeStampFixScript = new File(sqlScriptPath + dbType + "-timestamp_fix.sql");
 
-                if (isFoundQueryEnd) {
-                    if (sqlQuery.length() > 0) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("SQL to be executed : " + sqlQuery);
+                        if (timeStampFixScript.exists()) {
+                            log.info(NO_ZERO_DATE_MODE + " mode detected, run schema compatibility script");
+                            InputStream is = new FileInputStream(timeStampFixScript);
+
+                            List<String> sqlStatements = readSQLStatements(is, dbType);
+
+                            for (String sqlStatement : sqlStatements) {
+                                preparedStatement = connection.prepareStatement(sqlStatement);
+                                preparedStatement.execute();
+                                connection.commit();
+                            }
                         }
-
-                        preparedStatement = connection.prepareStatement(sqlQuery.trim());
-                        preparedStatement.execute();
-                        connection.commit();
                     }
-
-                    // Reset variables to read next SQL
-                    sqlQuery = "";
-                    isFoundQueryEnd = false;
                 }
             }
 
-            bufferedReader.close();
-        } catch (IOException e) {
-            //Errors logged to let user know the state of the db migration and continue other resource migrations
-            log.error("Error occurred while migrating databases", e);
-        } catch (Exception e) {
+            InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
+
+            List<String> sqlStatements = readSQLStatements(is, dbType);
+
+            for (String sqlStatement : sqlStatements) {
+                preparedStatement = connection.prepareStatement(sqlStatement);
+                preparedStatement.execute();
+                connection.commit();
+            }
+
+        }  catch (Exception e) {
             /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
             method getDatabaseType throws generic Exception */
             log.error("Error occurred while migrating databases", e);
         } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+
+            if (statement != null) {
+                statement.close();
+            }
             if (preparedStatement != null) {
                 preparedStatement.close();
             }
@@ -293,5 +289,65 @@ public abstract class MigrationClientBase {
             }
             APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
         }
+    }
+
+    private List<String> readSQLStatements(InputStream is, String dbType) {
+        List<String> sqlStatements = new ArrayList<>();
+
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
+            String sqlQuery = "";
+            boolean isFoundQueryEnd = false;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("//") || line.startsWith("--")) {
+                    continue;
+                }
+                StringTokenizer stringTokenizer = new StringTokenizer(line);
+                if (stringTokenizer.hasMoreTokens()) {
+                    String token = stringTokenizer.nextToken();
+                    if ("REM".equalsIgnoreCase(token)) {
+                        continue;
+                    }
+                }
+
+                if (line.contains("\\n")) {
+                    line = line.replace("\\n", "");
+                }
+
+                sqlQuery += ' ' + line;
+                if (line.contains(";")) {
+                    isFoundQueryEnd = true;
+                }
+
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
+
+                if (isFoundQueryEnd) {
+                    if (sqlQuery.length() > 0) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("SQL to be executed : " + sqlQuery);
+                        }
+
+                        sqlStatements.add(sqlQuery.trim());
+                    }
+
+                    // Reset variables to read next SQL
+                    sqlQuery = "";
+                    isFoundQueryEnd = false;
+                }
+            }
+
+            bufferedReader.close();
+        }  catch (IOException e) {
+            log.error("Error while reading SQL statements from stream", e);
+        }
+
+        return sqlStatements;
     }
 }
