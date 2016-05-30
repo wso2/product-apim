@@ -735,6 +735,16 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>axis2.xml</destName>
         </file>
+        <file>
+            <source>src/main/conf/axis2_DE.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
+            <destName>axis2_DE.xml</destName>
+        </file>
+        <file>
+            <source>src/main/conf/axis2.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
+            <destName>axis2.xml</destName>
+        </file>
 	<file>
             <source>src/main/conf/axis2_blocking_client.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
@@ -764,6 +774,13 @@
             <source>src/main/conf/registry.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>registry.xml</destName>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>src/main/conf/registry_DE.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <destName>registry_DE.xml</destName>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
