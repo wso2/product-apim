@@ -25,6 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -286,9 +287,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         claim = jsonObject.getString("http://wso2.org/claims/usertype");
         assertTrue("JWT claim usertype invalid. Received " + claim, claim.contains("APPLICATION"));
 
-        claim = jsonObject.getString("http://wso2.org/claims/role");
-        assertTrue("JWT claim role invalid. Received " + claim,
-                   claim.contains("admin") && claim.contains("Internal/everyone"));
+        JSONArray roleClaim = jsonObject.getJSONArray("http://wso2.org/claims/role");
+        String roles = roleClaim.toString();
+        assertTrue("JWT claim role invalid. Received " + roles,
+                   roles.contains("admin") && roles.contains("Internal/everyone"));
     }
 
     @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
