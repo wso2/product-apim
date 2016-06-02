@@ -164,10 +164,10 @@ public class ChangeEndPointSecurityOfAPITestCase extends APIManagerLifecycleBase
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-
+        super.cleanUp();
     }
 
 
