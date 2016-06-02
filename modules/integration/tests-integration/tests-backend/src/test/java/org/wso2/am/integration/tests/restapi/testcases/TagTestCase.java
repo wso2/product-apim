@@ -82,6 +82,7 @@ public class TagTestCase extends APIMIntegrationBaseTest {
         super.cleanUp();
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();
-        }    }
+        }
+    }
 
 }

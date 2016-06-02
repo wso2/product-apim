@@ -441,7 +441,7 @@
     </RESTAPI>
 
     <ThrottlingConfigurations>
-        <EnableAdvanceThrottling>false</EnableAdvanceThrottling>
+        <EnableAdvanceThrottling>true</EnableAdvanceThrottling>
         <DataPublisher>
             <Type>Binary</Type>
             <ReceiverUrlGroup>tcp://${carbon.local.ip}:${receiver.url.port}</ReceiverUrlGroup>

@@ -165,10 +165,10 @@ public class EditAPIContextAndCheckAccessibilityTestCase extends APIManagerLifec
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-
+        super.cleanUp();
     }
 
 
