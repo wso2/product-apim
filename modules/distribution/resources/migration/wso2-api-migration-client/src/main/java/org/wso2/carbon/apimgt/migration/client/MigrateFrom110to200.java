@@ -20,12 +20,21 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.api.model.API;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
+import org.wso2.carbon.apimgt.migration.client._200Specific.ResourceModifier200;
 import org.wso2.carbon.apimgt.migration.client._110Specific.dto.*;
+import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
@@ -47,11 +56,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.sql.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import java.util.*;
 
 public class MigrateFrom110to200 extends MigrationClientBase implements MigrationClient {
 
@@ -91,6 +98,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
 
     @Override
     public void registryResourceMigration() throws APIMigrationException {
+        swaggerResourceMigration();
         rxtMigration();
 
        /* workflowExtensionsMigration();
@@ -102,7 +110,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
 
     @Override
     public void fileSystemMigration() throws APIMigrationException {
-        //synapseAPIMigration();
+        synapseAPIMigration();
     }
 
     @Override
@@ -119,7 +127,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         for (Tenant tenant : getTenantsArray()) {
             String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
             List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
-            ResourceModifier.updateSynapseConfigs(synapseDTOs);
+            ResourceModifier200.updateSynapseConfigs(synapseDTOs);
 
             for (SynapseDTO synapseDTO : synapseDTOs) {
                 ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
@@ -523,12 +531,12 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         
         String rxtName = "api.rxt";
         String rxtDir = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator +
-                "19-110-migration" + File.separator + "rxts" + File.separator + rxtName;
+                "110-200-migration" + File.separator + "rxts" + File.separator + rxtName;
 
         
         for (Tenant tenant : getTenantsArray()) {       
             try {                
-                registryService.startTenantFlow(tenant);                
+                registryService.startTenantFlow(tenant);
                 
                 log.info("Updating api.rxt for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 //Update api.rxt file
@@ -539,7 +547,15 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                 log.info("Start rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
                 GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
                 for (GenericArtifact artifact : artifacts) {
-                    artifact.setAttribute("overview_endpointAuthDigest", "false");
+                    String val="{\"corsConfigurationEnabled\": false,"
+                            + "\"accessControlAllowOrigins\": [\"*\"],"
+                            + "\"accessControlAllowCredentials\": false,"
+                            + "\"accessControlAllowHeaders\": [\"authorization\",   \"Access-Control-Allow-Origin\", \"Content-Type\", \"SOAPAction\"],"
+                            + "\"accessControlAllowMethods\": [\"GET\", \"PUT\", \"POST\", \"DELETE\", \"PATCH\", \"OPTIONS\"]"
+                            + "}";
+                    artifact.setAttribute("overview_cors_configuration", val);
+                    artifact.setAttribute("overview_endpoint_secured", "false");
+                    artifact.setAttribute("overview_endpoint_auth_digest", "false");
                 }
                 registryService.updateGenericAPIArtifacts(artifacts);
                 log.info("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
@@ -784,4 +800,148 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         }
     }
+
+    /**
+     * This method is used to migrate swagger v1.2 resources to swagger v2.0 resource
+     * This reads the swagger v1.2 doc from the registry and creates swagger v2.0 doc
+     *
+     * @throws APIMigrationException
+     */
+    void swaggerResourceMigration() throws APIMigrationException {
+        log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
+
+        for (Tenant tenant : getTenantsArray()) {
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Start swaggerResourceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            }
+
+            try {
+                registryService.startTenantFlow(tenant);
+                GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
+
+                updateSwaggerResources(artifacts, tenant);
+            } finally {
+                registryService.endTenantFlow();
+            }
+
+            log.debug("End swaggerResourceMigration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        }
+
+        log.info("Swagger resource migration done for all the tenants.");
+    }
+
+    private void updateSwaggerResources(GenericArtifact[] artifacts, Tenant tenant) throws APIMigrationException {
+        log.debug("Calling updateSwaggerResources");
+        APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
+
+        for (GenericArtifact artifact : artifacts) {
+            API api = registryService.getAPI(artifact);
+
+            if (api != null) {
+                APIIdentifier apiIdentifier = api.getId();
+                String apiName = apiIdentifier.getApiName();
+                String apiVersion = apiIdentifier.getVersion();
+                String apiProviderName = apiIdentifier.getProviderName();
+                try {
+                    String swagger2location = ResourceUtil
+                            .getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
+                    String swagger2Document = null;
+                    log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + '-' + apiVersion + '-'
+                            + apiProviderName);
+                    swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger2location, api);
+
+                    registryService
+                            .addGovernanceRegistryResource(swagger2location, swagger2Document, "application/json");
+
+                    registryService
+                            .setGovernanceRegistryResourcePermissions(apiProviderName, null, null, swagger2location);
+                } catch (RegistryException e) {
+                    log.error("Registry error encountered for api " + apiName + '-' + apiVersion + '-' + apiProviderName
+                            + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
+                } catch (ParseException e) {
+                    log.error("Error occurred while parsing swagger v1.2 document for api " + apiName + '-' + apiVersion
+                            + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')',
+                            e);
+                } catch (UserStoreException e) {
+                    log.error(
+                            "Error occurred while setting permissions of swagger v2.0 document for api " + apiName + '-'
+                                    + apiVersion + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant
+                                    .getDomain() + ')', e);
+                } catch (MalformedURLException e) {
+                    log.error(
+                            "Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion
+                                    + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain()
+                                    + ')', e);
+                } catch (APIManagementException e) {
+                    log.error(
+                            "Error occurred while creating swagger v2.0 document for api " + apiName + '-' + apiVersion
+                                    + '-' + apiProviderName + " of tenant " + tenant.getId() + '(' + tenant.getDomain()
+                                    + ')', e);
+                }
+            }
+        }
+    }
+
+    /**
+     * This method generates swagger v2 doc using swagger 1.2 doc
+     *
+     * @param tenant            Tenant
+     * @param swagger12location the location of swagger 1.2 doc
+     * @return JSON string of swagger v2 doc
+     * @throws java.net.MalformedURLException
+     * @throws org.json.simple.parser.ParseException
+     * @throws org.wso2.carbon.registry.core.exceptions.RegistryException
+     */
+
+    private String getSwagger2docUsingSwagger12RegistryResources(Tenant tenant, String swagger12location, API api)
+            throws MalformedURLException, ParseException, RegistryException, UserStoreException {
+        log.debug("Calling getSwagger2docUsingSwagger12RegistryResources");
+        JSONParser parser = new JSONParser();
+
+        Object rawResource = registryService.getGovernanceRegistryResource(swagger12location);
+        String swaggerRes = ResourceUtil.getResourceContent(rawResource);
+
+        JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
+        JSONObject sec = generateSecurityDefinitionsObject();
+        swagger12doc.put("securityDefinitions", sec);
+
+        JSONObject paths = (JSONObject) swagger12doc.get("paths");
+        Set<Map.Entry> res = paths.entrySet();
+        for (Map.Entry e : res) {
+            JSONObject methods = (JSONObject) e.getValue();
+            Set<Map.Entry> mes = methods.entrySet();
+            for (Map.Entry m : mes) {
+                System.out.println(m.getValue());
+                JSONObject re = (JSONObject) m.getValue();
+                re.put("security", parser.parse("[{\"sample_oauth\": []}]"));
+                re.put("parameters", parser.parse("[]"));
+            }
+        }
+        return swagger12doc.toJSONString();
+    }
+
+    /**
+     * Generate swagger v2 security definition object
+     * See <a href="https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#securityDefinitionsObject">
+     * Swagger v2 definition object</a>
+     *
+     * @return security definition object
+     * @throws ParseException
+     */
+    private static JSONObject generateSecurityDefinitionsObject() throws ParseException {
+        log.debug("Calling generateSecurityDefinitionsObject");
+        JSONObject sec = new JSONObject();
+        sec.put("type", "oauth2");
+        String url = ServiceHolder.getAPIManagerConfigurationService().getAPIManagerConfiguration()
+                .getFirstProperty("OAuthConfigurations.RevokeAPIURL");
+        sec.put("authorizationUrl", url.replace("revoke", "token"));
+        sec.put("flow",
+                "urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm,implicit,refresh_token,client_credentials,authorization_code,password");
+        sec.put("scopes", "{}");
+        JSONObject securityDefinitionObject = new JSONObject();
+        securityDefinitionObject.put("sample_oauth", sec);
+        return securityDefinitionObject;
+    }
+
 }
