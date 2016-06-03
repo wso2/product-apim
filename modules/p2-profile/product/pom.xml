@@ -1228,7 +1228,7 @@
                                 <!-- START - UES Features -->
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${shindig.version}</version>
+                                    <version>${carbon.dashboard.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
@@ -2511,7 +2511,7 @@
                                 <!-- START - UES Features -->
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${shindig.version}</version>
+                                    <version>${carbon.dashboard.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
@@ -2962,7 +2962,7 @@
                                 <!-- START - UES Features -->
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
-                                    <version>${shindig.version}</version>
+                                    <version>${carbon.dashboard.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.dashboards.portal.feature.group</id>
