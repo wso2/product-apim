@@ -197,5 +197,6 @@ public class APIM641StoreApiTestCase extends APIMIntegrationBaseTest {
             deletedUserCount++;
         }
         assertEquals(deletedUserCount,beforeDeleteUserCount,"Error in user Deletion");
+        super.cleanUp();
     }
 }

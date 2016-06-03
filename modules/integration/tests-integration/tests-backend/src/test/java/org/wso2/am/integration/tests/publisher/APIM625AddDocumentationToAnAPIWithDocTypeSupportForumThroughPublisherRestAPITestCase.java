@@ -140,6 +140,6 @@ public class APIM625AddDocumentationToAnAPIWithDocTypeSupportForumThroughPublish
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
-
+        super.cleanUp();
     }
 }

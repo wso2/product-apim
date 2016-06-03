@@ -380,6 +380,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         assertTrue(isApisDeleted,"Error in Application Deleted: " + applicationName);
 
         apiStore.removeApplication(newApplicationName);
+        super.cleanUp();
     }
 
 }

@@ -141,6 +141,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception{
         apiPublisher.deleteAPI(API_NAME,version,providerName);
+        super.cleanUp();
     }
 
 

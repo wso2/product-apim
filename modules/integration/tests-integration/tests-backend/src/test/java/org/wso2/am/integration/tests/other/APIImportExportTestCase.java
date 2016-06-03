@@ -636,6 +636,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = zipTempDir.delete();
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
+        super.cleanUp();
     }
 
     @DataProvider

@@ -179,6 +179,7 @@ public class APIM570CheckIfAnOlderVersionOfTheAPIExistsThroughThePublisherRestAP
         apiPublisher.deleteAPI(apiNameTest, apiVersion1, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest, apiVersion2, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest, apiVersion3, apiProviderName);
+        super.cleanUp();
     }
 
 }

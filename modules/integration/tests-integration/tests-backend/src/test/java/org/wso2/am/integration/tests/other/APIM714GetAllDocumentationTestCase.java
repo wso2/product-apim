@@ -268,6 +268,6 @@ public class APIM714GetAllDocumentationTestCase extends APIMIntegrationBaseTest 
                 "Error in API delete Response Code");
         JSONObject apiDeleteJsonObject = new JSONObject(apiDeleteResponse.getData());
         assertFalse(apiDeleteJsonObject.getBoolean("error"), "Response data Error in Api Deletion: " + apiName);
-
+        super.cleanUp();
     }
 }

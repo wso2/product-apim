@@ -288,7 +288,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient1.deleteUser(APP_DEV_USER);
             userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
-
+        super.cleanUp();
         serverManager.restoreToLastConfiguration();
         log.info("Restored configuration and restarted gracefully...");
     }
