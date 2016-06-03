@@ -963,7 +963,6 @@
         <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
-
         <analytics.shared.version>1.0.0-beta</analytics.shared.version>
 
 
