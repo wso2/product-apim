@@ -89,18 +89,10 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
     @Test(groups = "wso2.am",
             description = "Send a request to a backend returning 204 and check if the expected result is received")
-    public void testAPIReturningStatusCode204() {
+    public void testAPIReturningStatusCode204() throws Exception {
         //Login to the API Publisher
-        try {
-            apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                    publisherContext.getContextTenant().getContextUser().getPassword());
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage());
-            Assert.assertTrue(false);
-        } catch (XPathExpressionException e) {
-            log.error("XPathExpressionException " + e.getMessage());
-            Assert.assertTrue(false);
-        }
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "Test_API" + userMode;
         String apiVersion = "1.0.0";
@@ -169,10 +161,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 204, "Status Code is not 204");
 
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (JSONException e) {
+        }  catch (JSONException e) {
             log.error("Error parsing JSON to get access token " + e.getMessage(), e);
             Assert.assertTrue(false);
         } catch (XPathExpressionException e) {

@@ -373,6 +373,11 @@
                             <token>(2000)</token>
                             <value>50</value>
                         </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/timerPeriod</xpath>
+                            <token>(1000)</token>
+                            <value>40</value>
+                        </replacement>
                     </replacements>
                 </configuration>
             </execution>

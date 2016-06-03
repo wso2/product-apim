@@ -179,12 +179,13 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             APIIdentifier apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
             deleteAPI(apiIdentifier, apiPublisherClientUser1);
         }
+        super.cleanUp();
     }
 
 
