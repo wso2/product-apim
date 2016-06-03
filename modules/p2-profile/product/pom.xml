@@ -573,17 +573,20 @@
 
                                 <!-- START - UES Features -->
                                 <featureArtifactDef>
-                                    org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.shindig.feature:${shindig.version}
+                                    org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.shindig.feature:${carbon.dashboard.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.dashboards:org.wso2.carbon.dashboards.portal.feature:${carbon.dashboard.version}
                                 </featureArtifactDef>
                                 <!-- END - UES Features -->
                                 <featureArtifactDef>
-                                    org.wso2.analytics.common:org.wso2.analytics.common.la.apim.feature:${analytics.common.version}
+                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.la.common.feature:${analytics.shared.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.analytics.common:org.wso2.analytics.common.data.agents.log4j.feature:${analytics.common.version}
+                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.la.apim.feature:${analytics.shared.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.data.agents.log4j.feature:${analytics.shared.version}
                                 </featureArtifactDef>
 
                             </featureArtifacts>
@@ -1233,12 +1236,16 @@
                                 </feature>
                                 <!-- END - UES Features -->
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1566,12 +1573,16 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
 
                                 <!-- MB features -->
@@ -1988,12 +1999,16 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
 
                                 <!-- MB features -->
@@ -2504,12 +2519,16 @@
                                 </feature>
                                 <!-- END - UES Features -->
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2951,12 +2970,16 @@
                                 </feature>
                                 <!-- END - UES Features -->
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
 
                             </features>
@@ -3349,12 +3372,16 @@
                                     <version>${carbon.identity.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.data.agents.log4j.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.common.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.analytics.common.la.apim.feature.group</id>
-                                    <version>${analytics.common.version}</version>
+                                    <id>org.wso2.carbon.analytics.shared.la.apim.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
+                                    <version>${analytics.shared.version}</version>
                                 </feature>
 
                             </features>
