@@ -121,6 +121,7 @@ public class YouTubeAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("YoutubeFeeds-Application");
+        super.cleanUp();
     }
 
     @DataProvider

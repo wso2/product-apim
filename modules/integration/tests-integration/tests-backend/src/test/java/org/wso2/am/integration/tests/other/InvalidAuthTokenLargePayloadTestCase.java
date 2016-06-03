@@ -169,6 +169,7 @@ public class InvalidAuthTokenLargePayloadTestCase extends APIMIntegrationBaseTes
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @DataProvider

@@ -248,7 +248,7 @@ public class DeleteSubscribedApiFromPublisherTestCase extends APIMIntegrationBas
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(applicationName);
-
+        super.cleanUp();
     }
 
     @DataProvider

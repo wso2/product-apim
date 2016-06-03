@@ -348,6 +348,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
         apiStore.removeApplication(APP_NAME);
         apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @DataProvider

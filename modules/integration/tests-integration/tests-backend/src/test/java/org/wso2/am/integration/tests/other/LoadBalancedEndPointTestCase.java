@@ -387,6 +387,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiStore.removeApplication(applicationNameSandbox);
         apiPublisher.deleteAPI(apiName, version, providerName);
         apiPublisher.deleteAPI(apiNameSandbox, version, providerName);
+        super.cleanUp();
     }
 
     /**

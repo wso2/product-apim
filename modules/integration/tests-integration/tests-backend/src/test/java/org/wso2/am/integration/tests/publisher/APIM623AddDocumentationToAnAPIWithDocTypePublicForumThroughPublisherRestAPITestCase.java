@@ -142,6 +142,6 @@ public class APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublishe
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
-
+        super.cleanUp();
     }
 }
