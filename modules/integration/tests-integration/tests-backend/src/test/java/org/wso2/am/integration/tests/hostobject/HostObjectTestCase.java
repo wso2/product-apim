@@ -249,7 +249,7 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while getting auth service url from API store host object (getAuthServerURL)");
         assertTrue(array[4].contains("http"),
                    "Error while getting http url from API store host object (getHTTPURL)");
-        assertTrue(array[5].contains("tierName"),
+        assertTrue(array[5].contains("[]"),
                    "Error while getting denied tiers from API store host object (getDeniedTiers)");
         assertTrue(array[6].contains("wso2.com"),
                    "Error while getting active tenant domains from API store host object (getActiveTenantDomains)");
