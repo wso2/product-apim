@@ -147,6 +147,7 @@ public class APIM520UpdateAnAPIThroughThePublisherRestAPITestCase extends APIMIn
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
         apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProviderName);
+        super.cleanUp();
     }
 
 

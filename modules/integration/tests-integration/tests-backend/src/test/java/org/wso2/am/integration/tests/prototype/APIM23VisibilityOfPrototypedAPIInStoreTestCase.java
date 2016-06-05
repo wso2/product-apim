@@ -137,9 +137,9 @@ public class APIM23VisibilityOfPrototypedAPIInStoreTestCase extends APIMIntegrat
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException, JSONException {
+    public void cleanUpArtifacts() throws Exception {
         apiPublisher.deleteAPI(apiName, apiVersion, apiProvider);
-
+        super.cleanUp();
     }
 
 }

@@ -233,8 +233,8 @@ public class APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPI
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUp() throws APIManagerIntegrationTestException, JSONException {
+    public void cleanUp() throws Exception {
         apiPublisher.deleteAPI(apiNameTest, apiVersion, apiProvider);
-
+        super.cleanUp();
     }
 }

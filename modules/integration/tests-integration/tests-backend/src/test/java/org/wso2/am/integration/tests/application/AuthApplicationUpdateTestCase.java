@@ -212,6 +212,7 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME_TO_UPDATE);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @DataProvider

@@ -220,10 +220,11 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreRestClient.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherRestClient);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherRestClient);
+        super.cleanUp();
     }
 
 }

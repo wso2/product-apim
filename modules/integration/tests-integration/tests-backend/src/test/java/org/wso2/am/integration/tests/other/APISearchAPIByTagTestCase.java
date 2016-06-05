@@ -143,6 +143,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiPublisher.deleteAPI(API_NAME_1, API_VERSION, user.getUserName());
         apiPublisher.deleteAPI(API_NAME_2, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @Test(groups = { "wso2.am" }, description = "API search by TAG", dependsOnMethods = "testAPICreation")

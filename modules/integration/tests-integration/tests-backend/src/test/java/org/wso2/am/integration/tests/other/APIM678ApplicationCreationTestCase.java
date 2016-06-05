@@ -407,7 +407,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-    removeAllApps();
+        removeAllApps();
+        super.cleanUp();
     }
 
     public void removeAllApps() throws Exception{

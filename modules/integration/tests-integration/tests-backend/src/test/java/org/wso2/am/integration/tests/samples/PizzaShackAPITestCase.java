@@ -134,7 +134,6 @@ public class PizzaShackAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("PizzaShack");
-
-
+        super.cleanUp();
     }
 }
