@@ -426,7 +426,10 @@ public class ResourceUtil {
 
 
     public static String getApiPath(int tenantID, String tenantDomain) {
-        log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        }
+
         String apiFilePath;
         if (tenantID != MultitenantConstants.SUPER_TENANT_ID) {
             apiFilePath = CarbonUtils.getCarbonTenantsDirPath() + File.separatorChar + tenantID +
@@ -435,7 +438,10 @@ public class ResourceUtil {
             apiFilePath = CarbonUtils.getCarbonRepository() + "synapse-configs" + File.separatorChar +
                     "default" + File.separatorChar  +"api";
         }
-        log.debug("Path of api folder " + apiFilePath);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Path of api folder of tenant : " + tenantDomain + " is : "+ apiFilePath);
+        }
 
         return apiFilePath;
     }
@@ -460,7 +466,9 @@ public class ResourceUtil {
                     // that represent default versions
                     if (Constants.SYNAPSE_API_ROOT_ELEMENT.equals(rootElement.getNodeName()) &&
                             rootElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION)) {
-                        log.debug("API file name : " + file.getName());
+                        if (log.isDebugEnabled()) {
+                            log.debug("API file name : " + file.getName());
+                        }
                         SynapseDTO synapseConfig = new SynapseDTO(doc, file);
                         versionedAPIs.add(synapseConfig);
                     }
@@ -469,7 +477,6 @@ public class ResourceUtil {
                 }
             }
         }
-
         return versionedAPIs;
     }
 

@@ -29,6 +29,7 @@ import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
@@ -136,9 +137,13 @@ public class RegistryServiceImpl implements RegistryService {
             GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
 
             for (GenericArtifact artifact : artifacts) {
-                artifactManager.updateGenericArtifact(artifact);
+                try {
+                    artifactManager.updateGenericArtifact(artifact);
+                } catch (GovernanceException e) {
+                    // This is to avoid the loop from exiting if one artifact fails.
+                    log.error("Unable to update governance artifact", e);
+                }
             }
-
         } catch (UserStoreException e) {
             log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (RegistryException e) {
@@ -158,7 +163,6 @@ public class RegistryServiceImpl implements RegistryService {
         } catch (APIManagementException e) {
             log.error("Error when getting api artifact " + artifact.getId() + " from registry", e);
         }
-
         return api;
     }
 
