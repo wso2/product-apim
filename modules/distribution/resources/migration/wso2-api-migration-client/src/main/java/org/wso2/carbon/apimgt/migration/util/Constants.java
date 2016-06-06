@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.migration.util;
 
+import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
 
@@ -142,6 +143,8 @@ public class Constants {
     public static final String SWAGGER_DEFINITIONS = "definitions";
     public static final String SWAGGER_REF = "$ref";
     public static final String SWAGGER_SAMPLE_DEFINITION = "sampleItem";
+    public static final String SWAGGER_PRODUCES = "produces";
+
 
 
     // Work flow extensions
@@ -221,5 +224,9 @@ public class Constants {
     public static final String API_PUBLISHER_CLASSNAME = "org.wso2.carbon.apimgt.impl.publishers.WSO2APIPublisher";
 
 
+    public static final String SWAGGER_CONSUMES = "consumes";
+    public static final String DEFAULT_DATA_TYPE = "string";
 
+	public static final String API_KEY_VALIDATOR_ENCRYPT_TOKENS =
+            APIConstants.API_KEY_VALIDATOR + "EncryptPersistedTokens";
 }
