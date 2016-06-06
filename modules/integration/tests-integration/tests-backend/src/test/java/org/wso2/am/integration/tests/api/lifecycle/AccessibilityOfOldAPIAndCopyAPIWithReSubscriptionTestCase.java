@@ -200,10 +200,11 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);
+        super.cleanUp();
     }
 
 

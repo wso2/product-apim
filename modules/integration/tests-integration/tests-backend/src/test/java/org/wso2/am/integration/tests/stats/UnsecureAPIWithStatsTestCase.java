@@ -208,7 +208,7 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
         if (apiPublisher != null) {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
         }
-
+        super.cleanUp();
         serverManager.restoreToLastConfiguration();
         log.info("Restored configuration and restarted gracefully...");
     }

@@ -155,6 +155,7 @@ public class APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase e
     public void destroyAPIs() throws Exception {
         apiPublisher.deleteAPI(apiNameTest, apiOldVersion, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest, apiNewVersion, apiProviderName);
+        super.cleanUp();
     }
 
 }

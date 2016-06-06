@@ -159,7 +159,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         if (apiPublisher != null) {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, provider);
         }
-
         super.cleanUp();
     }
 }

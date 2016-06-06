@@ -159,11 +159,16 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                     "Error in API Update in API Name:" + apiName +
                             "Response Data:" + updateAPIHTTPResponse.getData());
         }
+        try {
+			Thread.sleep(5000l);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
         assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code wan not" +
                 " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
-        for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
+        for (Map.Entry<String, String> apiTagEntry : apiTagsMapAfterChange.entrySet()) {
             String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
                     API_VERSION_1_0_0 + "&provider=" + providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {

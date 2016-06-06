@@ -71,7 +71,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-        super.cleanUp();
         super.init();
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,

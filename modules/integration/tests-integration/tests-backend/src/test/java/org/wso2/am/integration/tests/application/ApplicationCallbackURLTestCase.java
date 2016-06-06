@@ -163,6 +163,7 @@ public class ApplicationCallbackURLTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(appName);
+        super.cleanUp();
     }
 
     @DataProvider

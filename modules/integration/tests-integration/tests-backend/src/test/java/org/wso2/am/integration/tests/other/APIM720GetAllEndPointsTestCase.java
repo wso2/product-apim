@@ -262,5 +262,6 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
                      "Error in Delete API Response");
         JSONObject deleteApiJsonObject = new JSONObject(deleteApiResponse.getData());
         assertFalse(deleteApiJsonObject.getBoolean("error"), "Error in Delete API");
+        super.cleanUp();
     }
 }
