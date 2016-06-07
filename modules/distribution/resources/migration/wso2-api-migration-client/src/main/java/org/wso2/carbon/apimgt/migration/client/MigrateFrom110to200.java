@@ -130,7 +130,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
             ResourceModifier200.updateSynapseConfigs(synapseDTOs);
 
             for (SynapseDTO synapseDTO : synapseDTOs) {
-                ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                ResourceModifier200.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
             }
         }
     }
