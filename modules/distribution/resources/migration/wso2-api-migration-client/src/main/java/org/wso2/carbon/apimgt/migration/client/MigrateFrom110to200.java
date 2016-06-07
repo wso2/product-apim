@@ -87,7 +87,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         String amScriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator +
                 "110-200-migration" + File.separator;
 
-        updateAPIManangerDatabase(amScriptPath);
+        updateAPIManagerDatabase(amScriptPath);
 
         //updateAuthzUserName();
         
