@@ -6,7 +6,7 @@
 
     <groupId>org.wso2.carbon</groupId>
     <artifactId>org.wso2.carbon.apimgt.migrate.client</artifactId>
-    <version>1.10.x</version>
+    <version>2.0.x</version>
     <packaging>bundle</packaging>
 
     <repositories>
@@ -162,9 +162,9 @@
     </dependencies>
 
     <properties>
-        <carbon.apimgt.version>5.0.3</carbon.apimgt.version>
-        <carbon.governance.version>4.5.8</carbon.governance.version>
-        <carbon.kernel.version>4.4.3</carbon.kernel.version>
-        <carbon.platform.version>4.4.3</carbon.platform.version>
+        <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
+        <carbon.governance.version>4.6.2</carbon.governance.version>
+        <carbon.kernel.version>4.4.6-SNAPSHOT</carbon.kernel.version>
+        <carbon.platform.version>4.4.6-SNAPSHOT</carbon.platform.version>
     </properties>
 </project>

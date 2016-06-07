@@ -147,6 +147,6 @@ public class StatDBUtil {
     
     public static boolean isTokenEncryptionEnabled() {
         APIManagerConfiguration config = ServiceHolder.getAPIManagerConfigurationService().getAPIManagerConfiguration();        
-        return Boolean.parseBoolean(config.getFirstProperty(APIConstants.API_KEY_VALIDATOR_ENCRYPT_TOKENS));
+        return Boolean.parseBoolean(config.getFirstProperty(Constants.API_KEY_VALIDATOR_ENCRYPT_TOKENS));
     }
 }
