@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.migration.util;
 
+import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
 
@@ -25,6 +26,7 @@ public class Constants {
     public static final String VERSION_1_9 = "1.9.0";
     public static final String VERSION_1_9_1 = "1.9.1";
     public static final String VERSION_1_10 = "1.10.0";
+    public static final String VERSION_2_0_0 = "2.0.0";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String ALTER = "alter";
@@ -80,6 +82,8 @@ public class Constants {
     public static final String SYNAPSE_API_VALUE_RESPONSE_HANDLER = "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler";
     public static final String SYNAPSE_API_VALUE_CORS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler";
     public static final String SYNAPSE_API_VALUE_THROTTLE_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler";
+    public static final String NEW_SYNAPSE_API_VALUE_THROTTLE_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.throttling.ThrottleHandler";
+    public static final String SYNAPSE_API_VALUE_LATENCY_STATS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencyStatsHandler";
     public static final String SYNAPSE_API_VALUE_INLINE = "inline";
     public static final String SYNAPSE_API_VALUE_INLINE_UPPERCASE = "INLINE";
     public static final String SYNAPSE_API_VALUE_ENPOINT = "ENDPOINT";
@@ -142,6 +146,8 @@ public class Constants {
     public static final String SWAGGER_DEFINITIONS = "definitions";
     public static final String SWAGGER_REF = "$ref";
     public static final String SWAGGER_SAMPLE_DEFINITION = "sampleItem";
+    public static final String SWAGGER_PRODUCES = "produces";
+
 
 
     // Work flow extensions
@@ -221,5 +227,9 @@ public class Constants {
     public static final String API_PUBLISHER_CLASSNAME = "org.wso2.carbon.apimgt.impl.publishers.WSO2APIPublisher";
 
 
+    public static final String SWAGGER_CONSUMES = "consumes";
+    public static final String DEFAULT_DATA_TYPE = "string";
 
+	public static final String API_KEY_VALIDATOR_ENCRYPT_TOKENS =
+            APIConstants.API_KEY_VALIDATOR + "EncryptPersistedTokens";
 }

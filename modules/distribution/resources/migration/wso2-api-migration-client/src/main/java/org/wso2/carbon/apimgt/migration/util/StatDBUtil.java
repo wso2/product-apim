@@ -28,9 +28,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class StatDBUtil {
     private static volatile DataSource dataSource = null;
@@ -60,18 +58,61 @@ public class StatDBUtil {
             throw new APIMigrationException("Stats Data source is not configured properly.");
         }
 
-        String responseSummarySQL = "UPDATE API_RESPONSE_SUMMARY " +
-                "SET CONTEXT = concat(API_RESPONSE_SUMMARY.CONTEXT,'/'," +
-                "(SELECT DISTINCT(VERSION) FROM WSO2AM_STATS_DB.API_REQUEST_SUMMARY WHERE CONTEXT NOT LIKE concat('%', VERSION))) " +
-                "WHERE API_VERSION = (SELECT DISTINCT(API_VERSION) FROM WSO2AM_STATS_DB.API_REQUEST_SUMMARY WHERE CONTEXT NOT LIKE concat('%', VERSION))";
-
-        executeSQL(responseSummarySQL);
+        updateResponseSummaryTable();
 
         executeSQL(getCommonUpdateSQL(TABLE_API_DESTINATION_SUMMARY));
         executeSQL(getCommonUpdateSQL(TABLE_API_FAULT_SUMMARY));
         executeSQL(getCommonUpdateSQL(TABLE_API_REQUEST_SUMMARY));
         executeSQL(getCommonUpdateSQL(TABLE_API_RESOURCE_USAGE_SUMMARY));
         executeSQL(getCommonUpdateSQL(TABLE_API_VERSION_USAGE_SUMMARY));
+    }
+
+    private static void updateResponseSummaryTable() {
+        Connection connection = null;
+        Statement statement = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            String sql = "SELECT CONTEXT, VERSION, API_VERSION FROM API_REQUEST_SUMMARY GROUP BY CONTEXT, VERSION, API_VERSION";
+
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            connection.setAutoCommit(false);
+            statement.setFetchSize(50);
+            resultSet = statement.executeQuery(sql);
+
+            preparedStatement = connection.prepareStatement("UPDATE API_RESPONSE_SUMMARY SET CONTEXT = concat(?, '/', ?) " +
+                    "WHERE CONTEXT = ? AND API_VERSION = ?");
+            while (resultSet.next()) {
+                final String context = resultSet.getString("CONTEXT");
+                final String version = resultSet.getString("VERSION");
+
+                if (!context.endsWith('/' + version)) {
+                    preparedStatement.setString(1, context);
+                    preparedStatement.setString(2, version);
+                    preparedStatement.setString(3, context);
+                    preparedStatement.setString(4, resultSet.getString("API_VERSION"));
+                    preparedStatement.addBatch();
+                }
+            }
+            preparedStatement.executeBatch();
+            connection.commit();
+
+        } catch (SQLException e) {
+            log.error("SQLException when updating API_RESPONSE_SUMMARY table", e);
+        }
+        finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+                if (statement != null) statement.close();
+                if (resultSet != null) resultSet.close();
+                if (connection != null) connection.close();
+            }
+            catch (SQLException e) {
+                log.error("SQLException when closing resource", e);
+            }
+        }
     }
 
     private static String getCommonUpdateSQL(String table) {
@@ -106,6 +147,6 @@ public class StatDBUtil {
     
     public static boolean isTokenEncryptionEnabled() {
         APIManagerConfiguration config = ServiceHolder.getAPIManagerConfigurationService().getAPIManagerConfiguration();        
-        return Boolean.parseBoolean(config.getFirstProperty(APIConstants.API_KEY_VALIDATOR_ENCRYPT_TOKENS));
+        return Boolean.parseBoolean(config.getFirstProperty(Constants.API_KEY_VALIDATOR_ENCRYPT_TOKENS));
     }
 }
