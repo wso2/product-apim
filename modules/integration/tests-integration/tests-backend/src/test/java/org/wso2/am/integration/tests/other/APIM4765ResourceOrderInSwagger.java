@@ -99,11 +99,10 @@ import static org.testng.Assert.assertTrue;
                 + "\"TokenTestAPI\",\"description\":\"This is test API create by API manager integration test\","
                 + "\"contact\":{\"email\":null,\"name\":null},\"version\":\"1.0.0\"}}";
 
-        String resourceOrder = "\"paths\":{\"/*\":{\"get\":{\"parameters\":[],\"responses\":{\"200\":{}},"
-                + "\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"Plus\"}},\"/list\":{\"get\":"
-                + "{\"parameters\":[],\"responses\":{\"200\":{}},\"x-auth-type\":\"Application \",\"x-throttling-tier\""
-                + ":\"Plus\"}},\"/post\":{\"get\":{\"parameters\":[],\"responses\":{\"200\":{}},\"x-auth-type\":\""
-                + "Application \",\"x-throttling-tier\":\"Plus\"}}}";
+        String resourceOrder = "{\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\""
+                + ":\"Plus\",\"responses\":{\"200\":{}}}},\"/post\":{\"get\":{\"x-auth-type\":\"Application \","
+                + "\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}},\"/list\":{\"get\":"
+                + "{\"x-auth-type\":\"Application \",\"x-throttling-tier\":\"Plus\",\"responses\":{\"200\":{}}}}}";
 
         apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, swagger);
         //get swagger doc.
