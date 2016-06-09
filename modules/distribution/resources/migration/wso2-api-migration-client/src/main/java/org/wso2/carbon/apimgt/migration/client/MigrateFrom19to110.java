@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class MigrateFrom19to110 extends MigrationClientBase implements MigrationClient {
 
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
@@ -109,6 +108,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     @Override
     public void statsMigration() throws APIMigrationException {
 
+    }
+
+    @Override
+    public void optionalMigration(List<String> options) throws APIMigrationException {
+        //no implementation is required
     }
 
     private void synapseAPIMigration() {

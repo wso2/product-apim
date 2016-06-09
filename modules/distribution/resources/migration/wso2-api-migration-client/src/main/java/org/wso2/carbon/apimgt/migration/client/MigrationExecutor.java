@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.migration.client;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
@@ -25,6 +26,7 @@ import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 
 import java.sql.SQLException;
+import java.util.*;
 
 public final class MigrationExecutor {
     private static final Log log = LogFactory.getLog(MigrationExecutor.class);
@@ -33,6 +35,7 @@ public final class MigrationExecutor {
         private String migrateFromVersion;
         private String specificVersion;
         private String component;
+        private String options;
         private boolean migrateAll;
         private boolean cleanupNeeded;
         private boolean isDBMigration;
@@ -74,6 +77,14 @@ public final class MigrationExecutor {
 
         public void setComponent(String component) {
             this.component = component;
+        }
+
+        public String getOptions() {
+            return options;
+        }
+
+        public void setOptions(String options) {
+            this.options = options;
         }
     }
 
@@ -154,6 +165,27 @@ public final class MigrationExecutor {
             migrationClient.statsMigration();
             log.info("Stat migration completed");
         }
+
+        List<String> options = parseOptions(arguments.getOptions());
+        if (options != null && options.size() > 0) {
+            StatDBUtil.initialize();
+            migrationClient.optionalMigration(options);
+            log.info("optional migration completed");
+        }
     }
 
+    private static List<String> parseOptions(String arguments) {
+        if (StringUtils.isBlank(arguments)) {
+            return Collections.emptyList();
+        }
+        List<String> options = null;
+        try {
+            String[] optionsList = arguments.split(",");
+            options= Arrays.asList(optionsList);
+        } catch (Exception e) {
+            log.error("error parsing options arguments");
+            log.warn("Skipping options migration");
+        }
+        return options;
+    }
 }

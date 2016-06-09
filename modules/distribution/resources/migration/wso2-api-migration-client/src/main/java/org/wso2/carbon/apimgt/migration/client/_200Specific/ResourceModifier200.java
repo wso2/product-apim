@@ -41,18 +41,9 @@ public class ResourceModifier200 {
     public static void updateSynapseConfigs(List<SynapseDTO> synapseDTOs) {
 
         for (SynapseDTO synapseDTO : synapseDTOs) {
-            Element existingThrottleHandler = SynapseUtil
-                    .getHandler(synapseDTO.getDocument(), Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER);
             Element handlersElement = (Element) synapseDTO.getDocument()
                     .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS)
                     .item(0);
-
-            if (existingThrottleHandler != null && !isThrottleHandlerUpdated(existingThrottleHandler)) {
-                Element updatedThrottleHandler = SynapseUtil
-                        .createHandler(synapseDTO.getDocument(), Constants.NEW_SYNAPSE_API_VALUE_THROTTLE_HANDLER,
-                                null);
-                handlersElement.replaceChild(updatedThrottleHandler, existingThrottleHandler);
-            }
 
             Element existingLatencyStatHandler = SynapseUtil
                     .getHandler(synapseDTO.getDocument(), Constants.SYNAPSE_API_VALUE_LATENCY_STATS_HANDLER);
@@ -69,7 +60,28 @@ public class ResourceModifier200 {
             try {
                 updateResources(synapseDTO.getDocument());
             } catch (APIMigrationException e) {
-                log.error("error occcurend while migrating synapse at " + synapseDTO.getFile().getAbsolutePath(), e);
+                log.error("error occurred while migrating synapse at " + synapseDTO.getFile().getAbsolutePath(), e);
+            }
+        }
+    }
+
+    /**
+     * update new throttle handler in the synapse
+     *
+     * @param synapseDTOs list of synapse files to be updated
+     */
+    public static void updateThrottleHandler(List<SynapseDTO> synapseDTOs) {
+        for (SynapseDTO synapseDTO : synapseDTOs) {
+            Element existingThrottleHandler = SynapseUtil
+                    .getHandler(synapseDTO.getDocument(), Constants.SYNAPSE_API_VALUE_THROTTLE_HANDLER);
+            Element handlersElement = (Element) synapseDTO.getDocument()
+                    .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS)
+                    .item(0);
+            if (existingThrottleHandler != null && !isThrottleHandlerUpdated(existingThrottleHandler)) {
+                Element updatedThrottleHandler = SynapseUtil
+                        .createHandler(synapseDTO.getDocument(), Constants.NEW_SYNAPSE_API_VALUE_THROTTLE_HANDLER,
+                                null);
+                handlersElement.replaceChild(updatedThrottleHandler, existingThrottleHandler);
             }
         }
     }
