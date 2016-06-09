@@ -1106,6 +1106,10 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
         sequenceMigration();
     }
 
+    @Override
+    public void optionalMigration(List<String> options) throws APIMigrationException {
+        //no implementation is required
+    }
     /**
      * This method is used to migrate sequence files
      * This adds cors_request_handler_ to sequences

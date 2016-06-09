@@ -45,6 +45,7 @@ public class Constants {
     // Migration client argument property names
     public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
     public static final String ARG_MIGRATE_FROM_VERSION = "migrateFromVersion";
+    public static final String ARG_OPTIONS = "options";
     public static final String ARG_COMPONENT = "component";
     public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
@@ -232,4 +233,18 @@ public class Constants {
 
 	public static final String API_KEY_VALIDATOR_ENCRYPT_TOKENS =
             APIConstants.API_KEY_VALIDATOR + "EncryptPersistedTokens";
+
+    public static final String SECURITY_DEFINITION__KEY = "securityDefinitions";
+    public static final String SECURITY_DEFINITION_TYPE_KEY = "type";
+    public static final String SECURITY_DEFINITION_AUTHORIZATION_URL_KEY = "authorizationUrl";
+    public static final String SECURITY_DEFINITION_FLOW_KEY = "flow";
+    public static final String SECURITY_DEFINITION_SCOPES_KEY = "scopes";
+    public static final String SECURITY_DEFINITION_NAME_KEY = "sample_oauth";
+    public static final String SECURITY_DEFINITION_TYPE_AUTH2 = "oauth2";
+    public static final String SECURITY_DEFINITION_DEFAULT_GRANT_TYPES = "urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm,implicit,refresh_token,client_credentials,authorization_code,password";
+    public static final String REVOKE_URL_CONFIG_PATH = "OAuthConfigurations.RevokeAPIURL";
+
+    public static final String SWAGGER_PATH_SECURITY_KEY = "security";
+    public static final String SWAGGER_PATH_PARAMETERS_KEY = "parameters";
+
 }
