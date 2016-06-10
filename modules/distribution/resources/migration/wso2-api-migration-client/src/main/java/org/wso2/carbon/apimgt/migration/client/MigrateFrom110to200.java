@@ -920,7 +920,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
         Object existSecDef = swagger12doc.get(Constants.SECURITY_DEFINITION__KEY);
         if (existSecDef == null) {
-            String existScopes = "";
+            JSONObject existScopes=new JSONObject();
             JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
             if (xWso2Security == null) {
                 log.info("Security definition 'x-wso2-security' exist in API " + swagger12location
@@ -928,9 +928,13 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
             } else {
                 JSONArray scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
                         .get(Constants.SWAGGER_X_WSO2_SCOPES);
-                existScopes = scopes.toString();
+                for (int i = 0; i < scopes.size(); i++) {
+                    JSONObject scope = (JSONObject) scopes.get(i);
+                    existScopes.put(scope.get(Constants.SECURITY_DEFINITION_SCOPE_NAME),
+                            scope.get(Constants.SECURITY_DEFINITION_SCOPE_KEY));
+                }
             }
-            JSONObject sec = generateSecurityDefinitionsObject(existScopes);
+            JSONObject sec = generateSecurityDefinitionsObject(api.getId().getApiName(), existScopes);
             swagger12doc.put(Constants.SECURITY_DEFINITION__KEY, sec);
         } else {
             log.info("Security definition already exist in API " + swagger12location);
@@ -941,11 +945,22 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
             JSONObject methods = (JSONObject) e.getValue();
             Set<Map.Entry> mes = methods.entrySet();
             for (Map.Entry m : mes) {
-                System.out.println(m.getValue());
                 JSONObject re = (JSONObject) m.getValue();
-                re.put(Constants.SWAGGER_PATH_SECURITY_KEY,
-                        parser.parse("[{\"" + Constants.SECURITY_DEFINITION_NAME_KEY + "\": []}]"));
-                re.put(Constants.SWAGGER_PATH_PARAMETERS_KEY, parser.parse("[]"));
+                JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
+                JSONArray scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
+                        .get(Constants.SWAGGER_X_WSO2_SCOPES);
+
+                JSONArray scopeList = new JSONArray();
+                for (int i = 0; i < scopes.size(); i++) {
+                    JSONObject scope = (JSONObject) scopes.get(i);
+                    scopeList.add(scope.get(Constants.SECURITY_DEFINITION_SCOPE_NAME));
+                }
+                JSONArray authScopeArray = new JSONArray();
+                JSONObject authScopeObj = new JSONObject();
+                authScopeObj.put(api.getId().getApiName() + Constants.SECURITY_DEFINITION_NAME_KEY_SUFFIX, scopeList);
+                authScopeArray.add(authScopeObj);
+                re.put(Constants.SWAGGER_PATH_SECURITY_KEY, authScopeArray);
+                re.put(Constants.SWAGGER_PATH_PARAMETERS_KEY, new JSONArray());
             }
         }
         return swagger12doc.toJSONString();
@@ -959,7 +974,8 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
      * @return security definition object
      * @throws ParseException
      */
-    private static JSONObject generateSecurityDefinitionsObject(String scopes) throws ParseException {
+    private static JSONObject generateSecurityDefinitionsObject(String apiName, JSONObject scopes)
+            throws ParseException {
         log.debug("Calling generateSecurityDefinitionsObject");
         JSONObject sec = new JSONObject();
         sec.put(Constants.SECURITY_DEFINITION_TYPE_KEY, Constants.SECURITY_DEFINITION_TYPE_AUTH2);
@@ -969,7 +985,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         sec.put(Constants.SECURITY_DEFINITION_FLOW_KEY, Constants.SECURITY_DEFINITION_DEFAULT_GRANT_TYPES);
         sec.put(Constants.SECURITY_DEFINITION_SCOPES_KEY, scopes);
         JSONObject securityDefinitionObject = new JSONObject();
-        securityDefinitionObject.put(Constants.SECURITY_DEFINITION_NAME_KEY, sec);
+        securityDefinitionObject.put(apiName+Constants.SECURITY_DEFINITION_NAME_KEY_SUFFIX, sec);
         return securityDefinitionObject;
     }
 
