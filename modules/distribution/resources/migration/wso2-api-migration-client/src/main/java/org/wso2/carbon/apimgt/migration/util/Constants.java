@@ -239,9 +239,11 @@ public class Constants {
     public static final String SECURITY_DEFINITION_AUTHORIZATION_URL_KEY = "authorizationUrl";
     public static final String SECURITY_DEFINITION_FLOW_KEY = "flow";
     public static final String SECURITY_DEFINITION_SCOPES_KEY = "scopes";
-    public static final String SECURITY_DEFINITION_NAME_KEY = "sample_oauth";
+    public static final String SECURITY_DEFINITION_NAME_KEY_SUFFIX = "_oauth";
     public static final String SECURITY_DEFINITION_TYPE_AUTH2 = "oauth2";
     public static final String SECURITY_DEFINITION_DEFAULT_GRANT_TYPES = "urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm,implicit,refresh_token,client_credentials,authorization_code,password";
+    public static final String SECURITY_DEFINITION_SCOPE_NAME = "name";
+    public static final String SECURITY_DEFINITION_SCOPE_KEY = "key";
     public static final String REVOKE_URL_CONFIG_PATH = "OAuthConfigurations.RevokeAPIURL";
 
     public static final String SWAGGER_PATH_SECURITY_KEY = "security";
