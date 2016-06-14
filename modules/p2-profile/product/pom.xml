@@ -380,9 +380,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics:org.wso2.carbon.analytics.message.tracer.handler.feature:${carbon.analytics.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.mediation:org.wso2.carbon.mediator.bam.feature:${carbon.mediation.version}
-                                </featureArtifactDef>                              
 
                                 <!-- Carbon-MultiTenancy-->
                                 <featureArtifactDef>
@@ -1088,12 +1085,6 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
                                 <feature>
                                     <id>org.wso2.carbon.idp.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1520,11 +1511,6 @@
                                     <version>${carbon.registry.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
-                                <feature>
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
@@ -1936,10 +1922,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.bam.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group
