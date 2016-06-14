@@ -63,7 +63,8 @@ public class StreamDefinitions {
                 "          {'name':'cacheHit','type':'BOOL'}," +
                 "          {'name':'responseSize','type':'LONG'}," +
                 "          {'name':'protocol','type':'STRING'}," +
-                "          {'name':'responseCode','type':'INT'}" +
+                "          {'name':'responseCode','type':'INT'}," +
+                "          {'name':'destination','type':'STRING'}" +
                 "  ]" +
                 "}";
     }
