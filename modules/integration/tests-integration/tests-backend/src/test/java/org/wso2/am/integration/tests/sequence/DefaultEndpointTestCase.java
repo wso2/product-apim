@@ -43,11 +43,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         super.init();
         String providerName = user.getUserName();
 
-
-
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName);
-
-
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         String publisherURLHttp = getPublisherURLHttp();
@@ -99,7 +95,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
 
         assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
 
-        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/json; charset=utf-8");
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
     }
 
 
