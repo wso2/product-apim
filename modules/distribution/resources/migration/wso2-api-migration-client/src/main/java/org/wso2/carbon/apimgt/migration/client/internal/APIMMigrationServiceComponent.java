@@ -71,6 +71,7 @@ public class APIMMigrationServiceComponent {
         }
 
         String migrateFromVersion = System.getProperty(Constants.ARG_MIGRATE_FROM_VERSION);
+        String options = System.getProperty(Constants.ARG_OPTIONS);
         String specificVersion = System.getProperty(Constants.ARG_RUN_SPECIFIC_VERSION);
         String component = System.getProperty(Constants.ARG_COMPONENT);
         String tenants = System.getProperty(Constants.ARG_MIGRATE_TENANTS);
@@ -101,7 +102,7 @@ public class APIMMigrationServiceComponent {
             arguments.setRegistryMigration(isRegistryMigration);
             arguments.setFileSystemMigration(isFileSystemMigration);
             arguments.setStatMigration(isStatMigration);
-
+            arguments.setOptions(options);
             MigrationExecutor.execute(arguments);
 
         } catch (APIMigrationException e) {

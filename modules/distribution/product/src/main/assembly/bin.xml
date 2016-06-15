@@ -80,7 +80,6 @@
                 <exclude>**/conf/thrift-authentication.xml</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/store/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin-dashboard/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/workflow-admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
             </excludes>
@@ -290,10 +289,6 @@
          </fileSet>
 
         <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/workflow-admin/</directory>
-            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/workflow-admin</outputDirectory>
-        </fileSet>
-	    <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/admin-dashboard/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/admin-dashboard</outputDirectory>
         </fileSet>

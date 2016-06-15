@@ -104,7 +104,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionResponse(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionExecutionTime(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionWorkflow(), -1234);
-            thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionDestination(), -1234);
             thriftTestServer.start(thriftServerListenPort);
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfiguration(new File(
@@ -179,28 +178,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         testRequestEvent();
         //testing response event stream
         testResponseEvent();
-    }
-
-    @Test(groups = { "wso2.am" }, description = "Test API invocation", dependsOnMethods = "testApiInvocationAndEventTest")
-    public void testDestinationStatInvocationAndEventTest() throws Exception {
-        //clear the test thrift server received event to avoid event conflicting among tenants
-        thriftTestServer.clearTables();
-        //update api to enable destination stat
-        apiCreationRequestBean.setDestinationStats("Enabled");
-        HttpResponse serviceResponse = apiPublisher.updateAPI(apiCreationRequestBean);
-        verifyResponse(serviceResponse);
-        waitForAPIDeployment();
-
-        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
-        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
-        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
-
-        //testing request event stream
-        testRequestEvent();
-        //testing response event stream
-        testResponseEvent();
-        //testing destination event stream
-        testDestinationEvent();
     }
 
     @AfterClass(alwaysRun = true)
@@ -323,43 +300,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
         Assert.assertEquals(APP_NAME, map.get("applicationName").toString(), "Wrong applicationName received");
         Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
-    }
-
-    /**
-     * used to test destination event stream data
-     *
-     * @throws Exception if any exception throws
-     */
-    private void testDestinationEvent() throws Exception {
-        List<Event> responseTable = null;
-        long currentTime = System.currentTimeMillis();
-        long waitTime = currentTime + WAIT_TIME;
-        while (waitTime > System.currentTimeMillis()) {
-            responseTable = thriftTestServer.getDataTables()
-                    .get(StreamDefinitions.APIMGT_STATISTICS_DESTINATION_STREAM_ID);
-            if (responseTable == null || responseTable.isEmpty()) {
-                Thread.sleep(1000);
-                continue;
-            } else {
-                break;
-            }
-        }
-        Assert.assertEquals(1, responseTable.size(), "Stat publisher published events not match");
-        Map<String, Object> map = convertToMap(responseTable.get(0).getPayloadData(),
-                StreamDefinitions.getStreamDefinitionDestination());
-        String context;
-        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            context = "/" + API_CONTEXT + "/" + API_VERSION;
-        } else {
-            context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
-        }
-
-        Assert.assertEquals(context, map.get("context").toString(), "Wrong context received");
-        Assert.assertEquals(API_NAME, map.get("api").toString(), "Wrong api name received");
-        Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination received");
-        Assert.assertEquals(API_VERSION, map.get("version").toString(), "Wrong version received");
-        Assert.assertEquals(1, Integer.parseInt(map.get("request").toString()), "Wrong request count received");
-        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
     }
 
     /**

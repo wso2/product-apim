@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -28,7 +29,6 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.definitions.APIDefinitionFromSwagger20;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
@@ -52,10 +52,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.xml.stream.XMLStreamException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.sql.*;
 import java.util.*;
@@ -120,7 +117,28 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
 
     @Override
     public void statsMigration() throws APIMigrationException {
+    }
 
+    /**
+     * Implementation of new throttling migration using optional migration argument
+     *
+     * @param options list of command line options
+     * @throws APIMigrationException throws if any exception occured
+     */
+    @Override
+    public void optionalMigration(List<String> options) throws APIMigrationException {
+        if (options.contains("migrateThrottling")) {
+            for (Tenant tenant : getTenantsArray()) {
+                String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
+                List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
+                ResourceModifier200.updateThrottleHandler(synapseDTOs);
+
+                for (SynapseDTO synapseDTO : synapseDTOs) {
+                    ResourceModifier200.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                }
+            }
+            log.info("Throttling migration is finished.");
+        }
     }
 
     private void synapseAPIMigration() {
@@ -833,8 +851,6 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
 
     private void updateSwaggerResources(GenericArtifact[] artifacts, Tenant tenant) throws APIMigrationException {
         log.debug("Calling updateSwaggerResources");
-        APIDefinitionFromSwagger20 definitionFromSwagger20 = new APIDefinitionFromSwagger20();
-
         for (GenericArtifact artifact : artifacts) {
             API api = registryService.getAPI(artifact);
 
@@ -846,10 +862,9 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                 try {
                     String swagger2location = ResourceUtil
                             .getSwagger2ResourceLocation(apiName, apiVersion, apiProviderName);
-                    String swagger2Document = null;
                     log.debug("Creating swagger v2.0 resource using v1.2 for : " + apiName + '-' + apiVersion + '-'
                             + apiProviderName);
-                    swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger2location, api);
+                    String swagger2Document = getSwagger2docUsingSwagger12RegistryResources(tenant, swagger2location, api);
 
                     registryService
                             .addGovernanceRegistryResource(swagger2location, swagger2Document, "application/json");
@@ -903,19 +918,49 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         String swaggerRes = ResourceUtil.getResourceContent(rawResource);
 
         JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
-        JSONObject sec = generateSecurityDefinitionsObject();
-        swagger12doc.put("securityDefinitions", sec);
-
-        JSONObject paths = (JSONObject) swagger12doc.get("paths");
+        Object existSecDef = swagger12doc.get(Constants.SECURITY_DEFINITION__KEY);
+        if (existSecDef == null) {
+            JSONObject existScopes=new JSONObject();
+            JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
+            if (xWso2Security == null) {
+                log.info("Security definition 'x-wso2-security' exist in API " + swagger12location
+                        + " using default Security definitions");
+            } else {
+                JSONArray scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
+                        .get(Constants.SWAGGER_X_WSO2_SCOPES);
+                for (int i = 0; i < scopes.size(); i++) {
+                    JSONObject scope = (JSONObject) scopes.get(i);
+                    existScopes.put(scope.get(Constants.SECURITY_DEFINITION_SCOPE_NAME),
+                            scope.get(Constants.SECURITY_DEFINITION_SCOPE_KEY));
+                }
+            }
+            JSONObject sec = generateSecurityDefinitionsObject(api.getId().getApiName(), existScopes);
+            swagger12doc.put(Constants.SECURITY_DEFINITION__KEY, sec);
+        } else {
+            log.info("Security definition already exist in API " + swagger12location);
+        }
+        JSONObject paths = (JSONObject) swagger12doc.get(Constants.SWAGGER_PATHS);
         Set<Map.Entry> res = paths.entrySet();
         for (Map.Entry e : res) {
             JSONObject methods = (JSONObject) e.getValue();
             Set<Map.Entry> mes = methods.entrySet();
             for (Map.Entry m : mes) {
-                System.out.println(m.getValue());
                 JSONObject re = (JSONObject) m.getValue();
-                re.put("security", parser.parse("[{\"sample_oauth\": []}]"));
-                re.put("parameters", parser.parse("[]"));
+                JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
+                JSONArray scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
+                        .get(Constants.SWAGGER_X_WSO2_SCOPES);
+
+                JSONArray scopeList = new JSONArray();
+                for (int i = 0; i < scopes.size(); i++) {
+                    JSONObject scope = (JSONObject) scopes.get(i);
+                    scopeList.add(scope.get(Constants.SECURITY_DEFINITION_SCOPE_NAME));
+                }
+                JSONArray authScopeArray = new JSONArray();
+                JSONObject authScopeObj = new JSONObject();
+                authScopeObj.put(api.getId().getApiName() + Constants.SECURITY_DEFINITION_NAME_KEY_SUFFIX, scopeList);
+                authScopeArray.add(authScopeObj);
+                re.put(Constants.SWAGGER_PATH_SECURITY_KEY, authScopeArray);
+                re.put(Constants.SWAGGER_PATH_PARAMETERS_KEY, new JSONArray());
             }
         }
         return swagger12doc.toJSONString();
@@ -929,18 +974,18 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
      * @return security definition object
      * @throws ParseException
      */
-    private static JSONObject generateSecurityDefinitionsObject() throws ParseException {
+    private static JSONObject generateSecurityDefinitionsObject(String apiName, JSONObject scopes)
+            throws ParseException {
         log.debug("Calling generateSecurityDefinitionsObject");
         JSONObject sec = new JSONObject();
-        sec.put("type", "oauth2");
+        sec.put(Constants.SECURITY_DEFINITION_TYPE_KEY, Constants.SECURITY_DEFINITION_TYPE_AUTH2);
         String url = ServiceHolder.getAPIManagerConfigurationService().getAPIManagerConfiguration()
-                .getFirstProperty("OAuthConfigurations.RevokeAPIURL");
-        sec.put("authorizationUrl", url.replace("revoke", "token"));
-        sec.put("flow",
-                "urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm,implicit,refresh_token,client_credentials,authorization_code,password");
-        sec.put("scopes", "{}");
+                .getFirstProperty(Constants.REVOKE_URL_CONFIG_PATH);
+        sec.put(Constants.SECURITY_DEFINITION_AUTHORIZATION_URL_KEY, url.replace("revoke", "token"));
+        sec.put(Constants.SECURITY_DEFINITION_FLOW_KEY, Constants.SECURITY_DEFINITION_DEFAULT_GRANT_TYPES);
+        sec.put(Constants.SECURITY_DEFINITION_SCOPES_KEY, scopes);
         JSONObject securityDefinitionObject = new JSONObject();
-        securityDefinitionObject.put("sample_oauth", sec);
+        securityDefinitionObject.put(apiName+Constants.SECURITY_DEFINITION_NAME_KEY_SUFFIX, sec);
         return securityDefinitionObject;
     }
 
