@@ -248,5 +248,12 @@ public class Constants {
 
     public static final String SWAGGER_PATH_SECURITY_KEY = "security";
     public static final String SWAGGER_PATH_PARAMETERS_KEY = "parameters";
+    public static final String SYNAPSE_ENDPOINT_XML_ELEMENT = "endpoint";
+    public static final String SYNAPSE_FAIL_OVER_XML_ELEMENT = "failover";
+    public static final String SYNAPSE_LOAD_BALANCE_XML_ELEMENT = "loadbalance";
+    public static final String SYNAPSE_ENDPOINT_ADDRESS_XML_ELEMENT = "ENDPOINT_ADDRESS";
+    public static final String SYNAPSE_HTTP_XML_ELEMENT = "http";
+    public static final String SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME = "uri-template";
+    public static final String SYNAPSE_IS_STAT_ENABLED_PROPERTY_NAME = "isStatEnabled";
 
 }
