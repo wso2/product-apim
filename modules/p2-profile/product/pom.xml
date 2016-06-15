@@ -91,7 +91,7 @@
                                     org.apache.axis2.transport:org.apache.axis2.transport.mail.feature:${axis2-transports.wso2.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.platform.version}
+                                    org.wso2.carbon:org.wso2.carbon.core.runtime.feature:${carbon.kernel.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.commons:org.wso2.carbon.logging.mgt.feature:${carbon.commons.version}
@@ -1273,15 +1273,15 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
@@ -1704,15 +1704,15 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
@@ -2126,7 +2126,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.user.mgt.feature.group</id>
@@ -2138,15 +2138,15 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
@@ -2593,19 +2593,19 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.ui.feature.group</id>
@@ -3063,7 +3063,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.mgt.server.feature.group</id>
@@ -3071,11 +3071,11 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.server.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.runtime.feature.group</id>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.ntask.core.feature.group</id>
