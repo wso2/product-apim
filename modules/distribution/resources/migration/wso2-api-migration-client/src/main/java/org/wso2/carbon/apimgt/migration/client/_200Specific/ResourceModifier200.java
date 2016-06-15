@@ -139,7 +139,61 @@ public class ResourceModifier200 {
                         }
                     }
                 }
-                // At least one <send> element must exist as a child of <then> element
+
+                //removing bam mediator
+                //for production url
+                NodeList thenFilterElement = thenElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_FILTER);
+                if (thenFilterElement != null && thenFilterElement.getLength() > 0) {
+                    for (int i = 0; i < thenFilterElement.getLength(); ++i) {
+                        Element filterNode = (Element) thenFilterElement.item(i);
+                        if (filterNode.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_SOURCE)
+                                .contains(Constants.SYNAPSE_IS_STAT_ENABLED_PROPERTY_NAME)) {
+                            thenElement.removeChild(filterNode);
+                        }
+                    }
+                }
+                //for sandbox url
+                Element elseElement = (Element) filterElement
+                        .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, "else").item(0);
+                NodeList elseFilterElement = elseElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_FILTER);
+                if (elseFilterElement != null && elseFilterElement.getLength() > 0) {
+                    for (int i = 0; i < elseFilterElement.getLength(); ++i) {
+                        Element filterNode = (Element) elseFilterElement.item(i);
+                        if (filterNode.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_SOURCE)
+                                .contains(Constants.SYNAPSE_IS_STAT_ENABLED_PROPERTY_NAME)) {
+                            elseElement.removeChild(filterNode);
+                        }
+                    }
+                }
+
+                //adding endpoint_address property, only for production
+                Element sendElement = (Element) thenElement
+                        .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_SEND)
+                        .item(0);
+                Element endpointElement = (Element) sendElement
+                        .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_ENDPOINT_XML_ELEMENT)
+                        .item(0);
+                NodeList failOverElements = endpointElement
+                        .getElementsByTagName(Constants.SYNAPSE_FAIL_OVER_XML_ELEMENT);
+                NodeList loadBalanceElements = endpointElement
+                        .getElementsByTagName(Constants.SYNAPSE_LOAD_BALANCE_XML_ELEMENT);
+                if (failOverElements.getLength() > 0) {
+                    Element failOverElement = (Element) failOverElements.item(0);
+                    NodeList endpointElements = failOverElement
+                            .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
+                    for (int i = 0; i < endpointElements.getLength(); i++) {
+                        addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
+                    }
+                } else if (loadBalanceElements.getLength() > 0) {
+                    Element loadBalanceElement = (Element) loadBalanceElements.item(0);
+                    NodeList endpointElements = loadBalanceElement
+                            .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
+                    for (int i = 0; i < endpointElements.getLength(); i++) {
+                        addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
+                    }
+                } else {
+                    addingAddressPropertyToEndpoint(endpointElement, doc);
+                }
             }
         }
 
@@ -169,6 +223,39 @@ public class ResourceModifier200 {
             } else {
                 inSequenceElement.appendChild(propertyElement);
             }
+        }
+    }
+
+    /**
+     * adding address_endpoint to endpoints if not available
+     *
+     * @param endpointElement endpoint element
+     * @param doc             xml document
+     */
+    public static void addingAddressPropertyToEndpoint(Element endpointElement, Document doc) {
+        NodeList addressProp = endpointElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+        Element propertyElement, propertyElementExist;
+        boolean exist = false;
+        for (int i = 0; i < addressProp.getLength(); i++) {
+            propertyElement = (Element) addressProp.item(i);
+            if (propertyElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME)) {
+                if (Constants.SYNAPSE_ENDPOINT_ADDRESS_XML_ELEMENT
+                        .equalsIgnoreCase(propertyElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
+                    exist = true;
+                    break;
+                }
+            }
+        }
+        if (!exist) {
+            Element uriElement = (Element) endpointElement.getElementsByTagName(Constants.SYNAPSE_HTTP_XML_ELEMENT)
+                    .item(0);
+            String val = uriElement.getAttribute(Constants.SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME);
+            propertyElementExist = doc
+                    .createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
+            propertyElementExist.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, val);
+            propertyElementExist
+                    .setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_ENDPOINT_ADDRESS_XML_ELEMENT);
+            endpointElement.appendChild(propertyElementExist);
         }
     }
 
