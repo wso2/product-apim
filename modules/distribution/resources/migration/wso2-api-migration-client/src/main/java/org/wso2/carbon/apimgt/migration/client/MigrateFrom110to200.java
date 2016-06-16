@@ -571,9 +571,9 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                             + "\"accessControlAllowHeaders\": [\"authorization\",   \"Access-Control-Allow-Origin\", \"Content-Type\", \"SOAPAction\"],"
                             + "\"accessControlAllowMethods\": [\"GET\", \"PUT\", \"POST\", \"DELETE\", \"PATCH\", \"OPTIONS\"]"
                             + "}";
-                    artifact.setAttribute("overview_cors_configuration", val);
-                    artifact.setAttribute("overview_endpoint_secured", "false");
-                    artifact.setAttribute("overview_endpoint_auth_digest", "false");
+                    artifact.setAttribute("overview_corsConfiguration", val);
+                    artifact.setAttribute("overview_endpointSecured", "false");
+                    artifact.setAttribute("overview_endpointAuthDigest", "false");
                 }
                 registryService.updateGenericAPIArtifacts(artifacts);
                 log.info("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
