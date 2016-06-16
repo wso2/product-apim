@@ -188,9 +188,9 @@
         <!-- Start API Manager related -->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/identity/application-mgt/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/identity/
             </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts/identity/application-mgt</outputDirectory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts/identity</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
             </includes>
