@@ -258,7 +258,7 @@
     <indexingConfiguration>
         <startIndexing>true</startIndexing>
         <startingDelayInSeconds>35</startingDelayInSeconds>
-        <indexingFrequencyInSeconds>5</indexingFrequencyInSeconds>
+        <indexingFrequencyInSeconds>3</indexingFrequencyInSeconds>
         <!--number of resources submit for given indexing thread -->
         <batchSize>40</batchSize>
         <!--number of worker threads for indexing -->
