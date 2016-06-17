@@ -196,15 +196,8 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "Test Subscription after Application name update",
             dependsOnMethods = "testApplicationNameUpdateAfterKeyGeneration")
     public void testSubscriptionAfterApplicationNameUpdate() throws Exception {
-        //Test the Subscription UI
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Cookie", apiStore.getSession());
-        HttpResponse response = HTTPSClientUtils.doGet(storeURLHttp + "/store/site/pages/application.jag?name="
-                + APP_NAME_TO_UPDATE, headers);
-        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-                "subscription page have error after update application page");
         //Test the subscription list after update app name
-        response = apiStore.getAllSubscriptionsOfApplication(APP_NAME_TO_UPDATE);
+        HttpResponse response = apiStore.getAllSubscriptionsOfApplication(APP_NAME_TO_UPDATE);
         verifyResponse(response);
         Assert.assertTrue(response.getData().contains(API_NAME), "Subscribe API not included after App name updated");
     }
