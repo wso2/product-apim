@@ -101,7 +101,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Create and publish two apis with public and role based visibility")
-    public void testAPICreation() throws Exception {
+    public void testAPICreationWithVisibility() throws Exception {
         String providerName = user.getUserName();
 
         //API request for public visible API
@@ -140,7 +140,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Test the API tag visibility as a anonymous user",
-            dependsOnMethods = "testAPICreation")
+            dependsOnMethods = "testAPICreationWithVisibility")
     public void testAPITagVisibilityAnonymousUser() throws Exception {
         requestHeaders.clear();
 
@@ -150,7 +150,8 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tenant", tenant));
         HttpEntity content = new UrlEncodedFormEntity(urlParameters);
         String contentString = EntityUtils.toString(content);
-
+        
+        Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
         Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
                 "Public visibility tag is not available for anonymous user");
@@ -177,6 +178,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         HttpEntity content = new UrlEncodedFormEntity(urlParameters);
         String contentString = EntityUtils.toString(content);
 
+        Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
         Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
                 "Public visibility tag is not available for authorised user");

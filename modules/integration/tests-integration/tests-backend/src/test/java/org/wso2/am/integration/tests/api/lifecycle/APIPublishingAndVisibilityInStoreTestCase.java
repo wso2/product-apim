@@ -83,7 +83,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
 
     @Test(groups = {"wso2.am"}, description = "Create a API and  check its availability in Publisher.")
-    public void testAPICreation() throws APIManagerIntegrationTestException {
+    public void testAvailabilityOfAPIInPublisher() throws APIManagerIntegrationTestException {
         //Create APi
         HttpResponse createAPIResponse = apiPublisherClientUser1.addAPI(apiCreationRequestBean);
         assertEquals(createAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -101,7 +101,7 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
 
     @Test(groups = {"wso2.am"}, description = "Check the visibility of API in Store before the API publish. " +
-            "it should not be available in store.", dependsOnMethods = "testAPICreation")
+            "it should not be available in store.", dependsOnMethods = "testAvailabilityOfAPIInPublisher")
     public void testVisibilityOfAPIInStoreBeforePublishing() throws APIManagerIntegrationTestException {
         //Verify the API in API Store : API should not be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -116,11 +116,6 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
             dependsOnMethods = "testVisibilityOfAPIInStoreBeforePublishing")
     public void testAPIPublishing() throws APIManagerIntegrationTestException, XPathExpressionException {
         //Publish the API
-        APILifeCycleStateRequest publishUpdateRequest =
-                new APILifeCycleStateRequest(API_NAME, providerName, APILifeCycleState.PUBLISHED);
-        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),apiCreationRequestBean.getName(),
-                API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
-        publishUpdateRequest.setVersion(API_VERSION_1_0_0);
         HttpResponse publishAPIResponse =
                 apiPublisherClientUser1.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
         assertEquals(publishAPIResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -133,6 +128,8 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in the store after API publish.",
             dependsOnMethods = "testAPIPublishing")
     public void testVisibilityOfAPIInStoreAfterPublishing() throws APIManagerIntegrationTestException {
+        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),apiCreationRequestBean.getName(),
+                                 API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         //Verify the API in API Store : API should be available in the store.
         List<APIIdentifier> apiStoreAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiStoreClientUser1.getAPI());
@@ -143,9 +140,10 @@ public class APIPublishingAndVisibilityInStoreTestCase extends APIManagerLifecyc
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        super.cleanUp();
     }
 
 

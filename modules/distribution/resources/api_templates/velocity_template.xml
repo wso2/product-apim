@@ -81,9 +81,7 @@
 <http uri-template="$util.escapeXml($ep.get("url"))">
 #timeout( $ep.get('config') )
 </http>
-        #if($destinationBasedStatsEnabled)
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
-        #end
         </endpoint>
         #end
 
@@ -157,9 +155,7 @@
     >
     #timeout( $endpoints.get('config') )
 </address>
-#if($destinationBasedStatsEnabled)
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-#end
 </endpoint>
         #elseif ($endpointClass == "wsdl")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
@@ -172,9 +168,7 @@
         #timeout()
         </wsdl>
         #end
-        #if($destinationBasedStatsEnabled)
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-        #end
         </endpoint>
         #elseif ($endpointClass == "failover")
         #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
@@ -215,17 +209,6 @@
 </endpoint>
         #end
         </send>
-        #if($destinationBasedStatsEnabled)
-<filter source="get-property('isStatEnabled')" regex="true">
-<then>
-<bam>
-<serverProfile name="$!profileName">
-    <streamConfig name="$!streamName" version="$!streamVersion"/>
-</serverProfile>
-</bam>
-</then>
-</filter>
-        #end
         #end
 
         ######################## End of Macros ######################################
@@ -273,7 +256,7 @@
     <implementation type="memory" maxSize="500"/>
 </cache>
 #end
-
+<property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
 #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
@@ -284,8 +267,7 @@
 #if($apiStatus != 'PROTOTYPED')
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-        #end
-        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
+        #end        
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else

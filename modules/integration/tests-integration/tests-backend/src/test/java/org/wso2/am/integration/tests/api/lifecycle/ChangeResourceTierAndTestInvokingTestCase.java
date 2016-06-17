@@ -28,9 +28,14 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +46,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * Change the API resource tier and test the throttling.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
     //Random number to avoid test failure on clustered setup. Swagger document of the API not getting
     //removed properly hence re-executing the tests trend to yield false negatives.
@@ -60,10 +66,22 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
+    private ServerConfigurationManager serverConfigurationManager;
+    protected AutomationContext superTenantKeyManagerContext;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
+                File.separator + "api-manager.xml"));
+
+        serverConfigurationManager.restartGracefully();
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =
@@ -286,10 +304,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 

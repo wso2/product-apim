@@ -134,7 +134,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for API creator ")
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")
     public void testVisibilityForCreatorInPublisher() throws Exception {
         //Create API  with private visibility and publish.
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
@@ -161,7 +161,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for API creator",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for API creator",
             dependsOnMethods = "testVisibilityForCreatorInPublisher")
     public void testVisibilityForCreatorInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -171,7 +171,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifier));
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for admin in same domain ",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for admin in same domain ",
             dependsOnMethods = "testVisibilityForCreatorInStore")
     public void testVisibilityForAdminInSameDomainInPublisher() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiPublisherAPIIdentifierList =
@@ -183,7 +183,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for admin in same domain ",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for admin in same domain ",
             dependsOnMethods = "testVisibilityForAdminInSameDomainInPublisher")
     public void testVisibilityForAdminInSameDomainInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -194,7 +194,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for another user in same domain",
             dependsOnMethods = "testVisibilityForAdminInSameDomainInStore")
     public void testVisibilityForAnotherUserInSameDomainInPublisher() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiPublisherAPIIdentifierList =
@@ -206,7 +206,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in same domain",
             dependsOnMethods = "testVisibilityForAnotherUserInSameDomainInPublisher")
     public void testVisibilityForAnotherUserInSameDomainInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -216,7 +216,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
                         getAPIIdentifierString(apiIdentifier));
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for another user in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for another user in other domain",
             dependsOnMethods = "testVisibilityForAnotherUserInSameDomainInStore")
     public void testVisibilityForAnotherUserInOtherDomainInPublisher() throws APIManagerIntegrationTestException {
 
@@ -229,7 +229,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in other domain",
             dependsOnMethods = "testVisibilityForAnotherUserInOtherDomainInPublisher")
     public void testVisibilityForAnotherUserInOtherDomainInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -240,7 +240,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for admin in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for admin in other domain",
             dependsOnMethods = "testVisibilityForAnotherUserInOtherDomainInStore")
     public void testVisibilityForAdminInOtherDomainInPublisher() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiPublisherAPIIdentifierList =
@@ -252,7 +252,7 @@ public class APIVisibilityByDomainTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for admin in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for admin in other domain",
             dependsOnMethods = "testVisibilityForAdminInOtherDomainInPublisher")
     public void testVisibilityForAdminInOtherDomainInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =

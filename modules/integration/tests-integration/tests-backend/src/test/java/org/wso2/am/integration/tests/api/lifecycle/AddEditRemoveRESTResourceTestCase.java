@@ -142,7 +142,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (AutomationFrameworkException e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 403 when accessing a " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 405 when accessing a " +
                                                                   "POST resource which is not define yet. "
                                                                   + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
@@ -176,7 +176,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                      "Update APi with new Resource information fail");
         //Send GET Request
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, "POST");
+        waitForAPIDeployment();
 
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
@@ -220,9 +220,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
 
-        waitForAPIDeploymentSync(user.getUserName(),
-                                 apiCreationRequestBean.getName(),
-                                 apiCreationRequestBean.getVersion(), "\"urlMapping\":\"\\/customers\\/name\"");
+        waitForAPIDeployment();
 
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Update APi with new Resource information fail");
@@ -281,9 +279,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                      "Update APi with new Resource information fail");
         //Send GET request
 
-        waitForAPIUnDeploymentSync(user.getUserName(),
-                                 apiCreationRequestBean.getName(),
-                                 apiCreationRequestBean.getVersion(), "POST");
+        waitForAPIDeployment();
 
         HttpResponse httpResponseGet =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
@@ -302,7 +298,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
             exceptionMessage = e.getMessage();
         } finally {
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException " +
-                                          "with 403 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
+                                          "with 405 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
     }

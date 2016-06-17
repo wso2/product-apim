@@ -57,10 +57,10 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
-    protected static final String UNCLASSIFIED_AUTHENTICATION_FAILURE =
-            "<ams:message>Unclassified Authentication Failure</ams:message>";
     protected static final String HTTP_RESPONSE_DATA_NOT_FOUND =
             "<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>";
+    protected static final String HTTP_RESPONSE_DATA_API_FORBIDDEN =
+            "<ams:code>900908</ams:code><ams:message>Resource forbidden </ams:message>";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
     protected static final int SILVER_INVOCATION_LIMIT_PER_MIN = 5;
     protected static final String TIER_UNLIMITED = "Unlimited";
@@ -74,13 +74,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    //protected static String gatewayWebAppUrl;
-
-    @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
-        super.init();
-        //gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
-    }
 
     /**
      * Return a String with combining the value of API Name,API Version and API Provider Name as key:value format
@@ -136,7 +129,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
             String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
             JSONObject response = new JSONObject(responseString);
-
+            log.info("Token response: " + response.toString());
             applicationKeyBean.setAccessToken(response.getJSONObject("data").getJSONObject("key").
                     get("accessToken").toString());
             applicationKeyBean.setConsumerKey(response.getJSONObject("data").getJSONObject("key").

@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.migration.util;
 
+import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.registry.core.RegistryConstants;
 
@@ -25,6 +26,7 @@ public class Constants {
     public static final String VERSION_1_9 = "1.9.0";
     public static final String VERSION_1_9_1 = "1.9.1";
     public static final String VERSION_1_10 = "1.10.0";
+    public static final String VERSION_2_0_0 = "2.0.0";
     public static final String LINE_BREAK = "\\n";
     public static final String CONSTRAINT = "constraint";
     public static final String ALTER = "alter";
@@ -43,6 +45,7 @@ public class Constants {
     // Migration client argument property names
     public static final String ARG_RUN_SPECIFIC_VERSION = "runSpecificVersion";
     public static final String ARG_MIGRATE_FROM_VERSION = "migrateFromVersion";
+    public static final String ARG_OPTIONS = "options";
     public static final String ARG_COMPONENT = "component";
     public static final String ARG_MIGRATE_TENANTS = "tenants";
     public static final String ARG_MIGRATE_BLACKLIST_TENANTS = "blackListed";
@@ -52,6 +55,7 @@ public class Constants {
     public static final String ARG_MIGRATE_REG = "migrateReg";
     public static final String ARG_MIGRATE_FILE_SYSTEM = "migrateFS";
     public static final String ARG_MIGRATE_STATS = "migrateStats";
+    public static final String ARG_REMOVE_DECRYPTION_FAILED_CONSUMER_KEYS_FROM_DB = "removeDecryptionFailedKeysFromDB";
 
     // Synapse configuration related
     public static final String SYNAPSE_API_ROOT_ELEMENT = "api";
@@ -79,6 +83,8 @@ public class Constants {
     public static final String SYNAPSE_API_VALUE_RESPONSE_HANDLER = "org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler";
     public static final String SYNAPSE_API_VALUE_CORS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.security.CORSRequestHandler";
     public static final String SYNAPSE_API_VALUE_THROTTLE_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler";
+    public static final String NEW_SYNAPSE_API_VALUE_THROTTLE_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.throttling.ThrottleHandler";
+    public static final String SYNAPSE_API_VALUE_LATENCY_STATS_HANDLER = "org.wso2.carbon.apimgt.gateway.handlers.common.APIMgtLatencyStatsHandler";
     public static final String SYNAPSE_API_VALUE_INLINE = "inline";
     public static final String SYNAPSE_API_VALUE_INLINE_UPPERCASE = "INLINE";
     public static final String SYNAPSE_API_VALUE_ENPOINT = "ENDPOINT";
@@ -141,6 +147,8 @@ public class Constants {
     public static final String SWAGGER_DEFINITIONS = "definitions";
     public static final String SWAGGER_REF = "$ref";
     public static final String SWAGGER_SAMPLE_DEFINITION = "sampleItem";
+    public static final String SWAGGER_PRODUCES = "produces";
+
 
 
     // Work flow extensions
@@ -220,5 +228,32 @@ public class Constants {
     public static final String API_PUBLISHER_CLASSNAME = "org.wso2.carbon.apimgt.impl.publishers.WSO2APIPublisher";
 
 
+    public static final String SWAGGER_CONSUMES = "consumes";
+    public static final String DEFAULT_DATA_TYPE = "string";
+
+	public static final String API_KEY_VALIDATOR_ENCRYPT_TOKENS =
+            APIConstants.API_KEY_VALIDATOR + "EncryptPersistedTokens";
+
+    public static final String SECURITY_DEFINITION__KEY = "securityDefinitions";
+    public static final String SECURITY_DEFINITION_TYPE_KEY = "type";
+    public static final String SECURITY_DEFINITION_AUTHORIZATION_URL_KEY = "authorizationUrl";
+    public static final String SECURITY_DEFINITION_FLOW_KEY = "flow";
+    public static final String SECURITY_DEFINITION_SCOPES_KEY = "scopes";
+    public static final String SECURITY_DEFINITION_NAME_KEY_SUFFIX = "_oauth";
+    public static final String SECURITY_DEFINITION_TYPE_AUTH2 = "oauth2";
+    public static final String SECURITY_DEFINITION_DEFAULT_GRANT_TYPES = "urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm,implicit,refresh_token,client_credentials,authorization_code,password";
+    public static final String SECURITY_DEFINITION_SCOPE_NAME = "name";
+    public static final String SECURITY_DEFINITION_SCOPE_KEY = "key";
+    public static final String REVOKE_URL_CONFIG_PATH = "OAuthConfigurations.RevokeAPIURL";
+
+    public static final String SWAGGER_PATH_SECURITY_KEY = "security";
+    public static final String SWAGGER_PATH_PARAMETERS_KEY = "parameters";
+    public static final String SYNAPSE_ENDPOINT_XML_ELEMENT = "endpoint";
+    public static final String SYNAPSE_FAIL_OVER_XML_ELEMENT = "failover";
+    public static final String SYNAPSE_LOAD_BALANCE_XML_ELEMENT = "loadbalance";
+    public static final String SYNAPSE_ENDPOINT_ADDRESS_XML_ELEMENT = "ENDPOINT_ADDRESS";
+    public static final String SYNAPSE_HTTP_XML_ELEMENT = "http";
+    public static final String SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME = "uri-template";
+    public static final String SYNAPSE_IS_STAT_ENABLED_PROPERTY_NAME = "isStatEnabled";
 
 }

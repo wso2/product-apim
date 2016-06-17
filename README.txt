@@ -151,7 +151,7 @@ System Requirements
 Installation & Running
 ==================================
 
-1. Extract the wso2am-1.10.0.zip and go to the 'bin' directory
+1. Extract the wso2am-2.0.0.zip and go to the 'bin' directory
 2. Run the wso2server.sh or wso2server.bat as appropriate
 3. API Publisher web application is running at http://localhost:9763/publisher. You may login
    to the Publisher using the default administrator credentials (user: admin, pass: admin).
@@ -162,7 +162,7 @@ Documentation
 ==============
 
 On-line product documentation is available at:
-        https://docs.wso2.com/display/AM1100/WSO2+API+Manager+Documentation
+        https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation
 
 Support
 ==================================

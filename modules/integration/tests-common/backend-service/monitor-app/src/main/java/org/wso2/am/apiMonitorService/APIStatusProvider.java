@@ -18,6 +18,7 @@
 package org.wso2.am.apiMonitorService;
 
 import org.apache.synapse.config.SynapseConfiguration;
+import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.rest.API;
 import org.wso2.am.apiMonitorService.beans.APIStatusData;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -78,9 +79,7 @@ public class APIStatusProvider {
                 PrivilegedCarbonContext privilegedCarbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
                 privilegedCarbonContext.setTenantId(tenantId);
                 privilegedCarbonContext.setTenantDomain(tenantDomain);
-                synEnvService =
-                        ConfigHolder.getInstance()
-                                .getSynapseEnvironmentService(tenantId);
+                synEnvService = ConfigHolder.getInstance().getSynapseEnvironmentService(tenantId);
             } catch (Exception e) {
                 String msg = "Error while Eager loading tenant : " + tenantDomain;
                 throw new RuntimeException(msg, e);
@@ -88,8 +87,17 @@ public class APIStatusProvider {
                 PrivilegedCarbonContext.endTenantFlow();
             }
         }
-        return synEnvService.getSynapseEnvironment().getSynapseConfiguration();
+        if(synEnvService == null){
+            throw new RuntimeException("Synapse Environment Service is null.");
+        }
 
+        SynapseEnvironment synapseEnv = synEnvService.getSynapseEnvironment();
+
+        if(synapseEnv == null){
+            throw new RuntimeException("Synapse Environment is null.");
+        }
+
+        return synapseEnv.getSynapseConfiguration();
     }
 
 }

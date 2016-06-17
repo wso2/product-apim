@@ -29,6 +29,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -163,6 +164,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         apiRequest.setHttps_checked("");
         apiRequest.setProvider(user.getUserName());
         HttpResponse serviceResponse = apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeployment();
         assertTrue(serviceResponse.getData().contains("\"error\" : false"), apiName + " is not updated properly");
 
         //Check whether API is updated from the above request
@@ -176,7 +178,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
 
         //invoke HTTPS transport
         try {
-            serviceResponse = HttpRequestUtil
+            serviceResponse = HTTPSClientUtils
                     .doGet(getAPIInvocationURLHttps(APIContext + "/" + APIVersion), requestHeaders);
             assertEquals(serviceResponse.getResponseCode(), Response.Status.FORBIDDEN.getStatusCode(),
                     "Response code mismatched when api invocation");
@@ -194,6 +196,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         apiRequest.setHttp_checked("");
         apiRequest.setHttps_checked("https");
         apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeployment();
 
         try {
             //invoke HTTP transport
@@ -289,6 +292,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         apiRequest.setHttps_checked("");
         apiRequest.setProvider(TENANT_WSO2_ADMIN);
         HttpResponse serviceResponse = apiPublisherTenant.updateAPI(apiRequest);
+        waitForAPIDeployment();
         assertTrue(serviceResponse.getData().contains("\"error\" : false"), apiName + " is not updated properly");
 
         //Check whether API is updated from the above request
@@ -319,6 +323,7 @@ public class APIEndpointTypeUpdateTestCase extends APIMIntegrationBaseTest {
         apiRequest.setHttp_checked("");
         apiRequest.setHttps_checked("https");
         apiPublisherTenant.updateAPI(apiRequest);
+        waitForAPIDeployment();
 
         try {
             //invoke HTTP transport

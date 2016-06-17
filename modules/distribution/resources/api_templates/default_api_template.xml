@@ -1,13 +1,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport">
-        #foreach($resource in $resources)
-	<resource xmlns="http://ws.apache.org/ns/synapse"
-		#if($resource.getUriTemplate().contains("{") ||
-		   ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-		   	uri-template="$util.escapeXml($resource.getUriTemplate())"
-		#else
-		   url-mapping="$resource.getUriTemplate()"
-		#end
-		    methods="$resource.getMethodsAsString()" faultSequence="fault">
+   <resource methods="POST PATCH GET DELETE HEAD PUT"
+             uri-template="/*"
+             faultSequence="fault">
 	<inSequence>
 		<property name="isDefault" expression="$trp:WSO2_AM_API_DEFAULT_VERSION"/>
 		<filter source="$ctx:isDefault" regex="true">
@@ -72,7 +66,6 @@
 		<send/>
 	    </outSequence>
 	</resource>
-        #end  ## end of resource iterator
         <handlers>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
         </handlers>

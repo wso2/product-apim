@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<artifact name="Eventstream_response" version="1.0.0" type="event/stream" serverRole="DataAnalyticsServer">
-	<file>org.wso2.apimgt.statistics.response_1.0.0.json</file>	
-</artifact>
-

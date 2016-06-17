@@ -125,6 +125,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
                  " to :" + identityRepositoryConfigLocation);
 
         serverManager.restartGracefully();
+        super.init();
 
         //Initialize publisher and store.
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -287,9 +288,8 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient1.deleteUser(APP_DEV_USER);
             userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
-
+        super.cleanUp();
         serverManager.restoreToLastConfiguration();
-        serverManager.restartGracefully();
         log.info("Restored configuration and restarted gracefully...");
     }
 

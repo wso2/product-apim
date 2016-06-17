@@ -35,6 +35,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.wso2.andes.wso2</groupId>
+            <artifactId>andes-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs.wso2</groupId>
+            <artifactId>geronimo-jms_1.1_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-digester.wso2</groupId>
+            <artifactId>commons-digester</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.h2database.wso2</groupId>
             <artifactId>h2-database-engine</artifactId>
             <exclusions>
@@ -67,7 +79,45 @@
                                 <artifactItem>
                                     <groupId>org.wso2.carbon</groupId>
                                     <artifactId>wso2carbon-core</artifactId>
-                                    <version>${carbon.platform.version}</version>
+                                    <version>${carbon.kernel.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-rest-publisher</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.publisher.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-rest-store</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.store.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>target</outputDirectory>
@@ -97,7 +147,7 @@
                                         <include name="wso2am-${project.version}.zip" />
                                     </fileset>
                                 </unzip>
-                                <copy todir="target/wso2carbon-core-${carbon.platform.version}/repository/components/" overwrite="false">
+                                <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/" overwrite="false">
                                     <fileset dir="${tempdir}/wso2am-${project.version}/repository/components/">
                                     </fileset>
                                 </copy>
@@ -105,7 +155,7 @@
                                 <delete dir="${tempdir}" />
                                 <mkdir dir="${tempdir}" />
                                 <unzip dest="${tempdir}">
-                                    <fileset dir="target/wso2carbon-core-${carbon.platform.version}/repository/components/plugins/">
+                                    <fileset dir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/plugins/">
                                         <include name="*.ui*.jar" />
                                     </fileset>
                                 </unzip>
@@ -145,6 +195,12 @@
                                         <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
+                                <zip destfile="target/site/publisher-api-docs.zip" basedir="target/features/"
+                                     includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/"></zip>
+                                <zip destfile="target/site/store-api-docs.zip" basedir="target/features/"
+                                     includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/"></zip>
+                                <delete dir="features" />
+                                <delete dir="plugins" />
                                 <delete dir="${tempdir}" />
                             </tasks>
                         </configuration>
@@ -157,7 +213,7 @@
                                 <delete dir="target/archive-tmp" />
                                 <delete dir="target/dependency-maven-plugin-markers" />
                                 <delete dir="target/maven-archiver" />
-                                <delete dir="target/wso2carbon-core-${carbon.platform.version}" />
+                                <delete dir="target/wso2carbon-core-${carbon.kernel.version}" />
                                 <delete dir="target/sources" />
                                 <delete dir="target/site" />
                                 <delete dir="src/site" />
@@ -250,7 +306,7 @@
                             <goal>replace</goal>
                         </goals>
                         <configuration>
-                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</file>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</file>
                             <replacements>
                                 <replacement>
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
@@ -275,7 +331,7 @@
 			        <replacement>
 				    <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
 				    <token>(org.wso2.carbon.identity.oauth2.token.handlers.grant.saml.SAML2BearerGrantHandler)</token>
-				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>	
+				    <value>org.wso2.carbon.apimgt.keymgt.handlers.ExtendedSAML2BearerGrantHandler</value>
 			        </replacement>
                                 <replacement>
                                     <xpath>/Server/OAuth/SupportedGrantTypes/SupportedGrantType</xpath>
@@ -291,7 +347,43 @@
                             </replacements>
                         </configuration>
 		    </execution>
-		    <!-- Replace the Datasource in the thrift-authentication.xml file -->	
+            <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
+            <!-- Disable MQTT as it's not needed -->
+            <execution>
+                <id>replace-for-broker</id>
+                <phase>prepare-package</phase>
+                <goals>
+                    <goal>replace</goal>
+                </goals>
+                <configuration>
+                    <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/broker.xml</file>
+                    <replacements>
+                        <replacement>
+                            <xpath>/broker/transports/mqtt/@enabled</xpath>
+                            <token>(true)</token>
+                            <value>false</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/windowSize</xpath>
+                            <token>(1000)</token>
+                            <value>50</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/messageAccumulationTimeout</xpath>
+                            <token>(2000)</token>
+                            <value>50</value>
+                        </replacement>
+                        <replacement>
+                            <xpath>/broker/performanceTuning/slots/timerPeriod</xpath>
+                            <token>(1000)</token>
+                            <value>40</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </execution>
+            <!-- End disabling MQTT -->
+
+		    <!-- Replace the Datasource in the thrift-authentication.xml file -->
                     <execution>
                         <id>replace-for-thrift</id>
                         <phase>prepare-package</phase>
@@ -299,7 +391,7 @@
                             <goal>replace</goal>
                         </goals>
                         <configuration>
-                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/thrift-authentication.xml</file>
+                            <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/thrift-authentication.xml</file>
                             <replacements>
                                 <replacement>
                                     <xpath>/Server/JDBCPersistenceManager/DataSource/Name</xpath>
@@ -327,9 +419,9 @@
 			<configuration>
 			    <failOnMissingXpath>false</failOnMissingXpath>
                             <transformations>
-                                   <transformation>    
-                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</input>
-					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/conf/identity/identity.xml</output>
+                                   <transformation>
+                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</input>
+					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</output>
                                         <config>identity_config_change.xml</config>
                                     </transformation>
 			    </transformations>

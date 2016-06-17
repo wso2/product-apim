@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<artifact name="APIM_STAT_SCRIPT" version="1.0.0" type="analytics/spark" serverRole="DataAnalyticsServer">
-    <file>APIM_STAT_SCRIPT.xml</file>
-</artifact>

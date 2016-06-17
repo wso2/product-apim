@@ -57,7 +57,7 @@ print("==");
 print(storeHostObj.searchPaginatedAPIsByType("name:*","wso2.com","0","10"));
 print("==");
 //11
-print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
+print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10","wso2.com"));
 print("==");
 //12
 print(storeHostObj.rateAPI("admin@wso2.com","HostObjectTestAPI","1.0.0","3")); 
@@ -69,7 +69,7 @@ print("==");
 print(storeHostObj.getAllPaginatedPublishedAPIs("wso2.com","0","10")); 
 print("=="); 
 //15
-print(storeHostObj.getAPIsWithTag("youtube")); 
+print(storeHostObj.getAPIsWithTag("youtube","wso2.com")); 
 print("=="); 
 //16
 print(storeHostObj.getAllPublishedAPIs("wso2.com"));

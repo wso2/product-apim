@@ -20,33 +20,20 @@ package org.wso2.carbon.apimgt.migration.client;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.APIStatus;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
-import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.client._110Specific.ResourceModifier;
-import org.wso2.carbon.apimgt.migration.client._110Specific.dto.SynapseDTO;
-import org.wso2.carbon.apimgt.migration.client._110Specific.dto.AppKeyMappingDTO;
-import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
+import org.wso2.carbon.apimgt.migration.client._110Specific.dto.*;
 import org.wso2.carbon.apimgt.migration.util.Constants;
 import org.wso2.carbon.apimgt.migration.util.RegistryService;
 import org.wso2.carbon.apimgt.migration.util.ResourceUtil;
 import org.wso2.carbon.apimgt.migration.util.StatDBUtil;
 import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
-import org.wso2.carbon.governance.api.util.GovernanceConstants;
 import org.wso2.carbon.registry.api.RegistryException;
-import org.wso2.carbon.registry.core.ActionConstants;
-import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
-import org.wso2.carbon.registry.core.Resource;
-import org.wso2.carbon.registry.core.config.RegistryContext;
-import org.wso2.carbon.registry.core.jdbc.realm.RegistryAuthorizationManager;
-import org.wso2.carbon.registry.core.session.UserRegistry;
-import org.wso2.carbon.registry.core.utils.RegistryUtils;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.tenant.TenantManager;
@@ -59,36 +46,32 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 
 public class MigrateFrom19to110 extends MigrationClientBase implements MigrationClient {
 
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
     private RegistryService registryService;
+    private boolean removeDecryptionFailedKeysFromDB;
 
     private static class AccessTokenInfo {
         AccessTokenInfo(String usernameWithoutDomain, String authzUser) {
             this.usernameWithoutDomain = usernameWithoutDomain;
             this.authzUser = authzUser;
         }
-        public String usernameWithoutDomain;
-        public String authzUser;
+        String usernameWithoutDomain;
+        String authzUser;
     }
 
-    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments,
-                              RegistryService registryService, TenantManager tenantManager) throws UserStoreException {
+    public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments, RegistryService registryService,
+            TenantManager tenantManager, boolean removeDecryptionFailedKeysFromDB) throws UserStoreException {
         super(tenantArguments, blackListTenantArguments, tenantManager);
         this.registryService = registryService;
+        this.removeDecryptionFailedKeysFromDB = removeDecryptionFailedKeysFromDB;
     }
 
     @Override
@@ -96,9 +79,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         String amScriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator +
                 "19-110-migration" + File.separator;
 
-        updateAPIManangerDatabase(amScriptPath);
-
-        updateAuthzUserName();
+        updateAPIManagerDatabase(amScriptPath);
+        //updateAuthzUserName();
         
         if (StatDBUtil.isTokenEncryptionEnabled()) {
             decryptEncryptedConsumerKeys();
@@ -108,11 +90,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     @Override
     public void registryResourceMigration() throws APIMigrationException {
         rxtMigration();
-
         workflowExtensionsMigration();
-
         updateTiers();
-
         migrateLifeCycles();
     }
 
@@ -131,18 +110,26 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     }
 
+    @Override
+    public void optionalMigration(List<String> options) throws APIMigrationException {
+        //no implementation is required
+    }
+
     private void synapseAPIMigration() {
         for (Tenant tenant : getTenantsArray()) {
-            String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
-            List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
-            ResourceModifier.updateSynapseConfigs(synapseDTOs);
+            try {
+                String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
+                List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
+                ResourceModifier.updateSynapseConfigs(synapseDTOs);
 
-            for (SynapseDTO synapseDTO : synapseDTOs) {
-                ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                for (SynapseDTO synapseDTO : synapseDTOs) {
+                    ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                }
+            } catch (Exception e) {
+                log.error("Unable to do the Synapse API migration of tenant : " + tenant.getDomain());
             }
         }
     }
-
 
     private void updateAuthzUserName() throws SQLException {
         log.info("Updating Authz UserName for API Manager started");
@@ -160,13 +147,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             while (resultSet.next()) {
                 String authzUser = resultSet.getString("AUTHZ_USER");
-
                 String usernameWithoutDomain = MultitenantUtils.getTenantAwareUsername(authzUser);
 
                 AccessTokenInfo accessTokenInfo = new AccessTokenInfo(usernameWithoutDomain, authzUser);
                 updateValues.add(accessTokenInfo);
             }
-
         } finally {
             APIMgtDBUtil.closeAllConnections(selectStatement, connection, resultSet);
         }
@@ -179,7 +164,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 connection.setAutoCommit(false);
 
                 updateStatement = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET AUTHZ_USER = ?" +
-                                                                "WHERE AUTHZ_USER = ?");
+                                                                " WHERE AUTHZ_USER = ?");
 
                 for (AccessTokenInfo accessTokenInfo : updateValues) {
                     updateStatement.setString(1, accessTokenInfo.usernameWithoutDomain);
@@ -197,58 +182,346 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     }
 
     private void decryptEncryptedConsumerKeys() throws SQLException {
-        log.info("Decrypting encrypted consumer keys for API Manager started");
+        log.info("Decrypting encrypted consumer keys started");
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
+
+        try {
+            connection = APIMgtDBUtil.getConnection();
+            connection.setAutoCommit(false);
+
+            if (updateAMApplicationKeyMapping(connection)) {
+                if (updateAMAppKeyDomainMapping(connection)) {
+                    if (updateIdnTableConsumerKeys(connection)) {
+                        connection.commit();
+                    }
+                }
+            }
+        } finally {
+            APIMgtDBUtil.closeAllConnections(null, connection, null);
+        }
+        log.info("Decrypting encrypted consumer keys completed");
+    }
+
+    private boolean updateAMApplicationKeyMapping(Connection connection) throws SQLException {
+        log.info("Updating consumer keys in AM_APPLICATION_KEY_MAPPING");
+
+        PreparedStatement preparedStatementUpdate = null;
+        PreparedStatement preparedStatementDelete = null;
+        Statement statement = null;
         ResultSet resultSet = null;
-        ArrayList<AppKeyMappingDTO> appKeyMappingDTOs = new ArrayList<>();
+        boolean continueUpdatingDB = true;
+        long totalRecords = 0;
+        long decryptionFailedRecords = 0;
 
         try {
             String query = "SELECT APPLICATION_ID, CONSUMER_KEY, KEY_TYPE FROM AM_APPLICATION_KEY_MAPPING";
+            ArrayList<AppKeyMappingTableDTO> appKeyMappingTableDTOs = new ArrayList<>();
+            ArrayList<AppKeyMappingTableDTO> appKeyMappingTableDTOsFailed = new ArrayList<>();
 
-            connection = APIMgtDBUtil.getConnection();
-            preparedStatement = connection.prepareStatement(query);
-            resultSet = preparedStatement.executeQuery();
+            statement = connection.createStatement();
+            statement.setFetchSize(50);
+            resultSet = statement.executeQuery(query);
 
             while (resultSet.next()) {
-                AppKeyMappingDTO appKeyMappingDTO = new AppKeyMappingDTO();
-                appKeyMappingDTO.setApplicationId(resultSet.getString("APPLICATION_ID"));
-                appKeyMappingDTO.setConsumerKey(resultSet.getString("CONSUMER_KEY"));
-                appKeyMappingDTO.setKeyType(resultSet.getString("KEY_TYPE"));
+                ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
+                consumerKeyDTO.setEncryptedConsumerKey(resultSet.getString("CONSUMER_KEY"));
 
-                appKeyMappingDTOs.add(appKeyMappingDTO);
+                AppKeyMappingTableDTO appKeyMappingTableDTO = new AppKeyMappingTableDTO();
+                appKeyMappingTableDTO.setApplicationId(resultSet.getString("APPLICATION_ID"));
+                appKeyMappingTableDTO.setConsumerKey(consumerKeyDTO);
+                appKeyMappingTableDTO.setKeyType(resultSet.getString("KEY_TYPE"));
+                totalRecords ++;
+                if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
+
+                    appKeyMappingTableDTOs.add(appKeyMappingTableDTO);
+                    log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
+                            + " as : " + consumerKeyDTO.getDecryptedConsumerKey()
+                            + " in AM_APPLICATION_KEY_MAPPING table");
+                } else {
+                    log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
+                            " in AM_APPLICATION_KEY_MAPPING table");
+                    decryptionFailedRecords++;
+                    appKeyMappingTableDTOsFailed.add(appKeyMappingTableDTO);
+
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
+                }
             }
 
-            ResourceModifier.decryptConsumerKeyIfEncrypted(appKeyMappingDTOs);
+            if (continueUpdatingDB) {
+                preparedStatementUpdate = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
+                        " WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
+
+                for (AppKeyMappingTableDTO appKeyMappingTableDTO : appKeyMappingTableDTOs) {
+                    preparedStatementUpdate.setString(1, appKeyMappingTableDTO.getConsumerKey().getDecryptedConsumerKey());
+                    preparedStatementUpdate.setString(2, appKeyMappingTableDTO.getApplicationId());
+                    preparedStatementUpdate.setString(3, appKeyMappingTableDTO.getKeyType());
+                    preparedStatementUpdate.addBatch();
+                }
+                preparedStatementUpdate.executeBatch();
+
+                //deleting rows where consumer key decryption was unsuccessful
+                preparedStatementDelete = connection.prepareStatement("DELETE FROM AM_APPLICATION_KEY_MAPPING WHERE CONSUMER_KEY = ?");
+
+                for (AppKeyMappingTableDTO appKeyMappingTableDTO : appKeyMappingTableDTOsFailed) {
+                    preparedStatementDelete.setString(1, appKeyMappingTableDTO.getConsumerKey().getEncryptedConsumerKey());
+                    preparedStatementDelete.addBatch();
+                }
+                preparedStatementDelete.executeBatch();
+
+                log.info("AM_APPLICATION_KEY_MAPPING table updated with " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries deleted as they cannot be decrypted");
+            } else {
+                log.error("AM_APPLICATION_KEY_MAPPING table not updated as " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries cannot be decrypted");
+            }
         } finally {
-            APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
+            APIMgtDBUtil.closeAllConnections(null, null, resultSet);
+            APIMgtDBUtil.closeAllConnections(preparedStatementUpdate, null, null);
+            APIMgtDBUtil.closeAllConnections(preparedStatementDelete, null, null);
+
+            if (statement != null){
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.error("Unable to close the statement", e);
+                }
+            }
         }
+        return continueUpdatingDB;
+    }
 
-        if (!appKeyMappingDTOs.isEmpty()) {
-            PreparedStatement updateStatement = null;
+    private boolean updateAMAppKeyDomainMapping(Connection connection) throws SQLException {
+        log.info("Updating consumer keys in AM_APP_KEY_DOMAIN_MAPPING");
 
-            try {
-                connection = APIMgtDBUtil.getConnection();
-                connection.setAutoCommit(false);
-                updateStatement = connection.prepareStatement("UPDATE AM_APPLICATION_KEY_MAPPING SET CONSUMER_KEY = ?" +
-                                                                    "WHERE APPLICATION_ID = ? AND KEY_TYPE = ?");
+        Statement selectStatement = null;
+        Statement deleteStatement = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        boolean continueUpdatingDB = true;
+        long totalRecords = 0;
+        long decryptionFailedRecords = 0;
 
-                for (AppKeyMappingDTO appKeyMappingDTO : appKeyMappingDTOs) {
-                    updateStatement.setString(1, appKeyMappingDTO.getConsumerKey());
-                    updateStatement.setString(2, appKeyMappingDTO.getApplicationId());
-                    updateStatement.setString(3, appKeyMappingDTO.getKeyType());
-                    updateStatement.addBatch();
+        try {
+            ArrayList<KeyDomainMappingTableDTO> keyDomainMappingTableDTOs = new ArrayList<>();
+            String query = "SELECT * FROM AM_APP_KEY_DOMAIN_MAPPING";
+
+            selectStatement = connection.createStatement();
+            selectStatement.setFetchSize(50);
+            resultSet = selectStatement.executeQuery(query);
+            while (resultSet.next()) {
+                ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
+                consumerKeyDTO.setEncryptedConsumerKey(resultSet.getString("CONSUMER_KEY"));
+                totalRecords++;
+                if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
+                    KeyDomainMappingTableDTO keyDomainMappingTableDTO = new KeyDomainMappingTableDTO();
+                    keyDomainMappingTableDTO.setConsumerKey(consumerKeyDTO);
+                    keyDomainMappingTableDTO.setAuthzDomain(resultSet.getString("AUTHZ_DOMAIN"));
+
+                    keyDomainMappingTableDTOs.add(keyDomainMappingTableDTO);
+                }
+                else {
+                    log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
+                                            " in AM_APP_KEY_DOMAIN_MAPPING table");
+                    decryptionFailedRecords++;
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
+                }
+            }
+
+            if (continueUpdatingDB) { // Modify table only if decryption is successful
+                preparedStatement = connection.prepareStatement("INSERT INTO AM_APP_KEY_DOMAIN_MAPPING " +
+                                                                        "(CONSUMER_KEY, AUTHZ_DOMAIN) VALUES (?, ?)");
+
+                for (KeyDomainMappingTableDTO keyDomainMappingTableDTO : keyDomainMappingTableDTOs) {
+                    preparedStatement.setString(1, keyDomainMappingTableDTO.getConsumerKey().getDecryptedConsumerKey());
+                    preparedStatement.setString(2, keyDomainMappingTableDTO.getAuthzDomain());
+                    preparedStatement.addBatch();
                 }
 
-                updateStatement.executeBatch();
+                deleteStatement = connection.createStatement();
+                deleteStatement.execute("DELETE FROM AM_APP_KEY_DOMAIN_MAPPING");
 
-                connection.commit();
-            } finally {
-                APIMgtDBUtil.closeAllConnections(updateStatement, connection, null);
+                preparedStatement.executeBatch();
+                log.info("AM_APP_KEY_DOMAIN_MAPPING table updated with " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries deleted as they cannot be decrypted");
+            } else {
+                log.error("AM_APP_KEY_DOMAIN_MAPPING table not updated as " + decryptionFailedRecords + "/"
+                        + totalRecords + " of the CONSUMER_KEY entries" + " cannot be decrypted");
             }
         }
+        finally {
+            if (selectStatement != null) selectStatement.close();
+            if (deleteStatement != null) deleteStatement.close();
+            if (preparedStatement != null) preparedStatement.close();
+            if (resultSet != null) resultSet.close();
+        }
+
+        return continueUpdatingDB;
     }
-    
+
+
+    private boolean updateIdnTableConsumerKeys(Connection connection) throws SQLException {
+        log.info("Updating consumer keys in IDN Tables");
+
+        Statement consumerAppsLookup = null;
+        PreparedStatement consumerAppsDelete = null;
+        PreparedStatement consumerAppsInsert = null;
+        PreparedStatement consumerAppsDeleteFailedRecords = null;
+        PreparedStatement accessTokenUpdate = null;
+        PreparedStatement accessTokenDelete = null;
+
+        ResultSet consumerAppsResultSet = null;
+        boolean continueUpdatingDB = true;
+
+        try {
+            String consumerAppsQuery = "SELECT * FROM IDN_OAUTH_CONSUMER_APPS";
+            consumerAppsLookup = connection.createStatement();
+            consumerAppsLookup.setFetchSize(50);
+            consumerAppsResultSet = consumerAppsLookup.executeQuery(consumerAppsQuery);
+
+            ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOs = new ArrayList<>();
+            ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOsFailed = new ArrayList<>();
+
+            while (consumerAppsResultSet.next()) {
+                ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
+                consumerKeyDTO.setEncryptedConsumerKey(consumerAppsResultSet.getString("CONSUMER_KEY"));
+
+                ConsumerAppsTableDTO consumerAppsTableDTO = new ConsumerAppsTableDTO();
+                consumerAppsTableDTO.setConsumerKey(consumerKeyDTO);
+                consumerAppsTableDTO.setConsumerSecret(consumerAppsResultSet.getString("CONSUMER_SECRET"));
+                consumerAppsTableDTO.setUsername(consumerAppsResultSet.getString("USERNAME"));
+                consumerAppsTableDTO.setTenantID(consumerAppsResultSet.getInt("TENANT_ID"));
+                consumerAppsTableDTO.setAppName(consumerAppsResultSet.getString("APP_NAME"));
+                consumerAppsTableDTO.setOauthVersion(consumerAppsResultSet.getString("OAUTH_VERSION"));
+                consumerAppsTableDTO.setCallbackURL(consumerAppsResultSet.getString("CALLBACK_URL"));
+                consumerAppsTableDTO.setGrantTypes(consumerAppsResultSet.getString("GRANT_TYPES"));
+                if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
+                    consumerAppsTableDTOs.add(consumerAppsTableDTO);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
+                                + " in IDN_OAUTH_CONSUMER_APPS table");
+                    }
+                }
+                else {
+                    consumerAppsTableDTOsFailed.add(consumerAppsTableDTO);
+                    log.error("Cannot decrypt consumer key : " + consumerKeyDTO.getEncryptedConsumerKey() +
+                                                                            " in IDN_OAUTH_CONSUMER_APPS table");
+                    //If its not allowed to remove decryption failed entries from DB, we will not continue updating 
+                    // tables even with successfully decrypted entries to maintain DB integrity
+                    if (!removeDecryptionFailedKeysFromDB) {
+                        continueUpdatingDB = false;
+                    }
+                }
+            }
+
+            if (continueUpdatingDB) {
+                // Add new entries for decrypted consumer keys into IDN_OAUTH_CONSUMER_APPS
+                consumerAppsInsert = connection.prepareStatement("INSERT INTO IDN_OAUTH_CONSUMER_APPS (CONSUMER_KEY, " +
+                                                    "CONSUMER_SECRET, USERNAME, TENANT_ID, APP_NAME, OAUTH_VERSION, " +
+                                                    "CALLBACK_URL, GRANT_TYPES) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOs) {
+                    updateIdnConsumerApps(consumerAppsInsert, consumerAppsTableDTO);
+                }
+                consumerAppsInsert.executeBatch();
+                log.info("Inserted entries in IDN_OAUTH_CONSUMER_APPS");
+
+                // Update IDN_OAUTH2_ACCESS_TOKEN foreign key reference to CONSUMER_KEY
+                accessTokenUpdate = connection.prepareStatement("UPDATE IDN_OAUTH2_ACCESS_TOKEN SET CONSUMER_KEY = ? " +
+                                                                "WHERE CONSUMER_KEY = ?");
+
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOs) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    updateIdnAccessToken(accessTokenUpdate, consumerKeyDTO);
+                }
+                accessTokenUpdate.executeBatch();
+                log.info("Updated entries in IDN_OAUTH2_ACCESS_TOKEN");
+
+                // Remove redundant records in IDN_OAUTH_CONSUMER_APPS
+                consumerAppsDelete = connection.prepareStatement("DELETE FROM IDN_OAUTH_CONSUMER_APPS WHERE " +
+                                                                                                    "CONSUMER_KEY = ?");
+
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOs) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    deleteIdnConsumerApps(consumerAppsDelete, consumerKeyDTO);
+                }
+                consumerAppsDelete.executeBatch();
+                log.info("Removed redundant entries in IDN_OAUTH_CONSUMER_APPS");
+
+                //deleting rows where consumer key decryption was unsuccessful from IDN_OAUTH_CONSUMER_APPS table
+                consumerAppsDeleteFailedRecords = connection.prepareStatement("DELETE FROM IDN_OAUTH_CONSUMER_APPS WHERE " +
+                        "CONSUMER_KEY = ?");
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOsFailed) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    deleteIdnConsumerApps(consumerAppsDeleteFailedRecords, consumerKeyDTO);
+                }
+                consumerAppsDeleteFailedRecords.executeBatch();
+                log.info("Removed decryption failed entries in IDN_OAUTH_CONSUMER_APPS");
+
+                //deleting rows where consumer key decryption was unsuccessful from IDN_OAUTH2_ACCESS_TOKEN table
+                accessTokenDelete = connection.prepareStatement("DELETE FROM IDN_OAUTH2_ACCESS_TOKEN " +
+                        "WHERE CONSUMER_KEY = ?");
+                for (ConsumerAppsTableDTO consumerAppsTableDTO : consumerAppsTableDTOsFailed) {
+                    ConsumerKeyDTO consumerKeyDTO = consumerAppsTableDTO.getConsumerKey();
+                    deleteIdnAccessToken(consumerAppsDeleteFailedRecords, consumerKeyDTO);
+                }
+                accessTokenDelete.executeBatch();
+                log.info("Removed decryption failed entries in IDN_OAUTH2_ACCESS_TOKEN");
+            }
+        } finally {
+            if (consumerAppsLookup != null) consumerAppsLookup.close();
+            if (consumerAppsDelete != null) consumerAppsDelete.close();
+            if (consumerAppsDeleteFailedRecords != null) consumerAppsDeleteFailedRecords.close();
+            if (consumerAppsInsert != null) consumerAppsInsert.close();
+            if (accessTokenUpdate != null) accessTokenUpdate.close();
+            if (accessTokenDelete != null) accessTokenDelete.close();
+            if (consumerAppsResultSet != null) consumerAppsResultSet.close();
+        }
+
+        return continueUpdatingDB;
+    }
+
+
+    private void updateIdnConsumerApps(PreparedStatement consumerAppsInsert, ConsumerAppsTableDTO consumerAppsTableDTO)
+                                                                                                throws SQLException {
+        consumerAppsInsert.setString(1, consumerAppsTableDTO.getConsumerKey().getDecryptedConsumerKey());
+        consumerAppsInsert.setString(2, consumerAppsTableDTO.getConsumerSecret());
+        consumerAppsInsert.setString(3, consumerAppsTableDTO.getUsername());
+        consumerAppsInsert.setInt(4, consumerAppsTableDTO.getTenantID());
+        consumerAppsInsert.setString(5, consumerAppsTableDTO.getAppName());
+        consumerAppsInsert.setString(6, consumerAppsTableDTO.getOauthVersion());
+        consumerAppsInsert.setString(7, consumerAppsTableDTO.getCallbackURL());
+        consumerAppsInsert.setString(8, consumerAppsTableDTO.getGrantTypes());
+        consumerAppsInsert.addBatch();
+    }
+
+
+    private void updateIdnAccessToken(PreparedStatement accessTokenUpdate, ConsumerKeyDTO consumerKeyDTO)
+    throws SQLException {
+        accessTokenUpdate.setString(1, consumerKeyDTO.getDecryptedConsumerKey());
+        accessTokenUpdate.setString(2, consumerKeyDTO.getEncryptedConsumerKey());
+        accessTokenUpdate.addBatch();
+    }
+
+    private void deleteIdnAccessToken(PreparedStatement accessTokenDelete, ConsumerKeyDTO consumerKeyDTO)
+            throws SQLException {
+        accessTokenDelete.setString(1, consumerKeyDTO.getEncryptedConsumerKey());
+        accessTokenDelete.addBatch();
+    }
+
+    private void deleteIdnConsumerApps(PreparedStatement consumerAppsDelete, ConsumerKeyDTO consumerKeyDTO)
+    throws SQLException{
+        consumerAppsDelete.setString(1, consumerKeyDTO.getEncryptedConsumerKey());
+        consumerAppsDelete.addBatch();
+    }
+
     
     /**
      * This method is used to migrate rxt and rxt data
@@ -311,14 +584,19 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
      */
     private void workflowExtensionsMigration() throws APIMigrationException {
         log.info("Workflow Extensions configuration file migration for API Manager started.");
+
         for (Tenant tenant : getTenantsArray()) {
-            log.info("Start workflow extensions configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("Start workflow extensions configuration migration for tenant " + tenant.getId()
+                     + '(' + tenant.getDomain() + ')');
 
             try {
                 registryService.startTenantFlow(tenant);
 
                 if (!registryService.isGovernanceRegistryResourceExists(APIConstants.WORKFLOW_EXECUTOR_LOCATION)) {
-                    log.debug("Workflow extensions resource does not exist for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                    if (log.isDebugEnabled()) {
+                        log.debug("Workflow extensions resource does not exist for tenant " + tenant.getId()
+                                  + '(' + tenant.getDomain() + ')');
+                    }
                     continue;
                 }
 
@@ -356,6 +634,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 registryService.startTenantFlow(tenant);
 
                 if (!registryService.isGovernanceRegistryResourceExists(APIConstants.API_TIER_LOCATION)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tier resource does not exist for tenant " + tenant.getId()
+                                  + '(' + tenant.getDomain() + ')');
+                    }
                     continue;
                 } else {
                     String apiTiers = ResourceUtil.getResourceContent(
@@ -400,9 +682,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private void migrateLifeCycles() throws APIMigrationException {
         log.info("Life Cycles executor migration for API Manager started.");
 
-        String apiLifeCycleXMLPath = CarbonUtils.getCarbonHome() + File.separator + APIConstants.RESOURCE_FOLDER_LOCATION +
-                File.separator + Constants.LIFE_CYCLES_FOLDER + File.separator +
-                APIConstants.API_LIFE_CYCLE + ".xml";
+        String apiLifeCycleXMLPath = CarbonUtils.getCarbonHome() + File.separator
+                                     + APIConstants.RESOURCE_FOLDER_LOCATION + File.separator
+                                     + Constants.LIFE_CYCLES_FOLDER + File.separator + APIConstants.API_LIFE_CYCLE
+                                     + ".xml";
+
         String executorlessApiLifeCycle = null;
         String apiLifeCycle = null;
 
@@ -421,13 +705,12 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
         for (Tenant tenant : getTenantsArray()) {
             log.info("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+
             try {
                 registryService.startTenantFlow(tenant);
 
                 addExecutorlessLifeCycle(tenant, apiLifeCycleRegistryPath, executorlessApiLifeCycle);
-
                 updateApiLifeCycleStatus(tenant);
-
                 updateWithCompleteLifeCycle(tenant, apiLifeCycleRegistryPath, apiLifeCycle);
             }
             finally {
@@ -441,7 +724,9 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private void addExecutorlessLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath,
                                           String executorlessApiLifeCycle) throws APIMigrationException {
         try {
-            log.debug("Adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            }
             if (!registryService.isConfigRegistryResourceExists(apiLifeCycleRegistryPath)) {
                 registryService.addConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle,
                         "application/xml");
@@ -449,7 +734,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             else {
                 registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle);
             }
-            log.debug("Completed adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Completed adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain()
+                          + ')');
+            }
         } catch (UserStoreException e) {
             log.error("Error occurred while accessing the user store when adding executorless " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
@@ -467,32 +755,42 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         statuses.put(APIStatus.DEPRECATED.toString(), new String[]{"Publish", "Deprecate"});
         statuses.put(APIStatus.RETIRED.toString(), new String[]{"Publish", "Deprecate", "Retire"});
 
-        log.debug("Updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        }
         try {
             registryService.addDefaultLifecycles();
             GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
 
             for (GenericArtifact artifact : artifacts) {
-                String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
-                //Check whether API is already migrated
-                if (currentState != null && !currentState.equalsIgnoreCase(artifact.getLifecycleState())) {                    
-                    artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
-                    String[] actions = statuses.get(currentState);
+                try {
+                    String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
+                    //Check whether API is already migrated
+                    if (currentState != null && !currentState.equalsIgnoreCase(artifact.getLifecycleState())) {
+                        artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
+                        String[] actions = statuses.get(currentState);
 
-                    if (actions != null) {
-                        for (String action : actions) {
-                            artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
-                            if (log.isDebugEnabled()) {
-                                log.debug("Target LC Status : " + currentState + ". Performing LC Action : " + action);
+                        if (actions != null) {
+                            for (String action : actions) {
+                                artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Target LC Status : " + currentState + ". Performing LC Action : "
+                                              + action);
+                                }
                             }
                         }
+                    } else {
+                        log.info("API is already in target LC state: " + currentState + ". Skipping migration for API "
+                                 + artifact.getAttribute(APIConstants.API_OVERVIEW_NAME));
                     }
-                } else {
-                    log.info("API is already in target LC state: " + currentState + ". Skipping migration for API " +
-                            artifact.getAttribute(APIConstants.API_OVERVIEW_NAME));
-                }                
+                } catch (GovernanceException e) {
+                    // Log the error and continue to the next governance artifact.
+                    log.error("Unable to update the lifecycle state of artifact ", e);
+                }
             }
-            log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            }
         }  catch (RegistryException e) {
             log.error("Error occurred while accessing the registry when updating " +
                     "API life cycles for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
@@ -510,10 +808,16 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private void updateWithCompleteLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath, String apiLifeCycle)
                                                                 throws APIMigrationException {
-        log.debug("Update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        }
         try {
             registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, apiLifeCycle);
-            log.debug("Completed update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+
+            if (log.isDebugEnabled()) {
+                log.debug("Completed update with complete LC for tenant " + tenant.getId() + '('
+                          + tenant.getDomain() + ')');
+            }
         } catch (UserStoreException e) {
             log.error("Error occurred while accessing the user store when adding complete " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);

@@ -28,10 +28,15 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,6 +50,7 @@ import static org.testng.Assert.assertTrue;
  * Publish a API under gold tier and test the invocation with throttling , then change the api tier to silver
  * and do a new silver subscription and test invocation under Silver tier.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE })
 public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBaseTest {
     private final String API_NAME = "ChangeAPITierAndTestInvokingTest";
     private final String API_CONTEXT = "ChangeAPITierAndTestInvoking";
@@ -65,10 +71,23 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     private APICreationRequestBean apiCreationRequestBean;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
+    private ServerConfigurationManager serverConfigurationManager;
+    protected AutomationContext superTenantKeyManagerContext;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void initialize() throws Exception {
         super.init();
+        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                TestUserMode.SUPER_TENANT_ADMIN);
+        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+
+        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
+                File.separator + "api-manager.xml"));
+
+        serverConfigurationManager.restartGracefully();
+
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         String publisherURLHttp = getPublisherURLHttp();
@@ -177,6 +196,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         apiCreationRequestBean.setTiersCollection(TIER_SILVER);
         //Update API with Edited information with Tier Silver
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Update API Response Code is" +
                      " invalid. Updating of API information fail" + getAPIIdentifierString(apiIdentifier));
@@ -244,9 +264,10 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(applicationNameGold);
         apiStoreClientUser1.removeApplication(applicationNameSilver);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 }

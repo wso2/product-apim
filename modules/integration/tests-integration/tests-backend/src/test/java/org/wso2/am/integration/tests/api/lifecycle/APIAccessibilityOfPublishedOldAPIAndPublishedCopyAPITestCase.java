@@ -99,7 +99,7 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
 
 
     @Test(groups = {"wso2.am"}, description = " Test Copy API.Copy API version 1.0.0  to 2.0.0 ")
-    public void testCopyAPI() throws APIManagerIntegrationTestException, XPathExpressionException {
+    public void testCopyAPI() throws Exception {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifierAPI1Version1, apiCreationRequestBean, apiPublisherRestClient, false);
         //Copy API version 1.0.0  to 2.0.0
@@ -113,6 +113,8 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
         assertEquals(getValueFromJSON(httpResponseCopyAPI, "error"), "false",
                      "Copy  API response data is invalid" + getAPIIdentifierString(apiIdentifierAPI1Version1) +
                      "Response Data:" + httpResponseCopyAPI.getData());
+
+        Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
     }
 
 
@@ -218,10 +220,11 @@ public class APIAccessibilityOfPublishedOldAPIAndPublishedCopyAPITestCase
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreRestClient.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherRestClient);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherRestClient);
+        super.cleanUp();
     }
 
 }

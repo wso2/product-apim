@@ -32,18 +32,23 @@ public final class MigrationClientFactory {
     private static ArrayList<MigrationClient> migrationClients = new ArrayList<>();
 
     public static void initFactory(String tenants, String blackListTenants, RegistryService registryService,
-                                                            TenantManager tenantManager) throws UserStoreException {
+            TenantManager tenantManager, boolean removeDecryptionFailedKeysFromDB) throws UserStoreException {
         String[] version_1_8_x = new String[]{Constants.VERSION_1_8};
         String[] version_1_9_x = new String[]{Constants.VERSION_1_9, Constants.VERSION_1_9_1};
         String[] version_1_10_x = new String[]{Constants.VERSION_1_10};
+        String[] version_2_0_x = new String[]{Constants.VERSION_2_0_0};
 
         MigrationClient migrateFrom18to19 = new MigrateFrom18to19(tenants, blackListTenants,
                                                                         registryService, tenantManager);
         registerClient(version_1_8_x, migrateFrom18to19, version_1_9_x);
 
-        MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants,
-                                                                        registryService, tenantManager);
+        MigrationClient migrateFrom19to110 = new MigrateFrom19to110(tenants, blackListTenants, registryService,
+                tenantManager, removeDecryptionFailedKeysFromDB);
         registerClient(version_1_9_x, migrateFrom19to110, version_1_10_x);
+
+        MigrationClient migrateFrom1100to200 = new MigrateFrom110to200(tenants, blackListTenants, registryService,
+                tenantManager, removeDecryptionFailedKeysFromDB);
+        registerClient(version_1_10_x, migrateFrom1100to200, version_2_0_x);
     }
 
     public static void clearFactory() {

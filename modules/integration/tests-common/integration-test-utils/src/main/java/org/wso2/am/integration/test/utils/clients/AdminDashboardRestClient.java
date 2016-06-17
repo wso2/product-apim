@@ -18,16 +18,16 @@
 
 package org.wso2.am.integration.test.utils.clients;
 
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTierRequest;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AdminDashboardRestClient {
     private static final Log log = LogFactory.getLog(AdminDashboardRestClient.class);
@@ -55,7 +55,7 @@ public class AdminDashboardRestClient {
         HttpResponse response;
         log.info("Login to admin-dashboard " + backendURL + " as the user " + userName );
         try {
-            response = HttpRequestUtil.doPost(
+            response = HTTPSClientUtils.doPost(
                     new URL(backendURL + "admin-dashboard/site/blocks/user/login/ajax/login.jag"),
                     "action=login&username=" + userName + "&password=" + password + "",
                     requestHeaders);
@@ -83,7 +83,7 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "admin-dashboard/site/blocks/tier/edit/ajax/tier-edit.jag"),
                     throttlingTierRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
@@ -101,7 +101,7 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=deleteTier&tier=" + tierName, requestHeaders);
         } catch (Exception e) {
@@ -118,7 +118,7 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
+            return HTTPSClientUtils.doPost(
                     new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=getAllTiers", requestHeaders);
         } catch (Exception e) {

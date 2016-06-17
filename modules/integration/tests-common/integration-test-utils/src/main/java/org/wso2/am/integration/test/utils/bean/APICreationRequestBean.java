@@ -50,6 +50,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
     private String tiersCollection = APIMIntegrationConstants.API_TIER.GOLD;
+    private String subPolicyCollection = APIMIntegrationConstants.API_TIER.GOLD;
     private String resourceCount = "0";
     private String roles = "";
     private String wsdl = "";
@@ -69,6 +70,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String techOwnerMail = "";
     private JSONObject corsConfiguration;
     private String environment = "Production and Sandbox";
+    private String destinationStats = null;
 
     public String getEnvironment() {
         return environment;
@@ -77,6 +79,7 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setEnvironment(String environment) {
         this.environment = environment;
     }
+    private String swagger;
 
     public void setName(String name) {
         this.name = name;
@@ -202,6 +205,23 @@ public class APICreationRequestBean extends AbstractRequest {
                 throw new APIManagerIntegrationTestException(" Error When constructing the end point url JSON", e);
             }
         }
+    }
+
+    /**
+     * constructor of the APICreationRequestBean class only with production url
+     *
+     * @param apiName     - Name of the APi
+     * @param context     - API context
+     * @param version     - API version
+     * @param endpointUrl - Endpoint URL of the API
+     * @param resourceBeans - Resource list
+     * @throws APIManagerIntegrationTestException - Exception throws when constructing the end point url JSON
+     */
+    public APICreationRequestBean(String apiName, String context, String version, String provider, URL endpointUrl,
+                                  List<APIResourceBean> resourceBeans)
+            throws APIManagerIntegrationTestException {
+        this(apiName, context, version, provider, endpointUrl);
+        resourceBeanList = resourceBeans;
     }
 
 
@@ -387,7 +407,7 @@ public class APICreationRequestBean extends AbstractRequest {
         this.provider = provider;
         resourceBeanList = new ArrayList<APIResourceBean>();
         resourceBeanList.add(new APIResourceBean("GET", "Application & Application User",
-                                                 APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*"));
 
         try {
             this.endpoint = new JSONObject();
@@ -421,6 +441,13 @@ public class APICreationRequestBean extends AbstractRequest {
         super.setAction(action);
     }
 
+    public String getDestinationStats() {
+        return destinationStats;
+    }
+
+    public void setDestinationStats(String destinationStats) {
+        this.destinationStats = destinationStats;
+    }
 
     @Override
     public void init() {
@@ -472,6 +499,10 @@ public class APICreationRequestBean extends AbstractRequest {
             addParameter("uriTemplate-" + resourceIndex, apiResourceBean.getUriTemplate());
             resourceIndex++;
         }
+
+        if (swagger != null && !swagger.isEmpty()) {
+            addParameter("swagger", swagger);
+        }
         addParameter("default_version", getDefaultVersion());
         addParameter("default_version_checked", getDefaultVersionChecked());
         if (roles.length() > 1) {
@@ -486,7 +517,11 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("techOwnerMail",techOwnerMail);
         addParameter("environments", getEnvironment());
         addParameter("corsConfiguration", getCorsConfiguration().toString());
+        addParameter("subPolicyCollection",getSubPolicyCollection());
 
+        if (destinationStats != null) {
+            addParameter("destinationStats", getDestinationStats());
+        }
     }
 
     public String getEpUsername() {
@@ -696,4 +731,20 @@ public class APICreationRequestBean extends AbstractRequest {
     public void setCorsConfiguration(JSONObject corsConfiguration) {
         this.corsConfiguration = corsConfiguration;
     }
+
+    public String getSwagger() {
+        return swagger;
+    }
+
+    public void setSwagger(String swagger) {
+        this.swagger = swagger;
+    }
+    
+	public String getSubPolicyCollection() {
+		return subPolicyCollection;
+	}
+
+	public void setSubPolicyCollection(String subPolicyCollection) {
+		this.subPolicyCollection = subPolicyCollection;
+	}
 }

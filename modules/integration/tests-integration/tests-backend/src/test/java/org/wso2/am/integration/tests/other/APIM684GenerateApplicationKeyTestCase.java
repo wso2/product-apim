@@ -183,6 +183,11 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
         assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
 
+        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),
+                                 apiCreationRequestBean.getName(),
+                                 "1.0.0",
+                                 APIMIntegrationConstants.IS_API_EXISTS);
+
         apiProvider = storeContext.getContextTenant().getContextUser().getUserName();
 
         //add application
@@ -211,10 +216,6 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         applicationHeader.put("Authorization", " Bearer " + accessToken);
         applicationHeader.put("accept", "text/xml");
 
-        waitForAPIDeploymentSync(apiCreationRequestBean.getProvider(),
-                apiCreationRequestBean.getName(),
-                "1.0.0",
-                APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse apiInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp("testScopeAPI","1.0.0")
                 + "/customers/123", applicationHeader);
 
@@ -251,8 +252,4 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         assertFalse(removeApplicationJsonObject.getBoolean("error"),"Response Data Mismatched in remove Application");
 
     }
-
-
-
-
 }

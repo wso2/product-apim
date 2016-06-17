@@ -57,7 +57,7 @@ public class ScriptMediatorTestCase extends APIMIntegrationBaseTest {
                                                                                                         "in the json")
     public void testScriptMediatorWithNullObject() throws Exception {
 
-        String endpoint = getGatewayURLNhttp() + "script/test";
+        String endpoint = getGatewayURLNhttp() + "script/1.0/test";
 
         waitForAPIDeploymentSync(user.getUserName(), APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
         //Access the deployed API.

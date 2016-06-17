@@ -48,8 +48,11 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
 
         String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
                                                   APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
+        String APIImportExportWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + ".war";
 
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
+        String publisherSessionId = createSession(publisherContext);
 
         WebAppAdminClient webAppAdminClient = new WebAppAdminClient(
                 gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
@@ -62,6 +65,10 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
+
+        WebAppAdminClient webAppAdminClientForPublisher = new WebAppAdminClient(
+                publisherContext.getContextUrls().getBackEndUrl(), publisherSessionId);
+        webAppAdminClientForPublisher.uploadWarFile(APIImportExportWebAppSourcePath);
 
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
@@ -79,6 +86,8 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
                                                       gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
                                                       gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(publisherContext.getContextUrls().getBackEndUrl(),
+                                                      publisherSessionId, APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
         WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
     }
 

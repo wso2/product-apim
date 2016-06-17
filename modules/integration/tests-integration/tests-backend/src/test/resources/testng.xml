@@ -28,9 +28,7 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
-            <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3374&ndash;&gt;-->
-            <!--commented out due to this https://wso2.org/jira/browse/TA-974-->
-            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfRetireAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
             <!--&lt;!&ndash;https://wso2.org/jira/browse/TA-970&ndash;&gt;-->
@@ -68,6 +66,10 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
+            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
+            <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
@@ -87,8 +89,8 @@
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
             <class name="org.wso2.am.integration.tests.token.TokenAPITestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
-            <class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
+            <class name="org.wso2.am.integration.tests.token.OpenIDTokenAPITestCase"/>
+            <!--class name="org.wso2.am.integration.tests.samples.YouTubeAPITestCase"/>-->
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
@@ -102,7 +104,13 @@
             <!-- <class name="org.wso2.am.integration.tests.jwt.EmailUserNameJWTAssertionTestCase"/>
             <class name="org.wso2.am.integration.tests.otherDefaultVersionWithScopesTesCase"/>
             <class name="org.wso2.am.integration.tests.header.ContentLengthHeaderTestCase"/> -->
+	    <class name="org.wso2.am.integration.tests.header.APIMANAGER3614DuplicateTransferEncodingHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIEndpointTypeUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
         </classes>
     </test>
 
@@ -130,7 +138,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
 			<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-
+            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
         </classes>
     </test>
 
@@ -151,6 +159,10 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
+            <!--disable test case since it need to configure DAS -->
+            <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
         </classes>
     </test>
 

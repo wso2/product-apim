@@ -29,12 +29,11 @@ import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.migration.client.internal.ServiceHolder;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.governance.api.exception.GovernanceException;
 import org.wso2.carbon.governance.api.generic.GenericArtifactManager;
 import org.wso2.carbon.governance.api.generic.dataobjects.GenericArtifact;
 import org.wso2.carbon.governance.api.util.GovernanceUtils;
 import org.wso2.carbon.governance.lcm.util.CommonUtil;
-import org.wso2.carbon.identity.base.IdentityException;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.registry.core.ActionConstants;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.RegistryConstants;
@@ -60,20 +59,30 @@ public class RegistryServiceImpl implements RegistryService {
     @Override
     public void startTenantFlow(Tenant tenant) {
         if (this.tenant != null) {
+            log.error("Start tenant flow called without ending previous tenant flow");
             throw new IllegalStateException("Previous tenant flow has not been ended, " +
                                                 "'RegistryService.endTenantFlow()' needs to be called");
         }
-        PrivilegedCarbonContext.startTenantFlow();
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
-        this.tenant = tenant;
+        else {
+            PrivilegedCarbonContext.startTenantFlow();
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenant.getDomain(), true);
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenant.getId(), true);
+            this.tenant = tenant;
+        }
     }
 
     @Override
     public void endTenantFlow() {
-        PrivilegedCarbonContext.endTenantFlow();
-        this.tenant = null;
-        this.apiProvider = null;
+        if (this.tenant == null) {
+            log.error("End tenant flow called even though tenant flow has already been ended or was not started");
+            throw new IllegalStateException("Previous tenant flow has already been ended, " +
+                    "unnecessary additional RegistryService.endTenantFlow()' call has been detected");
+        }
+        else {
+            PrivilegedCarbonContext.endTenantFlow();
+            this.tenant = null;
+            this.apiProvider = null;
+        }
     }
 
     @Override
@@ -128,9 +137,13 @@ public class RegistryServiceImpl implements RegistryService {
             GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
 
             for (GenericArtifact artifact : artifacts) {
-                artifactManager.updateGenericArtifact(artifact);
+                try {
+                    artifactManager.updateGenericArtifact(artifact);
+                } catch (GovernanceException e) {
+                    // This is to avoid the loop from exiting if one artifact fails.
+                    log.error("Unable to update governance artifact", e);
+                }
             }
-
         } catch (UserStoreException e) {
             log.error("Error occurred while reading tenant information of tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
         } catch (RegistryException e) {
@@ -150,7 +163,6 @@ public class RegistryServiceImpl implements RegistryService {
         } catch (APIManagementException e) {
             log.error("Error when getting api artifact " + artifact.getId() + " from registry", e);
         }
-
         return api;
     }
 
@@ -241,10 +253,10 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     @Override
-    public void setGovernanceRegistryResourcePermissions(String visibility, String[] roles,
+    public void setGovernanceRegistryResourcePermissions(String userName, String visibility, String[] roles,
                                                                 String resourcePath) throws APIManagementException {
         initAPIProvider();
-        APIUtil.setResourcePermissions(tenant.getAdminName(), visibility, roles, resourcePath);
+        APIUtil.setResourcePermissions(userName, visibility, roles, resourcePath);
     }
 
     private void initAPIProvider() throws APIManagementException {

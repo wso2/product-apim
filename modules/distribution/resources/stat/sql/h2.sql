@@ -178,3 +178,18 @@ CREATE TABLE IF NOT EXISTS `API_EXECUTION_TIME_SECONDS_SUMMARY` (
   `time` bigint(20),
   PRIMARY KEY (`api`,`version`,`apiPublisher`,`context`,`year`,`month`,`day`,`hour`,`minutes`,`seconds`,`mediationName`)
 );
+CREATE TABLE IF NOT EXISTS `API_REQUEST_GEO_LOCATION_SUMMARY` (
+  `api` varchar(100) NOT NULL DEFAULT '',
+  `version` varchar(100) NOT NULL DEFAULT '',
+  `apiPublisher` varchar(100) NOT NULL DEFAULT '',
+  `tenantDomain` varchar(100) NOT NULL DEFAULT '',
+  `total_request_count` int(11) DEFAULT NULL,
+  `year` smallint(6) DEFAULT NULL,
+  `month` smallint(6) DEFAULT NULL,
+  `day` smallint(6) DEFAULT NULL,
+  `requestTime` bigint(20),
+  `country` varchar(200) NOT NULL,
+  `city` varchar(200) NOT NULL
+  PRIMARY KEY (`api`,`version`,`apiPublisher`,`year`,`month`,`day`,`tenantDomain`,`country`,`city`)
+);
+

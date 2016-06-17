@@ -1,17 +1,19 @@
 /*
- * Copyright 2016 The Apache Software Foundation.
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.wso2.am.integration.tests.other;
@@ -87,23 +89,15 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
     @Test(groups = "wso2.am",
             description = "Send a request to a backend returning 204 and check if the expected result is received")
-    public void testAPIReturningStatusCode204() {
+    public void testAPIReturningStatusCode204() throws Exception {
         //Login to the API Publisher
-        try {
-            apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                    publisherContext.getContextTenant().getContextUser().getPassword());
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage());
-            Assert.assertTrue(false);
-        } catch (XPathExpressionException e) {
-            log.error("XPathExpressionException " + e.getMessage());
-            Assert.assertTrue(false);
-        }
+        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+                publisherContext.getContextTenant().getContextUser().getPassword());
 
         String apiName = "Test_API" + userMode;
         String apiVersion = "1.0.0";
         String apiContext = "/somecontext" + userMode;
-        String endpointUrl = gatewayUrlsMgt.getWebAppURLNhttp() + "response";
+        String endpointUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
 
         //Create the api creation request object
         APIRequest apiRequest = null;
@@ -113,7 +107,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
             log.error("Error creating APIRequest " + e.getMessage());
             Assert.assertTrue(false);
         } catch (MalformedURLException e) {
-            log.error("Invalid URL " + gatewayUrlsMgt.getWebAppURLNhttp() + "response", e);
+            log.error("Invalid URL " + gatewayUrlsWrk.getWebAppURLNhttp() + "response", e);
             Assert.assertTrue(false);
         }
 
@@ -155,9 +149,9 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
             String apiInvocationUrl;
             if (userMode == TestUserMode.TENANT_ADMIN || userMode == TestUserMode.TENANT_USER) {
-                apiInvocationUrl = gatewayUrlsMgt.getWebAppURLNhttp() + "/t/wso2.com" + apiContext + "/" + apiVersion;
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "/t/wso2.com" + apiContext + "/" + apiVersion;
             } else {
-                apiInvocationUrl = gatewayUrlsMgt.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
+                apiInvocationUrl = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
             }
 
             HttpClient httpclient = new DefaultHttpClient();
@@ -167,10 +161,7 @@ public class APIMANAGER4464BackendReturningStatusCode204TestCase extends APIMInt
 
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 204, "Status Code is not 204");
 
-        } catch (APIManagerIntegrationTestException e) {
-            log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
-            Assert.assertTrue(false);
-        } catch (JSONException e) {
+        }  catch (JSONException e) {
             log.error("Error parsing JSON to get access token " + e.getMessage(), e);
             Assert.assertTrue(false);
         } catch (XPathExpressionException e) {

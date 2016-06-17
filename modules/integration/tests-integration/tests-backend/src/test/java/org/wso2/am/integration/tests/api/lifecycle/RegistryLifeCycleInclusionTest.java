@@ -108,7 +108,8 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         
     }
     
-    @Test(groups = {"wso2.am"}, description = "Test LC state change visibility in the LC tab in publisher")
+    @Test(groups = {"wso2.am"}, description = "Test LC state change visibility in the LC tab in publisher",
+            dependsOnMethods = "testChecklistItemsVisibility")
     public void testLCStateChengeVisibility() throws Exception {
        
         //get the info page from the publisher
@@ -146,7 +147,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         updateRequest.setVersion(API_VERSION_2_0_0);
         apiPublisherClientUser1.changeAPILifeCycleStatus(updateRequest);
         
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_BLOCKED);
+        waitForAPIDeployment();
         
         //get the info page from the publisher
         resp = apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_2_0_0);
@@ -165,7 +166,7 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         updateRequest.setVersion(API_VERSION_2_0_0);
         apiPublisherClientUser1.changeAPILifeCycleStatus(updateRequest);
         
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_NOT_EXISTS);
+        waitForAPIDeployment();
         
         //get the info page from the publisher
         resp = apiPublisherClientUser1.getAPIInformationPage(API_NAME, providerName, API_VERSION_2_0_0);
@@ -179,8 +180,6 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         assertEquals(resp.getData().contains("Retire"), true, "'Retire' not visible");    
   
     }
-    
-    
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {

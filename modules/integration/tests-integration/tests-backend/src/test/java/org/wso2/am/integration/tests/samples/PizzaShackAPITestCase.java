@@ -112,7 +112,7 @@ public class PizzaShackAPITestCase extends APIMIntegrationBaseTest {
         Thread.sleep(2000);
 
         HttpResponse pizzaShackResponse = HttpRequestUtil.doGet(
-                gatewayUrlsMgt.getWebAppURLNhttp() + "pizzashack/1.0.0/menu", requestHeaders);
+                gatewayUrlsWrk.getWebAppURLNhttp() + "pizzashack/1.0.0/menu", requestHeaders);
         assertEquals(pizzaShackResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response code mismatched when api invocation");
         System.out.println("My Response Code is "+pizzaShackResponse.getResponseCode());
@@ -134,7 +134,6 @@ public class PizzaShackAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("PizzaShack");
-
-
+        super.cleanUp();
     }
 }

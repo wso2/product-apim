@@ -85,5 +85,5 @@ After Running the Samples
 Samples only scratch the surface when it comes to demonstrating the capabilities of
 WSO2 API Manager. Therefore it's highly recommended to try out the API Publisher and
 API Store manually to understand its full potential. Also go through our documentation
-at https://docs.wso2.com/display/AM190/WSO2+API+Manager+Documentation to learn
+at https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation to learn
 more about the product and its features.

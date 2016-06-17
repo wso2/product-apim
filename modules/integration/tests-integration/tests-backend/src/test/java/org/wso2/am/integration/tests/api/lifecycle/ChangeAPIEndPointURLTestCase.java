@@ -52,11 +52,11 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     private final String API1_END_POINT_METHOD = "customers/123";
     private final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String API2_RESPONSE_DATA = "AcceptanceSampling";
-    private final String API2_END_POINT_URL = "http://public.opencpu.org/ocpu/library";
+    private final String API2_RESPONSE_DATA = "HelloWSO2";
+    private final String API2_END_POINT_POSTFIX_URL = "name-check1_SB/name";
     private final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private String api1EndPointUrl;
+    private String api1EndPointUrl, api2EndPointUrl;
 
     private APIIdentifier apiIdentifier;
     private String providerName;
@@ -96,7 +96,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
-        requestHeaders.put("accept", "text/xml");
+        requestHeaders.put("accept", "*/*");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
 
@@ -117,8 +117,9 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL() throws APIManagerIntegrationTestException, MalformedURLException {
         //Create the API Request with new context
-        APICreationRequestBean apiCreationRequestBeanUpdate =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(API2_END_POINT_URL));
+        api2EndPointUrl = getGatewayURLHttp() + API2_END_POINT_POSTFIX_URL;
+        APICreationRequestBean apiCreationRequestBeanUpdate = new APICreationRequestBean(
+                API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api2EndPointUrl));
         apiCreationRequestBeanUpdate.setTags(API_TAGS);
         apiCreationRequestBeanUpdate.setDescription(API_DESCRIPTION);
         //Update API with Edited information
@@ -129,16 +130,13 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                 "Error in API end point URL Update in " + getAPIIdentifierString(apiIdentifier) +
                         "Response Data:" + updateAPIHTTPResponse.getData());
+        waitForAPIDeployment();
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
             "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
-        //Invoke  new context
-
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, API2_END_POINT_URL);
-
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0),
                         requestHeaders);
@@ -156,10 +154,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-
+        super.cleanUp();
     }
 
 

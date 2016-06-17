@@ -18,11 +18,11 @@
 
 package org.wso2.carbon.apimgt.importexport.utils;
 
-import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.importexport.APIExportException;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -32,7 +32,6 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -95,13 +94,14 @@ public class AuthenticatorUtil {
 
                 //user is only authorized for exporting and importing if he is an admin of his
                 // domain
-                if (Arrays.asList(userRoles).contains(adminRoleName)) {
-                    log.info(username + " is authorized to import and export APIs");
-                    return Response.ok().build();
-                } else {
-                    return Response.status(Response.Status.FORBIDDEN).entity("User Authorization " + "Failed")
-                            .type(MediaType.APPLICATION_JSON).build();
+                for (String userRole : userRoles) {
+                    if (adminRoleName.equalsIgnoreCase(userRole)) {
+                        log.info(username + " is authorized to import and export APIs");
+                        return Response.ok().build();
+                    }
                 }
+                return Response.status(Response.Status.FORBIDDEN).entity("User Authorization " + "Failed")
+                        .type(MediaType.APPLICATION_JSON).build();
 
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("User Authentication " + "Failed")

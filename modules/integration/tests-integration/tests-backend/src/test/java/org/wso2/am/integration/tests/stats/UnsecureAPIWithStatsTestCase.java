@@ -111,6 +111,7 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
                 " to :" + masterDatasourceConfigLocation);
 
         serverManager.restartGracefully();
+        super.init();
 
         //Initialize publisher and store.
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -207,9 +208,8 @@ public class UnsecureAPIWithStatsTestCase extends APIMIntegrationBaseTest {
         if (apiPublisher != null) {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
         }
-
+        super.cleanUp();
         serverManager.restoreToLastConfiguration();
-        serverManager.restartGracefully();
         log.info("Restored configuration and restarted gracefully...");
     }
 

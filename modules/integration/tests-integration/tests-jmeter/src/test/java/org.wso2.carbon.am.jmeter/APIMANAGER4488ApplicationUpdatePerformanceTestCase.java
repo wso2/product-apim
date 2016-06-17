@@ -33,8 +33,8 @@ import java.io.File;
 public class APIMANAGER4488ApplicationUpdatePerformanceTestCase {
     protected Log log = LogFactory.getLog(getClass());
 
-    @Test(groups = "wso2.am", description = "Application update performance test") public void testApplicationUpdate()
-            throws Exception {
+    @Test(groups = "wso2.am", description = "Application update performance test")
+    public void testApplicationUpdate() throws Exception {
         log.info("Starting Application Update/Delete Performance TestCase");
         JMeterTest script = new JMeterTest(new File(
                 TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM"

@@ -208,10 +208,11 @@ public class ChangeApplicationTierAndTestInvokingTestCase extends APIManagerLife
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeAPISubscriptionByApplicationName (API_NAME, API_VERSION_1_0_0, providerName, applicationNameSilver);
         apiStoreClientUser1.removeApplication(applicationNameSilver);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        super.cleanUp();
     }
 
 

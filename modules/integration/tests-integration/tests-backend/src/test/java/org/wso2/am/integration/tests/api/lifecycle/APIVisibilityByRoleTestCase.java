@@ -191,7 +191,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for API creator ")
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for API creator ")
     public void testVisibilityForCreatorInPublisher() throws APIManagerIntegrationTestException,
                                                              MalformedURLException,
                                                              XPathExpressionException {
@@ -245,7 +245,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for API creator",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for API creator",
           dependsOnMethods = "testVisibilityForCreatorInPublisher")
     public void testVisibilityForCreatorInStore() throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
@@ -261,7 +261,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for admin in same domain ",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for admin in same domain ",
           dependsOnMethods = "testVisibilityForCreatorInStore")
     public void testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInPublisher()
             throws APIManagerIntegrationTestException {
@@ -277,7 +277,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
                    getAPIIdentifierString(apiIdentifierSubscriberVisibility));
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for admin in same domain ",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for admin in same domain ",
           dependsOnMethods = "testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInPublisher")
     public void testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInStore()
             throws APIManagerIntegrationTestException {
@@ -294,7 +294,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for another user in same domain",
           dependsOnMethods = "testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInStore")
     public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInPublisher()
             throws
@@ -313,7 +313,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in same domain",
           dependsOnMethods = "testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInPublisher")
     public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInStore() throws
                                                                                             APIManagerIntegrationTestException {
@@ -331,7 +331,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for another user in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for another user in other domain",
           dependsOnMethods = "testVisibilityForAnotherUserWithAdminAndSubscriberRoleInSameDomainInStore")
     public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInOtherDomainInPublisher()
             throws
@@ -350,7 +350,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in other domain",
           dependsOnMethods = "testVisibilityForAnotherUserWithAdminAndSubscriberRoleInOtherDomainInPublisher")
     public void testVisibilityForAnotherUserWithAdminAndSubscriberRoleInOtherDomainInStore()
             throws APIManagerIntegrationTestException {
@@ -368,7 +368,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Publisher for admin in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for admin in other domain",
           dependsOnMethods = "testVisibilityForAnotherUserWithAdminAndSubscriberRoleInOtherDomainInStore")
     public void testVisibilityForAdminWithAdminAndSubscriberRoleInOtherDomainInPublisher() throws
                                                                                            APIManagerIntegrationTestException {
@@ -389,7 +389,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for admin in other domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for admin in other domain",
           dependsOnMethods = "testVisibilityForAdminWithAdminAndSubscriberRoleInOtherDomainInPublisher")
     public void testVisibilityForAdminWithAdminAndSubscriberRoleInOtherDomainInStore()
             throws APIManagerIntegrationTestException {
@@ -407,7 +407,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in same domain",
           dependsOnMethods = "testVisibilityForAdminWithAdminAndSubscriberRoleInOtherDomainInStore")
     public void testVisibilityForAnotherUserWithSubscriberRoleInSameDomainInStore()
             throws APIManagerIntegrationTestException {
@@ -424,7 +424,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the visibility pf API in Store for another user in same domain",
+    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for another user in same domain",
           dependsOnMethods = "testVisibilityForAnotherUserWithSubscriberRoleInSameDomainInStore")
     public void testVisibilityForAnotherUserWithSubscriberRoleInOtherDomainInStore()
             throws APIManagerIntegrationTestException {

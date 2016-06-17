@@ -81,8 +81,11 @@ public class ApplicationCallbackURLTestCase extends APIMIntegrationBaseTest {
         Assert.fail("Created application not found");
     }
 
+    /**
+     * Test is disabled as callback url validation is removed now
+     */
     @Test(groups = { "wso2.am" }, description = "Update application with callback URL",
-            dependsOnMethods = "testApplicationCreation")
+            dependsOnMethods = "testApplicationCreation", enabled = false)
     public void testApplicationUpdate() throws Exception {
         String callbackURL = "malformedUrl";
         //update application with malformed callback URL
@@ -107,7 +110,7 @@ public class ApplicationCallbackURLTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation",
-            dependsOnMethods = "testApplicationUpdate")
+            dependsOnMethods = "testApplicationCreation")
     public void testApplicationUpdateIpAsCallBackURL() throws Exception {
         String callbackURL = "https://10.100.7.74:9443/store/";
         //update application with valid callback URL
@@ -129,8 +132,11 @@ public class ApplicationCallbackURLTestCase extends APIMIntegrationBaseTest {
         Assert.fail("Updated application not found");
     }
 
+    /**
+     * Test is disabled as callback url validation is removed now
+     */
     @Test(groups = { "wso2.am" }, description = "Update application with callback URL",
-            dependsOnMethods = "testApplicationUpdateIpAsCallBackURL")
+            dependsOnMethods = "testApplicationUpdateIpAsCallBackURL", enabled = false)
     public void testApplicationUpdateValidIpAsCallBackURL() throws Exception {
         String callbackURL = "10.100.7.74:9443/store/";
         //update application with malformed callback URL
@@ -157,6 +163,7 @@ public class ApplicationCallbackURLTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication(appName);
+        super.cleanUp();
     }
 
     @DataProvider
