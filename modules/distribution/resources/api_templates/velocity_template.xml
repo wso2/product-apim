@@ -76,14 +76,32 @@
 </markForSuspension>
         #end
 
-        #macro ( http_endpoint $name $ep )
+#macro ( http_endpoint $name $ep )
 <endpoint name="$name">
-<http uri-template="$util.escapeXml($ep.get("url"))">
-#timeout( $ep.get('config') )
-</http>
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
-        </endpoint>
-        #end
+    <http uri-template="$util.escapeXml($ep.get("url"))">
+    #timeout( $ep.get('config') )
+    </http>
+    <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+</endpoint>
+#end
+
+#macro ( address_endpoint $name $ep )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
+    #set( $advance_ep = $ep.get("config") )
+    <address uri="$util.escapeXml($ep.get("url"))"
+    #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
+    format="$advance_ep.get("format")"
+    #end
+    #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
+    optimize="$advance_ep.get("optimize")"
+    #end
+    >
+        #timeout( $ep.get('config') )
+    </address>
+    <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+</endpoint>
+#end
+
 
         #macro ( draw_endpoint $type $endpoint_config )
 
@@ -174,11 +192,19 @@
         #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
 <failover>
-    #http_endpoint("${ep_name}_0" $endpoints)
+    #if($endpoints.get("endpoint_type") == "address")
+        #address_endpoint("${ep_name}_0" $endpoints)
+    #else
+        #http_endpoint("${ep_name}_0" $endpoints)
+    #end
     #set( $i = 1)
     #foreach($endpoint in $failover_endpoints)
-    #http_endpoint("${ep_name}_$i" $endpoint)
-    #set( $i = $i + 1)
+        #if($endpoint.get("endpoint_type") == "address")
+            #address_endpoint("${ep_name}_$i" $endpoint)
+        #else
+            #http_endpoint("${ep_name}_$i" $endpoint)
+        #end
+        #set( $i = $i + 1)
     #end
 </failover>
 </endpoint>
@@ -197,8 +223,12 @@
         #end>
         #set( $i = 0)
         #foreach($endpoint in $endpoints)
-        #http_endpoint("${ep_name}_$i" $endpoint)
-        #set( $i = $i + 1)
+            #if($endpoint.get("endpoint_type") == "address")
+                #address_endpoint("${ep_name}_$i" $endpoint)
+            #else
+                #http_endpoint("${ep_name}_$i" $endpoint)
+            #end            
+            #set( $i = $i + 1)
         #end
         </loadbalance>
         </endpoint>
