@@ -947,9 +947,11 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
             for (Map.Entry m : mes) {
                 JSONObject re = (JSONObject) m.getValue();
                 JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
-                JSONArray scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
-                        .get(Constants.SWAGGER_X_WSO2_SCOPES);
-
+                JSONArray scopes = new JSONArray();
+                if (xWso2Security != null) {
+                    scopes = (JSONArray) ((JSONObject) xWso2Security.get(Constants.SWAGGER_OBJECT_NAME_APIM))
+                            .get(Constants.SWAGGER_X_WSO2_SCOPES);
+                }
                 JSONArray scopeList = new JSONArray();
                 for (int i = 0; i < scopes.size(); i++) {
                     JSONObject scope = (JSONObject) scopes.get(i);
