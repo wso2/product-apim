@@ -75,7 +75,7 @@
             <repository>
                 <id>wso2-staging</id>
                 <name>WSO2 staging Repository</name>
-                <url>https://maven.wso2.org/nexus/content/repositories/orgjaggeryjs-1004/</url>
+                <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbon-1024/</url>
                 <releases>
                     <enabled>true</enabled>
                     <updatePolicy>daily</updatePolicy>
@@ -506,7 +506,7 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>SecVerifier</artifactId>
                 <type>aar</type>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
 
             <dependency>
@@ -617,12 +617,12 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.utils</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
@@ -798,7 +798,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
 
             <dependency>
@@ -844,7 +844,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.user.core</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.synapse</groupId>
@@ -913,7 +913,7 @@
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.12-alpha</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.0.12-SNAPSHOT</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -926,10 +926,10 @@
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.6.2</carbon.governance.version>
+        <carbon.governance.version>4.6.3</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.5</carbon.kernel.version>
+        <carbon.kernel.version>4.4.6</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
@@ -951,13 +951,13 @@
         <carbon.identity-outbound-auth-samlsso.version>5.1.1-SNAPSHOT</carbon.identity-outbound-auth-samlsso.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.6.1</carbon.deployment.version>
+        <carbon.deployment.version>4.6.2-SNAPSHOT</carbon.deployment.version>
 
         <!-- carbon analytics -->
         <carbon.analytics.version>1.0.5</carbon.analytics.version>
 
         <!--jaggery-->
-        <org.jaggery.version>0.12.5</org.jaggery.version>
+        <org.jaggery.version>0.12.6-SNAPSHOT</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
         <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
@@ -975,7 +975,6 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <carbon.platform.version>4.4.5</carbon.platform.version>
         <synapse.version>2.1.7-wso2v3-BETA</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v17</axis2.wso2.version>

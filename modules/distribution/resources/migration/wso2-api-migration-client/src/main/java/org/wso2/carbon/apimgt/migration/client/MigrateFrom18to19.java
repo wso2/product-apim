@@ -775,10 +775,12 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
             throws ParseException {
         JSONObject pathsObj = new JSONObject();
 
-        // Extract produces element
+        // Extract produces element. This is the global definition that would be used if non other is defined. This
+        // is extracted from the root definition.
         JSONArray producesMimeArray = extractProducesObject(swagger12doc);
 
-        // Extract consumes element
+        // Extract consumes element. This is the global definition that would be used if non other is defined. This
+        // is extracted from the root definition.
         JSONArray consumesMimeArray = extractConsumesObject(swagger12doc);
 
         for (Map.Entry<String, SwaggerInfoDTO> entry : apiDefinitionPaths.entrySet()) {
@@ -837,18 +839,35 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                 }
 
                                 // Add the produces mime types
-                                if(entry.getValue().getProducesList() != null){
+                                // First we check whether the operation has a produces element defined.
+                                JSONArray operationsLevelProduces = extractProducesObject(operationObject);
+
+                                if(operationsLevelProduces != null){
+                                    // Adding the operations level produces element if it was defined.
+                                    swagger2OperationsObj.put(Constants.SWAGGER_PRODUCES, operationsLevelProduces);
+                                }
+                                else if(entry.getValue().getProducesList() != null){
+                                    // Adding the API level produces definition.
                                     swagger2OperationsObj.put(Constants.SWAGGER_PRODUCES,
                                                               entry.getValue().getProducesList());
                                 }else if(producesMimeArray != null){
+                                    // Adding the global produces definition.
                                     swagger2OperationsObj.put(Constants.SWAGGER_PRODUCES, producesMimeArray);
                                 }
 
                                 // Add the consumes mime types
-                                if(entry.getValue().getConsumeList() != null){
+                                // First we check whether the operation has a consumes element defined.
+                                JSONArray operationLevelConsumes = extractConsumesObject(operationObject);
+                                if(operationLevelConsumes != null){
+                                    // Adding the operations level consumes element if it was defined.
+                                    swagger2OperationsObj.put(Constants.SWAGGER_CONSUMES, operationLevelConsumes);
+                                }
+                                else if(entry.getValue().getConsumeList() != null){
+                                    // Adding the operations level consumes element if it was defined.
                                     swagger2OperationsObj.put(Constants.SWAGGER_CONSUMES,
                                                               entry.getValue().getConsumeList());
                                 }else if(consumesMimeArray != null){
+                                    // Adding the operations level consumes element if it was defined.
                                     swagger2OperationsObj.put(Constants.SWAGGER_CONSUMES, consumesMimeArray);
                                 }
 
@@ -1212,6 +1231,8 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                     log.error("IO exception encountered for " + synapseFile.getAbsolutePath(), e);
                 } catch (APIMigrationException e) {
                     log.error("Updating synapse file failed for " + synapseFile.getAbsolutePath(), e);
+                } catch (Exception e){
+                    log.error("Error occurred while migrating the Synapse file : " + synapseFile.getAbsolutePath(), e);
                 }
             }
 

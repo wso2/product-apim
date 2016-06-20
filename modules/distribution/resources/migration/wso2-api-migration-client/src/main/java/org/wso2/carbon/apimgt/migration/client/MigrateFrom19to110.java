@@ -649,21 +649,16 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 }
 
                 // Since API tiers.xml has been updated it will be used as app and resource tier.xml
-                if (!registryService.isGovernanceRegistryResourceExists(APIConstants.APP_TIER_LOCATION)) {
-                    String apiTiers = ResourceUtil.getResourceContent(
-                            registryService.getGovernanceRegistryResource(APIConstants.API_TIER_LOCATION));
+                // We do not care whether there is an already existing file in this location. Theoretically it should
+                // not. If there was, then we override that file too.
+                String apiTiers = ResourceUtil.getResourceContent(registryService.getGovernanceRegistryResource
+                        (APIConstants.API_TIER_LOCATION));
 
-                    registryService.addGovernanceRegistryResource(
-                                                    APIConstants.APP_TIER_LOCATION, apiTiers, "application/xml");
-                }
+                registryService.addGovernanceRegistryResource(APIConstants.APP_TIER_LOCATION, apiTiers,
+                                                              "application/xml");
 
-                if (!registryService.isGovernanceRegistryResourceExists(APIConstants.RES_TIER_LOCATION)) {
-                    String apiTiers = ResourceUtil.getResourceContent(
-                            registryService.getGovernanceRegistryResource(APIConstants.API_TIER_LOCATION));
-
-                    registryService.addGovernanceRegistryResource(
-                                                    APIConstants.RES_TIER_LOCATION, apiTiers, "application/xml");
-                }
+                registryService.addGovernanceRegistryResource(APIConstants.RES_TIER_LOCATION, apiTiers,
+                                                              "application/xml");
             } catch (UserStoreException e) {
                 log.error("Error occurred while accessing the user store " + + tenant.getId() + 
                           '(' + tenant.getDomain() + ')', e);
