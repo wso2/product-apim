@@ -186,7 +186,7 @@
 	</fileSet>
 
         <!-- Start API Manager related -->
-        <fileSet>
+        <!--fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/identity/
             </directory>
@@ -194,7 +194,7 @@
             <includes>
                 <include>**/**.sql</include>
             </includes>
-        </fileSet>
+        </fileSet-->
         <fileSet>
             <directory>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/
