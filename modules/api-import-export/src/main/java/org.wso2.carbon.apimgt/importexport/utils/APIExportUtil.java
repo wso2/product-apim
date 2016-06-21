@@ -454,7 +454,7 @@ public class APIExportUtil {
             sequences.put(APIConstants.API_CUSTOM_SEQUENCE_TYPE_OUT, api.getOutSequence());
         }
 
-        if (api.getOutSequence() != null) {
+        if (api.getFaultSequence() != null) {
             sequences.put(APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT, api.getFaultSequence());
         }
 
