@@ -195,10 +195,10 @@ public abstract class MigrationClientBase {
             InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
 
             List<String> sqlStatements = readSQLStatements(is, dbType);
-
             for (String sqlStatement : sqlStatements) {
-                preparedStatement = connection.prepareStatement(sqlStatement);
-                preparedStatement.execute();
+                log.debug("SQL to be executed : " + sqlStatement);
+                statement = connection.createStatement();
+                statement.executeQuery(sqlStatement);
             }
             connection.commit();
 
@@ -206,6 +206,7 @@ public abstract class MigrationClientBase {
             /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
             method getDatabaseType throws generic Exception */
             log.error("Error occurred while migrating databases", e);
+            connection.rollback();
         } finally {
             if (resultSet != null) {
                 resultSet.close();
@@ -327,7 +328,6 @@ public abstract class MigrationClientBase {
                     } else {
                         isFoundQueryEnd = false;
                     }
-                    sqlQuery = sqlQuery.replaceAll(";( )*/", "/");
                     sqlQuery = sqlQuery.replaceAll("/", "");
                 }
                 if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
