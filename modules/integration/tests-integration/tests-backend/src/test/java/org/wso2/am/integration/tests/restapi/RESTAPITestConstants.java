@@ -72,6 +72,12 @@ public final class RESTAPITestConstants {
     //header-asserts under the assert section
     public static final String HEADER_ASSERTS = "header-asserts";
 
+    //body-asserts under the assert section
+    public static final String BODY_ASSERTS = "body-asserts";
+    public static final String BODY_ASSERTS_JSONPATH = "jsonPath";
+    public static final String BODY_ASSERTS_VALUE = "value";
+    public static final String BODY_ASSERTS_REGEX = "regex";
+
     //method element in data section in JSON file
     public static final String METHOD_ELEMENT = "method";
 
