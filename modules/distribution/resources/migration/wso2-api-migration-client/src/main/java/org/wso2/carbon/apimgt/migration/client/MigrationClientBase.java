@@ -199,8 +199,8 @@ public abstract class MigrationClientBase {
             for (String sqlStatement : sqlStatements) {
                 preparedStatement = connection.prepareStatement(sqlStatement);
                 preparedStatement.execute();
-                connection.commit();
             }
+            connection.commit();
 
         }  catch (Exception e) {
             /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
@@ -322,7 +322,13 @@ public abstract class MigrationClientBase {
                 }
 
                 if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
+                    if ("/".equals(line.trim())) {
+                        isFoundQueryEnd = true;
+                    } else {
+                        isFoundQueryEnd = false;
+                    }
+                    sqlQuery = sqlQuery.replaceAll(";( )*/", "/");
+                    sqlQuery = sqlQuery.replaceAll("/", "");
                 }
                 if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
                     sqlQuery = sqlQuery.replace(";", "");
