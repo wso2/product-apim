@@ -82,6 +82,7 @@
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin-dashboard/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
+                <exclude>**/dbscripts/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -197,9 +198,18 @@
         </fileSet-->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/apimgt/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
+            <includes>
+                <include>**/**.sql</include>
+            </includes>
+        </fileSet>
+       <fileSet>
+            <directory>
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/registry/
+            </directory>
+            <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
             </includes>
