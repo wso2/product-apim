@@ -1065,5 +1065,18 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+
+        <!-- duplicating metrics and MB scripts for MySQL 5.7 until respective teams provide the fix
+        or kernel is fixed -->
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/mysql.sql</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/metrics</outputDirectory>
+            <destName>mysql-5.7+.sql</destName>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/mb-store/mysql-mb.sql</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/mb-store</outputDirectory>
+            <destName>mysql-5.7+-mb.sql</destName>
+        </file>
     </files>
 </assembly>
