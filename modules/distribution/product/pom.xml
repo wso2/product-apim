@@ -125,6 +125,25 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>unpack-rest-admin</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.carbon.apimgt</groupId>
+                                    <artifactId>org.wso2.carbon.apimgt.rest.api.admin.feature</artifactId>
+                                    <version>${carbon.apimgt.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>target</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -199,6 +218,8 @@
                                      includes="org.wso2.carbon.apimgt.rest.api.publisher*/api-docs/"></zip>
                                 <zip destfile="target/site/store-api-docs.zip" basedir="target/features/"
                                      includes="org.wso2.carbon.apimgt.rest.api.store*/api-docs/"></zip>
+                                <zip destfile="target/site/admin-api-docs.zip" basedir="target/features/"
+                                     includes="org.wso2.carbon.apimgt.rest.api.admin*/api-docs/"></zip>
                                 <delete dir="features" />
                                 <delete dir="plugins" />
                                 <delete dir="${tempdir}" />
