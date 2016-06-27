@@ -197,8 +197,13 @@ public abstract class MigrationClientBase {
             List<String> sqlStatements = readSQLStatements(is, dbType);
             for (String sqlStatement : sqlStatements) {
                 log.debug("SQL to be executed : " + sqlStatement);
-                statement = connection.createStatement();
-                statement.executeQuery(sqlStatement);
+                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    statement = connection.createStatement();
+                    statement.executeQuery(sqlStatement);
+                } else {
+                    preparedStatement = connection.prepareStatement(sqlStatement);
+                    preparedStatement.execute();
+                }
             }
             connection.commit();
 

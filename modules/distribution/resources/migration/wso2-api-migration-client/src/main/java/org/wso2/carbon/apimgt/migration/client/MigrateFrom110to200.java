@@ -574,6 +574,15 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                     artifact.setAttribute("overview_corsConfiguration", val);
                     artifact.setAttribute("overview_endpointSecured", "false");
                     artifact.setAttribute("overview_endpointAuthDigest", "false");
+
+                    String env = artifact.getAttribute("overview_environments");
+                    if (env == null) {
+                        artifact.setAttribute("overview_environments", "Production and Sandbox");
+                    }
+                    String trans = artifact.getAttribute("overview_transports");
+                    if (trans == null) {
+                        artifact.setAttribute("overview_transports", "http,https");
+                    }
                 }
                 registryService.updateGenericAPIArtifacts(artifacts);
                 log.info("End rxt data migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
@@ -915,8 +924,10 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
         JSONParser parser = new JSONParser();
 
         Object rawResource = registryService.getGovernanceRegistryResource(swagger12location);
+        if (rawResource == null) {
+            return "";
+        }
         String swaggerRes = ResourceUtil.getResourceContent(rawResource);
-
         JSONObject swagger12doc = (JSONObject) parser.parse(swaggerRes);
         Object existSecDef = swagger12doc.get(Constants.SECURITY_DEFINITION__KEY);
         if (existSecDef == null) {
@@ -962,7 +973,27 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                 authScopeObj.put(api.getId().getApiName() + Constants.SECURITY_DEFINITION_NAME_KEY_SUFFIX, scopeList);
                 authScopeArray.add(authScopeObj);
                 re.put(Constants.SWAGGER_PATH_SECURITY_KEY, authScopeArray);
-                re.put(Constants.SWAGGER_PATH_PARAMETERS_KEY, new JSONArray());
+
+                //setting product type as array
+                Object produceObj = re.get(Constants.SWAGGER_PRODUCES);
+                if (produceObj != null && !(produceObj instanceof JSONArray)) {
+                    JSONArray prodArr = new JSONArray();
+                    prodArr.add((String) produceObj);
+                    re.put(Constants.SWAGGER_PRODUCES, prodArr);
+                }
+
+                //for resources response object
+                JSONObject responses = (JSONObject) re.get(Constants.SWAGGER_RESPONSES);
+                JSONObject response;
+                Iterator itr = responses.keySet().iterator();
+                while (itr.hasNext()) {
+                    String key = (String) itr.next();
+                    response = (JSONObject) responses.get(key);
+                    boolean isExist = response.containsKey(Constants.SWAGGER_DESCRIPTION);
+                    if (!isExist) {
+                        response.put(Constants.SWAGGER_DESCRIPTION, "");
+                    }
+                }
             }
         }
         return swagger12doc.toJSONString();

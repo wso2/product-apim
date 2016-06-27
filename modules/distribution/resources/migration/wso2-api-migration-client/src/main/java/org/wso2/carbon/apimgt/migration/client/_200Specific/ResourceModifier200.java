@@ -249,7 +249,16 @@ public class ResourceModifier200 {
         if (!exist) {
             Element uriElement = (Element) endpointElement.getElementsByTagName(Constants.SYNAPSE_HTTP_XML_ELEMENT)
                     .item(0);
-            String val = uriElement.getAttribute(Constants.SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME);
+            Element addressElement = (Element) endpointElement.getElementsByTagName("address").item(0);
+            String val;
+            if (uriElement != null) {
+                val = uriElement.getAttribute(Constants.SYNAPSE_URI_TEMPLATE_ATTRIBUTE_NAME);
+            } else if (addressElement != null) {
+                val = addressElement.getAttribute("uri");
+            } else {
+                return;
+            }
+
             propertyElementExist = doc
                     .createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
             propertyElementExist.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, val);
