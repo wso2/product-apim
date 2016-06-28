@@ -25,6 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -94,7 +95,6 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     private String providerName;
     private String apiVersion = "1.0.0";
     private String applicationName = "JWTTest-application";
-    private String backendURL;
 
     String subscriberUsername = "subscriberUser2";
     String subscriberUserWithTenantDomain;
@@ -112,18 +112,12 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
-                + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
+                    + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
             subscriberUserWithTenantDomain = subscriberUsername;
-            //Load the back-end API
-            String gatewaySessionCookie = createSession(gatewayContextMgt);
-            loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
-                + "synapseconfigs" + File.separator + "rest" + File.separator + "jwt_backend.xml",
-                gatewayContextMgt, gatewaySessionCookie);
         }
 
-        backendURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
         providerName = user.getUserName();
     }
 
@@ -136,10 +130,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String profile = "default";
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(user.getUserNameWithoutDomain(),
-                                                              "http://wso2.org/claims/givenname", "first name", profile);
+                "http://wso2.org/claims/givenname", "first name", profile);
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(user.getUserNameWithoutDomain(),
-                                                              "http://wso2.org/claims/lastname", "last name", profile);
+                "http://wso2.org/claims/lastname", "last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
         ServerConfigurationManager serverConfigManagerForTenant =
@@ -147,7 +141,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         serverConfigManagerForTenant.restartGracefully();
         super.init(userMode);
 
-        addAndSubscribeToAPI(apiName1, apiVersion, apiContext1, description, backendURL, tags, providerName, user);
+        addAndSubscribeToAPI(apiName1, apiVersion, apiContext1, description, tags, providerName, user);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
@@ -163,7 +157,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         HttpResponse response = httpclient.execute(get);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-                            "Response code mismatched when api invocation");
+                "Response code mismatched when api invocation");
 
         Header[] responseHeaders = response.getAllHeaders();
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
@@ -215,28 +209,26 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
-                   InterruptedException {
+            InterruptedException {
 
         String applicationName = "JWTTokenCacheTestApp";
         String apiName = "JWTTokenCacheTestAPI";
         String apiContext = "JWTTokenCacheTestAPI";
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
-        String endpointURL = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
-        String apiTier = APIMIntegrationConstants.API_TIER.GOLD;
         String tags = "token,jwt,cache";
         int waitingSecs = 900;
 
-        addAndSubscribeToAPI(apiName, apiVersion, apiContext, description, endpointURL, tags, providerName, user);
+        addAndSubscribeToAPI(apiName, apiVersion, apiContext, description, tags, providerName, user);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                                 storeContext.getContextTenant().getContextUser().getPassword());
+                storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient
                 .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
-                                                                          storeContext.getContextTenant().getContextUser().getUserName());
+                storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
 
@@ -260,8 +252,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         //Second attempt to invoke the API.
         httpResponse = HttpRequestUtil.doGet(url, headers);
         assertEquals("GET request failed for " + url +
-                     ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
-                     httpResponse.getResponseCode());
+                        ". Most probably due to a failed invalidated cache access to retrieve JWT claims.", 200,
+                httpResponse.getResponseCode());
     }
 
     private void checkDefaultUserClaims(JSONObject jsonObject) throws JSONException {
@@ -273,15 +265,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationname");
         assertTrue("JWT claim applicationname invalid. Received " + claim,
-                   claim.contains(applicationName));
+                claim.contains(applicationName));
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim,
-                   claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
+                claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim,
-                   claim.contains("/" + apiContext1 + "/" + jsonObject.getString("http://wso2.org/claims/version")));
+                claim.contains("/" + apiContext1 + "/" + jsonObject.getString("http://wso2.org/claims/version")));
 
         claim = jsonObject.getString("http://wso2.org/claims/version");
         assertTrue("JWT claim version invalid. Received " + claim, claim.contains(apiVersion));
@@ -307,17 +299,17 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String accessToken;
 
         userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
-                                                         user.getUserName(), user.getPassword());
+                user.getUserName(), user.getPassword());
 
         if (!userManagementClient1.roleNameExists(INTERNAL_ROLE_SUBSCRIBER)) {
             userManagementClient1.addInternalRole(ROLE_SUBSCRIBER, new String[]{},
-                                                  new String[]{"/permission/admin/login",
-                                                               "/permission/admin/manage/api/subscribe"});
+                    new String[]{"/permission/admin/login",
+                            "/permission/admin/manage/api/subscribe"});
         }
 
         if (!userManagementClient1.userNameExists(INTERNAL_ROLE_SUBSCRIBER, subscriberUsername)) {
             userManagementClient1.addUser(subscriberUsername, subscriberUserPassword, new String[] {INTERNAL_ROLE_SUBSCRIBER},
-                                          null);
+                    null);
         }
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
@@ -340,7 +332,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         User subscriberUser = new User();
         subscriberUser.setUserName(subscriberUserWithTenantDomain);
         subscriberUser.setPassword(subscriberUserPassword);
-        addAndSubscribeToAPI(apiName2, apiVersion, apiContext2, description, backendURL, tags, providerName, subscriberUser);
+        addAndSubscribeToAPI(apiName2, apiVersion, apiContext2, description, tags, providerName, subscriberUser);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(subscriberUserWithTenantDomain, subscriberUserPassword);
@@ -357,7 +349,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         HttpResponse response = httpclient.execute(get);
 
         Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
-                            "Response code mismatched when api invocation");
+                "Response code mismatched when api invocation");
 
         Header[] responseHeaders = response.getAllHeaders();
         Header jwtheader = pickHeader(responseHeaders, JWT_ASSERTION_HEADER);
@@ -391,8 +383,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
         apiPublisher.login(user.getUserName(), user.getPassword());
 
+        //Load the back-end API
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                + "synapseconfigs" + File.separator + "rest" + File.separator
+                + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
+        String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
+
         APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(PROTOTYPE_API_NAME,
-            PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(backendURL));
+                PROTOTYPE_API_CONTEXT, PROTOTYPE_API_VERSION, providerName, new URL(endpointURL));
         apiCreationRequestBean.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
 
         //define resources
@@ -418,7 +417,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         serviceResponse = HTTPSClientUtils.doGet(invokeURL, requestHeaders);
         Assert.assertEquals(serviceResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
-                            "Response code is not as expected");
+                "Response code is not as expected");
     }
 
     @AfterClass(alwaysRun = true)
@@ -434,8 +433,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     }
 
     private void addAndSubscribeToAPI(String apiName, String apiVersion, String apiContext, String description,
-                                      String endpointURL, String tags, String providerName, User subscriber)
+            String tags, String providerName, User subscriber)
             throws APIManagerIntegrationTestException, MalformedURLException, XPathExpressionException {
+
+        //Load the back-end API
+        String gatewaySessionCookie = createSession(gatewayContextMgt);
+        loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM" + File.separator
+                + "synapseconfigs" + File.separator + "rest" + File.separator
+                + "jwt_backend.xml", gatewayContextMgt, gatewaySessionCookie);
+        String endpointURL = getSuperTenantAPIInvocationURLHttp("jwt_backend", "1.0");
 
         APIPublisherRestClient apiPublisher = new APIPublisherRestClient(publisherURLHttp);
 
@@ -450,7 +456,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(apiName, providerName,
-                                                                              APILifeCycleState.PUBLISHED);
+                APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);
@@ -459,7 +465,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.login(subscriber.getUserName(), subscriber.getPassword());
 
         apiStoreRestClient.addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
-                                          "this-is-test");
+                "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, user.getUserName());
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);
@@ -468,7 +474,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] {TestUserMode.SUPER_TENANT_ADMIN },
-                                new Object[] {TestUserMode.TENANT_ADMIN }};
+                new Object[] {TestUserMode.TENANT_ADMIN }};
     }
 
     @Factory(dataProvider = "userModeDataProvider")
