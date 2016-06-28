@@ -199,7 +199,7 @@ public abstract class MigrationClientBase {
                 log.debug("SQL to be executed : " + sqlStatement);
                 if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
                     statement = connection.createStatement();
-                    statement.executeQuery(sqlStatement);
+                    statement.executeUpdate(sqlStatement);
                 } else {
                     preparedStatement = connection.prepareStatement(sqlStatement);
                     preparedStatement.execute();

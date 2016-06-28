@@ -835,7 +835,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
      * @throws APIMigrationException
      */
     void swaggerResourceMigration() throws APIMigrationException {
-        log.info("Swagger migration for API Manager " + Constants.VERSION_1_9 + " started.");
+        log.info("Swagger migration for API Manager " + Constants.VERSION_1_10 + " started.");
 
         for (Tenant tenant : getTenantsArray()) {
             if (log.isDebugEnabled()) {
@@ -974,7 +974,7 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
                 authScopeArray.add(authScopeObj);
                 re.put(Constants.SWAGGER_PATH_SECURITY_KEY, authScopeArray);
 
-                //setting product type as array
+                //setting produce type as array
                 Object produceObj = re.get(Constants.SWAGGER_PRODUCES);
                 if (produceObj != null && !(produceObj instanceof JSONArray)) {
                     JSONArray prodArr = new JSONArray();

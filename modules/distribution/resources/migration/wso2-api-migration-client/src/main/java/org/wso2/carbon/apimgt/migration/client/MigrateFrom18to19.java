@@ -116,7 +116,7 @@ public class MigrateFrom18to19 extends MigrationClientBase implements MigrationC
                                        "18-19-migration" + File.separator;
 
         //To drop the foreign key
-        dropFKConstraint(constraintsScriptPath);
+        //        dropFKConstraint(constraintsScriptPath);
     }
 
     /**
