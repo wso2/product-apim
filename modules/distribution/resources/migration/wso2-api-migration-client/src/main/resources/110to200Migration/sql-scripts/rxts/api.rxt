@@ -162,13 +162,6 @@
         <field type="text">
             <name>Cache Timeout</name>
         </field>
-        <field type="options">
-            <name label="Destination Statistics">Destination Stats Enabled</name>
-            <values>
-                <value>Enabled</value>
-                <value>Disabled</value>             
-            </values>
-        </field>
         <field type="text">
             <name>Production Tps</name>
         </field>
