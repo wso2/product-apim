@@ -111,10 +111,10 @@ public class EmailUserNameLoginTestCase extends APIMIntegrationBaseTest {
         login = apiStore.login(fullUserName, password);
         assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Login to Store with email username failed");
-        // check for admin dashboard login with email user name
+        // check for Admin Portal login with email user name
         login = workflowAdmin.login(fullUserName, password);
         assertEquals(login.getResponseCode(), Response.Status.OK.getStatusCode(),
-                "Login to Admin dashboard Login to Publisher with email username failed");
+                "Login to Admin Portal Login to Publisher with email username failed");
     }
 
     /**

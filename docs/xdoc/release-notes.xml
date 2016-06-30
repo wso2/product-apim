@@ -82,7 +82,7 @@
         to access the API provider webapp
     </li>
     <li>Navigate to <a href="https://localhost:9443/store">https://localhost:9443/store</a> to access the API store</li>
-    <li>Navigate to <a href="https://localhost:9443/admin">https://localhost:9443/admin</a> to access Admin dashboard</li>
+    <li>Navigate to <a href="https://localhost:9443/admin">https://localhost:9443/admin</a> to access Admin Portal</li>
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
@@ -100,7 +100,7 @@
 </li>
 <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4034'>APIMANAGER-4034</a>] -         Making the backend endpoint/url optional
 </li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4179'>APIMANAGER-4179</a>] -         Support reverse proxy for API manager admin-dashboard application
+<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4179'>APIMANAGER-4179</a>] -         Support reverse proxy for API manager Admin Portal application
 </li>
 <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4192'>APIMANAGER-4192</a>] -         Set a throttling hard limit per API
 </li>

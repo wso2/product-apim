@@ -56,7 +56,7 @@ public class AnalyticsConfigureTestCase extends APIMIntegrationUiTestBase {
     To run this test case the bam analyzer node should be run on the https://localhost:9446 (port offset 3) with the
      credentials admin,admin
      */
-    @Test(groups = "wso2.apim", description = "verify admin dashboard - configure analytics page", enabled = false)
+    @Test(groups = "wso2.apim", description = "verify Admin Portal - configure analytics page", enabled = false)
     public void testAdminDashboardAnalyticsPage() throws Exception {
         AdminDashboardLoginPage adminDashboardLoginPage = new AdminDashboardLoginPage(driver);
         ConfigureAnalyticsPage configureAnalyticsPage = adminDashboardLoginPage.

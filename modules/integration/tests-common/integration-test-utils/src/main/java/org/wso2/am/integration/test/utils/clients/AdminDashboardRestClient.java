@@ -42,18 +42,18 @@ public class AdminDashboardRestClient {
     }
 
     /**
-     * Login to API admin-dashboard
+     * Login to API Admin Portal
      *
      * @param userName - username to login
      * @param password - password to login
      * @return - http response
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if login to 
-     * admin-dashboard fails
+     * Admin Portal fails
      */
     public HttpResponse login(String userName, String password)
             throws APIManagerIntegrationTestException {
         HttpResponse response;
-        log.info("Login to admin-dashboard " + backendURL + " as the user " + userName );
+        log.info("Login to Admin Portal " + backendURL + " as the user " + userName );
         try {
             response = HTTPSClientUtils.doPost(
                     new URL(backendURL + "admin/site/blocks/user/login/ajax/login.jag"),
