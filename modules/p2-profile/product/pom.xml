@@ -1577,75 +1577,6 @@
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
                                 </feature>
-
-                                <!-- MB features -->
-                                <feature>
-                                    <id>org.wso2.carbon.messaging.andes.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
-                                </feature>
-
-                                <!-- CEP features -->
-                                <feature>
-                                    <id>org.wso2.carbon.event.receiver.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.publisher.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.tracer.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.flow.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.siddhi.tryit.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.statistics.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.stream.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.simulator.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.application.deployer.feature.group
-                                    </id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.execution.manager.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.manager.core.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1667,10 +1598,6 @@
                             </destination>
                             <deleteOldProfileFiles>true</deleteOldProfileFiles>
                             <features>
-                                <feature>
-                                    <id>org.wso2.carbon.analytics.message.tracer.handler.feature.group</id>
-                                    <version>${carbon.analytics.version}</version>
-                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1976,10 +1903,6 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.throttling.siddhi.extension.feature.group</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -1998,75 +1921,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
-                                </feature>
-
-                                <!-- MB features -->
-                                <feature>
-                                    <id>org.wso2.carbon.messaging.andes.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
-                                </feature>
-
-                                <!-- CEP features -->
-                                <feature>
-                                    <id>org.wso2.carbon.event.receiver.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.publisher.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.tracer.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.flow.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.siddhi.tryit.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.statistics.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.stream.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.simulator.feature.group</id>
-                                    <version>${carbon.event-processing.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.application.deployer.feature.group
-                                    </id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.execution.manager.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.manager.core.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.databridge.datareceiver.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
-                                    <version>${carbon.analytics.common.version}</version>
                                 </feature>
                             </features>
                         </configuration>
