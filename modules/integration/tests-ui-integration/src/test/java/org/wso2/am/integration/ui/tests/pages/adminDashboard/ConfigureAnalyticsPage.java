@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * UI Page class of admin-dashboard Configure Analytics page of API Manager
+ * UI Page class of Admin Portal Configure Analytics page of API Manager
  */
 public class ConfigureAnalyticsPage extends PageHandler {
 
@@ -23,7 +23,7 @@ public class ConfigureAnalyticsPage extends PageHandler {
         if (!driver.getCurrentUrl().contains(APIMTestConstants.ADMIN_DASHBOARD_CONFIGURE_ANALYTICS_PAGE_URL_VERIFICATION)) {
             throw new IllegalStateException(driver.getCurrentUrl() + ":    This is not the Publisher home page");
         }
-        log.info("Page load : Admin Dashboard Analytics Page");
+        log.info("Page load : Admin Portal Analytics Page");
     }
 
     /**
