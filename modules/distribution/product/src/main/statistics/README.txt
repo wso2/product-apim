@@ -106,7 +106,7 @@ configure the following properties in the api-manager.xml file of API Manager.
 
 Start APIM
 
-1. go to admin-dashboard using https://localhost:9443/admin-dashboard/
+1. go to admin-dashboard using https://localhost:9443/admin/
 2. login and click Configure Analytics under settings section
 3. select enable combo box and will appear setting to configure analytics
 4. set the Event Receiver Configurations according to the DAS

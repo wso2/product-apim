@@ -56,7 +56,7 @@ public class AdminDashboardRestClient {
         log.info("Login to admin-dashboard " + backendURL + " as the user " + userName );
         try {
             response = HTTPSClientUtils.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/user/login/ajax/login.jag"),
+                    new URL(backendURL + "admin/site/blocks/user/login/ajax/login.jag"),
                     "action=login&username=" + userName + "&password=" + password + "",
                     requestHeaders);
         } catch (Exception e) {
@@ -84,7 +84,7 @@ public class AdminDashboardRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/edit/ajax/tier-edit.jag"),
+                    new URL(backendURL + "admin/site/blocks/tier/edit/ajax/tier-edit.jag"),
                     throttlingTierRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Add new tier failed", e);
@@ -102,7 +102,7 @@ public class AdminDashboardRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
+                    new URL(backendURL + "admin/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=deleteTier&tier=" + tierName, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Delete tier failed", e);
@@ -119,7 +119,7 @@ public class AdminDashboardRestClient {
         try {
             checkAuthentication();
             return HTTPSClientUtils.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
+                    new URL(backendURL + "admin/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=getAllTiers", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Get all tiers failed", e);
