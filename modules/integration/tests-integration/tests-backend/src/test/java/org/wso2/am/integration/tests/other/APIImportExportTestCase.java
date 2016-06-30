@@ -280,8 +280,6 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 "Imported API HTTPS transport status is incorrect");
         Assert.assertEquals("Disabled", apiObj.getString("responseCache"),
                 "Imported API response Cache status is incorrect");
-        Assert.assertEquals("Disabled", apiObj.getString("destinationStats"),
-                "Imported API destination Stats status is incorrect");
         Assert.assertEquals("public", apiObj.getString("visibility"), "Imported API visibility is incorrect");
         Assert.assertEquals("false", apiObj.getString("isDefaultVersion"),
                 "Imported API Default Version status is incorrect");
