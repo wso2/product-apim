@@ -73,49 +73,9 @@
             </releases>
         </repository>
         <repository>
-            <id>wso2-staging-1</id>
+            <id>wso2-staging</id>
             <name>WSO2 staging Repository</name>
             <url>https://maven.wso2.org/nexus/content/repositories/orgwso2siddhi-1005/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>wso2-staging-2</id>
-            <name>WSO2 staging Repository</name>
-            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonanalytics-common-1008/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>wso2-staging-3</id>
-            <name>WSO2 staging Repository</name>
-            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonevent-processing-1006/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>wso2-staging-4</id>
-            <name>WSO2 staging Repository</name>
-            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonanalytics-1018/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>wso2-staging-5</id>
-            <name>WSO2 staging Repository</name>
-            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2analyticscommon-1009</url>
             <releases>
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
