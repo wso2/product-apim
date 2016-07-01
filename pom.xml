@@ -72,17 +72,56 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
-            <repository>
-                <id>wso2-staging</id>
-                <name>WSO2 staging Repository</name>
-                <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbon-1024/</url>
-                <releases>
-                    <enabled>true</enabled>
-                    <updatePolicy>daily</updatePolicy>
-                    <checksumPolicy>ignore</checksumPolicy>
-                </releases>
-            </repository>
-
+        <repository>
+            <id>wso2-staging-1</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2siddhi-1005/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>wso2-staging-2</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonanalytics-common-1008/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>wso2-staging-3</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonevent-processing-1006/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>wso2-staging-4</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2carbonanalytics-1018/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>wso2-staging-5</id>
+            <name>WSO2 staging Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/orgwso2analyticscommon-1009</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -913,7 +952,7 @@
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.12-SNAPSHOT</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.0-beta</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -954,7 +993,7 @@
         <carbon.deployment.version>4.6.2-SNAPSHOT</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.0.5</carbon.analytics.version>
+        <carbon.analytics.version>1.0.6-beta5</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6-SNAPSHOT</org.jaggery.version>
@@ -963,7 +1002,7 @@
         <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
-        <analytics.shared.version>1.0.0-beta</analytics.shared.version>
+        <analytics.shared.version>1.0.0-beta3</analytics.shared.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
@@ -1046,7 +1085,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.5.0-SNAPSHOT</carbon.messaging.version>
-        <carbon.event-processing.version>2.0.13-SNAPSHOT</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.0-beta</carbon.event-processing.version>
         <andes.version>3.5.0-SNAPSHOT</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
