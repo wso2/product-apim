@@ -603,6 +603,13 @@
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.broker.lifecycle</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
