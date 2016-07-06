@@ -399,6 +399,11 @@
                             <token>(1000)</token>
                             <value>40</value>
                         </replacement>
+                        <replacement>
+                            <xpath>/broker/deployment/mode</xpath>
+                            <token>(standalone)</token>
+                            <value>40</value>
+                        </replacement>
                     </replacements>
                 </configuration>
             </execution>
