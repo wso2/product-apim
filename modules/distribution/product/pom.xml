@@ -401,8 +401,8 @@
                         </replacement>
                         <replacement>
                             <xpath>/broker/deployment/mode</xpath>
-                            <token>(standalone)</token>
-                            <value>40</value>
+                            <token>(default)</token>
+                            <value>standalone</value>
                         </replacement>
                     </replacements>
                 </configuration>
