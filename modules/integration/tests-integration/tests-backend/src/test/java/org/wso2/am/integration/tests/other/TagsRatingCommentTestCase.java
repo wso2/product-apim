@@ -130,7 +130,7 @@ public class TagsRatingCommentTestCase extends APIMIntegrationBaseTest {
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
-        apiStore.addApplication("CommentRatingAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+        apiStore.addApplication("CommentRatingAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "",
                 "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName, storeContext.getContextTenant()

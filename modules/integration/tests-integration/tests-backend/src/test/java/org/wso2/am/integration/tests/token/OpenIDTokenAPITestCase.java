@@ -26,6 +26,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
@@ -59,7 +60,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
-        apiStore.addApplication("OpenIDTokenTestAPIApplication", "Gold", "", "this-is-test");
+        apiStore.addApplication("OpenIDTokenTestAPIApplication",
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
 
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("OpenIDTokenTestAPIApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();

@@ -93,7 +93,8 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")
     public void testApplicationCreation() throws Exception {
 
-        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, APP_CALLBACK_URL,
+        apiStore.addApplication(APP_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, APP_CALLBACK_URL,
                 APP_DESCRIPTION);
         //generate keys for the subscription
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);

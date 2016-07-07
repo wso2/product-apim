@@ -82,6 +82,8 @@ public class APIMIntegrationConstants {
         public static final int LARGE_LIMIT = 20;
         public static final int MEDIUM_LIMIT = 5;
         public static final int SMALL_LIMIT = 1;
+
+        public static final String DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN = "50PerMin";
     }
 
     public static class API_TIER {
