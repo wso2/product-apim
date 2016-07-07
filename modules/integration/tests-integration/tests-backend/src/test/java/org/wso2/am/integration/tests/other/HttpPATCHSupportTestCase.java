@@ -113,7 +113,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         apiStore.login(user.getUserName(), user.getPassword());
 
         //Add an Application in the Store.
-        apiStore.addApplication("HttpPatchSupportAPP", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+        apiStore.addApplication("HttpPatchSupportAPP", APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "",
                 "Test-HTTP-PATCH");
 
         //Subscribe to the new application

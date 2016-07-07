@@ -89,9 +89,12 @@ public class UsersAndDocsInAPIOverviewTestCase extends APIManagerLifecycleBaseTe
     public void testNumberOfUsersInAPIOverview() throws APIManagerIntegrationTestException {
         String applicationDescription = "";
         String applicationCallBackUrl = "";
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE,
-                applicationCallBackUrl, applicationDescription);
-        apiStoreClientUser2.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, applicationCallBackUrl, applicationDescription);
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, applicationCallBackUrl,
+                applicationDescription);
+        apiStoreClientUser2.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, applicationCallBackUrl,
+                applicationDescription);
         //Create publish and subscribe a API by user 1
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(TIER_GOLD);

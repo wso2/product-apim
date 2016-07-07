@@ -168,9 +168,8 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
         //add a application
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
-        serviceResponse = apiStore
-                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.SMALL, "",
-                        "this-is-test");
+        serviceResponse = apiStore.addApplication(applicationName,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
         verifyResponse(serviceResponse);
 
         //publish the api
