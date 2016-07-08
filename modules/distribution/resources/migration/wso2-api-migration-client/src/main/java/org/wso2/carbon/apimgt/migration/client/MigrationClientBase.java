@@ -243,16 +243,17 @@ public abstract class MigrationClientBase {
         ResultSet resultSet = null;
         Statement statement = null;
         try {
-            String queryToExecute = IOUtils.toString(new FileInputStream(new File(sqlScriptPath + "drop-fk.sql")),
-                                                     "UTF-8");
-            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
-
             connection = APIMgtDBUtil.getConnection();
             String dbType = MigrationDBCreator.getDatabaseType(connection);
+            String queryToExecute = IOUtils.toString(
+                    new FileInputStream(new File(sqlScriptPath + "constraint" + File.separator + dbType + ".sql")),
+                    "UTF-8");
+            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
             connection.setAutoCommit(false);
             statement = connection.createStatement();
             if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
                 queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
+                queryArray[0] = queryArray[0].replace("<AM_DB_NAME>", connection.getMetaData().getUserName());
             }
             resultSet = statement.executeQuery(queryArray[0]);
             String constraintName = null;
