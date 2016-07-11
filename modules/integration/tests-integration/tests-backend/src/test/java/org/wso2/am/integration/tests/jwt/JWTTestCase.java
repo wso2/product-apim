@@ -367,6 +367,15 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String claim = jsonObject.getString("iss");
         assertTrue("JWT assertion is invalid", claim.contains("wso2.org/products/am"));
 
+        if("carbon.super".equalsIgnoreCase(user.getUserDomain())) {
+            //Do the signature verification for super tenant as tenant key store not there accessible
+            String jwtHeader = APIMTestCaseUtils.getDecodedJWTHeader(jwtheader.getValue());
+            byte[] jwtSignature = APIMTestCaseUtils.getDecodedJWTSignature(jwtheader.getValue());
+            String jwtAssertion = APIMTestCaseUtils.getJWTAssertion(jwtheader.getValue());
+            boolean isSignatureValid = APIMTestCaseUtils.isJwtSignatureValid(jwtAssertion, jwtSignature, jwtHeader);
+            assertTrue("JWT signature verification failed", isSignatureValid);
+        }
+
         claim = jsonObject.getString("http://wso2.org/claims/subscriber");
         assertTrue("JWT claim subscriber invalid. Received " + claim, claim.contains(subscriberUsername));
 
