@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
@@ -95,10 +96,14 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(serviceResponse.getStatusLine().getStatusCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched when api invocation");
         assertEquals(accessControlAllowOrigin, "*", "Access Control allow origin values get mismatched in option Call");
-        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type",
+        assertEquals(accessControlAllowHeaders, "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
-        assertEquals(accessControlAllowMethods, "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-                     "Access Control allow Method values get mismatched in option Call");
+        assertTrue(accessControlAllowMethods.contains("GET")
+                   && accessControlAllowMethods.contains("POST")
+                   && !accessControlAllowMethods.contains("DELETE")
+                   && !accessControlAllowMethods.contains("PUT")
+                   && !accessControlAllowMethods.contains("PATCH"),
+                   "Access Control allow Method values get mismatched in option Call");
     }
 
     @Test(groups = {
@@ -111,12 +116,13 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
                                                       "\"accessControlAllowCredentials\" : true, " +
                                                       "\"accessControlAllowHeaders\" : " +
                                                       "[\"Access-Control-Allow-Origin\", \"authorization\", " +
-                                                      "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\"," +
-                                                      " " +
+                                                      "\"Content-Type\", \"SOAPAction\"], " +
+                                                      "\"accessControlAllowMethods\" : [\"POST\", " +
                                                       "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         apiRequest.setCorsConfiguration(corsConfiguration);
         apiRequest.setProvider(user.getUserName());
         apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeployment();
         waitForAPIDeploymentSync(apiRequest.getProvider(), apiRequest.getName(), apiRequest.getVersion(),
                                  APIMIntegrationConstants.IS_API_EXISTS);
         String apiInvocationUrl = getAPIInvocationURLHttp(apiContext + "/1.0.0/customers/123");
@@ -135,10 +141,14 @@ public class APIMANAGER3965TestCase extends APIMIntegrationBaseTest {
         assertEquals(accessControlAllowOrigin, "http://localhost:8080",
                      "Access Control allow origin values get mismatched in option " +
                      "Call");
-        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type",
+        assertEquals(accessControlAllowHeaders, "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction",
                      "Access Control allow Headers values get mismatched in option Call");
-        assertEquals(accessControlAllowMethods, "POST,PATCH,GET,DELETE,OPTIONS,PUT",
-                     "Access Control allow Method values get mismatched in option Call");
+        assertTrue(accessControlAllowMethods.contains("GET")
+                   && !accessControlAllowMethods.contains("POST")
+                   && !accessControlAllowMethods.contains("DELETE")
+                   && !accessControlAllowMethods.contains("PUT")
+                   && !accessControlAllowMethods.contains("PATCH"),
+                   "Access Control allow Method values get mismatched in option Call");
         assertEquals(accessControlAllowCredentials, "true",
                      "Access Control allow Credentials values get mismatched in option Call");
     }

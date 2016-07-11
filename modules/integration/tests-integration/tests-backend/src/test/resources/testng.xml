@@ -110,6 +110,7 @@
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
         </classes>
     </test>
 
@@ -137,7 +138,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
 			<class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-
+            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
         </classes>
     </test>
 
@@ -157,9 +158,13 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
+            <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
+            <class name="org.wso2.am.integration.tests.application.APIMANAGER3706ApplicationUpdateTestCase"/>
+            <!--disable test case since it need to configure DAS -->
+            <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
         </classes>
     </test>
 
@@ -176,7 +181,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
-
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
         </classes>
     </test>
 

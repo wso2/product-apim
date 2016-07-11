@@ -154,6 +154,7 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception{
         apiPublisher.deleteAPI(API_NAME,version,providerName);
         apiPublisher.deleteAPI(API_NAME,newVersion,providerName);
+        super.cleanUp();
     }
 
 

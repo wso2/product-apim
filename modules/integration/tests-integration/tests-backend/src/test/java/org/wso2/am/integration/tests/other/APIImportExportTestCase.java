@@ -31,26 +31,50 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APIThrottlingTier;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This test case is used to test the API Manager Import Export tool
@@ -256,8 +280,6 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 "Imported API HTTPS transport status is incorrect");
         Assert.assertEquals("Disabled", apiObj.getString("responseCache"),
                 "Imported API response Cache status is incorrect");
-        Assert.assertEquals("Disabled", apiObj.getString("destinationStats"),
-                "Imported API destination Stats status is incorrect");
         Assert.assertEquals("public", apiObj.getString("visibility"), "Imported API visibility is incorrect");
         Assert.assertEquals("false", apiObj.getString("isDefaultVersion"),
                 "Imported API Default Version status is incorrect");
@@ -360,7 +382,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Imported API not in Created state");
     }
 
@@ -443,7 +465,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         requestHeaders.clear();
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(NEW_API_CONTEXT, API_VERSION);
-        serviceResponse = HttpRequestUtil.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_FORBIDDEN, serviceResponse.getResponseCode(),
                 "Imported API not in Created state");
     }
@@ -612,6 +634,7 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(deleteStatus, "temp file delete not successful");
         deleteStatus = zipTempDir.delete();
         Assert.assertTrue(deleteStatus, "temp directory delete not successful");
+        super.cleanUp();
     }
 
     @DataProvider
@@ -643,10 +666,10 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
      * @throws IOException        throws if connection issues occurred
      */
     private void exportAPI(URL exportRequest, File fileName) throws URISyntaxException, IOException {
-        CloseableHttpClient client = HttpClients.createDefault();
+        CloseableHttpClient client = HTTPSClientUtils.getHttpsClient();
         HttpGet get = new HttpGet(exportRequest.toURI());
         get.addHeader(APIMIntegrationConstants.AUTHORIZATION_HEADER,
-                "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
+                      "Basic " + encodeCredentials(user.getUserName(), user.getPassword().toCharArray()));
         CloseableHttpResponse response = client.execute(get);
         HttpEntity entity = response.getEntity();
         if (entity != null) {
@@ -657,8 +680,8 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
                 outStream.close();
             }
         }
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK,
-                "Response code is not as expected");
+
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.SC_OK, "Response code is not as expected");
         Assert.assertTrue(fileName.exists(), "File save was not successful");
     }
 
@@ -672,7 +695,13 @@ public class APIImportExportTestCase extends APIMIntegrationBaseTest {
     private void importAPI(String importUrl, File fileName, String user, char[] pass) throws IOException {
         //open import API url connection and deploy the exported API
         URL url = new URL(importUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        });
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
 

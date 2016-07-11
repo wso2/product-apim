@@ -163,6 +163,7 @@ public class APIApplicationLifeCycleTestCase extends APIMIntegrationBaseTest {
         apiRequest.setProvider("admin");
         Thread.sleep(1000);
         apiPublisher.updateAPI(apiRequest);
+        waitForAPIDeployment();
         //TODO need to reformat this code after we finalize new APIs
         apiPublisher.addDocument(APIName, APIVersion, providerName, "Doc Name", "How To", "In-line",
                 "url-no-need", "summary", "","","");

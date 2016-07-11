@@ -12,7 +12,7 @@ WSO2 API Manager consists of several loosely coupled modules.
         * API publisher
         * API store
         * API gateway
-	    * API Key Manager
+	* API Key Manager
 
 The API publisher module allows API publishers to easily define APIs and manage them
 using a strong governance model which consists of well-established concepts such as
@@ -162,7 +162,7 @@ Documentation
 ==============
 
 On-line product documentation is available at:
-        https://docs.wso2.com/display/AM1100/WSO2+API+Manager+Documentation
+        https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation
 
 Support
 ==================================
@@ -180,7 +180,7 @@ Known issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
 
-    https://wso2.org/jira/issues/?filter=12237
+    https://wso2.org/jira/issues/?filter=13107
 
 Issue Tracker
 ==================================

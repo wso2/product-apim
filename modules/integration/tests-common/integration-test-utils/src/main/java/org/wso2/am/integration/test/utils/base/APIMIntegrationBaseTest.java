@@ -339,6 +339,14 @@ public class APIMIntegrationBaseTest {
         return gatewayUrlsWrk.getWebAppURLNhttp();
     }
 
+    protected String getGatewayURLHttps() {
+        return gatewayUrlsWrk.getWebAppURLHttps();
+    }
+
+    protected String getGatewayURLNhttps() {
+        return gatewayUrlsWrk.getWebAppURLNhttps();
+    }
+
     protected String getKeyManagerURLHttp() {
         return keyMangerUrl.getWebAppURLHttp();
     }

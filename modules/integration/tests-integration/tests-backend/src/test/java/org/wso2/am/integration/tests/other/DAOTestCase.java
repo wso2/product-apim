@@ -153,8 +153,8 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
         }
         assertEquals(apiBean.getDescription(), description, "API description mismatch");
 
-        apiStore.addApplication("DAOTestAPI-Application", APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
-                "this-is-test");
+        apiStore.addApplication("DAOTestAPI-Application",
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(APIName,
                 storeContext.getContextTenant()
                         .getContextUser()
@@ -235,6 +235,7 @@ public class DAOTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         apiStore.removeApplication("DAOTestAPI-Application");
+        super.cleanUp();
     }
 
 }

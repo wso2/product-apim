@@ -18,6 +18,7 @@ package org.wso2.carbon.apimgt.migration.client;
 
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Public interface for all migrations.
@@ -72,4 +73,10 @@ public interface MigrationClient {
      */
     public void statsMigration() throws APIMigrationException;
 
+    /**
+     * This method is used to migrate optional features in API.     *
+     *
+     * @throws APIMigrationException
+     */
+    public void optionalMigration(List<String> options) throws APIMigrationException;
 }

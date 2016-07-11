@@ -334,7 +334,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
 
         HttpResponse response = apiStore
                 .updateClientApplication(CALLBACK_URL_UPDATE_APP_NAME, keyType, authorizedDomains, retryAfterFailure,
-                        URLEncoder.encode(jsonParams, "UTF8"), CALLBACK_URL);
+                        jsonParams, CALLBACK_URL);
         verifyResponse(response);
 
         //Test the Authorization Code key generation with updates values
@@ -348,6 +348,7 @@ public class GrantTypeTokenGenerateTestCase extends APIMIntegrationBaseTest {
         apiStore.removeApplication(APP_NAME);
         apiStore.removeApplication(CALLBACK_URL_UPDATE_APP_NAME);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @DataProvider

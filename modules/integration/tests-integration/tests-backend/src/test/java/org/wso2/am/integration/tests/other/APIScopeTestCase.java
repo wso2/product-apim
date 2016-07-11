@@ -124,6 +124,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                 APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
         // user_scope (used for GET) :- admin,subscriber
@@ -138,6 +140,8 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
 
         apiPublisher.updateResourceOfAPI(user.getUserName(), API_NAME, API_VERSION, modifiedResource);
+
+        waitForAPIDeployment();
 
         // For Admin user
         // create new application and subscribing
@@ -170,8 +174,6 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                 "&password=" + user.getPassword() +
                 "&scope=admin_scope user_scope";
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
-
         response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
                                                   requestBody, tokenEndpointURL);
         accessTokenGenerationResponse = new JSONObject(response.getData());
@@ -180,7 +182,6 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
-        Thread.sleep(5000);
         response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
 
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),

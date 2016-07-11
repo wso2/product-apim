@@ -18,16 +18,16 @@
 
 package org.wso2.am.integration.test.utils.clients;
 
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIThrottlingTierRequest;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AdminDashboardRestClient {
     private static final Log log = LogFactory.getLog(AdminDashboardRestClient.class);
@@ -42,21 +42,21 @@ public class AdminDashboardRestClient {
     }
 
     /**
-     * Login to API admin-dashboard
+     * Login to API Admin Portal
      *
      * @param userName - username to login
      * @param password - password to login
      * @return - http response
      * @throws org.wso2.am.integration.test.utils.APIManagerIntegrationTestException - Throws if login to 
-     * admin-dashboard fails
+     * Admin Portal fails
      */
     public HttpResponse login(String userName, String password)
             throws APIManagerIntegrationTestException {
         HttpResponse response;
-        log.info("Login to admin-dashboard " + backendURL + " as the user " + userName );
+        log.info("Login to Admin Portal " + backendURL + " as the user " + userName );
         try {
-            response = HttpRequestUtil.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/user/login/ajax/login.jag"),
+            response = HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/user/login/ajax/login.jag"),
                     "action=login&username=" + userName + "&password=" + password + "",
                     requestHeaders);
         } catch (Exception e) {
@@ -83,8 +83,8 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/edit/ajax/tier-edit.jag"),
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/tier/edit/ajax/tier-edit.jag"),
                     throttlingTierRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Add new tier failed", e);
@@ -101,8 +101,8 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=deleteTier&tier=" + tierName, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Delete tier failed", e);
@@ -118,8 +118,8 @@ public class AdminDashboardRestClient {
             throws APIManagerIntegrationTestException {
         try {
             checkAuthentication();
-            return HttpRequestUtil.doPost(
-                    new URL(backendURL + "admin-dashboard/site/blocks/tier/manage/ajax/tier-manage.jag"),
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/tier/manage/ajax/tier-manage.jag"),
                     "action=getAllTiers", requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Get all tiers failed", e);

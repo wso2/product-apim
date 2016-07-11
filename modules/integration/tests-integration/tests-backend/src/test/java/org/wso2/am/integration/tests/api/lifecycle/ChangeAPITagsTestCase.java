@@ -152,17 +152,23 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             //Update API with Edited Tags
             HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+            waitForAPIDeployment();
             assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Update API Response Code is invalid. API Name:" + apiName);
             assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                     "Error in API Update in API Name:" + apiName +
                             "Response Data:" + updateAPIHTTPResponse.getData());
         }
+        try {
+			Thread.sleep(5000l);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
         assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code wan not" +
                 " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
-        for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
+        for (Map.Entry<String, String> apiTagEntry : apiTagsMapAfterChange.entrySet()) {
             String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
                     API_VERSION_1_0_0 + "&provider=" + providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
@@ -178,12 +184,13 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             APIIdentifier apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
             deleteAPI(apiIdentifier, apiPublisherClientUser1);
         }
+        super.cleanUp();
     }
 
 

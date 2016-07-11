@@ -273,8 +273,9 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
         //update description fields
         String updatedDescription = "updatednewdescription";
-        HttpResponse updateDescriptionResponse = apiStore.updateApplication(updatedAppName, updatedAppName,
-                appCallbackUrl, updatedDescription, APIMIntegrationConstants.APPLICATION_TIER.LARGE);
+        HttpResponse updateDescriptionResponse = apiStore.updateApplication
+                (updatedAppName, updatedAppName, appCallbackUrl, updatedDescription,
+                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN);
         assertEquals(updateDescriptionResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code Invalid in Description update Response");
         JSONObject updateDescriptionJsonObject = new JSONObject(updateDescriptionResponse.getData());
@@ -299,7 +300,7 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
         assertTrue(isUpdatedDescriptionAvailable, "Error in Application Description Update Response");
 
         //update tier field
-        String newTier = APIMIntegrationConstants.APPLICATION_TIER.LARGE;
+        String newTier = APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN;
         HttpResponse updateTierResponse = apiStore.updateApplication(updatedAppName, updatedAppName,
                 "http://myserverupdated.com", updatedDescription, newTier);
         assertEquals(updateTierResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
@@ -323,6 +324,33 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
             }
         }
         assertTrue(isTierUpdated, "Error in Tier Update Response");
+
+        //update callbackURL fields
+        String updatedCallbackURL = "vzwcloudapi://oauth";
+        HttpResponse updateCallBackURLResponse = apiStore.updateApplication(updatedAppName, updatedAppName,
+                updatedCallbackURL, description, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN);
+        assertEquals(updateCallBackURLResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Invalid in callbackURL update Response");
+        JSONObject updateCallBackURLJsonObject = new JSONObject(updateCallBackURLResponse.getData());
+        assertFalse(updateCallBackURLJsonObject.getBoolean("error"), "Error in callbackURL Update Response");
+
+        //verify the app CallbackURL
+        HttpResponse verifyAppCallBackURLResponse = apiStore.getAllApplications();
+        assertEquals(verifyAppName.getResponseCode(), Response.Status.OK.getStatusCode());
+        JSONObject verifyAppCallBackURLJsonObject = new JSONObject(verifyAppCallBackURLResponse.getData());
+
+        JSONArray verifyCallBackURLJsonArray = verifyAppCallBackURLJsonObject.getJSONArray("applications");
+        boolean isUpdatedCallBackURLAvailable = false;
+        for (int applicationsIndex = 0; applicationsIndex < verifyCallBackURLJsonArray.length(); applicationsIndex++) {
+            if (verifyCallBackURLJsonArray.getJSONObject(applicationsIndex).getString("name").contains(updatedAppName)) {
+                isUpdatedCallBackURLAvailable = true;
+
+                assertTrue(updatedCallbackURL.equals(verifyCallBackURLJsonArray.getJSONObject(applicationsIndex).getString("callbackUrl")),
+                        "callbackURL is not updated ");
+                break;
+            }
+        }
+        assertTrue(isUpdatedCallBackURLAvailable, "Error in Application CallbackURL Update Response");
     }
 
     //Remove a application
@@ -380,7 +408,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-    removeAllApps();
+        removeAllApps();
+        super.cleanUp();
     }
 
     public void removeAllApps() throws Exception{

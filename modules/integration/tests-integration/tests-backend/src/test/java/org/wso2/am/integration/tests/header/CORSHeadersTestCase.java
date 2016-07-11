@@ -70,10 +70,9 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
     private static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER_VALUE = "*";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE = "GET";
-    private static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES = "GET,PUT,POST,DELETE,PATCH,OPTIONS";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
     private static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER_VALUE
-            = "authorization,Access-Control-Allow-Origin,Content-Type";
+            = "authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction";
     private static final String ACCESS_CONTROL_ALLOW_CREDENTIALS_HEADER = "Access-Control-Allow-Credentials";
 
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -120,7 +119,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
 
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
@@ -151,7 +151,7 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_METHODS_HEADER);
         assertNotNull(header, ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header is not available in the response.");
-        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_ALL_VALUES,
+        assertEquals(header.getValue(), ACCESS_CONTROL_ALLOW_METHODS_HEADER_VALUE,
                      ACCESS_CONTROL_ALLOW_METHODS_HEADER + " header value mismatch.");
 
         header = pickHeader(responseHeaders, ACCESS_CONTROL_ALLOW_HEADERS_HEADER);

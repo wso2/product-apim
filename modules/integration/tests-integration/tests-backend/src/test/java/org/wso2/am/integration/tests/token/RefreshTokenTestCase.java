@@ -138,7 +138,7 @@ public class RefreshTokenTestCase extends APIMIntegrationBaseTest {
                        storeContext.getContextTenant().getContextUser().getPassword());
 
         //Add Application.
-        apiStore.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
+        apiStore.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
 
         //Subscribe Application to API.
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, storeContext.getContextTenant()

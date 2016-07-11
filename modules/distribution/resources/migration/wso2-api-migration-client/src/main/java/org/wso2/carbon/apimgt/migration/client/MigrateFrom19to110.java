@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class MigrateFrom19to110 extends MigrationClientBase implements MigrationClient {
 
     private static final Log log = LogFactory.getLog(MigrateFrom19to110.class);
@@ -64,8 +63,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             this.usernameWithoutDomain = usernameWithoutDomain;
             this.authzUser = authzUser;
         }
-        public String usernameWithoutDomain;
-        public String authzUser;
+        String usernameWithoutDomain;
+        String authzUser;
     }
 
     public MigrateFrom19to110(String tenantArguments, String blackListTenantArguments, RegistryService registryService,
@@ -80,8 +79,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         String amScriptPath = CarbonUtils.getCarbonHome() + File.separator + "migration-scripts" + File.separator +
                 "19-110-migration" + File.separator;
 
-        updateAPIManangerDatabase(amScriptPath);
-
+        updateAPIManagerDatabase(amScriptPath);
         //updateAuthzUserName();
         
         if (StatDBUtil.isTokenEncryptionEnabled()) {
@@ -92,11 +90,8 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     @Override
     public void registryResourceMigration() throws APIMigrationException {
         rxtMigration();
-
         workflowExtensionsMigration();
-
         updateTiers();
-
         migrateLifeCycles();
     }
 
@@ -115,18 +110,26 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     }
 
+    @Override
+    public void optionalMigration(List<String> options) throws APIMigrationException {
+        //no implementation is required
+    }
+
     private void synapseAPIMigration() {
         for (Tenant tenant : getTenantsArray()) {
-            String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
-            List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
-            ResourceModifier.updateSynapseConfigs(synapseDTOs);
+            try {
+                String apiPath = ResourceUtil.getApiPath(tenant.getId(), tenant.getDomain());
+                List<SynapseDTO> synapseDTOs = ResourceUtil.getVersionedAPIs(apiPath);
+                ResourceModifier.updateSynapseConfigs(synapseDTOs);
 
-            for (SynapseDTO synapseDTO : synapseDTOs) {
-                ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                for (SynapseDTO synapseDTO : synapseDTOs) {
+                    ResourceUtil.transformXMLDocument(synapseDTO.getDocument(), synapseDTO.getFile());
+                }
+            } catch (Exception e) {
+                log.error("Unable to do the Synapse API migration of tenant : " + tenant.getDomain());
             }
         }
     }
-
 
     private void updateAuthzUserName() throws SQLException {
         log.info("Updating Authz UserName for API Manager started");
@@ -144,13 +147,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
             while (resultSet.next()) {
                 String authzUser = resultSet.getString("AUTHZ_USER");
-
                 String usernameWithoutDomain = MultitenantUtils.getTenantAwareUsername(authzUser);
 
                 AccessTokenInfo accessTokenInfo = new AccessTokenInfo(usernameWithoutDomain, authzUser);
                 updateValues.add(accessTokenInfo);
             }
-
         } finally {
             APIMgtDBUtil.closeAllConnections(selectStatement, connection, resultSet);
         }
@@ -195,7 +196,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                     }
                 }
             }
-
         } finally {
             APIMgtDBUtil.closeAllConnections(null, connection, null);
         }
@@ -204,6 +204,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private boolean updateAMApplicationKeyMapping(Connection connection) throws SQLException {
         log.info("Updating consumer keys in AM_APPLICATION_KEY_MAPPING");
+
         PreparedStatement preparedStatementUpdate = null;
         PreparedStatement preparedStatementDelete = null;
         Statement statement = null;
@@ -270,6 +271,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                     preparedStatementDelete.addBatch();
                 }
                 preparedStatementDelete.executeBatch();
+
                 log.info("AM_APPLICATION_KEY_MAPPING table updated with " + decryptionFailedRecords + "/"
                         + totalRecords + " of the CONSUMER_KEY entries deleted as they cannot be decrypted");
             } else {
@@ -277,17 +279,24 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                         + totalRecords + " of the CONSUMER_KEY entries cannot be decrypted");
             }
         } finally {
-            if (preparedStatementUpdate != null) preparedStatementUpdate.close();
-            if (preparedStatementDelete != null) preparedStatementDelete.close();
-            if (statement != null) statement.close();
-            if (resultSet != null) resultSet.close();
-        }
+            APIMgtDBUtil.closeAllConnections(null, null, resultSet);
+            APIMgtDBUtil.closeAllConnections(preparedStatementUpdate, null, null);
+            APIMgtDBUtil.closeAllConnections(preparedStatementDelete, null, null);
 
+            if (statement != null){
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.error("Unable to close the statement", e);
+                }
+            }
+        }
         return continueUpdatingDB;
     }
 
     private boolean updateAMAppKeyDomainMapping(Connection connection) throws SQLException {
         log.info("Updating consumer keys in AM_APP_KEY_DOMAIN_MAPPING");
+
         Statement selectStatement = null;
         Statement deleteStatement = null;
         PreparedStatement preparedStatement = null;
@@ -360,6 +369,7 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private boolean updateIdnTableConsumerKeys(Connection connection) throws SQLException {
         log.info("Updating consumer keys in IDN Tables");
+
         Statement consumerAppsLookup = null;
         PreparedStatement consumerAppsDelete = null;
         PreparedStatement consumerAppsInsert = null;
@@ -379,7 +389,6 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOs = new ArrayList<>();
             ArrayList<ConsumerAppsTableDTO> consumerAppsTableDTOsFailed = new ArrayList<>();
 
-
             while (consumerAppsResultSet.next()) {
                 ConsumerKeyDTO consumerKeyDTO = new ConsumerKeyDTO();
                 consumerKeyDTO.setEncryptedConsumerKey(consumerAppsResultSet.getString("CONSUMER_KEY"));
@@ -395,8 +404,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 consumerAppsTableDTO.setGrantTypes(consumerAppsResultSet.getString("GRANT_TYPES"));
                 if (ResourceModifier.decryptConsumerKeyIfEncrypted(consumerKeyDTO)) {
                     consumerAppsTableDTOs.add(consumerAppsTableDTO);
-                    log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
-                            + " in IDN_OAUTH_CONSUMER_APPS table");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Successfully decrypted consumer key : " + consumerKeyDTO.getEncryptedConsumerKey()
+                                + " in IDN_OAUTH_CONSUMER_APPS table");
+                    }
                 }
                 else {
                     consumerAppsTableDTOsFailed.add(consumerAppsTableDTO);
@@ -573,14 +584,19 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
      */
     private void workflowExtensionsMigration() throws APIMigrationException {
         log.info("Workflow Extensions configuration file migration for API Manager started.");
+
         for (Tenant tenant : getTenantsArray()) {
-            log.info("Start workflow extensions configuration migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            log.info("Start workflow extensions configuration migration for tenant " + tenant.getId()
+                     + '(' + tenant.getDomain() + ')');
 
             try {
                 registryService.startTenantFlow(tenant);
 
                 if (!registryService.isGovernanceRegistryResourceExists(APIConstants.WORKFLOW_EXECUTOR_LOCATION)) {
-                    log.debug("Workflow extensions resource does not exist for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+                    if (log.isDebugEnabled()) {
+                        log.debug("Workflow extensions resource does not exist for tenant " + tenant.getId()
+                                  + '(' + tenant.getDomain() + ')');
+                    }
                     continue;
                 }
 
@@ -618,6 +634,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 registryService.startTenantFlow(tenant);
 
                 if (!registryService.isGovernanceRegistryResourceExists(APIConstants.API_TIER_LOCATION)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Tier resource does not exist for tenant " + tenant.getId()
+                                  + '(' + tenant.getDomain() + ')');
+                    }
                     continue;
                 } else {
                     String apiTiers = ResourceUtil.getResourceContent(
@@ -629,21 +649,16 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
                 }
 
                 // Since API tiers.xml has been updated it will be used as app and resource tier.xml
-                if (!registryService.isGovernanceRegistryResourceExists(APIConstants.APP_TIER_LOCATION)) {
-                    String apiTiers = ResourceUtil.getResourceContent(
-                            registryService.getGovernanceRegistryResource(APIConstants.API_TIER_LOCATION));
+                // We do not care whether there is an already existing file in this location. Theoretically it should
+                // not. If there was, then we override that file too.
+                String apiTiers = ResourceUtil.getResourceContent(registryService.getGovernanceRegistryResource
+                        (APIConstants.API_TIER_LOCATION));
 
-                    registryService.addGovernanceRegistryResource(
-                                                    APIConstants.APP_TIER_LOCATION, apiTiers, "application/xml");
-                }
+                registryService.addGovernanceRegistryResource(APIConstants.APP_TIER_LOCATION, apiTiers,
+                                                              "application/xml");
 
-                if (!registryService.isGovernanceRegistryResourceExists(APIConstants.RES_TIER_LOCATION)) {
-                    String apiTiers = ResourceUtil.getResourceContent(
-                            registryService.getGovernanceRegistryResource(APIConstants.API_TIER_LOCATION));
-
-                    registryService.addGovernanceRegistryResource(
-                                                    APIConstants.RES_TIER_LOCATION, apiTiers, "application/xml");
-                }
+                registryService.addGovernanceRegistryResource(APIConstants.RES_TIER_LOCATION, apiTiers,
+                                                              "application/xml");
             } catch (UserStoreException e) {
                 log.error("Error occurred while accessing the user store " + + tenant.getId() + 
                           '(' + tenant.getDomain() + ')', e);
@@ -662,9 +677,11 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private void migrateLifeCycles() throws APIMigrationException {
         log.info("Life Cycles executor migration for API Manager started.");
 
-        String apiLifeCycleXMLPath = CarbonUtils.getCarbonHome() + File.separator + APIConstants.RESOURCE_FOLDER_LOCATION +
-                File.separator + Constants.LIFE_CYCLES_FOLDER + File.separator +
-                APIConstants.API_LIFE_CYCLE + ".xml";
+        String apiLifeCycleXMLPath = CarbonUtils.getCarbonHome() + File.separator
+                                     + APIConstants.RESOURCE_FOLDER_LOCATION + File.separator
+                                     + Constants.LIFE_CYCLES_FOLDER + File.separator + APIConstants.API_LIFE_CYCLE
+                                     + ".xml";
+
         String executorlessApiLifeCycle = null;
         String apiLifeCycle = null;
 
@@ -683,13 +700,12 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
         for (Tenant tenant : getTenantsArray()) {
             log.info("Start life cycle migration for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+
             try {
                 registryService.startTenantFlow(tenant);
 
                 addExecutorlessLifeCycle(tenant, apiLifeCycleRegistryPath, executorlessApiLifeCycle);
-
                 updateApiLifeCycleStatus(tenant);
-
                 updateWithCompleteLifeCycle(tenant, apiLifeCycleRegistryPath, apiLifeCycle);
             }
             finally {
@@ -703,7 +719,9 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
     private void addExecutorlessLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath,
                                           String executorlessApiLifeCycle) throws APIMigrationException {
         try {
-            log.debug("Adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            }
             if (!registryService.isConfigRegistryResourceExists(apiLifeCycleRegistryPath)) {
                 registryService.addConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle,
                         "application/xml");
@@ -711,7 +729,10 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
             else {
                 registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, executorlessApiLifeCycle);
             }
-            log.debug("Completed adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Completed adding executorless LC for tenant " + tenant.getId() + '(' + tenant.getDomain()
+                          + ')');
+            }
         } catch (UserStoreException e) {
             log.error("Error occurred while accessing the user store when adding executorless " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
@@ -729,32 +750,42 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
         statuses.put(APIStatus.DEPRECATED.toString(), new String[]{"Publish", "Deprecate"});
         statuses.put(APIStatus.RETIRED.toString(), new String[]{"Publish", "Deprecate", "Retire"});
 
-        log.debug("Updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        }
         try {
             registryService.addDefaultLifecycles();
             GenericArtifact[] artifacts = registryService.getGenericAPIArtifacts();
 
             for (GenericArtifact artifact : artifacts) {
-                String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
-                //Check whether API is already migrated
-                if (currentState != null && !currentState.equalsIgnoreCase(artifact.getLifecycleState())) {                    
-                    artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
-                    String[] actions = statuses.get(currentState);
+                try {
+                    String currentState = artifact.getAttribute(APIConstants.API_OVERVIEW_STATUS);
+                    //Check whether API is already migrated
+                    if (currentState != null && !currentState.equalsIgnoreCase(artifact.getLifecycleState())) {
+                        artifact.attachLifecycle(APIConstants.API_LIFE_CYCLE);
+                        String[] actions = statuses.get(currentState);
 
-                    if (actions != null) {
-                        for (String action : actions) {
-                            artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
-                            if (log.isDebugEnabled()) {
-                                log.debug("Target LC Status : " + currentState + ". Performing LC Action : " + action);
+                        if (actions != null) {
+                            for (String action : actions) {
+                                artifact.invokeAction(action, APIConstants.API_LIFE_CYCLE);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Target LC Status : " + currentState + ". Performing LC Action : "
+                                              + action);
+                                }
                             }
                         }
+                    } else {
+                        log.info("API is already in target LC state: " + currentState + ". Skipping migration for API "
+                                 + artifact.getAttribute(APIConstants.API_OVERVIEW_NAME));
                     }
-                } else {
-                    log.info("API is already in target LC state: " + currentState + ". Skipping migration for API " +
-                            artifact.getAttribute(APIConstants.API_OVERVIEW_NAME));
-                }                
+                } catch (GovernanceException e) {
+                    // Log the error and continue to the next governance artifact.
+                    log.error("Unable to update the lifecycle state of artifact ", e);
+                }
             }
-            log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            if (log.isDebugEnabled()) {
+                log.debug("Completed updating LC status for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+            }
         }  catch (RegistryException e) {
             log.error("Error occurred while accessing the registry when updating " +
                     "API life cycles for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);
@@ -772,10 +803,16 @@ public class MigrateFrom19to110 extends MigrationClientBase implements Migration
 
     private void updateWithCompleteLifeCycle(Tenant tenant, String apiLifeCycleRegistryPath, String apiLifeCycle)
                                                                 throws APIMigrationException {
-        log.debug("Update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+        }
         try {
             registryService.updateConfigRegistryResource(apiLifeCycleRegistryPath, apiLifeCycle);
-            log.debug("Completed update with complete LC for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')');
+
+            if (log.isDebugEnabled()) {
+                log.debug("Completed update with complete LC for tenant " + tenant.getId() + '('
+                          + tenant.getDomain() + ')');
+            }
         } catch (UserStoreException e) {
             log.error("Error occurred while accessing the user store when adding complete " +
                     APIConstants.API_LIFE_CYCLE + " for tenant " + tenant.getId() + '(' + tenant.getDomain() + ')', e);

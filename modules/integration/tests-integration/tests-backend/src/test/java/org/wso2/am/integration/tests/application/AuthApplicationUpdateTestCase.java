@@ -25,13 +25,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
@@ -93,7 +102,8 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")
     public void testApplicationCreation() throws Exception {
-        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, APP_CALLBACK_URL,
+        apiStore.addApplication(APP_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, APP_CALLBACK_URL,
                 APP_DESCRIPTION);
         //generate the key for the subscription
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
@@ -180,21 +190,15 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         //change the application name
         HttpResponse response = apiStore
                 .updateApplication(APP_NAME, APP_NAME_TO_UPDATE, UPDATE_APP_CALLBACK_URL, APP_DESCRIPTION,
-                        APIMIntegrationConstants.APPLICATION_TIER.LARGE);
+                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN);
         verifyResponse(response);
     }
 
     @Test(groups = { "wso2.am" }, description = "Test Subscription after Application name update",
             dependsOnMethods = "testApplicationNameUpdateAfterKeyGeneration")
     public void testSubscriptionAfterApplicationNameUpdate() throws Exception {
-        //Test the Subscription UI
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Cookie", apiStore.getSession());
-        HttpResponse response = HttpRequestUtil.doGet(storeURLHttp + "/store/site/pages/subscriptions.jag", headers);
-        Assert.assertEquals(response.getResponseCode(), HttpStatus.SC_OK,
-                "subscription page have error after update application page");
         //Test the subscription list after update app name
-        response = apiStore.getAllSubscriptionsOfApplication(APP_NAME_TO_UPDATE);
+        HttpResponse response = apiStore.getAllSubscriptionsOfApplication(APP_NAME_TO_UPDATE);
         verifyResponse(response);
         Assert.assertTrue(response.getData().contains(API_NAME), "Subscribe API not included after App name updated");
     }
@@ -203,6 +207,7 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication(APP_NAME_TO_UPDATE);
         apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+        super.cleanUp();
     }
 
     @DataProvider

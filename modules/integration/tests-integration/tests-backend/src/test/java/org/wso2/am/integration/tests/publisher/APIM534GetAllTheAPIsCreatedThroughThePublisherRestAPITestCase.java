@@ -168,6 +168,7 @@ public class APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase exten
         apiPublisher.deleteAPI(apiNameTest1, apiVersion, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest2, apiVersion, apiProviderName);
         apiPublisher.deleteAPI(apiNameTest3, apiVersion, apiProviderName);
+        super.cleanUp();
     }
 
 

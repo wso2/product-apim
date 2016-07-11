@@ -85,7 +85,8 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
 
         String sessionId = createSession(gatewayContextMgt);
         deployArrService(gatewayContextMgt.getContextUrls().getBackEndUrl(), sessionId);
@@ -123,7 +124,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
         apiCreationRequestBean.setOutSequence("xml_to_json_out_message");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
-
+        waitForAPIDeployment();
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
         request.setHeader("Authorization" , "Bearer " + accessToken);
@@ -140,6 +141,7 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void testAPIInvocationBeforeRemovingNewMediation() throws Exception {
         apiCreationRequestBean.setOutSequence("");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
         //Send GET Request
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));

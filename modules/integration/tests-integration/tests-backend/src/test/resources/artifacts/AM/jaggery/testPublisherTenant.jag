@@ -30,7 +30,7 @@ print("==");
 print(publisherHostObj.validateRoles('admin', 'admin'));
 print("==");
 //2
-print(publisherHostObj.isURLValid("https","https://www.google.com","admin@wso2.com","HostObjectTestAPI","1.0.0"));
+print(publisherHostObj.isURLValid("https","https://localhost:9943/","admin@wso2.com","HostObjectTestAPI","1.0.0"));
 print("==");
 //3
 print(publisherHostObj.getAPIsByProvider("admin@wso2.com"));

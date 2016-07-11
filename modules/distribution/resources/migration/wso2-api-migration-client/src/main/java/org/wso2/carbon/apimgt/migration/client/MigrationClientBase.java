@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.impl.utils.APIMgtDBUtil;
 import org.wso2.carbon.apimgt.migration.APIMigrationException;
 import org.wso2.carbon.apimgt.migration.util.Constants;
+import org.wso2.carbon.registry.indexing.AsyncIndexer;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -37,28 +38,31 @@ import java.util.StringTokenizer;
 public abstract class MigrationClientBase {
     private static final Log log = LogFactory.getLog(MigrationClientBase.class);
     private List<Tenant> tenantsArray;
+    private static final String IS_MYSQL_SESION_MODE_EXISTS = "SELECT COUNT(@@SESSION.sql_mode)";
+    private static final String GET_MYSQL_SESSION_MODE = "SELECT @@SESSION.sql_mode AS MODE";
+    private  static final String NO_ZERO_DATE_MODE = "NO_ZERO_DATE";
 
     public MigrationClientBase(String tenantArguments, String blackListTenantArguments, TenantManager tenantManager)
                                                                                             throws UserStoreException {
         if (tenantArguments != null) {  // Tenant arguments have been provided so need to load specific ones
             tenantArguments = tenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
-            tenantsArray = new ArrayList();
+            tenantsArray = new ArrayList<Tenant>();
 
             buildTenantList(tenantManager, tenantsArray, tenantArguments);
         } else if (blackListTenantArguments != null) {
             blackListTenantArguments = blackListTenantArguments.replaceAll("\\s", ""); // Remove spaces and tabs
 
-            List<Tenant> blackListTenants = new ArrayList();
+            List<Tenant> blackListTenants = new ArrayList<Tenant>();
             buildTenantList(tenantManager, blackListTenants, blackListTenantArguments);
 
-            List<Tenant> allTenants = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
+            List<Tenant> allTenants = new ArrayList<Tenant>(Arrays.asList(tenantManager.getAllTenants()));
             Tenant superTenant = new Tenant();
             superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
             superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
             allTenants.add(superTenant);
 
-            tenantsArray = new ArrayList();
+            tenantsArray = new ArrayList<Tenant>();
 
             for (Tenant tenant : allTenants) {
                 boolean isBlackListed = false;
@@ -73,26 +77,24 @@ public abstract class MigrationClientBase {
                     tenantsArray.add(tenant);
                 }
             }
-
         } else {  // Load all tenants
-            tenantsArray = new ArrayList(Arrays.asList(tenantManager.getAllTenants()));
+            tenantsArray = new ArrayList<Tenant>(Arrays.asList(tenantManager.getAllTenants()));
             Tenant superTenant = new Tenant();
             superTenant.setDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
             superTenant.setId(MultitenantConstants.SUPER_TENANT_ID);
             tenantsArray.add(superTenant);
         }
-
         setAdminUserName(tenantManager);
     }
 
-
-    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments) throws UserStoreException {
+    private void buildTenantList(TenantManager tenantManager, List<Tenant> tenantList, String tenantArguments)
+            throws UserStoreException {
         if (tenantArguments.contains(",")) { // Multiple arguments specified
             String[] parts = tenantArguments.split(",");
 
-            for (int i = 0; i < parts.length; ++i) {
-                if (parts[i].length() > 0) {
-                    populateTenants(tenantManager, tenantList, parts[i]);
+            for (String part : parts) {
+                if (part.length() > 0) {
+                    populateTenants(tenantManager, tenantList, part);
                 }
             }
         } else { // Only single argument provided
@@ -100,9 +102,11 @@ public abstract class MigrationClientBase {
         }
     }
 
-
     private void populateTenants(TenantManager tenantManager, List<Tenant> tenantList, String argument) throws UserStoreException {
-        log.debug("Argument provided : " + argument);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Argument provided : " + argument);
+        }
 
         if (argument.contains("@")) { // Username provided as argument
             int tenantID = tenantManager.getTenantId(argument);
@@ -147,75 +151,75 @@ public abstract class MigrationClientBase {
 
     protected List<Tenant> getTenantsArray() { return tenantsArray; }
 
-    protected void updateAPIManangerDatabase(String sqlScriptPath) throws SQLException {
+    protected void updateAPIManagerDatabase(String sqlScriptPath) throws SQLException {
         log.info("Database migration for API Manager started");
+
         Connection connection = null;
         PreparedStatement preparedStatement = null;
-        BufferedReader bufferedReader = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+
         try {
             connection = APIMgtDBUtil.getConnection();
             connection.setAutoCommit(false);
             String dbType = MigrationDBCreator.getDatabaseType(connection);
 
-            InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
-            bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
-            String sqlQuery = "";
-            boolean isFoundQueryEnd = false;
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                line = line.trim();
-                if (line.startsWith("//") || line.startsWith("--")) {
-                    continue;
-                }
-                StringTokenizer stringTokenizer = new StringTokenizer(line);
-                if (stringTokenizer.hasMoreTokens()) {
-                    String token = stringTokenizer.nextToken();
-                    if ("REM".equalsIgnoreCase(token)) {
-                        continue;
+            if (Constants.DB_TYPE_MYSQL.equals(dbType)) {
+                statement = connection.createStatement();
+                resultSet = statement.executeQuery(GET_MYSQL_SESSION_MODE);
+
+                if (resultSet.next()) {
+                    String mode = resultSet.getString("MODE");
+
+                    log.info("MySQL Server SQL Mode is : " + mode);
+
+                    if (mode.contains(NO_ZERO_DATE_MODE)) {
+                        File timeStampFixScript = new File(sqlScriptPath + dbType + "-timestamp_fix.sql");
+
+                        if (timeStampFixScript.exists()) {
+                            log.info(NO_ZERO_DATE_MODE + " mode detected, run schema compatibility script");
+                            InputStream is = new FileInputStream(timeStampFixScript);
+
+                            List<String> sqlStatements = readSQLStatements(is, dbType);
+
+                            for (String sqlStatement : sqlStatements) {
+                                preparedStatement = connection.prepareStatement(sqlStatement);
+                                preparedStatement.execute();
+                                connection.commit();
+                            }
+                        }
                     }
-                }
-
-                if (line.contains("\\n")) {
-                    line = line.replace("\\n", "");
-                }
-
-                sqlQuery += ' ' + line;
-
-                if (line.contains(";")) {
-                    isFoundQueryEnd = true;
-                }
-
-                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
-                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
-                    sqlQuery = sqlQuery.replace(";", "");
-                }
-
-                if (isFoundQueryEnd) {
-                    if (sqlQuery.length() > 0) {
-                        log.debug("SQL to be executed : " + sqlQuery);
-                        preparedStatement = connection.prepareStatement(sqlQuery.trim());
-                        preparedStatement.execute();
-                        connection.commit();
-                    }
-
-                    // Reset variables to read next SQL
-                    sqlQuery = "";
-                    isFoundQueryEnd = false;
                 }
             }
 
-            bufferedReader.close();
+            InputStream is = new FileInputStream(sqlScriptPath + dbType + ".sql");
 
-        } catch (IOException e) {
-            //Errors logged to let user know the state of the db migration and continue other resource migrations
-            log.error("Error occurred while migrating databases", e);
-        } catch (Exception e) {
+            List<String> sqlStatements = readSQLStatements(is, dbType);
+            for (String sqlStatement : sqlStatements) {
+                log.debug("SQL to be executed : " + sqlStatement);
+                if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    statement = connection.createStatement();
+                    statement.executeUpdate(sqlStatement);
+                } else {
+                    preparedStatement = connection.prepareStatement(sqlStatement);
+                    preparedStatement.execute();
+                }
+            }
+            connection.commit();
+
+        }  catch (Exception e) {
             /* MigrationDBCreator extends from org.wso2.carbon.utils.dbcreator.DatabaseCreator and in the super class
             method getDatabaseType throws generic Exception */
             log.error("Error occurred while migrating databases", e);
+            connection.rollback();
         } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+
+            if (statement != null) {
+                statement.close();
+            }
             if (preparedStatement != null) {
                 preparedStatement.close();
             }
@@ -232,7 +236,6 @@ public abstract class MigrationClientBase {
      *
      * @param sqlScriptPath path of sql script
      * @throws SQLException
-     * @throws IOException
      */
     protected void dropFKConstraint(String sqlScriptPath) throws SQLException {
         Connection connection = null;
@@ -240,15 +243,17 @@ public abstract class MigrationClientBase {
         ResultSet resultSet = null;
         Statement statement = null;
         try {
-            String queryToExecute = IOUtils.toString(new FileInputStream(new File(sqlScriptPath + "drop-fk.sql")), "UTF-8");
-            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
-
             connection = APIMgtDBUtil.getConnection();
             String dbType = MigrationDBCreator.getDatabaseType(connection);
+            String queryToExecute = IOUtils.toString(
+                    new FileInputStream(new File(sqlScriptPath + "constraint" + File.separator + dbType + ".sql")),
+                    "UTF-8");
+            String queryArray[] = queryToExecute.split(Constants.LINE_BREAK);
             connection.setAutoCommit(false);
             statement = connection.createStatement();
             if (Constants.DB_TYPE_ORACLE.equals(dbType)) {
                 queryArray[0] = queryArray[0].replace(Constants.DELIMITER, "");
+                queryArray[0] = queryArray[0].replace("<AM_DB_NAME>", connection.getMetaData().getUserName());
             }
             resultSet = statement.executeQuery(queryArray[0]);
             String constraintName = null;
@@ -283,10 +288,78 @@ public abstract class MigrationClientBase {
             log.error("Error occurred while deleting foreign key", e);
         } finally {
             if (statement != null) {
-                statement.close();
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    log.error("Unable to close the statement", e);
+                }
             }
-
             APIMgtDBUtil.closeAllConnections(preparedStatement, connection, resultSet);
         }
+    }
+
+    private List<String> readSQLStatements(InputStream is, String dbType) {
+        List<String> sqlStatements = new ArrayList<>();
+
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF8"));
+            String sqlQuery = "";
+            boolean isFoundQueryEnd = false;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("//") || line.startsWith("--")) {
+                    continue;
+                }
+                StringTokenizer stringTokenizer = new StringTokenizer(line);
+                if (stringTokenizer.hasMoreTokens()) {
+                    String token = stringTokenizer.nextToken();
+                    if ("REM".equalsIgnoreCase(token)) {
+                        continue;
+                    }
+                }
+
+                if (line.contains("\\n")) {
+                    line = line.replace("\\n", "");
+                }
+
+                sqlQuery += ' ' + line;
+                if (line.contains(";")) {
+                    isFoundQueryEnd = true;
+                }
+
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_ORACLE.equals(dbType)) {
+                    if ("/".equals(line.trim())) {
+                        isFoundQueryEnd = true;
+                    } else {
+                        isFoundQueryEnd = false;
+                    }
+                    sqlQuery = sqlQuery.replaceAll("/", "");
+                }
+                if (org.wso2.carbon.apimgt.migration.util.Constants.DB_TYPE_DB2.equals(dbType)) {
+                    sqlQuery = sqlQuery.replace(";", "");
+                }
+
+                if (isFoundQueryEnd) {
+                    if (sqlQuery.length() > 0) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("SQL to be executed : " + sqlQuery);
+                        }
+
+                        sqlStatements.add(sqlQuery.trim());
+                    }
+
+                    // Reset variables to read next SQL
+                    sqlQuery = "";
+                    isFoundQueryEnd = false;
+                }
+            }
+
+            bufferedReader.close();
+        }  catch (IOException e) {
+            log.error("Error while reading SQL statements from stream", e);
+        }
+
+        return sqlStatements;
     }
 }

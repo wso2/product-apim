@@ -90,5 +90,6 @@ public class APIMANAGER2611EndpointValidationTestCase extends APIManagerLifecycl
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         deleteAPI(apiIdentifier, apiPublisherRestClient);
+        super.cleanUp();
     }
 }

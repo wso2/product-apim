@@ -48,7 +48,6 @@
         <module>modules/org.wso2.stratos.apimgt.login.ui</module>
         <module>modules/features</module>
         <module>modules/p2-profile</module>
-        <module>/modules/distribution/product/src/main/statistics</module>
         <module>modules/distribution</module>
         <module>modules/api-import-export</module>
         <module>modules/integration</module>
@@ -72,17 +71,6 @@
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
-            <repository>
-                <id>wso2-staging</id>
-                <name>WSO2 staging Repository</name>
-                <url>http://maven.wso2.org/nexus/content/repositories/orgwso2carbonmediation-401/</url>
-                <releases>
-                    <enabled>true</enabled>
-                    <updatePolicy>daily</updatePolicy>
-                    <checksumPolicy>ignore</checksumPolicy>
-                </releases>
-            </repository>
-
     </repositories>
 
     <pluginRepositories>
@@ -191,7 +179,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.0</version>
+                    <version>1.0.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -506,7 +494,7 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>SecVerifier</artifactId>
                 <type>aar</type>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
 
             <dependency>
@@ -570,6 +558,11 @@
                 <version>${carbon.automationutils.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.analytics</groupId>
+                <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
+                <version>${carbon.analytics.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
                 <version>${apimserver.version}</version>
@@ -599,6 +592,13 @@
                 <artifactId>org.wso2.carbon.apimgt.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.broker.lifecycle</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
@@ -612,12 +612,12 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.utils</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
@@ -793,7 +793,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
 
             <dependency>
@@ -819,7 +819,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
                 <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
-                <version>${carbon.identity.version}</version>
+                <version>${carbon.identity-user-ws.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.rampart</groupId>
@@ -839,7 +839,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.user.core</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.synapse</groupId>
@@ -852,10 +852,9 @@
                 <version>${jacoco.agent.version}</version>
             </dependency>
             <dependency>
-                    <groupId>com.google.guava</groupId>
+                <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${google.guava.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -885,7 +884,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.identity</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
-                <version>${carbon.identity.version}</version>
+                <version>${carbon.identity-inbound-auth-oauth.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.andes.wso2</groupId>
@@ -897,13 +896,38 @@
                 <artifactId>geronimo-jms_1.1_spec</artifactId>
                 <version>${orbit.version.geronimo-jms_1.1_spec}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-digester.wso2</groupId>
+                <artifactId>commons-digester</artifactId>
+                <version>${commons-digester.version}.wso2v1</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>jsr311-api</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.apimgt</groupId>
+                <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
+                <version>${carbon.apimgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.governance</groupId>
+                <artifactId>org.wso2.carbon.governance.lcm</artifactId>
+                <version>${carbon.governance.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <properties>
 
-        <carbon.analytics.common.version>5.0.12-alpha</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.0-beta</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
@@ -911,45 +935,49 @@
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
-        <carbon.registry.version>4.5.4</carbon.registry.version>
+        <carbon.registry.version>4.5.5</carbon.registry.version>
         <carbon.registry.package.import.version.range>[4.5.4, 4.6.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
-        <carbon.governance.version>4.6.2</carbon.governance.version>
+        <carbon.governance.version>4.6.3</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.5</carbon.kernel.version>
+        <carbon.kernel.version>4.4.7</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 	
-
 	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
-        <carbon.commons.version>4.5.2</carbon.commons.version>
-        <carbon.kernel.imp.pkg.version>[4.4.1, 4.5.0)</carbon.kernel.imp.pkg.version>
+        <carbon.commons.version>4.5.4</carbon.commons.version>
+        <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
         <carbon.mediation.version>4.6.1-BETA2</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.0.9-SNAPSHOT</carbon.identity.version>
+        <carbon.identity.version>5.2.0</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>5.1.1</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-user-ws.version>5.1.1</carbon.identity-user-ws.version>
+        <carbon.identity-inbound-auth-saml2.version>5.1.1</carbon.identity-inbound-auth-saml2.version>
+        <carbon.identity-inbound-auth-openid.version>5.1.1</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-local-auth-basicauth.version>5.1.1</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.1</carbon.identity-outbound-auth-samlsso.version>
 
         <!-- carbon deployment -->
-        <carbon.deployment.version>4.6.1</carbon.deployment.version>
+        <carbon.deployment.version>4.7.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.0.5</carbon.analytics.version>
+        <carbon.analytics.version>1.0.6-beta5</carbon.analytics.version>
 
         <!--jaggery-->
-        <org.jaggery.version>0.12.3</org.jaggery.version>
+        <org.jaggery.version>0.12.6</org.jaggery.version>
 
         <!-- Carbon Multitenancy version-->
-        <carbon.multitenancy.version>4.5.1</carbon.multitenancy.version>
+        <carbon.multitenancy.version>4.5.2</carbon.multitenancy.version>
 
-        <carbon.dashboard.version>1.0.15</carbon.dashboard.version>
-        <shindig.version>1.0.0</shindig.version>
-        <analytics.common.version>1.0.0-SNAPSHOT</analytics.common.version>
+        <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
+        <analytics.shared.version>1.0.0-beta3</analytics.shared.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
@@ -961,8 +989,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <carbon.platform.version>4.4.5</carbon.platform.version>
-        <synapse.version>2.1.7-wso2v3-SNAPSHOT</synapse.version>
+        <synapse.version>2.1.7-wso2v3-BETA</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v17</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
@@ -1026,18 +1053,20 @@
         <maven-resources-plugin.version>2.5</maven-resources-plugin.version>
         <eclipse.version>3.2.0</eclipse.version>
         <ws.seccurity.version>1.5.11.wso2v7</ws.seccurity.version>
-        <identity.core.version>4.2.7</identity.core.version>
         <bam.feature.version>4.2.6</bam.feature.version>
         <jacoco.agent.version>0.7.4.201502262128</jacoco.agent.version>
-        <google.guava.version>16.0.1</google.guava.version>
+        <google.guava.version>18.0</google.guava.version>
 
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
-        <carbon.messaging.version>3.1.5-m1</carbon.messaging.version>
-        <carbon.event-processing.version>2.0.13-alpha</carbon.event-processing.version>
-        <andes.version>3.1.2</andes.version>
+        <carbon.messaging.version>3.1.6</carbon.messaging.version>
+        <carbon.event-processing.version>2.1.0-beta</carbon.event-processing.version>
+        <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
-	<project.scm.id>scm-server</project.scm.id>
+        <commons-digester.version>1.8.1</commons-digester.version>
+	    <project.scm.id>scm-server</project.scm.id>
+        <product.cep.version>4.1.1-SNAPSHOT</product.cep.version>
+        <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
     </properties>
 
 </project>

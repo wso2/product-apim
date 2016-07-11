@@ -25,6 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -146,7 +147,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(user.getUserName(), user.getPassword());
 
-        apiStoreRestClient.addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "",
+        apiStoreRestClient.addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "",
                                           "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, user.getUserName());
         subscriptionRequest.setApplicationName(applicationName);
@@ -235,7 +236,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
                                  storeContext.getContextTenant().getContextUser().getPassword());
 
         apiStoreRestClient
-                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName,
                                                                           storeContext.getContextTenant().getContextUser().getUserName());
         subscriptionRequest.setApplicationName(applicationName);
@@ -278,7 +279,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
 
         claim = jsonObject.getString("http://wso2.org/claims/applicationtier");
         assertTrue("JWT claim applicationtier invalid. Received " + claim,
-                   claim.contains(APIMIntegrationConstants.APPLICATION_TIER.LARGE));
+                   claim.contains(APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN));
 
         claim = jsonObject.getString("http://wso2.org/claims/apicontext");
         assertTrue("JWT claim apicontext invalid. Received " + claim,
@@ -296,9 +297,10 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         claim = jsonObject.getString("http://wso2.org/claims/usertype");
         assertTrue("JWT claim usertype invalid. Received " + claim, claim.contains("APPLICATION"));
 
-        claim = jsonObject.getString("http://wso2.org/claims/role");
-        assertTrue("JWT claim role invalid. Received " + claim,
-                   claim.contains("admin") && claim.contains("Internal/everyone"));
+        JSONArray roleClaim = jsonObject.getJSONArray("http://wso2.org/claims/role");
+        String roles = roleClaim.toString();
+        assertTrue("JWT claim role invalid. Received " + roles,
+                   roles.contains("admin") && roles.contains("Internal/everyone"));
     }
 
     @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
@@ -345,7 +347,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.login(subscriberUserWithTenantDomain, password);
 
         apiStoreRestClient
-                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
+                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, providerName);
         subscriptionRequest.setApplicationName(applicationName);
         apiStoreRestClient.subscribe(subscriptionRequest);

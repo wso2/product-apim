@@ -224,30 +224,31 @@ public class ResourceUtil {
     private static void updateHandlers(Document document) {
         Element handlersElement = (Element) document.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLERS).item(0);
 
-        NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
+        // For blocked APIs, the Handlers element would not be there.
+        if(handlersElement != null) {
+            NodeList handlerNodes = handlersElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_HANDLER);
 
-        for (int i = 0; i < handlerNodes.getLength(); ++i) {
-            Element handler = (Element) handlerNodes.item(i);
-
-            String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
-
-            if (Constants.SYNAPSE_API_VALUE_CORS_HANDLER.equals(className)) {
-                handlersElement.removeChild(handler);
-                break;
+            for (int i = 0; i < handlerNodes.getLength(); ++i) {
+                Element handler = (Element) handlerNodes.item(i);
+                String className = handler.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS);
+                if (Constants.SYNAPSE_API_VALUE_CORS_HANDLER.equals(className)) {
+                    handlersElement.removeChild(handler);
+                    break;
+                }
             }
         }
-
         // Find the inSequence
         Element inSequenceElement = (Element) document.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_INSEQUENCE).item(0);
-
         NodeList sendElements = inSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_SEND);
 
         Element corsHandler = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_HANDLER);
         corsHandler.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_CLASS, Constants.SYNAPSE_API_VALUE_CORS_HANDLER);
+
         Element property = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_PROPERTY);
         property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME, Constants.SYNAPSE_API_VALUE_INLINE);
 
-        if (0 < sendElements.getLength()) {
+        // If handlers element is null, that means this is a blocked API. Hence we need to add INLINE as the value.
+        if (0 < sendElements.getLength() && handlersElement != null) {
             property.setAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VALUE, Constants.SYNAPSE_API_VALUE_ENPOINT);
         }
         else {
@@ -256,8 +257,17 @@ public class ResourceUtil {
 
         corsHandler.appendChild(property);
 
-        handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
-
+        // Handlers element is null for BLOCKED APIs. Therefore if the handlers element is null, we create a new
+        // element and add the CORS handler because that is the default behavior in API Manager 1.9.x
+        if (handlersElement != null) {
+            handlersElement.insertBefore(corsHandler, handlersElement.getFirstChild());
+        }else{
+            handlersElement = document.createElementNS(Constants.SYNAPSE_API_XMLNS, Constants
+                    .SYNAPSE_API_ELEMENT_HANDLERS);
+            handlersElement.appendChild(corsHandler);
+            // document.getFirstChild() == api element
+            document.getFirstChild().appendChild(handlersElement);
+        }
     }
 
     private static void updateResources(Document document) throws APIMigrationException {
@@ -319,13 +329,14 @@ public class ResourceUtil {
         // Find the outSequence
         Element outSequenceElement = (Element) resourceElement.getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_API_ELEMENT_OUTSEQUENCE).item(0);
 
+        // For blocked APIs, there is no out sequence. Hence we are returning.
+        if(outSequenceElement == null){
+            return;
+        }
         NodeList classNodes = outSequenceElement.getElementsByTagName(Constants.SYNAPSE_API_ELEMENT_CLASS);
-
         boolean isResponseHandlerSet = false;
-
         for (int i = 0; i < classNodes.getLength(); ++i) {
             Element classElement = (Element) classNodes.item(i);
-
             if (Constants.SYNAPSE_API_VALUE_RESPONSE_HANDLER.equals(classElement.getAttribute(Constants.SYNAPSE_API_ATTRIBUTE_NAME))) {
                 isResponseHandlerSet = true;
                 break;
@@ -426,7 +437,10 @@ public class ResourceUtil {
 
 
     public static String getApiPath(int tenantID, String tenantDomain) {
-        log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        if (log.isDebugEnabled()) {
+            log.debug("Get api synapse files for tenant " + tenantID + '(' + tenantDomain + ')');
+        }
+
         String apiFilePath;
         if (tenantID != MultitenantConstants.SUPER_TENANT_ID) {
             apiFilePath = CarbonUtils.getCarbonTenantsDirPath() + File.separatorChar + tenantID +
@@ -435,7 +449,10 @@ public class ResourceUtil {
             apiFilePath = CarbonUtils.getCarbonRepository() + "synapse-configs" + File.separatorChar +
                     "default" + File.separatorChar  +"api";
         }
-        log.debug("Path of api folder " + apiFilePath);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Path of api folder of tenant : " + tenantDomain + " is : "+ apiFilePath);
+        }
 
         return apiFilePath;
     }
@@ -460,7 +477,9 @@ public class ResourceUtil {
                     // that represent default versions
                     if (Constants.SYNAPSE_API_ROOT_ELEMENT.equals(rootElement.getNodeName()) &&
                             rootElement.hasAttribute(Constants.SYNAPSE_API_ATTRIBUTE_VERSION)) {
-                        log.debug("API file name : " + file.getName());
+                        if (log.isDebugEnabled()) {
+                            log.debug("API file name : " + file.getName());
+                        }
                         SynapseDTO synapseConfig = new SynapseDTO(doc, file);
                         versionedAPIs.add(synapseConfig);
                     }
@@ -469,7 +488,6 @@ public class ResourceUtil {
                 }
             }
         }
-
         return versionedAPIs;
     }
 

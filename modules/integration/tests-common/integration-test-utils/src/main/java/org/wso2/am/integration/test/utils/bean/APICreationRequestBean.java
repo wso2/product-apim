@@ -70,6 +70,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String techOwnerMail = "";
     private JSONObject corsConfiguration;
     private String environment = "Production and Sandbox";
+    private String destinationStats = null;
 
     public String getEnvironment() {
         return environment;
@@ -440,6 +441,13 @@ public class APICreationRequestBean extends AbstractRequest {
         super.setAction(action);
     }
 
+    public String getDestinationStats() {
+        return destinationStats;
+    }
+
+    public void setDestinationStats(String destinationStats) {
+        this.destinationStats = destinationStats;
+    }
 
     @Override
     public void init() {
@@ -511,6 +519,9 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("corsConfiguration", getCorsConfiguration().toString());
         addParameter("subPolicyCollection",getSubPolicyCollection());
 
+        if (destinationStats != null) {
+            addParameter("destinationStats", getDestinationStats());
+        }
     }
 
     public String getEpUsername() {

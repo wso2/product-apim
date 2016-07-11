@@ -216,7 +216,8 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         apiIdentifier = new APIIdentifier(providerName, apiName, apiVersion);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(appName,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
                                        apiStoreClientUser1, appName);
         return generateApplicationKeys(apiStoreClientUser1, appName).getAccessToken();

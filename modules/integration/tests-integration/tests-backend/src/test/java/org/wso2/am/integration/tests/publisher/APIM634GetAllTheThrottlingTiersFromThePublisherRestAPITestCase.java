@@ -87,7 +87,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
 
         //Validate the Tier Gold
         JSONObject tierGold = (JSONObject) tierArrayList.get(1);
-        assertEquals(tierGold.getString("tierDescription"), "Allows 20 request(s) per minute.",
+        assertEquals(tierGold.getString("tierDescription"), "Allows 5000 requests per minute",
                 "Invalid description of the tier Gold");
         assertEquals(tierGold.getString("tierDisplayName"), "Gold",
                 "Invalid display name of the tier Gold");
@@ -98,7 +98,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
 
         //Validate the Tier Silver
         JSONObject tierSilver = (JSONObject) tierArrayList.get(2);
-        assertEquals(tierSilver.getString("tierDescription"), "Allows 5 request(s) per minute.",
+        assertEquals(tierSilver.getString("tierDescription"), "Allows 2000 requests per minute",
                 "Invalid description of the tier Silver");
         assertEquals(tierSilver.getString("tierDisplayName"), "Silver",
                 "Invalid display name of the tier Silver");
@@ -109,7 +109,7 @@ public class APIM634GetAllTheThrottlingTiersFromThePublisherRestAPITestCase
 
         //Validate the Tier Silver
         JSONObject tierBronze = (JSONObject) tierArrayList.get(3);
-        assertEquals(tierBronze.getString("tierDescription"), "Allows 1 request(s) per minute.",
+        assertEquals(tierBronze.getString("tierDescription"), "Allows 1000 requests per minute",
                 "Invalid description of the tier Bronze");
         assertEquals(tierBronze.getString("tierDisplayName"), "Bronze",
                 "Invalid display name of the tier Bronze");

@@ -27,23 +27,14 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
-import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
-import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
-import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
-import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +60,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
         apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
-        apiStore.addApplication("OpenIDTokenTestAPIApplication", "Gold", "", "this-is-test");
+        apiStore.addApplication("OpenIDTokenTestAPIApplication",
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
 
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator("OpenIDTokenTestAPIApplication");
         String responseString = apiStore.generateApplicationKey(generateAppKeyRequest).getData();
@@ -98,8 +90,8 @@ public class OpenIDTokenAPITestCase extends APIMIntegrationBaseTest {
         Map<String, String> requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + userAccessToken);
 
-        HttpResponse userInfoResponse = HttpRequestUtil.doGet(gatewayUrlsMgt.getWebAppURLNhttp()
-                                                             + "oauth2/userinfo?schema=openid", requestHeaders);
+        HttpResponse userInfoResponse = HTTPSClientUtils.doGet(gatewayUrlsWrk.getWebAppURLNhttp()
+                                                               + "userinfo?schema=openid", requestHeaders);
         Assert.assertEquals(userInfoResponse.getResponseCode(), 200, "Response code mismatched");
     }
 

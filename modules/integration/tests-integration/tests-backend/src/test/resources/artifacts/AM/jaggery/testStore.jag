@@ -57,7 +57,7 @@ print("==");
 print(storeHostObj.searchPaginatedAPIsByType("name:*","carbon.super","0","10"));
 print("==");
 //11
-print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10"));
+print(storeHostObj.getPaginatedAPIsWithTag("youtube","0","10","carbon.super"));
 print("==");
 //12
 print(storeHostObj.rateAPI("admin","HostObjectTestAPI","1.0.0","3")); 
@@ -69,7 +69,7 @@ print("==");
 print(storeHostObj.getAllPaginatedPublishedAPIs("carbon.super","0","10")); 
 print("=="); 
 //15
-print(storeHostObj.getAPIsWithTag("youtube")); 
+print(storeHostObj.getAPIsWithTag("youtube","carbon.super")); 
 print("=="); 
 //16
 print(storeHostObj.getAllPublishedAPIs("carbon.super"));

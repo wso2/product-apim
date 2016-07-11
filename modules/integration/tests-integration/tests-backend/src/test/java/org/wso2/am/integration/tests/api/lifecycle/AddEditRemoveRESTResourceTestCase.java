@@ -104,7 +104,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     @Test(groups = {"wso2.am"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         //Create publish and subscribe a API
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
@@ -142,7 +143,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } catch (AutomationFrameworkException e) {
             exceptionMessage = e.getMessage();
         } finally {
-            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 403 when accessing a " +
+            assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 405 when accessing a " +
                                                                   "POST resource which is not define yet. "
                                                                   + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
@@ -298,7 +299,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
             exceptionMessage = e.getMessage();
         } finally {
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException " +
-                                          "with 403 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
+                                          "with 405 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
             assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
     }

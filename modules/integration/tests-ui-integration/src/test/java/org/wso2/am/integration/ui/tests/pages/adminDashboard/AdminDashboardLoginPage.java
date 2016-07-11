@@ -9,7 +9,7 @@ import org.wso2.am.integration.ui.tests.util.APIMTestConstants;
 import java.io.IOException;
 
 /**
- * UI Page class of Admin-dashboard Login page of API Manager
+ * UI Page class of Admin Portal Login page of API Manager
  */
 public class AdminDashboardLoginPage extends PageHandler {
 
@@ -21,7 +21,7 @@ public class AdminDashboardLoginPage extends PageHandler {
         this.driver = driver;
         // Check that were on the right page.
         if (!(driver.getCurrentUrl().contains(APIMTestConstants.ADMIN_DASHBOARD_LOGIN_PAGE_URL_VERIFICATION))) {
-            throw new IllegalStateException("This is not the admin-dashboard login page");
+            throw new IllegalStateException("This is not the Admin Portal login page");
         }
     }
 
@@ -39,7 +39,7 @@ public class AdminDashboardLoginPage extends PageHandler {
         fillTextBoxById("admin.dashboard.login.username.id", userName);
         fillTextBoxById("admin.dashboard.login.password.id", password);
         clickElementById("admin.dashboard.login.button.id");
-        log.info("login as " + userName + " to Admin-dashboard Page");
+        log.info("login as " + userName + " to Admin Portal Page");
         waitUntilElementVisibilityByLinkText("admin.dashboard.menu.configure.analytics", APIMTestConstants.WAIT_TIME_VISIBILITY_ELEMENT_SECONDS);
         clickElementByLinkText("admin.dashboard.menu.configure.analytics");
         return new ConfigureAnalyticsPage(driver);

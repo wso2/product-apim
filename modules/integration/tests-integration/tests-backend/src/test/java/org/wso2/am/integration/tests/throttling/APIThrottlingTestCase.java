@@ -107,9 +107,9 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+            /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "api-manager.xml"));
-            /*serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
+            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                 + "configFiles" + File.separator + "throttling" + File.separator + "log4j.properties"));
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));*/
@@ -168,9 +168,8 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
         //add a application
         APIStoreRestClient apiStore = new APIStoreRestClient(storeURLHttp);
         apiStore.login(user.getUserName(), user.getPassword());
-        serviceResponse = apiStore
-                .addApplication(applicationName, APIMIntegrationConstants.APPLICATION_TIER.SMALL, "",
-                        "this-is-test");
+        serviceResponse = apiStore.addApplication(applicationName,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
         verifyResponse(serviceResponse);
 
         //publish the api
@@ -209,17 +208,23 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
 	}
 	
+	/**
+	 * @param accessToken
+	 * @param invokeURL
+	 * @param requestHeaders
+	 */
 	private void checkThrottling(String accessToken, String invokeURL, Map<String, String> requestHeaders){
 		int count = 0;
-		int numberOfIterations = 1;
+		int limit = 4;
+		int numberOfIterations = 4;
 		for(; count < numberOfIterations; ++count){
 			try {
 				log.info(" =================================== Number of time API Invoked : "+ count);
-				if(count == 0){
+				if(count == limit){
 					Thread.sleep(10000);
 				}
 				HttpResponse serviceResponse = callAPI(accessToken, invokeURL, requestHeaders);
-				if(count == 0){
+				if(count == limit){
 					Assert.assertEquals(serviceResponse.getResponseCode(), 429, "Response code is not as expected");
 				}else{
 					Assert.assertEquals(serviceResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");

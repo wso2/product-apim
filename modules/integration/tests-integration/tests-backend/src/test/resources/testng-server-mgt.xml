@@ -11,17 +11,18 @@
         <listener class-name="org.wso2.carbon.automation.engine.testlisteners.TestTransformerListener"/>
     </listeners>
 
+    <test name="apim-common-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerStandaloneConfigurationChangeTest"/>
+        </classes>
+    </test>
+
     <test name="apim-startup-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.server.mgt.APIMgtServerStartupTestCase"/>
             <class name="org.wso2.am.integration.tests.server.mgt.OSGIServerBundleStatusTestCase"/>
             <class name="org.wso2.am.integration.tests.login.LoginValidationTestCase"/>
-        </classes>
-    </test>
-
-    <test name="apim-common-tests" preserve-order="true" parallel="false">
-        <classes>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
         </classes>
     </test>
 

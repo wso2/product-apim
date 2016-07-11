@@ -134,8 +134,7 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
             String responsePayload = httpResponse.getData();
             Assert.assertNotNull(responsePayload);
             OMElement element = AXIOMUtil.stringToOM(responsePayload);
-            AXIOMXPath xpath = new AXIOMXPath("/soapenv:Envelope/soapenv:Body/ams:fault/ams:description");
-            xpath.addNamespace("soapenv", "http://www.w3.org/2003/05/soap-envelope");
+            AXIOMXPath xpath = new AXIOMXPath("/ams:fault/ams:description");
             xpath.addNamespace("ams", "http://wso2.org/apimanager/security");
             Object descriptionElement = xpath.selectSingleNode(element);
             Assert.assertNotNull("Error message doesn't contain a 'description'", descriptionElement);
@@ -160,7 +159,6 @@ public class InvalidTokenTestCase extends APIMIntegrationBaseTest {
         if (apiPublisher != null) {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, provider);
         }
-
         super.cleanUp();
     }
 }

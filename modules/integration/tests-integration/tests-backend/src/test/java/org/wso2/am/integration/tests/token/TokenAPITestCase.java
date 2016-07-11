@@ -38,14 +38,11 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +55,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
-    private ServerConfigurationManager serverConfigurationManager;
 
     private static final Log log = LogFactory.getLog(TokenAPITestCase.class);
 
@@ -78,13 +74,6 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
-            serverConfigurationManager.restartGracefully();
-            super.init();
-        }
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
 
@@ -166,12 +155,10 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
                 response.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
         //Obtain user access token
         Thread.sleep(2000);
-        String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
+        String requestBody = "grant_type=password&username=" + user.getUserName() + "&password=admin&scope=PRODUCTION";
         URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
-                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
-                                               tokenEndpointURL).getData()
-        );
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody, tokenEndpointURL).getData());
         /*Response would be like -
         {"token_type":"bearer","expires_in":3600,"refresh_token":"736b6b5354e4cf24f217718b2f3f72b",
         "access_token":"e06f12e3d6b1367d8471b093162f6729"}
@@ -185,8 +172,7 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("accept", "text/xml");
 
         Thread.sleep(2000);
-        HttpResponse youTubeResponse = HttpRequestUtil
-                .doGet(gatewayUrl, requestHeaders);
+        HttpResponse youTubeResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
 
         assertEquals(youTubeResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Response code mismatched");
@@ -219,16 +205,13 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
 
         HttpResponse errorResponse = null;
 //        for (int i = 0; i < 40; i++) {
-//            errorResponse = HttpRequestUtil
-//                    .doGet(gatewayUrl,
-//                           requestHeaders);
+//            errorResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
 //        }
 //
 //        assertEquals(errorResponse.getResponseCode(), 429,
 //                     "Response code mismatched while token API test case");
 //        Thread.sleep(60000);
-        errorResponse = HttpRequestUtil
-                .doGet(gatewayUrl, requestHeaders);
+        errorResponse = HttpRequestUtil.doGet(gatewayUrl, requestHeaders);
         log.info("Error response " + errorResponse);
 
         apiPublisher.revokeAccessToken(accessToken, consumerKey, providerName);
@@ -255,8 +238,5 @@ public class TokenAPITestCase extends APIMIntegrationBaseTest {
     public void destroy() throws Exception {
         apiStore.removeApplication("TokenTestAPI-Application");
         super.cleanUp();
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
-        }
     }
 }
