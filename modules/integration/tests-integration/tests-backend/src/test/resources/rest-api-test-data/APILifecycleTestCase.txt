@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.9//tiers/api",
+                    "url": "api/am/publisher/v0.10//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -30,7 +30,7 @@
                },
                "data":{
                   "method":"POST",
-                  "url":"/api/am/publisher/v0.9//apis",
+                  "url":"/api/am/publisher/v0.10//apis",
                   "query-parameters":"",
                   "request-headers":{
                      "Authorization":"Bearer"
@@ -89,7 +89,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Deploy+as+a+Prototype",
+                    "url": "/api/am/publisher/v0.10//apis/change-lifecycle?apiId={apiId}&action=Deploy+as+a+Prototype",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -111,7 +111,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Publish",
+                    "url": "/api/am/publisher/v0.10//apis/change-lifecycle?apiId={apiId}&action=Publish",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -133,7 +133,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "/api/am/publisher/v0.9//apis/change-lifecycle?apiId={apiId}&action=Demote+to+Created",
+                    "url": "/api/am/publisher/v0.10//apis/change-lifecycle?apiId={apiId}&action=Demote+to+Created",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -155,7 +155,7 @@
                  },
                  "data":{
                     "method":"DELETE",
-                    "url":"/api/am/publisher/v0.9//apis/{apiId}",
+                    "url":"/api/am/publisher/v0.10//apis/{apiId}",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -177,7 +177,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.9//tiers/api/CustomTier",
+                    "url": "api/am/publisher/v0.10//tiers/api/CustomTier",
                     "query-parameters": {
                         "tierName": "CustomTier"
                     },
