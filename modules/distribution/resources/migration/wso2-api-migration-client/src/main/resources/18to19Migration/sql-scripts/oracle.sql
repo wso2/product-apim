@@ -1,24 +1,3 @@
-declare
-  con_name varchar2(100);
-  command varchar2(200);
-  databasename VARCHAR2(100);
-BEGIN
-  databasename := 'SAMPLE';
-  begin
-    select constraint_name into con_name from all_constraints where table_name='AM_APP_KEY_DOMAIN_MAPPING' AND UPPER(owner)=UPPER('WSO2_APIM') AND constraint_type = 'R';
-    if TRIM(con_name) is not null
-    then
-      command := 'ALTER TABLE AM_APP_KEY_DOMAIN_MAPPING DROP CONSTRAINT ' || con_name;
-      execute immediate command;
-    end if;
-
-    exception
-    when NO_DATA_FOUND
-    then
-    null;
-  end;
-end;
-/
 ALTER TABLE AM_APPLICATION_KEY_MAPPING ADD CREATE_MODE VARCHAR2(30) DEFAULT 'CREATED'
 /
 ALTER TABLE AM_API_LC_EVENT MODIFY USER_ID VARCHAR2(255)

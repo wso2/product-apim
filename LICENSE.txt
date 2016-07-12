@@ -599,7 +599,7 @@ tomcat_7.0.59.wso2v3.jar                                                        
 uddi4j-1.0.1.jar                                                                jarinbundle    ibmpl     406       
 velocity-1.7.jar                                                                bundle         apache2   509       
 waffle-jna.jar                                                                  jar            epl1      892       
-waffle-jna_1.6.0.wso2v4.jar                                                     bundle         epl1      6276      
+waffle-jna_1.6.wso2v2.jar                                                     bundle         epl1      6276
 woden_1.0.0.M9-wso2v1.jar                                                       bundle         apache2   3755      
 woodstox-core-asl-4.4.1.jar                                                     bundle         apache2   1087      
 wsdl-validator_1.2.0.wso2v1.jar                                                 bundle         epl1      1175      

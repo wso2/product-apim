@@ -82,7 +82,6 @@
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
-                <exclude>**/dbscripts/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -198,18 +197,9 @@
         </fileSet-->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/apimgt/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
-            <includes>
-                <include>**/**.sql</include>
-            </includes>
-        </fileSet>
-       <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/registry/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
             </includes>
@@ -462,7 +452,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.9.war</include>
+                <include>api#am#store#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -472,7 +462,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.9.war</include>
+                <include>api#am#publisher#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -482,7 +472,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.9.war</include>
+                <include>api#am#admin#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -502,7 +492,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.9.war</include>
+                <include>client-registration#v0.10.war</include>
             </includes>
         </fileSet>
 

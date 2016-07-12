@@ -109,7 +109,8 @@ public class SubscriptionWFHTTPRedirectTest  extends APIManagerLifecycleBaseTest
 
         apiStore.login(userName, user.getPassword());
 
-        apiStore.addApplication(appName, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "this-is-test");
+        apiStore.addApplication(appName,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
 
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, userName);
         subscriptionRequest.setApplicationName(appName);
