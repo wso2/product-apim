@@ -35,7 +35,8 @@
                 <exclude>**/conf/axis2/tenant-axis2.xml</exclude>
                 <exclude>**/conf/synapse.xml</exclude>
                 <exclude>**/conf/security/Owasp.CsrfGuard.Carbon.properties</exclude>
-                <exclude>**/log4j.properties</exclude>
+		<exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+		<exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -664,6 +665,15 @@
                 <include>**/*.*</include>
             </includes>
         </fileSet>
+	
+	<!-- Tomcat carbon web.xml -->
+	<fileSet>
+	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/</directory>
+	    <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/carbon/WEB-INF/</outputDirectory>
+            <includes>
+                <include>**/web.xml</include>
+            </includes>
+        </fileSet>
 
 
     </fileSets>
@@ -965,7 +975,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
+    	</file>	
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
@@ -1074,19 +1084,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
-
-        <!-- duplicating metrics and MB scripts for MySQL 5.7 until respective teams provide the fix
-        or kernel is fixed -->
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/mysql.sql</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/metrics</outputDirectory>
-            <destName>mysql-5.7+.sql</destName>
-        </file>
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/mb-store/mysql-mb.sql</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/mb-store</outputDirectory>
-            <destName>mysql-5.7+-mb.sql</destName>
         </file>
     </files>
 </assembly>
