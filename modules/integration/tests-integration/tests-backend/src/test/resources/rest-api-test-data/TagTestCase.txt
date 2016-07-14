@@ -40,7 +40,7 @@
                         \"tags\": [\"Tag1\",\"Tag2\",\"Tag3\"],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
                         \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
                         \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"TempTier\"],\r\n
-                        \"thumbnailUrl\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+                        \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
                         \"visibleTenants\": [],\r\n
                         \"endpointConfig\":
                         \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
