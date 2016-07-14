@@ -148,6 +148,8 @@ public class RelativeUrlLocationHeaderTestCase extends APIMIntegrationBaseTest {
 
 
         assertEquals(httpResponse.getStatusLine().getStatusCode(), 201, "Response Code Mismatched");
+        assertEquals(httpResponse.getFirstHeader("Location").getValue(), "/abc/domain",
+                "Location Header not received.");
     }
 
     @AfterClass(alwaysRun = true)

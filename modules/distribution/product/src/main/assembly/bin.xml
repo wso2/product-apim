@@ -35,7 +35,8 @@
                 <exclude>**/conf/axis2/tenant-axis2.xml</exclude>
                 <exclude>**/conf/synapse.xml</exclude>
                 <exclude>**/conf/security/Owasp.CsrfGuard.Carbon.properties</exclude>
-                <exclude>**/log4j.properties</exclude>
+		<exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+		<exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -82,7 +83,6 @@
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
-                <exclude>**/dbscripts/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -198,18 +198,9 @@
         </fileSet-->
         <fileSet>
             <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/apimgt/
+                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/
             </directory>
             <outputDirectory>wso2am-${pom.version}/dbscripts/apimgt</outputDirectory>
-            <includes>
-                <include>**/**.sql</include>
-            </includes>
-        </fileSet>
-       <fileSet>
-            <directory>
-                ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/apimgt/registry/
-            </directory>
-            <outputDirectory>wso2am-${pom.version}/dbscripts</outputDirectory>
             <includes>
                 <include>**/**.sql</include>
             </includes>
@@ -462,7 +453,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#store#v0.9.war</include>
+                <include>api#am#store#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -472,7 +463,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#publisher#v0.9.war</include>
+                <include>api#am#publisher#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -482,7 +473,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>api#am#admin#v0.9.war</include>
+                <include>api#am#admin#v0.10.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -502,7 +493,7 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps
             </outputDirectory>
             <includes>
-                <include>client-registration#v0.9.war</include>
+                <include>client-registration#v0.10.war</include>
             </includes>
         </fileSet>
 
@@ -672,6 +663,15 @@
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/executionplans</outputDirectory>
             <includes>
                 <include>**/*.*</include>
+            </includes>
+        </fileSet>
+	
+	<!-- Tomcat carbon web.xml -->
+	<fileSet>
+	    <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/</directory>
+	    <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/carbon/WEB-INF/</outputDirectory>
+            <includes>
+                <include>**/web.xml</include>
             </includes>
         </fileSet>
 
@@ -975,7 +975,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
+    	</file>	
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/governance.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
@@ -1084,19 +1084,6 @@
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>
-
-        <!-- duplicating metrics and MB scripts for MySQL 5.7 until respective teams provide the fix
-        or kernel is fixed -->
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/metrics/mysql.sql</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/metrics</outputDirectory>
-            <destName>mysql-5.7+.sql</destName>
-        </file>
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/mb-store/mysql-mb.sql</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/dbscripts/mb-store</outputDirectory>
-            <destName>mysql-5.7+-mb.sql</destName>
         </file>
     </files>
 </assembly>

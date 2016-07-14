@@ -28,6 +28,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
@@ -105,7 +106,8 @@ public class APIMANAGER4480AllSubscriptionsByApplicationTestCase extends APIMInt
 
         for (int i = 0; i < numberOfApplications; i++) {
             String applicationName = applicationNamePrefix + i;
-            apiStore.addApplication(applicationName, SILVER, "", "this-is-test");
+            apiStore.addApplication(applicationName,
+                    APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "this-is-test");
 
             SubscriptionRequest subscriptionRequest =
                     new SubscriptionRequest(APIName, storeContext.getContextTenant().getContextUser().getUserName());

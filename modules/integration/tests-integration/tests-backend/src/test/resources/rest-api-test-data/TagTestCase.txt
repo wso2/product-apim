@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.9//tiers/api",
+                    "url": "api/am/publisher/v0.10//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -30,7 +30,7 @@
                },
                "data":{
                   "method":"POST",
-                  "url":"/api/am/publisher/v0.9//apis",
+                  "url":"/api/am/publisher/v0.10//apis",
                   "query-parameters":"",
                   "request-headers":{
                      "Authorization":"Bearer"
@@ -40,7 +40,7 @@
                         \"tags\": [\"Tag1\",\"Tag2\",\"Tag3\"],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
                         \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
                         \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"TempTier\"],\r\n
-                        \"thumbnailUrl\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+                        \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
                         \"visibleTenants\": [],\r\n
                         \"endpointConfig\":
                         \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
@@ -89,7 +89,7 @@
                  },
                  "data":{
                     "method":"GET",
-                    "url":"/api/am/store/v0.9//tags",
+                    "url":"/api/am/store/v0.10//tags",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -111,7 +111,7 @@
                  },
                  "data":{
                     "method":"DELETE",
-                    "url":"/api/am/publisher/v0.9//apis/{apiId}",
+                    "url":"/api/am/publisher/v0.10//apis/{apiId}",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -133,7 +133,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.9//tiers/api/TempTier",
+                    "url": "api/am/publisher/v0.10//tiers/api/TempTier",
                     "query-parameters": {
                         "tierName": "TempTier"
                     },

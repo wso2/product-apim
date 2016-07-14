@@ -399,6 +399,11 @@
                             <token>(1000)</token>
                             <value>40</value>
                         </replacement>
+                        <replacement>
+                            <xpath>/broker/deployment/mode</xpath>
+                            <token>(default)</token>
+                            <value>standalone</value>
+                        </replacement>
                     </replacements>
                 </configuration>
             </execution>
@@ -422,6 +427,25 @@
                             </replacements>
                         </configuration>
                     </execution>
+
+		   <!-- Update Owasp.CsrfGuard.properties file location to fix IBM JDK issue -->
+		   <execution>
+                        <id>replace-for-owasp</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+			<configuration>
+		 	   <file>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/carbon/WEB-INF/web.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <xpath>/web-app/context-param/param-value</xpath>
+                                    <token>(/repository/conf/security/Owasp.CsrfGuard.Carbon.properties)</token>
+                                    <value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</value>
+                                </replacement>
+                            </replacements>	
+			</configuration>
+                    </execution>		
                 </executions>
 	    </plugin>
 

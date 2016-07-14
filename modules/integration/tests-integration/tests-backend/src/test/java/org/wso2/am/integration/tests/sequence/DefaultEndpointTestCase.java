@@ -57,7 +57,7 @@ public class DefaultEndpointTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
 

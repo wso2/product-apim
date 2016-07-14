@@ -119,7 +119,8 @@ public class CORSHeadersTestCase extends APIManagerLifecycleBaseTest {
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
 
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,

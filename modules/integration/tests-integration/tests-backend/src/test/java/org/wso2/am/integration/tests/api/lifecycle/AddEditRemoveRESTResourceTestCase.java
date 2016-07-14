@@ -104,7 +104,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     @Test(groups = {"wso2.am"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         //Create publish and subscribe a API
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);

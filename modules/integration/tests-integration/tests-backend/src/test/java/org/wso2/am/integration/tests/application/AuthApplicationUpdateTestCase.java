@@ -102,7 +102,8 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = { "wso2.am" }, description = "Sample Application creation")
     public void testApplicationCreation() throws Exception {
-        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.LARGE, APP_CALLBACK_URL,
+        apiStore.addApplication(APP_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, APP_CALLBACK_URL,
                 APP_DESCRIPTION);
         //generate the key for the subscription
         APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(APP_NAME);
@@ -189,7 +190,7 @@ public class AuthApplicationUpdateTestCase extends APIMIntegrationBaseTest {
         //change the application name
         HttpResponse response = apiStore
                 .updateApplication(APP_NAME, APP_NAME_TO_UPDATE, UPDATE_APP_CALLBACK_URL, APP_DESCRIPTION,
-                        APIMIntegrationConstants.APPLICATION_TIER.LARGE);
+                        APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN);
         verifyResponse(response);
     }
 
