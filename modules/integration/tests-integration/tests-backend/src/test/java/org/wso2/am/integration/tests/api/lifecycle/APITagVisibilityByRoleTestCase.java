@@ -153,9 +153,9 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         
         Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
                 "Public visibility tag is not available for anonymous user");
-        Assert.assertFalse(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertFalse(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
                 "Restricted visibility tag is available for anonymous user");
     }
 
@@ -180,9 +180,9 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
 
         Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
                 "Public visibility tag is not available for authorised user");
-        Assert.assertTrue(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
                 "Restricted visibility tag is not available for authorised user");
 
     }
