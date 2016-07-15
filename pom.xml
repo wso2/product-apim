@@ -473,18 +473,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.backend.service</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jettison.wso2</groupId>
-                <artifactId>jettison</artifactId>
-                <version>${orbit.version.jettison}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>emma</groupId>
                 <artifactId>emma</artifactId>
                 <version>${emma.version}</version>
@@ -495,12 +483,6 @@
                 <artifactId>SecVerifier</artifactId>
                 <type>aar</type>
                 <version>${carbon.kernel.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-digester</groupId>
-                <artifactId>commons-digester</artifactId>
-                <version>2.1</version>
             </dependency>
 
             <!-- MT dashboard -->
@@ -577,25 +559,10 @@
                 <artifactId>org.wso2.am.integration.test.extensions</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.integration.backend.service</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.integration.ui.pages</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.broker.lifecycle</artifactId>
+                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
 
@@ -652,11 +619,6 @@
             <dependency>
                 <groupId>org.wso2.carbon.mediation</groupId>
                 <artifactId>org.wso2.carbon.mediation.configadmin.stub</artifactId>
-                <version>${carbon.mediation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.mediation</groupId>
-                <artifactId>org.wso2.carbon.rest.api</artifactId>
                 <version>${carbon.mediation.version}</version>
             </dependency>
             <dependency>
