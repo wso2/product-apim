@@ -936,7 +936,7 @@
         <carbon.deployment.version>4.7.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.0.6-beta6</carbon.analytics.version>
+        <carbon.analytics.version>1.1.0</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
