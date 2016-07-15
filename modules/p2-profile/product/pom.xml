@@ -516,6 +516,9 @@
 
                                 <!-- CEP based features -->
                                 <featureArtifactDef>
+                                    org.wso2.cep:org.wso2.cep.styles.feature:${product.cep.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.event.processor.manager.core.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -3412,6 +3415,10 @@
                                 </feature>
 
                                 <!-- CEP features -->
+                                <feature>
+                                    <id>org.wso2.cep.styles.feature.group</id>
+                                    <version>${product.cep.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.event.receiver.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
