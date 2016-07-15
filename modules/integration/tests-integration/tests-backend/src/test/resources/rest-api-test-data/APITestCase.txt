@@ -16,7 +16,7 @@
             \"tags\": [],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
             \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
             \"version\": \"2\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"Unlimited\"],\r\n
-            \"thumbnailUrl\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+            \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
             \"visibleTenants\": [],\r\n
             \"endpointConfig\":
             \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
@@ -76,7 +76,7 @@
             \"tags\": [],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
             \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
             \"version\": \"2\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"Unlimited\"],\r\n
-            \"thumbnailUrl\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+            \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
             \"visibleTenants\": [],\r\n
             \"endpointConfig\":
             \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Kandy\\\",

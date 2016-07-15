@@ -197,21 +197,9 @@
                                 </featureArtifactDef>
 
                                 <featureArtifactDef>
-                                    org.wso2.carbon.mediation:org.wso2.carbon.mediation.statistics.feature:${carbon.mediation.version}
-                                </featureArtifactDef>
-
-                           
-                                <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediation.configadmin.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
 
-
-                                <featureArtifactDef>
-                                    org.wso2.carbon.mediation:org.wso2.carbon.mediation.tracer.feature:${carbon.mediation.version}
-                                </featureArtifactDef>
-
-
-                      
                                 <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.forum.server.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
@@ -528,9 +516,6 @@
 
                                 <!-- CEP based features -->
                                 <featureArtifactDef>
-                                    org.wso2.cep:org.wso2.cep.styles.feature:${product.cep.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.event.processor.manager.core.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
@@ -565,7 +550,7 @@
                                     org.wso2.carbon.analytics-common:org.wso2.carbon.event.application.deployer.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.analytics-common:org.wso2.carbon.event.execution.manager.feature:${carbon.analytics.common.version}
+                                    org.wso2.carbon.analytics-common:org.wso2.carbon.event.template.manager.feature:${carbon.analytics.common.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.event-processing:org.wso2.carbon.siddhi.tryit.feature:${carbon.event-processing.version}
@@ -839,16 +824,7 @@
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                              
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                               
+                                                              
                                 <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1211,7 +1187,7 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.execution.manager.feature.group</id>
+                                    <id>org.wso2.carbon.event.template.manager.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
@@ -1336,15 +1312,7 @@
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
+                                                                
                                 <feature>
                                     <id>org.wso2.carbon.application.mgt.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
@@ -1687,15 +1655,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -2061,15 +2020,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -2505,15 +2455,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -2975,16 +2916,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediation.configadmin.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.statistics.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                               
-                                <feature>
-                                    <id>org.wso2.carbon.mediation.tracer.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -3480,10 +3411,6 @@
 
                                 <!-- CEP features -->
                                 <feature>
-                                    <id>org.wso2.cep.styles.feature.group</id>
-                                    <version>${product.cep.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.event.receiver.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
@@ -3525,7 +3452,7 @@
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.event.execution.manager.feature.group</id>
+                                    <id>org.wso2.carbon.event.template.manager.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
                                 <feature>
