@@ -752,9 +752,9 @@
             <destName>axis2.xml</destName>
         </file>
         <file>
-            <source>src/main/conf/axis2_DE.xml</source>
+            <source>src/main/conf/axis2_TM.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
-            <destName>axis2_DE.xml</destName>
+            <destName>axis2_TM.xml</destName>
         </file>
         <file>
             <source>src/main/conf/axis2.xml</source>
@@ -794,9 +794,9 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>src/main/conf/registry_DE.xml</source>
+            <source>src/main/conf/registry_TM.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
-            <destName>registry_DE.xml</destName>
+            <destName>registry_TM.xml</destName>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
