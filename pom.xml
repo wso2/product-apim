@@ -61,7 +61,7 @@
     </scm>
 
     <repositories>
-        <repository>
+	 <repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
             <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
@@ -915,7 +915,7 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.1-BETA3</carbon.mediation.version>
+        <carbon.mediation.version>4.6.1</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.2.0</carbon.identity.version>
