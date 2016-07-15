@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v1.10.0 - 7th January 2016</title>
+    <title>WSO2 API Manager v2.0.0 - 18th July 2016</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 1.10.0 Released!</h1>
+<h1>The WSO2 API Manager 2.0.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 1.10.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 2.0.0 of
     the Open Source API Manager.
 </p>
 
@@ -52,6 +52,7 @@
     <li><b>API Store:</b> Browse published APIs and subscribe to them</li>
     <li><b>API Gateway:</b> The underlying API runtime based on WSO2 ESB</li>
     <li><b>API Key Manager:</b> Performs Key Generation and Key Validation functionalities</li>
+    <li><b>API Traffic Manager:</b> Performs Rate Limiting of API Requests</li>
 </ul>
 
 <p>
@@ -70,7 +71,7 @@
 <p>
     For more information on WSO2 API Manager please visit <a href="http://wso2.com/products/api-manager">
     http://wso2.com/products/api-manager</a>. Also take a look at the online product
-    <a href="https://docs.wso2.com/display/AM1100/WSO2+API+Manager+Documentation">documentation</a>.
+    <a href="https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
