@@ -17,14 +17,12 @@
   ~ */
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.0</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -65,9 +63,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <copy overwrite="true"
-                                      file="${project.build.directory}/${project.artifactId}-${project.version}-v0.war"
-                                      tofile="${basedir}/../../modules/integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/war/api-import-export-test.war"/>
+                                <copy overwrite="true" file="${project.build.directory}/${project.artifactId}-${project.version}-v0.war" tofile="${basedir}/../../modules/integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/war/api-import-export-test.war" />
                             </target>
                         </configuration>
                     </execution>
@@ -110,7 +106,7 @@
                                     <tasks>
                                         <copy todir="${basedir}/../../../repository/deployment/server/webapps" overwrite="true">
                                             <fileset dir="${basedir}/target">
-                                                <include name="${project.artifactId}-${project.version}-v0.war"/>
+                                                <include name="${project.artifactId}-${project.version}-v0.war" />
                                             </fileset>
                                         </copy>
                                     </tasks>
