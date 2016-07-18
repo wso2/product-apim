@@ -956,6 +956,10 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
             JSONObject methods = (JSONObject) e.getValue();
             Set<Map.Entry> mes = methods.entrySet();
             for (Map.Entry m : mes) {
+                if (!(m.getValue() instanceof JSONObject)) {
+                    log.warn("path is expected to be json but string found on " + swagger12location);
+                    continue;
+                }
                 JSONObject re = (JSONObject) m.getValue();
                 JSONObject xWso2Security = (JSONObject) swagger12doc.get(Constants.SWAGGER_X_WSO2_SECURITY);
                 JSONArray scopes = new JSONArray();
@@ -984,6 +988,10 @@ public class MigrateFrom110to200 extends MigrationClientBase implements Migratio
 
                 //for resources response object
                 JSONObject responses = (JSONObject) re.get(Constants.SWAGGER_RESPONSES);
+                if (responses == null) {
+                    log.warn("responses attribute not present in swagger " + swagger12location);
+                    continue;
+                }
                 JSONObject response;
                 Iterator itr = responses.keySet().iterator();
                 while (itr.hasNext()) {
