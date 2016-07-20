@@ -581,7 +581,7 @@ public final class APIImportUtil {
 
         String faultSequenceFileName = importedApi.getFaultSequence();
         String faultSequenceFileLocation = pathToArchive + APIImportExportConstants.FAULT_SEQUENCE_LOCATION + "custom" +
-                                           File.separator + outSequenceFileName;
+                                           File.separator + faultSequenceFileName;
 
         //Adding fault-sequence, if any
         if (checkFileExistence(faultSequenceFileLocation)) {
