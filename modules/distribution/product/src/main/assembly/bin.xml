@@ -364,7 +364,7 @@
         </fileSet>
          <!-- Throttling policy related templates -->
  	<fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/templates</directory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/policy_templates</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/policy_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
