@@ -915,7 +915,7 @@
         <carbon.kernel.version>4.4.7</carbon.kernel.version>
         <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
-	
+
 	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
         <carbon.commons.version>4.5.4</carbon.commons.version>
@@ -946,7 +946,7 @@
         <carbon.multitenancy.version>4.6.0</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
-        <analytics.shared.version>1.0.0</analytics.shared.version>
+        <analytics.shared.version>1.0.1</analytics.shared.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
