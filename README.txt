@@ -13,6 +13,7 @@ WSO2 API Manager consists of several loosely coupled modules.
         * API store
         * API gateway
 	* API Key Manager
+	* API Traffic Manager
 
 The API publisher module allows API publishers to easily define APIs and manage them
 using a strong governance model which consists of well-established concepts such as
@@ -96,11 +97,11 @@ Key Features
         
 * Monitor API Usage and Performance:        
             - All API usage published to pluggable analytics framework.
-            - Out of the box support for WSO2 Business Activity Monitor and Google Analytics.
+            - Out of the box support for the WSO2 Analytics Platform and Google Analytics.
             - View metrics by user, API and more.
             - Customized reporting via plugging reporting engines.
             - Monitor SLA compliance.
-            - Powered by WSO2 Business Activity Monitor.      
+            - Powered by WSO2 Data Analytics Server (DAS).      
     
 * Pluggable, Extensible and Themeable:        
             - All components are highly customizable thru styling, theming and open source code.
