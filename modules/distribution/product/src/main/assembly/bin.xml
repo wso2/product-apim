@@ -1087,5 +1087,11 @@
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
+        <file>
+            <source>../resources/authenticators/authenticators.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 </assembly>
