@@ -35,8 +35,9 @@
                 <exclude>**/conf/axis2/tenant-axis2.xml</exclude>
                 <exclude>**/conf/synapse.xml</exclude>
                 <exclude>**/conf/security/Owasp.CsrfGuard.Carbon.properties</exclude>
-		<exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
-		<exclude>**/log4j.properties</exclude>
+                <exclude>**/conf/security/authenticators.xml</exclude>
+		        <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+		        <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
