@@ -896,11 +896,12 @@
 
     <properties>
 
+        <project.scm.id>scm-server</project.scm.id>
+
         <carbon.analytics.common.version>5.1.0</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.5-SNAPSHOT</carbon.apimgt.version>
-        <apim.feature.version>6.0.5-SNAPSHOT</apim.feature.version>
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -1033,7 +1034,6 @@
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
-	    <project.scm.id>scm-server</project.scm.id>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
         <product.cep.version>4.1.0</product.cep.version>
     </properties>
