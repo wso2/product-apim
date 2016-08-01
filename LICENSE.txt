@@ -269,7 +269,7 @@ org.wso2.carbon.addressing_4.4.7.jar                                            
 org.wso2.carbon.analytics.message.tracer.handler.stub_1.0.6.jar                 bundle         apache2   8730
 org.wso2.carbon.analytics.message.tracer.handler.ui_1.0.6.jar                   bundle         apache2   8729
 org.wso2.carbon.analytics.message.tracer.handler_1.0.6.jar                      bundle         apache2   8728
-org.wso2.carbon.analytics.shared.data.agents.log4j_1.0.0.jar                    bundle         apache2   8727
+org.wso2.carbon.analytics.shared.data.agents.log4j_1.0.1.jar                    bundle         apache2   8727
 org.wso2.carbon.andes.admin_3.1.6.jar                                           bundle         apache2   8726      
 org.wso2.carbon.andes.authentication_3.1.6.jar                                  bundle         apache2   8725      
 org.wso2.carbon.andes.authorization_3.1.6.jar                                   bundle         apache2   8724      

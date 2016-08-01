@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.am</groupId>
         <artifactId>am-p2-profile-gen-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -320,6 +320,9 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity:org.wso2.carbon.identity.oauth.feature:${carbon.identity-inbound-auth-oauth.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity:org.wso2.carbon.identity.oauth.ui.feature:${carbon.identity-inbound-auth-oauth.version}
                                 </featureArtifactDef>
                               	<featureArtifactDef>
                                     org.wso2.carbon.identity:org.wso2.carbon.identity.application.authenticator.basicauth.server.feature:${carbon.identity-local-auth-basicauth.version}
@@ -3246,8 +3249,10 @@
                                     <id>org.wso2.carbon.apimgt.scxml.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-
-
+                                <feature>
+                                    <id>org.wso2.carbon.identity.oauth.ui.feature.group</id>
+                                    <version>${carbon.identity-inbound-auth-oauth.version}</version>
+                                </feature>
                                 <feature>
                                     <id>org.wso2.carbon.soaptracer.feature.group</id>
                                     <version>${carbon.commons.version}</version>

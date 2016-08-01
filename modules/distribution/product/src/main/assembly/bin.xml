@@ -35,8 +35,9 @@
                 <exclude>**/conf/axis2/tenant-axis2.xml</exclude>
                 <exclude>**/conf/synapse.xml</exclude>
                 <exclude>**/conf/security/Owasp.CsrfGuard.Carbon.properties</exclude>
-		<exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
-		<exclude>**/log4j.properties</exclude>
+                <exclude>**/conf/security/authenticators.xml</exclude>
+		        <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+		        <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
                 <exclude>**/version.txt</exclude>
@@ -72,6 +73,7 @@
 		        <exclude>**/repository/components/plugins/org.wso2.carbon.hostobjects.sso_4.3.2.jar</exclude>
 		        <exclude>**/repository/components/plugins/com.google.guava_15.0.0.jar</exclude>
 		        <exclude>**/repository/components/plugins/httpclient_4.3.2.wso2v1.jar</exclude>
+                <exclude>**/repository/components/plugins/org.wso2.carbon.identity.oauth.stub_5.0.8.jar</exclude>
                 <!--This has excluded because commons-scxml_0.9.0.wso2v1 exports the same version-->
 		        <exclude>**/repository/components/plugins/commons-digester_1.8.1.wso2v1.jar</exclude>
                 <!--<exclude>**/repository/components/plugins/waffle_1.4.0.wso2v1.jar</exclude>-->
@@ -363,7 +365,7 @@
         </fileSet>
          <!-- Throttling policy related templates -->
  	<fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/templates</directory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/policy_templates</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources/policy_templates</outputDirectory>
             <includes>
                 <include>**/**.xml</include>
@@ -1083,6 +1085,12 @@
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/message-tracer-config.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../resources/authenticators/authenticators.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/security</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
         </file>
