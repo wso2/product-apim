@@ -145,6 +145,8 @@ public class APIMANAGER5326CustomStatusMsgTestCase extends APIMIntegrationBaseTe
 
             org.apache.http.HttpResponse httpResponse = httpclient.execute(getRequest1);
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 400, "Response Code Mismatched");
+            Assert.assertEquals(httpResponse.getStatusLine().toString().contains("Custom response"), true,
+                    "Response received with Custom Status Message");
 
         } catch (APIManagerIntegrationTestException e) {
             log.error("APIManagerIntegrationTestException " + e.getMessage(), e);
