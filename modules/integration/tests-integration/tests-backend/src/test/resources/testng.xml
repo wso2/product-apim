@@ -172,12 +172,14 @@
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.APIMANAGER3706ApplicationUpdateTestCase"/>
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5327KeyGenerationWithPGSQLTestCase"/>-->
         </classes>
     </test>
 
