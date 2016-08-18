@@ -65,15 +65,17 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
+            <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
 
+
     <test name="apim-throttling-tests" preserve-order="true" parallel="false">
         <classes>
+            <class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
-            <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
 

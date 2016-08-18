@@ -73,58 +73,46 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     private String newTiersXML;
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private APIPublisherRestClient apiPublisherClientUser1;
-    private ServerConfigurationManager serverConfigurationManager;
-    protected AutomationContext superTenantKeyManagerContext;
 
-    @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-        super.init();
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+            super.init();
 
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
-                File.separator + "api-manager.xml"));
+            apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+            providerName = user.getUserName();
+            apiCreationRequestBean =
+                    new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                            new URL(apiEndPointUrl));
+            apiCreationRequestBean.setTags(API_TAGS);
+            apiCreationRequestBean.setDescription(API_DESCRIPTION);
+            String publisherURLHttp = getPublisherURLHttp();
+            String storeURLHttp = getStoreURLHttp();
+            apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+            APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
-        serverConfigurationManager.restartGracefully();
+            //Login to API Publisher with  admin
+            apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+            //Login to API Store with  admin
+            apiStoreClientUser1.login(user.getUserName(), user.getPassword());
 
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+            apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+            String artifactsLocation =
+                    TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                            File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
+            resourceAdminServiceClient =
+                    new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
+                            createSession(publisherContext));
+            originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
+            originalAppTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_APP_LOCATION);
+            originalResTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_RES_LOCATION);
 
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        String artifactsLocation =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                        File.separator + "AM" + File.separator + "lifecycletest" + File.separator + "tiers.xml";
-        resourceAdminServiceClient =
-                new ResourceAdminServiceClient(publisherContext.getContextUrls().getBackEndUrl(),
-                                               createSession(publisherContext));
-        originalTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_LOCATION);
-        originalAppTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_APP_LOCATION);
-        originalResTiersXML = resourceAdminServiceClient.getTextContent(TIER_XML_REG_CONFIG_RES_LOCATION);
-
-        newTiersXML = readFile(artifactsLocation);
+            newTiersXML = readFile(artifactsLocation);
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test availability of tiers in Permission Page before change tiers XML")
-    public void testAvailabilityOfTiersInPermissionPageBeforeChangeTiersXML() throws APIManagerIntegrationTestException {
+    @Test(groups = {"throttling"}, description = "test availability of tiers in Permission Page before change tiers XML")
+    public void testAvailabilityOfTiersInPermissionPageBeforeChangeTiersXML() throws Exception {
+        initialize();
         //Create a API
         APIIdentifier apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
@@ -140,10 +128,10 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test availability of tiers in API Manage Page before change tiers XML",
+    @Test(groups = {"throttling"}, description = "Test availability of tiers in API Manage Page before change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInPermissionPageBeforeChangeTiersXML")
-    public void testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML() throws APIManagerIntegrationTestException {
-
+    public void testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML() throws Exception {
+        initialize();
         HttpResponse tierManagePageHttpResponse =
                 apiPublisherClientUser1.getAPIManagePage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(tierManagePageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -151,18 +139,20 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
         assertTrue(tierManagePageHttpResponse.getData().contains(TIER_MANAGE_PAGE_TIER_GOLD),
                 "default tier  Gold is not available in Tier Permission page before  add new tear in tiers.xml");
         assertFalse(tierManagePageHttpResponse.getData().contains(TIER_MANAGE_PAGE_TIER_PLATINUM),
-                "new tier Platinum available in Tier Permission page before  add new tear in tiers.xml");
+                "new tier Platinum available in Tier Permission pag    private ServerConfigurationManager serverConfigurationManager;e before  add new tear in tiers.xml");
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test availability of tiers in Permission Page after change tiers XML",
+    @Test(groups = {"throttling"}, description = "test availability of tiers in Permission Page after change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML")
-    public void testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML() throws RemoteException,
-            ResourceAdminServiceExceptionException, APIManagerIntegrationTestException {
+    public void testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML() throws Exception {
+        initialize();
+
         //Changing the Tier XML
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, newTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, newTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, newTiersXML);
+
         HttpResponse tierPermissionPageHttpResponse =
                 apiPublisherClientUser1.getTierPermissionsPage();
         assertEquals(tierPermissionPageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -175,9 +165,10 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test availability of tiers in API Manage Page after change tiers XML",
+    @Test(groups = {"throttling"}, description = "Test availability of tiers in API Manage Page after change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML")
-    public void testAvailabilityOfTiersInAPIManagePageAfterChangeTiersXML() throws APIManagerIntegrationTestException {
+    public void testAvailabilityOfTiersInAPIManagePageAfterChangeTiersXML() throws Exception {
+        initialize();
         HttpResponse tierManagePageHttpResponse =
                 apiPublisherClientUser1.getAPIManagePage(API_NAME, providerName, API_VERSION_1_0_0);
         assertEquals(tierManagePageHttpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
@@ -191,12 +182,13 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        //Login to API Publisher with  admin
+        initialize();
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         //restore the original tiers.xml content.
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_LOCATION, originalTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_APP_LOCATION, originalAppTiersXML);
         resourceAdminServiceClient.updateTextContent(TIER_XML_REG_CONFIG_RES_LOCATION, originalResTiersXML);
-        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 
