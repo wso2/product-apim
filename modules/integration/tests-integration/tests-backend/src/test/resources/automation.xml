@@ -304,7 +304,8 @@
         <platformExecutionManager>
             <extentionClasses>
                 <class>
-                    <name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name>
+                    <!--name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name-->
+                    <name>org.wso2.am.framework.extensions.APIMCarbonServerExtension</name>
                     <parameter name="-DportOffset" value="500"/>
                     <!--<parameter name="cmdArg" value="debug 5005" />-->
                 </class>

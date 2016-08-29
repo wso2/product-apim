@@ -24,6 +24,7 @@ import org.apache.commons.net.telnet.TelnetClient;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.APIMTestConstants;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -54,54 +55,19 @@ import static org.testng.Assert.assertEquals;
 public class OSGIServerBundleStatusTestCase {
 
     private static final Log log = LogFactory.getLog(OSGIServerBundleStatusTestCase.class);
-    private static int telnetPort = 2000;
     private TelnetClient telnet = new TelnetClient();
     private ArrayList<String> arrList = new ArrayList<String>();
     private ArrayList<String> unsatisfiedList = new ArrayList<String>();
-    private HashMap<String, String> serverPropertyMap = new HashMap<String, String>();
     private PrintStream out;
-    TestServerManager testServerManager;
-
-    @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        // to start the server from a different port offset
-        serverPropertyMap.put("-DportOffset", "510");
-        // start with OSGI component service
-        serverPropertyMap.put("-DosgiConsole", Integer.toString(telnetPort));
-        AutomationContext autoCtx = new AutomationContext();
-        CarbonTestServerManager server =
-                new CarbonTestServerManager(autoCtx, System.getProperty("carbon.zip"), serverPropertyMap);
-
-        testServerManager = new TestServerManager(autoCtx, null, serverPropertyMap) {
-
-            public void configureServer() throws AutomationFrameworkException {
-
-                try {
-                    File sourceFile = new File(TestConfigurationProvider.getResourceLocation() + File.separator
-                                               + "artifacts" + File.separator + "AM" + File.separator
-                                               + "configFiles" + File.separator + "osgi" + File.separator
-                                               + "api-manager.xml");
-                    //copying api-manager.xml file to conf folder
-                    FileManager.copyFile(sourceFile, this.getCarbonHome() + File.separator + "repository"
-                                                     + File.separator + "conf" + File.separator + "api-manager.xml");
-                } catch (IOException e) {
-                    throw new AutomationFrameworkException(e.getMessage(), e);
-                }
-            }
-        };
-
-        testServerManager.startServer();
-    }
 
     @AfterClass(alwaysRun = true)
-    public void stopServers() throws Exception {
+    public void disconnectFromOSGiConsole() throws Exception {
         disconnect();  // telnet disconnection
-        testServerManager.stopServer();
     }
 
     @Test(groups = "wso2.all", description = "Identifying and storing unsatisfied OSGI components")
     public void testOSGIUnsatisfiedComponents() throws Exception {
-        telnet.connect(InetAddress.getLocalHost().getHostAddress(), telnetPort);
+        telnet.connect(InetAddress.getLocalHost().getHostAddress(), Integer.parseInt(APIMTestConstants.OSGI_CONSOLE_TELNET_PORT));
         telnet.setSoTimeout(10000);
         ArrayList<String> arr = retrieveUnsatisfiedComponentsList("ls");
         for (int x = 0; x < arr.size(); x++) {

@@ -153,6 +153,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         
         Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
+        log.info("Response received from Tag list Query " + serviceResponse.getData());
         Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
                 "Public visibility tag is not available for anonymous user");
         Assert.assertFalse(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),

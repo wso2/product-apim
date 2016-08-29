@@ -82,10 +82,10 @@
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/store/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${apim.feature.version}/admin/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${apim.feature.version}/publisher/**</exclude>
-                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${apim.feature.version}/libs/**</exclude>
+                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/store/**</exclude>
+                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**</exclude>
+                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**</exclude>
+                <exclude>**/repository/components/features/org.wso2.carbon.apimgt.core_${carbon.apimgt.version}/libs/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>

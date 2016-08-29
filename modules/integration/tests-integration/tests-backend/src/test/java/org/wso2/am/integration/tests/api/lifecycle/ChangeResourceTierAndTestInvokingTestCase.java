@@ -66,46 +66,39 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
-    private ServerConfigurationManager serverConfigurationManager;
-    protected AutomationContext superTenantKeyManagerContext;
+    private boolean isInitialised = false;
 
-    @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-        super.init();
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        if (!isInitialised) {
+            super.init();
+            apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+            providerName = user.getUserName();
+            apiCreationRequestBean =
+                    new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                            new URL(apiEndPointUrl));
+            apiCreationRequestBean.setTags(API_TAGS);
+            apiCreationRequestBean.setDescription(API_DESCRIPTION);
+            String publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            String storeURLHttp = storeUrls.getWebAppURLHttp();
+            apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+            apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
-                File.separator + "api-manager.xml"));
+            //Login to API Publisher with  admin
+            apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
-        serverConfigurationManager.restartGracefully();
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                                           new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+            //Login to API Store with  admin
+            apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+            apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
 
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+            isInitialised = true;
+        }
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
                                               "Resource Tier: Unlimited.")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited() throws Exception {
+        initialize();
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
         //Create publish and subscribe a API
@@ -169,10 +162,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
    "Resource Tier: Plus.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
-
+        initialize();
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
@@ -239,9 +232,10 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
                                               "Resource Tier: Gold.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceSilver")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceGold() throws Exception {
+        initialize();
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
 
         String swagger = " {\"paths\":{\"/*\":{\"get\":{\"x-auth-type\":\"Application \",\"x-throttling-tier\":" +
@@ -307,7 +301,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 

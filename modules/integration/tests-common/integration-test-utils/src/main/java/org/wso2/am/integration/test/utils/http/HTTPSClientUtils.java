@@ -21,6 +21,7 @@ package org.wso2.am.integration.test.utils.http;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -108,8 +109,15 @@ public class HTTPSClientUtils {
      * @return CloseableHttpClient
      */
     public static CloseableHttpClient getHttpsClient() {
+        int timeout = 7;
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(timeout * 1000)
+                .setConnectionRequestTimeout(timeout * 1000)
+                .setSocketTimeout(timeout * 1000).build();
+
         CloseableHttpClient httpClient = HttpClients.custom().disableRedirectHandling()
-                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).build();
+                .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER).
+                        setDefaultRequestConfig(config).build();
         return httpClient;
     }
 

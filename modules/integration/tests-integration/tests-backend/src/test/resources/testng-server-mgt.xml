@@ -14,7 +14,6 @@
     <test name="apim-common-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerConfigurationChangeTest"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIManagerStandaloneConfigurationChangeTest"/>
         </classes>
     </test>
 
