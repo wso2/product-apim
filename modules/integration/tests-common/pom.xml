@@ -33,6 +33,7 @@ under the License.
         <module>admin-clients</module>
         <module>integration-test-utils</module>
         <module>backend-service</module>
+        <module>framework-extensions</module>
         <module>integration-test-extensions</module>
         <module>ui-pages</module>
     </modules>

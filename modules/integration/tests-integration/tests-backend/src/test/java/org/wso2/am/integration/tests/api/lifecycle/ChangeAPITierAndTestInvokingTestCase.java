@@ -71,40 +71,32 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     private APICreationRequestBean apiCreationRequestBean;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private ServerConfigurationManager serverConfigurationManager;
-    protected AutomationContext superTenantKeyManagerContext;
+    private boolean isInitialised = false;
 
-    @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
-        super.init();
-        superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
-                TestUserMode.SUPER_TENANT_ADMIN);
-        serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
+        if (!isInitialised) {
+            super.init();
 
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
-                File.separator + "api-manager.xml"));
+            apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+            providerName = user.getUserName();
+            String publisherURLHttp = getPublisherURLHttp();
+            String storeURLHttp = getStoreURLHttp();
+            apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
+            apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
+            //Login to API Publisher with  admin
+            apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
+            //Login to API Store with  admin
+            apiStoreClientUser1.login(user.getUserName(), user.getPassword());
+            apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
 
-        serverConfigurationManager.restartGracefully();
-
-        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = user.getUserName();
-        String publisherURLHttp = getPublisherURLHttp();
-        String storeURLHttp = getStoreURLHttp();
-        apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
-        apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
-        //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
-        //Login to API Store with  admin
-        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
+            isInitialised = true;
+        }
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  invocation of  api under tier Gold.")
+    @Test(groups = {"throttling"}, description = "test  invocation of  api under tier Gold.")
     public void testInvokingWithGoldTier() throws Exception {
-
+        initialize();
         applicationNameGold = APPLICATION_NAME + TIER_GOLD;
         apiStoreClientUser1
                 .addApplication(applicationNameGold, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
@@ -165,9 +157,10 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  invocation of APi after expire the throttling block time.",
+    @Test(groups = {"throttling"}, description = "test  invocation of APi after expire the throttling block time.",
           dependsOnMethods = "testInvokingWithGoldTier")
     public void testInvokingAfterExpireThrottleExpireTime() throws Exception {
+        initialize();
         //wait millisecond to expire the throttling block
         Thread.sleep(THROTTLING_UNIT_TIME + THROTTLING_ADDITIONAL_WAIT_TIME);
         HttpResponse invokeResponse =
@@ -184,10 +177,10 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
                    "millisecond to expire the throttling block");
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test changing of the API Tier from Gold to Silver",
+    @Test(groups = {"throttling"}, description = "Test changing of the API Tier from Gold to Silver",
           dependsOnMethods = "testInvokingAfterExpireThrottleExpireTime")
-    public void testEditAPITierToSilver()
-            throws APIManagerIntegrationTestException, MalformedURLException {
+    public void testEditAPITierToSilver() throws Exception {
+        initialize();
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                                                             new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
@@ -208,9 +201,10 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "test  invocation of  api under tier Silver.",
+    @Test(groups = {"throttling"}, description = "test  invocation of  api under tier Silver.",
           dependsOnMethods = "testEditAPITierToSilver")
     public void testInvokingWithSilverTier() throws Exception {
+        initialize();
         applicationNameSilver = APPLICATION_NAME + TIER_SILVER;
         // create new application
         apiStoreClientUser1
@@ -268,6 +262,5 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
         apiStoreClientUser1.removeApplication(applicationNameGold);
         apiStoreClientUser1.removeApplication(applicationNameSilver);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        serverConfigurationManager.restoreToLastConfiguration();
     }
 }
