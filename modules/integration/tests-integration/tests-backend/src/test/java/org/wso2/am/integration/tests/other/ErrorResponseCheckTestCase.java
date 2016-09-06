@@ -111,7 +111,7 @@ public class ErrorResponseCheckTestCase extends APIMIntegrationBaseTest {
             response = apiStore.addApplication("SecApp", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
             verifyResponse(response);
 
-            //Subscribe the API to the DefaultApplication
+            //Subscribe the API to the Application
             SubscriptionRequest subscriptionRequest = new SubscriptionRequest(apiName, apiVersion,
                     user.getUserName(), "SecApp",
                     APIMIntegrationConstants.API_TIER.UNLIMITED);
