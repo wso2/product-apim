@@ -998,14 +998,14 @@
 
         <carbon.automation.version>4.4.2</carbon.automation.version>
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
-        <org.apache.cxf.version>3.1.4</org.apache.cxf.version>
+        <org.apache.cxf.version>3.1.7</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v18</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
-        <google.code.gson.version>2.3.1</google.code.gson.version>
+        <google.code.gson.version>2.7</google.code.gson.version>
 
         <!-- Store -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
