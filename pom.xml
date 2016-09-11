@@ -890,6 +890,11 @@
                 <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
                 <version>${carbon.analytics.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${version.snake.yaml}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -897,8 +902,7 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-
-        <carbon.analytics.common.version>5.1.0</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.3</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
         <carbon.apimgt.version>6.0.5-SNAPSHOT</carbon.apimgt.version>
@@ -1036,6 +1040,7 @@
         <commons-digester.version>1.8.1</commons-digester.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
         <product.cep.version>4.1.0</product.cep.version>
+        <version.snake.yaml>1.17</version.snake.yaml>
     </properties>
 
 </project>
