@@ -44,7 +44,6 @@
             <!--Disable the test case because of APIMANAGER-3378-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPIEndPointURLTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITagsTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.PluggableVersioningStrategyTestCase"/>
             <!--&lt;!&ndash;&lt;!&ndash;Disable the test case because of APIMANAGER-4191&ndash;&gt;&ndash;&gt;-->
             <!-- <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeApplicationTierAndTestInvokingTestCase"/>-->
@@ -52,11 +51,9 @@
             <!--&lt;!&ndash;Disable the test case because ofAPIMANAGER-3515&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeEndPointSecurityOfAPITestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3530. this blocks the verification of the API. Need to update swagger after this issue is fixed&ndash;&gt;-->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIAndCheckUpdatedInformationTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3377&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.MalformedRequestTest"/>
@@ -66,12 +63,30 @@
             <class name="org.wso2.am.integration.tests.stats.UnsecureAPIWithStatsTestCase"/> -->
             <class name="org.wso2.am.integration.tests.api.lifecycle.APITagVisibilityByRoleTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.NewVersionUpdateTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIMANAGER5337SubscriptionRetainTestCase"/>
             <class name="org.wso2.am.integration.tests.header.CORSHeadersTestCase"/>
-            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
             <class name="org.wso2.am.integration.tests.token.InvalidTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.APIThrottlingTestCase"/>
         </classes>
     </test>
+
+
+    <test name="apim-throttling-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.InvokeAPIUsingOldThrottlingWithWSClient"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
+        </classes>
+    </test>
+
+    <test name="apim-CORS-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
+        </classes>
+    </test>
+
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
@@ -152,19 +167,21 @@
             <class name="org.wso2.am.integration.tests.other.APIM684GenerateApplicationKeyTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM678ApplicationCreationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
+            <!-- <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
             <class name="org.wso2.am.integration.tests.other.ErrorResponseCheckTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER5326CustomStatusMsgTestCase"/>
             <class name="org.wso2.am.integration.tests.application.ApplicationCallbackURLTestCase"/>
             <class name="org.wso2.am.integration.tests.application.AuthApplicationUpdateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.GrantTypeTokenGenerateTestCase"/>
             <class name="org.wso2.am.integration.tests.application.APIMANAGER3706ApplicationUpdateTestCase"/>
             <!--disable test case since it need to configure DAS -->
             <!--<class name="org.wso2.am.integration.tests.stats.APIMANAGER4731StoreStatisticsWhenTokenEncryptedTestCase"/>-->
+            <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER5327KeyGenerationWithPGSQLTestCase"/>-->
         </classes>
     </test>
 

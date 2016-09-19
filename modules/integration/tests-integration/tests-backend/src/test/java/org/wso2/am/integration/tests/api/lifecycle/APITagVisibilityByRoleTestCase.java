@@ -151,11 +151,19 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         HttpEntity content = new UrlEncodedFormEntity(urlParameters);
         String contentString = EntityUtils.toString(content);
         
-        Thread.sleep(5000l);
+        log.info("Waiting for tags to get visible in the store......");
+        Thread.sleep(30000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        //sometimes it takes some time to get the tags to appear in the store. As a result in some occasions 
+        //above request can happen before the tags get deployed. So do a request again if tags are not there
+        if(serviceResponse.getData().contains("[]")){
+        	Thread.sleep(30000l);
+        	serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
+        }
+        log.info("Response received from Tag list Query " + serviceResponse.getData());
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
                 "Public visibility tag is not available for anonymous user");
-        Assert.assertFalse(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertFalse(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
                 "Restricted visibility tag is available for anonymous user");
     }
 
@@ -180,9 +188,9 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
 
         Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
                 "Public visibility tag is not available for authorised user");
-        Assert.assertTrue(serviceResponse.getData().contains(tagsRestricted),
+        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
                 "Restricted visibility tag is not available for authorised user");
 
     }

@@ -173,26 +173,29 @@ public class ResourceModifier200 {
                 Element endpointElement = (Element) sendElement
                         .getElementsByTagNameNS(Constants.SYNAPSE_API_XMLNS, Constants.SYNAPSE_ENDPOINT_XML_ELEMENT)
                         .item(0);
-                NodeList failOverElements = endpointElement
-                        .getElementsByTagName(Constants.SYNAPSE_FAIL_OVER_XML_ELEMENT);
-                NodeList loadBalanceElements = endpointElement
-                        .getElementsByTagName(Constants.SYNAPSE_LOAD_BALANCE_XML_ELEMENT);
-                if (failOverElements.getLength() > 0) {
-                    Element failOverElement = (Element) failOverElements.item(0);
-                    NodeList endpointElements = failOverElement
-                            .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
-                    for (int i = 0; i < endpointElements.getLength(); i++) {
-                        addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
+                
+                if (endpointElement != null) {
+                    NodeList failOverElements = endpointElement
+                            .getElementsByTagName(Constants.SYNAPSE_FAIL_OVER_XML_ELEMENT);
+                    NodeList loadBalanceElements = endpointElement
+                            .getElementsByTagName(Constants.SYNAPSE_LOAD_BALANCE_XML_ELEMENT);
+                    if (failOverElements.getLength() > 0) {
+                        Element failOverElement = (Element) failOverElements.item(0);
+                        NodeList endpointElements = failOverElement
+                                .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
+                        for (int i = 0; i < endpointElements.getLength(); i++) {
+                            addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
+                        }
+                    } else if (loadBalanceElements.getLength() > 0) {
+                        Element loadBalanceElement = (Element) loadBalanceElements.item(0);
+                        NodeList endpointElements = loadBalanceElement
+                                .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
+                        for (int i = 0; i < endpointElements.getLength(); i++) {
+                            addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
+                        }
+                    } else {
+                        addingAddressPropertyToEndpoint(endpointElement, doc);
                     }
-                } else if (loadBalanceElements.getLength() > 0) {
-                    Element loadBalanceElement = (Element) loadBalanceElements.item(0);
-                    NodeList endpointElements = loadBalanceElement
-                            .getElementsByTagName(Constants.SYNAPSE_ENDPOINT_XML_ELEMENT);
-                    for (int i = 0; i < endpointElements.getLength(); i++) {
-                        addingAddressPropertyToEndpoint((Element) endpointElements.item(i), doc);
-                    }
-                } else {
-                    addingAddressPropertyToEndpoint(endpointElement, doc);
                 }
             }
         }

@@ -19,20 +19,21 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <parent>
-        <groupId>org.wso2</groupId>
-        <artifactId>wso2</artifactId>
-        <version>1</version>
-    </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <name>WSO2 API Manager - Aggregator Module</name>
     <url>http://wso2.com/products/api-manager</url>
     <description>WSO2 API Manager</description>
+
+    <parent>
+        <groupId>org.wso2</groupId>
+        <artifactId>wso2</artifactId>
+        <version>1</version>
+    </parent>
 
     <licenses>
         <license>
@@ -61,7 +62,7 @@
     </scm>
 
     <repositories>
-        <repository>
+	 <repository>
             <id>wso2-nexus</id>
             <name>WSO2 internal Repository</name>
             <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
@@ -161,7 +162,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-scr-plugin</artifactId>
-                    <version>1.7.2</version>
+                    <version>1.9.0</version>
                     <executions>
                         <execution>
                             <id>generate-scr-scrdescriptor</id>
@@ -473,18 +474,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.backend.service</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jettison.wso2</groupId>
-                <artifactId>jettison</artifactId>
-                <version>${orbit.version.jettison}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>emma</groupId>
                 <artifactId>emma</artifactId>
                 <version>${emma.version}</version>
@@ -495,12 +484,6 @@
                 <artifactId>SecVerifier</artifactId>
                 <type>aar</type>
                 <version>${carbon.kernel.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-digester</groupId>
-                <artifactId>commons-digester</artifactId>
-                <version>2.1</version>
             </dependency>
 
             <!-- MT dashboard -->
@@ -558,11 +541,6 @@
                 <version>${carbon.automationutils.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.analytics</groupId>
-                <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
-                <version>${carbon.analytics.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.am</groupId>
                 <artifactId>org.wso2.am.integration.admin.clients</artifactId>
                 <version>${apimserver.version}</version>
@@ -577,25 +555,10 @@
                 <artifactId>org.wso2.am.integration.test.extensions</artifactId>
                 <version>${apimserver.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.integration.backend.service</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.am</groupId>
-                <artifactId>org.wso2.am.integration.ui.pages</artifactId>
-                <version>${apimserver.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
-                <version>${carbon.apimgt.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.broker.lifecycle</artifactId>
+                <artifactId>org.wso2.carbon.apimgt.api</artifactId>
                 <version>${carbon.apimgt.version}</version>
             </dependency>
 
@@ -652,11 +615,6 @@
             <dependency>
                 <groupId>org.wso2.carbon.mediation</groupId>
                 <artifactId>org.wso2.carbon.mediation.configadmin.stub</artifactId>
-                <version>${carbon.mediation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.mediation</groupId>
-                <artifactId>org.wso2.carbon.rest.api</artifactId>
                 <version>${carbon.mediation.version}</version>
             </dependency>
             <dependency>
@@ -921,17 +879,33 @@
                 <artifactId>org.wso2.carbon.governance.lcm</artifactId>
                 <version>${carbon.governance.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.icegreen</groupId>
+                <artifactId>greenmail</artifactId>
+                <version>1.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.analytics</groupId>
+                <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
+                <version>${carbon.analytics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${version.snake.yaml}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
 
     <properties>
 
-        <carbon.analytics.common.version>5.1.0-beta</carbon.analytics.common.version>
+        <project.scm.id>scm-server</project.scm.id>
+        <carbon.analytics.common.version>5.1.3</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.0.0-SNAPSHOT</carbon.apimgt.version>
-        <apim.feature.version>6.0.0.SNAPSHOT</apim.feature.version>
+        <carbon.apimgt.version>6.0.5-SNAPSHOT</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -943,23 +917,23 @@
         <carbon.governance.version>4.6.4</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.7</carbon.kernel.version>
-        <apimserver.version>2.0.0-SNAPSHOT</apimserver.version>
+        <carbon.kernel.version>4.4.8</carbon.kernel.version>
+        <apimserver.version>2.0.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
-	
+
 	    <cipher.tool.version>1.0.0-wso2v3</cipher.tool.version>
 
         <carbon.commons.version>4.5.4</carbon.commons.version>
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.1-BETA2</carbon.mediation.version>
+        <carbon.mediation.version>4.6.6</carbon.mediation.version>
 
         <!-- carbon identity -->
         <carbon.identity.version>5.2.0</carbon.identity.version>
         <carbon.identity-inbound-auth-oauth.version>5.1.1</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.1</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-saml2.version>5.1.1</carbon.identity-inbound-auth-saml2.version>
+        <carbon.identity-inbound-auth-saml2.version>5.1.2</carbon.identity-inbound-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.1.1</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>5.1.1</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.1</carbon.identity-outbound-auth-samlsso.version>
@@ -968,7 +942,7 @@
         <carbon.deployment.version>4.7.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.0.6-beta5</carbon.analytics.version>
+        <carbon.analytics.version>1.1.0</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
@@ -977,7 +951,7 @@
         <carbon.multitenancy.version>4.6.0</carbon.multitenancy.version>
 
         <carbon.dashboard.version>1.0.18</carbon.dashboard.version>
-        <analytics.shared.version>1.0.0-beta3</analytics.shared.version>
+        <analytics.shared.version>1.0.1</analytics.shared.version>
 
 
         <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
@@ -989,7 +963,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v3-BETA</synapse.version>
+        <synapse.version>2.1.7-wso2v7</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v17</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
@@ -1028,14 +1002,14 @@
 
         <carbon.automation.version>4.4.2</carbon.automation.version>
         <carbon.automationutils.version>4.4.2</carbon.automationutils.version>
-        <org.apache.cxf.version>3.1.4</org.apache.cxf.version>
+        <org.apache.cxf.version>3.1.7</org.apache.cxf.version>
         <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
         <org.apache.tomcat>7.0.34</org.apache.tomcat>
         <org.codehaus.jackson.version>1.9.12</org.codehaus.jackson.version>
         <carbon.rest.api.version>4.2.2</carbon.rest.api.version>
         <rampart.wso2.version>1.6.1-wso2v18</rampart.wso2.version>
         <slf4j.api.version>1.5.6</slf4j.api.version>
-        <google.code.gson.version>2.3.1</google.code.gson.version>
+        <google.code.gson.version>2.7</google.code.gson.version>
 
         <!-- Store -->
         <caramel.feature.version>1.0.1</caramel.feature.version>
@@ -1060,13 +1034,13 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.0-beta</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.0</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
-	    <project.scm.id>scm-server</project.scm.id>
-        <product.cep.version>4.1.1-SNAPSHOT</product.cep.version>
         <commons.scxml.version>0.9.0.wso2v1</commons.scxml.version>
+        <product.cep.version>4.1.0</product.cep.version>
+        <version.snake.yaml>1.17</version.snake.yaml>
     </properties>
 
 </project>

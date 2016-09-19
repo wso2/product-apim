@@ -107,12 +107,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
 
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "api-manager.xml"));
-            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
-                + "configFiles" + File.separator + "throttling" + File.separator + "log4j.properties"));
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "throttling" + File.separator + "jndi.properties"));*/
+
             subscriberUserWithTenantDomain = subscriberUser;
             //Load the back-end API
             String gatewaySessionCookie = createSession(gatewayContextMgt);
@@ -121,11 +116,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
                 gatewayContextMgt, gatewaySessionCookie);
             waitForAPIDeploymentSync(user.getUserName(), apiName, apiVersion,
                     APIMIntegrationConstants.IS_API_EXISTS);
-            
-            // restart the server 
-            ServerConfigurationManager serverConfigManagerForTenant =
-                    new ServerConfigurationManager(superTenantKeyManagerContext);
-            serverConfigManagerForTenant.restartGracefully();
+
             super.init(userMode);
         }
 
@@ -133,7 +124,7 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
         providerName = user.getUserName();
     }
 
-    @Test(groups = { "wso2.am" }, description = "API Throttling Test", enabled = true)
+    @Test(groups = { "throttling" }, description = "API Throttling Test", enabled = true)
     public void testAPIThrottling_1() throws Exception {
 
         publishAndInvokeAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);        
@@ -261,9 +252,6 @@ public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
         if(userManagementClient1 != null) {
             userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
             userManagementClient1.deleteUser(subscriberUser);
-        }
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
         }
     }
 

@@ -156,7 +156,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         watForAPIsAvailableOnSearchApi();
 
         //search for common tags
-        searchTerm = "tag:" + TAG_API;
+        searchTerm = "tags:" + TAG_API;
         response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
         verifyResponse(response);
         results = new JSONObject(response.getData());
@@ -166,7 +166,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         Assert.assertTrue(response.getData().contains(API_NAME_2), "API with searched tag not returned");
 
         //search for one out of two API
-        searchTerm = "tag:" + TAG_API_1;
+        searchTerm = "tags:" + TAG_API_1;
         response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
         verifyResponse(response);
         results = new JSONObject(response.getData());
@@ -176,7 +176,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         Assert.assertFalse(response.getData().contains(API_NAME_2), "Result contain API without the requested Tag");
 
         //search for non-exist TAG
-        searchTerm = "tag:" + TAG_NOT_EXIST;
+        searchTerm = "tags:" + TAG_NOT_EXIST;
         response = apiStore.searchPaginateAPIs(user.getUserDomain(), "0", "10", searchTerm);
         verifyResponse(response);
         results = new JSONObject(response.getData());
