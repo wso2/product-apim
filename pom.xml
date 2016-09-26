@@ -917,7 +917,7 @@
         <carbon.governance.version>4.6.4</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.8</carbon.kernel.version>
+        <carbon.kernel.version>4.4.9</carbon.kernel.version>
         <apimserver.version>2.0.1-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
@@ -942,7 +942,7 @@
         <carbon.deployment.version>4.7.0</carbon.deployment.version>
 
         <!-- carbon analytics -->
-        <carbon.analytics.version>1.1.0</carbon.analytics.version>
+        <carbon.analytics.version>1.2.8</carbon.analytics.version>
 
         <!--jaggery-->
         <org.jaggery.version>0.12.6</org.jaggery.version>
@@ -1034,7 +1034,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.0</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.4</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
