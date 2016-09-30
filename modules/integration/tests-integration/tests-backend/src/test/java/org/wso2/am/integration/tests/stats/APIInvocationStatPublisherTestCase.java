@@ -72,7 +72,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
     private final String TIER_COLLECTION = APIMIntegrationConstants.API_TIER.UNLIMITED;
     private final static DASThriftTestServer thriftTestServer = new DASThriftTestServer();
     private final int thriftServerListenPort = 7614;
-    private final long WAIT_TIME = 60 * 1000;
+    private final long WAIT_TIME = 300 * 1000;
     private String publisherURLHttps;
     private String storeURLHttp;
     private APICreationRequestBean apiCreationRequestBean;
@@ -173,7 +173,9 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
         serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
-
+        log.info("Waiting till all the events are published to the event listner..");
+        //adding waiting time to prevent intermittent test failure
+        Thread.sleep(10000);
         //testing request event stream
         testRequestEvent();
         //testing response event stream
@@ -207,11 +209,15 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         while (waitTime > System.currentTimeMillis()) {
             requestTable = thriftTestServer.getDataTables().get(StreamDefinitions.APIMGT_STATISTICS_REQUEST_STREAM_ID);
             if (requestTable == null || requestTable.isEmpty()) {
+            	log.info("Request data table is empty or null. waiting 1s and retry..");
                 Thread.sleep(1000);
                 continue;
             } else {
                 break;
             }
+        }
+        if (requestTable == null ) {
+        	log.error("Response data table is null!!");
         }
 
         Assert.assertEquals(1, requestTable.size(), "Stat publisher published events not match");
@@ -261,11 +267,15 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
             responseTable = thriftTestServer.getDataTables()
                     .get(StreamDefinitions.APIMGT_STATISTICS_RESPONSE_STREAM_ID);
             if (responseTable == null || responseTable.isEmpty()) {
+            	log.info("Response data table is empty or null. waiting 1s and retry..");
                 Thread.sleep(1000);
                 continue;
             } else {
                 break;
             }
+        }
+        if (responseTable == null ) {
+        	log.error("Response data table is null!!");
         }
         Assert.assertEquals(1, responseTable.size(), "Stat publisher published events not match");
 

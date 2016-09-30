@@ -113,51 +113,72 @@ public class StreamDefinitions {
     }
 
     public static String getStreamDefinitionExecutionTime() {
-        return "{" +
-                "  'name': '" + "org.wso2.apimgt.statistics.execution.time" + "'," +
-                "  'version': '" + "1.0.0" + "'," +
-                "  'nickName': 'Execution Time Data'," +
-                "  'description': 'This stream will persist the data which send by the mediation executions'," +
-                "  'metaData': [" +
-                "    {" +
-                "      'name': 'clientType'," +
-                "      'type': 'STRING'" +
-                "    }" +
-                "  ]," +
-                "  'payloadData': [" +
-                "    {" +
-                "      'name': 'api'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'api_version'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'tenantDomain'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'apiPublisher'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'mediationName'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'executionTime'," +
-                "      'type': 'LONG'" +
-                "    }," +
-                "    {" +
-                "      'name': 'context'," +
-                "      'type': 'STRING'" +
-                "    }," +
-                "    {" +
-                "      'name': 'eventTime'," +
-                "      'type': 'LONG'" +
-                "    }" +
-                "  ]" +
+        return "{\n" +
+                "  \"name\": \"org.wso2.apimgt.statistics.execution.time\",\n" +
+                "  \"version\": \"1.0.0\",\n" +
+                "  \"nickName\": \"Execution Time Data\",\n" +
+                "  \"description\": \"This stream will persist the data which send by the mediation executions\",\n" +
+                "  \"metaData\": [\n" +
+                "    {\n" +
+                "      \"name\": \"clientType\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"payloadData\": [\n" +
+                "    {\n" +
+                "      \"name\": \"api\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"api_version\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"tenantDomain\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"apiPublisher\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"apiResponseTime\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"context\",\n" +
+                "      \"type\": \"STRING\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"securityLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"throttlingLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"requestMediationLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"responseMediationLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"backendLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"otherLatency\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"name\": \"eventTime\",\n" +
+                "      \"type\": \"LONG\"\n" +
+                "    }\n" +
+
+                "  ]\n" +
                 "}";
     }
 
