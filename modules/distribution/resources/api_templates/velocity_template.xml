@@ -297,7 +297,7 @@
 #if($apiStatus != 'PROTOTYPED')
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
-        #end        
+        #end
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else
