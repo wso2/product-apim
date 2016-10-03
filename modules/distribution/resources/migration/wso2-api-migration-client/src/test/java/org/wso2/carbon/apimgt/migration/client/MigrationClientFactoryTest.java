@@ -39,9 +39,10 @@ public class MigrationClientFactoryTest {
 
         MigrationClient[] compatible18Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_8);
 
-        Assert.assertEquals(compatible18Clients.length, 2);
+        Assert.assertEquals(compatible18Clients.length, 3);
         Assert.assertTrue(compatible18Clients[0] instanceof MigrateFrom18to19);
         Assert.assertTrue(compatible18Clients[1] instanceof MigrateFrom19to110);
+        Assert.assertTrue(compatible18Clients[2] instanceof MigrateFrom110to200);
     }
 
 
@@ -56,8 +57,9 @@ public class MigrationClientFactoryTest {
 
         MigrationClient[] compatible19Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_9);
 
-        Assert.assertEquals(compatible19Clients.length, 1);
+        Assert.assertEquals(compatible19Clients.length, 2);
         Assert.assertTrue(compatible19Clients[0] instanceof MigrateFrom19to110);
+        Assert.assertTrue(compatible19Clients[1] instanceof MigrateFrom110to200);
     }
 
 
@@ -72,8 +74,24 @@ public class MigrationClientFactoryTest {
 
         MigrationClient[] compatible19Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_9_1);
 
-        Assert.assertEquals(compatible19Clients.length, 1);
+        Assert.assertEquals(compatible19Clients.length, 2);
         Assert.assertTrue(compatible19Clients[0] instanceof MigrateFrom19to110);
+        Assert.assertTrue(compatible19Clients[1] instanceof MigrateFrom110to200);
+    }
+    
+    @Test
+    public void testInitFactoryMigratingFrom110() throws Exception {
+        RegistryService mockRegistryService = Mockito.mock(RegistryService.class);
+
+        TenantManager mockTenantManager = Mockito.mock(TenantManager.class);
+        Mockito.when(mockTenantManager.getAllTenants()).thenReturn(new Tenant[]{new Tenant()});
+
+        MigrationClientFactory.initFactory(null, null, mockRegistryService, mockTenantManager, false);
+
+        MigrationClient[] compatible110Clients = MigrationClientFactory.getAllClients(Constants.VERSION_1_10);
+
+        Assert.assertEquals(compatible110Clients.length, 1);
+        Assert.assertTrue(compatible110Clients[0] instanceof MigrateFrom110to200);
     }
 
 
