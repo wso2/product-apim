@@ -2437,8 +2437,11 @@
                                     <id>org.wso2.carbon.module.mgt.server.feature.group</id>
                                     <version>${carbon.deployment.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.databridge.datapublisher.feature.group</id>
+                                    <version>${carbon.analytics.common.version}</version>
+                                </feature>
 
-                               
                                 <feature>
                                     <id>org.apache.synapse.wso2.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
