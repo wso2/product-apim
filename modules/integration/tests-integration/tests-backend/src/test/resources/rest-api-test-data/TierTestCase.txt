@@ -2,11 +2,13 @@
     "testCase": [
             {
                 "init": {
+                    "username":"admin",
+                    "password":"admin",
                     "scope": "apim:tier_view"
                 },
                 "data": {
                     "method": "GET",
-                    "url": "api/am/publisher/v0.10//tiers/api",
+                    "url": "api/am/admin/v0.10/throttling/policies/subscription",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -29,23 +31,27 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.10//tiers/api",
+                    "url": "api/am/admin/v0.10/throttling/policies/subscription",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
                     },
-                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
-                    \"requestCount\": 20,\n   \"description\": \"Allows 20 requests per minute.\",\n
-                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "request-payload": "{\"policyName\":\"TestTier\",\"displayName\":\"TestTier\",\"description\":\"Allows 15000 requests per minute\",\"isDeployed\":true,\"defaultLimit\":{\"type\":\"RequestCountLimit\",\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":15000},\"rateLimitCount\":0,\"rateLimitTimeUnit\":null,\"customAttributes\":[],\"stopOnQuotaReach\":true,\"billingPlan\":\"FREE\"}",
                     "response-headers": "",
-                    "response-payload": ""
+                    "response-payload": []
                 },
                 "asserts": {
                     "header-asserts": {
                         "status-code": "201"
                     },
                     "body-asserts": []
-                }
+                },
+                "preserve-list": [
+                    {
+                        "attribute-name": "policyId",
+                        "response-location": "policyId"
+                    }
+                ]
             }
             ,
             {
@@ -54,17 +60,12 @@
                 },
                 "data": {
                     "method": "PUT",
-                    "url": "api/am/publisher/v0.10//tiers/api/NewTier",
-                    "query-parameters": {
-                        "tierName": "NewTier",
-                        "Content-Type": "application/json"
-                    },
+                    "url": "api/am/admin/v0.10/throttling/policies/subscription/{policyId}",
+                    "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
                     },
-                    "request-payload": "{\n   \"name\": \"NewTier\",\n   \"attributes\": {},\n
-                                        \"requestCount\": 20,\n   \"description\": \"Updated description.\",\n
-                                        \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
+                    "request-payload": "{\"policyName\":\"TestTier\",\"displayName\":\"TestTier\",\"description\":\"Allows 20000 requests per minute\",\"isDeployed\":true,\"defaultLimit\":{\"type\":\"RequestCountLimit\",\"timeUnit\":\"min\",\"unitTime\":1,\"requestCount\":20000},\"rateLimitCount\":0,\"rateLimitTimeUnit\":null,\"customAttributes\":[],\"stopOnQuotaReach\":true,\"billingPlan\":\"FREE\"}",
                     "response-headers": "",
                     "response-payload": ""
                 },
@@ -83,10 +84,8 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.10//tiers/api/NewTier",
-                    "query-parameters": {
-                        "tierName": "NewTier"
-                    },
+                    "url": "api/am/admin/v0.10/throttling/policies/subscription/{policyId}",
+                    "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
                     },
