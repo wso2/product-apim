@@ -1,30 +1,6 @@
 {
 	"testCase": [
             {
-                "init": {
-                    "scope": "apim:tier_manage"
-                },
-                "data": {
-                    "method": "POST",
-                    "url": "api/am/publisher/v0.10//tiers/api",
-                    "query-parameters": "",
-                    "request-headers": {
-                        "Authorization": "Bearer"
-                    },
-                    "request-payload": "{\n   \"name\": \"TempTier\",\n   \"attributes\": {},\n
-                    \"requestCount\": 25,\n   \"description\": \"Allows 25 requests per minute.\",\n
-                    \"tierPlan\": \"FREE\",\n   \"unitTime\": 60000,\n   \"stopOnQuotaReach\": true\n}",
-                    "response-headers": "",
-                    "response-payload": ""
-                },
-                "asserts": {
-                    "header-asserts": {
-                        "status-code": "201"
-                    },
-                    "body-asserts": []
-                }
-            },
-            {
                "init":{
                   "scope":"apim:api_create"
                },
@@ -39,7 +15,7 @@
                         \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\r\n   \"status\": \"CREATED\",\r\n
                         \"tags\": [\"Tag1\",\"Tag2\",\"Tag3\"],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
                         \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
-                        \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"TempTier\"],\r\n
+                        \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"Unlimited\"],\r\n
                         \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
                         \"visibleTenants\": [],\r\n
                         \"endpointConfig\":
@@ -48,18 +24,18 @@
                         \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
                         \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
                         \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
                         \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":
                         \\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"200\\\":{}}},
-                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"TempTier\\\",
+                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",
                         \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"Request Body\\\",
                         \\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
                         \\\"responses\\\":{\\\"200\\\":{}}},\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
                         \\\"delete\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
                         \\\"patch\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
-                        \\\"x-throttling-tier\\\":\\\"TempTier\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
                         \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
                         \\\"responses\\\":{\\\"200\\\":{}}}}},\\\"swagger\\\":\\\"2.0\\\",
                         \\\"info\\\":{\\\"title\\\":\\\"api1\\\",\\\"version\\\":\\\"1\\\"}}\",\r\n
@@ -126,30 +102,6 @@
                     },
                     "body-asserts": []
                  }
-            },
-            {
-                "init": {
-                    "scope": "apim:tier_manage"
-                },
-                "data": {
-                    "method": "DELETE",
-                    "url": "api/am/publisher/v0.10//tiers/api/TempTier",
-                    "query-parameters": {
-                        "tierName": "TempTier"
-                    },
-                    "request-headers": {
-                        "Authorization": "Bearer"
-                    },
-                    "request-payload": "",
-                    "response-headers": "",
-                    "response-payload": ""
-                },
-                "asserts": {
-                    "header-asserts": {
-                        "status-code": "200"
-                    },
-                    "body-asserts": []
-                }
             }
     ]
 }

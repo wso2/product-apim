@@ -191,7 +191,9 @@
             CARBON-15759 and ESBJAVA-4386 fixed -->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4464BackendReturningStatusCode204TestCase"/>-->
             <!--<class name="org.wso2.am.integration.tests.other.APIMANAGER4533BackendReturningStatusCode200TestCase"/>-->
-            <class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/>
+            
+            <!--commented since this would require restarting the server with old throttle configuration. Need to rewrite the test using the new throttling implementation-->
+            <!--class name="org.wso2.am.integration.tests.restapi.testcases.TierTestCase"/-->
             <class name="org.wso2.am.integration.tests.restapi.testcases.APITestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
