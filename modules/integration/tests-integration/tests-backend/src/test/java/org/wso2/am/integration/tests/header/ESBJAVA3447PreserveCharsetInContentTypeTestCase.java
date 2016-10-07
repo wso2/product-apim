@@ -78,15 +78,17 @@ public class ESBJAVA3447PreserveCharsetInContentTypeTestCase extends APIMIntegra
         } catch (IOException e) {
             log.error("Error in executing GET request for CharsetAPI",e);
         }
+
         String[] wireResponse = wireServer.getCapturedMessage().split(System.lineSeparator());
+        String charSet = "";
         for (String line : wireResponse) {
             if (line.contains("Content-Type")) {
-                if (!line.contains("text/xml; charset=UTF-8")) {
-                    Assert.fail("Content-Type header has dropped Charset");
-                }
+                charSet = line;
+                break;
             }
-            Assert.assertTrue(true);
         }
+        Assert.assertTrue(charSet.contains("text/xml; charset=UTF-8"), "Content-Type header has dropped Charset");
+
     }
     @AfterClass(alwaysRun = true)
     public void stop() throws Exception {
