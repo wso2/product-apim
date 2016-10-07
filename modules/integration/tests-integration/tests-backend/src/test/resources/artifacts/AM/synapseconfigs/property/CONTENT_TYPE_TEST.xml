@@ -187,5 +187,35 @@
             </outSequence>
         </resource>
     </api>
+    <api xmlns="http://ws.apache.org/ns/synapse"
+         name="CharsetAPI"
+         context="/charset">
+        <resource methods="GET POST"
+                  url-mapping="/*">
+            <inSequence>
+                <payloadFactory media-type="xml">
+                    <format>
+                        <echo>développeurs</echo>
+                    </format>
+                </payloadFactory>
+                <property name="messageType" value="text/xml; charset=UTF-8" scope="axis2" />
+                <property name="Content-Type" value="text/xml; charset=UTF-8" scope="transport"/>
+                <!--property name="HTTP_METHOD" value="POST" scope="axis2" type="STRING" /-->
+                <send>
+                    <endpoint name="admin--echo_APIproductionEndpoint_0">
+                        <address uri="http://localhost:8992" format="soap11">
+                            <timeout>
+                                <duration>30000</duration>
+                                <responseAction>fault</responseAction>
+                            </timeout>
+                        </address>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
 
 </definitions>
