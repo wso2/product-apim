@@ -38,6 +38,7 @@ import static org.testng.Assert.assertTrue;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TagTestCase extends APIMIntegrationBaseTest {
+    ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public TagTestCase(TestUserMode userMode) {
@@ -54,6 +55,12 @@ public class TagTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.restartGracefully();
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API tags test case")
@@ -73,6 +80,9 @@ public class TagTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
     }
 
 }
