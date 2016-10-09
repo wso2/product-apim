@@ -35,7 +35,7 @@
                   "request-headers":{
                      "Authorization":"Bearer"
                   },
-                  "request-payload":"{\r\n   \"name\": \"LifecycleTestAPI\",\r\n   \"context\": \"\/testContext\",\r\n
+                  "request-payload":"{\r\n   \"name\": \"LifecycleTestAPI\",\r\n   \"context\": \"\/lifecycleTestAPI\",\r\n
                         \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\r\n   \"status\": \"CREATED\",\r\n
                         \"tags\": [],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
                         \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
