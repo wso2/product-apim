@@ -29,6 +29,9 @@ under the License.
     <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <jetty.version>9.2.11.v20150529</jetty.version>
+    </properties>
 
     <profiles>
         <profile>
@@ -333,6 +336,11 @@ under the License.
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+            </plugin>
         </plugins>
 
         <resources>
@@ -346,6 +354,7 @@ under the License.
     </build>
 
     <dependencies>
+
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
@@ -439,5 +448,30 @@ under the License.
             <groupId>org.wso2.carbon.identity</groupId>
             <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
         </dependency>
+
+        <!--Jetty dependencies-->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!--Jetty dependencies end -->
+
     </dependencies>
 </project>

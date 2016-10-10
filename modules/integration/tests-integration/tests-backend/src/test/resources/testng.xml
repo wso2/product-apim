@@ -25,7 +25,7 @@
 
     <test name="apim-integration-tests-api-lifecycle" preserve-order="true" parallel="false">
         <classes>
-        	<class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfBlockAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AccessibilityOfOldAPIAndCopyAPIWithOutReSubscriptionTestCase"/>
@@ -156,7 +156,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>          
+            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
         </classes>
     </test>
 
@@ -210,6 +210,11 @@
     <test name="apim-mediation-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddNewMediationAndInvokeAPITestCase"/>
+        </classes>
+    </test>
+    <test name="apim-websocket-tests" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
         </classes>
     </test>
 </suite>
