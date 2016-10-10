@@ -52,7 +52,7 @@
     facet5( COALESCE(a.api,b.api), COALESCE(a.year,b.year),COALESCE(a.month,b.month),COALESCE(a.week,b.week),COALESCE(a.day,b.day)),
     COALESCE(a.applicationName,b.applicationName,'_ANONYMOUS_')
     from
-    (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(requestTime) as times,
+    (select api,api_version,context,apiPublisher,COALESCE(applicationName,'_ANONYMOUS_') as applicationName,tenantDomain,first(requestTime) as times,
     substring(cast(first(requestTime)/1000 as timestamp),0,4) year,
     substring(cast(first(requestTime)/1000 as timestamp),6,2) month,
     substring(cast(first(requestTime)/1000 as timestamp),9,2) day,
@@ -68,7 +68,7 @@
     cast(requestTime/(1000 * 60 * 60 *24 * 7) as INT)
     ) a full outer join
 
-    (select api,api_version,context,apiPublisher,applicationName,tenantDomain,first(throttledTime) as times,
+    (select api,api_version,context,apiPublisher,COALESCE(applicationName,'_ANONYMOUS_') as applicationName,tenantDomain,first(throttledTime) as times,
     substring(cast(first(throttledTime)/1000 as timestamp),0,4) year,
     substring(cast(first(throttledTime)/1000 as timestamp),6,2) month,
     substring(cast(first(throttledTime)/1000 as timestamp),9,2) day,
