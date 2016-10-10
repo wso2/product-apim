@@ -12,7 +12,8 @@ WSO2 API Manager consists of several loosely coupled modules.
         * API publisher
         * API store
         * API gateway
-	    * API Key Manager
+	* API Key Manager
+	* API Traffic Manager
 
 The API publisher module allows API publishers to easily define APIs and manage them
 using a strong governance model which consists of well-established concepts such as
@@ -96,11 +97,11 @@ Key Features
         
 * Monitor API Usage and Performance:        
             - All API usage published to pluggable analytics framework.
-            - Out of the box support for WSO2 Business Activity Monitor and Google Analytics.
+            - Out of the box support for the WSO2 Analytics Platform and Google Analytics.
             - View metrics by user, API and more.
             - Customized reporting via plugging reporting engines.
             - Monitor SLA compliance.
-            - Powered by WSO2 Business Activity Monitor.      
+            - Powered by WSO2 Data Analytics Server (DAS).      
     
 * Pluggable, Extensible and Themeable:        
             - All components are highly customizable thru styling, theming and open source code.
@@ -136,22 +137,22 @@ Key Features
 System Requirements
 ==================================
 
-1. Minimum memory - 1GB
+1. Minimum memory - 2GB
 2. Processor      - Pentium 800MHz or equivalent at minimum
-3. Java SE Development Kit 1.6.0_24 or higher
+3. Java 1.7 or higher
 4. The Management Console requires you to enable Javascript of the Web browser,
-   with MS IE 6 and 7. In addition to JavaScript, ActiveX should also be enabled
+   with MS IE 7. In addition to JavaScript, ActiveX should also be enabled
    with IE. This can be achieved by setting your security level to
    medium or lower.
 5. To compile and run the sample clients, an Ant version is required. Ant 1.7.0
    version is recommended
 6. To build WSO2 API Manager from the Source distribution, it is necessary that you have
-   JDK 1.6.x version and Maven 3.0.0 or later
+   JDK 1.7 version and Maven 3.0.4 or later
 
 Installation & Running
 ==================================
 
-1. Extract the wso2am-1.9.0.zip and go to the 'bin' directory
+1. Extract the wso2am-2.0.0.zip and go to the 'bin' directory
 2. Run the wso2server.sh or wso2server.bat as appropriate
 3. API Publisher web application is running at http://localhost:9763/publisher. You may login
    to the Publisher using the default administrator credentials (user: admin, pass: admin).
@@ -162,7 +163,7 @@ Documentation
 ==============
 
 On-line product documentation is available at:
-        https://docs.wso2.com/display/AM190/WSO2+API+Manager+Documentation
+        https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation
 
 Support
 ==================================
@@ -180,7 +181,7 @@ Known issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
 
-    https://wso2.org/jira/issues/?filter=12237
+    https://wso2.org/jira/issues/?filter=13107
 
 Issue Tracker
 ==================================

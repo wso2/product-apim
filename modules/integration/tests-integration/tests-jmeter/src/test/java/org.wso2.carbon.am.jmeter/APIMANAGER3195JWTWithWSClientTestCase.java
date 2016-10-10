@@ -37,15 +37,15 @@ public class APIMANAGER3195JWTWithWSClientTestCase extends APIMIntegrationBaseTe
     private Log log = LogFactory.getLog(getClass());
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void configServer() throws Exception {
         super.init();
-        if (isBuilderEnabled()) {
-            String apiManagerXml = getAMResourceLocation() + File.separator +
-                    "configFiles" + File.separator + "jwt_wsclient_config" + File.separator + "api-manager.xml";
 
-            serverConfigurationManager = new ServerConfigurationManager(apimContext);
-            serverConfigurationManager.applyConfiguration(new File(apiManagerXml));
-        }
+        String apiManagerXml = getAMResourceLocation() + File.separator +
+                               "configFiles" + File.separator + "jwt_wsclient_config" + File.separator + "api-manager.xml";
+
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverConfigurationManager.applyConfiguration(new File(apiManagerXml));
+
 
         super.init();
     }
@@ -69,6 +69,6 @@ public class APIMANAGER3195JWTWithWSClientTestCase extends APIMIntegrationBaseTe
         if (serverConfigurationManager != null) {
             serverConfigurationManager.restoreToLastConfiguration();
         }
-        super.cleanup();
+        super.cleanUp();
     }
 }

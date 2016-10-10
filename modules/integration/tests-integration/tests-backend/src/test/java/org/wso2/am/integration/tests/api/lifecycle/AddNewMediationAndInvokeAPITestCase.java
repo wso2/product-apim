@@ -18,160 +18,139 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
-import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
-import org.wso2.carbon.logging.view.stub.types.carbon.LogEvent;
 
-import java.io.IOException;
+
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Add new Log mediation to the in-flow and check the logs to verify the  added mediation is working.
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBaseTest {
-    private static final String API_NAME = "AddNewMediationAndInvokeAPITest";
-    private static final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
-    private final static String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
-    private final static String MEDIATION_LOG_OUTPUT1 = "To: /" + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD;
-    private final static String MEDIATION_LOG_OUTPUT2 = "Direction: request, IN_MESSAGE = IN_MESSAGE";
-    private final static String MEDIATION_LOGGER = "org.apache.synapse.mediators.builtin.LogMediator";
+    private final String API_NAME = "AddNewMediationAndInvokeAPITest";
+    private final String API_CONTEXT = "AddNewMediationAndInvokeAPI";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_END_POINT_POSTFIX_URL = "CxfRestService-1.0.0-SNAPSHOT/rest/employeeservices/10/";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String APPLICATION_NAME = "AddNewMediationAndInvokeAPI";
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private APICreationRequestBean apiCreationRequestBean;
-    private LogViewerClient logViewerClient;
     private APIIdentifier apiIdentifier;
-    private HashMap<String, String> requestHeadersGet;
+    private String accessToken;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        String apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        String providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+        String apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        String providerName = user.getUserName();
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                         new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
-        logViewerClient = new LogViewerClient(
-                gatewayContext.getContextUrls().getBackEndUrl(), createSession(gatewayContext));
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(TIER_GOLD);
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
-                        new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
+        //Create application
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+
+        String sessionId = createSession(gatewayContextMgt);
+        deployArrService(gatewayContextMgt.getContextUrls().getBackEndUrl(), sessionId);
+
+        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                                                 sessionId, "CxfRestService-1.0.0-SNAPSHOT");
+        assertTrue(isWebAppDeployed, "Web Application Not Deployed Correctly.");
+
+        accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API before adding the log mediation")
-    public void testAPIInvocationBeforeAddingNewMediation() throws APIManagerIntegrationTestException, IOException,
-            LogViewerLogViewerException {
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+    public void testAPIInvocationBeforeAddingNewMediation() throws Exception    {
         //Create publish and subscribe a API
         createPublishAndSubscribeToAPI(
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
-        requestHeadersGet = new HashMap<String, String>();
-        requestHeadersGet.put("accept", "text/xml");
-        //get the  access token
-        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
-        requestHeadersGet.put("Authorization", "Bearer " + accessToken);
-        logViewerClient.clearLogs();
+
         //Send GET Request
-        HttpResponse httpResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
-                        requestHeadersGet);
-        assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
-        assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
-                " Expected value :\"" + RESPONSE_GET + "\" not contains in response data:\"" +
-                httpResponse.getData() + "\"");
-        LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
-        assertFalse(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT1),
-                "API request  went through  the  log mediation before adding");
-        assertFalse(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT2),
-                "API request  went through  the  log mediation before adding");
-        logViewerClient.clearLogs();
+
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
+        request.setHeader("Authorization" , "Bearer " + accessToken);
+        org.apache.http.HttpResponse response = client.execute(request);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
+
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
 
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke the API after adding the log mediation",
             dependsOnMethods = "testAPIInvocationBeforeAddingNewMediation")
-    public void testAPIInvocationAfterAddingNewMediation() throws APIManagerIntegrationTestException, IOException,
-            LogViewerLogViewerException {
-        logViewerClient.clearLogs();
-        apiCreationRequestBean.setInSequence("log_in_message");
+    public void testAPIInvocationAfterAddingNewMediation() throws Exception  {
+        apiCreationRequestBean.setOutSequence("xml_to_json_out_message");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
-        logViewerClient.clearLogs();
-        //Send GET Request
-        HttpResponse httpResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
-                        requestHeadersGet);
-        assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
-        assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
-                " Expected value :\"" + RESPONSE_GET + "\" not contains in response data:\"" +
-                httpResponse.getData() + "\"");
-        LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
-        assertTrue(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT1),
-                "API request did not go through the log mediation after adding");
-        assertTrue(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT2),
-                "API request did not go through the log mediation after adding");
-        logViewerClient.clearLogs();
+        waitForAPIDeployment();
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
+        request.setHeader("Authorization" , "Bearer " + accessToken);
+        org.apache.http.HttpResponse response = client.execute(request);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
+
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/json; charset=UTF-8");
     }
 
 
     @Test(groups = {"wso2.am"}, description = "IInvoke the API after removing the log mediation",
             dependsOnMethods = "testAPIInvocationAfterAddingNewMediation")
-    public void testAPIInvocationBeforeRemovingNewMediation() throws APIManagerIntegrationTestException, IOException,
-            LogViewerLogViewerException {
-        logViewerClient.clearLogs();
-        apiCreationRequestBean.setInSequence("");
+    public void testAPIInvocationBeforeRemovingNewMediation() throws Exception {
+        apiCreationRequestBean.setOutSequence("");
         apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+        waitForAPIDeployment();
         //Send GET Request
-        HttpResponse httpResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                        API_GET_ENDPOINT_METHOD, requestHeadersGet);
-        assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
-        assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
-                " Expected value :\"" + RESPONSE_GET + "\" not contains in response data:\"" +
-                httpResponse.getData() + "\"");
-        LogEvent[] logEvents = logViewerClient.getAllRemoteSystemLogs();
-        assertFalse(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT1),
-                "API request went through the log mediation after removing it");
-        assertFalse(isLogAvailable(logEvents, MEDIATION_LOGGER, MEDIATION_LOG_OUTPUT2),
-                "API request went through the log mediation after removing it");
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0));
+        request.setHeader("Authorization" , "Bearer " + accessToken);
+        org.apache.http.HttpResponse response = client.execute(request);
+
+        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
+
+        assertEquals(response.getHeaders("Content-Type")[0].getValue(), "application/xml");
     }
 
 
@@ -179,28 +158,18 @@ public class AddNewMediationAndInvokeAPITestCase extends APIManagerLifecycleBase
     public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+
     }
 
-    /**
-     * Check the availability of logs
-     *
-     * @param logEventsArray - LogEvent Array that need to be searched for the logs.
-     * @param expectedLogger - Name of the class that do the logging.
-     * @param expectedLog    - Expected log message.
-     * @return boolean - true of expected log is found under expected Logger class in the
-     * logEventsArray, else false.
-     */
-    private boolean isLogAvailable(LogEvent[] logEventsArray, String expectedLogger, String expectedLog) {
-        boolean isNewMediationCalled = false;
-        for (LogEvent logEvent : logEventsArray) {
+    public void deployArrService(String backEndUrl, String sessionCookie) throws  Exception {
 
-            if (logEvent != null && logEvent.getLogger().equals(expectedLogger) &&
-                    logEvent.getMessage().contains(expectedLog)) {
-                isNewMediationCalled = true;
-                break;
-            }
-        }
-        return isNewMediationCalled;
+        String filePath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
+                          File.separator + "sequence" + File.separator + "CxfRestService-1.0.0-SNAPSHOT.war";
+
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(backEndUrl, sessionCookie);
+        webAppAdminClient.uploadWarFile(filePath);
+
+
     }
 
 

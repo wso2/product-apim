@@ -24,13 +24,14 @@
     <fileSets>
         <!-- Copying p2 profile and osgi bundles-->
         <fileSet>
-            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.platform.version}/repository/components</directory>
+            <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</directory>
             <outputDirectory>wso2am-${pom.version}/repository/components</outputDirectory>
             <excludes>
                 <exclude>**/eclipse.ini</exclude>
                 <exclude>**/*.lock</exclude>
                 <exclude>**/.data</exclude>
                 <exclude>**/.settings</exclude>
+                <exclude>features/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>

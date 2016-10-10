@@ -76,16 +76,32 @@
 </markForSuspension>
         #end
 
-        #macro ( http_endpoint $name $ep )
+#macro ( http_endpoint $name $ep )
 <endpoint name="$name">
-<http uri-template="$util.escapeXml($ep.get("url"))">
-#timeout( $ep.get('config') )
-</http>
-        #if($destinationBasedStatsEnabled)
-<property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
-        #end
-        </endpoint>
-        #end
+    <http uri-template="$util.escapeXml($ep.get("url"))">
+    #timeout( $ep.get('config') )
+    </http>
+    <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+</endpoint>
+#end
+
+#macro ( address_endpoint $name $ep )
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="$name">
+    #set( $advance_ep = $ep.get("config") )
+    <address uri="$util.escapeXml($ep.get("url"))"
+    #if($advance_ep.get("format") && $advance_ep.get("format") != "" && $advance_ep.get("format") != 'leave-as-is')
+    format="$advance_ep.get("format")"
+    #end
+    #if($advance_ep.get("optimize") && $advance_ep.get("optimize") != "" && $advance_ep.get("optimize") != 'leave-as-is')
+    optimize="$advance_ep.get("optimize")"
+    #end
+    >
+        #timeout( $ep.get('config') )
+    </address>
+    <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($ep.get("url"))"/>
+</endpoint>
+#end
+
 
         #macro ( draw_endpoint $type $endpoint_config )
 
@@ -100,7 +116,43 @@
 <property xmlns="http://ws.apache.org/ns/synapse" name="unpw" expression="fn:concat('$username',':',get-property('password'))"/>
 <property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', base64Encode(get-property('unpw')))" scope="transport"/>
         #else
-<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization"	expression="fn:concat('Basic ', '$base64unpw')" scope="transport" />
+        #if($isEndpointAuthDigest)
+
+<property xmlns="http://ws.apache.org/ns/synapse" name="UNAMEPASSWORD" value="$util.escapeXml($base64unpw)" type="STRING"/>
+<property name="BACKEND_URL" value="$util.escapeXml($endpoints.get("url"))"/>
+<property name="POSTFIX" expression="get-property('axis2', 'REST_URL_POSTFIX')"/>
+<property name="HTTP_METHOD" expression="get-property('axis2', 'HTTP_METHOD')"/>
+<property name="POST_TO_URI" value="true" scope="axis2"/>
+<property name="MessageType" expression="get-property('axis2', 'messageType')"/>
+
+<enrich>
+    <source type="body" clone="true"/>
+    <target type="property" property="MessageBody"/>
+</enrich>
+
+<call>
+    <endpoint name="$ep_name">
+        <http uri-template="$util.escapeXml($endpoints.get("url"))">
+        </http>
+    </endpoint>
+</call>
+
+<class name="org.wso2.carbon.apimgt.gateway.mediators.DigestAuthMediator"/>
+
+<property name="Authorization" expression="get-property('AuthHeader')" scope="transport"/>
+<property name="messageType" expression="get-property('MessageType')" scope="axis2"/>
+<property name="HTTP_METHOD" expression="get-property('HTTP_METHOD')" scope="axis2"/>
+<property name="REST_URL_POSTFIX" expression="$ctx:POSTFIX" scope="axis2"/>
+<property name="POST_TO_URI" value="true" scope="axis2"/>
+
+<enrich>
+    <source type="property" property="MessageBody" clone="true"/>
+    <target type="body"/>
+</enrich>
+
+        #else
+<property xmlns="http://ws.apache.org/ns/synapse" name="Authorization" expression="fn:concat('Basic ', '$base64unpw')" scope="transport"/>
+        #end
         #end
         #end
 <send>
@@ -121,9 +173,7 @@
     >
     #timeout( $endpoints.get('config') )
 </address>
-#if($destinationBasedStatsEnabled)
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-#end
 </endpoint>
         #elseif ($endpointClass == "wsdl")
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
@@ -136,19 +186,25 @@
         #timeout()
         </wsdl>
         #end
-        #if($destinationBasedStatsEnabled)
 <property name="ENDPOINT_ADDRESS" value="$util.escapeXml($endpoints.get("url"))"/>
-        #end
         </endpoint>
         #elseif ($endpointClass == "failover")
         #set( $failover_endpoints = $endpoint_config.get("${type}_failovers"))
 <endpoint xmlns="http://ws.apache.org/ns/synapse" name="$ep_name">
 <failover>
-    #http_endpoint("${ep_name}_0" $endpoints)
+    #if($endpoints.get("endpoint_type") == "address")
+        #address_endpoint("${ep_name}_0" $endpoints)
+    #else
+        #http_endpoint("${ep_name}_0" $endpoints)
+    #end
     #set( $i = 1)
     #foreach($endpoint in $failover_endpoints)
-    #http_endpoint("${ep_name}_$i" $endpoint)
-    #set( $i = $i + 1)
+        #if($endpoint.get("endpoint_type") == "address")
+            #address_endpoint("${ep_name}_$i" $endpoint)
+        #else
+            #http_endpoint("${ep_name}_$i" $endpoint)
+        #end
+        #set( $i = $i + 1)
     #end
 </failover>
 </endpoint>
@@ -167,20 +223,22 @@
         #end>
         #set( $i = 0)
         #foreach($endpoint in $endpoints)
-        #http_endpoint("${ep_name}_$i" $endpoint)
-        #set( $i = $i + 1)
+            #if($endpoint.get("endpoint_type") == "address")
+                #address_endpoint("${ep_name}_$i" $endpoint)
+            #else
+                #http_endpoint("${ep_name}_$i" $endpoint)
+            #end            
+            #set( $i = $i + 1)
         #end
         </loadbalance>
         </endpoint>
+#elseif ($endpointClass == "default")
+<endpoint name="$ep_name">
+    <default>
+    </default>
+</endpoint>
         #end
         </send>
-        #if($destinationBasedStatsEnabled)
-<bam>
-<serverProfile name="$!profileName">
-    <streamConfig name="$!streamName" version="$!streamVersion"/>
-</serverProfile>
-</bam>
-        #end
         #end
 
         ######################## End of Macros ######################################
@@ -189,7 +247,7 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" version="$!apiVersion" transports="$!transport" version-type="context">
 #if($apiIsBlocked)
 ## if API is blocked send the API Block message
-<resource methods="GET POST PUT DELETE" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
+<resource methods="GET POST PUT DELETE PATCH" url-mapping="/*" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
     <payloadFactory>
         <format>
@@ -215,23 +273,20 @@
 <resource xmlns="http://ws.apache.org/ns/synapse"
         #if($resource.getUriTemplate().contains("{") ||
         ($resource.getUriTemplate().contains("*") && !$resource.getUriTemplate().endsWith("/*")))
-        uri-template="$resource.getUriTemplate()"
+        uri-template="$util.escapeXml($resource.getUriTemplate())"
         #else
         url-mapping="$resource.getUriTemplate()"
         #end
         methods="$resource.getMethodsAsString()" faultSequence=#print_string_if_exist($faultSequence "fault")>
 <inSequence>
-## check and set jwt
-#if($jwtIsEnabled)
-<class name="org.wso2.carbon.apimgt.gateway.mediators.TokenPasser"/>
-#end
+
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="false" hashGenerator="org.wso2.caching.digest.REQUESTHASHGenerator" timeout="$!responseCacheTimeOut">
     <implementation type="memory" maxSize="500"/>
 </cache>
 #end
-
+<property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
 ##############  define the filter based on environment type production only, sandbox only , hybrid ############
 
 #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && !$endpoint_config.get("production_endpoints") ))
@@ -243,7 +298,6 @@
 <filter source="$ctx:AM_KEY_TYPE" regex="$filterRegex">
     <then>
         #end
-        <property name="api.ut.backendRequestTime" expression="get-property('SYSTEM_TIME')"/>
         #if(($environmentType == 'sandbox') || ($environmentType =='hybrid' && ! $endpoint_config.get("production_endpoints") ))
         #draw_endpoint( "sandbox" $endpoint_config )
         #else

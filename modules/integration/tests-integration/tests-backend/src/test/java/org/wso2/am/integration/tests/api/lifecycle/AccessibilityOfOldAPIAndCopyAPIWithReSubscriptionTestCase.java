@@ -23,6 +23,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
@@ -70,7 +71,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
+        apiEndPointUrl = gatewayUrlsWrk.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = publisherContext.getContextTenant().getContextUser().getUserName();
         apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0,
                 providerName, new URL(apiEndPointUrl));
@@ -90,7 +91,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         apiStoreClientUser1.login(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, "", "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_UNLIMITED, "", "");
     }
 
 
@@ -98,6 +99,9 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     public void testSubscriptionOfOldAPI() throws APIManagerIntegrationTestException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifierAPI1Version1, apiCreationRequestBean, apiPublisherClientUser1, false);
+
+        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+
         // Subscribe old api version (1.0.0)
         HttpResponse oldVersionSubscribeResponse =
                 subscribeToAPI(apiIdentifierAPI1Version1, APPLICATION_NAME, apiStoreClientUser1);
@@ -127,12 +131,14 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         assertTrue(verifyAPIStatusChange(publishAPIResponse, APILifeCycleState.CREATED, APILifeCycleState.PUBLISHED),
                 "API status Change is invalid in" + getAPIIdentifierString(apiIdentifierAPI1Version2) +
                         "Response Data:" + publishAPIResponse.getData());
+
+        waitForAPIDeploymentSync(providerName, API_NAME, API_VERSION_2_0_0, APIMIntegrationConstants.IS_API_EXISTS);
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of old API version  before the new version is subscribed.",
             dependsOnMethods = "testPublishCopiedAPIWithReSubscriptionRequired")
-    public void testInvokeOldAPIBeforeSubscribeTheNewVersion() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeOldAPIBeforeSubscribeTheNewVersion() throws Exception {
         //get access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         // Create requestHeaders
@@ -141,8 +147,8 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 +
-                        API_END_POINT_METHOD, requestHeaders);
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
+                                      API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke old api before subscribe the new version");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA),
@@ -153,21 +159,21 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  before the new version is subscribed." +
             "This invocation should be failed", dependsOnMethods = "testInvokeOldAPIBeforeSubscribeTheNewVersion")
-    public void testInvokeNewAPIBeforeSubscribeTheNewVersion() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeNewAPIBeforeSubscribeTheNewVersion() throws Exception {
         //Invoke  old version
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_2_0_0 +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_2_0_0) +
                         API_END_POINT_METHOD, requestHeaders);
-        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_UNAUTHORIZED,
+        assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_FORBIDDEN,
                 "Response code mismatched when invoke new api before subscribe the new version");
-        assertTrue(oldVersionInvokeResponse.getData().contains(UNCLASSIFIED_AUTHENTICATION_FAILURE),
+        assertTrue(oldVersionInvokeResponse.getData().contains(HTTP_RESPONSE_DATA_API_FORBIDDEN),
                 "Response data mismatched when invoke new API version before subscribe the new version." +
                         " Response Data:" + oldVersionInvokeResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test subscribe the new API Version",
             dependsOnMethods = "testInvokeNewAPIBeforeSubscribeTheNewVersion")
-    public void testSubscribeTheNewVersion() throws APIManagerIntegrationTestException {
+    public void testSubscribeTheNewVersion() throws Exception {
         //subscribe new version
         HttpResponse httpResponseSubscribeNewVersion =
                 subscribeToAPI(apiIdentifierAPI1Version2, APPLICATION_NAME, apiStoreClientUser1);
@@ -182,10 +188,10 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
             dependsOnMethods = "testSubscribeTheNewVersion")
-    public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws APIManagerIntegrationTestException, IOException {
+    public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
         //Invoke  new version after subscription
-        HttpResponse oldVersionInvokeResponse = HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT +
-                "/" + API_VERSION_2_0_0 + API_END_POINT_METHOD, requestHeaders);
+        HttpResponse oldVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,API_VERSION_2_0_0)
+                                                                      + API_END_POINT_METHOD, requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatched when" +
                 " invoke new api after subscribe the new version");
         assertTrue(oldVersionInvokeResponse.getData().contains(API_RESPONSE_DATA), "Response data mismatched when invoke" +
@@ -194,10 +200,11 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifierAPI1Version1, apiPublisherClientUser1);
         deleteAPI(apiIdentifierAPI1Version2, apiPublisherClientUser1);
+        super.cleanUp();
     }
 
 

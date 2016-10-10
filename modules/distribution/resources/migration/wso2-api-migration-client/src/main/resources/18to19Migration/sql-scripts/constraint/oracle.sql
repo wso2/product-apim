@@ -1,0 +1,2 @@
+select constraint_name from all_constraints where table_name='AM_APP_KEY_DOMAIN_MAPPING' AND UPPER(owner)=UPPER('<AM_DB_NAME>') AND constraint_type = 'R'
+ALTER TABLE AM_APP_KEY_DOMAIN_MAPPING DROP CONSTRAINT <temp_key_name>

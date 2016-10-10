@@ -23,13 +23,14 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.bean.ApplicationKeyBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
@@ -45,14 +46,14 @@ import static org.testng.Assert.assertTrue;
  */
 public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "ChangeAuthTypeOfResourceTest";
-    private static final String API_CONTEXT = "ChangeAuthTypeOfResource";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
-    private static final String API_GET_ENDPOINT_METHOD = "/customers/123";
+    private final String API_NAME = "ChangeAuthTypeOfResourceTest999";
+    private final String API_CONTEXT = "ChangeAuthTypeOfResource999";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
+    private final String API_GET_ENDPOINT_METHOD = "customers/123";
     private String APPLICATION_NAME = "ChangeAuthTypeOfResourceTestCase";
     private APIPublisherRestClient apiPublisherClientUser1;
     private String apiEndPointUrl;
@@ -66,34 +67,40 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
     @BeforeClass(alwaysRun = true)
     public void initialize() throws Exception {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        apiEndPointUrl = getGatewayURLHttp()+ API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
         //Login to API Store with  admin
-        apiStoreClientUser1.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
+        //Create application
+
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
+
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Invoke a resource with auth type Application And Application User")
     public void testInvokeResourceWithAuthTypeApplicationAndApplicationUser() throws Exception {
         //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME, TIER_GOLD, "", "");
+        apiStoreClientUser1.addApplication(APPLICATION_NAME,
+                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application & Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Create publish and subscribe a API
@@ -105,8 +112,10 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         String accessToken = applicationKeyBean.getAccessToken();
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         //Send GET request
+
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application & Application User");
@@ -127,7 +136,9 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
@@ -135,9 +146,10 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" +  API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application");
@@ -159,23 +171,26 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "Application User", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_USER,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Generate User Access Key
         String requestBody = "grant_type=password&username=admin&password=admin&scope=PRODUCTION";
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         JSONObject accessTokenGenerationResponse = new JSONObject(
                 apiStoreClientUser1.generateUserAccessKey(applicationKeyBean.getConsumerKey(),
                         applicationKeyBean.getConsumerSecret(), requestBody, tokenEndpointURL).getData());
         requestHeadersGet.put("Authorization", "Bearer " + accessTokenGenerationResponse.getString("access_token"));
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0)  + "/" + API_GET_ENDPOINT_METHOD,
                         requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type Application User");
@@ -195,17 +210,20 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
-        APIResourceBean apiResourceBeanGET = new APIResourceBean("GET", "None", "Unlimited", "/*");
+        APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.RESOURCE_AUTH_TYPE_NONE,
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/*");
         apiResourceBeansList.add(apiResourceBeanGET);
         apiCreationRequestBean.setResourceBeanList(apiResourceBeansList);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Update APi with new Resource information fail");
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false", "Update APi with new Resource information fail");
+        waitForAPIDeployment();
         //Send GET request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(gatewayWebAppUrl + API_CONTEXT + "/" + API_VERSION_1_0_0 + API_GET_ENDPOINT_METHOD,
-                        requestHeadersGet);
+                HTTPSClientUtils.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + "/" + API_GET_ENDPOINT_METHOD,
+                                       requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request for " +
                 "auth type None");
         assertTrue(httpResponseGet.getData().contains(RESPONSE_GET), "Response Data not match for GET request for" +
@@ -215,9 +233,10 @@ public class ChangeAuthTypeOfResourceTestCase extends APIManagerLifecycleBaseTes
 
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        super.cleanUp();
     }
 
 }

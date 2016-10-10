@@ -18,31 +18,42 @@
 package org.wso2.am.integration.test.utils.base;
 
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.test.utils.generic.ServiceDeploymentUtil;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
+import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.base.MultitenantConstants;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
+import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
+import org.wso2.carbon.tenant.mgt.stub.beans.xsd.TenantInfoBean;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
-
-import static org.testng.Assert.assertTrue;
 
 /**
  * Base class for all API Manager integration tests
@@ -51,12 +62,23 @@ import static org.testng.Assert.assertTrue;
 public class APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIMIntegrationBaseTest.class);
-    protected AutomationContext storeContext, publisherContext, gatewayContext;
+    protected AutomationContext storeContext, publisherContext, keyManagerContext, gatewayContextMgt,
+            gatewayContextWrk, backEndServer, superTenantKeyManagerContext;
     protected OMElement synapseConfiguration;
     protected APIMTestCaseUtils apimTestCaseUtils;
     protected TestUserMode userMode;
-    protected APIMURLBean storeUrls, publisherUrls, gatewayUrls;
-
+    protected String executionMode;
+    protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
+    protected User user;
+    private static final long WAIT_TIME = 45 * 1000;
+    protected APIPublisherRestClient apiPublisher;
+    protected APIStoreRestClient apiStore;
+    protected UserManagementClient userManagementClient;
+    protected TenantManagementServiceClient tenantManagementServiceClient;
+    protected String publisherURLHttp;
+    protected String storeURLHttp;
+    protected String keymanagerSessionCookie;
+    protected String keymanagerSuperTenantSessionCookie;
 
     /**
      * This method will initialize test environment
@@ -93,10 +115,48 @@ public class APIMIntegrationBaseTest {
             publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
 
             //create gateway server instance based on configuration given at automation.xml
-            gatewayContext =
+            gatewayContextMgt =
                     new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                          APIMIntegrationConstants.AM_GATEWAY_INSTANCE, userMode);
-            gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
+                                          APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, userMode);
+            gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
+
+            gatewayContextWrk =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                          APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, userMode);
+            gatewayUrlsWrk = new APIMURLBean(gatewayContextWrk.getContextUrls());
+
+            keyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, userMode);
+            keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
+
+            backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                  APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, userMode);
+            backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
+
+            executionMode = gatewayContextMgt.getConfigurationValue(ContextXpathConstants.EXECUTION_ENVIRONMENT);
+
+            user = storeContext.getContextTenant().getContextUser();
+
+            superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
+                                                      TestUserMode.SUPER_TENANT_ADMIN);
+
+            keymanagerSessionCookie = createSession(keyManagerContext);
+            publisherURLHttp = publisherUrls.getWebAppURLHttp();
+            storeURLHttp = storeUrls.getWebAppURLHttp();
+            apiPublisher = new APIPublisherRestClient(publisherURLHttp);
+            apiStore = new APIStoreRestClient(storeURLHttp);
+
+            try {
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                userManagementClient = new UserManagementClient(
+                        keyManagerContext.getContextUrls().getBackEndUrl(), keymanagerSessionCookie);
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSuperTenantSessionCookie);
+            } catch (Exception e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
 
         } catch (XPathExpressionException e) {
             log.error("APIM test environment initialization failed", e);
@@ -109,59 +169,52 @@ public class APIMIntegrationBaseTest {
      * init the object with tenant domain, user key and instance of store,publisher and gateway
      * create context objects and construct URL bean
      *
-     * @param domainKey         - tenant domain key
-     * @param userKey           - tenant user key
-     * @param publisherInstance - publisher instance name in automation.xml
-     * @param storeInstance     - store instance name in automation.xml
-     * @param gatewayInstance   - gateway instance name in automation.xml
+     * @param domainKey - tenant domain key
+     * @param userKey   - tenant user key
      * @throws APIManagerIntegrationTestException - if test configuration init fails
      */
-    protected void init(String domainKey, String userKey, String publisherInstance,
-                        String storeInstance, String gatewayInstance)
+    protected void init(String domainKey, String userKey)
             throws APIManagerIntegrationTestException {
-
-        apimTestCaseUtils = new APIMTestCaseUtils();
 
         try {
             //create store server instance based configuration given at automation.xml
             storeContext =
                     new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                          storeInstance, domainKey, userKey);
+                                          APIMIntegrationConstants.AM_STORE_INSTANCE, domainKey, userKey);
             storeUrls = new APIMURLBean(storeContext.getContextUrls());
 
             //create publisher server instance
             publisherContext =
                     new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                          publisherInstance, domainKey, userKey);
+                                          APIMIntegrationConstants.AM_PUBLISHER_INSTANCE, domainKey, userKey);
             publisherUrls = new APIMURLBean(publisherContext.getContextUrls());
 
             //create gateway server instance
-            gatewayContext =
+            gatewayContextMgt =
                     new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
-                                          gatewayInstance, domainKey, userKey);
-            gatewayUrls = new APIMURLBean(gatewayContext.getContextUrls());
+                                          APIMIntegrationConstants.AM_GATEWAY_MGT_INSTANCE, domainKey, userKey);
+            gatewayUrlsMgt = new APIMURLBean(gatewayContextMgt.getContextUrls());
+
+            gatewayContextWrk =
+                    new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                          APIMIntegrationConstants.AM_GATEWAY_WRK_INSTANCE, domainKey, userKey);
+            gatewayUrlsWrk = new APIMURLBean(gatewayContextWrk.getContextUrls());
+
+            keyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                      APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE, domainKey, userKey);
+            keyMangerUrl = new APIMURLBean(keyManagerContext.getContextUrls());
+
+            backEndServer = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
+                                                  APIMIntegrationConstants.BACKEND_SERVER_INSTANCE, domainKey, userKey);
+            backEndServerUrl = new APIMURLBean(backEndServer.getContextUrls());
+
+            user = storeContext.getContextTenant().getContextUser();
 
         } catch (XPathExpressionException e) {
             log.error("Init failed", e);
             throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
         }
 
-    }
-
-    /**
-     * proxy service URL of deployed server non secure
-     *
-     * @param proxyServiceName - name of proxy service
-     * @return - URL of proxy service
-     */
-    protected String getProxyServiceURLHttp(String proxyServiceName)
-            throws APIManagerIntegrationTestException {
-        try {
-            return gatewayContext.getContextUrls().getServiceUrl() + "/" + proxyServiceName + "/";
-        } catch (XPathExpressionException e) {
-            log.error("URL retrieve error", e);
-            throw new APIManagerIntegrationTestException("APIM test environment initialization failed", e);
-        }
     }
 
     /**
@@ -178,7 +231,7 @@ public class APIMIntegrationBaseTest {
         OMElement synapseConfig;
 
         try {
-            synapseConfig = apimTestCaseUtils.loadResource(relativeFilePath);
+            synapseConfig = APIMTestCaseUtils.loadResource(relativeFilePath);
             updateSynapseConfiguration(synapseConfig, automationContext, sessionCookie);
 
         } catch (FileNotFoundException e) {
@@ -240,26 +293,9 @@ public class APIMIntegrationBaseTest {
 
         try {
 
-            apimTestCaseUtils.updateSynapseConfiguration(synapseConfig,
+            APIMTestCaseUtils.updateSynapseConfiguration(synapseConfig,
                                                          automationContext.getContextUrls().getBackEndUrl(),
                                                          sessionCookie);
-
-            if (automationContext.getProductGroup().isClusterEnabled()) {
-
-                long deploymentDelay = Long.parseLong(automationContext.getConfigurationValue("//deploymentDelay"));
-                Thread.sleep(deploymentDelay);
-                Iterator<OMElement> proxies = synapseConfig.getChildrenWithLocalName("proxy"); //ToDo
-
-                while (proxies.hasNext()) {
-                    String proxy = proxies.next().getAttributeValue(new QName("name"));
-                    assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                            , "Deployment Synchronizing failed in workers");
-                    assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                            , "Deployment Synchronizing failed in workers");
-                    assertTrue(isProxyWSDlExist(getProxyServiceURLHttp(proxy), deploymentDelay)
-                            , "Deployment Synchronizing failed in workers");
-                }
-            }
 
         } catch (Exception e) {
             log.error("synapse config  upload error", e);
@@ -267,90 +303,309 @@ public class APIMIntegrationBaseTest {
         }
     }
 
-
-    /**
-     * check whether the proxy service wsdl exist
-     *
-     * @param serviceUrl         - proxy service URL
-     * @param synchronizingDelay - delay to update
-     * @return - whether wsdl exist or not
-     * @throws APIManagerIntegrationTestException - APIManagerIntegrationTestException
-     */
-    private boolean isProxyWSDlExist(String serviceUrl, long synchronizingDelay)
-            throws APIManagerIntegrationTestException {
-        try {
-            return ServiceDeploymentUtil.isServiceWSDlExist(serviceUrl, synchronizingDelay);
-        } catch (Exception e) {
-            log.error("wsdl lookup error", e);
-            throw new APIManagerIntegrationTestException("wsdl lookup error", e);
-        }
+    protected String getStoreURLHttp() {
+        return storeUrls.getWebAppURLHttp();
     }
 
-    public static void cleanup(){
+    protected String getStoreURLHttps() {
+        return storeUrls.getWebAppURLHttps();
+    }
 
+    protected String getPublisherURLHttp() {
+        return publisherUrls.getWebAppURLHttp();
+    }
+
+    protected String getPublisherURLHttps() {
+        return publisherUrls.getWebAppURLHttps();
+    }
+
+    protected String getGatewayMgtURLHttp() {
+        return gatewayUrlsMgt.getWebAppURLHttp();
+    }
+
+    protected String getGatewayMgtBackendURLHttps() {
+        return gatewayUrlsMgt.getWebAppURLHttp();
+    }
+
+    protected String getGatewayMgtURLHttps() {
+        return gatewayUrlsMgt.getWebAppURLHttps();
+    }
+
+    protected String getGatewayURLHttp() {
+        return gatewayUrlsWrk.getWebAppURLHttp();
+    }
+
+    protected String getGatewayURLNhttp() {
+        return gatewayUrlsWrk.getWebAppURLNhttp();
+    }
+
+    protected String getGatewayURLHttps() {
+        return gatewayUrlsWrk.getWebAppURLHttps();
+    }
+
+    protected String getGatewayURLNhttps() {
+        return gatewayUrlsWrk.getWebAppURLNhttps();
+    }
+
+    protected String getKeyManagerURLHttp() {
+        return keyMangerUrl.getWebAppURLHttp();
+    }
+
+    protected String getKeyManagerURLHttps() throws XPathExpressionException {
+        return keyManagerContext.getContextUrls().getBackEndUrl().replace("/services", "");
+    }
+
+    protected String getAPIInvocationURLHttp(String apiContext) throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext;
+    }
+
+    protected String getAPIInvocationURLHttp(String apiContext, String version)
+            throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext + "/" + version;
+    }
+
+    protected String getAPIInvocationURLHttps(String apiContext) throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getSecureServiceUrl().replace("/services", "") + "/" + apiContext;
+    }
+
+    protected String getBackendEndServiceEndPointHttp(String serviceName) {
+        return backEndServerUrl.getWebAppURLHttp() + serviceName;
+    }
+
+    protected String getBackendEndServiceEndPointHttps(String serviceName) {
+        return backEndServerUrl.getWebAppURLHttps() + serviceName;
+    }
+
+    protected String getSuperTenantAPIInvocationURLHttp(String apiContext, String version)
+            throws XPathExpressionException {
+        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "")
+                       .replace("/t/" + user.getUserDomain(), "") + "/" + apiContext + "/" + version;
     }
 
     /**
      * Cleaning up the API manager by removing all APIs and applications other than default application
      *
-     * @param userName     - username of the api created tenant
-     * @param passWord     - password of the api created tenant
-     * @param storeUrl     - store url
-     * @param publisherUrl - publisher url
      * @throws APIManagerIntegrationTestException - occurred when calling the apis
-     * @throws org.json.JSONException                      - occurred when reading the json
+     * @throws org.json.JSONException             - occurred when reading the json
      */
-    public static void cleanUp(String userName, String passWord, String storeUrl,
-                               String publisherUrl) throws APIManagerIntegrationTestException,
-                                                           JSONException {
+    protected void cleanUp() throws Exception {
 
-        APIStoreRestClient apiStore = new APIStoreRestClient(storeUrl);
-        apiStore.login(userName, passWord);
-        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(publisherUrl);
-        publisherRestClient.login(userName, passWord);
-        String subscriptionData = apiStore.getAllSubscriptions().getData();
-        JSONObject jsonSubscription = new JSONObject(subscriptionData);
+        APIStoreRestClient apiStore = new APIStoreRestClient(getStoreURLHttp());
+        apiStore.login(user.getUserName(), user.getPassword());
+        APIPublisherRestClient publisherRestClient = new APIPublisherRestClient(getPublisherURLHttp());
+        publisherRestClient.login(user.getUserName(), user.getPassword());
+        HttpResponse subscriptionDataResponse = apiStore.getAllSubscriptions();
+        verifyResponse(subscriptionDataResponse);
+        JSONObject jsonSubscription = new JSONObject(subscriptionDataResponse.getData());
 
-        if(jsonSubscription.getString("error").equals("false")) {
-            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject("subscriptions");
-            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray("applications");
+        if (!jsonSubscription.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR)) {
+            JSONObject jsonSubscriptionsObject = jsonSubscription.getJSONObject(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
+            JSONArray jsonApplicationsArray = jsonSubscriptionsObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
 
             //Remove API Subscriptions
             for (int i = 0; i < jsonApplicationsArray.length(); i++) {
                 JSONObject appObject = jsonApplicationsArray.getJSONObject(i);
-                int id = appObject.getInt("id");
-                JSONArray subscribedAPIJSONArray = appObject.getJSONArray("subscriptions");
+                int id = appObject.getInt(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ID);
+                JSONArray subscribedAPIJSONArray = appObject.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_SUBSCRIPTION);
                 for (int j = 0; j < subscribedAPIJSONArray.length(); j++) {
                     JSONObject subscribedAPI = subscribedAPIJSONArray.getJSONObject(j);
-                    apiStore.removeAPISubscription(subscribedAPI.getString("name"), subscribedAPI.getString("version"),
-                                                   subscribedAPI.getString("provider"), String.valueOf(id));
+                    verifyResponse(apiStore.removeAPISubscription(subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
+                            , subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION),
+                                                                  subscribedAPI.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_PROVIDER), String.valueOf(id)));
                 }
             }
-        }
-
-        String apiData = apiStore.getAPI().getData();
-        JSONObject jsonAPIData = new JSONObject(apiData);
-        JSONArray jsonAPIArray = jsonAPIData.getJSONArray("apis");
-
-        //delete all APIs
-        for (int i = 0; i < jsonAPIArray.length(); i++) {
-            JSONObject api = jsonAPIArray.getJSONObject(i);
-            publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), userName);
         }
 
         //delete all application other than default application
         String applicationData = apiStore.getAllApplications().getData();
         JSONObject jsonApplicationData = new JSONObject(applicationData);
-        JSONArray applicationArray = jsonApplicationData.getJSONArray("applications");
+        JSONArray applicationArray = jsonApplicationData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APPLICATIONS);
         for (int i = 0; i < applicationArray.length(); i++) {
             JSONObject jsonApplication = applicationArray.getJSONObject(i);
-            if (!jsonApplication.getString("name").equals("DefaultApplication")) {
-                apiStore.removeApplication(jsonApplication.getString("name"));
+            if (!jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME).equals(APIMIntegrationConstants.OAUTH_DEFAULT_APPLICATION_NAME)) {
+                verifyResponse(apiStore.removeApplication(jsonApplication.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)));
             }
         }
 
+        String apiData = apiStore.getAPI().getData();
+        JSONObject jsonAPIData = new JSONObject(apiData);
+        JSONArray jsonAPIArray = jsonAPIData.getJSONArray(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_APIS);
+
+        //delete all APIs
+        for (int i = 0; i < jsonAPIArray.length(); i++) {
+            JSONObject api = jsonAPIArray.getJSONObject(i);
+//            verifyResponse(publisherRestClient.deleteAPI(api.getString("name"), api.getString("version"), user.getUserName()));
+            publisherRestClient.deleteAPI(api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_NAME)
+                    , api.getString(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_API_VERSION), user.getUserName());
+        }
     }
 
+    protected void verifyResponse(HttpResponse httpResponse) throws JSONException {
+        Assert.assertNotNull(httpResponse, "Response object is null");
+        log.info("Response Code : " + httpResponse.getResponseCode());
+        log.info("Response Message : " + httpResponse.getData());
+        Assert.assertEquals(httpResponse.getResponseCode(), HttpStatus.SC_OK, "Response code is not as expected");
+        JSONObject responseData = new JSONObject(httpResponse.getData());
+        Assert.assertFalse(responseData.getBoolean(APIMIntegrationConstants.API_RESPONSE_ELEMENT_NAME_ERROR), "Error message received " + httpResponse.getData());
 
+    }
+
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     */
+    protected void waitForAPIDeployment() {
+        try {
+            if (executionMode.equalsIgnoreCase(String.valueOf(ExecutionEnvironment.PLATFORM))) {
+                Thread.sleep(WAIT_TIME);
+            } else {
+                Thread.sleep(15000);
+            }
+        } catch (InterruptedException ignored) {
+
+        }
+    }
+
+    /**
+     * This method can be used to wait for API deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
+     */
+    protected void waitForAPIDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                            String expectedResponse)
+            throws APIManagerIntegrationTestException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+
+        String tenantIdentifier = getTenantIdentifier(apiProvider);
+
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            try {
+                response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                                                          "APIStatusMonitor/apiInformation/api/" +
+                                                          tenantIdentifier +
+                                                          apiName + "/" + apiVersion, null);
+            } catch (IOException ignored) {
+                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
+            }
+
+            log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
+                     + " with provider: " + apiProvider + " with Tenant Identifier: " + tenantIdentifier
+                     + " with expected response : " + expectedResponse);
+
+            if (response != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                             " with expected response " + expectedResponse + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This method can be used to wait for API Un-deployment sync in distributed and clustered environment
+     * APIStatusMonitor will be invoked to get API related data and then verify that data matches with
+     * expected response provided.
+     *
+     * @param apiProvider      - Provider of the API
+     * @param apiName          - API name
+     * @param apiVersion       - API version
+     * @param expectedResponse - Expected response
+     * @throws APIManagerIntegrationTestException - Throws if something goes wrong
+     */
+    protected void waitForAPIUnDeploymentSync(String apiProvider, String apiName, String apiVersion,
+                                              String expectedResponse)
+            throws APIManagerIntegrationTestException {
+
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+
+        String tenantIdentifier = getTenantIdentifier(apiProvider);
+
+        while (waitTime > System.currentTimeMillis()) {
+            HttpResponse response = null;
+            try{
+                response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                                                          "APIStatusMonitor/apiInformation/api/" +
+                                                          tenantIdentifier +
+                                                          apiName + "/" + apiVersion, null);
+                } catch (IOException ignored) {
+                    log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
+                }
+
+            log.info("WAIT for meta data sync of API :" + apiName + " with version: " + apiVersion + " with provider: " + apiProvider +
+                     " without entry : " + expectedResponse);
+
+            if (response != null) {
+                if (!response.getData().contains(expectedResponse)) {
+                    log.info("API :" + apiName + " with version: " + apiVersion +
+                             " with expected response " + expectedResponse + " not found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This returns "tenatDomain/tenantId/" string
+     * @param apiProvider
+     */
+    private String getTenantIdentifier(String apiProvider) throws APIManagerIntegrationTestException {
+        int tenantId = -1234;
+        String providerTenantDomain = MultitenantUtils.getTenantDomain(apiProvider);
+        try{
+            if(!MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(providerTenantDomain)){
+                keymanagerSuperTenantSessionCookie = new LoginLogoutClient(superTenantKeyManagerContext).login();
+                tenantManagementServiceClient = new TenantManagementServiceClient(
+                        superTenantKeyManagerContext.getContextUrls().getBackEndUrl(),
+                        keymanagerSuperTenantSessionCookie);
+                TenantInfoBean tenant = tenantManagementServiceClient.getTenant(providerTenantDomain);
+                if(tenant == null){
+                    log.info("tenant is null: " + providerTenantDomain);
+                } else {
+                    tenantId = tenant.getTenantId();
+                }
+                //forced tenant loading
+                new LoginLogoutClient(gatewayContextWrk).login();
+            }
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException(e.getMessage(), e);
+        }
+        return providerTenantDomain + "/" + tenantId + "/";
+    }
+
+    protected Header pickHeader(Header[] headers, String requiredHeader){
+        if (requiredHeader == null){
+            return null;
+        }
+        for (Header header : headers) {
+            if(requiredHeader.equals(header.getName())){
+                return header;
+            }
+        }
+        return null;
+    }
 }
-

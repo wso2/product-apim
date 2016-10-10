@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.testng.annotations.BeforeClass;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -34,6 +35,7 @@ import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.ws.rs.core.Response;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -51,30 +53,27 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
             Response.Status.SERVICE_UNAVAILABLE.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_TOO_MANY_REQUESTS = 429; // Define manually since value is not available in enum
     protected static final int HTTP_RESPONSE_CODE_FORBIDDEN = Response.Status.FORBIDDEN.getStatusCode();
     protected static final String HTTP_RESPONSE_DATA_API_BLOCK =
             "<am:code>700700</am:code><am:message>API blocked</am:message>";
-    protected static final String UNCLASSIFIED_AUTHENTICATION_FAILURE =
-            "<ams:message>Unclassified Authentication Failure</ams:message>";
     protected static final String HTTP_RESPONSE_DATA_NOT_FOUND =
             "<am:code>404</am:code><am:type>Status report</am:type><am:message>Not Found</am:message>";
+    protected static final String HTTP_RESPONSE_DATA_API_FORBIDDEN =
+            "<ams:code>900908</ams:code><ams:message>Resource forbidden </ams:message>";
     protected static final int GOLD_INVOCATION_LIMIT_PER_MIN = 20;
     protected static final int SILVER_INVOCATION_LIMIT_PER_MIN = 5;
     protected static final String TIER_UNLIMITED = "Unlimited";
     protected static final String TIER_GOLD = "Gold";
     protected static final String TIER_SILVER = "Silver";
     protected static final String MESSAGE_THROTTLED_OUT =
-            "<amt:code>900800</amt:code><amt:message>Message Throttled Out</amt:message><amt:description>" +
+            "<amt:code>900800</amt:code><amt:message>Message throttled out</amt:message><amt:description>" +
+                    "You have exceeded your quota</amt:description>";
+    protected static final String MESSAGE_THROTTLED_OUT_RESOURCE =
+            "<amt:code>900802</amt:code><amt:message>Message throttled out</amt:message><amt:description>" +
                     "You have exceeded your quota</amt:description>";
     protected static final int THROTTLING_UNIT_TIME = 60000;
     protected static final int THROTTLING_ADDITIONAL_WAIT_TIME = 5000;
-    protected static String gatewayWebAppUrl;
-
-    @BeforeClass(alwaysRun = true)
-    public void init() throws APIManagerIntegrationTestException {
-        super.init();
-        gatewayWebAppUrl = gatewayUrls.getWebAppURLNhttp();
-    }
 
     /**
      * Return a String with combining the value of API Name,API Version and API Provider Name as key:value format
@@ -130,7 +129,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
             APPKeyRequestGenerator generateAppKeyRequest = new APPKeyRequestGenerator(applicationName);
             String responseString = storeRestClient.generateApplicationKey(generateAppKeyRequest).getData();
             JSONObject response = new JSONObject(responseString);
-
+            log.info("Token response: " + response.toString());
             applicationKeyBean.setAccessToken(response.getJSONObject("data").getJSONObject("key").
                     get("accessToken").toString());
             applicationKeyBean.setConsumerKey(response.getJSONObject("data").getJSONObject("key").
@@ -156,7 +155,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
      */
     protected void deleteAPI(APIIdentifier apiIdentifier, APIPublisherRestClient publisherRestClient)
             throws APIManagerIntegrationTestException {
-        try {
+
             HttpResponse deleteHTTPResponse =
                     publisherRestClient.deleteAPI(apiIdentifier.getApiName(), apiIdentifier.getVersion(),
                             apiIdentifier.getProviderName());
@@ -167,10 +166,6 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                         "Response Code:" + deleteHTTPResponse.getResponseCode() +
                         " Response Data :" + deleteHTTPResponse.getData());
             }
-
-        } catch (Exception e) {
-            throw new APIManagerIntegrationTestException("Exception when delete a API", e);
-        }
     }
 
     /**
@@ -271,6 +266,11 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
         if (createAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(createAPIResponse, "error").equals("false")) {
             log.info("API Created :" + getAPIIdentifierString(apiIdentifier));
+            try {
+                Thread.sleep(1000); //This is required to set a time difference between timestamps of current state and next
+            } catch (InterruptedException e) {
+                throw new APIManagerIntegrationTestException(e.getMessage(), e);
+            }
             //Publish the API
             HttpResponse publishAPIResponse = publishAPI(apiIdentifier, publisherRestClient, isRequireReSubscription);
             if (!(publishAPIResponse.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
@@ -366,6 +366,8 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
                                                   APIStoreRestClient storeRestClient, String applicationName)
             throws APIManagerIntegrationTestException {
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, publisherRestClient, false);
+        waitForAPIDeploymentSync(user.getUserName(), apiIdentifier.getApiName(), apiIdentifier.getVersion(),
+                                     APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponseSubscribeAPI = subscribeToAPI(apiIdentifier, applicationName, storeRestClient);
         if (!(httpResponseSubscribeAPI.getResponseCode() == HTTP_RESPONSE_CODE_OK &&
                 getValueFromJSON(httpResponseSubscribeAPI, "error").equals("false"))) {

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="default_endpoint">
+    <property name="service_ep" expression="fn:concat('http://localhost:10263/jaxrs_basic/services/customers/customerservice/', 'customers/123')"/>
+    <header name="To" expression="get-property('service_ep')"/>
+</sequence>

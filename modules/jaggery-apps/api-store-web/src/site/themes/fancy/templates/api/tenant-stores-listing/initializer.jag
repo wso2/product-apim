@@ -1,8 +1,0 @@
-<%
-jagg.initializer("api/tenant-stores-listing", {
-
-    preInitialize:function () {
-
-    }
-});
-%>

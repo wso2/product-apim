@@ -11,7 +11,7 @@
         <log/>
         <drop/>
     </sequence>
-    <api name="stockquote" context="/stockquote">
+    <api name="admin--stockquote" context="/stockquote">
         <resource methods="GET POST" uri-template="/test">
             <inSequence>
                 <header name="To" action="remove"/>
@@ -39,7 +39,9 @@
         <handlers>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.throttling.APIThrottleHandler">
                 <property name="id" value="A"/>
+                <property name="policyKeyResource" value="gov:/apimgt/applicationdata/test-tiers.xml"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/test-tiers.xml"/>
+                <property name="policyKeyApplication" value="gov:/apimgt/applicationdata/test-tiers.xml"/>
             </handler>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
         </handlers>

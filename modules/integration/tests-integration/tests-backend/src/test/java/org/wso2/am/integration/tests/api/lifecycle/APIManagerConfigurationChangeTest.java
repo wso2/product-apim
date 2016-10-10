@@ -23,69 +23,76 @@ import org.apache.commons.logging.LogFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
-import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
-import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
-import org.wso2.carbon.automation.test.utils.common.FileManager;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
 import java.io.File;
 
 /**
- * Change the api-manager.xml file before start the test suit and  restore it after  all test executions are finished.
+ * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
+ * jaxrs_basic - Provides rest backend to run tests
+ * <p/>
+ * APIStatusMonitor - Can be used to retrieve API deployment status in worker and manager nodes
  */
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
-
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
-    private ServerConfigurationManager serverManager;
-    private static final String APIM_CONFIG_XML = "api-manager.xml";
-    private static final String WEB_APP_NAME = "jaxrs_basic";
-    private static final String WEB_APP_FILE_NAME = "jaxrs_basic.war";
-    private String targetPathInServer;
-    private String sessionId;
 
-    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     @BeforeTest(alwaysRun = true)
-    public void startChangeAPIMConfigureXml() throws Exception {
+    public void startDeployingWebAPPs() throws Exception {
         super.init();
-        String artifactsLocation =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator +
-                        "AM" + File.separator + "lifecycletest" + File.separator;
-        String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
-        String apimRepositoryConfigLocation =
-                CARBON_HOME + File.separator + "repository" + File.separator + "conf" + File.separator + APIM_CONFIG_XML;
-        File sourceFile = new File(apimConfigArtifactLocation);
-        File targetFile = new File(apimRepositoryConfigLocation);
-        serverManager = new ServerConfigurationManager(gatewayContext);
-        //apply configuration to  api-manager.xml
-        serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
-        log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                " to :" + apimRepositoryConfigLocation);
+        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                                  File.separator + "AM" + File.separator;
 
-        String sourcePath =
-                TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" + File.separator + "AM" +
-                        File.separator + "lifecycletest" + File.separator + WEB_APP_FILE_NAME;
-        targetPathInServer =
-                CARBON_HOME + File.separator + "repository" + File.separator + "deployment" + File.separator +
-                        "server" + File.separator + "webapps" + File.separator + WEB_APP_FILE_NAME;
+        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
 
-        sessionId = createSession(gatewayContext);
-        WebAppAdminClient webAppAdminClient =
-                new WebAppAdminClient(gatewayContext.getContextUrls().getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContext.getContextUrls().getBackEndUrl(),
-                sessionId, WEB_APP_NAME);
-        serverManager.restartGracefully();
+        String APIStatusMonitorWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                                                  APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME + ".war";
+        String APIImportExportWebAppSourcePath = testArtifactPath + "war" + File.separator +
+                APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME + ".war";
 
+        String gatewayMgtSessionId = createSession(gatewayContextMgt);
+        String publisherSessionId = createSession(publisherContext);
 
+        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(
+                gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
+
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
+
+        WebAppAdminClient webAppAdminClientForPublisher = new WebAppAdminClient(
+                publisherContext.getContextUrls().getBackEndUrl(), publisherSessionId);
+        webAppAdminClientForPublisher.uploadWarFile(APIImportExportWebAppSourcePath);
+
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                                                      gatewayMgtSessionId, APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
+        WebAppDeploymentUtil.isWebApplicationDeployed(publisherContext.getContextUrls().getBackEndUrl(),
+                                                      publisherSessionId, APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
+        WebAppDeploymentUtil.isMonitoringAppDeployed(gatewayContextWrk.getContextUrls().getWebAppURL());
     }
 
     @AfterTest(alwaysRun = true)
-    public void startRestoreAPIMConfigureXml() throws Exception {
-        serverManager.restoreToLastConfiguration();
-        log.info("Restore the api-manager.xml configuration file");
-        FileManager.deleteFile(targetPathInServer);
-        serverManager.restartGracefully();
+    public void unDeployWebApps() throws Exception {
+        //TODO remove webAPPS
     }
 }

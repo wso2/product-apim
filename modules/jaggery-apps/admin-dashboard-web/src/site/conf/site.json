@@ -3,7 +3,7 @@
         "base" : "default",
         "subtheme" : "modern"
     },
-    "context" : "/admin-dashboard",
+    "context" : "/admin",
     "request_url":"READ_FROM_REQUEST",
     "tasksPerPage": 10,
     "allowedRole":"admin",

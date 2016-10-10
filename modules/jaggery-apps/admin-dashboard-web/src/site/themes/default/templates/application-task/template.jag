@@ -41,7 +41,7 @@ if(tasks!=null && tasks!='null'){
         </div>
   <%}else if(currentPage > numberOfPages){
                 var previousPage = currentPage-1;
-                var redirectUrl = "/admin-dashboard/tasks?page="+previousPage+"&task=application";
+                var redirectUrl = "/admin/tasks?page="+previousPage+"&task=application";
                 response.sendRedirect(redirectUrl);
           }
 else{

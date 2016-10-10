@@ -76,7 +76,7 @@ public class APIVersoinStatTestCase extends APIMIntegrationUiTestBase {
         // Go to test API
         driver.navigate().to(getPublisherURL() + "/info?name=" + TEST_DATA_API_NAME
                              + "&version=" + TEST_DATA_API_VERSION + "&provider=" +
-                gatewayContext.getContextTenant().getContextUser().getUserName());
+                publisherContext.getContextTenant().getContextUser().getUserName());
 
         //click on versions tab
         wait.until(ExpectedConditions.visibilityOfElementLocated(

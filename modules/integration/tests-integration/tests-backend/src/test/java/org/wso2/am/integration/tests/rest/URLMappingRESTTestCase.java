@@ -24,6 +24,8 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -34,17 +36,24 @@ import java.io.File;
 import static org.testng.Assert.assertEquals;
 
 /**
- * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-769
- * This test class test the Rest URI template patterns like uri-template="/view/*"
+ * Related to Patch Automation  https://wso2.org/jira/browse/APIMANAGER-769 &  APIMANAGER-4194
+ * This test class test the Rest URI template patterns like uri-template="/view/*" & uri-template="view/{param1},{param2},{param3}*"
  */
 public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 
-	String gatewaySessionCookie;
-    String gatewayUrl;
+	private String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
     public URLMappingRESTTestCase(TestUserMode userMode) {
         this.userMode = userMode;
+    }
+
+    @DataProvider
+    public static Object[][] userModeDataProvider() {
+        return new Object[][]{
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.TENANT_ADMIN},
+        };
     }
 
 	@BeforeClass(alwaysRun = true)
@@ -52,18 +61,18 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
         String synapseConfFile;
 		super.init(userMode);
 
-		gatewaySessionCookie = createSession(gatewayContext);
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() ;
+		gatewaySessionCookie = createSession(gatewayContextMgt);
+        if (gatewayContextWrk.getContextTenant().getDomain().equals(FrameworkConstants.SUPER_TENANT_DOMAIN_NAME)) {
             synapseConfFile = "url-mapping-synapse.xml";
         } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
             synapseConfFile = "url-mapping-synapse-tenant.xml";
         }
 
 		loadSynapseConfigurationFromClasspath("artifacts" + File.separator + "AM"
 				+ File.separator + "synapseconfigs" + File.separator + "rest"
-                + File.separator + synapseConfFile, gatewayContext, gatewaySessionCookie);
+                + File.separator + synapseConfFile, gatewayContextMgt, gatewaySessionCookie);
+
+        waitForAPIDeploymentSync(user.getUserName(), "urlmapping", "1.0.0", APIMIntegrationConstants.IS_API_EXISTS);
 	}
 
 	@Test(groups = { "wso2.am" },
@@ -74,23 +83,23 @@ public class URLMappingRESTTestCase extends APIMIntegrationBaseTest {
 		//maps to same resource. It will return correct response only if request hits localhost:8280/stockquote/test
 		//after fixing issue both will work.
 
-		HttpResponse response = HttpRequestUtil.sendGetRequest(gatewayUrl+"stockquote/test/", null);
+		HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("urlmapping/1.0.0/test/"), null);
 		assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
 	}
+//    Commenting out the test case until synapse is upgraded.
+//    @Test(groups = { "wso2.am" },
+//            description = "Sending a Message Via REST to test uri template fix")
+//    public void testRESTURITemplateForCommaSeparetdParameters() throws Exception {
+//        // Before apply this patch uri template not recognize localhost:8280/stockquote/test/param1,param2,param3
+//        HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp("stockquote/courses/course1,CE001,sem1"), null);
+//        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(), "Response code mismatch");
+//    }
 
-	@AfterClass(alwaysRun = true)
+
+    @AfterClass(alwaysRun = true)
 	public void destroy() throws Exception {
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
 	}
 
-    @DataProvider
-    public static Object[][] userModeDataProvider() {
-        return new Object[][]{
-                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
-                new Object[]{TestUserMode.TENANT_ADMIN},
-        };
-    }
 }
 

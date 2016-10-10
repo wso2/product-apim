@@ -31,7 +31,7 @@ import java.util.Map;
 public class WorkFlowAdminRestClient {
 
 	 private String backEndUrl;
-	    private static final String URL_SURFIX = "/admin-dashboard/site/blocks";
+	    private static final String URL_SURFIX = "/admin/site/blocks";
 	    private Map<String, String> requestHeaders = new HashMap<String, String>();
 
 	    public WorkFlowAdminRestClient(String backEndUrl) {

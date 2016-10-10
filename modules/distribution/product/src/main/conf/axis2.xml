@@ -58,8 +58,8 @@
     <parameter name="ModulesDirectory">axis2modules</parameter>
 
     <!-- User agent and the server details to be used in the http communication -->
-    <parameter name="userAgent" locked="true">WSO2 AM 1.9.0</parameter>
-    <parameter name="server" locked="true">WSO2 AM 1.9.0</parameter>
+    <parameter name="userAgent" locked="true">WSO2 AM 2.0.0</parameter>
+    <parameter name="server" locked="true">WSO2 AM 2.0.0</parameter>
 
     <!-- During a fault, stacktrace can be sent with the fault message. The following flag -->
     <!-- will control that behaviour -->
@@ -156,6 +156,8 @@
                           class="org.apache.axis2.transport.http.XFormURLEncodedFormatter"/>
         <messageFormatter contentType="multipart/form-data"
                           class="org.apache.axis2.transport.http.MultipartFormDataFormatter"/>
+        <messageFormatter contentType="text/html"
+                          class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="application/xml"
                           class="org.apache.axis2.transport.http.ApplicationXMLFormatter"/>
         <messageFormatter contentType="text/xml"
@@ -220,6 +222,8 @@
     <messageBuilders>
 	<messageBuilder contentType="application/xml"
                         class="org.apache.axis2.builder.ApplicationXMLBuilder"/>
+        <messageBuilder contentType="text/html"
+                        class="org.wso2.carbon.relay.BinaryRelayBuilder"/>
         <messageBuilder contentType="application/x-www-form-urlencoded"
                         class="org.apache.synapse.commons.builders.XFormURLEncodedBuilder"/>
         <messageBuilder contentType="multipart/form-data"
@@ -283,7 +287,7 @@
         <parameter name="non-blocking" locked="false">true</parameter>
         <!--parameter name="bind-address" locked="false">hostname or IP address</parameter-->
         <!--parameter name="WSDLEPRPrefix" locked="false">https://apachehost:port/somepath</parameter-->
-        <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.transport.nhttp.api.PassThroughNHttpGetProcessor</parameter>
+        <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor</parameter>
         <!--<parameter name="priorityConfigFile" locked="false">location of priority configuration file</parameter>-->
     </transportReceiver>
 
@@ -302,7 +306,7 @@
         <parameter name="non-blocking" locked="false">true</parameter>
         <!--parameter name="bind-address" locked="false">hostname or IP address</parameter-->
         <!--parameter name="WSDLEPRPrefix" locked="false">https://apachehost:port/somepath</parameter-->
-        <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.transport.nhttp.api.PassThroughNHttpGetProcessor</parameter>
+       <parameter name="httpGetProcessor" locked="false">org.wso2.carbon.mediation.transport.handlers.PassThroughNHttpGetProcessor</parameter>
         <parameter name="keystore" locked="false">
             <KeyStore>
                 <Location>repository/resources/security/wso2carbon.jks</Location>
@@ -768,10 +772,11 @@
 	</phase>
 	<phase name="Validation"/>
         <phase name="Transport">
-            <handler name="TenantActiveCheckDispatcher"
+            <!--TEMPORALY-->
+            <!--handler name="TenantActiveCheckDispatcher"
                      class="org.wso2.carbon.tenant.dispatcher.TenantActiveCheckDispatcher">
                 <order phase="Transport"/>
-            </handler>
+            </handler-->
             <handler name="RequestURIBasedDispatcher"
                      class="org.apache.axis2.dispatchers.RequestURIBasedDispatcher">
                 <order phase="Transport"/>
@@ -786,8 +791,9 @@
                      class="org.wso2.carbon.core.transports.smtp.SMTPFaultHandler">
                 <order phase="Transport"/>
             </handler-->
-            <handler name="CacheMessageBuilderDispatchandler"
-                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/>
+            <!-- TEMPORALY-->
+            <!--handler name="CacheMessageBuilderDispatchandler"
+                     class="org.wso2.carbon.mediation.initializer.handler.CacheMessageBuilderDispatchandler"/-->
             <handler name="CarbonContentConfigurator"
                      class="org.wso2.carbon.mediation.initializer.handler.CarbonContextConfigurator"/>
         </phase>

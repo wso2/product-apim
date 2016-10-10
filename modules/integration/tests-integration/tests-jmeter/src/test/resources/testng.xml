@@ -22,6 +22,8 @@
             <class name="org.wso2.carbon.am.jmeter.APIMANAGER3427APINameValidationPerformanceTestCase"/>
             <!-- <class name="org.wso2.carbon.am.jmeter.JmeterSuperTenantTestCase"/>
             <class name="org.wso2.carbon.am.jmeter.JmeterPassThroughTestCase"/>-->
+            <class name="org.wso2.carbon.am.jmeter.APIMANAGER4163InvalidStoreUrlPerformanceTestCase"/>
+            <class name="org.wso2.carbon.am.jmeter.APIMANAGER4488ApplicationUpdatePerformanceTestCase"/>
 
         </classes>
     </test>

@@ -18,15 +18,13 @@
 
 package org.wso2.am.integration.tests.other;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -36,7 +34,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,25 +46,21 @@ import static org.testng.Assert.assertTrue;
 public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     private static final Log log = LogFactory.getLog(APIScopeTestCase.class);
-
     private APIPublisherRestClient apiPublisher;
-
     private APIStoreRestClient apiStore;
-
-    private UserManagementClient userManagementClient = null;
-
+    private UserManagementClient userManagementClient1 = null;
     private static final String API_NAME = "APIScopeTestAPI";
-
     private static final String API_VERSION = "1.0.0";
-
     private static final String APP_NAME = "NewApplication";
-
     private static final String USER_JOHN = "john";
-
     private static final String SUBSCRIBER_ROLE = "subscriber";
-
-    private static String apiProvider;
-
+    private final String API_VERSION_WITH_SCOPE = "1.0.0";
+    private final String API_VERSION_WITH_SCOPE_COPY = "2.0.0";
+    private final String API_NAME_WITH_SCOPE = "APIScopeTestWithScopeName";
+    private final String API_CONTEXT_WITH_SCOPE = "APIScopeTestWithScopeContext";
+    private final String SCOPE_NAME = "APIScopeUpdateCopyScope";
+    private final String ALLOWED_ROLE = "admin";
+    private String gatewaySessionCookie;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIScopeTestCase(TestUserMode userMode) {
@@ -73,65 +69,62 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
-
         super.init(userMode);
-
-        apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
-
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
-
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisher = new APIPublisherRestClient(publisherURLHttp);
-
         apiStore = new APIStoreRestClient(storeURLHttp);
+        gatewaySessionCookie = createSession(gatewayContextMgt);
+        //Load the back-end dummy API
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            loadSynapseConfigurationFromClasspath(
+                    "artifacts" + File.separator + "AM" + File.separator + "synapseconfigs" + File.separator + "rest"
+                            + File.separator + "dummy_api.xml", gatewayContextMgt, gatewaySessionCookie);
+        }
     }
 
     @Test(groups = {"wso2.am"}, description = "Testing the scopes with admin, subscriber roles")
     public void testSetScopeToResourceTestCase() throws Exception {
-
-
-        userManagementClient = new UserManagementClient(gatewayContext.getContextUrls().getBackEndUrl(),
-                                                        gatewayContext.getContextTenant().getContextUser().getUserName(),
-                                                        gatewayContext.getContextTenant().getContextUser().getPassword());
-
+        userManagementClient1 = new UserManagementClient(keyManagerContext.getContextUrls().getBackEndUrl(),
+                keyManagerContext.getContextTenant().getContextUser().getUserName(),
+                keyManagerContext.getContextTenant().getContextUser().getPassword());
         // adding new role subscriber
-        userManagementClient.addRole(SUBSCRIBER_ROLE, new String[]{}, new String[]{"/permission/admin/login",
-                                                                                   "/permission/admin/manage/api/subscribe"});
+        userManagementClient1.addRole(SUBSCRIBER_ROLE, new String[] {},
+                new String[] { "/permission/admin/login", "/permission/admin/manage/api/subscribe" });
 
         // crating user john
         String userJohn;
         String gatewayUrl;
-        if (gatewayContext.getContextTenant().getDomain().equals("carbon.super")) {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp();
+        if (keyManagerContext.getContextTenant().getDomain().equals("carbon.super")) {
+            gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp();
             userJohn = USER_JOHN;
         } else {
-            gatewayUrl = gatewayUrls.getWebAppURLNhttp() + "t/" + gatewayContext.getContextTenant().getDomain() + "/";
-            userJohn = USER_JOHN + "@" + gatewayContext.getContextTenant().getDomain();
+            gatewayUrl =
+                    gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + keyManagerContext.getContextTenant().getDomain() + "/";
+            userJohn = USER_JOHN + "@" + keyManagerContext.getContextTenant().getDomain();
         }
-        userManagementClient.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
-
+        userManagementClient1.addUser(USER_JOHN, "john123", new String[]{SUBSCRIBER_ROLE}, USER_JOHN);
 
         // Adding API
         String apiContext = "testScopeAPI";
         String tags = "thomas-bayer, testing, rest-Apis";
-        String url = "http://www.thomas-bayer.com/sqlrest/";
+        String url = getGatewayURLNhttp() + "response";
         String description = "This is a test API created by API manager integration test";
 
-        apiPublisher.login(publisherContext.getContextTenant().getContextUser().getUserName(),
-                           publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisher.login(user.getUserName(), user.getPassword());
         APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URL(url));
         apiRequest.setTags(tags);
         apiRequest.setDescription(description);
         apiRequest.setVersion(API_VERSION);
-        apiRequest.setProvider(apiProvider);
+        apiRequest.setProvider(user.getUserName());
         apiPublisher.addAPI(apiRequest);
 
         //publishing API
-        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, apiProvider,
-                                                                              APILifeCycleState.PUBLISHED);
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         //resources are modified using swagger doc.
         // admin_scope(used for POST) :- admin
@@ -146,15 +139,16 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
                                   "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
 
 
-        apiPublisher.updateResourceOfAPI(apiProvider, API_NAME, API_VERSION, modifiedResource);
+        apiPublisher.updateResourceOfAPI(user.getUserName(), API_NAME, API_VERSION, modifiedResource);
+
+        waitForAPIDeployment();
 
         // For Admin user
         // create new application and subscribing
-        apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
-                       storeContext.getContextTenant().getContextUser().getPassword());
-        apiStore.addApplication(APP_NAME, "Unlimited", "some_url", "NewApp");
+        apiStore.login(user.getUserName(), user.getPassword());
+        apiStore.addApplication(APP_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "some_url", "NewApp");
 
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, apiProvider);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(API_NAME, user.getUserName());
         subscriptionRequest.setApplicationName(APP_NAME);
         apiStore.subscribe(subscriptionRequest);
 
@@ -167,7 +161,7 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         String consumerKey = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerKey");
         String consumerSecret = jsonResponse.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
 
-        URL tokenEndpointURL = new URL(gatewayUrls.getWebAppURLNhttp() + "token");
+        URL tokenEndpointURL = new URL(gatewayUrlsWrk.getWebAppURLNhttp() + "token");
         String accessToken;
         Map<String, String> requestHeaders;
         HttpResponse response;
@@ -176,25 +170,26 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         JSONObject accessTokenGenerationResponse;
 
         //Obtain user access token for Admin
-        requestBody = "grant_type=password&username=" + storeContext.getContextTenant().getContextUser().getUserName() +
-                      "&password=" + storeContext.getContextTenant().getContextUser().getPassword() +
-                      "&scope=admin_scope user_scope";
+        requestBody = "grant_type=password&username=" + user.getUserName() +
+                "&password=" + user.getPassword() +
+                "&scope=admin_scope user_scope";
 
-        accessTokenGenerationResponse = new JSONObject(apiStore.generateUserAccessKey(consumerKey, consumerSecret,
-                                                                                      requestBody, tokenEndpointURL).getData());
+        response = apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                                                  requestBody, tokenEndpointURL);
+        accessTokenGenerationResponse = new JSONObject(response.getData());
         accessToken = accessTokenGenerationResponse.getString("access_token");
 
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
-        // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
+
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the GET Method");
 
         // Accessing POST method
-        endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/PRODUCT/35");
-        response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
+        endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/test");
+        response = HttpRequestUtil.doPost(endPointURL, "", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "Admin user cannot access the POST Method");
 
@@ -210,14 +205,14 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
 
         // Accessing GET method
-        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/ITEM", requestHeaders);
+        response = HttpRequestUtil.doGet(gatewayUrl + "testScopeAPI/1.0.0/test", requestHeaders);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                      "User John cannot access the GET Method");
 
         try {
             // Accessing POST method
-            endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/PRODUCT/35");
-            response = HttpRequestUtil.doPost(endPointURL, "<resource><PRICE>8.5</PRICE></resource>", requestHeaders);
+            endPointURL = new URL(gatewayUrl + "testScopeAPI/1.0.0/test");
+            response = HttpRequestUtil.doPost(endPointURL, "", requestHeaders);
             assertTrue(response.getResponseCode() != Response.Status.OK.getStatusCode(),
                        "testRole John can access the POST Method");
 
@@ -227,30 +222,86 @@ public class APIScopeTestCase extends APIMIntegrationBaseTest {
         }
     }
 
+    @Test(groups = { "wso2.am" }, description = "Testing Copy api with scopes assigned",
+            dependsOnMethods = "testSetScopeToResourceTestCase")
+    public void testCopyApiWithScopes() throws Exception {
+        String tierCollection = APIMIntegrationConstants.API_TIER.UNLIMITED;
+        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api";
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME_WITH_SCOPE,
+                API_CONTEXT_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+
+        //adding resources using swagger
+        String swagger = "{" + "\"paths\": {" + "\"/add\": {" + "\"get\": {" + "\"x-auth-type\": \"" + URLEncoder
+                .encode(APIMIntegrationConstants.RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER, "UTF-8") + "\","
+                + "\"x-throttling-tier\": \"" + APIMIntegrationConstants.API_TIER.UNLIMITED + "\"," + "\"x-scope\": \""
+                + SCOPE_NAME + "\"," + "\"responses\": {" + "\"200\": {}" + "}," + "\"parameters\": [{"
+                + "\"name\": \"x\"," + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
+                + "\"description\": \"First value\"," + "\"in\": \"query\"" + "}, {" + "\"name\": \"y\","
+                + "\"paramType\": \"query\"," + "\"required\": false," + "\"type\": \"string\","
+                + "\"description\": \"Second Value\"," + "\"in\": \"query\"" + "}]" + "}" + "}" + "},"
+                + "\"swagger\": \"2.0\"," + "\"x-wso2-security\": {" + "\"apim\": {" + "\"x-wso2-scopes\": [{"
+                + "\"description\": \"Sample Scope\"," + "\"name\": \"" + SCOPE_NAME + "\"," + "\"roles\": \""
+                + ALLOWED_ROLE + "\"," + "\"key\": \"" + SCOPE_NAME + "\"" + "}]" + "}" + "}," + "\"info\": {"
+                + "\"title\": \"" + API_NAME_WITH_SCOPE + "\"," + "\"" + API_VERSION + "\": \"1.0.0\"" + "}" + "}";
+        apiCreationRequestBean.setSwagger(swagger);
+
+        //add test api
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_WITH_SCOPE, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+
+        //copy published api
+        HttpResponse newVersionResponse = apiPublisher
+                .copyAPI(user.getUserName(), API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE, API_VERSION_WITH_SCOPE_COPY,
+                        "");
+        assertEquals(newVersionResponse.getResponseCode(), HttpStatus.SC_OK, "Response Code Mismatch");
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Testing Update api with scopes assigned",
+            dependsOnMethods = "testCopyApiWithScopes")
+    public void testUpdateApiWithScopes() throws Exception {
+        String tierCollection = APIMIntegrationConstants.API_TIER.GOLD;
+        String endpointUrl = backEndServerUrl.getWebAppURLHttp() + "am/sample/calculator/v1/api/add";
+        APICreationRequestBean apiCreationRequestBean = new APICreationRequestBean(API_NAME_WITH_SCOPE,
+                API_CONTEXT_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTiersCollection(tierCollection);
+        apiCreationRequestBean.setDescription("test api description");
+
+        HttpResponse updateResponse = apiPublisher.updateAPI(apiCreationRequestBean);
+        verifyResponse(updateResponse);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
         if (apiStore != null) {
             apiStore.removeApplication(APP_NAME);
+            apiStore.removeApplication(API_NAME_WITH_SCOPE);
         }
 
         if (apiPublisher != null) {
-            apiPublisher.deleteAPI(API_NAME, API_VERSION, apiProvider);
+            apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
+            apiPublisher.deleteAPI(API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE, user.getUserName());
+            apiPublisher.deleteAPI(API_NAME_WITH_SCOPE, API_VERSION_WITH_SCOPE_COPY, user.getUserName());
         }
 
-        if (userManagementClient != null) {
-            userManagementClient.deleteUser(USER_JOHN);
-            userManagementClient.deleteRole(SUBSCRIBER_ROLE);
+        if (userManagementClient1 != null) {
+            userManagementClient1.deleteUser(USER_JOHN);
+            userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
-        super.cleanUp(gatewayContext.getContextTenant().getTenantAdmin().getUserName(),
-                      gatewayContext.getContextTenant().getContextUser().getPassword(),
-                      storeUrls.getWebAppURLHttp(), publisherUrls.getWebAppURLHttp());
+        super.cleanUp();
     }
 
     @DataProvider
     public static Object[][] userModeDataProvider() {
         return new Object[][]{
-//                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
+                new Object[]{TestUserMode.SUPER_TENANT_ADMIN},
                 new Object[]{TestUserMode.TENANT_ADMIN},
         };
     }

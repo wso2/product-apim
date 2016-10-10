@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -29,6 +30,7 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,10 +44,10 @@ import static org.testng.Assert.*;
  */
 public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String TEST_TAG = "Tag3";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String TEST_TAG = "Tag3";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIPublisherRestClient apiPublisherClientUser1;
@@ -57,10 +59,10 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
@@ -70,9 +72,7 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                 publisherContext.getContextTenant().getContextUser().getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
 
         apiTagsMapBeforeChange = new HashMap<String, String>();
         apiTagsMapBeforeChange.put("APITagTest1", "Tag1, Tag2, Tag3");
@@ -88,7 +88,9 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @Test(groups = {"wso2.am"}, description = "Test the filter by Tags before changing the Tags")
-    public void testFilterByTagsBeforeTagChange() throws APIManagerIntegrationTestException, MalformedURLException {
+    public void testFilterByTagsBeforeTagChange()
+            throws APIManagerIntegrationTestException, IOException, InterruptedException,
+                   XPathExpressionException {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             String apiTags = apiTagEntry.getValue();
@@ -99,9 +101,20 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
                     new APICreationRequestBean(apiName, apiContext, API_VERSION_1_0_0, providerName,
                             new URL(apiEndPointUrl));
             apiCreationRequestBean.setTags(apiTags);
-            apiCreationRequestBean.setDescription(API_DESCRIPTION);
+            apiCreationRequestBean.setDescription(API_DESCRIPTION + " with tags " + apiTags );
+
             createAndPublishAPIWithoutRequireReSubscription(apiIdentifier, apiCreationRequestBean,
                     apiPublisherClientUser1);
+
+            waitForAPIDeploymentSync(apiIdentifier.getProviderName(),
+                                     apiIdentifier.getApiName(),
+                                     apiIdentifier.getVersion(),
+                                     APIMIntegrationConstants.IS_API_EXISTS);
+
+            apiStoreClientUser1.waitForSwaggerDocument(apiIdentifier.getProviderName(),
+                                                   apiIdentifier.getApiName(),
+                                                   apiIdentifier.getVersion(),
+                                                   apiTags, executionMode);
         }
         HttpResponse apiPageFilteredWithTagsResponse =
                 apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
@@ -139,17 +152,23 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
             apiCreationRequestBean.setDescription(API_DESCRIPTION);
             //Update API with Edited Tags
             HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+            waitForAPIDeployment();
             assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                     "Update API Response Code is invalid. API Name:" + apiName);
             assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
                     "Error in API Update in API Name:" + apiName +
                             "Response Data:" + updateAPIHTTPResponse.getData());
         }
+        try {
+			Thread.sleep(5000l);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         HttpResponse apiPageFilteredWithTagsResponse = apiStoreClientUser1.getAPIPageFilteredWithTags(TEST_TAG);
         assertEquals(apiPageFilteredWithTagsResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Response code wan not" +
                 " Ok:200 for retrieving the API page filtered with tags");
         String apiPageFilteredWithTagsResponseString = apiPageFilteredWithTagsResponse.getData();
-        for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
+        for (Map.Entry<String, String> apiTagEntry : apiTagsMapAfterChange.entrySet()) {
             String apiLinkToTestInPage = "/store/apis/info?name=" + apiTagEntry.getKey() + "&version=" +
                     API_VERSION_1_0_0 + "&provider=" + providerName + "&tenant=carbon.super&tag=" + TEST_TAG + "";
             if (apiTagEntry.getValue().contains(TEST_TAG)) {
@@ -165,12 +184,13 @@ public class ChangeAPITagsTestCase extends APIManagerLifecycleBaseTest {
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws APIManagerIntegrationTestException {
+    public void cleanUpArtifacts() throws Exception {
         for (Map.Entry<String, String> apiTagEntry : apiTagsMapBeforeChange.entrySet()) {
             String apiName = apiTagEntry.getKey();
             APIIdentifier apiIdentifier = new APIIdentifier(providerName, apiName, API_VERSION_1_0_0);
             deleteAPI(apiIdentifier, apiPublisherClientUser1);
         }
+        super.cleanUp();
     }
 
 

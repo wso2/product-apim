@@ -1,5 +1,0 @@
-<% jagg.template("tools/rest-client", function(inputs, outputs, jagg) { %>
-    <div class="tryit-content" id="tryit-content">
-        <% jagg.includeBlock("api/tryit", outputs); %>
-    </div>
-<% }); %>

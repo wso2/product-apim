@@ -88,9 +88,9 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
     private String httpsStoreUrl;
     private String httpsPublisherUrl;
     private String samlSsoEndpointUrl;
-    private String apiName = "SingleSignOnAPI";
-    private String apiVersion = "1.0.0";
-    private String callbackUrl = "www.youtube.com";
+    private final static String API_NAME = "SingleSignOnAPI";
+    private final static String API_VERSION = "1.0.0";
+    private final static String CALLBACK_URL = "www.youtube.com";
 
     private HttpResponse response;
     private HttpClient httpClient;
@@ -150,7 +150,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanup();
+        super.cleanUp();
     }
 
     @Test(description = "Login to publisher using username and password", groups = "wso2.apim.is")
@@ -335,8 +335,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "addAPISubscription"));
         urlParameters.add(new BasicNameValuePair("applicationName", "SSOApplication"));
-        urlParameters.add(new BasicNameValuePair("name", apiName));
-        urlParameters.add(new BasicNameValuePair("version", apiVersion));
+        urlParameters.add(new BasicNameValuePair("name", API_NAME));
+        urlParameters.add(new BasicNameValuePair("version", API_VERSION));
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("tier", "Unlimited"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/subscription/" +
@@ -357,7 +357,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("action", "generateApplicationKey"));
         urlParameters.add(new BasicNameValuePair("application", "SSOApplication"));
         urlParameters.add(new BasicNameValuePair("keytype", "PRODUCTION"));
-        urlParameters.add(new BasicNameValuePair("callbackUrl", callbackUrl));
+        urlParameters.add(new BasicNameValuePair("callbackUrl", CALLBACK_URL));
         urlParameters.add(new BasicNameValuePair("authorizedDomains", "ALL"));
         urlParameters.add(new BasicNameValuePair("validityTime", "500"));  // 2 minutes
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/subscription/" +
@@ -402,9 +402,9 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
         //11.
         urlParameters.clear();
-        urlParameters.add(new BasicNameValuePair("name", apiName));
+        urlParameters.add(new BasicNameValuePair("name", API_NAME));
         urlParameters.add(new BasicNameValuePair("context", APIContext));
-        urlParameters.add(new BasicNameValuePair("version", apiVersion));
+        urlParameters.add(new BasicNameValuePair("version", API_VERSION));
         urlParameters.add(new BasicNameValuePair("visibility", "public"));
         urlParameters.add(new BasicNameValuePair("roles", ""));
         urlParameters.add(new BasicNameValuePair("apiThumb", ""));
@@ -412,8 +412,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tags", "WSO2,APIM,IS,CrossProduct,PlatformTests"));
         urlParameters.add(new BasicNameValuePair("action", "design"));
         urlParameters.add(new BasicNameValuePair("swagger",                  //
-                                                 "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":\"1.2\"," +
-                                                 "\"apis\":[{\"path\":\"/default\",\"description\":\"\",\"file\":{\"apiVersion\":" + apiVersion + "," +
+                                                 "{\"apiVersion\":" + API_VERSION + ",\"swaggerVersion\":\"1.2\"," +
+                                                 "\"apis\":[{\"path\":\"/default\",\"description\":\"\",\"file\":{\"apiVersion\":" + API_VERSION + "," +
                                                  "\"swaggerVersion\":\"1.2\",\"basePath\":\"http://localhost:8280/CrossProductsAPI3Context/1.0.0\"," +
                                                  "\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":[{\"method\":\"GET\"," +
                                                  "\"parameters\":[{\"name\":\"body\",\"description\":\"Request Body\",\"allowMultiple\":false," +
@@ -427,7 +427,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
                                                  "\"type\":\"string\"}],\"nickname\":\"delete_*\"},{\"method\":\"OPTIONS\",\"parameters\":[{\"name\":" +
                                                  "\"body\",\"description\":\"Request Body\",\"allowMultiple\":false,\"required\":true,\"paramType\":" +
                                                  "\"body\",\"type\":\"string\"}],\"nickname\":\"options_*\"}]}]}}],\"info\":{\"title\":" +
-                                                 "" + apiName + ",\"description\":" +
+                                                 "" + API_NAME + ",\"description\":" +
                                                  "" + APIDescription + "," + "\"termsOfServiceUrl\":\"\",\"contact\":\"\",\"license\":\"\"," +
                                                  "\"licenseUrl\":\"\"}," +
                                                  "\"authorizations\":{\"oauth2\":{\"type\":\"oauth2\",\"scopes\":[]}}}"));
@@ -439,7 +439,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
         // 12.
         response = sendGetRequest(String.format(httpsPublisherUrl + "/implement?name=" +
-                                                apiName + "&version=" + apiVersion + "&provider=" + providerName));
+                API_NAME + "&version=" + API_VERSION + "&provider=" + providerName));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
                      "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
@@ -458,13 +458,13 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("epPassword", providerName));
         urlParameters.add(new BasicNameValuePair("wsdl", ""));
         urlParameters.add(new BasicNameValuePair("wadl", ""));
-        urlParameters.add(new BasicNameValuePair("name", apiName));
-        urlParameters.add(new BasicNameValuePair("version", apiVersion));
+        urlParameters.add(new BasicNameValuePair("name", API_NAME));
+        urlParameters.add(new BasicNameValuePair("version", API_VERSION));
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("action", "implement"));
-        urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":" +
+        urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + API_VERSION + ",\"swaggerVersion\":" +
                                                             "\"1.2\",\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\"" +
-                                                            ":{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"" +
+                                                            ":{\"apiVersion\":" + API_VERSION + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"" +
                                                             ",\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"" +
                                                             "operations\":[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\"" +
                                                             ":\"Request Body\",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":" +
@@ -488,7 +488,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
 
         //15.
         response = sendGetRequest(String.format(httpsPublisherUrl + "/manage?name=" +
-                                                apiName + "&version=" + apiVersion + "&provider=" + providerName));
+                API_NAME + "&version=" + API_VERSION + "&provider=" + providerName));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode(),
                      "Response mismatch not 200");
         EntityUtils.consume(response.getEntity());
@@ -510,13 +510,13 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("bizOwnerMail", ""));
         urlParameters.add(new BasicNameValuePair("techOwner", ""));
         urlParameters.add(new BasicNameValuePair("techOwnerMail", ""));
-        urlParameters.add(new BasicNameValuePair("name", apiName));
-        urlParameters.add(new BasicNameValuePair("version", apiVersion));
+        urlParameters.add(new BasicNameValuePair("name", API_NAME));
+        urlParameters.add(new BasicNameValuePair("version", API_VERSION));
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("action", "manage"));
-        urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + apiVersion + ",\"swaggerVersion\":\"1.2\"," +
+        urlParameters.add(new BasicNameValuePair("swagger", "{\"apiVersion\":" + API_VERSION + ",\"swaggerVersion\":\"1.2\"," +
                                                             "\"authorizations\":{\"oauth2\":{\"scopes\":[],\"type\":\"oauth2\"}},\"apis\":[{\"file\":" +
-                                                            "{\"apiVersion\":" + apiVersion + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"," +
+                                                            "{\"apiVersion\":" + API_VERSION + ",\"basePath\":\"http://10.100.0.42:8280/CrossProductsAPI3Context/1.0.0\"," +
                                                             "\"swaggerVersion\":\"1.2\",\"resourcePath\":\"/default\",\"apis\":[{\"path\":\"/*\",\"operations\":" +
                                                             "[{\"nickname\":\"get_*\",\"method\":\"GET\",\"parameters\":[{\"description\":\"Request Body\"" +
                                                             ",\"name\":\"body\",\"allowMultiple\":false,\"required\":true,\"type\":\"string\",\"paramType\"" +
@@ -554,8 +554,8 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         //21.
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "updateStatus"));
-        urlParameters.add(new BasicNameValuePair("name", apiName));
-        urlParameters.add(new BasicNameValuePair("version", apiVersion));
+        urlParameters.add(new BasicNameValuePair("name", API_NAME));
+        urlParameters.add(new BasicNameValuePair("version", API_VERSION));
         urlParameters.add(new BasicNameValuePair("provider", providerName));
         urlParameters.add(new BasicNameValuePair("status", "PUBLISHED"));
         urlParameters.add(new BasicNameValuePair("publishToGateway", "true"));
@@ -602,7 +602,7 @@ public class SingleSignOnTestCase extends APIMIntegrationBaseTest {
         urlParameters.clear();
         urlParameters.add(new BasicNameValuePair("action", "addApplication"));
         urlParameters.add(new BasicNameValuePair("tier", "Unlimited"));
-        urlParameters.add(new BasicNameValuePair("callbackUrl", callbackUrl));
+        urlParameters.add(new BasicNameValuePair("callbackUrl", CALLBACK_URL));
         urlParameters.add(new BasicNameValuePair("description", "This is platform based application"));
         urlParameters.add(new BasicNameValuePair("application", "SSOApplication"));
         response = sendPOSTMessage(httpsStoreUrl + "/site/blocks/application/" +

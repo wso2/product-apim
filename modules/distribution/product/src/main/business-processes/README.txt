@@ -10,7 +10,7 @@ We can engage business process execution for API management releated operations.
 If we performed any of above operations with properly configured API Manager to integrate web service based workflow executor[which is default ship with AM 1.6.0],then API manager will execute business process workflow for each of above operations. Each business process has 4 main operations.
 01. Accept workflow request coming from API manager to BPS.
 02. Create human tasks instance in BPS.
-03. User interaction to approve workflow. User can log in to "Admin-Dashboard" jaggery app which is default ship with API manager 1.6.0 and approve process.The url for "admin-dashboard" jaggery application is "http[s]://ip:port/admin-dashboard"
+03. User interaction to approve workflow. User can log in to "Admin Portal" jaggery app which is default ship with API manager 1.6.0 and approve process.The url for "Admin Portal" jaggery application is "http[s]://ip:port/admin"
 04. Call back to API manager after workflow execution.
 
 
@@ -90,4 +90,4 @@ Note: The default http and https ports (without offset) of a carbon server respe
    b) Grep (search) for the value 9765 within all the .wsdl files and update them accordingly.
    c) Zip the contents you unzipped in (a) and recreate the zip file. Note to deploy the newly created zip file when deploying the same on BPS.
 
-3. Open the <AM_HOME>/repository/deployment/server/jaggeryapps/admin-dashboard/site/conf/site.json file and update all references of 9445 accordingly.
+3. Open the <AM_HOME>/repository/deployment/server/jaggeryapps/admin/site/conf/site.json file and update all references of 9445 accordingly.

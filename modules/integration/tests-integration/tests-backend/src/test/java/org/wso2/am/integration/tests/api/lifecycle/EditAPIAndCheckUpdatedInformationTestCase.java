@@ -22,6 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
+import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APIBean;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
@@ -42,14 +43,14 @@ import static org.testng.Assert.assertTrue;
  */
 public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecycleBaseTest {
 
-    private static final String API_NAME = "EditAPIAndCheckUpdatedInformationTest";
-    private static final String API_CONTEXT = "EditAPIAndCheckUpdatedInformation";
-    private static final String API_TAGS = "testTag1, testTag2, testTag3";
-    private static final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private static final String API_VERSION_1_0_0 = "1.0.0";
-    private static final String NEW_API_TAG = "newTag";
-    private static final String NEW_API_DESCRIPTION = API_DESCRIPTION + " New Description";
-    private static final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
+    private final String API_NAME = "EditAPIAndCheckUpdatedInformationTest";
+    private final String API_CONTEXT = "EditAPIAndCheckUpdatedInformation";
+    private final String API_TAGS = "testTag1, testTag2, testTag3";
+    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
+    private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String NEW_API_TAG = "newTag";
+    private final String NEW_API_DESCRIPTION = API_DESCRIPTION + " New Description";
+    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiEndPointUrl;
     private String providerName;
     private APIIdentifier apiIdentifier;
@@ -58,52 +59,58 @@ public class EditAPIAndCheckUpdatedInformationTestCase extends APIManagerLifecyc
 
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+                                    MalformedURLException {
         super.init();
-        apiEndPointUrl = gatewayUrls.getWebAppURLHttp() + API_END_POINT_POSTFIX_URL;
-        providerName = publisherContext.getContextTenant().getContextUser().getUserName();
+        apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
+        providerName = user.getUserName();
         apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
+                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+                                           new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        String publisherURLHttp = publisherUrls.getWebAppURLHttp();
-        String storeURLHttp = storeUrls.getWebAppURLHttp();
+        String publisherURLHttp = getPublisherURLHttp();
+        String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
         APIStoreRestClient apiStoreClientUser1 = new APIStoreRestClient(storeURLHttp);
 
         //Login to API Publisher with  admin
-        apiPublisherClientUser1.login(
-                publisherContext.getContextTenant().getContextUser().getUserName(),
-                publisherContext.getContextTenant().getContextUser().getPassword());
+        apiPublisherClientUser1.login(user.getUserName(), user.getPassword());
 
         //Login to API Store with  admin
-        apiStoreClientUser1.login(
-                storeContext.getContextTenant().getContextUser().getUserName(),
-                storeContext.getContextTenant().getContextUser().getPassword());
+        apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
     }
 
 
     @Test(groups = {"wso2.am"}, description = "Edit the API Information")
-    public void testEditAPIInformation() throws APIManagerIntegrationTestException {
+    public void testEditAPIInformation()
+            throws APIManagerIntegrationTestException, XPathExpressionException {
         //Create and publish API version 1.0.0
         createAndPublishAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, false);
         //Edit the api
+
+        waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
         String apiNewTags = API_TAGS + ", " + NEW_API_TAG;
         apiCreationRequestBean.setTags(apiNewTags);
         apiCreationRequestBean.setDescription(NEW_API_DESCRIPTION);
         //Update API with Edited information
         HttpResponse updateAPIHTTPResponse = apiPublisherClientUser1.updateAPI(apiCreationRequestBean);
+
+        waitForAPIDeployment();
+
         assertEquals(updateAPIHTTPResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
-                "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
+                     "Update API Response Code is invalid." + getAPIIdentifierString(apiIdentifier));
         assertEquals(getValueFromJSON(updateAPIHTTPResponse, "error"), "false",
-                "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
-                        "Response Data:" + updateAPIHTTPResponse.getData());
+                     "Error in API Update in " + getAPIIdentifierString(apiIdentifier) +
+                     "Response Data:" + updateAPIHTTPResponse.getData());
     }
 
     @Test(groups = {"wso2.am"}, description = "Test whether the updated information available in the publisher ",
-            dependsOnMethods = "testEditAPIInformation")
-    public void testUpdatedAPIInformationFromAPIPublisher() throws APIManagerIntegrationTestException {
+          dependsOnMethods = "testEditAPIInformation")
+    public void testUpdatedAPIInformationFromAPIPublisher()
+            throws APIManagerIntegrationTestException {
         APIBean apiBeanAfterUpdate =
                 APIMTestCaseUtils.getAPIBeanFromHttpResponse(apiPublisherClientUser1.getApi(
                         API_NAME, providerName, API_VERSION_1_0_0));

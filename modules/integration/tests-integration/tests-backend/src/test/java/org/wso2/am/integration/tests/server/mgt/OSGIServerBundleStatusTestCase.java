@@ -24,10 +24,22 @@ import org.apache.commons.net.telnet.TelnetClient;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.integration.test.utils.APIMTestConstants;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
-import org.wso2.carbon.integration.common.extensions.carbonserver.MultipleServersManager;
+import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
+import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
+import org.wso2.carbon.automation.test.utils.common.FileManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -39,38 +51,23 @@ import static org.testng.Assert.assertEquals;
   This test class can be used to identify required osgi component service
   (eg: unsatisfied) in server startup
  */
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class OSGIServerBundleStatusTestCase {
 
     private static final Log log = LogFactory.getLog(OSGIServerBundleStatusTestCase.class);
-    private static int telnetPort = 2000;
     private TelnetClient telnet = new TelnetClient();
     private ArrayList<String> arrList = new ArrayList<String>();
     private ArrayList<String> unsatisfiedList = new ArrayList<String>();
-    private HashMap<String, String> serverPropertyMap = new HashMap<String, String>();
-    private MultipleServersManager manager = new MultipleServersManager();
     private PrintStream out;
 
-    @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception {
-        // to start the server from a different port offset
-        serverPropertyMap.put("-DportOffset", "1");
-        // start with OSGI component service
-        serverPropertyMap.put("-DosgiConsole", Integer.toString(telnetPort));
-        AutomationContext autoCtx = new AutomationContext();
-        CarbonTestServerManager server =
-                new CarbonTestServerManager(autoCtx, System.getProperty("carbon.zip"), serverPropertyMap);
-        manager.startServers(server);
-    }
-
     @AfterClass(alwaysRun = true)
-    public void stopServers() throws Exception {
+    public void disconnectFromOSGiConsole() throws Exception {
         disconnect();  // telnet disconnection
-        manager.stopAllServers();
     }
 
     @Test(groups = "wso2.all", description = "Identifying and storing unsatisfied OSGI components")
     public void testOSGIUnsatisfiedComponents() throws Exception {
-        telnet.connect(InetAddress.getLocalHost().getHostAddress(), telnetPort);
+        telnet.connect(InetAddress.getLocalHost().getHostAddress(), Integer.parseInt(APIMTestConstants.OSGI_CONSOLE_TELNET_PORT));
         telnet.setSoTimeout(10000);
         ArrayList<String> arr = retrieveUnsatisfiedComponentsList("ls");
         for (int x = 0; x < arr.size(); x++) {

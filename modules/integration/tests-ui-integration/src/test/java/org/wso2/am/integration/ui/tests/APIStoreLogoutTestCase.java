@@ -45,13 +45,13 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 	public void testCreateAndPublishAPI() throws Exception {
 		String loginURL = getPublisherURL();
 		HttpContext httpContext =
-		                          TestUtil.login(gatewayContext.getContextTenant().getContextUser().getUserName(),
-										  gatewayContext.getContextTenant().getContextUser().getPassword(),
+		                          TestUtil.login(publisherContext.getContextTenant().getContextUser().getUserName(),
+										  publisherContext.getContextTenant().getContextUser().getPassword(),
 		                                         loginURL);
 
-		assertTrue(TestUtil.addAPI(gatewayContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
+		assertTrue(TestUtil.addAPI(publisherContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
 		                           TEST_DATA_API_VERSION, httpContext, loginURL));
-		assertTrue(TestUtil.publishAPI(gatewayContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
+		assertTrue(TestUtil.publishAPI(publisherContext.getContextTenant().getContextUser().getUserName(), TEST_DATA_API_NAME,
 		                               TEST_DATA_API_VERSION, httpContext, loginURL));
 
 		System.out.println("API Create and Publish test case is completed ");
@@ -70,12 +70,12 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		// Find and fill Username
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("username")));
 		WebElement usernameEle = driver.findElement(By.id("username"));
-		usernameEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getUserName());
+		usernameEle.sendKeys(storeContext.getContextTenant().getContextUser().getUserName());
 
 		// Find and fill Password
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("password")));
 		WebElement passwordEle = driver.findElement(By.id("password"));
-		passwordEle.sendKeys(gatewayContext.getContextTenant().getContextUser().getPassword());
+		passwordEle.sendKeys(storeContext.getContextTenant().getContextUser().getPassword());
 
 		// find Login button and click on it.
 		driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
@@ -87,12 +87,12 @@ public class APIStoreLogoutTestCase extends APIMIntegrationUiTestBase {
 		// select API
 		driver.navigate().to(getStoreURL() + "/apis/info?name=" +
 		                             TEST_DATA_API_NAME + "&version=" + TEST_DATA_API_VERSION +
-		                             "&provider=" + gatewayContext.getContextTenant().getContextUser().getUserName() + "&tenant=" +
+		                             "&provider=" + storeContext.getContextTenant().getContextUser().getUserName() + "&tenant=" +
 		                             SUPER_TENANT_DOMAIN_NAME);
 
 		// waiting till load
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())));
-		driver.findElement(By.linkText(gatewayContext.getContextTenant().getContextUser().getUserName())).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(storeContext.getContextTenant().getContextUser().getUserName())));
+		driver.findElement(By.linkText(storeContext.getContextTenant().getContextUser().getUserName())).click();
 
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("logout-link")));
 		driver.findElement(By.id("logout-link")).click();

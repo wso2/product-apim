@@ -55,12 +55,23 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.Signature;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -90,7 +101,7 @@ public class APIMTestCaseUtils {
      * @param path A relative path to the resource file
      * @return An OMElement containing the resource content
      */
-    public OMElement loadResource(String path) throws FileNotFoundException, XMLStreamException {
+    public static OMElement loadResource(String path) throws FileNotFoundException, XMLStreamException {
         OMElement documentElement = null;
         FileInputStream inputStream = null;
         XMLStreamReader parser = null;
@@ -137,7 +148,7 @@ public class APIMTestCaseUtils {
      * @param sessionCookie - session cookie of user login
      * @throws Exception - Throws if update fails
      */
-    public void updateSynapseConfiguration(OMElement synapseConfig, String backendURL,
+    public static void updateSynapseConfiguration(OMElement synapseConfig, String backendURL,
                                            String sessionCookie)
             throws Exception {
 
@@ -185,7 +196,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    private void checkPriorityExecutors(OMElement synapseConfig, String backendURL,
+    private static void checkPriorityExecutors(OMElement synapseConfig, String backendURL,
                                         String sessionCookie,
                                         PriorityMediationAdminClient priorityMediationAdminClient)
             throws RemoteException {
@@ -205,7 +216,7 @@ public class APIMTestCaseUtils {
         }
     }
 
-    private void checkAPIs(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkAPIs(OMElement synapseConfig, String backendURL, String sessionCookie,
                            RestApiAdminClient apiAdminClient)
             throws RestApiAdminAPIException, RemoteException {
         Iterator apiElements = synapseConfig.getChildrenWithLocalName(API);
@@ -214,15 +225,14 @@ public class APIMTestCaseUtils {
             String apiName = api.getAttributeValue(new QName(NAME));
             if (ArrayUtils.contains(apiAdminClient.getApiNames(), apiName)) {
                 apiAdminClient.deleteApi(apiName);
-                assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName)
-                        , apiName + " Api undeployment failed");
+                assertTrue(isApiUnDeployed(backendURL, sessionCookie, apiName), apiName + " Api undeployment failed");
             }
             apiAdminClient.add(api);
             log.info(apiName + " API Uploaded");
         }
     }
 
-    private void checkTemplates(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkTemplates(OMElement synapseConfig, String backendURL, String sessionCookie,
                                 EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient,
                                 SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient)
             throws RemoteException, EndpointAdminEndpointAdminException {
@@ -256,7 +266,7 @@ public class APIMTestCaseUtils {
         }
     }
 
-    private void checkMessageProcessors(OMElement synapseConfig, String backendURL,
+    private static void checkMessageProcessors(OMElement synapseConfig, String backendURL,
                                         String sessionCookie,
                                         MessageProcessorClient messageProcessorClient)
             throws RemoteException, SequenceEditorException {
@@ -268,16 +278,15 @@ public class APIMTestCaseUtils {
             if (ArrayUtils
                     .contains(messageProcessorClient.getMessageProcessorNames(), mProcessor)) {
                 messageProcessorClient.deleteMessageProcessor(mProcessor);
-                assertTrue(
-                        isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor)
-                        , mProcessor + " Message Processor undeployment failed");
+                assertTrue(isMessageProcessorUnDeployed(backendURL, sessionCookie, mProcessor),
+                        mProcessor + " Message Processor undeployment failed");
             }
             messageProcessorClient.addMessageProcessor(messageProcessor);
             log.info(mProcessor + " Message Processor Uploaded");
         }
     }
 
-    private void checkMessageStores(OMElement synapseConfig, String backendURL,
+    private static void checkMessageStores(OMElement synapseConfig, String backendURL,
                                     String sessionCookie,
                                     MessageStoreAdminClient messageStoreAdminClient)
             throws RemoteException, SequenceEditorException,
@@ -289,14 +298,14 @@ public class APIMTestCaseUtils {
             if (ArrayUtils.contains(messageStoreAdminClient.getMessageStores(), mStore)) {
                 messageStoreAdminClient.deleteMessageStore(mStore);
                 assertTrue(isMessageStoreUnDeployed(backendURL, sessionCookie, mStore),
-                           mStore + " Message Store undeployment failed");
+                        mStore + " Message Store undeployment failed");
             }
             messageStoreAdminClient.addMessageStore(messageStore);
             log.info(mStore + " Message Store Uploaded");
         }
     }
 
-    private void checkProxies(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkProxies(OMElement synapseConfig, String backendURL, String sessionCookie,
                               ProxyServiceAdminClient proxyAdmin,
                               ServiceAdminClient adminServiceService) throws Exception {
         Iterator proxies = synapseConfig.getChildrenWithLocalName(PROXY);
@@ -305,15 +314,14 @@ public class APIMTestCaseUtils {
             String proxyName = proxy.getAttributeValue(new QName(NAME));
             if (adminServiceService.isServiceExists(proxyName)) {
                 proxyAdmin.deleteProxy(proxyName);
-                assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName),
-                           proxyName + " Undeployment failed");
+                assertTrue(isProxyUnDeployed(backendURL, sessionCookie, proxyName), proxyName + " Undeployment failed");
             }
             proxyAdmin.addProxyService(proxy);
             log.info(proxyName + " Proxy Uploaded");
         }
     }
 
-    private void checkSequences(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkSequences(OMElement synapseConfig, String backendURL, String sessionCookie,
                                 SequenceAdminServiceClient sequenceAdminClient)
             throws SequenceEditorException, RemoteException {
         Iterator sequences = synapseConfig.getChildrenWithLocalName(SEQUENCE);
@@ -321,8 +329,7 @@ public class APIMTestCaseUtils {
             OMElement sequence = (OMElement) sequences.next();
             String sqn = sequence.getAttributeValue(new QName(NAME));
             boolean isSequenceExist = ArrayUtils.contains(sequenceAdminClient.getSequences(), sqn);
-            if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) &&
-                isSequenceExist) {
+            if (("main".equalsIgnoreCase(sqn) || "fault".equalsIgnoreCase(sqn)) && isSequenceExist) {
                 sequenceAdminClient.updateSequence(sequence);
             } else {
                 if (isSequenceExist) {
@@ -336,7 +343,7 @@ public class APIMTestCaseUtils {
         }
     }
 
-    private void checkEndPoints(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkEndPoints(OMElement synapseConfig, String backendURL, String sessionCookie,
                                 EndPointAdminClient endPointAdminClient)
             throws EndpointAdminEndpointAdminException, IOException, XMLStreamException {
         Iterator endpoints = synapseConfig.getChildrenWithLocalName(ENDPOINT);
@@ -344,18 +351,15 @@ public class APIMTestCaseUtils {
             OMElement endpoint = (OMElement) endpoints.next();
             String ep = endpoint.getAttributeValue(new QName(NAME));
             if (ArrayUtils.contains(endPointAdminClient.getEndpointNames(), ep)) {
-                assertTrue(endPointAdminClient.deleteEndpoint(ep),
-                           ep + " Endpoint deletion failed");
-                assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep),
-                           ep + " Endpoint undeployment failed");
+                assertTrue(endPointAdminClient.deleteEndpoint(ep), ep + " Endpoint deletion failed");
+                assertTrue(isEndpointUnDeployed(backendURL, sessionCookie, ep), ep + " Endpoint undeployment failed");
             }
-            assertTrue(endPointAdminClient.addEndPoint(endpoint),
-                       ep + " Endpoint addition failed");
+            assertTrue(endPointAdminClient.addEndPoint(endpoint), ep + " Endpoint addition failed");
             log.info(ep + " Endpoint Uploaded");
         }
     }
 
-    private void checkLocalEntries(OMElement synapseConfig, String backendURL, String sessionCookie,
+    private static void checkLocalEntries(OMElement synapseConfig, String backendURL, String sessionCookie,
                                    LocalEntriesAdminClient localEntryAdminServiceClient)
             throws LocalEntryAdminException, RemoteException {
         Iterator localEntries = synapseConfig.getChildrenWithLocalName(LOCAL_ENTRY);
@@ -363,18 +367,16 @@ public class APIMTestCaseUtils {
             OMElement localEntry = (OMElement) localEntries.next();
             String le = localEntry.getAttributeValue(new QName(KEY));
             if (ArrayUtils.contains(localEntryAdminServiceClient.getEntryNames(), le)) {
-                assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le),
-                           le + " Local Entry deletion failed");
+                assertTrue(localEntryAdminServiceClient.deleteLocalEntry(le), le + " Local Entry deletion failed");
                 assertTrue(isLocalEntryUnDeployed(backendURL, sessionCookie, le),
-                           le + " Local Entry undeployment failed");
+                        le + " Local Entry undeployment failed");
             }
-            assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry),
-                       le + " Local Entry addition failed");
+            assertTrue(localEntryAdminServiceClient.addLocalEntry(localEntry), le + " Local Entry addition failed");
             log.info(le + " LocalEntry Uploaded");
         }
     }
 
-    public void addProxyService(String backEndUrl, String sessionCookie, OMElement proxyConfig)
+    public static void addProxyService(String backEndUrl, String sessionCookie, OMElement proxyConfig)
             throws Exception {
         ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backEndUrl, sessionCookie);
         proxyAdmin.addProxyService(proxyConfig);
@@ -384,7 +386,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public void addEndpoint(String backEndUrl, String sessionCookie, OMElement endpointConfig)
+    public static void addEndpoint(String backEndUrl, String sessionCookie, OMElement endpointConfig)
             throws Exception {
         EndPointAdminClient endPointAdminClient =
                 new EndPointAdminClient(backEndUrl, sessionCookie);
@@ -394,7 +396,7 @@ public class APIMTestCaseUtils {
                    ep + "Endpoint deployment not found or time out");
     }
 
-    public void addLocalEntry(String backEndUrl, String sessionCookie,
+    public static void addLocalEntry(String backEndUrl, String sessionCookie,
                               OMElement localEntryConfig) throws Exception {
         LocalEntriesAdminClient localEntryAdminServiceClient =
                 new LocalEntriesAdminClient(backEndUrl,
@@ -409,7 +411,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public void addSequence(String backEndUrl, String sessionCookie, OMElement sequenceConfig)
+    public static void addSequence(String backEndUrl, String sessionCookie, OMElement sequenceConfig)
             throws Exception {
         SequenceAdminServiceClient sequenceAdminClient = new SequenceAdminServiceClient(backEndUrl,
                                                                                         sessionCookie);
@@ -420,7 +422,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public void addMessageStore(String backEndUrl, String sessionCookie, OMElement messageStore)
+    public static void addMessageStore(String backEndUrl, String sessionCookie, OMElement messageStore)
             throws Exception {
         MessageStoreAdminClient messageStoreAdminClient =
                 new MessageStoreAdminClient(backEndUrl, sessionCookie);
@@ -430,7 +432,7 @@ public class APIMTestCaseUtils {
                    "Message Store Deployment failed");
     }
 
-    public void addMessageProcessor(String backEndUrl, String sessionCookie,
+    public static void addMessageProcessor(String backEndUrl, String sessionCookie,
                                     OMElement messageProcessor)
             throws Exception {
         MessageProcessorClient messageProcessorClient =
@@ -441,7 +443,7 @@ public class APIMTestCaseUtils {
                    "Message Processor deployment failed");
     }
 
-    public void addSequenceTemplate(String backEndUrl, String sessionCookie,
+    public static void addSequenceTemplate(String backEndUrl, String sessionCookie,
                                     OMElement sequenceTemplate) throws RemoteException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
                 new SequenceTemplateAdminServiceClient(backEndUrl, sessionCookie);
@@ -452,7 +454,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public void addEndpointTemplate(String backEndUrl, String sessionCookie,
+    public static void addEndpointTemplate(String backEndUrl, String sessionCookie,
                                     OMElement endpointTemplate) throws RemoteException {
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
                 new EndpointTemplateAdminServiceClient(backEndUrl, sessionCookie);
@@ -463,7 +465,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public void addAPI(String backEndUrl, String sessionCookie,
+    public static void addAPI(String backEndUrl, String sessionCookie,
                        OMElement api) throws RemoteException, RestApiAdminAPIException {
         RestApiAdminClient apiAdminClient = new RestApiAdminClient(backEndUrl, sessionCookie);
         apiAdminClient.add(api);
@@ -472,7 +474,7 @@ public class APIMTestCaseUtils {
                    "Rest Api deployment failed");
     }
 
-    public void addPriorityExecutor(String backEndUrl, String sessionCookie,
+    public static void addPriorityExecutor(String backEndUrl, String sessionCookie,
                                     OMElement priorityExecutor)
             throws RemoteException {
         PriorityMediationAdminClient priorityMediationAdminClient =
@@ -483,17 +485,17 @@ public class APIMTestCaseUtils {
                    "Priority Executor deployment failed");
     }
 
-    public void addScheduleTask(String backEndUrl, String sessionCookie, OMElement taskDescription)
+    public static void addScheduleTask(String backEndUrl, String sessionCookie, OMElement taskDescription)
             throws TaskManagementException, RemoteException {
         TaskAdminClient taskAdminClient = new TaskAdminClient(backEndUrl, sessionCookie);
         taskAdminClient.addTask(taskDescription);
-        assertTrue(isScheduleTaskDeployed(backEndUrl, sessionCookie
-                           , taskDescription.getAttributeValue(new QName("name"))),
+        assertTrue(isScheduleTaskDeployed(backEndUrl, sessionCookie,
+                        taskDescription.getAttributeValue(new QName("name"))),
                    "ScheduleTask deployment failed"
         );
     }
 
-    public boolean isProxyDeployed(String backEndUrl, String sessionCookie, String proxyName)
+    public static boolean isProxyDeployed(String backEndUrl, String sessionCookie, String proxyName)
             throws RemoteException {
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Proxy deployment " +
                  proxyName);
@@ -520,7 +522,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public boolean isEndpointDeployed(String backEndUrl, String sessionCookie, String endpointName)
+    public static boolean isEndpointDeployed(String backEndUrl, String sessionCookie, String endpointName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
                                                                           sessionCookie);
@@ -553,13 +555,13 @@ public class APIMTestCaseUtils {
         return isEndpointExist;
     }
 
-    public boolean isMessageProcessorDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isMessageProcessorDeployed(String backEndUrl, String sessionCookie,
                                               String messageProcessorName)
             throws SequenceEditorException, RemoteException {
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Message Processor " +
-                 messageProcessorName);
+                messageProcessorName);
         boolean isMessageStoreExist = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -589,7 +591,7 @@ public class APIMTestCaseUtils {
         return isMessageStoreExist;
     }
 
-    public boolean isSequenceDeployed(String backEndUrl, String sessionCookie, String sequenceName)
+    public static boolean isSequenceDeployed(String backEndUrl, String sessionCookie, String sequenceName)
             throws SequenceEditorException, RemoteException {
         SequenceAdminServiceClient sequenceAdminServiceClient =
                 new SequenceAdminServiceClient(backEndUrl,
@@ -623,7 +625,7 @@ public class APIMTestCaseUtils {
         return isSequenceExist;
     }
 
-    public boolean isMessageStoreDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isMessageStoreDeployed(String backEndUrl, String sessionCookie,
                                           String messageStoreName)
             throws SequenceEditorException, RemoteException {
         MessageStoreAdminClient messageStoreAdminClient =
@@ -658,7 +660,7 @@ public class APIMTestCaseUtils {
         return isMessageStoreExist;
     }
 
-    public boolean isSequenceTemplateDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isSequenceTemplateDeployed(String backEndUrl, String sessionCookie,
                                               String sequenceTemplateName) throws RemoteException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
                 new SequenceTemplateAdminServiceClient(backEndUrl, sessionCookie);
@@ -693,7 +695,7 @@ public class APIMTestCaseUtils {
         return isSequenceTmpFound;
     }
 
-    public boolean isEndpointTemplateDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isEndpointTemplateDeployed(String backEndUrl, String sessionCookie,
                                               String endpointTemplateName) throws RemoteException {
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
                 new EndpointTemplateAdminServiceClient(backEndUrl, sessionCookie);
@@ -728,7 +730,7 @@ public class APIMTestCaseUtils {
         return isEndpointTmpFound;
     }
 
-    public boolean isApiDeployed(String backEndUrl, String sessionCookie, String apiName)
+    public static boolean isApiDeployed(String backEndUrl, String sessionCookie, String apiName)
             throws RemoteException, RestApiAdminAPIException {
         RestApiAdminClient apiAdminClient = new RestApiAdminClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for API " + apiName);
@@ -760,7 +762,7 @@ public class APIMTestCaseUtils {
         return isApiFound;
     }
 
-    public boolean isPriorityExecutorDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isPriorityExecutorDeployed(String backEndUrl, String sessionCookie,
                                               String executorName)
             throws RemoteException {
         PriorityMediationAdminClient priorityMediationAdminClient =
@@ -795,7 +797,7 @@ public class APIMTestCaseUtils {
         return isExecutorFound;
     }
 
-    public boolean isScheduleTaskDeployed(String backEndUrl, String sessionCookie, String taskName)
+    public static boolean isScheduleTaskDeployed(String backEndUrl, String sessionCookie, String taskName)
             throws RemoteException, TaskManagementException {
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Task deployment " + taskName);
 
@@ -820,14 +822,14 @@ public class APIMTestCaseUtils {
         return isTaskDeployed;
     }
 
-    public boolean isProxyServiceExist(String backEndUrl, String sessionCookie, String proxyName)
+    public static boolean isProxyServiceExist(String backEndUrl, String sessionCookie, String proxyName)
             throws RemoteException {
         ServiceAdminClient adminServiceService = new ServiceAdminClient(backEndUrl, sessionCookie);
         return adminServiceService.isServiceExists(proxyName);
 
     }
 
-    public boolean isLocalEntryExist(String backEndUrl, String sessionCookie, String localEntryName)
+    public static boolean isLocalEntryExist(String backEndUrl, String sessionCookie, String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
                 new LocalEntriesAdminClient(backEndUrl,
@@ -839,7 +841,7 @@ public class APIMTestCaseUtils {
         return ArrayUtils.contains(localEntries, localEntryName);
     }
 
-    public boolean isSequenceExist(String backEndUrl, String sessionCookie, String sequenceName)
+    public static boolean isSequenceExist(String backEndUrl, String sessionCookie, String sequenceName)
             throws SequenceEditorException, RemoteException {
         SequenceAdminServiceClient sequenceAdminServiceClient =
                 new SequenceAdminServiceClient(backEndUrl,
@@ -851,7 +853,7 @@ public class APIMTestCaseUtils {
         return ArrayUtils.contains(sequences, sequenceName);
     }
 
-    public boolean isEndpointExist(String backEndUrl, String sessionCookie, String endpointName)
+    public static boolean isEndpointExist(String backEndUrl, String sessionCookie, String endpointName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
                                                                           sessionCookie);
@@ -862,7 +864,7 @@ public class APIMTestCaseUtils {
         return ArrayUtils.contains(endpoints, endpointName);
     }
 
-    public boolean isMessageStoreExist(String backEndUrl, String sessionCookie,
+    public static boolean isMessageStoreExist(String backEndUrl, String sessionCookie,
                                        String messageProcessor) throws RemoteException {
         MessageStoreAdminClient messageStoreAdminClient =
                 new MessageStoreAdminClient(backEndUrl, sessionCookie);
@@ -870,7 +872,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public boolean isMessageProcessorExist(String backEndUrl, String sessionCookie,
+    public static boolean isMessageProcessorExist(String backEndUrl, String sessionCookie,
                                            String messageProcessor) throws RemoteException {
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backEndUrl, sessionCookie);
@@ -879,32 +881,30 @@ public class APIMTestCaseUtils {
 
     }
 
-    public boolean isSequenceTemplateExist(String backEndUrl, String sessionCookie,
+    public static boolean isSequenceTemplateExist(String backEndUrl, String sessionCookie,
                                            String sequenceTemplate) throws RemoteException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
                 new SequenceTemplateAdminServiceClient(backEndUrl, sessionCookie);
-        return ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(),
-                                   sequenceTemplate);
+        return ArrayUtils.contains(sequenceTemplateAdminServiceClient.getSequenceTemplates(), sequenceTemplate);
 
     }
 
-    public boolean isEndpointTemplateExist(String backEndUrl, String sessionCookie,
+    public static boolean isEndpointTemplateExist(String backEndUrl, String sessionCookie,
                                            String endpointTemplate) throws RemoteException {
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
                 new EndpointTemplateAdminServiceClient(backEndUrl, sessionCookie);
-        return ArrayUtils.contains(endpointTemplateAdminServiceClient.getEndpointTemplates(),
-                                   endpointTemplate);
+        return ArrayUtils.contains(endpointTemplateAdminServiceClient.getEndpointTemplates(), endpointTemplate);
 
     }
 
-    public boolean isApiExist(String backEndUrl, String sessionCookie, String apiName)
+    public static boolean isApiExist(String backEndUrl, String sessionCookie, String apiName)
             throws RemoteException, RestApiAdminAPIException {
         RestApiAdminClient apiAdminClient = new RestApiAdminClient(backEndUrl, sessionCookie);
         return ArrayUtils.contains(apiAdminClient.getApiNames(), apiName);
 
     }
 
-    public boolean isPriorityExecutorExist(String backEndUrl, String sessionCookie,
+    public static boolean isPriorityExecutorExist(String backEndUrl, String sessionCookie,
                                            String priorityExecutorName) throws RemoteException {
         PriorityMediationAdminClient priorityMediationAdminClient =
                 new PriorityMediationAdminClient(backEndUrl, sessionCookie);
@@ -913,13 +913,13 @@ public class APIMTestCaseUtils {
 
     }
 
-    public boolean isScheduleTaskExist(String backEndUrl, String sessionCookie, String taskName)
+    public static boolean isScheduleTaskExist(String backEndUrl, String sessionCookie, String taskName)
             throws RemoteException, TaskManagementException {
         TaskAdminClient taskAdminClient = new TaskAdminClient(backEndUrl, sessionCookie);
         return taskAdminClient.getScheduleTaskList().contains(taskName);
     }
 
-    public void deleteProxyService(String backEndUrl, String sessionCookie, String proxyServiceName)
+    public static void deleteProxyService(String backEndUrl, String sessionCookie, String proxyServiceName)
             throws ProxyServiceAdminProxyAdminException, RemoteException {
         ProxyServiceAdminClient proxyAdmin = new ProxyServiceAdminClient(backEndUrl, sessionCookie);
         proxyAdmin.deleteProxy(proxyServiceName);
@@ -927,29 +927,27 @@ public class APIMTestCaseUtils {
                    "Proxy service undeployment failed");
     }
 
-    public void deleteLocalEntry(String backEndUrl, String sessionCookie, String localEntryName)
+    public static void deleteLocalEntry(String backEndUrl, String sessionCookie, String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
                 new LocalEntriesAdminClient(backEndUrl,
                                             sessionCookie);
-        assertTrue(localEntryAdminServiceClient.deleteLocalEntry(localEntryName),
-                   "LocalEntry Deletion failed");
+        assertTrue(localEntryAdminServiceClient.deleteLocalEntry(localEntryName), "LocalEntry Deletion failed");
         assertTrue(isLocalEntryUnDeployed(backEndUrl, sessionCookie, localEntryName),
                    "LocalEntry undeployment failed");
 
     }
 
-    public void deleteEndpoint(String backEndUrl, String sessionCookie, String endpointName)
+    public static void deleteEndpoint(String backEndUrl, String sessionCookie, String endpointName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
                                                                           sessionCookie);
-        assertTrue(endPointAdminClient.deleteEndpoint(endpointName),
-                   "Endpoint deletion failed");
+        assertTrue(endPointAdminClient.deleteEndpoint(endpointName), "Endpoint deletion failed");
         assertTrue(isEndpointUnDeployed(backEndUrl, sessionCookie, endpointName),
                    "Endpoint undeployment failed");
     }
 
-    public void deleteSequence(String backEndUrl, String sessionCookie, String sequenceName)
+    public static void deleteSequence(String backEndUrl, String sessionCookie, String sequenceName)
             throws SequenceEditorException, RemoteException {
         SequenceAdminServiceClient sequenceAdminServiceClient =
                 new SequenceAdminServiceClient(backEndUrl,
@@ -959,7 +957,7 @@ public class APIMTestCaseUtils {
                    "Sequence undeployment failed");
     }
 
-    public void deleteMessageStore(String backEndUrl, String sessionCookie, String messageStore)
+    public static void deleteMessageStore(String backEndUrl, String sessionCookie, String messageStore)
             throws RemoteException, SequenceEditorException {
         MessageStoreAdminClient messageStoreAdminClient =
                 new MessageStoreAdminClient(backEndUrl, sessionCookie);
@@ -968,7 +966,7 @@ public class APIMTestCaseUtils {
                    "Message Store undeployment failed");
     }
 
-    public void deleteMessageProcessor(String backEndUrl, String sessionCookie,
+    public static void deleteMessageProcessor(String backEndUrl, String sessionCookie,
                                        String messageProcessor)
             throws RemoteException, SequenceEditorException {
         MessageProcessorClient messageProcessorClient =
@@ -978,7 +976,7 @@ public class APIMTestCaseUtils {
                    "Message Processor undeployment failed");
     }
 
-    public void deleteEndpointTemplate(String backEndUrl, String sessionCookie,
+    public static void deleteEndpointTemplate(String backEndUrl, String sessionCookie,
                                        String endpointTemplate)
             throws RemoteException, SequenceEditorException, EndpointAdminEndpointAdminException {
 
@@ -989,7 +987,7 @@ public class APIMTestCaseUtils {
                    "Endpoint Template undeployment failed");
     }
 
-    public void deleteSequenceTemplate(String backEndUrl, String sessionCookie,
+    public static void deleteSequenceTemplate(String backEndUrl, String sessionCookie,
                                        String sequenceTemplateName)
             throws RemoteException, SequenceEditorException, EndpointAdminEndpointAdminException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
@@ -1000,7 +998,7 @@ public class APIMTestCaseUtils {
                 "Sequence Template undeployment failed");
     }
 
-    public void deleteApi(String backEndUrl, String sessionCookie, String apiName)
+    public static void deleteApi(String backEndUrl, String sessionCookie, String apiName)
             throws RemoteException, RestApiAdminAPIException {
         RestApiAdminClient apiAdminClient = new RestApiAdminClient(backEndUrl, sessionCookie);
         apiAdminClient.deleteApi(apiName);
@@ -1008,7 +1006,7 @@ public class APIMTestCaseUtils {
                    "API undeployment failed");
     }
 
-    public void deletePriorityExecutor(String backEndUrl, String sessionCookie, String executorName)
+    public static void deletePriorityExecutor(String backEndUrl, String sessionCookie, String executorName)
             throws RemoteException {
         PriorityMediationAdminClient priorityMediationAdminClient =
                 new PriorityMediationAdminClient(backEndUrl, sessionCookie);
@@ -1017,7 +1015,7 @@ public class APIMTestCaseUtils {
                    "Priority Executor undeployment failed");
     }
 
-    public void deleteScheduleTask(String backEndUrl, String sessionCookie, String taskName,
+    public static void deleteScheduleTask(String backEndUrl, String sessionCookie, String taskName,
                                    String group)
             throws TaskManagementException, RemoteException {
         TaskAdminClient taskAdminClient = new TaskAdminClient(backEndUrl, sessionCookie);
@@ -1027,7 +1025,7 @@ public class APIMTestCaseUtils {
 
     }
 
-    public boolean isProxyUnDeployed(String backEndUrl, String sessionCookie, String proxyName)
+    public static boolean isProxyUnDeployed(String backEndUrl, String sessionCookie, String proxyName)
             throws RemoteException {
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Proxy undeployment");
         ServiceAdminClient adminServiceService = new ServiceAdminClient(backEndUrl, sessionCookie);
@@ -1050,13 +1048,13 @@ public class APIMTestCaseUtils {
         return isServiceDeleted;
     }
 
-    public boolean isMessageStoreUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isMessageStoreUnDeployed(String backEndUrl, String sessionCookie,
                                             String messageStoreName)
             throws SequenceEditorException, RemoteException {
         MessageStoreAdminClient messageStoreAdminClient =
                 new MessageStoreAdminClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Undeployment Message Store " +
-                 messageStoreName);
+                messageStoreName);
         boolean isMessageStoreDeleted = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -1077,13 +1075,13 @@ public class APIMTestCaseUtils {
         return isMessageStoreDeleted;
     }
 
-    public boolean isMessageProcessorUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isMessageProcessorUnDeployed(String backEndUrl, String sessionCookie,
                                                 String messageProcessorName)
             throws SequenceEditorException, RemoteException {
         MessageProcessorClient messageProcessorClient =
                 new MessageProcessorClient(backEndUrl, sessionCookie);
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY +
-                 " millis for Undeployment Message Processor " + messageProcessorName);
+                " millis for Undeployment Message Processor " + messageProcessorName);
         boolean isMessageProcessorDeleted = false;
         Calendar startTime = Calendar.getInstance();
         long time;
@@ -1104,7 +1102,7 @@ public class APIMTestCaseUtils {
         return isMessageProcessorDeleted;
     }
 
-    public boolean isLocalEntryDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isLocalEntryDeployed(String backEndUrl, String sessionCookie,
                                         String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
@@ -1140,7 +1138,7 @@ public class APIMTestCaseUtils {
         return isLocalEntryExist;
     }
 
-    public boolean isLocalEntryUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isLocalEntryUnDeployed(String backEndUrl, String sessionCookie,
                                           String localEntryName)
             throws LocalEntryAdminException, RemoteException {
         LocalEntriesAdminClient localEntryAdminServiceClient =
@@ -1168,7 +1166,7 @@ public class APIMTestCaseUtils {
         return isLocalEntryUnDeployed;
     }
 
-    public boolean isSequenceUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isSequenceUnDeployed(String backEndUrl, String sessionCookie,
                                         String sequenceName)
             throws SequenceEditorException, RemoteException {
         SequenceAdminServiceClient sequenceAdminServiceClient =
@@ -1196,7 +1194,7 @@ public class APIMTestCaseUtils {
         return isSequenceUnDeployed;
     }
 
-    public boolean isEndpointUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isEndpointUnDeployed(String backEndUrl, String sessionCookie,
                                         String endpointName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndPointAdminClient endPointAdminClient = new EndPointAdminClient(backEndUrl,
@@ -1222,7 +1220,7 @@ public class APIMTestCaseUtils {
         return isEndpointUnDeployed;
     }
 
-    public boolean isEndpointTemplateUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isEndpointTemplateUnDeployed(String backEndUrl, String sessionCookie,
                                                 String endpointTemplateName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         EndpointTemplateAdminServiceClient endpointTemplateAdminServiceClient =
@@ -1248,7 +1246,7 @@ public class APIMTestCaseUtils {
         return isEndpointTemplateUnDeployed;
     }
 
-    public boolean isSequenceTemplateUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isSequenceTemplateUnDeployed(String backEndUrl, String sessionCookie,
                                                 String sequenceTemplateName)
             throws EndpointAdminEndpointAdminException, RemoteException {
         SequenceTemplateAdminServiceClient sequenceTemplateAdminServiceClient =
@@ -1274,7 +1272,7 @@ public class APIMTestCaseUtils {
         return isSequenceTemplateUnDeployed;
     }
 
-    public boolean isApiUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isApiUnDeployed(String backEndUrl, String sessionCookie,
                                    String apiName)
             throws RemoteException, RestApiAdminAPIException {
         RestApiAdminClient apiAdminClient = new RestApiAdminClient(backEndUrl, sessionCookie);
@@ -1298,7 +1296,7 @@ public class APIMTestCaseUtils {
         return isApiUnDeployed;
     }
 
-    public boolean isPriorityExecutorUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isPriorityExecutorUnDeployed(String backEndUrl, String sessionCookie,
                                                 String executorName)
             throws RemoteException {
         PriorityMediationAdminClient priorityMediationAdminClient =
@@ -1324,7 +1322,7 @@ public class APIMTestCaseUtils {
         return isExecutorUnDeployed;
     }
 
-    public boolean isScheduleTaskUnDeployed(String backEndUrl, String sessionCookie,
+    public static boolean isScheduleTaskUnDeployed(String backEndUrl, String sessionCookie,
                                             String taskName)
             throws RemoteException, TaskManagementException {
         log.info("waiting " + SERVICE_DEPLOYMENT_DELAY + " millis for Task Undeployment " +
@@ -1351,7 +1349,7 @@ public class APIMTestCaseUtils {
         return isTaskUnDeployed;
     }
 
-    public void verifySynapseDeployment(OMElement synapseConfig, String backendURL,
+    public static void verifySynapseDeployment(OMElement synapseConfig, String backendURL,
                                         String sessionCookie)
             throws LocalEntryAdminException, RemoteException, EndpointAdminEndpointAdminException,
                    SequenceEditorException, RestApiAdminAPIException {
@@ -1551,27 +1549,121 @@ public class APIMTestCaseUtils {
         }
     }
 
-    public static String getDecodedJWT(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+    public static String getDecodedJWT(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT part
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[1].getBytes("UTF-8"));
         return new String(jwtByteArray, "UTF-8");
     }
-    
-    public static String getDecodedJWTHeader(String serverMessage) throws UnsupportedEncodingException {
-        // result comes as header values
-        String[] headerArray = serverMessage.split("\n");
-        //tokenize  from JWT assertion header
-        String[] jwtEncodedArray = headerArray[1].trim().split(":");
+
+    public static String getJWTAssertion(String jwt) throws UnsupportedEncodingException {
+        //take first element
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
+        //Generate the jwt assertion by concatenating header and body section of the jwt token array
+        return  jwtTokenArray[0].trim() + "." + jwtTokenArray[1].trim();
+    }
+
+    public static boolean isJwtSignatureValid(String jwtAssertion, byte[] jwtSignature, String jsonHeader) throws UnsupportedEncodingException {
+        KeyStore keyStore = null;
+        String thumbPrint = null;
+        String signatureAlgorithm = null;
+        JSONObject jsonHeaderObject = null;
+        try {
+            jsonHeaderObject = new JSONObject(jsonHeader);
+            Base64 base64 = new Base64(true);
+            thumbPrint = hexify(base64.decodeBase64(((String) jsonHeaderObject.get("x5t")).getBytes()));
+            signatureAlgorithm = (String) jsonHeaderObject.get("alg");
+        } catch (JSONException e) {
+            log.error("Error while parsing json" + e);
+        }
+
+        if("RS256".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA256withRSA";
+        } else if("RS515".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA512withRSA";
+        } else if("RS384".equals(signatureAlgorithm)){
+            signatureAlgorithm = "SHA384withRSA";
+        } else {
+            //Default algorithm
+            signatureAlgorithm = "SHA256withRSA";
+        }
+
+        if(jwtAssertion != null && jwtSignature != null && thumbPrint != null) {
+            try {
+                String trustStore = TestConfigurationProvider.getTrustStoreLocation();
+                String trustStorePassword = TestConfigurationProvider.getTrustStorePassword();
+                keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keyStore.load(new FileInputStream(trustStore), trustStorePassword.toCharArray());
+                String alias = getAliasForX509CertThumb(thumbPrint.getBytes(), keyStore);
+                Certificate certificate = keyStore.getCertificate(alias);
+                Signature signature = Signature.getInstance(signatureAlgorithm);
+                signature.initVerify(certificate);
+                signature.update(jwtAssertion.getBytes());
+                return signature.verify(jwtSignature);
+            } catch (Exception e) {
+                log.error("Error occurred while validating signature", e);
+                return false;
+            }
+        } else {
+            log.debug("JWT Signature is empty");
+            return false;
+        }
+    }
+
+    public static String getDecodedJWTHeader(String jwt) throws UnsupportedEncodingException {
         //take first part
-        String[] jwtTokenArray = jwtEncodedArray[1].split(Pattern.quote("."));
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
         // decode  JWT header
         byte[] jwtByteArray = Base64.decodeBase64(jwtTokenArray[0].getBytes("UTF-8"));
+        return new String(jwtByteArray, "UTF-8");
+    }
+
+    public static byte[] getDecodedJWTSignature(String jwt) throws UnsupportedEncodingException {
+        //take first part
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
+        // decode  JWT signature
+        return Base64.decodeBase64(jwtTokenArray[2].getBytes());
+    }
+
+    /**
+     * This method is used to base64Url-decode a base64Url-encoded string
+     *
+     * @param stringToBeDecodedArg - The base64Url encoded string to be decoded
+     * @return - The base64Url decoded string
+     * @throws UnsupportedEncodingException
+     */
+    public static byte[] decode(String stringToBeDecodedArg) throws UnsupportedEncodingException{
+
+        String stringToBeDecoded = stringToBeDecodedArg;
+        stringToBeDecoded = stringToBeDecoded.replaceAll("-", "+");
+        stringToBeDecoded = stringToBeDecoded.replaceAll("_", "/");
+
+        switch (stringToBeDecoded.length() % 4) {
+            case 0: break;
+            case 1: break;
+            case 2: stringToBeDecoded = stringToBeDecoded + "==";
+                    break;
+            case 3: stringToBeDecoded = stringToBeDecoded + "=";
+                    break;
+        }
+
+        return Base64.decodeBase64(stringToBeDecoded.getBytes("UTF-8"));
+    }
+
+    public static String getDecodedURLSafeJWT(String jwt) throws UnsupportedEncodingException {
+        //take first part
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
+        // decode  JWT part
+        byte[] jwtByteArray = decode(jwtTokenArray[1]);
+        return new String(jwtByteArray, "UTF-8");
+    }
+
+    public static String getDecodedURLSafeJWTHeader(String jwt) throws UnsupportedEncodingException {
+        //take first part
+        String[] jwtTokenArray = jwt.split(Pattern.quote("."));
+        // decode  JWT header
+        byte[] jwtByteArray = decode(jwtTokenArray[0]);
         return new String(jwtByteArray, "UTF-8");
     }
 
@@ -1635,5 +1727,53 @@ public class APIMTestCaseUtils {
             }
         }
         return isFound;
+    }
+
+    /**
+     * Get the json payload required for getting an access token using the password grant-type
+     * @param username - The username of the user (required)
+     * @param password - The password of the user (required)
+     * @return - The json payload. Sample: "grant_type=password&username=user&password=pass"
+     */
+    public static String getPayloadForPasswordGrant(String username, String password){
+        return "grant_type=password&username=" + username + "&password=" + password;
+    }
+
+    private static String getAliasForX509CertThumb(byte[] thumb, KeyStore keyStore) {
+        Certificate cert = null;
+        MessageDigest sha = null;
+        try {
+            sha = MessageDigest.getInstance("SHA-1");
+            for (Enumeration e = keyStore.aliases(); e.hasMoreElements();) {
+                String alias = (String) e.nextElement();
+                Certificate[] certs = keyStore.getCertificateChain(alias);
+                if (certs == null || certs.length == 0) {
+                    cert = keyStore.getCertificate(alias);
+                    if (cert == null) {
+                        return null;
+                    }
+                } else {
+                    cert = certs[0];
+                }
+                sha.update(cert.getEncoded());
+                byte[] data = sha.digest();
+                if (new String(thumb).equals(hexify(data))) {
+                    return alias;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error while getting the alias", e);
+        }
+        return null;
+    }
+
+    private static String hexify(byte bytes[]) {
+        char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+        StringBuilder buf = new StringBuilder(bytes.length * 2);
+        for (byte aByte : bytes) {
+            buf.append(hexDigits[(aByte & 0xf0) >> 4]);
+            buf.append(hexDigits[aByte & 0x0f]);
+        }
+        return buf.toString();
     }
 }
