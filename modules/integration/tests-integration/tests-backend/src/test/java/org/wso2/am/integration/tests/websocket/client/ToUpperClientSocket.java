@@ -23,7 +23,7 @@ public class ToUpperClientSocket {
     @OnWebSocketMessage
     public void onText(Session session, String message) throws IOException {
         this.setResponseMessage(message);
-        log.info("Message received from server:" + message);
+        log.info("Client received message:" + message);
     }
 
     @OnWebSocketConnect
@@ -40,7 +40,6 @@ public class ToUpperClientSocket {
             log.error("Error while sending message from client: ", e);
         }
     }
-
 
     public CountDownLatch getLatch() {
         return latch;
