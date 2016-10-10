@@ -32,6 +32,7 @@ import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.extensions.servers.httpserver.SimpleHttpClient;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -1190,5 +1191,33 @@ public class APIStoreRestClient {
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Unable to get application page. Error: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Generate SDK for a given programming language
+     *
+     * @param sdkLanguage programming language for the SDK
+     * @param apiName name of the API
+     * @param apiVersion version of the API
+     * @param apiProvider provider of the API
+     * @return org.apache.http.HttpResponse for the SDK generation
+     * @throws APIManagerIntegrationTestException if failed to generate the SDK
+     */
+    public org.apache.http.HttpResponse generateSDKUpdated(String sdkLanguage, String apiName, String apiVersion,
+                                                           String apiProvider) throws APIManagerIntegrationTestException {
+
+        try {
+            checkAuthentication();
+            SimpleHttpClient httpClient = new SimpleHttpClient();
+            String restURL = backendURL + "store/site/blocks/sdk/ajax/sdk-create.jag?" +
+                    "action=generateSDK&apiName=" + apiName + "&apiVersion=" + apiVersion + "&apiProvider=" +
+                    apiProvider + "&language=java";
+            //response is org.apache.http.HttpResponse, because we need to write it to a file
+            return httpClient.doGet(restURL, requestHeaders);
+        } catch (IOException e) {
+            throw new APIManagerIntegrationTestException("Error in generating SDK for API : " + apiName +
+                    " API version : " + apiVersion + " Error : " + e.getMessage(), e);
+        }
+
     }
 }
