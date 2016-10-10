@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
+import java.net.URI;
 import java.net.URL;
 
 /**
@@ -65,6 +66,7 @@ public class APIRequest extends AbstractRequest {
     private String provider = "admin";
     private JSONObject corsConfiguration;
     private String environment = "Production and Sandbox";
+    private String ws = "false";
 
     public String getEnvironment() {
         return environment;
@@ -121,6 +123,28 @@ public class APIRequest extends AbstractRequest {
                                                     "[\"Access-Control-Allow-Origin\", \"authorization\", " +
                                                     "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
                                                     "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
+        } catch (JSONException e) {
+            log.error("JSON construct error", e);
+            throw new APIManagerIntegrationTestException("JSON construct error", e);
+        }
+
+    }
+
+    public APIRequest(String apiName, String context, URI endpointUri) throws APIManagerIntegrationTestException {
+        this.name = apiName;
+        this.context = context;
+        try {
+            this.endpoint =
+                    new JSONObject("{\"production_endpoints\":{\"url\":\""
+                            + endpointUri + "\",\"config\":null},\"endpoint_type\":\""
+                            + endpointUri.getScheme() + "\"}");
+            this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
+                    "\"accessControlAllowOrigins\" : [\"*\"], " +
+                    "\"accessControlAllowCredentials\" : true, " +
+                    "\"accessControlAllowHeaders\" : " +
+                    "[\"Access-Control-Allow-Origin\", \"authorization\", " +
+                    "\"Content-Type\"], \"accessControlAllowMethods\" : [\"POST\", " +
+                    "\"PATCH\", \"GET\", \"DELETE\", \"OPTIONS\", \"PUT\"]}");
         } catch (JSONException e) {
             log.error("JSON construct error", e);
             throw new APIManagerIntegrationTestException("JSON construct error", e);
@@ -197,6 +221,7 @@ public class APIRequest extends AbstractRequest {
         addParameter("default_version", getDefault_version());
         addParameter("default_version_checked", getDefault_version_checked());
         addParameter("environments", getEnvironment());
+        addParameter("ws",getWs());
         addParameter("corsConfiguration", getCorsConfiguration().toString());
         if (roles.length() > 1) {
             addParameter("roles", getRoles());
@@ -372,5 +397,13 @@ public class APIRequest extends AbstractRequest {
 
     public void setCorsConfiguration(JSONObject corsConfiguration) {
         this.corsConfiguration = corsConfiguration;
+    }
+
+    public String getWs() {
+        return ws;
+    }
+
+    public void setWs(String ws) {
+        this.ws = ws;
     }
 }

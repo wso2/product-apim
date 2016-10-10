@@ -29,6 +29,10 @@ under the License.
     <artifactId>org.wso2.carbon.am.integration.backend.test</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <jetty.version>9.2.11.v20150529</jetty.version>
+        <slf4jVersion>1.7.5</slf4jVersion>
+    </properties>
 
     <profiles>
         <profile>
@@ -333,6 +337,11 @@ under the License.
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+            </plugin>
         </plugins>
 
         <resources>
@@ -346,6 +355,35 @@ under the License.
     </build>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <!-- any library that uses commons-logging will be directed to slf4j -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <!-- any library that uses slf4j will be directed to java.util.logging -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4jVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
@@ -435,5 +473,43 @@ under the License.
             <groupId>org.wso2.carbon.analytics</groupId>
             <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
         </dependency>
+
+        <!--Jetty dependencies start here -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!--Jetty dependencies end here -->
+
+        <!--Jetty Websocket server side dependencies start here -->
+
+
+        <!--Jetty Websocket API server side dependency -->
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
+
+        <!--Jetty Websocket server dependencies end here -->
+
+        <!--Jetty Websocket client side dependencies start here -->
+
+        <!--Jetty Websocket API client side dependency -->
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!--Jetty Websocket client side  dependencies end here -->
+
     </dependencies>
 </project>

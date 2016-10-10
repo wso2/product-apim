@@ -307,11 +307,11 @@
                     <!--name>org.wso2.carbon.automation.extensions.servers.carbonserver.CarbonServerExtension</name-->
                     <name>org.wso2.am.framework.extensions.APIMCarbonServerExtension</name>
                     <parameter name="-DportOffset" value="500"/>
-                    <!--<parameter name="cmdArg" value="debug 5005" />-->
+                    <parameter name="-debug" value="5005"/>
                 </class>
-                <class>
-                    <name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>
-                </class>
+                <!--<class>-->
+                    <!--<name>org.wso2.carbon.integration.common.extensions.usermgt.UserPopulateExtension</name>-->
+                <!--</class>-->
             </extentionClasses>
         </platformExecutionManager>
 
