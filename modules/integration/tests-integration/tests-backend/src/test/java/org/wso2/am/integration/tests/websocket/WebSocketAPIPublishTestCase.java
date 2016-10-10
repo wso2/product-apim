@@ -52,6 +52,7 @@ import org.wso2.carbon.utils.xml.StringUtils;
 
 import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -177,9 +178,39 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
             waitForReply(socket, testMessage);
             assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
                     "Client did not receive response from server");
+            socket.setResponseMessage(null);
         } catch (InterruptedException e) {
             log.error("Exception in connecting to server", e);
             assertTrue(false, "Client cannot connect to server");
+        } finally {
+            try {
+                client.stop();
+            } catch (Exception e) {
+                log.error("Exception in disconnecting from server", e);
+            }
+        }
+    }
+
+    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebsocketAPIInvocation")
+    public void testWebsocketAPIInvalidTokenInvocation() {
+        String dest = "ws://127.0.0.1:9099/echo/1.0.0";
+        WebSocketClient client = new WebSocketClient();
+        try {
+            ToUpperClientSocket socket = new ToUpperClientSocket();
+            client.start();
+            URI echoUri = new URI(dest);
+            ClientUpgradeRequest request = new ClientUpgradeRequest();
+            request.setHeader("Authorization", "Bearer " + "00000000-0000-0000-0000-000000000000");
+            client.connect(socket, echoUri, request);
+            socket.getLatch().await(3, TimeUnit.SECONDS);
+            socket.sendMessage(testMessage);
+            waitForReply(socket, testMessage);
+            assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), true,
+                    "Client did not receive response from server");
+            socket.setResponseMessage(null);
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
+            assertTrue(true, "Client cannot connect to server");
         } finally {
             try {
                 client.stop();
