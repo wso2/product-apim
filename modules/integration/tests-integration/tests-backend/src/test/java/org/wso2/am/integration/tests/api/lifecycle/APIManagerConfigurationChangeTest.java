@@ -28,6 +28,8 @@ import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Deploy jaxrs_basic webApp and monitoring webApp required to run tests
@@ -37,6 +39,7 @@ import java.io.File;
  */
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
+    WebAppAdminClient webAppAdminClient;
 
     @BeforeTest(alwaysRun = true)
     public void startDeployingWebAPPs() throws Exception {
@@ -54,7 +57,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         String gatewayMgtSessionId = createSession(gatewayContextMgt);
         String publisherSessionId = createSession(publisherContext);
 
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(
+        webAppAdminClient = new WebAppAdminClient(
                 gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
 
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME + ".war");
@@ -94,5 +97,14 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     @AfterTest(alwaysRun = true)
     public void unDeployWebApps() throws Exception {
         //TODO remove webAPPS
+        List<String> webAppList = new ArrayList<String>();
+//        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+        webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
     }
 }

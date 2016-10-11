@@ -28,22 +28,30 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.*;
+import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
+import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
+import org.wso2.am.integration.test.utils.bean.APIResourceBean;
+import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
+import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.Response;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -72,6 +80,7 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
     private String thirdProductionEndPoint = "";
     private String productionEndpointPrefix = "HelloWSO2 from File ";
     private String gatewayUrl;
+    private WebAppAdminClient webAppAdminClient;
 
     @Factory(dataProvider = "userModeDataProvider")
     public LoadBalancedEndPointTestCase(TestUserMode userMode) {
@@ -89,6 +98,23 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         log.info("Test Starting user mode: " + userMode);
+
+        String gatewayMgtSessionId = createSession(gatewayContextMgt);
+
+        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                                  File.separator + "AM" + File.separator;
+        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
+
+        webAppAdminClient = new WebAppAdminClient(
+                gatewayContextMgt.getContextUrls().getBackEndUrl(), gatewayMgtSessionId);
+
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
+
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -387,6 +413,16 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         apiStore.removeApplication(applicationNameSandbox);
         apiPublisher.deleteAPI(apiName, version, providerName);
         apiPublisher.deleteAPI(apiNameSandbox, version, providerName);
+
+        List<String> webAppList = new ArrayList<String>();
+        webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+        webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
+
         super.cleanUp();
     }
 

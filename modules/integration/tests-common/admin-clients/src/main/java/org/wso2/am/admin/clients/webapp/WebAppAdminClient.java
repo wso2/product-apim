@@ -25,14 +25,14 @@ import org.wso2.carbon.webapp.mgt.stub.types.carbon.VersionedWebappMetadata;
 import org.wso2.carbon.webapp.mgt.stub.types.carbon.WebappMetadata;
 import org.wso2.carbon.webapp.mgt.stub.types.carbon.WebappUploadData;
 import org.wso2.carbon.webapp.mgt.stub.types.carbon.WebappsWrapper;
-
-import javax.activation.DataHandler;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.activation.DataHandler;
 
 /**
  * Client that enable the functions of WebappAdmin service.
@@ -138,6 +138,14 @@ public class WebAppAdminClient {
             }
         }
         return list;
+    }
+
+    public void deleteWebAppList(List<String> webAppList, String host) throws RemoteException {
+        List<String> webAppKey = new ArrayList<String>();
+        for(String webApp: webAppList){
+            webAppKey.add(webappAdminStub.getStartedWebapp(webApp + ".war",host).getWebappKey());
+        }
+        webappAdminStub.deleteAllWebApps(webAppKey.toArray(new String[webAppKey.size()]));
     }
 
 }
