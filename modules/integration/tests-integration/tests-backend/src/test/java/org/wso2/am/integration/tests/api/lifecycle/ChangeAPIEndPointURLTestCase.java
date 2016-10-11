@@ -21,20 +21,26 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -64,10 +70,20 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
+    private WebAppAdminClient webAppAdminClient;
 
     @BeforeClass(alwaysRun = true)
-    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException, MalformedURLException {
+    public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
+                                    MalformedURLException, RemoteException {
         super.init();
+        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
+                                  File.separator + "AM" + File.separator;
+
+        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
+        webAppAdminClient = new WebAppAdminClient(
+                gatewayContextMgt.getContextUrls().getBackEndUrl(), createSession(gatewayContextMgt));
+        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
+
         api1EndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
         apiCreationRequestBean =
@@ -155,6 +171,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts() throws Exception {
+        List<String> webAppList = new ArrayList<String>();
+        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
+        webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
+
         apiStoreClientUser1.removeApplication(APPLICATION_NAME);
         deleteAPI(apiIdentifier, apiPublisherClientUser1);
         super.cleanUp();
