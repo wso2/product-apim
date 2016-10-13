@@ -1,6 +1,6 @@
 <api xmlns="http://ws.apache.org/ns/synapse"  name="$!apiName" context="$!apiContext" transports="$!transport">
-   <resource methods="POST PATCH GET DELETE HEAD PUT"
-             uri-template="/*"
+   <resource methods="POST PATCH GET DELETE HEAD PUT OPTIONS"
+             url-mapping="/*"
              faultSequence="fault">
 	<inSequence>
 		<property name="isDefault" expression="$trp:WSO2_AM_API_DEFAULT_VERSION"/>
