@@ -1,4 +1,0 @@
-<sequence name="_auth_failure_handler_" xmlns="http://ws.apache.org/ns/synapse">
-    <property name="error_message_type" value="application/xml"/>
-    <sequence key="_cors_request_handler_"/>
-</sequence>

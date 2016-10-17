@@ -1,1 +1,0 @@
-[{"pizzaType":"Pizza7","description":"PizzaDescription7","icon":"/images/pizza7.jpg","price":"12.84894125548481"},{"pizzaType":"Pizza9","description":"PizzaDescription9","icon":"/images/pizza9.jpg","price":"19.24996348648854"},{"pizzaType":"Pizza8","description":"PizzaDescription8","icon":"/images/pizza8.jpg","price":"4.196336016891981"}]

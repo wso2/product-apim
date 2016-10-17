@@ -1,2 +1,0 @@
-apiDocumentation -
-APIM2-629:Add documentation to an API [ Other | File ] through the publisher REST api
