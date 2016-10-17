@@ -6,6 +6,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.tests.websocket.WebSocketAPIPublishTestCase;
 
 import java.io.IOException;
@@ -33,9 +34,13 @@ public class ToUpperClientSocket {
         latch.countDown();
     }
 
-    public void sendMessage(String str) {
+    public void sendMessage(String str) throws APIManagerIntegrationTestException {
         try {
-            session.getRemote().sendString(str);
+            if (session != null) {
+                session.getRemote().sendString(str);
+            }else{
+                throw new APIManagerIntegrationTestException("Client session is null");
+            }
         } catch (IOException e) {
             log.error("Error while sending message from client: ", e);
         }
