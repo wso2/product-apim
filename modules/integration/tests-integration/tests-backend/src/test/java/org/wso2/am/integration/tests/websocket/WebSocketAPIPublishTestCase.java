@@ -27,6 +27,7 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -46,15 +47,18 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.websocket.client.ToUpperClientSocket;
 import org.wso2.am.integration.tests.websocket.server.ToUpperWebSocket;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
 import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,10 +76,14 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
     private APIIdentifier apiIdentifierWebSocketTest;
     private APIPublisherRestClient apiPublisher;
     private String provider;
-    private static final String API_NAME = "WebSocketAPI";
-    private static final String API_VERSION = "1.0.0";
-    private static final int BACKEND_SERVER_PORT = 8580;
+    private final String API_NAME = "WebSocketAPI";
+    private final String API_VERSION = "1.0.0";
+    private final int BACKEND_SERVER_PORT = 8580;
     private String applicationNameTest1 = "WebSocketApplication";
+    private String dest = "ws://127.0.0.1:9099/echo/1.0.0";
+    private String consumerKey;
+    private String consumerSecret;
+    private ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPIPublishTestCase(TestUserMode userMode) {
@@ -90,8 +98,11 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws APIManagerIntegrationTestException {
+    public void setEnvironment() throws Exception {
         super.init(userMode);
+        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+                + File.separator + "configFiles" + File.separator + "webSocketTest" + File.separator + "axis2.xml"));
         startWebSocketServer(BACKEND_SERVER_PORT);
     }
 
@@ -126,6 +137,9 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
         List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.
                 getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
         assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierWebSocketTest, publisherAPIList),
@@ -139,7 +153,6 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
 
     @Test(description = "Create Application and subscribe", dependsOnMethods = "publishWebSocketAPI")
     public void testWebSocketAPIApplicationSubscription() throws Exception {
-        waitForAPIDeployment();
         apiStore.addApplication(applicationNameTest1, APIMIntegrationConstants.API_TIER.UNLIMITED, "", "");
         SubscriptionRequest subscriptionRequest =
                 new SubscriptionRequest(API_NAME, provider);
@@ -157,28 +170,21 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
     public void testWebsocketAPIInvocation() throws Exception {
         APPKeyRequestGenerator generateAppKeyRequestSandBox =
                 new APPKeyRequestGenerator(applicationNameTest1);
-        generateAppKeyRequestSandBox.setKeyType("SANDBOX");
-        String responseSandBox = apiStore.generateApplicationKey
+        generateAppKeyRequestSandBox.setKeyType("PRODUCTION");
+        String responseSandBoxToken = apiStore.generateApplicationKey
                 (generateAppKeyRequestSandBox).getData();
-        JSONObject jsonObject = new JSONObject(responseSandBox);
-        String sandboxAccessToken =
+        JSONObject jsonObject = new JSONObject(responseSandBoxToken);
+        String accessToken =
                 jsonObject.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
-        log.info("Sandbox token " + sandboxAccessToken);
-        String dest = "ws://127.0.0.1:9099/echo/1.0.0";
+        consumerKey =
+                jsonObject.getJSONObject("data").getJSONObject("key").getString("consumerKey");
+        consumerSecret =
+                jsonObject.getJSONObject("data").getJSONObject("key").getString("consumerSecret");
+        Assert.assertNotNull("Access Token not found " + responseSandBoxToken, accessToken);
+
         WebSocketClient client = new WebSocketClient();
         try {
-            ToUpperClientSocket socket = new ToUpperClientSocket();
-            client.start();
-            URI echoUri = new URI(dest);
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-            request.setHeader("Authorization", "Bearer " + sandboxAccessToken);
-            client.connect(socket, echoUri, request);
-            socket.getLatch().await(3, TimeUnit.SECONDS);
-            socket.sendMessage(testMessage);
-            waitForReply(socket, testMessage);
-            assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
-                    "Client did not receive response from server");
-            socket.setResponseMessage(null);
+            invokeAPI(client, accessToken);
         } catch (InterruptedException e) {
             log.error("Exception in connecting to server", e);
             assertTrue(false, "Client cannot connect to server");
@@ -191,26 +197,57 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
         }
     }
 
-    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebsocketAPIInvocation")
+    @Test(groups = {"throttling"}, description = "Invoke API using token", dependsOnMethods = "testWebsocketAPIInvocation")
+    public void testWebSocketAPIThrottling() throws Exception {
+
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+
+        //Get an Access Token from the user who is logged into the API Store. See APIMANAGER-3152.
+        String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(
+                storeContext.getContextTenant().getContextUser().getUserName(),
+                storeContext.getContextTenant().getContextUser().getPassword());
+
+        JSONObject subsAccessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, subsAccessTokenPayload,
+                        tokenEndpointURL).getData());
+
+        String subsRefreshToken = subsAccessTokenGenerationResponse.getString("refresh_token");
+
+        assertFalse(org.apache.commons.lang.StringUtils.isEmpty(subsRefreshToken),
+                "Refresh token of access token generated by subscriber is empty");
+
+        //Obtain user access token
+        String requestBody = APIMTestCaseUtils.getPayloadForPasswordGrant(user.getUserName(), user.getPassword());
+
+        JSONObject accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret, requestBody,
+                        tokenEndpointURL).getData());
+
+        // get Access Token and Refresh Token
+        String refreshToken = accessTokenGenerationResponse.getString("refresh_token");
+
+        String getAccessTokenFromRefreshTokenRequestBody =
+                "grant_type=refresh_token&refresh_token=" + refreshToken + "&scope=PRODUCTION";
+        accessTokenGenerationResponse = new JSONObject(
+                apiStore.generateUserAccessKey(consumerKey, consumerSecret,
+                        getAccessTokenFromRefreshTokenRequestBody,
+                        tokenEndpointURL).getData());
+        String userAccessToken = accessTokenGenerationResponse.getString("access_token");
+
+        Assert.assertNotNull("Access Token not found " + accessTokenGenerationResponse, userAccessToken);
+        testThrottling(userAccessToken);
+    }
+
+    @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
     public void testWebsocketAPIInvalidTokenInvocation() {
-        String dest = "ws://127.0.0.1:9099/echo/1.0.0";
         WebSocketClient client = new WebSocketClient();
         try {
-            ToUpperClientSocket socket = new ToUpperClientSocket();
-            client.start();
-            URI echoUri = new URI(dest);
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-            request.setHeader("Authorization", "Bearer " + "00000000-0000-0000-0000-000000000000");
-            client.connect(socket, echoUri, request);
-            socket.getLatch().await(3, TimeUnit.SECONDS);
-            socket.sendMessage(testMessage);
-            waitForReply(socket, testMessage);
-            assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), true,
-                    "Client did not receive response from server");
-            socket.setResponseMessage(null);
-        } catch (Exception e) {
+            invokeAPI(client, "00000000-0000-0000-0000-000000000000");
+        } catch (APIManagerIntegrationTestException e) {
             log.error("Exception in connecting to server", e);
             assertTrue(true, "Client cannot connect to server");
+        } catch (Exception e) {
+            log.error("Exception in connecting to server", e);
         } finally {
             try {
                 client.stop();
@@ -266,9 +303,59 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
         });
     }
 
+    /**
+     * @param accessToken
+     */
+    private void testThrottling(String accessToken) {
+        int count = 0;
+        int limit = 4;
+        int numberOfIterations = 6;
+        WebSocketClient client = new WebSocketClient();
+        for (; count < numberOfIterations; ++count) {
+            try {
+                log.info(" =================================== Number of time API Invoked : " + count);
+                if (count == limit) {
+                    Thread.sleep(10000);
+                }
+                invokeAPI(client, accessToken);
+                if (count == limit) {
+                    log.info("Response code is not as expected");
+                } else {
+                    log.info("Response code is not as expected");
+                }
+
+            } catch (Exception ex) {
+                log.error("Error occurred while calling API : " + ex);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Invoke deployed API via WebSocketClient and wait for reply
+     *
+     * @param client
+     * @param accessToken
+     * @throws Exception
+     */
+    private void invokeAPI(WebSocketClient client, String accessToken) throws Exception {
+        ToUpperClientSocket socket = new ToUpperClientSocket();
+        client.start();
+        URI echoUri = new URI(dest);
+        ClientUpgradeRequest request = new ClientUpgradeRequest();
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        client.connect(socket, echoUri, request);
+        socket.getLatch().await(3, TimeUnit.SECONDS);
+        socket.sendMessage(testMessage);
+        waitForReply(socket, testMessage);
+        assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
+                "Client did not receive response from server");
+        socket.setResponseMessage(null);
+    }
+
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        super.cleanUp();
+        //super.cleanUp();
         executorService.shutdownNow();
     }
 }
