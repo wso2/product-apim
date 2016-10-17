@@ -128,7 +128,11 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         APIResourceBean res1 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
                 APIMIntegrationConstants.ResourceAuthTypes.APPLICATION_AND_APPLICATION_USER.getAuthType(),
                 APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/add");
+        APIResourceBean res2 = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.ResourceAuthTypes.NONE.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.PLUS, "/multiply");
         resList.add(res1);
+        resList.add(res2);
 
         apiCreationRequestBean.setResourceBeanList(resList);
 
@@ -180,6 +184,21 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         testRequestEvent();
         //testing response event stream
         testResponseEvent();
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test Anonymous API invocation",
+            dependsOnMethods = "testApiInvocationAndEventTest")
+    public void testAnonymousApiInvocationAndEventTest() throws Exception {
+        //clear the test thrift server received event to avoid event conflicting among tenants
+        thriftTestServer.clearTables();
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
+        HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", requestHeaders);
+        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
+
+        //testing request event stream
+        testAnonymousRequestEvent();
+        //testing response event stream
+        testAnonymousResponseEvent();
     }
 
     @AfterClass(alwaysRun = true)
@@ -255,6 +274,58 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
     }
 
     /**
+     * used to test Anonymous request event stream data
+     *
+     * @throws Exception if any exception throws
+     */
+    private void testAnonymousRequestEvent() throws Exception {
+        List<Event> requestTable = null;
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            requestTable = thriftTestServer.getDataTables().get(StreamDefinitions.APIMGT_STATISTICS_REQUEST_STREAM_ID);
+            if (requestTable == null || requestTable.isEmpty()) {
+                Thread.sleep(1000);
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        Assert.assertEquals(1, requestTable.size(), "Stat publisher published events not match");
+        Map<String, Object> map = convertToMap(requestTable.get(0).getPayloadData(),
+                StreamDefinitions.getStreamDefinitionRequest());
+        System.out.println(map);
+        Assert.assertNull(map.get("consumerKey"), "Wrong consumer key is received");
+        String context, apiVersion, resourcePath, apiPublisher;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            context = "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName() + "--" + API_NAME + ":v" + API_VERSION;
+            resourcePath = "/multiply?x=1&y=1";
+            apiPublisher = user.getUserName() + "@" + user.getUserDomain();
+        } else {
+            context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName().replace("@", "-AT-") + "--" + API_NAME + ":v" + API_VERSION;
+            resourcePath = "/" + API_CONTEXT + "/" + API_VERSION + "/multiply?x=1&y=1";
+            apiPublisher = user.getUserName();
+        }
+        Assert.assertEquals(context, map.get("context").toString(), "Wrong context received");
+        Assert.assertEquals(apiVersion, map.get("api_version").toString(), "Wrong api_version received");
+        Assert.assertEquals(API_NAME, map.get("api").toString(), "Wrong api name received");
+        Assert.assertEquals(resourcePath, map.get("resourcePath").toString(), "Wrong resourcePath received");
+        Assert.assertEquals("/multiply", map.get("resourceTemplate").toString(), "Wrong resourceTemplate received");
+        Assert.assertEquals("GET", map.get("method").toString(), "Wrong http method method received");
+        Assert.assertEquals(API_VERSION, map.get("version").toString(), "Wrong version received");
+        Assert.assertEquals(1, Integer.parseInt(map.get("request").toString()), "Wrong request count received");
+        Assert.assertEquals("anonymous", map.get("userId").toString(), "Wrong userId received");
+        Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
+        Assert.assertEquals(apiPublisher, map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
+        Assert.assertEquals("Unauthenticated", map.get("tier").toString(), "Wrong subscribe tier received");
+        Assert.assertEquals("false", map.get("throttledOut").toString(), "Wrong throttledOut state received");
+    }
+
+    /**
      * used to test response event stream data
      *
      * @throws Exception if any exception throws
@@ -309,6 +380,62 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
         Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
         Assert.assertEquals(APP_NAME, map.get("applicationName").toString(), "Wrong applicationName received");
+        Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
+        Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
+    }
+
+    /**
+     * used to test Anonymous response event stream data
+     *
+     * @throws Exception if any exception throws
+     */
+    private void testAnonymousResponseEvent() throws Exception {
+        List<Event> responseTable = null;
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            responseTable = thriftTestServer.getDataTables()
+                    .get(StreamDefinitions.APIMGT_STATISTICS_RESPONSE_STREAM_ID);
+            if (responseTable == null || responseTable.isEmpty()) {
+                Thread.sleep(1000);
+                continue;
+            } else {
+                break;
+            }
+        }
+        Assert.assertEquals(1, responseTable.size(), "Stat publisher published events not match");
+
+        Map<String, Object> map = convertToMap(responseTable.get(0).getPayloadData(),
+                StreamDefinitions.getStreamDefinitionResponse());
+
+        String context, resourcePath, username, apiVersion, apiPublisher;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            context = "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName() + "--" + API_NAME + ":v" + API_VERSION;
+            resourcePath = "/multiply?x=1&y=1";
+            username = user.getUserName() + "@" + user.getUserDomain();
+            apiPublisher = user.getUserName() + "@" + user.getUserDomain();
+        } else {
+            context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName().replace("@", "-AT-") + "--" + API_NAME + ":v" + API_VERSION;
+            resourcePath = "/" + API_CONTEXT + "/" + API_VERSION + "/multiply?x=1&y=1";
+            username = user.getUserName();
+            apiPublisher = user.getUserName();
+        }
+
+        Assert.assertNull(map.get("consumerKey"), "Wrong consumer key is received");
+        Assert.assertEquals(context, map.get("context").toString(), "Wrong context received");
+        Assert.assertEquals(apiVersion, map.get("api_version").toString(), "Wrong api_version received");
+        Assert.assertEquals(API_NAME, map.get("api").toString(), "Wrong api name received");
+        Assert.assertEquals(resourcePath, map.get("resourcePath").toString(), "Wrong resourcePath received");
+        Assert.assertEquals("/multiply", map.get("resourceTemplate").toString(), "Wrong resourceTemplate received");
+        Assert.assertEquals("GET", map.get("method").toString(), "Wrong http method method received");
+        Assert.assertEquals(API_VERSION, map.get("version").toString(), "Wrong version received");
+        Assert.assertEquals(1, Integer.parseInt(map.get("response").toString()), "Wrong request count received");
+        Assert.assertEquals("anonymous", map.get("username").toString(), "Wrong userId received");
+        Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
+        Assert.assertEquals(apiPublisher, map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
         Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
         Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
     }
