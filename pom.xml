@@ -199,6 +199,7 @@
     </dependencyManagement>
 
     <properties>
+	<carbon.apimgt.version>7.0.0-SNAPSHOT</carbon.apimgt.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
@@ -239,6 +240,9 @@
 
         <antlr4.runtime.version>4.5.1.wso2v1</antlr4.runtime.version>
         <plugin.version.antlr>4.5.1</plugin.version.antlr>
+
+	<carbon.datasources.version>1.0.0</carbon.datasources.version>
+       	<carbon.jndi.version>1.0.1</carbon.jndi.version>
     </properties>
 
     <modules>
