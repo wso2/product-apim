@@ -1,0 +1,15 @@
+{
+  "policyName": "Demo1",
+  "policyDescription": "Demo",
+  "executionFlows": [],
+  "defaultQuotaPolicy": {
+    "type": "requestCount",
+    "limit": {
+      "requestCount": "4",
+      "timeUnit": "min",
+      "dataAmount": 0,
+      "dataUnit": "",
+      "unitTime": "10"
+    }
+  }
+}

@@ -209,7 +209,7 @@
 
     <test name="apim-websocket-tests" preserve-order="true" parallel="false">
     <classes>
-        <class name="org.wso2.am.integration.tests.websocket.WebSocketAPIPublishTestCase"/>
+        <class name="org.wso2.am.integration.tests.websocket.WebSocketAPITestCase"/>
     </classes>
     </test>
 </suite>
