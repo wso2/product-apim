@@ -19,6 +19,7 @@
 
 package org.wso2.am.integration.tests.websocket;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
@@ -26,6 +27,7 @@ import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -39,15 +41,16 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleState;
 import org.wso2.am.integration.test.utils.bean.APILifeCycleStateRequest;
 import org.wso2.am.integration.test.utils.bean.APIRequest;
+import org.wso2.am.integration.test.utils.bean.APIThrottlingTierRequest;
 import org.wso2.am.integration.test.utils.bean.APPKeyRequestGenerator;
 import org.wso2.am.integration.test.utils.bean.SubscriptionRequest;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.am.integration.tests.websocket.client.ToUpperClientSocket;
 import org.wso2.am.integration.tests.websocket.server.ToUpperWebSocket;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -56,6 +59,10 @@ import org.wso2.carbon.utils.xml.StringUtils;
 import javax.ws.rs.core.Response;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -68,25 +75,26 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
+public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private static final long WAIT_TIME = 30 * 1000;
     private String testMessage = "WebSocketMessage1";
-    private final Log log = LogFactory.getLog(WebSocketAPIPublishTestCase.class);
+    private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     private APIIdentifier apiIdentifierWebSocketTest;
     private APIPublisherRestClient apiPublisher;
     private String provider;
     private final String API_NAME = "WebSocketAPI";
     private final String API_VERSION = "1.0.0";
-    private final int BACKEND_SERVER_PORT = 8580;
+    private final int WEB_SOCKET_SERVER_PORT = 8580;
     private String applicationNameTest1 = "WebSocketApplication";
     private String dest = "ws://127.0.0.1:9099/echo/1.0.0";
     private String consumerKey;
     private String consumerSecret;
     private ServerConfigurationManager serverConfigurationManager;
+    APIRequest apiRequest;
 
     @Factory(dataProvider = "userModeDataProvider")
-    public WebSocketAPIPublishTestCase(TestUserMode userMode) {
+    public WebSocketAPITestCase(TestUserMode userMode) {
         this.userMode = userMode;
     }
 
@@ -101,30 +109,30 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "webSocketTest" + File.separator + "axis2.xml"));
-        startWebSocketServer(BACKEND_SERVER_PORT);
+//        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
+//                + File.separator + "configFiles" + File.separator + "webSocketTest" + File.separator + "axis2.xml"));
+        startWebSocketServer(WEB_SOCKET_SERVER_PORT);
     }
 
     @Test(description = "Publish WebSocket API")
-    public void publishWebSocketAPI() throws APIManagerIntegrationTestException, URISyntaxException, XPathExpressionException {
+    public void publishWebSocketAPI() throws Exception {
         apiPublisher = new APIPublisherRestClient(getPublisherURLHttp());
         apiStore = new APIStoreRestClient(getStoreURLHttp());
         provider = user.getUserName();
         String apiContext = "echo";
-        String endpointUri = "ws://localhost:" + BACKEND_SERVER_PORT;
+        String endpointUri = "ws://127.0.0.1:" + WEB_SOCKET_SERVER_PORT;
 
         //Create the api creation request object
-        APIRequest apiRequest = new APIRequest(API_NAME, apiContext, new URI(endpointUri));
+        apiRequest = new APIRequest(API_NAME, apiContext, new URI(endpointUri));
         apiRequest.setVersion(API_VERSION);
         apiRequest.setTiersCollection("Unlimited");
-        apiRequest.setTier("Unlimited");
         apiRequest.setProvider(provider);
         apiRequest.setWs("true");
         apiPublisher.login(user.getUserName(),
                 user.getPassword());
-        apiPublisher.addAPI(apiRequest);
+        HttpResponse addAPIResponse = apiPublisher.addAPI(apiRequest);
 
+        verifyResponse(addAPIResponse);
         //publishing API
         APILifeCycleStateRequest updateRequest =
                 new APILifeCycleStateRequest(API_NAME, user.getUserName(),
@@ -199,10 +207,22 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
 
     @Test(groups = {"throttling"}, description = "Invoke API using token", dependsOnMethods = "testWebsocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
+        //Deploy Throttling policy
+        AdminDashboardRestClient adminDashboardRestClient = new AdminDashboardRestClient(getGatewayMgtURLHttps());
+        adminDashboardRestClient.login(user.getUserName(), user.getPassword());
+        InputStream is = new FileInputStream(getAMResourceLocation() + File.separator +
+                "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
+        String jsonTxt = IOUtils.toString(is);
+        HttpResponse addPolicyResponse = adminDashboardRestClient.addThrottlingPolicy(jsonTxt);
+        verifyResponse(addPolicyResponse);
 
-        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
+        //Update API
+        apiRequest.setApiTier("Unlimited");
+        HttpResponse updateAPIResponse = apiPublisher.updateAPI(apiRequest);
+        verifyResponse(updateAPIResponse);
 
         //Get an Access Token from the user who is logged into the API Store. See APIMANAGER-3152.
+        URL tokenEndpointURL = new URL(getGatewayURLNhttp() + "token");
         String subsAccessTokenPayload = APIMTestCaseUtils.getPayloadForPasswordGrant(
                 storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
@@ -307,11 +327,10 @@ public class WebSocketAPIPublishTestCase extends APIMIntegrationBaseTest {
      * @param accessToken
      */
     private void testThrottling(String accessToken) {
-        int count = 0;
         int limit = 4;
         int numberOfIterations = 6;
         WebSocketClient client = new WebSocketClient();
-        for (; count < numberOfIterations; ++count) {
+        for (int count = 0; count < numberOfIterations; count++) {
             try {
                 log.info(" =================================== Number of time API Invoked : " + count);
                 if (count == limit) {

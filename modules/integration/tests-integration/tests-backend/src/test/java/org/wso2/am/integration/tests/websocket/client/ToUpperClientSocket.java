@@ -7,7 +7,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.tests.websocket.WebSocketAPIPublishTestCase;
+import org.wso2.am.integration.tests.websocket.WebSocketAPITestCase;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 public class ToUpperClientSocket {
 
     private Session session;
-    private final Log log = LogFactory.getLog(WebSocketAPIPublishTestCase.class);
+    private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     private String responseMessage;
 
     CountDownLatch latch = new CountDownLatch(1);

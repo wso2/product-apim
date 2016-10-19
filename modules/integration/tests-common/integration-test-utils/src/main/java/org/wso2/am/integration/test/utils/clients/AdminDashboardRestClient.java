@@ -26,6 +26,7 @@ import org.wso2.am.integration.test.utils.http.HTTPSClientUtils;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,9 +89,23 @@ public class AdminDashboardRestClient {
                     throttlingTierRequest.generateRequestParameters(), requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Add new tier failed", e);
-        }        
+        }
     }
-    
+
+    public HttpResponse addThrottlingPolicy(String throttlingPolicyJSON)
+            throws APIManagerIntegrationTestException {
+        try {
+            checkAuthentication();
+            requestHeaders.put("Accept", "application/json, text/javascript");
+            return HTTPSClientUtils.doPost(
+                    new URL(backendURL + "admin/site/blocks/policy/resource/policy-add/ajax/policy-operations.jag"),
+                    "action=addApiPolicy&apiPolicy=" + URLEncoder.encode(throttlingPolicyJSON, "UTF-8")
+                    , requestHeaders);
+        } catch (Exception e) {
+            throw new APIManagerIntegrationTestException("Add new policy failed", e);
+        }
+    }
+
     /**
      * Delete tier
      * @param tierName
