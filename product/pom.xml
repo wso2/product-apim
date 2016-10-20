@@ -116,6 +116,19 @@
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.jndi</groupId>
+            <artifactId>org.wso2.carbon.jndi.feature</artifactId>
+            <version>${carbon.jndi.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.datasources</groupId>
+            <artifactId>org.wso2.carbon.datasource.core.feature</artifactId>
+            <version>${carbon.datasource.version}</version>
+            <type>zip</type>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -207,6 +220,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.jndi.feature</id>
+                                    <version>${carbon.jndi.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.datasource.core.feature</id>
+                                    <version>${carbon.datasource.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -303,6 +324,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.jndi.feature</id>
+                                    <version>${carbon.jndi.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.datasource.core.feature</id>
+                                    <version>${carbon.datasource.version}</version>
                                 </feature>
                             </features>
                         </configuration>
