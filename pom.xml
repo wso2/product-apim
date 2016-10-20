@@ -209,6 +209,8 @@
         <carbon.kernel.package.import.version.range>[5.0.0, 6.0.0)</carbon.kernel.package.import.version.range>
 
         <carbon.gw.version>1.0.0-SNAPSHOT</carbon.gw.version>
+        <carbon.jndi.version>1.0.1</carbon.jndi.version>
+        <carbon.datasource.version>1.0.0</carbon.datasource.version>
         <carbon.gw.package.export.version>1.0.0</carbon.gw.package.export.version>
 
         <osgi.api.version>6.0.0</osgi.api.version>
