@@ -70,50 +70,6 @@
                 <type>zip</type>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.core</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.core.feature</artifactId>
-				<version>${carbon.gw.version}</version>
-				 <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.inbounds</groupId>
-                <artifactId>org.wso2.carbon.gateway.inbounds.http</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.inbounds</groupId>
-                <artifactId>org.wso2.carbon.gateway.inbounds.http.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.outbounds</groupId>
-                <artifactId>org.wso2.carbon.gateway.outbounds.http</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.outbounds</groupId>
-                <artifactId>org.wso2.carbon.gateway.outbounds.http.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.mediators</groupId>
-                <artifactId>org.wso2.carbon.gateway.mediators.samplemediator</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.mediators</groupId>
-                <artifactId>org.wso2.carbon.gateway.mediators.samplemediator.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
                 <version>${osgi.api.version}</version>
@@ -153,48 +109,6 @@
                 <artifactId>org.wso2.carbon.core</artifactId>
                 <version>${carbon.kernel.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.converters</groupId>
-                <artifactId>org.wso2.carbon.gateway.converters.xmltojson</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.converters</groupId>
-                <artifactId>org.wso2.carbon.gateway.converters.xmltojson.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.converters</groupId>
-                <artifactId>org.wso2.carbon.gateway.converters.jsontoxml</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway.converters</groupId>
-                <artifactId>org.wso2.carbon.gateway.converters.jsontoxml.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-                <type>zip</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader</artifactId>
-                <version>${carbon.gw.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.gateway</groupId>
-                <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader.feature</artifactId>
-                <version>${carbon.gw.version}</version>
-                <type>zip</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -209,15 +123,9 @@
         <carbon.kernel.product.version>5.1.0</carbon.kernel.product.version>
         <carbon.kernel.package.import.version.range>[5.0.0, 6.0.0)</carbon.kernel.package.import.version.range>
 
-        <carbon.gw.version>1.0.0-SNAPSHOT</carbon.gw.version>
-        <carbon.gw.package.export.version>1.0.0</carbon.gw.package.export.version>
-
         <osgi.api.version>6.0.0</osgi.api.version>
         <equinox.osgi.version>3.10.2.v20150203-1939</equinox.osgi.version>
         <equinox.osgi.services.version>3.4.0.v20140312-2051</equinox.osgi.services.version>
-
-        <spring.framework.version>4.1.6.wso2v1</spring.framework.version>
-        <spring.framework.package.import.version.range>[4.1.6, 4.2.0)</spring.framework.package.import.version.range>
 
 
         <slf4j.version>1.7.5</slf4j.version>
@@ -228,8 +136,6 @@
         <carbon.transport.package.import.version.range>[2.0.0, 2.2.0)</carbon.transport.package.import.version.range>
 
         <carbon.messaging.version>1.0.8-SNAPSHOT</carbon.messaging.version>
-
-
         <carbon.messaging.package.import.version.range>[0.0.0, 2.0.0)</carbon.messaging.package.import.version.range>
 
         <osgi.framework.import.version.range>[1.8.0, 2.0.0)</osgi.framework.import.version.range>
@@ -243,6 +149,8 @@
 
 	<carbon.datasources.version>1.0.0</carbon.datasources.version>
        	<carbon.jndi.version>1.0.1</carbon.jndi.version>
+	<carbon.metrics.version>2.0.0</carbon.metrics.version>
+	<wso2.msf4j.version>2.0.0</wso2.msf4j.version>
     </properties>
 
     <modules>

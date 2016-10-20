@@ -55,24 +55,6 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.gateway</groupId>
-            <artifactId>org.wso2.carbon.gateway.core.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.inbounds</groupId>
-            <artifactId>org.wso2.carbon.gateway.inbounds.http.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.outbounds</groupId>
-            <artifactId>org.wso2.carbon.gateway.outbounds.http.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon.transport</groupId>
             <artifactId>org.wso2.carbon.transport.http.netty.feature</artifactId>
             <version>${carbon.transport.version}</version>
@@ -82,58 +64,6 @@
             <groupId>org.wso2.carbon.messaging</groupId>
             <artifactId>org.wso2.carbon.messaging.feature</artifactId>
             <version>${carbon.messaging.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.mediators</groupId>
-            <artifactId>org.wso2.carbon.gateway.mediators.samplemediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.mediators</groupId>
-            <artifactId>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.mediators</groupId>
-            <artifactId>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.converters</groupId>
-            <artifactId>org.wso2.carbon.gateway.converters.xmltojson.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway.converters</groupId>
-            <artifactId>org.wso2.carbon.gateway.converters.jsontoxml.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway</groupId>
-            <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader</artifactId>
-            <version>${carbon.gw.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway</groupId>
-            <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader.feature</artifactId>
-            <version>${carbon.gw.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway</groupId>
-            <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader</artifactId>
-            <version>${carbon.gw.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.gateway</groupId>
-            <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader.feature</artifactId>
-            <version>${carbon.gw.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -148,11 +78,41 @@
             <version>${carbon.jndi.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.metrics</groupId>
+            <artifactId>org.wso2.carbon.metrics.core.feature</artifactId>
+            <version>${carbon.metrics.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.metrics</groupId>
+            <artifactId>org.wso2.carbon.metrics.jdbc.core.feature</artifactId>
+            <version>${carbon.metrics.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.metrics</groupId>
+            <artifactId>org.wso2.carbon.metrics.das.core.feature</artifactId>
+            <version>${carbon.metrics.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.msf4j</groupId>
+	    <artifactId>org.wso2.msf4j.feature</artifactId>
+            <version>${wso2.msf4j.version}</version>
+            <type>zip</type>
+        </dependency>
 
 	<!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.rest.api.store.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.rest.api.publisher.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
@@ -209,52 +169,12 @@
                                     <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.gateway.core.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature</id>
                                     <version>${carbon.transport.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature</id>
                                     <version>${carbon.messaging.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.inbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.outbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.samplemediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.converters.xmltojson.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.converters.jsontoxml.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.message.readers.jsonreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.datasource.core.feature</id>
@@ -265,7 +185,27 @@
                                     <version>${carbon.jndi.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.metrics.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.msf4j.feature</id>
+                                    <version>${wso2.msf4j.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.jdbc.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.das.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
@@ -325,52 +265,12 @@
                                     <version>${carbon.kernel.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.gateway.core.feature.group</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
                                     <version>${carbon.transport.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.messaging.feature.group</id>
+                                    <id>org.wso2.carbon.messaging.feature</id>
                                     <version>${carbon.messaging.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.inbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.outbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.samplemediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.converters.xmltojson.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.converters.jsontoxml.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.message.readers.jsonreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.datasource.core.feature</id>
@@ -381,7 +281,27 @@
                                     <version>${carbon.jndi.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.msf4j.feature</id>
+                                    <version>${wso2.msf4j.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.jdbc.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.metrics.das.core.feature</id>
+                                    <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
