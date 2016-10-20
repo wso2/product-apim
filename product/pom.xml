@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.wso2.carbon.datasources</groupId>
             <artifactId>org.wso2.carbon.datasource.core.feature</artifactId>
-            <version>${carbon.datasource.version}</version>
+            <version>${carbon.datasources.version}</version>
             <type>zip</type>
         </dependency>
 
@@ -227,7 +227,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.datasource.core.feature</id>
-                                    <version>${carbon.datasource.version}</version>
+                                    <version>${carbon.datasources.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -331,7 +331,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.datasource.core.feature</id>
-                                    <version>${carbon.datasource.version}</version>
+                                    <version>${carbon.datasources.version}</version>
                                 </feature>
                             </features>
                         </configuration>
