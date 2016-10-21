@@ -66,6 +66,10 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
     private final Log log = LogFactory.getLog(APIInvocationStatPublisherTestCase.class);
     private final String API_NAME = "APIInvocationStatPublisherAPIName";
     private final String API_CONTEXT = "APIInvocationStatPublisherContext";
+    private final String FAULT_API_NAME = "FaultAPIInvocationStatPublisherAPIName";
+    private final String THROTTLE_API_NAME = "ThrottleAPIInvocationStatPublisherAPIName";
+    private final String FAULT_API_CONTEXT = "FaultAPIInvocationStatPublisherContext";
+    private final String THROTTLE_API_CONTEXT = "ThrottleAPIInvocationStatPublisherContext";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
     private final String APP_NAME = "APIInvocationStatPublisherApp";
@@ -104,6 +108,8 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionResponse(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionExecutionTime(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionWorkflow(), -1234);
+            thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionFault(), -1234);
+            thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionThrottle(), -1234);
             thriftTestServer.start(thriftServerListenPort);
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfiguration(new File(
@@ -146,6 +152,42 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
         verifyResponse(serviceResponse);
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
+
+        apiCreationRequestBean = new APICreationRequestBean(FAULT_API_NAME, FAULT_API_CONTEXT, API_VERSION,
+                providerName, new URL(endpointUrl.replace("http", "https")));
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add api for test fault stream
+        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        updateRequest = new APILifeCycleStateRequest(FAULT_API_NAME, user.getUserName(), APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), FAULT_API_NAME, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        apiCreationRequestBean = new APICreationRequestBean(THROTTLE_API_NAME, THROTTLE_API_CONTEXT, API_VERSION,
+                providerName, new URL(endpointUrl));
+        apiCreationRequestBean.setDescription(DESCRIPTION);
+        apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
+        apiCreationRequestBean.setResourceBeanList(resList);
+        apiCreationRequestBean.setProductionTps("2");
+
+        //add api for test throttle stream
+        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api
+        updateRequest = new APILifeCycleStateRequest(THROTTLE_API_NAME, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), THROTTLE_API_NAME, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
     }
 
     @Test(groups = { "wso2.am" }, description = "Test API invocation", dependsOnMethods = "testAPICreation")
@@ -199,6 +241,174 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         testAnonymousRequestEvent();
         //testing response event stream
         testAnonymousResponseEvent();
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test execution time Event stream",
+            dependsOnMethods = "testAnonymousApiInvocationAndEventTest")
+    public void testExecutionTimeEventTest() throws Exception {
+        //clear the test thrift server received event to avoid event conflicting among tenants
+        thriftTestServer.clearTables();
+
+        //invoke api
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
+        HttpResponse serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
+
+        String publisher, context;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            publisher = user.getUserName() + "@" + user.getUserDomain();
+            context = "/" + API_CONTEXT + "/" + API_VERSION;
+        } else {
+            publisher = user.getUserName();
+            context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
+        }
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("api", API_NAME);
+        map.put("api_version", API_VERSION);
+        map.put("tenantDomain", user.getUserDomain());
+        map.put("apiPublisher", publisher);
+        map.put("context", context);
+        testExecutionTimeEvent(map);
+
+        //invoke api anonymously
+        thriftTestServer.clearTables();
+        invokeURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
+        Assert.assertEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
+        testExecutionTimeEvent(map);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test fault Event stream",
+            dependsOnMethods = "testExecutionTimeEventTest")
+    public void testFaultEventTest() throws Exception {
+        //clear the test thrift server received event to avoid event conflicting among tenants
+        thriftTestServer.clearTables();
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(FAULT_API_NAME, user.getUserName());
+        subscriptionRequest.setApplicationName(APP_NAME);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse serviceResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //invoke api
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp(FAULT_API_CONTEXT, API_VERSION);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, serviceResponse.getResponseCode(),
+                "Error in response code");
+
+        String context, resourcePath, userId;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            context = "/" + FAULT_API_CONTEXT + "/" + API_VERSION;
+            resourcePath = "/add?x=1&y=1";
+            userId = user.getUserName() + "@" + user.getUserDomain();
+        } else {
+            context = "/" + "t/" + user.getUserDomain() + "/" + FAULT_API_CONTEXT + "/" + API_VERSION;
+            resourcePath = "/" + FAULT_API_CONTEXT + "/" + API_VERSION + "/add?x=1&y=1";
+            userId = user.getUserName();
+        }
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("consumerKey", consumerKey);
+        map.put("context", context);
+        map.put("api_version", FAULT_API_NAME + ":v" + API_VERSION);
+        map.put("api", FAULT_API_NAME);
+        map.put("resourcePath", resourcePath);
+        map.put("method", "GET");
+        map.put("version", API_VERSION);
+        map.put("errorCode", "");
+        map.put("errorMessage", "");
+        map.put("requestTime", "");
+        map.put("userId", userId);
+        map.put("tenantDomain", user.getUserDomain());
+        map.put("hostName", "");
+        map.put("apiPublisher", user.getUserName());
+        map.put("applicationName", APP_NAME);
+        map.put("applicationId", "");
+        map.put("protocol", "http");
+        testFaultEvent(map);
+
+        //invoke api anonymously
+        thriftTestServer.clearTables();
+        invokeURL = getAPIInvocationURLHttp(FAULT_API_CONTEXT, API_VERSION);
+        serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
+        Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, serviceResponse.getResponseCode(),
+                "Error in response code");
+        map.put("consumerKey", null);
+
+        map.put("userId", "anonymous");
+        map.put("applicationName", null);
+        map.put("applicationId", null);
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            resourcePath = "/multiply?x=1&y=1";
+        } else {
+            resourcePath = "/" + FAULT_API_CONTEXT + "/" + API_VERSION + "/multiply?x=1&y=1";
+        }
+        map.put("resourcePath", resourcePath);
+        testFaultEvent(map);
+    }
+
+    @Test(groups = { "wso2.am" }, description = "Test fault Event stream", dependsOnMethods = "testFaultEventTest")
+    public void testThrottleEventTest() throws Exception {
+        //clear the test thrift server received event to avoid event conflicting among tenants
+        thriftTestServer.clearTables();
+
+        //subscribe to the api
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(THROTTLE_API_NAME, user.getUserName());
+        subscriptionRequest.setApplicationName(APP_NAME);
+        subscriptionRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
+        HttpResponse serviceResponse = apiStore.subscribe(subscriptionRequest);
+        verifyResponse(serviceResponse);
+
+        //invoke api
+        requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
+        String invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
+        for (int i = 0; i < 5; i++) {
+            serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+        }
+
+        Assert.assertNotEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
+
+        String context, apiVersion, userId;
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            userId = user.getUserName() + "@" + user.getUserDomain();
+            context = "/" + THROTTLE_API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName() + "--" + THROTTLE_API_NAME + ":v" + API_VERSION;
+        } else {
+            userId = user.getUserName();
+            context = "/" + "t/" + user.getUserDomain() + "/" + THROTTLE_API_CONTEXT + "/" + API_VERSION;
+            apiVersion = user.getUserName().replace("@", "-AT-") + "--" + THROTTLE_API_NAME + ":v" + API_VERSION;
+        }
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("accessToken", accessToken);
+        map.put("userId", userId);
+        map.put("tenantDomain", user.getUserDomain());
+        map.put("api", THROTTLE_API_NAME);
+        map.put("api_version", apiVersion);
+        map.put("context", context);
+        map.put("apiPublisher", user.getUserName());
+        map.put("applicationName", APP_NAME);
+        map.put("subscriber", user.getUserName());
+        map.put("throttledOutReason", "HARD_LIMIT_EXCEEDED");
+
+        testThrottleEvent(map);
+
+        //invoke api anonymously
+        thriftTestServer.clearTables();
+        invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
+        for (int i = 0; i < 5; i++) {
+            serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
+        }
+        Assert.assertNotEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
+        map.put("accessToken", null);
+        map.put("userId", "anonymous");
+        map.put("applicationName", null);
+        map.put("subscriber", null);
+        testThrottleEvent(map);
     }
 
     @AfterClass(alwaysRun = true)
@@ -295,19 +505,16 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, requestTable.size(), "Stat publisher published events not match");
         Map<String, Object> map = convertToMap(requestTable.get(0).getPayloadData(),
                 StreamDefinitions.getStreamDefinitionRequest());
-        System.out.println(map);
         Assert.assertNull(map.get("consumerKey"), "Wrong consumer key is received");
         String context, apiVersion, resourcePath, apiPublisher;
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             context = "/" + API_CONTEXT + "/" + API_VERSION;
             apiVersion = user.getUserName() + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/multiply?x=1&y=1";
-            apiPublisher = user.getUserName() + "@" + user.getUserDomain();
         } else {
             context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
             apiVersion = user.getUserName().replace("@", "-AT-") + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/" + API_CONTEXT + "/" + API_VERSION + "/multiply?x=1&y=1";
-            apiPublisher = user.getUserName();
         }
         Assert.assertEquals(context, map.get("context").toString(), "Wrong context received");
         Assert.assertEquals(apiVersion, map.get("api_version").toString(), "Wrong api_version received");
@@ -319,7 +526,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("request").toString()), "Wrong request count received");
         Assert.assertEquals("anonymous", map.get("userId").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(apiPublisher, map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
         Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
         Assert.assertEquals("Unauthenticated", map.get("tier").toString(), "Wrong subscribe tier received");
         Assert.assertEquals("false", map.get("throttledOut").toString(), "Wrong throttledOut state received");
@@ -408,19 +615,15 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Map<String, Object> map = convertToMap(responseTable.get(0).getPayloadData(),
                 StreamDefinitions.getStreamDefinitionResponse());
 
-        String context, resourcePath, username, apiVersion, apiPublisher;
+        String context, resourcePath, apiVersion;
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             context = "/" + API_CONTEXT + "/" + API_VERSION;
             apiVersion = user.getUserName() + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/multiply?x=1&y=1";
-            username = user.getUserName() + "@" + user.getUserDomain();
-            apiPublisher = user.getUserName() + "@" + user.getUserDomain();
         } else {
             context = "/" + "t/" + user.getUserDomain() + "/" + API_CONTEXT + "/" + API_VERSION;
             apiVersion = user.getUserName().replace("@", "-AT-") + "--" + API_NAME + ":v" + API_VERSION;
             resourcePath = "/" + API_CONTEXT + "/" + API_VERSION + "/multiply?x=1&y=1";
-            username = user.getUserName();
-            apiPublisher = user.getUserName();
         }
 
         Assert.assertNull(map.get("consumerKey"), "Wrong consumer key is received");
@@ -434,10 +637,125 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         Assert.assertEquals(1, Integer.parseInt(map.get("response").toString()), "Wrong request count received");
         Assert.assertEquals("anonymous", map.get("username").toString(), "Wrong userId received");
         Assert.assertEquals(user.getUserDomain(), map.get("tenantDomain").toString(), "Wrong tenant domain received");
-        Assert.assertEquals(apiPublisher, map.get("apiPublisher").toString(), "Wrong apiPublisher received");
+        Assert.assertEquals(user.getUserName(), map.get("apiPublisher").toString(), "Wrong apiPublisher received");
         Assert.assertNull(map.get("applicationName"), "Wrong applicationName received");
         Assert.assertEquals("200", map.get("responseCode").toString(), "Wrong throttledOut state received");
         Assert.assertEquals(endpointUrl, map.get("destination").toString(), "Wrong destination url received");
+    }
+
+    /**
+     * used to test ExecutionTime event stream data
+     *
+     * @throws Exception if any exception throws
+     */
+    private void testExecutionTimeEvent(Map<String, Object> expected) throws Exception {
+        List<Event> executionTimeTable = null;
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            executionTimeTable = thriftTestServer.getDataTables()
+                    .get(StreamDefinitions.APIMGT_STATISTICS_EXECUTION_TIME_STREAM_ID);
+            if (executionTimeTable == null || executionTimeTable.isEmpty()) {
+                Thread.sleep(1000);
+                continue;
+            } else {
+                break;
+            }
+        }
+        Assert.assertEquals(1, executionTimeTable.size(), "Stat publisher published events not match");
+
+        Map<String, Object> map = convertToMap(executionTimeTable.get(0).getPayloadData(),
+                StreamDefinitions.getStreamDefinitionExecutionTime());
+
+        Assert.assertEquals(expected.get("api"), map.get("api").toString(), "Wrong API name received");
+        Assert.assertEquals(expected.get("api_version"), map.get("api_version").toString(),
+                "Wrong api_version received");
+        Assert.assertEquals(expected.get("tenantDomain"), map.get("tenantDomain").toString(),
+                "Wrong tenantDomain received");
+        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
+                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("context"), map.get("context").toString(), "Wrong context received");
+    }
+
+    /**
+     * used to test Fault event stream data
+     *
+     * @throws Exception if any exception throws
+     */
+    private void testFaultEvent(Map<String, Object> expected) throws Exception {
+        List<Event> faultTable = null;
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            faultTable = thriftTestServer.getDataTables().get(StreamDefinitions.APIMGT_STATISTICS_FAULT_STREAM_ID);
+            if (faultTable == null || faultTable.isEmpty()) {
+                Thread.sleep(1000);
+                continue;
+            } else {
+                break;
+            }
+        }
+        Assert.assertEquals(1, faultTable.size(), "Stat publisher published fault events not received");
+
+        Map<String, Object> map = convertToMap(faultTable.get(0).getPayloadData(),
+                StreamDefinitions.getStreamDefinitionFault());
+
+        Assert.assertEquals(expected.get("consumerKey"), map.get("consumerKey"), "Wrong consumerKey received");
+        Assert.assertEquals(expected.get("context"), map.get("context").toString(), "Wrong context received");
+        Assert.assertEquals(expected.get("api_version"), map.get("api_version").toString(),
+                "Wrong api_version received");
+        Assert.assertEquals(expected.get("api"), map.get("api").toString(), "Wrong api name received");
+        Assert.assertEquals(expected.get("resourcePath"), map.get("resourcePath").toString(),
+                "Wrong resourcePath received");
+        Assert.assertEquals(expected.get("method"), map.get("method").toString(), "Wrong method received");
+        Assert.assertEquals(expected.get("version"), map.get("version").toString(), "Wrong version received");
+        Assert.assertEquals(expected.get("userId"), map.get("userId"), "Wrong userId received");
+        Assert.assertEquals(expected.get("tenantDomain"), map.get("tenantDomain").toString(),
+                "Wrong tenantDomain received");
+        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
+                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("applicationName"), map.get("applicationName"),
+                "Wrong applicationName received");
+        Assert.assertEquals(expected.get("protocol"), map.get("protocol").toString(), "Wrong protocol received");
+    }
+
+    /**
+     * used to test Throttle event stream data
+     *
+     * @throws Exception if any exception throws
+     */
+    private void testThrottleEvent(Map<String, Object> expected) throws Exception {
+        List<Event> faultTable = null;
+        long currentTime = System.currentTimeMillis();
+        long waitTime = currentTime + WAIT_TIME;
+        while (waitTime > System.currentTimeMillis()) {
+            faultTable = thriftTestServer.getDataTables().get(StreamDefinitions.APIMGT_STATISTICS_THROTTLE_STREAM_ID);
+            if (faultTable == null || faultTable.isEmpty()) {
+                Thread.sleep(1000);
+                continue;
+            } else {
+                break;
+            }
+        }
+        Assert.assertTrue(faultTable.size() > 0, "Stat publisher published throttle events not received");
+
+        Map<String, Object> map = convertToMap(faultTable.get(0).getPayloadData(),
+                StreamDefinitions.getStreamDefinitionThrottle());
+
+        Assert.assertEquals(expected.get("userId"), map.get("userId"), "Wrong userId received");
+        Assert.assertEquals(expected.get("tenantDomain"), map.get("tenantDomain").toString(),
+                "Wrong tenantDomain received");
+        Assert.assertEquals(expected.get("api"), map.get("api").toString(), "Wrong api name received");
+        Assert.assertEquals(expected.get("api_version"), map.get("api_version").toString(),
+                "Wrong api_version received");
+        Assert.assertEquals(expected.get("context"), map.get("context").toString(), "Wrong context received");
+        Assert.assertEquals(expected.get("apiPublisher"), map.get("apiPublisher").toString(),
+                "Wrong apiPublisher received");
+        Assert.assertEquals(expected.get("applicationName"), map.get("applicationName"),
+                "Wrong applicationName received");
+        Assert.assertEquals(expected.get("subscriber"), map.get("subscriber"), "Wrong subscriber received");
+        Assert.assertEquals(expected.get("throttledOutReason"), map.get("throttledOutReason").toString(),
+                "Wrong throttledOutReason received");
     }
 
     /**
