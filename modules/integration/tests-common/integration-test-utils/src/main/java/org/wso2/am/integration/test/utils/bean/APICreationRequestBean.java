@@ -71,6 +71,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private JSONObject corsConfiguration;
     private String environment = "Production and Sandbox";
     private String destinationStats = null;
+    private String productionTps = null;
 
     public String getEnvironment() {
         return environment;
@@ -522,6 +523,9 @@ public class APICreationRequestBean extends AbstractRequest {
         if (destinationStats != null) {
             addParameter("destinationStats", getDestinationStats());
         }
+        if (productionTps != null) {
+            addParameter("productionTps", getProductionTps());
+        }
     }
 
     public String getEpUsername() {
@@ -747,4 +751,12 @@ public class APICreationRequestBean extends AbstractRequest {
 	public void setSubPolicyCollection(String subPolicyCollection) {
 		this.subPolicyCollection = subPolicyCollection;
 	}
+
+    public String getProductionTps() {
+        return productionTps;
+    }
+
+    public void setProductionTps(String productionTps) {
+        this.productionTps = productionTps;
+    }
 }

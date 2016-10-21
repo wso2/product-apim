@@ -28,6 +28,8 @@ public class StreamDefinitions {
     public static final String APIMGT_STATISTICS_EXECUTION_TIME_STREAM_ID =
             "org.wso2.apimgt.statistics.execution.time:" + "1.0.0";
     public static final String APIMGT_STATISTICS_WORKFLOW_STREAM_ID = "org.wso2.apimgt.statistics.workflow:1.0.0";
+    public static final String APIMGT_STATISTICS_FAULT_STREAM_ID = "org.wso2.apimgt.statistics.fault:1.0.0";
+    public static final String APIMGT_STATISTICS_THROTTLE_STREAM_ID = "org.wso2.apimgt.statistics.throttle:1.0.0";
 
     public static String getStreamDefinitionResponse() {
         return "{" +
@@ -254,5 +256,60 @@ public class StreamDefinitions {
                 "    {'name': 'hostName','type': 'STRING'}" +
                 "  ]" +
                 "}";
+    }
+
+    public static String getStreamDefinitionFault() {
+        return "{" + "  'name': 'org.wso2.apimgt.statistics.fault',"
+                + "  'version': '1.0.0',"
+                + "  'nickName': 'API Manager Fault Data',"
+                + "  'description': 'Fault Data',"
+                + "  'metaData': ["
+                + "    {'name': 'clientType','type': 'STRING' }"
+                + "  ],"
+                + "  'payloadData': ["
+                + "    {'name': 'consumerKey','type': 'STRING' },"
+                + "    {'name': 'context','type': 'STRING' },"
+                + "    {'name': 'api_version','type': 'STRING'},"
+                + "    {  'name': 'api','type': 'STRING'},"
+                + "    {  'name': 'resourcePath','type': 'STRING'},"
+                + "    {  'name': 'method','type': 'STRING'},"
+                + "    {  'name': 'version','type': 'STRING'},"
+                + "    {  'name': 'errorCode','type': 'STRING'},"
+                + "    {  'name': 'errorMessage','type': 'STRING'},"
+                + "    {  'name': 'requestTime','type': 'LONG'},"
+                + "    {  'name': 'userId','type': 'STRING'},"
+                + "    {  'name': 'tenantDomain','type': 'STRING'},"
+                + "    {  'name': 'hostName','type': 'STRING'},"
+                + "    {  'name': 'apiPublisher','type': 'STRING'},"
+                + "    {  'name': 'applicationName','type': 'STRING'},"
+                + "    {  'name': 'applicationId','type': 'STRING'},"
+                + "    {  'name': 'protocol','type': 'STRING'}"
+                + "  ]"
+                + "}";
+    }
+
+    public static String getStreamDefinitionThrottle() {
+        return "{" + "  'name': 'org.wso2.apimgt.statistics.throttle',"
+                + "  'version': '1.0.0',"
+                + "  'nickName': 'API Manager Throttle Data',"
+                + "  'description': 'Throttle Data',"
+                + "  'metaData': [{"
+                + "      'name': 'clientType','type': 'STRING'" + "    }"
+                + "  ],"
+                + "  'payloadData': ["
+                + "    {'name': 'accessToken','type': 'STRING'},"
+                + "    {'name': 'userId','type': 'STRING'},"
+                + "    {'name': 'tenantDomain','type': 'STRING'},"
+                + "    {'name': 'api','type': 'STRING'},"
+                + "    {'name': 'api_version','type': 'STRING'},"
+                + "    {'name': 'context','type': 'STRING'},"
+                + "    {'name': 'apiPublisher','type': 'STRING'},"
+                + "    {'name': 'throttledTime','type': 'LONG'},"
+                + "    {'name': 'applicationName','type': 'STRING'},"
+                + "    {'name': 'applicationId','type': 'STRING'},"
+                + "    {'name': 'subscriber','type': 'STRING'},"
+                + "    {'name': 'throttledOutReason','type': 'STRING'}"
+                + "  ]"
+                + "}";
     }
 }
