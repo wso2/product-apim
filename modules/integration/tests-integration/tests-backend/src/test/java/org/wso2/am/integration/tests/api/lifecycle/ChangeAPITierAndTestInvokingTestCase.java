@@ -26,6 +26,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -75,6 +76,7 @@ public class ChangeAPITierAndTestInvokingTestCase extends APIManagerLifecycleBas
 
     public void initialize() throws Exception {
         if (!isInitialised) {
+            //new AdvancedThrottlingConfig().disableAdvancedThrottling();
             super.init();
 
             apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;

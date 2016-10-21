@@ -26,6 +26,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
@@ -70,6 +71,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
     public void initialize() throws Exception {
         if (!isInitialised) {
+            new AdvancedThrottlingConfig().disableAdvancedThrottling();
             super.init();
             apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
             providerName = user.getUserName();
@@ -185,7 +187,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         long startTime = System.currentTimeMillis();
         long currentTime;
-        for (int invocationCount = 1; invocationCount <= SILVER_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
+        for (int invocationCount = 1; invocationCount <= GOLD_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
@@ -224,7 +226,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
                         " Application level tier and Plus Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Plus Resource tier");
@@ -290,7 +292,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
                 "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");

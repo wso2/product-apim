@@ -76,21 +76,21 @@
             <class name="org.wso2.am.integration.tests.throttling.AdvancedThrottlingConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeAPITierAndTestInvokingTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.InvokeAPIUsingOldThrottlingWithWSClient"/>
-            <class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.api.lifecycle.ChangeResourceTierAndTestInvokingTestCase"/>-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditTiersXMLAndVerifyInPublisherTestCase"/>
         </classes>
     </test>
 
     <test name="apim-CORS-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.header.CORSAccessControlAllowCredentialsHeaderTestCase"/>-->
         </classes>
     </test>
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
-            <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
             <class name="org.wso2.am.integration.tests.version.DefaultVersionAPITestCase"/>
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
@@ -99,7 +99,7 @@
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>-->
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>
             <class name="org.wso2.am.integration.tests.throttling.ThrottlingTestCase"/>
@@ -171,7 +171,7 @@
             <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
+            <!--<class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
