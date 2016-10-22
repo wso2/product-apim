@@ -34,6 +34,7 @@ import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import javax.ws.rs.core.Response;
 import java.net.URL;
 
 import static org.testng.Assert.assertEquals;
@@ -89,9 +90,6 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         apiRequest.setRoles("admin");
         apiRequest.setProvider(providerName);
         apiPublisher.addAPI(apiRequest);
-        apiPublisher.deleteAPI(APIName, APIVersion, providerName);
-        //add assertion
-        apiPublisher.addAPI(apiRequest);
 
         APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(APIName, providerName,
                 APILifeCycleState.PUBLISHED);
@@ -105,23 +103,114 @@ public class APIResourceModificationTestCase extends APIMIntegrationBaseTest {
         // with modified
         // information. Similar thing happens when using UI to modify the
         // resources
-
-        String modifiedResource = "{\"paths\":{\"/*\":{\"put\":{\"responses\":{\"200\":{}}," +
-                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"},\"post\":{\"responses\":{\"200\":{}}," +
-                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"scopeKey\"},\"get\":{\"responses\":{\"200\":{}}," +
-                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"scopeKey\"},\"delete\":{\"responses\":{\"200\":{}}," +
-                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"},\"options\":{\"responses\":{\"200\":{}}," +
-                "\"x-auth-type\":\"None\",\"x-throttling-tier\":\"Unlimited\"}}}," +
-                "\"swagger\":\"2.0\",\"info\":{\"title\":\"APIResourceTestAPI\",\"version\":\"1.0.0\"}," +
-                "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"testscope\",\"description\":\"\",\"key\":\"scopeKey\",\"roles\":\"internal/subscriber\"}]}}}";
+        String modifiedResource = "{\n" +
+                "    \"swagger\": \"2.0\",\n" +
+                "    \"paths\": {\n" +
+                "        \"/*\": {\n" +
+                "            \"get\": {\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"x-auth-type\": \"None\",\n" +
+                "                \"x-throttling-tier\": \"Unlimited\"\n" +
+                "            },\n" +
+                "            \"post\": {\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"parameters\": [\n" +
+                "                    {\n" +
+                "                        \"name\": \"Payload\",\n" +
+                "                        \"description\": \"Request Body\",\n" +
+                "                        \"required\": false,\n" +
+                "                        \"in\": \"body\",\n" +
+                "                        \"schema\": {\n" +
+                "                            \"type\": \"object\",\n" +
+                "                            \"properties\": {\n" +
+                "                                \"payload\": {\n" +
+                "                                    \"type\": \"string\"\n" +
+                "                                }\n" +
+                "                            }\n" +
+                "                        }\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"x-auth-type\": \"None\",\n" +
+                "                \"x-throttling-tier\": \"Unlimited\"\n" +
+                "            },\n" +
+                "            \"put\": {\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"parameters\": [\n" +
+                "                    {\n" +
+                "                        \"name\": \"Payload\",\n" +
+                "                        \"description\": \"Request Body\",\n" +
+                "                        \"required\": false,\n" +
+                "                        \"in\": \"body\",\n" +
+                "                        \"schema\": {\n" +
+                "                            \"type\": \"object\",\n" +
+                "                            \"properties\": {\n" +
+                "                                \"payload\": {\n" +
+                "                                    \"type\": \"string\"\n" +
+                "                                }\n" +
+                "                            }\n" +
+                "                        }\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"x-auth-type\": \"None\",\n" +
+                "                \"x-throttling-tier\": \"Unlimited\"\n" +
+                "            },\n" +
+                "            \"delete\": {\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"x-auth-type\": \"None\",\n" +
+                "                \"x-throttling-tier\": \"Unlimited\"\n" +
+                "            },\n" +
+                "            \"patch\": {\n" +
+                "                \"responses\": {\n" +
+                "                    \"200\": {\n" +
+                "                        \"description\": \"\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"parameters\": [\n" +
+                "                    {\n" +
+                "                        \"name\": \"Payload\",\n" +
+                "                        \"description\": \"Request Body\",\n" +
+                "                        \"required\": false,\n" +
+                "                        \"in\": \"body\",\n" +
+                "                        \"schema\": {\n" +
+                "                            \"type\": \"object\",\n" +
+                "                            \"properties\": {\n" +
+                "                                \"payload\": {\n" +
+                "                                    \"type\": \"string\"\n" +
+                "                                }\n" +
+                "                            }\n" +
+                "                        }\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"x-auth-type\": \"None\",\n" +
+                "                \"x-throttling-tier\": \"Unlimited\"\n" +
+                "            }\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"info\": {\n" +
+                "        \"title\": \"APIResourceTestAPI\",\n" +
+                "        \"version\": \"1.0.0\"\n" +
+                "    }\n" +
+                "}";
 
         HttpResponse response = apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
-
         apiStoreRestClient.waitForSwaggerDocument(providerName, APIName, APIVersion, "Unlimited", executionMode);
-
-        JSONObject jsonObject = new JSONObject(response.getData());
-        boolean error = (Boolean) jsonObject.get("error");
-        assertEquals(error, false, "Modifying resources failed for API");
+        assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),"Modifying resources failed for API");
     }
 
     @AfterClass(alwaysRun = true)
