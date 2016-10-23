@@ -171,7 +171,7 @@
             <class name="org.wso2.am.integration.tests.other.LoadBalancedEndPointTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM641StoreApiTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM714GetAllDocumentationTestCase"/>
-            <!--<class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>-->
+            <class name="org.wso2.am.integration.tests.other.APIM720GetAllEndPointsTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4373BrokenAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER4480AllSubscriptionsByApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIMANAGER3965TestCase"/>
