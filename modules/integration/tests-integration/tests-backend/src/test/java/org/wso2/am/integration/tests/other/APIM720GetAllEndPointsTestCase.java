@@ -213,20 +213,22 @@ public class APIM720GetAllEndPointsTestCase extends APIMIntegrationBaseTest {
                         for (int mapIndex = 0; mapIndex < environmentUrlsArray.length(); mapIndex++) {
 
                             String jsonArrayElement = environmentUrlsArray.getString(mapIndex);
-                            String[] keyValue = jsonArrayElement.split("=");
-                            urlMap.put(keyValue[0], keyValue[1]);
-                            URL url = new URL(keyValue[1]);
-                            if (keyValue[0].equals("https")) {
-                                isHttpsUrlAvailable = true;
-                                assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
-                                assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
-                            } else if (keyValue[0].equals("http")) {
-                                isHttpUrlAvailable = true;
-                                assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
-                                assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
-                            }
-                            if (isHttpsUrlAvailable == true && isHttpUrlAvailable == true) {
-                                break;
+                            if (jsonArrayElement.startsWith("http") || jsonArrayElement.startsWith("https")) {
+                                String[] keyValue = jsonArrayElement.split("=");
+                                urlMap.put(keyValue[0], keyValue[1]);
+                                URL url = new URL(keyValue[1]);
+                                if (keyValue[0].equals("https")) {
+                                    isHttpsUrlAvailable = true;
+                                    assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
+                                    assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
+                                } else if (keyValue[0].equals("http")) {
+                                    isHttpUrlAvailable = true;
+                                    assertEquals(url.getProtocol(), keyValue[0], "Error in URL Protocol");
+                                    assertEquals(url.getPath(), "/" + apiContext + "/" + apiVersion, "Error in URL Path");
+                                }
+                                if (isHttpsUrlAvailable == true && isHttpUrlAvailable == true) {
+                                    break;
+                                }
                             }
 
                         }
