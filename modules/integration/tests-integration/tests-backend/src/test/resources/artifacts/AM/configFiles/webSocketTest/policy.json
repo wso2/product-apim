@@ -1,6 +1,6 @@
 {
-  "policyName": "Demo1",
-  "policyDescription": "Demo",
+  "policyName": "WebSocketTestThrottlingPolicy",
+  "policyDescription": "WebSocket Test Throttling Policy",
   "executionFlows": [],
   "defaultQuotaPolicy": {
     "type": "requestCount",
@@ -9,7 +9,7 @@
       "timeUnit": "min",
       "dataAmount": 0,
       "dataUnit": "",
-      "unitTime": "10"
+      "unitTime": "5"
     }
   }
 }
