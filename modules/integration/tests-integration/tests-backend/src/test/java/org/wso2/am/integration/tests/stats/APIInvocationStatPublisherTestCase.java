@@ -154,7 +154,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION, APIMIntegrationConstants.IS_API_EXISTS);
 
         apiCreationRequestBean = new APICreationRequestBean(FAULT_API_NAME, FAULT_API_CONTEXT, API_VERSION,
-                providerName, new URL(endpointUrl.replace("http", "https")));
+                providerName, new URL("http://localhost:8888/myresource"));//setting non existing host:port
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
         apiCreationRequestBean.setResourceBeanList(resList);
