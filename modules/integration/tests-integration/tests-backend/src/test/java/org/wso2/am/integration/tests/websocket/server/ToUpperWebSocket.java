@@ -24,7 +24,7 @@ public class ToUpperWebSocket {
     }
 
     @OnWebSocketConnect
-    public void onConnect(Session session) throws IOException {
+    public void onConnect(Session session) {
         log.info(session.getRemoteAddress().getHostName() + " connected!");
     }
 

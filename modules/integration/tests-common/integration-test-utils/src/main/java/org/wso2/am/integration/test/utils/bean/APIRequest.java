@@ -131,14 +131,16 @@ public class APIRequest extends AbstractRequest {
 
     }
 
-    public APIRequest(String apiName, String context, URI endpointUri) throws APIManagerIntegrationTestException {
+    public APIRequest(String apiName, String context, URI productionEndpointUri, URI sandboxEndpointUri )
+            throws APIManagerIntegrationTestException {
         this.name = apiName;
         this.context = context;
         try {
             this.endpoint =
                     new JSONObject("{\"production_endpoints\":{\"url\":\""
-                            + endpointUri + "\",\"config\":null},\"endpoint_type\":\""
-                            + endpointUri.getScheme() + "\"}");
+                            + productionEndpointUri + "\",\"config\":null}, \"sandbox_endpoints\":{\"url\":\""
+                            + sandboxEndpointUri + "\",\"config\":null},\"endpoint_type\":\""
+                            + productionEndpointUri.getScheme() + "\"}");
             this.corsConfiguration = new JSONObject("{\"corsConfigurationEnabled\" : false, " +
                     "\"accessControlAllowOrigins\" : [\"*\"], " +
                     "\"accessControlAllowCredentials\" : true, " +

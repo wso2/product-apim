@@ -19,10 +19,10 @@ public class ToUpperClientSocket {
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     private String responseMessage;
 
-    CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     @OnWebSocketMessage
-    public void onText(Session session, String message) throws IOException {
+    public void onText(Session session, String message) {
         this.setResponseMessage(message);
         log.info("Client received message:" + message);
     }
@@ -38,7 +38,7 @@ public class ToUpperClientSocket {
         try {
             if (session != null) {
                 session.getRemote().sendString(str);
-            }else{
+            } else {
                 throw new APIManagerIntegrationTestException("Client session is null");
             }
         } catch (IOException e) {
