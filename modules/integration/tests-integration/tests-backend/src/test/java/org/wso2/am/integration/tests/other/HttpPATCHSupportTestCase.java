@@ -87,6 +87,7 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         APIRequest apiRequest = new APIRequest(APIName, APIContext, new URL(url));
         apiRequest.setVersion(APIVersion);
         apiRequest.setProvider(providerName);
+        apiRequest.setResourceMethod("PATCH");
 
         //Adding the API to the publisher
         apiPublisher.addAPI(apiRequest);
@@ -97,17 +98,6 @@ public class HttpPATCHSupportTestCase extends APIMIntegrationBaseTest {
         apiPublisher.changeAPILifeCycleStatus(updateRequest);
 
         waitForAPIDeploymentSync(providerName, APIName, APIVersion, APIMIntegrationConstants.IS_API_EXISTS);
-
-        String modifiedResource = "{\"paths\":{ \"/*\":{\"patch\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
-                "\"x-throttling-tier\":\"Unlimited\" },\"get\":{ \"responses\":{\"200\":{}},\"x-auth-type\":\"Application\"," +
-                "\"x-throttling-tier\":\"Unlimited\",\"x-scope\":\"user_scope\"}}},\"swagger\":\"2.0\",\"info\":{\"title\":\"HttpPatchAPI\",\"version\":\"1.0.0\"}," +
-                "\"x-wso2-security\":{\"apim\":{\"x-wso2-scopes\":[{\"name\":\"admin_scope\",\"description\":\"\",\"key\":\"admin_scope\",\"roles\":\"admin\"}," +
-                "{\"name\":\"user_scope\",\"description\":\"\",\"key\":\"user_scope\",\"roles\":\"admin,subscriber\"}]}}}";
-
-        //Modify the resources to add the PATCH resource method to the API
-        apiPublisher.updateResourceOfAPI(providerName, APIName, APIVersion, modifiedResource);
-
-        waitForAPIDeployment();
 
         //Login to the API Store
         apiStore.login(user.getUserName(), user.getPassword());
