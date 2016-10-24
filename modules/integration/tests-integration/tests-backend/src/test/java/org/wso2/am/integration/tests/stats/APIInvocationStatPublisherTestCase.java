@@ -370,7 +370,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
         }
 
@@ -401,10 +401,13 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
 
         testThrottleEvent(map);
 
+        //waiting to publish all the pending events
+        Thread.sleep(5000);
+
         //invoke api anonymously
         thriftTestServer.clearTables();
         invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
         }
         Assert.assertNotEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
