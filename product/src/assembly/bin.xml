@@ -67,6 +67,11 @@
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
+            <directory>carbon-home/conf/datasources</directory>
+            <outputDirectory>conf/datasources</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
             <directory>carbon-home/samples</directory>
             <outputDirectory>samples</outputDirectory>
             <fileMode>644</fileMode>
