@@ -116,6 +116,12 @@
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.lifecycle.manager.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
 
     </dependencies>
 
@@ -207,6 +213,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.lifecycle.manager.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
@@ -303,6 +313,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.lifecycle.manager.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
