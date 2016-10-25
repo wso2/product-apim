@@ -370,8 +370,11 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
+            if (serviceResponse.getResponseCode() == 503) {
+                break;
+            }
         }
 
         Assert.assertNotEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
@@ -407,8 +410,11 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api anonymously
         thriftTestServer.clearTables();
         invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
+            if (serviceResponse.getResponseCode() == 503) {
+                break;
+            }
         }
         Assert.assertNotEquals(HttpStatus.SC_OK, serviceResponse.getResponseCode(), "Error in response code");
         map.put("accessToken", null);
@@ -732,21 +738,22 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
      * @throws Exception if any exception throws
      */
     private void testThrottleEvent(Map<String, Object> expected) throws Exception {
-        List<Event> faultTable = null;
+        List<Event> throttleTable = null;
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
         while (waitTime > System.currentTimeMillis()) {
-            faultTable = thriftTestServer.getDataTables().get(StreamDefinitions.APIMGT_STATISTICS_THROTTLE_STREAM_ID);
-            if (faultTable == null || faultTable.isEmpty()) {
+            throttleTable = thriftTestServer.getDataTables()
+                    .get(StreamDefinitions.APIMGT_STATISTICS_THROTTLE_STREAM_ID);
+            if (throttleTable == null || throttleTable.isEmpty()) {
                 Thread.sleep(1000);
                 continue;
             } else {
                 break;
             }
         }
-        Assert.assertTrue(faultTable.size() > 0, "Stat publisher published throttle events not received");
+        Assert.assertEquals(1, throttleTable.size(), "Stat publisher published throttle events not received");
 
-        Map<String, Object> map = convertToMap(faultTable.get(0).getPayloadData(),
+        Map<String, Object> map = convertToMap(throttleTable.get(0).getPayloadData(),
                 StreamDefinitions.getStreamDefinitionThrottle());
 
         Assert.assertEquals(expected.get("userId"), map.get("userId"), "Wrong userId received");
