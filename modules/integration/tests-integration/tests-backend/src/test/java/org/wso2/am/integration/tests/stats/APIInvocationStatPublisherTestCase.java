@@ -175,7 +175,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         apiCreationRequestBean.setDescription(DESCRIPTION);
         apiCreationRequestBean.setTiersCollection(TIER_COLLECTION);
         apiCreationRequestBean.setResourceBeanList(resList);
-        apiCreationRequestBean.setProductionTps("2");
+        apiCreationRequestBean.setProductionTps("1");
 
         //add api for test throttle stream
         serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
@@ -370,7 +370,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api
         requestHeaders.put(APIMIntegrationConstants.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         String invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/add?x=1&y=1", requestHeaders);
             if (serviceResponse.getResponseCode() == 503) {
                 break;
@@ -410,7 +410,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         //invoke api anonymously
         thriftTestServer.clearTables();
         invokeURL = getAPIInvocationURLHttp(THROTTLE_API_CONTEXT, API_VERSION);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             serviceResponse = HTTPSClientUtils.doGet(invokeURL + "/multiply?x=1&y=1", null);
             if (serviceResponse.getResponseCode() == 503) {
                 break;
