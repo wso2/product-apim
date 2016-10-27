@@ -46,8 +46,8 @@ import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.clients.AdminDashboardRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
-import org.wso2.am.integration.tests.websocket.client.ToUpperClientSocket;
-import org.wso2.am.integration.tests.websocket.server.ToUpperWebSocket;
+import org.wso2.am.integration.tests.websocket.client.WebSocketClientImpl;
+import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -188,15 +188,11 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, accessToken);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             log.error("Exception in connecting to server", e);
             assertTrue(false, "Client cannot connect to server");
         } finally {
-            try {
-                client.stop();
-            } catch (Exception e) {
-                log.error("Exception in disconnecting from server", e);
-            }
+            client.stop();
         }
     }
 
@@ -251,7 +247,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(description = "Invoke API using invalid token", dependsOnMethods = "testWebSocketAPIThrottling")
-    public void testWebSocketAPIInvalidTokenInvocation() {
+    public void testWebSocketAPIInvalidTokenInvocation() throws Exception {
         WebSocketClient client = new WebSocketClient();
         try {
             invokeAPI(client, "00000000-0000-0000-0000-000000000000");
@@ -260,12 +256,9 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             assertTrue(true, "Client cannot connect to server");
         } catch (Exception e) {
             log.error("Exception in connecting to server", e);
+            assertTrue(false, "Client cannot connect to server");
         } finally {
-            try {
-                client.stop();
-            } catch (Exception e) {
-                log.error("Exception in disconnecting from server", e);
-            }
+            client.stop();
         }
     }
 
@@ -274,7 +267,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      *
      * @param clientSocket WebSocket Client Object
      */
-    private void waitForReply(ToUpperClientSocket clientSocket) {
+    private void waitForReply(WebSocketClientImpl clientSocket) {
         long currentTime = System.currentTimeMillis();
         long WAIT_TIME = 30 * 1000;
         long waitTime = currentTime + WAIT_TIME;
@@ -299,7 +292,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 WebSocketHandler wsHandler = new WebSocketHandler() {
                     @Override
                     public void configure(WebSocketServletFactory factory) {
-                        factory.register(ToUpperWebSocket.class);
+                        factory.register(WebSocketServerImpl.class);
                     }
                 };
                 Server server = new Server(serverPort);
@@ -309,6 +302,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 } catch (InterruptedException ignore) {
                 } catch (Exception e) {
                     log.error("Error while starting server ", e);
+                    assertTrue(false, "Cannot start WebSocket server");
                 }
             }
 
@@ -320,15 +314,15 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      *
      * @param accessToken API accessToken
      */
-    private void testThrottling(String accessToken) {
+    private void testThrottling(String accessToken) throws Exception {
         int limit = 4;
         int numberOfIterations = 6;
         WebSocketClient client = new WebSocketClient();
-        for (int count = 0; count < numberOfIterations; count++) {
+        for (int count = 1; count <= numberOfIterations; count++) {
             try {
                 log.info("Number of time API Invoked : " + count);
                 if (count >= limit) {
-                    ToUpperClientSocket socket = new ToUpperClientSocket();
+                    WebSocketClientImpl socket = new WebSocketClientImpl();
                     client.start();
                     URI echoUri = new URI(apiEndPoint);
                     ClientUpgradeRequest request = new ClientUpgradeRequest();
@@ -346,7 +340,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
             } catch (Exception ex) {
                 log.error("Error occurred while calling API : " + ex);
+                assertTrue(false, "Client cannot connect to server");
                 break;
+            } finally {
+                client.stop();
             }
         }
     }
@@ -360,7 +357,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
      */
     private void invokeAPI(WebSocketClient client, String accessToken) throws Exception {
 
-        ToUpperClientSocket socket = new ToUpperClientSocket();
+        WebSocketClientImpl socket = new WebSocketClientImpl();
         client.start();
         URI echoUri = new URI(apiEndPoint);
         ClientUpgradeRequest request = new ClientUpgradeRequest();

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 @WebSocket
-public class ToUpperClientSocket {
+public class WebSocketClientImpl {
 
     private Session session;
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
