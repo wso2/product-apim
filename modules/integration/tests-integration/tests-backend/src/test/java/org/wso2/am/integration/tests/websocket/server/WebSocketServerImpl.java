@@ -11,8 +11,8 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import java.io.IOException;
 
 @WebSocket
-public class ToUpperWebSocket {
-    private final Log log = LogFactory.getLog(ToUpperWebSocket.class);
+public class WebSocketServerImpl {
+    private final Log log = LogFactory.getLog(WebSocketServerImpl.class);
 
     @OnWebSocketMessage
     public void onText(Session session, String message) throws IOException {
