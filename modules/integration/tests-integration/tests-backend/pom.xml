@@ -435,5 +435,9 @@ under the License.
             <groupId>org.wso2.carbon.analytics</groupId>
             <artifactId>org.wso2.carbon.analytics.spark.stub</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity</groupId>
+            <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
+        </dependency>
     </dependencies>
 </project>
