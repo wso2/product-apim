@@ -51,11 +51,11 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIMIntegrationBaseTe
         } catch (UserAdminUserAdminException e) {
             log.error("Error while creating the test users");
             //Fail the test case.
-            assertTrue(false, e.getMessage());
+            Assert.fail(e.getMessage());
         } catch (RemoteException e) {
             log.error("Error while creating the test users");
             //Fail the test case.
-            assertTrue(false, e.getMessage());
+            Assert.fail(e.getMessage());
         }
 
         publisherURLHttp = publisherUrls.getWebAppURLHttp();
@@ -67,7 +67,7 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIMIntegrationBaseTe
 
     @Test(groups = { "wso2.am" }, description = "Application call back url update and overwriting test case")
     public void callBackUrlUpdateTestCase() throws Exception {
-        addAppsAndGEnerateKeys();
+        addAppsAndGenerateKeys();
         //update the USER_2_TEST_APPLICATION's call back url
         String jsonParams = "{\"grant_types\":\"urn:ietf:params:oauth:grant-type:saml2-bearer,iwa:ntlm\"}";
         apiStore.updateClientApplication(USER_2_TEST_APPLICATION, "PRODUCTION", "ALL", String.valueOf(false),
@@ -103,7 +103,7 @@ public class CAPIMGT12CallBackURLOverwriteTestCase extends APIMIntegrationBaseTe
      *
      * @throws Exception
      */
-    public void addAppsAndGEnerateKeys() throws Exception {
+    public void addAppsAndGenerateKeys() throws Exception {
         //TEST_USER_1
         //Subscribe to API with a new application
         apiStore.login(TEST_USER_1, TEST_USER_1_PASSWORD);
