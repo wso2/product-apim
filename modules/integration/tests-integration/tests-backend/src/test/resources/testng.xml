@@ -156,6 +156,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
+            <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
         </classes>
     </test>
 
