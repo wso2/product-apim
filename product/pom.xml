@@ -106,6 +106,12 @@
 	<!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.core.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.rest.api.store.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
@@ -208,6 +214,10 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.core.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -306,6 +316,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.metrics.das.core.feature</id>
                                     <version>${carbon.metrics.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.core.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
