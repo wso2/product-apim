@@ -179,16 +179,25 @@ public class HTTPSClientUtils {
         return httpClient.execute(post);
     }
 
+    /**
+     * POST function implementation
+     *
+     * @param httpClient    http client to use
+     * @param url           request URL
+     * @param headers       headers to be send
+     * @param body          payload to be send
+     * @return org.apache.http.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
     private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
-                                                String json) throws IOException {
+                                                String body) throws IOException {
         HttpPost post = new HttpPost(url);
         if (headers != null) {
             for (Map.Entry<String, String> head : headers.entrySet()) {
                 post.addHeader(head.getKey(), head.getValue());
             }
         }
-        StringEntity postingString = new StringEntity(json);
-        post.setEntity(postingString);
+        post.setEntity(new StringEntity(body));
         return httpClient.execute(post);
     }
 
