@@ -150,7 +150,7 @@
 	<carbon.datasources.version>1.0.0</carbon.datasources.version>
        	<carbon.jndi.version>1.0.1</carbon.jndi.version>
 	<carbon.metrics.version>2.0.0</carbon.metrics.version>
-	<wso2.msf4j.version>2.0.0</wso2.msf4j.version>
+	<wso2.msf4j.version>2.1.0</wso2.msf4j.version>
     </properties>
 
     <modules>
