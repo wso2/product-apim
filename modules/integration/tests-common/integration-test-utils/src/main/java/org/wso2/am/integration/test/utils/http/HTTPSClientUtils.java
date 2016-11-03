@@ -77,22 +77,6 @@ public class HTTPSClientUtils {
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
     }
-    
-    /**
-     * do HTTP POST operation for the given URL
-     *
-     * @param url           request URL
-     * @param headers       headers to be send
-     * @param urlParameters parameters to be sent as payload
-     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
-     * @throws IOException if connection issue occurred
-     */
-    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(String url,
-            Map<String, String> headers, String payload) throws IOException {
-        CloseableHttpClient httpClient = getHttpsClient();
-        HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
-        return constructResponse(response);
-    }
 
     /**
      * do HTTP POST operation for the given URL with JSON entity
@@ -194,29 +178,6 @@ public class HTTPSClientUtils {
         post.setEntity(new UrlEncodedFormEntity(urlParameters));
         return httpClient.execute(post);
     }
-    
-    /**
-     * POST function implementation
-     *
-     * @param httpClient    http client to use
-     * @param url           request URL
-     * @param headers       headers to be send
-     * @param body          payload to be send
-     * @return org.apache.http.HttpResponse
-     * @throws IOException if connection issue occurred
-     */
-    private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
-            String body) throws IOException {
-        HttpPost post = new HttpPost(url);
-        if (headers != null) {
-            for (Map.Entry<String, String> head : headers.entrySet()) {
-                post.addHeader(head.getKey(), head.getValue());
-            }
-        }
-        post.setEntity(new StringEntity(body));
-        return httpClient.execute(post);
-    }
-
 
     private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
                                                 String json) throws IOException {
