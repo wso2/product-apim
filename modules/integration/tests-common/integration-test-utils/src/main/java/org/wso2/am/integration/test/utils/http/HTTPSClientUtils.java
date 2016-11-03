@@ -79,6 +79,21 @@ public class HTTPSClientUtils {
     }
 
     /**
+     * do HTTP POST operation for the given URL
+     *
+     * @param url           request URL
+     * @param headers       headers to be sent
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(String url,
+                                    Map<String, String> headers, String payload) throws IOException {
+        CloseableHttpClient httpClient = getHttpsClient();
+        HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
+        return constructResponse(response);
+    }
+
+    /**
      * do HTTP POST operation for the given URL with JSON entity
      * @param url
      * @param headers
