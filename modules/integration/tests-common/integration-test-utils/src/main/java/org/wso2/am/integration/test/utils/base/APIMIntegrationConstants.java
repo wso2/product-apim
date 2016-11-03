@@ -30,6 +30,7 @@ public class APIMIntegrationConstants {
     public static final String AM_GATEWAY_WRK_INSTANCE = "gateway-wrk";
     public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
     public static final String BACKEND_SERVER_INSTANCE = "backend-server";
+    public static final String REST_API_VERSION = "v0.10";
 
     //Response element names
     public static final String API_RESPONSE_ELEMENT_NAME_ERROR = "error";
@@ -56,6 +57,7 @@ public class APIMIntegrationConstants {
     public static final String SANDBOXEP1_WEB_APP_NAME = "name-check1_SB";
     public static final String SANDBOXEP2_WEB_APP_NAME = "name-check2_SB";
     public static final String SANDBOXEP3_WEB_APP_NAME = "name-check3_SB";
+    public static final String BPMN_PROCESS_ENGINE_WEB_APP_NAME = "BPMNProcessServerApp-1.0.0";
 
     public static final String RESOURCE_AUTH_TYPE_APPLICATION_AND_APPLICATION_USER = "Application & Application User";
     public static final String RESOURCE_AUTH_TYPE_APPLICATION = "Application";
