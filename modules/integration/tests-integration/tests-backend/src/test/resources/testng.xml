@@ -90,6 +90,7 @@
 
     <test name="apim-integration-tests-samples" preserve-order="true" parallel="false">
         <classes>
+            <class name="org.wso2.am.integration.tests.rest.UriTemplateReservedCharacterEncodingTest"/>
             <class name="org.wso2.am.integration.tests.other.APIInvocationFailureTestCase"/>
             <class name="org.wso2.am.integration.tests.resources.APIResourceModificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DAOTestCase"/>
@@ -156,7 +157,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM638ValidateTheRoleOfAnExistingUserThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
-            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>          
+            <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
         </classes>
     </test>
 
