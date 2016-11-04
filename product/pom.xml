@@ -27,7 +27,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wso2iserver</artifactId>
+    <artifactId>WSO2APIManager</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 API Management Server - Distribution</name>
     <description>WSO2 API Management Server - Distribution</description>
