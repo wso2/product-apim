@@ -159,6 +159,6 @@
 
     <modules>
         <module>samples</module>
-        <module>product</module>
+        <module>distribution</module>
     </modules>
 </project>
