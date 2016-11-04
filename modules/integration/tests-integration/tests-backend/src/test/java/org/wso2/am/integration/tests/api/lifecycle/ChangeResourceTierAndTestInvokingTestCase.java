@@ -187,7 +187,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
         long startTime = System.currentTimeMillis();
         long currentTime;
-        for (int invocationCount = 1; invocationCount <= GOLD_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
+        for (int invocationCount = 1; invocationCount <= SILVER_INVOCATION_LIMIT_PER_MIN; invocationCount++) {
             currentTime = System.currentTimeMillis();
             //Invoke  API
             HttpResponse invokeResponse =
@@ -226,7 +226,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold" +
                         " Application level tier and Plus Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
                 "Response data mismatched. Invocation attempt:" + (SILVER_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Plus Resource tier");
@@ -292,7 +292,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
                 "Response code mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");
-        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT),
+        assertTrue(invokeResponse.getData().contains(MESSAGE_THROTTLED_OUT_RESOURCE),
                 "Response data mismatched. Invocation attempt:" + (GOLD_INVOCATION_LIMIT_PER_MIN + 1) +
                         " passed  during :" + (currentTime - startTime) + " milliseconds under Gold API  and Gold " +
                         "Application level tier and Ultimate Resource tier");
