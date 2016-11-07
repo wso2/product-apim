@@ -354,7 +354,6 @@ under the License.
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>org.wso2.am.integration.admin.clients</artifactId>
@@ -465,7 +464,6 @@ under the License.
             <artifactId>websocket-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-client</artifactId>
@@ -474,12 +472,12 @@ under the License.
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.6.6</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>1.6.6</version>
+            <version>1.7.7</version>
         </dependency>
         <!--Jetty dependencies end -->
 
