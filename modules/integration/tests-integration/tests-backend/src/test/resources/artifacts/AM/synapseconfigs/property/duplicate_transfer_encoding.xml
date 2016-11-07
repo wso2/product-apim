@@ -66,7 +66,7 @@
                 <property name="HTTP_SC" value="500" scope="axis2"/>
             </else>
         </filter>
-        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
         <property name="RESPONSE" value="true"/>
         <header name="To" action="remove"/>
         <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>

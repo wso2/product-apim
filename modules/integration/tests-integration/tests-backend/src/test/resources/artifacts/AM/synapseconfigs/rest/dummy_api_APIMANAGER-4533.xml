@@ -294,7 +294,7 @@
                 <property name="HTTP_SC" scope="axis2" value="500"/>
             </else>
         </filter>
-        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
         <property name="RESPONSE" value="true"/>
         <header action="remove" name="To"/>
         <property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
@@ -312,7 +312,7 @@
     </sequence>
     <sequence name="_throttle_out_handler_">
         <property action="remove" name="X-JWT-Assertion" scope="transport"/>
-        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtThrottleUsageHandler"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtThrottleUsageHandler"/>
         <sequence key="_cors_request_handler_"/>
     </sequence>
     <sequence name="_sandbox_key_error_">
