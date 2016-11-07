@@ -99,9 +99,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "webSocketTest" + File.separator + "axis2.xml"));
         startWebSocketServer(webSocketServerPort);
     }
 
