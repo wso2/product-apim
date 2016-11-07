@@ -53,6 +53,7 @@ public class APIRequest extends AbstractRequest {
     private String tier = "Silver";
     private String thumbUrl = "";
     private String tiersCollection = "Gold";
+    private String type = "http";
     private String resourceCount = "0";
     private String resourceMethod = "GET,POST,PUT,PATCH,DELETE,HEAD";
     private String resourceMethodAuthType = "Application & Application User,Application & Application User";
@@ -216,6 +217,7 @@ public class APIRequest extends AbstractRequest {
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());
         addParameter("tiersCollection", getTiersCollection());
+        addParameter("type", getType());
         addParameter("resourceCount", getResourceCount());
         addParameter("resourceMethod-0", getResourceMethod());
         addParameter("resourceMethodAuthType-0", getResourceMethodAuthType());
@@ -338,6 +340,14 @@ public class APIRequest extends AbstractRequest {
 
     public void setTiersCollection(String tiersCollection) {
         this.tiersCollection = tiersCollection;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getResourceCount() {

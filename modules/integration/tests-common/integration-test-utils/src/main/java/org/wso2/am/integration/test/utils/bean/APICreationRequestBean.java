@@ -50,6 +50,7 @@ public class APICreationRequestBean extends AbstractRequest {
     private String tier = APIMIntegrationConstants.API_TIER.SILVER;
     private String thumbUrl = "";
     private String tiersCollection = APIMIntegrationConstants.API_TIER.GOLD;
+    private String type = "http";
     private String subPolicyCollection = APIMIntegrationConstants.API_TIER.GOLD;
     private String resourceCount = "0";
     private String roles = "";
@@ -474,6 +475,7 @@ public class APICreationRequestBean extends AbstractRequest {
         addParameter("tier", getTier());
         addParameter("thumbUrl", getThumbUrl());
         addParameter("tiersCollection", getTiersCollection());
+        addParameter("type", getType());
         //APIM is designed to send 0 as resource count if there is 0 and 1 resources.
         //From 2 resources it sends the correct count.
         if (resourceBeanList.size() < 2) {
@@ -678,6 +680,14 @@ public class APICreationRequestBean extends AbstractRequest {
 
     public void setTiersCollection(String tiersCollection) {
         this.tiersCollection = tiersCollection;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getResourceCount() {
