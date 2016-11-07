@@ -102,8 +102,50 @@
             <version>${wso2.msf4j.version}</version>
             <type>zip</type>
         </dependency>
-
-	<!-- APIM Features -->
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>${javax.cache-api.version}</version>
+        </dependency>
+        <!--UUF Dependencies-->
+        <dependency>
+            <groupId>org.wso2.carbon.caching</groupId>
+            <artifactId>org.wso2.carbon.caching.feature</artifactId>
+            <version>${carbon.cache.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.security.caas</groupId>
+            <artifactId>org.wso2.carbon.security.caas.feature</artifactId>
+            <version>${carbon.security.caas.version}</version>
+            <type>zip</type>
+        </dependency>
+       <!-- UUF Features-->
+        <dependency>
+            <groupId>org.wso2.carbon.uuf</groupId>
+            <artifactId>org.wso2.carbon.uuf.core.feature</artifactId>
+            <version>${carbon.uuf.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.uuf</groupId>
+            <artifactId>org.wso2.carbon.uuf.renderablecreator.hbs.feature</artifactId>
+            <version>${carbon.uuf.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.uuf</groupId>
+            <artifactId>org.wso2.carbon.uuf.renderablecreator.html.feature</artifactId>
+            <version>${carbon.uuf.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.uuf</groupId>
+            <artifactId>org.wso2.carbon.uuf.httpconnector.msf4j.feature</artifactId>
+            <version>${carbon.uuf.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.core.feature</artifactId>
@@ -134,7 +176,12 @@
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
-
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt.web</groupId>
+            <artifactId>org.wso2.carbon.apimgt.web.store.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -219,6 +266,7 @@
                                     <id>org.wso2.carbon.metrics.das.core.feature</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <!--APIM Features-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -236,8 +284,38 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.web.store.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <!--UUF Dependencies-->
+                                <feature>
+                                    <id>org.wso2.carbon.security.caas.feature</id>
+                                    <version>${carbon.security.caas.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.caching.feature</id>
+                                    <version>${carbon.cache.version}</version>
+                                </feature>
+                                <!--UUF Features-->
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.core.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.renderablecreator.hbs.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.renderablecreator.html.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.httpconnector.msf4j.feature</id>
+                                    <version>${carbon.uuf.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -327,6 +405,7 @@
                                     <id>org.wso2.carbon.metrics.das.core.feature</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <!--APIM Features-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -346,6 +425,36 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.web.store.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <!--UUF Dependencies-->
+                                <feature>
+                                    <id>org.wso2.carbon.caching.feature</id>
+                                    <version>${carbon.cache.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.security.caas.feature</id>
+                                    <version>${carbon.security.caas.version}</version>
+                                </feature>
+                                <!--UUF Features-->
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.core.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.renderablecreator.hbs.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.renderablecreator.html.feature</id>
+                                    <version>${carbon.uuf.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.uuf.httpconnector.msf4j.feature</id>
+                                    <version>${carbon.uuf.version}</version>
                                 </feature>
                             </features>
                         </configuration>
