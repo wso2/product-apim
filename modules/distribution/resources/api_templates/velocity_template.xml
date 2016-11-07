@@ -338,7 +338,7 @@
 #end
 </inSequence>
 <outSequence>
-<class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtResponseHandler"/>
+<class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtResponseHandler"/>
 ## check and set response caching
 #if($responseCacheEnabled)
 <cache scope="per-host" collector="true"/>

@@ -282,7 +282,7 @@
                 <property name="HTTP_SC" value="500" scope="axis2"/>
             </else>
         </filter>
-        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtFaultHandler"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtFaultHandler"/>
         <property name="RESPONSE" value="true"/>
         <header name="To" action="remove"/>
         <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
@@ -298,7 +298,7 @@
     </sequence>
     <sequence name="_throttle_out_handler_">
         <property name="X-JWT-Assertion" scope="transport" action="remove"/>
-        <class name="org.wso2.carbon.apimgt.usage.publisher.APIMgtThrottleUsageHandler"/>
+        <class name="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtThrottleUsageHandler"/>
     </sequence>
     <sequence name="_sandbox_key_error_">
         <property name="ERROR_CODE" value="900901"/>
@@ -416,8 +416,8 @@
                 <property name="id" value="A"/>
                 <property name="policyKey" value="gov:/apimgt/applicationdata/tiers.xml"/>
             </handler>
-            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageHandler"/>
-            <handler class="org.wso2.carbon.apimgt.usage.publisher.APIMgtGoogleAnalyticsTrackingHandler">
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtUsageHandler"/>
+            <handler class="org.wso2.carbon.apimgt.gateway.handlers.analytics.APIMgtGoogleAnalyticsTrackingHandler">
                 <property name="configKey" value="gov:/apimgt/statistics/ga-config.xml"/>
             </handler>
             <handler class="org.wso2.carbon.apimgt.gateway.handlers.ext.APIManagerExtensionHandler"/>
