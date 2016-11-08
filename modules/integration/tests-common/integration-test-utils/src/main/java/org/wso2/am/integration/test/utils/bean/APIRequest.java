@@ -67,7 +67,6 @@ public class APIRequest extends AbstractRequest {
     private String provider = "admin";
     private JSONObject corsConfiguration;
     private String environment = "Production and Sandbox";
-    private String ws = "false";
     private String apiTier = "";
 
     public String getEnvironment() {
@@ -226,7 +225,6 @@ public class APIRequest extends AbstractRequest {
         addParameter("default_version", getDefault_version());
         addParameter("default_version_checked", getDefault_version_checked());
         addParameter("environments", getEnvironment());
-        addParameter("ws", getWs());
         addParameter("corsConfiguration", getCorsConfiguration().toString());
         addParameter("apiTier", getApiTier());
 
@@ -412,14 +410,6 @@ public class APIRequest extends AbstractRequest {
 
     public void setCorsConfiguration(JSONObject corsConfiguration) {
         this.corsConfiguration = corsConfiguration;
-    }
-
-    public String getWs() {
-        return ws;
-    }
-
-    public void setWs(String ws) {
-        this.ws = ws;
     }
 
     public String getApiTier() {

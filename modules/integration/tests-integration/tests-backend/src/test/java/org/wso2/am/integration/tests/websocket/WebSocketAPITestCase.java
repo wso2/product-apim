@@ -117,7 +117,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apiRequest.setVersion(apiVersion);
         apiRequest.setTiersCollection("Unlimited");
         apiRequest.setProvider(provider);
-        apiRequest.setWs("true");
+        apiRequest.setType("WS");
         apiPublisher.login(user.getUserName(),
                 user.getPassword());
         HttpResponse addAPIResponse = apiPublisher.addAPI(apiRequest);
@@ -376,6 +376,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         executorService.shutdownNow();
-        super.cleanUp();
+        //super.cleanUp();
     }
 }
