@@ -376,6 +376,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         executorService.shutdownNow();
-        //super.cleanUp();
+        super.cleanUp();
     }
 }
