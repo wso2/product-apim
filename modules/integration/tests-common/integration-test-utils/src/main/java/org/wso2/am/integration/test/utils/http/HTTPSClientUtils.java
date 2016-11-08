@@ -77,28 +77,42 @@ public class HTTPSClientUtils {
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, urlParameters);
         return constructResponse(response);
     }
-    
+
     /**
      * do HTTP POST operation for the given URL
      *
      * @param url           request URL
-     * @param headers       headers to be send
-     * @param urlParameters parameters to be sent as payload
+     * @param headers       headers to be sent
      * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
      * @throws IOException if connection issue occurred
      */
     public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(String url,
-            Map<String, String> headers, String payload) throws IOException {
+                                    Map<String, String> headers, String payload) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
         return constructResponse(response);
     }
 
     /**
+     * do HTTP POST operation for the given URL with JSON entity
+     * @param url
+     * @param headers
+     * @param json
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(URL url,
+            Map<String, String> headers, String json) throws IOException {
+        CloseableHttpClient httpClient = getHttpsClient();
+        HttpResponse response = sendPOSTMessage(httpClient, url.toString(), headers, json);
+        return constructResponse(response);
+    }
+
+    /**
      * do HTTP POST operation for the given URL
      *
-     * @param url           request URL
-     * @param headers       headers to be send
+     * @param url       request URL
+     * @param headers   headers to be send
      * @param urlParams parameter string to be sent as payload
      * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
      * @throws IOException if connection issue occurred
@@ -106,10 +120,10 @@ public class HTTPSClientUtils {
     public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(URL url, String urlParams,
             Map<String, String> headers) throws IOException {
         List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-        if(urlParams != null && urlParams.contains("=")){
+        if (urlParams != null && urlParams.contains("=")) {
             String[] paramList = urlParams.split("&");
             for (String pair : paramList) {
-                if(pair.contains("=")) {
+                if (pair.contains("=")) {
                     String[] pairList = pair.split("=");
                     String key = pairList[0];
                     String value = (pairList.length > 1) ? pairList[1] : "";
@@ -179,7 +193,7 @@ public class HTTPSClientUtils {
         post.setEntity(new UrlEncodedFormEntity(urlParameters));
         return httpClient.execute(post);
     }
-    
+
     /**
      * POST function implementation
      *
@@ -191,7 +205,7 @@ public class HTTPSClientUtils {
      * @throws IOException if connection issue occurred
      */
     private static HttpResponse sendPOSTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
-            String body) throws IOException {
+                                                String body) throws IOException {
         HttpPost post = new HttpPost(url);
         if (headers != null) {
             for (Map.Entry<String, String> head : headers.entrySet()) {
@@ -201,7 +215,6 @@ public class HTTPSClientUtils {
         post.setEntity(new StringEntity(body));
         return httpClient.execute(post);
     }
-
 
     /**
      * Construct the org.wso2.carbon.automation.test.utils.http.client.HttpResponse

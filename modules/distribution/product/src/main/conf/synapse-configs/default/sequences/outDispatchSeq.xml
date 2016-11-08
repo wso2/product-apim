@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="outDispatchSeq">
+   <log level="full">
+      <property name="MESSAGE" value="out dispatch seq"/>
+   </log>
+   <respond/>
+</sequence>
