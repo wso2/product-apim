@@ -329,7 +329,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                     socket.sendMessage(testMessage);
                     waitForReply(socket);
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
-                            "Received response in not matching");
+                            "Received response is not matching");
                     socket.setResponseMessage(null);
                 } else {
                     invokeAPI(client, accessToken);
