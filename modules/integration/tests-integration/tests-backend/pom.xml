@@ -476,6 +476,11 @@ under the License.
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
             <version>1.7.7</version>
         </dependency>
