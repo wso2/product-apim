@@ -917,7 +917,7 @@
         <carbon.governance.version>4.7.0</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.9</carbon.kernel.version>
+        <carbon.kernel.version>4.4.10</carbon.kernel.version>
         <apimserver.version>2.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
