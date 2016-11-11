@@ -29,8 +29,8 @@
 
     <artifactId>wso2iserver</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 Integration Server - Distribution</name>
-    <description>WSO2 Integration Server - Distribution</description>
+    <name>WSO2 Integration Server For API Management - Distribution</name>
+    <description>WSO2 Integration Server For API Management - Distribution</description>
     <url>http://wso2.org</url>
 
     <dependencies>
