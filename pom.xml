@@ -160,5 +160,6 @@
     <modules>
         <module>samples</module>
         <module>product</module>
+        <module>gateway</module>
     </modules>
 </project>

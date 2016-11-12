@@ -142,6 +142,12 @@
             <version>${carbon.gw.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.gateway.extension.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -245,6 +251,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
                                     <version>${carbon.gw.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -354,6 +364,10 @@
                                     <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
                                     <version>${carbon.gw.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -426,4 +440,8 @@
 
         </plugins>
     </build>
+
+    <properties>
+        <carbon.apimgt.version>7.0.0-SNAPSHOT</carbon.apimgt.version>
+    </properties>
 </project>
