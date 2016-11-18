@@ -582,11 +582,9 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.analytics.shared:org.wso2.carbon.analytics.shared.data.agents.log4j.feature:${analytics.shared.version}
                                 </featureArtifactDef>
-
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.websocket.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
-
                                 <featureArtifactDef>
                                     org.wso2.carbon.mediation:org.wso2.carbon.mediator.cache.server.feature:${carbon.mediation.version}
                                 </featureArtifactDef>
@@ -978,12 +976,10 @@
                                     <id>org.wso2.carbon.registry.community.features.server.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-
                                 <feature>
                                     <id>org.wso2.carbon.websocket.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
-
                                 <feature>
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
@@ -1575,6 +1571,14 @@
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.websocket.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -1910,6 +1914,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.websocket.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -2352,6 +2364,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -3188,7 +3204,10 @@
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
                                 </feature>
-
+                                <feature>
+                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
                             </features>
                         </configuration>
                     </execution>
@@ -3511,7 +3530,10 @@
                                     <id>org.wso2.carbon.event.processor.manager.commons.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
-
+                                <feature>
+                                    <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
                                 <!-- START - UES Features -->
                                 <!--<feature>
                                     <id>org.wso2.carbon.dashboards.shindig.feature.group</id>
