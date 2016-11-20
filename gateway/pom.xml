@@ -57,19 +57,19 @@
         <dependency>
             <groupId>org.wso2.carbon.gateway</groupId>
             <artifactId>org.wso2.carbon.gateway.core.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.inbounds</groupId>
             <artifactId>org.wso2.carbon.gateway.inbounds.http.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.outbounds</groupId>
             <artifactId>org.wso2.carbon.gateway.outbounds.http.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -87,59 +87,59 @@
         <dependency>
             <groupId>org.wso2.carbon.gateway.mediators</groupId>
             <artifactId>org.wso2.carbon.gateway.mediators.samplemediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.mediators</groupId>
             <artifactId>org.wso2.carbon.gateway.mediators.headermediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.mediators</groupId>
             <artifactId>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.mediators</groupId>
             <artifactId>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.converters</groupId>
             <artifactId>org.wso2.carbon.gateway.converters.xmltojson.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway.converters</groupId>
             <artifactId>org.wso2.carbon.gateway.converters.jsontoxml.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway</groupId>
             <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway</groupId>
             <artifactId>org.wso2.carbon.gateway.message.readers.jsonreader.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway</groupId>
             <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.gateway</groupId>
             <artifactId>org.wso2.carbon.gateway.message.readers.xmlreader.feature</artifactId>
-            <version>${carbon.gw.version}</version>
+            <version>${ballerina.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -202,7 +202,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.core.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature</id>
@@ -214,43 +214,43 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.inbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.outbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.samplemediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.headermediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.converters.xmltojson.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.converters.jsontoxml.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.message.readers.jsonreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
@@ -314,7 +314,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.core.feature.group</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.transport.http.netty.feature.group</id>
@@ -326,43 +326,43 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.inbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.outbounds.http.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.samplemediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.headermediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.converters.xmltojson.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.converters.jsontoxml.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.message.readers.jsonreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.gateway.message.readers.xmlreader.feature</id>
-                                    <version>${carbon.gw.version}</version>
+                                    <version>${ballerina.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
