@@ -36,7 +36,9 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +56,14 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private final String TAG_API_1 = "api_1_tag";
     private final String TAG_API_2 = "api_2_tag";
     private final String TAG_API = "api_common_tag";
+    private final String API_NAME_CONTEXT_UPPER_CASE = "apiNameContextUpperCaseTag";
+    private final String API_NAME_CONTEXT_LOWER_CASE = "apiNameContextLowerCaseTag";
+    private final String API_NAME_CONTEXT_WITH_SPACE = "apiNameContextWithSpaceTag";
+    private final String API_NAME_CONTEXT_WITHOUT_SPACE = "apiNameContextWithoutSpaceTag";
+    private final String TAG_GROUP_UPPER_CASE = "API_tag-group";
+    private final String TAG_GROUP_LOWER_CASE = "api_tag-group";
+    private final String TAG_GROUP_WITH_SPACE = "api tag-group";
+    private final String TAG_GROUP_WITHOUT_SPACE = "apiTag-group";
     private final String TAG_NOT_EXIST = "no_such_tag";
     private final String DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION = "1.0.0";
@@ -67,6 +77,7 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private String endpointUrl;
     private APIPublisherRestClient apiPublisher;
     private APIStoreRestClient apiStore;
+    private ServerConfigurationManager serverConfigurationManager;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APISearchAPIByTagTestCase(TestUserMode userMode) {
@@ -141,8 +152,9 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
-        apiPublisher.deleteAPI(API_NAME_1, API_VERSION, user.getUserName());
-        apiPublisher.deleteAPI(API_NAME_2, API_VERSION, user.getUserName());
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.restoreToLastConfiguration();
+        }
         super.cleanUp();
     }
 
@@ -184,6 +196,121 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
         Assert.assertEquals(resultArray.length(), 0, "Search API return invalid APIs");
     }
 
+    @Test(groups = { "wso2.am" }, description = "API search by group TAG", dependsOnMethods = "testAPISearchByTag")
+    public void testAPISearchByTagGroup() throws Exception {
+        if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            String carbonHome = System.getProperty("carbon.home");
+            File srcFile = new File(
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "tag" + File.separator
+                            + "site.json");
+            File targetFile = new File(
+                    carbonHome + File.separator + "repository" + File.separator + "deployment" + File.separator
+                            + "server" + File.separator + "jaggeryapps" + File.separator +
+                            "store" + File.separator + "site" + File.separator + "conf" + File.separator + "site.json");
+            serverConfigurationManager.applyConfigurationWithoutRestart(srcFile, targetFile, true);
+        }
+
+        APIResourceBean addResource = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,
+                APIMIntegrationConstants.ResourceAuthTypes.APPLICATION.getAuthType(),
+                APIMIntegrationConstants.RESOURCE_TIER.UNLIMITED, "/add");
+
+        //create test api 1
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_UPPER_CASE, API_NAME_CONTEXT_UPPER_CASE,
+                API_VERSION, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTags(TAG_GROUP_UPPER_CASE);
+        resList.add(addResource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api 1
+        HttpResponse serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api 1
+        APILifeCycleStateRequest updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_UPPER_CASE,
+                user.getUserName(), APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_UPPER_CASE, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        //create test api 2
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_LOWER_CASE, API_NAME_CONTEXT_LOWER_CASE,
+                API_VERSION, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTags(TAG_GROUP_LOWER_CASE);
+        resList.add(addResource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api 2
+        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api 2
+        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_LOWER_CASE, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_LOWER_CASE, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        //create test api 3
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_WITH_SPACE, API_NAME_CONTEXT_WITH_SPACE,
+                API_VERSION, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTags(TAG_GROUP_WITH_SPACE);
+        resList.add(addResource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api 3
+        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api 3
+        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_WITH_SPACE, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITH_SPACE, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        //create test api 4
+        apiCreationRequestBean = new APICreationRequestBean(API_NAME_CONTEXT_WITHOUT_SPACE,
+                API_NAME_CONTEXT_WITHOUT_SPACE, API_VERSION, user.getUserName(), new URL(endpointUrl));
+        apiCreationRequestBean.setTags(TAG_GROUP_WITHOUT_SPACE);
+        resList.add(addResource);
+        apiCreationRequestBean.setResourceBeanList(resList);
+
+        //add test api 4
+        serviceResponse = apiPublisher.addAPI(apiCreationRequestBean);
+        verifyResponse(serviceResponse);
+
+        //publish the api 4
+        updateRequest = new APILifeCycleStateRequest(API_NAME_CONTEXT_WITHOUT_SPACE, user.getUserName(),
+                APILifeCycleState.PUBLISHED);
+        serviceResponse = apiPublisher.changeAPILifeCycleStatus(updateRequest);
+        verifyResponse(serviceResponse);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME_CONTEXT_WITHOUT_SPACE, API_VERSION,
+                APIMIntegrationConstants.IS_API_EXISTS);
+
+        watForTagsAvailableOnSearchApi(TAG_GROUP_WITHOUT_SPACE);
+
+        HttpResponse res = apiStore.getAllTags();
+        JSONObject tags = new JSONObject(res.getData());
+        JSONArray tagList = tags.getJSONArray("tags");
+        String[] tt = { TAG_GROUP_UPPER_CASE, TAG_GROUP_LOWER_CASE, TAG_GROUP_WITH_SPACE, TAG_GROUP_WITHOUT_SPACE };
+        for (String t : tt) {
+            boolean found = false;
+            for (int i = 0; i < tagList.length(); i++) {
+                JSONObject tagObj = tagList.getJSONObject(i);
+                if (t.equals(tagObj.getString("name"))) {
+                    Assert.assertEquals(tagObj.getInt("count"), 1);
+                    found = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(found, "Tag " + t + " is not available on tag cloud");
+        }
+    }
+
     /**
      * Used to wait until published apis are appear in the Store API search API
      *
@@ -202,6 +329,33 @@ public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
                 log.info("Data: " + response.getData());
                 if (response.getData().contains(API_NAME_1) && response.getData().contains(API_NAME_2)) {
                     log.info("API :" + API_NAME_1 + " and " + API_NAME_2 + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Used to wait until published apis tags are appear in the Store tag cloud API
+     *
+     * @throws Exception if tag cloud api throws any exceptions
+     */
+    public void watForTagsAvailableOnSearchApi(String tag) throws Exception {
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        HttpResponse response;
+        while (waitTime > System.currentTimeMillis()) {
+            response = apiStore.getAllTags();
+            verifyResponse(response);
+            log.info("WAIT for availability of tags : " + tag + " found on Store tag cloud");
+            if (response != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(tag)) {
+                    log.info("Tag :" + tag + " found");
                     break;
                 } else {
                     try {

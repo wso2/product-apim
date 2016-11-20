@@ -74,6 +74,7 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     private String role = "APITagVisibilityRole1";
     private String[] permissions = { "/permission/admin/login", "/permission/admin/manage/api/subscribe" };
     private Map<String, String> requestHeaders = new HashMap<String, String>();
+    private static final long WAIT_TIME = 45 * 1000;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APITagVisibilityByRoleTestCase(TestUserMode userMode) {
@@ -150,20 +151,12 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
         urlParameters.add(new BasicNameValuePair("tenant", tenant));
         HttpEntity content = new UrlEncodedFormEntity(urlParameters);
         String contentString = EntityUtils.toString(content);
-        
-        log.info("Waiting for tags to get visible in the store......");
-        Thread.sleep(30000l);
+
+        watForTagsAvailableOnSearchApi(tagsRestricted);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        //sometimes it takes some time to get the tags to appear in the store. As a result in some occasions 
-        //above request can happen before the tags get deployed. So do a request again if tags are not there
-        if(serviceResponse.getData().contains("[]")){
-        	Thread.sleep(30000l);
-        	serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        }
-        log.info("Response received from Tag list Query " + serviceResponse.getData());
-        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
+        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
                 "Public visibility tag is not available for anonymous user");
-        Assert.assertFalse(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
+        Assert.assertFalse(serviceResponse.getData().contains(tagsRestricted),
                 "Restricted visibility tag is available for anonymous user");
     }
 
@@ -188,9 +181,9 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
 
         Thread.sleep(5000l);
         HttpResponse serviceResponse = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
-        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsPublic.toLowerCase()),
+        Assert.assertTrue(serviceResponse.getData().contains(tagsPublic),
                 "Public visibility tag is not available for authorised user");
-        Assert.assertTrue(serviceResponse.getData().toLowerCase().contains(tagsRestricted.toLowerCase()),
+        Assert.assertTrue(serviceResponse.getData().contains(tagsRestricted),
                 "Restricted visibility tag is not available for authorised user");
 
     }
@@ -207,5 +200,38 @@ public class APITagVisibilityByRoleTestCase extends APIMIntegrationBaseTest {
     public static Object[][] userModeDataProvider() {
         return new Object[][] { new Object[] { TestUserMode.SUPER_TENANT_ADMIN },
                 new Object[] { TestUserMode.TENANT_ADMIN }, };
+    }
+
+    /**
+     * Used to wait until published apis tags are appear in the Store tag cloud API
+     *
+     * @throws Exception if tag cloud api throws any exceptions
+     */
+    public void watForTagsAvailableOnSearchApi(String tag) throws Exception {
+        long waitTime = System.currentTimeMillis() + WAIT_TIME;
+        HttpResponse response;
+        while (waitTime > System.currentTimeMillis()) {
+            List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+            urlParameters.add(new BasicNameValuePair("action", "getAllTags"));
+            urlParameters.add(new BasicNameValuePair("tenant", user.getUserDomain()));
+            HttpEntity content = new UrlEncodedFormEntity(urlParameters);
+            String contentString = EntityUtils.toString(content);
+            Map<String, String> requestHeaders = new HashMap<String, String>();
+            response = HttpRequestUtil.doPost(tagListUrl, contentString, requestHeaders);
+            verifyResponse(response);
+            log.info("WAIT for availability of tags : " + tag + " found on Store tag cloud");
+            if (response != null) {
+                log.info("Data: " + response.getData());
+                if (response.getData().contains(tag)) {
+                    log.info("Tag :" + tag + " found");
+                    break;
+                } else {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
     }
 }
