@@ -2,4 +2,12 @@
     <log level="full">
         <property name="IN_MESSAGE" value="IN_MESSAGE"/>
     </log>
+    <log level="custom">
+        <property name="Host" expression="get-property('transport', 'Host')"/>
+        <property name="Context" expression="get-property('To')"/>
+        <property name="Http_Method" expression="get-property('axis2', 'HTTP_METHOD')"/>
+        <property name="Resource" expression="$axis2:REST_URL_POSTFIX"/>
+        <property name="Origin" expression="get-property('transport', 'Origin')"/>
+        <property name="Content-Type" expression="get-property('transport', 'Content-Type')"/>
+    </log>
 </sequence>
