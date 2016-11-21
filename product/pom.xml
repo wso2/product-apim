@@ -166,12 +166,6 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.rest.api.publisher.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.lifecycle.manager.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
