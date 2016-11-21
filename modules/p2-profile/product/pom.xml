@@ -3283,6 +3283,11 @@
                                     <id>org.wso2.carbon.databridge.streamdefn.filesystem.server.feature.group</id>
                                     <version>${carbon.analytics.common.version}</version>
                                 </feature>
+                                <!-- dep-sync feature -->
+                                <feature>
+                                    <id>org.wso2.carbon.deployment.synchronizer.feature.group</id>
+                                    <version>${carbon.commons.version}</version>
+                                </feature>
 
                                 <!-- Output Adapter -->
                                 <feature>
