@@ -2,4 +2,8 @@
     <log level="full">
         <property name="OUT_MESSAGE" value="OUT_MESSAGE"/>
     </log>
+    <log level="custom">
+        <property name="Endpoint" expression="get-property('ENDPOINT_PREFIX')"/>
+        <property name="Content-Type" expression="get-property('transport', 'Content-Type')"/>
+    </log>
 </sequence>

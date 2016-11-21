@@ -3,6 +3,10 @@
         <property name="STATUS" value="Executing custom 'fault' sequence"/>
         <property name="ERROR_CODE" expression="get-property('ERROR_CODE')"/>
         <property name="ERROR_MESSAGE" expression="get-property('ERROR_MESSAGE')"/>
+        <property name="ERROR_DETAIL" expression="get-property('ERROR_DETAIL')"/>
+        <property name="ERROR_EXCEPTION" expression="get-property('ERROR_EXCEPTION')"/>
+        <property name="Endpoint" expression="get-property('ENDPOINT_PREFIX')"/>
+        <property name="Content-Type" expression="get-property('transport', 'Content-Type')"/>
     </log>
     <payloadFactory>
         <format>
