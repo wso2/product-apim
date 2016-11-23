@@ -18,6 +18,7 @@
 package org.wso2.am.integration.test.utils.base;
 
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,16 +32,15 @@ import org.wso2.am.integration.test.utils.bean.APIMURLBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
+import org.wso2.am.integration.test.utils.http.HttpRequestUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.engine.frameworkutils.FrameworkPathUtil;
-import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.base.MultitenantConstants;
-import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.integration.common.admin.client.TenantManagementServiceClient;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 import org.wso2.carbon.integration.common.utils.LoginLogoutClient;
@@ -52,7 +52,9 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 /**
@@ -490,18 +492,22 @@ public class APIMIntegrationBaseTest {
 
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
-
+        String colonSeparatedHeader = user.getUserName()+":"+user.getPassword();
+        String authorizationHeader = "Basic "+Base64.encodeBase64(colonSeparatedHeader.getBytes()).toString();
+        Map headerMap = new HashMap();
+        headerMap.put("Authorization",authorizationHeader);
         String tenantIdentifier = getTenantIdentifier(apiProvider);
 
         while (waitTime > System.currentTimeMillis()) {
             HttpResponse response = null;
             try {
-                response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                response = HttpRequestUtil.doGet(getGatewayURLHttp() +
                                                           "APIStatusMonitor/apiInformation/api/" +
                                                           tenantIdentifier +
-                                                          apiName + "/" + apiVersion, null);
+                                                          apiName + "/" + apiVersion, headerMap);
             } catch (IOException ignored) {
-                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
+                log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet " +
+                        "deployed " + " with provider: " + apiProvider);
             }
 
             log.info("WAIT for availability of API: " + apiName + " with version: " + apiVersion
@@ -544,14 +550,17 @@ public class APIMIntegrationBaseTest {
         long waitTime = currentTime + WAIT_TIME;
 
         String tenantIdentifier = getTenantIdentifier(apiProvider);
-
+        String colonSeparatedHeader = user.getUserName()+":"+user.getPassword();
+        String authorizationHeader = "Basic "+Base64.encodeBase64(colonSeparatedHeader.getBytes()).toString();
+        Map headerMap = new HashMap();
+        headerMap.put("Authorization",authorizationHeader);
         while (waitTime > System.currentTimeMillis()) {
             HttpResponse response = null;
             try{
-                response = HttpRequestUtil.sendGetRequest(getGatewayURLHttp() +
+                response = HttpRequestUtil.doGet(getGatewayURLHttp() +
                                                           "APIStatusMonitor/apiInformation/api/" +
                                                           tenantIdentifier +
-                                                          apiName + "/" + apiVersion, null);
+                                                          apiName + "/" + apiVersion, headerMap);
                 } catch (IOException ignored) {
                     log.warn("WebAPP:" + " APIStatusMonitor not yet deployed or" + " API :" + apiName + " not yet deployed " + " with provider: " + apiProvider);
                 }
