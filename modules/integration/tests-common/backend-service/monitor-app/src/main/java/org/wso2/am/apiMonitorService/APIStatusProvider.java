@@ -17,87 +17,81 @@
 */
 package org.wso2.am.apiMonitorService;
 
-import org.apache.synapse.config.SynapseConfiguration;
-import org.apache.synapse.core.SynapseEnvironment;
-import org.apache.synapse.rest.API;
+import org.apache.axis2.AxisFault;
 import org.wso2.am.apiMonitorService.beans.APIStatusData;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.mediation.initializer.services.SynapseEnvironmentService;
-import org.wso2.carbon.rest.api.ConfigHolder;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
+import org.wso2.carbon.apimgt.impl.APIConstants;
+import org.wso2.carbon.base.ServerConfiguration;
+import org.wso2.carbon.rest.api.stub.RestApiAdminStub;
+import org.wso2.carbon.rest.api.stub.types.carbon.APIData;
+import org.wso2.carbon.utils.CarbonUtils;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.rmi.RemoteException;
 
 public class APIStatusProvider {
 
-    public String[] getAllApisDeployed(String tenantDomain, int tenantId) {
-        List<String> apiNameList = new LinkedList<>();
-        Collection<API> apiList = this.getSynapseConfiguration(tenantDomain, tenantId).getAPIs();
-        for (API currentApi : apiList) {
-            apiNameList.add(currentApi.getAPIName());
+    public String[] getAllApisDeployed(String user, String password) {
+        try {
+            return this.getRestAPIAdmin(user, password).getApiNames();
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-        String[] apiArray = new String[apiNameList.size()];
-        return apiNameList.toArray(apiArray);
+        return null;
     }
 
-    public int getDeployedApiCount(String tenantDomain, int tenantId) {
-        return this.getSynapseConfiguration(tenantDomain, tenantId).getAPIs().size();
+    public int getDeployedApiCount(String user,String password) {
+        try {
+            return this.getRestAPIAdmin(user, password).getAPICount();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
-    public APIStatusData getApiDataOfApi(String tenantDomain, int tenantId, String apiName, String version) {
+    public APIStatusData getApiDataOfApi(String user,String password, String apiName, String version){
         APIStatusData apistatusData = new APIStatusData();
-        Collection<API> apiList = this.getSynapseConfiguration(tenantDomain, tenantId).getAPIs();
+        String[] apiNameList;
         boolean deployed = false;
-        for (API currentApi : apiList) {
-            if (currentApi.getName().contains("--")
-                && currentApi.getName().split("--")[1].equals(apiName+":v"+version)) {
-                apistatusData.setIsApiExists(true);
-                apistatusData.setApiName(currentApi.getAPIName());
-                apistatusData.setProviderName(currentApi.getFileName());
-                apistatusData.setVersion(currentApi.getVersion());
-                deployed = true;
-                break;
-            } else {
-                continue;
+        try {
+            apiNameList = this.getRestAPIAdmin(user,password).getApiNames();
+            for (String currentApi : apiNameList) {
+                if (currentApi.contains("--")
+                        && currentApi.split("--")[1].equals(apiName+":v"+version)) {
+                    APIData apiData =  this.getRestAPIAdmin(user,password).getApiByName(currentApi);
+                    apistatusData.setIsApiExists(true);
+                    apistatusData.setApiName(apiName);
+                    apistatusData.setProviderName(apiData.getFileName());
+                    apistatusData.setVersion(version);
+                    deployed = true;
+                    break;
+                } else {
+                    continue;
+                }
             }
+            apistatusData.setIsApiExists(deployed);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-        apistatusData.setIsApiExists(deployed);
         return apistatusData;
     }
 
-    private SynapseConfiguration getSynapseConfiguration(String tenantDomain, int tenantId) {
-        SynapseEnvironmentService synEnvService = null;
-        if (tenantDomain == null) {
-            synEnvService =
-                    ConfigHolder.getInstance()
-                            .getSynapseEnvironmentService(MultitenantConstants.SUPER_TENANT_ID);
-        } else {
-            try {
-                PrivilegedCarbonContext.getThreadLocalCarbonContext().startTenantFlow();
-                PrivilegedCarbonContext privilegedCarbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
-                privilegedCarbonContext.setTenantId(tenantId);
-                privilegedCarbonContext.setTenantDomain(tenantDomain);
-                synEnvService = ConfigHolder.getInstance().getSynapseEnvironmentService(tenantId);
-            } catch (Exception e) {
-                String msg = "Error while Eager loading tenant : " + tenantDomain;
-                throw new RuntimeException(msg, e);
-            } finally {
-                PrivilegedCarbonContext.endTenantFlow();
-            }
-        }
-        if(synEnvService == null){
-            throw new RuntimeException("Synapse Environment Service is null.");
-        }
-
-        SynapseEnvironment synapseEnv = synEnvService.getSynapseEnvironment();
-
-        if(synapseEnv == null){
-            throw new RuntimeException("Synapse Environment is null.");
-        }
-
-        return synapseEnv.getSynapseConfiguration();
+    private RestApiAdminStub getRestAPIAdmin(String username, String password) throws AxisFault {
+            int port = 9443 + getPortOffset();
+        RestApiAdminStub restApiAdminStub = new RestApiAdminStub(null,"https://localhost:"+port+"/services/RestApiAdmin");
+        CarbonUtils.setBasicAccessSecurityHeaders(username,password,true,restApiAdminStub._getServiceClient());
+        return restApiAdminStub;
     }
-
+    private static int getPortOffset() {
+        ServerConfiguration carbonConfig = ServerConfiguration.getInstance();
+        String portOffset = System.getProperty(APIConstants.PORT_OFFSET_SYSTEM_VAR,
+                carbonConfig.getFirstProperty(APIConstants.PORT_OFFSET_CONFIG));
+        try {
+            if ((portOffset != null)) {
+                return Integer.parseInt(portOffset.trim());
+            } else {
+                return 0;
+            }
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 }
