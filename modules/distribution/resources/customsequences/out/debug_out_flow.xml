@@ -1,0 +1,10 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="debug_out_flow">
+    <log level="full">
+        <property name="OUT_MESSAGE" value="OUT_MESSAGE"/>
+    </log>
+    <log level="custom">
+        <property name="Endpoint" expression="get-property('ENDPOINT_PREFIX')"/>
+        <property name="Content-Type" expression="get-property('transport', 'Content-Type')"/>
+        <property name="Correlation_Id" expression="get-property('msgID')" scope="axis2" />
+    </log>
+</sequence>
