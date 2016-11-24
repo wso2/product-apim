@@ -101,6 +101,7 @@ under the License.
                         </resource>
                     </webResources>
                     <warName>APIStatusMonitor</warName>
+                    <packagingExcludes>WEB-INF/*lib/</packagingExcludes>
                 </configuration>
             </plugin>
         </plugins>
