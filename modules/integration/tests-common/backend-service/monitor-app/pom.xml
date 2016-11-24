@@ -64,13 +64,18 @@ under the License.
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.rest.api</artifactId>
+            <groupId>org.wso2.carbon.mediation</groupId>
+            <artifactId>org.wso2.carbon.rest.api.stub</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.deployment</groupId>
             <artifactId>org.wso2.carbon.webapp.mgt</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec.wso2</groupId>
+            <artifactId>commons-codec</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -96,6 +101,7 @@ under the License.
                         </resource>
                     </webResources>
                     <warName>APIStatusMonitor</warName>
+                    <packagingExcludes>WEB-INF/*lib/</packagingExcludes>
                 </configuration>
             </plugin>
         </plugins>

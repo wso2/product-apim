@@ -17,7 +17,7 @@
 */
 package org.wso2.am.apiMonitorService;
 
-import org.apache.axis2.AxisFault;
+import org.apache.commons.codec.binary.Base64;
 import org.wso2.am.apiMonitorService.beans.APIStats;
 import org.wso2.am.apiMonitorService.beans.APIStatusData;
 
@@ -25,7 +25,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.io.UnsupportedEncodingException;
+import java.util.StringTokenizer;
 
 @Path("/apiInformation/")
 public class ApiInformationService {
@@ -33,7 +37,7 @@ public class ApiInformationService {
     APIStatusData apiStatus;
     APIStatusProvider apiStatusProvider;
 
-    public ApiInformationService() throws AxisFault {
+    public ApiInformationService()  {
         stats = new APIStats();
         apiStatus = new APIStatusData();
         apiStatusProvider = new APIStatusProvider();
@@ -46,9 +50,13 @@ public class ApiInformationService {
     /**
      * Provide the  status of tenant.
      */
-    public APIStats getAllDeployedApis() {
-        stats.setDeployedApiCount(apiStatusProvider.getDeployedApiCount(null, 0));
-        stats.setListOfApiNames(apiStatusProvider.getAllApisDeployed(null, 0));
+    public APIStats getAllDeployedApis(@Context HttpHeaders httpHeaders) {
+        String authorization =getCredentials(httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION).get(0));
+        StringTokenizer stringTokenizer = new StringTokenizer(authorization,":");
+        String username = stringTokenizer.nextToken();
+        String password = stringTokenizer.nextToken();
+        stats.setDeployedApiCount(apiStatusProvider.getDeployedApiCount(username,password));
+        stats.setListOfApiNames(apiStatusProvider.getAllApisDeployed(username,password));
         return stats;
     }
 
@@ -59,9 +67,13 @@ public class ApiInformationService {
      * Provide the  status of tenant.
      */
     public APIStats getAllDeployedApisForTenant(@PathParam("tenatDomain") String tenantDomain, @PathParam("tenantId")
-    int tenantId) {
-        stats.setDeployedApiCount(apiStatusProvider.getDeployedApiCount(tenantDomain, tenantId));
-        stats.setListOfApiNames(apiStatusProvider.getAllApisDeployed(tenantDomain, tenantId));
+    int tenantId,@Context HttpHeaders httpHeaders) {
+        String authorization =getCredentials(httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION).get(0));
+        StringTokenizer stringTokenizer = new StringTokenizer(authorization,":");
+        String username = stringTokenizer.nextToken();
+        String password = stringTokenizer.nextToken();
+        stats.setDeployedApiCount(apiStatusProvider.getDeployedApiCount(username,password));
+        stats.setListOfApiNames(apiStatusProvider.getAllApisDeployed(username,password));
         return stats;
     }
 
@@ -72,9 +84,13 @@ public class ApiInformationService {
     /**
      * Provide the  status of tenant.
      */
-    public APIStatusData getApiStatus(@PathParam("apiName") String apiName, @PathParam("version") String version) {
-
-        return apiStatusProvider.getApiDataOfApi(null, 0, apiName, version);
+    public APIStatusData getApiStatus(@PathParam("apiName") String apiName, @PathParam("version") String version,
+                                      @Context HttpHeaders httpHeaders) {
+        String authorization =getCredentials(httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION).get(0));
+        StringTokenizer stringTokenizer = new StringTokenizer(authorization,":");
+        String username = stringTokenizer.nextToken();
+        String password = stringTokenizer.nextToken();
+        return apiStatusProvider.getApiDataOfApi(username, password, apiName, version);
     }
 
 
@@ -85,8 +101,28 @@ public class ApiInformationService {
      * Provide the  status of tenant.
      */
     public APIStatusData getApiStatusForTenant(@PathParam("tenatDomain") String tenantDomain, @PathParam("tenantId")
-    int tenantId, @PathParam("apiName") String apiName, @PathParam("version") String version) {
-        return apiStatusProvider.getApiDataOfApi(tenantDomain, tenantId, apiName, version);
+            int tenantId, @PathParam("apiName") String apiName, @PathParam("version") String version, @Context
+                                                       HttpHeaders httpHeaders) {
+
+            String authorization =getCredentials(httpHeaders.getRequestHeader(HttpHeaders.AUTHORIZATION).get(0));
+            StringTokenizer stringTokenizer = new StringTokenizer(authorization,":");
+            String username = stringTokenizer.nextToken();
+            String password = stringTokenizer.nextToken();
+            return apiStatusProvider.getApiDataOfApi(username, password, apiName, version);
+
+    }
+    private String getCredentials(String authCredentials)  {
+
+        final String encodedUserPassword = authCredentials.replaceFirst("Basic"
+                + " ", "");
+        String usernameAndPassword = null;
+            byte[] decodedBytes = Base64.decodeBase64(encodedUserPassword.getBytes());
+        try {
+            usernameAndPassword = new String(decodedBytes, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return usernameAndPassword;
     }
 
 }
