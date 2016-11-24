@@ -493,7 +493,7 @@ public class APIMIntegrationBaseTest {
         long currentTime = System.currentTimeMillis();
         long waitTime = currentTime + WAIT_TIME;
         String colonSeparatedHeader = user.getUserName()+":"+user.getPassword();
-        String authorizationHeader = "Basic "+Base64.encodeBase64(colonSeparatedHeader.getBytes()).toString();
+        String authorizationHeader = "Basic "+new String(Base64.encodeBase64(colonSeparatedHeader.getBytes()));
         Map headerMap = new HashMap();
         headerMap.put("Authorization",authorizationHeader);
         String tenantIdentifier = getTenantIdentifier(apiProvider);
