@@ -296,9 +296,10 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 server.setHandler(wsHandler);
                 try {
                     server.start();
+                    log.info("WebSocket backend server started at port: " + serverPort);
                 } catch (InterruptedException ignore) {
                 } catch (Exception e) {
-                    log.error("Error while starting server ", e);
+                    log.error("Error while starting backend server at port: " + serverPort, e);
                     assertTrue(false, "Cannot start WebSocket server");
                 }
             }
@@ -315,33 +316,32 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         int limit = 4;
         int numberOfIterations = 6;
         WebSocketClient client = new WebSocketClient();
-        for (int count = 1; count <= numberOfIterations; count++) {
-            try {
-                log.info("Number of time API Invoked : " + count);
+        WebSocketClientImpl socket = new WebSocketClientImpl();
+        client.start();
+        URI echoUri = new URI(apiEndPoint);
+        ClientUpgradeRequest request = new ClientUpgradeRequest();
+        request.setHeader("Authorization", "Bearer " + accessToken);
+        client.connect(socket, echoUri, request);
+        socket.getLatch().await(3, TimeUnit.SECONDS);
+        try {
+            for (int count = 1; count <= numberOfIterations; count++) {
+                socket.sendMessage(testMessage);
+                waitForReply(socket);
+                log.info("Count :" + count + " Message :" + socket.getResponseMessage());
                 if (count >= limit) {
-                    WebSocketClientImpl socket = new WebSocketClientImpl();
-                    client.start();
-                    URI echoUri = new URI(apiEndPoint);
-                    ClientUpgradeRequest request = new ClientUpgradeRequest();
-                    request.setHeader("Authorization", "Bearer " + accessToken);
-                    client.connect(socket, echoUri, request);
-                    socket.getLatch().await(3, TimeUnit.SECONDS);
-                    socket.sendMessage(testMessage);
-                    waitForReply(socket);
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
                             "Received response is not matching");
-                    socket.setResponseMessage(null);
                 } else {
-                    invokeAPI(client, accessToken);
+                    assertEquals(socket.getResponseMessage(), testMessage.toUpperCase(),
+                            "Received response is not matching");
                 }
-
-            } catch (Exception ex) {
-                log.error("Error occurred while calling API : " + ex);
-                assertTrue(false, "Client cannot connect to server");
-                break;
-            } finally {
-                client.stop();
+                socket.setResponseMessage(null);
             }
+        } catch (Exception ex) {
+            log.error("Error occurred while calling API : " + ex);
+            assertTrue(false, "Client cannot connect to server");
+        } finally {
+            client.stop();
         }
     }
 
