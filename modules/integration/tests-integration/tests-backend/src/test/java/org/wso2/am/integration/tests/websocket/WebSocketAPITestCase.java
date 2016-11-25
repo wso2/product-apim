@@ -51,14 +51,15 @@ import org.wso2.am.integration.tests.websocket.server.WebSocketServerImpl;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.utils.xml.StringUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -66,6 +67,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.synapse.commons.evaluators.EvaluatorConstants.URI_FRAGMENTS.host;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -74,7 +76,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(WebSocketAPITestCase.class);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final String apiName = "WebSocketAPI";
-    private final int webSocketServerPort = 8580;
     private final String applicationName = "WebSocketApplication";
     private final String testMessage = "Web Socket Test Message";
     private String apiEndPoint;
@@ -83,6 +84,8 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private String consumerKey;
     private String consumerSecret;
     private APIRequest apiRequest;
+    private int webSocketServerPort;
+    private String webSocketServerHost;
 
     @Factory(dataProvider = "userModeDataProvider")
     public WebSocketAPITestCase(TestUserMode userMode) {
@@ -99,6 +102,15 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
+        webSocketServerHost = InetAddress.getLocalHost().getHostName();
+        int lowerPortLimit = 9950;
+        int upperPortLimit = 9999;
+        webSocketServerPort = getAvailablePort(lowerPortLimit, upperPortLimit);
+        if (webSocketServerPort == -1) {
+            throw new APIManagerIntegrationTestException("No available port in the range " +
+                    lowerPortLimit + "-" + upperPortLimit + " was found");
+        }
+        log.info("Selected port " + webSocketServerPort + " to start backend server");
         startWebSocketServer(webSocketServerPort);
     }
 
@@ -109,7 +121,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         provider = user.getUserName();
         String apiContext = "echo";
         String apiVersion = "1.0.0";
-        String webSocketServerHost = InetAddress.getLocalHost().getHostName();
+
         URI endpointUri = new URI("ws://" + webSocketServerHost + ":" + webSocketServerPort);
 
         //Create the api creation request object
@@ -137,6 +149,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         apiStore.login(storeContext.getContextTenant().getContextUser().getUserName(),
                 storeContext.getContextTenant().getContextUser().getPassword());
 
+        // replace port with inbound endpoint port
         apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion).replace("8780", "9099");
 
         List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.
@@ -370,6 +383,50 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             socket.setResponseMessage(null);
         } else {
             throw new APIManagerIntegrationTestException("Unable to create client connection");
+        }
+    }
+
+    /**
+     * Find a free port to start backend WebSocket server in given port range
+     *
+     * @param lowerPortLimit from port number
+     * @param upperPortLimit to port number
+     * @return Available Port Number
+     */
+    private int getAvailablePort(int lowerPortLimit, int upperPortLimit) {
+
+        while (lowerPortLimit < upperPortLimit) {
+            if (isPortFree(lowerPortLimit)) {
+                return lowerPortLimit;
+            }
+            lowerPortLimit += 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Check whether give port is available
+     *
+     * @param port Port Number
+     * @return status
+     */
+    private boolean isPortFree(int port) {
+        Socket s = null;
+        try {
+            s = new Socket(webSocketServerHost, port);
+            // something is using the port and has responded.
+            return false;
+        } catch (IOException e) {
+            //port available
+            return true;
+        } finally {
+            if( s != null){
+                try {
+                    s.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to close connection ",e);
+                }
+            }
         }
     }
 
