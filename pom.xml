@@ -910,7 +910,7 @@
 
         <!-- Carbon Registry -->
         <carbon.registry.version>4.6.0</carbon.registry.version>
-        <carbon.registry.package.import.version.range>[4.5.4, 4.6.1)</carbon.registry.package.import.version.range>
+        <carbon.registry.package.import.version.range>[4.5.4, 5.0.0)</carbon.registry.package.import.version.range>
 
 
         <!-- Carbon Governance -->
