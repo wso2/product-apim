@@ -223,7 +223,38 @@
                             </tasks>
                         </configuration>
                     </execution>
-                    <execution>
+		    <execution>
+                        <id>modify_entitlement_properties</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+            			<replace token= "PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">                                 
+              			   <include name="entitlement.properties"/>
+            			</replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+		    <execution>
+                        <id>modify_application_authenticaton</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <replace token= "&lt;AuthorizationHandler&gt;" value="&lt;!--AuthorizationHandler&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                   <include name="application-authentication.xml"/>
+                                </replace>
+				<replace token= "&lt;/AuthorizationHandler&gt;" value="&lt;/AuthorizationHandler--&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                   <include name="application-authentication.xml"/>
+                                </replace>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+		    <execution>
                         <id>clean_target</id>
                         <phase>install</phase>
                         <configuration>
@@ -470,6 +501,23 @@
 			    <namespaceContexts>
 				<s>http://wso2.org/projects/carbon/carbon.xml</s>
         		    </namespaceContexts>
+                        </configuration>
+                    </execution>
+		    <execution>
+                        <id>init-claim-manager</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                   <transformation>
+                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</input>
+                                        <output>../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</output>
+                                        <config>user_mgt_config_change.xml</config>
+                                    </transformation>
+                            </transformations>
                         </configuration>
                     </execution>
                 </executions>

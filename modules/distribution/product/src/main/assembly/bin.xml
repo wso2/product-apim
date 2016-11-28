@@ -48,6 +48,7 @@
                 <exclude>**/carbon.xml</exclude>
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/identity.xml</exclude>
+                <exclude>**/user-mgt.xml</exclude>
                 <exclude>**/master-datasources.xml</exclude>
         	    <exclude>**/repository/components/plugins/woden_${woden.version}.jar</exclude>
                 <exclude>**/lib/org.wso2.ciphertool-1.0.0-wso2v2.jar</exclude>
@@ -119,7 +120,7 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <includes>
                 <include>**/api-manager.xml</include>
-            </includes>
+	    </includes>
         </fileSet>
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/database</directory>
@@ -951,7 +952,12 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-        <file>
+	<file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+	<file>
             <source>
                 ../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/lifecycles/APILifeCycle.xml
             </source>
