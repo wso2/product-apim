@@ -332,7 +332,7 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.application.authentication.framework.server.feature:${carbon.identity.version}
-                                </featureArtifactDef>
+			    	</featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.user.ws:org.wso2.carbon.um.ws.service.server.feature:${carbon.identity-user-ws.version}
                                 </featureArtifactDef>
@@ -960,7 +960,7 @@
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group
                                     </id>
                                     <version>${carbon.identity.version}</version>
-                                </feature>
+			    	</feature>
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.registration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1519,7 +1519,7 @@
                                     <id>org.wso2.carbon.identity.application.authentication.framework.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-				                <feature>
+				<feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -1859,7 +1859,7 @@
                                     </id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-				                <feature>
+				<feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -2187,7 +2187,7 @@
                                     </id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-				                <feature>
+				<feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
@@ -2628,7 +2628,7 @@
                                     </id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-				                <feature>
+				<feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
                                     <version>${carbon.commons.version}</version>
                                 </feature>
