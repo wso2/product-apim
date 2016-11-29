@@ -341,7 +341,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 socket.sendMessage(testMessage);
                 waitForReply(socket);
                 log.info("Count :" + count + " Message :" + socket.getResponseMessage());
-                if (count >= limit) {
+                if (count > limit) {
                     assertEquals(socket.getResponseMessage(), "Websocket frame throttled out",
                             "Received response is not matching");
                 } else {
