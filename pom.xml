@@ -583,7 +583,7 @@
                 <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
@@ -739,7 +739,7 @@
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
@@ -755,7 +755,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.application.mgt.stub</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
@@ -765,7 +765,7 @@
                 <version>${carbon.commons.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
                 <version>${carbon.identity.version}</version>
             </dependency>
@@ -775,7 +775,7 @@
                 <version>${carbon.rest.api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.user.ws</groupId>
                 <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
                 <version>${carbon.identity-user-ws.version}</version>
             </dependency>
@@ -840,7 +840,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wso2.carbon.identity</groupId>
+                <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
                 <artifactId>org.wso2.carbon.identity.oauth.stub</artifactId>
                 <version>${carbon.identity-inbound-auth-oauth.version}</version>
             </dependency>
@@ -930,13 +930,13 @@
         <carbon.mediation.version>4.6.7</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.2.0</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>5.1.1</carbon.identity-inbound-auth-oauth.version>
-        <carbon.identity-user-ws.version>5.1.1</carbon.identity-user-ws.version>
-        <carbon.identity-inbound-auth-saml2.version>5.1.2</carbon.identity-inbound-auth-saml2.version>
-        <carbon.identity-inbound-auth-openid.version>5.1.1</carbon.identity-inbound-auth-openid.version>
-        <carbon.identity-local-auth-basicauth.version>5.1.1</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.1.1</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity.version>5.6.17</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>5.2.7</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity-user-ws.version>5.1.3</carbon.identity-user-ws.version>
+	<carbon.identity-carbon-auth-saml2.version>5.1.6</carbon.identity-carbon-auth-saml2.version>
+	<carbon.identity-inbound-auth-openid.version>5.2.0</carbon.identity-inbound-auth-openid.version>
+        <carbon.identity-local-auth-basicauth.version>5.2.2</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.4</carbon.identity-outbound-auth-samlsso.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.0</carbon.deployment.version>

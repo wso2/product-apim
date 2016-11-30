@@ -244,7 +244,7 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
 
             return HttpRequestUtil.doPost(new URL(storeURLHttp + "store/site/blocks/user/sign-up/ajax/user-add.jag"),
                     "action=addUser&username=" + userName + "&password=" + password + "&allFieldsValues=" +
-                            "|||||" + email, requestHeaders);
+                            "||||" + email, requestHeaders);
         } catch (Exception e) {
             throw new APIManagerIntegrationTestException("Error in user sign up. Error: " + e.getMessage(), e);
         }
