@@ -44,7 +44,7 @@ under the License.
             <artifactId>org.wso2.carbon.authenticator.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
         </dependency>
         <dependency>
@@ -164,7 +164,7 @@ under the License.
             <artifactId>org.wso2.carbon.logging.admin.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.security.mgt.stub</artifactId>
         </dependency>
         <dependency>
@@ -176,7 +176,7 @@ under the License.
             <artifactId>org.wso2.carbon.server.admin.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.mgt.stub</artifactId>
         </dependency>
         <dependency>
@@ -184,11 +184,11 @@ under the License.
             <artifactId>org.wso2.carbon.application.mgt.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.user.profile.stub</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.user.ws</groupId>
             <artifactId>org.wso2.carbon.um.ws.api.stub</artifactId>
         </dependency>
         <dependency>
