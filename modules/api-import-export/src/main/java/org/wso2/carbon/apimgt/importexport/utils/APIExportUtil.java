@@ -748,17 +748,20 @@ public class APIExportUtil {
         writeFile(archivePath + File.separator + "Meta-information" + File.separator + "api.json", apiInJson);
 
         try {
-            String swaggerDefinition = definitionFromSwagger20.getAPIDefinition(apiToReturn.getId(), registry);
-            JsonParser parser = new JsonParser();
-            JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
-            String formattedSwaggerJson = gson.toJson(json);
-            writeFile(archivePath + File.separator + "Meta-information" + File.separator + "swagger.json",
-                    formattedSwaggerJson);
+            //If a web socket API is exported, it does not contain a swagger file.
+            //Therefore swagger export is only required for REST or SOAP based APIs
+            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(apiToReturn.getType())) {
+                String swaggerDefinition = definitionFromSwagger20.getAPIDefinition(apiToReturn.getId(), registry);
+                JsonParser parser = new JsonParser();
+                JsonObject json = parser.parse(swaggerDefinition).getAsJsonObject();
+                String formattedSwaggerJson = gson.toJson(json);
+                writeFile(archivePath + File.separator + "Meta-information" + File.separator + "swagger.json",
+                          formattedSwaggerJson);
 
-            if (log.isDebugEnabled()) {
-                log.debug("Meta information retrieved successfully");
+                if (log.isDebugEnabled()) {
+                    log.debug("Meta information retrieved successfully");
+                }
             }
-
         } catch (APIManagementException e) {
             String errorMessage = "Error while retrieving Swagger definition";
             log.error(errorMessage, e);
@@ -774,6 +777,8 @@ public class APIExportUtil {
     private static void cleanApiDataToExport(API api) {
         // Thumbnail will be set according to the importing environment. Therefore current URL is removed
         api.setThumbnailUrl(null);
+        // WSDL file path will be set according to the importing environment. Therefore current path is removed
+        api.setWsdlUrl(null);
         // Swagger.json contains complete details about scopes and URI templates. Therefore scope and URI template
         // details are removed from api.json
         api.setScopes(new TreeSet<Scope>());
