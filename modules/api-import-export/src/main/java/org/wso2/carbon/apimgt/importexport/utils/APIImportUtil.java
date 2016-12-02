@@ -282,34 +282,38 @@ public final class APIImportUtil {
 
         try{
 
-            String swaggerContent  = FileUtils.readFileToString(
-                    new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
-
             provider.addAPI(importedApi);
-            addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
-            //Load required properties from swagger to the API
-            Set<URITemplate> uriTemplates =
-                    definitionFromSwagger20.getURITemplates(importedApi, swaggerContent);
-            importedApi.setUriTemplates(uriTemplates);
-            Set<Scope> scopes = definitionFromSwagger20.getScopes(swaggerContent);
-            importedApi.setScopes(scopes);
+            //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
+            if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
 
-            for (URITemplate uriTemplate : uriTemplates) {
-                Scope scope = uriTemplate.getScope();
-                if (scope != null && !(APIUtil.isWhiteListedScope(scope.getKey()))) {
-                    if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(),
-                                                    PrivilegedCarbonContext.getThreadLocalCarbonContext()
-                                                                           .getTenantId(true))) {
-                        String errorMessage = "Error in adding API. Scope " + scope.getKey() + " is already assigned " +
-                                              "by another API \n";
-                        log.error(errorMessage);
-                        throw new APIImportException(errorMessage);
+                String swaggerContent = FileUtils.readFileToString(
+                        new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
+
+                addSwaggerDefinition(importedApi.getId(), swaggerContent);
+
+                //Load required properties from swagger to the API
+                Set<URITemplate> uriTemplates = definitionFromSwagger20.getURITemplates(importedApi, swaggerContent);
+                importedApi.setUriTemplates(uriTemplates);
+                Set<Scope> scopes = definitionFromSwagger20.getScopes(swaggerContent);
+                importedApi.setScopes(scopes);
+
+                for (URITemplate uriTemplate : uriTemplates) {
+                    Scope scope = uriTemplate.getScope();
+                    if (scope != null && !(APIUtil.isWhiteListedScope(scope.getKey()))) {
+                        if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(),
+                                                        PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true))) {
+                            String errorMessage =
+                                    "Error in adding API. Scope " + scope.getKey() + " is already assigned " +
+                                    "by another API \n";
+                            log.error(errorMessage);
+                            throw new APIImportException(errorMessage);
+                        }
                     }
                 }
+                // This is required to make url templates and scopes get effected.
+                provider.updateAPI(importedApi);
             }
-            // This is required to make url templates and scopes get effected.
-            provider.updateAPI(importedApi);
 
         } catch (APIManagementException e){
             //Error is logged and APIImportException is thrown because adding API and swagger are mandatory steps
@@ -644,6 +648,7 @@ public final class APIImportUtil {
                 importedApi.setWsdlUrl(wsdlFileUrl.toString());
                 Registry registry = APIExportUtil.getRegistry();
                 APIUtil.createWSDL((org.wso2.carbon.registry.core.Registry) registry, importedApi);
+                provider.updateAPI(importedApi);
             } catch (MalformedURLException e) {
                 //this exception is logged and ignored since WSDL is optional for an API
                 log.error("Error in getting WSDL URL. ", e);
@@ -653,6 +658,9 @@ public final class APIImportUtil {
             } catch (APIManagementException e) {
                 //this exception is logged and ignored since WSDL is optional for an API
                 log.error("Error in creating the WSDL resource in the registry. ", e);
+            } catch (FaultGatewaysException e) {
+                //This is logged and process is continued because WSDL is optional for an API
+                log.error("Failed to update API after adding WSDL. ", e);
             }
         }
     }
