@@ -45,6 +45,7 @@ import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 
 /**
@@ -88,7 +89,7 @@ public class APIMANAGER5326CustomStatusMsgTestCase extends APIMIntegrationBaseTe
         String apiName = "ErrorResponseCheckAPI";
         String apiVersion = "1.0.0";
         String apiContext = "message";
-        String endpointUrl = "http://localhost:1989";
+        String endpointUrl = "http://" + InetAddress.getLocalHost().getHostName() + ":1989";
         String appName =  "testApplication";
 
         try {
