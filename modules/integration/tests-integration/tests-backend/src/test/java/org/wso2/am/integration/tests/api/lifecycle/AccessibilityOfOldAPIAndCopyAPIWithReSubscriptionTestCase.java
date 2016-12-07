@@ -189,6 +189,7 @@ public class AccessibilityOfOldAPIAndCopyAPIWithReSubscriptionTestCase extends A
     @Test(groups = {"wso2.am"}, description = "Test invocation of new API version  after the new version is subscribed.",
             dependsOnMethods = "testSubscribeTheNewVersion")
     public void testInvokeNewAPIAfterSubscribeTheNewVersion() throws Exception {
+        Thread.sleep(30000);
         //Invoke  new version after subscription
         HttpResponse oldVersionInvokeResponse = HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,API_VERSION_2_0_0)
                                                                       + API_END_POINT_METHOD, requestHeaders);
