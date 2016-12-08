@@ -1,6 +1,6 @@
 #!/bin/sh
 # ----------------------------------------------------------------------------
-#  Copyright 2005-2012 WSO2, Inc. http://www.wso2.org
+#  Copyright 2005-2016 WSO2, Inc. http://www.wso2.org
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -48,7 +48,11 @@ Darwin*) darwin=true
              echo "Using Java version: $JAVA_VERSION"
            fi
            if [ -z "$JAVA_HOME" ] ; then
-             JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/${JAVA_VERSION}/Home
+               if [ -x '/usr/libexec/java_home' ] ; then
+                   JAVA_HOME=`/usr/libexec/java_home`
+               elif [ -d "/System/Library/Frameworks/JavaVM.framework/Versions/$JAVA_VERSION/Home" ]; then
+                   JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/$JAVA_VERSION/Home
+               fi
            fi
            ;;
 esac
