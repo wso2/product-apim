@@ -366,10 +366,12 @@ public class APIMIntegrationBaseTest {
         return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "") + "/" + apiContext + "/" + version;
     }
 
-    protected String getWebSocketAPIInvocationURL(String apiContext, String version)
+    protected String getWebSocketAPIInvocationURL(String apiContext, String version, int inboundWebSocketPort)
             throws XPathExpressionException {
-        return gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
-                replace("http","ws") + "/" + apiContext + "/" + version;
+        String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
+                replace("http", "ws");
+        url = url.substring(0, url.lastIndexOf(":") + 1) + inboundWebSocketPort + "/" + apiContext + "/" + version;
+        return url;
     }
 
     protected String getAPIInvocationURLHttps(String apiContext) throws XPathExpressionException {
