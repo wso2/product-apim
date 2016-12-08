@@ -991,7 +991,7 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.mediator.publishevent.feature.group</id>
+                                    <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -1594,7 +1594,7 @@
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.mediator.publishevent.feature.group</id>
+                                    <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
@@ -1943,6 +1943,10 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
+                                    <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.xacml.mediator.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                             </features>
@@ -2389,10 +2393,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.mediator.cache.server.feature.group</id>
-                                    <version>${carbon.mediation.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.mediator.publishevent.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
                                 </feature>
                                 <feature>
