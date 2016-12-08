@@ -67,7 +67,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.synapse.commons.evaluators.EvaluatorConstants.URI_FRAGMENTS.host;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -78,6 +77,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
     private final String testMessage = "Web Socket Test Message";
+    private final int inboundWebSocketPort = 9099;
     private String apiEndPoint;
     private APIPublisherRestClient apiPublisher;
     private String provider;
@@ -150,7 +150,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getPassword());
 
         // replace port with inbound endpoint port
-        apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion).replace("8780", "9099");
+        apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion, inboundWebSocketPort);
 
         List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.
                 getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
