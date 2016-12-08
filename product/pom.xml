@@ -539,7 +539,79 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.18.1</version>
+                <configuration>
+                <images>
+                    <image>
+                        <name>wso2am</name>
+                        <build>
+                            <dockerFileDir>${project.basedir}/docker</dockerFileDir>
+                            <cleanup>true</cleanup>
+                            <tags>
+                                <tag>latest</tag>
+                            </tags>
+                            <assembly>
+                                <mode>dir</mode>
+                                <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+                                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+                                <id>wso2am-c5</id>
+                                    <files>
+                                        <file>
+                                            <source>${project.build.directory}/${project.build.finalName}.zip</source>
+                                            <outputDirectory>./</outputDirectory>
+                                            <destName>wso2am.zip</destName>
+                                        </file>
+                                    </files>
+                                </inline>
+                            </assembly>
+                        </build>
+                        <run>
+                            <namingStrategy>none</namingStrategy>
+                            <ports>
+                                <port>9090:9090</port>
+                            </ports>
+                            <wait>
+                                <tcp>
+                                    <ports>
+                                        <port>9090</port>
+                                    </ports>
+                                </tcp>
+                                <time>60000</time>
+                            </wait>
+                        </run>
+                    </image>
+                </images>
+                </configuration>
+               <!-- <executions>
+                    <execution>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>remove</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                            <goal>remove</goal>
+                        </goals>
+                    </execution>
+                </executions>-->
+            </plugin>
         </plugins>
     </build>
 </project>
