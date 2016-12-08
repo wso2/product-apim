@@ -64,7 +64,7 @@ public class ESBJAVA3447PreserveCharsetInContentTypeTestCase extends APIMIntegra
         Thread.sleep(5000);
     }
 
-    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
+    @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
     @org.testng.annotations.Test(groups = "wso2.am",
             description = "Test for preserving Charset in Content-Type header in the request")
     public void testPreserveCharsetInContentTypeHeader() throws Exception {
