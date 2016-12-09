@@ -48,7 +48,17 @@
             <url>http://dist.wso2.org/snapshots/maven2</url>
         </pluginRepository>
     </pluginRepositories>
-
+<build>
+    <pluginManagement>
+        <plugins>
+            <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.18.1</version>
+            </plugin>
+        </plugins>
+    </pluginManagement>
+</build>
 
     <dependencyManagement>
         <dependencies>
