@@ -151,6 +151,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
 
         // replace port with inbound endpoint port
         apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion, inboundWebSocketPort);
+        log.info("API Endpoint URL" + apiEndPoint);
 
         List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.
                 getAPIIdentifierListFromHttpResponse(apiPublisher.getAllAPIs());
@@ -209,7 +210,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     @Test(description = "Test Throttling for web socket API", dependsOnMethods = "testWebSocketAPIInvocation")
     public void testWebSocketAPIThrottling() throws Exception {
         //Deploy Throttling policy
-        AdminDashboardRestClient adminDashboardRestClient = new AdminDashboardRestClient(getGatewayMgtURLHttps());
+        AdminDashboardRestClient adminDashboardRestClient = new AdminDashboardRestClient(getPublisherURLHttps());
         adminDashboardRestClient.login(user.getUserName(), user.getPassword());
         InputStream inputStream = new FileInputStream(getAMResourceLocation() + File.separator +
                 "configFiles" + File.separator + "webSocketTest" + File.separator + "policy.json");
@@ -373,7 +374,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
         ClientUpgradeRequest request = new ClientUpgradeRequest();
         request.setHeader("Authorization", "Bearer " + accessToken);
         client.connect(socket, echoUri, request);
-        if (socket.getLatch().await(3, TimeUnit.SECONDS)) {
+        if (socket.getLatch().await(30, TimeUnit.SECONDS)) {
             socket.sendMessage(testMessage);
             waitForReply(socket);
             assertEquals(StringUtils.isEmpty(socket.getResponseMessage()), false,
