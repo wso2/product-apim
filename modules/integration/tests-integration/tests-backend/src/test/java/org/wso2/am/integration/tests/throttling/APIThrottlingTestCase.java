@@ -73,7 +73,7 @@ import static org.testng.AssertJUnit.assertTrue;
 /**
  * This will API Throttling for APIs.
  */
-@SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
+@SetEnvironment(executionEnvironments = {ExecutionEnvironment.ALL})
 public class APIThrottlingTestCase extends APIManagerLifecycleBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient1;
