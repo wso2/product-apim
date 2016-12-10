@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * This test case is used to test the API Store search API by API's TAG
  */
-@SetEnvironment(executionEnvironments = { ExecutionEnvironment.ALL })
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class APISearchAPIByTagTestCase extends APIMIntegrationBaseTest {
     private final Log log = LogFactory.getLog(APISearchAPIByTagTestCase.class);
     private final String API_NAME_1 = "APISearchAPIByTagAPIName_1";

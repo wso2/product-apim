@@ -34,6 +34,8 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
+import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
@@ -48,6 +50,8 @@ import java.nio.file.Paths;
  * having a Script mediator calling Thread.sleep before the Send mediator of out sequence of the API
  * in the synapse configuration.
  */
+
+@SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE }) 
 public class APIM4312NPEAfterRequestTimeoutTestCase extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIM4312NPEAfterRequestTimeoutTestCase.class);
 
