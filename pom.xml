@@ -51,26 +51,6 @@
 <build>
     <pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.19.1</version>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <id>integration-test</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>verify</id>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin><!-- Overridden from parent pom to exclude generated sources -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -125,32 +105,48 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>io.fabric8</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.18.1</version>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>start</id>
-                        <phase>pre-integration-test</phase>
+                        <id>ant-execute</id>
                         <goals>
-                            <goal>build</goal>
-                            <goal>start</goal>
+                            <goal>run</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>stop</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>remove</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                            <goal>remove</goal>
-                        </goals>
+                        <configuration>
+                            <target >
+                                <exec executable="mvn">
+                                    <arg value="docker:build"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                                <exec executable="mvn">
+                                    <arg value="docker:start"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                                <exec executable="mvn">
+                                    <arg value="failsafe:integration-test"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                                <exec executable="mvn">
+                                    <arg value="failsafe:verify"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                                <exec executable="mvn">
+                                    <arg value="docker:stop"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                                <exec executable="mvn">
+                                    <arg value="docker:remove"/>
+                                    <arg value="-f"/>
+                                    <arg value="integration-tests/pom.xml"/>
+                                </exec>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -268,9 +264,9 @@
     <modules>
         <module>samples</module>
         <module>product</module>
-        <module>gateway</module>
 <!--
-        <module>integration-tests</module>
+        <module>gateway</module>
 -->
+        <module>integration-tests</module>
     </modules>
 </project>
