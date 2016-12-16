@@ -97,62 +97,102 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.19.1</version>
-      </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>0.18.1</version>
-        <configuration>
-          <images>
-            <image>
-              <name>wso2am</name>
-              <build>
-                <dockerFileDir>${project.parent.basedir}/product/docker</dockerFileDir>
-                <cleanup>true</cleanup>
-                <tags>
-                  <tag>latest</tag>
-                </tags>
-                <assembly>
-                  <mode>dir</mode>
-                  <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
-                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-                    <id>wso2am-c5</id>
-                    <files>
-                      <file>
-                        <source>${project.basedir}/../product/target/WSO2APIManager-1.0.0-SNAPSHOT.zip</source>
-                        <outputDirectory>./</outputDirectory>
-                        <destName>wso2am.zip</destName>
-                      </file>
-                    </files>
-                  </inline>
-                </assembly>
-              </build>
-              <run>
-                <namingStrategy>none</namingStrategy>
-                <ports>
-                  <port>9090:9090</port>
-                </ports>
-                <wait>
-                  <tcp>
-                    <ports>
-                      <port>9090</port>
-                    </ports>
-                  </tcp>
-                  <time>60000</time>
-                </wait>
-              </run>
-            </image>
-          </images>
-        </configuration>
-      </plugin>
-
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>local-test</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.19.1</version>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <goals>
+                  <goal>integration-test</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>verify</id>
+                <goals>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.18.1</version>
+            <executions>
+              <execution>
+                <id>start-docker</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop-docker</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                  <goal>remove</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <images>
+                <image>
+                  <name>wso2am</name>
+                  <build>
+                    <dockerFileDir>${project.parent.basedir}/product/docker</dockerFileDir>
+                    <cleanup>true</cleanup>
+                    <tags>
+                      <tag>latest</tag>
+                    </tags>
+                    <assembly>
+                      <mode>dir</mode>
+                      <inline xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+                        <id>wso2am-c5</id>
+                        <files>
+                          <file>
+                            <source>${project.basedir}/../product/target/WSO2APIManager-1.0.0-SNAPSHOT.zip</source>
+                            <outputDirectory>./</outputDirectory>
+                            <destName>wso2am.zip</destName>
+                          </file>
+                        </files>
+                      </inline>
+                    </assembly>
+                  </build>
+                  <run>
+                    <namingStrategy>none</namingStrategy>
+                    <ports>
+                      <port>9090:9090</port>
+                    </ports>
+                    <wait>
+                      <tcp>
+                        <ports>
+                          <port>9090</port>
+                        </ports>
+                      </tcp>
+                      <time>60000</time>
+                    </wait>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>io.swagger</groupId>
