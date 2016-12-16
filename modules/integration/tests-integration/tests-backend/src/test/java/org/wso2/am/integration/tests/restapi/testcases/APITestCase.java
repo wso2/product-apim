@@ -61,7 +61,7 @@ public class APITestCase extends APIMIntegrationBaseTest {
         String gatewayURL = getGatewayURLNhttp();
         String keyManagerURL = getKeyManagerURLHttp();
 
-        //file name of the JSON data file related to : API handling test case
+        //File name of the JSON data file related to : API handling test case
         String dataFileName = "APITestCase.txt";
         String dataFilePath = (new File(System.getProperty("user.dir"))).getParent() +
                 RESTAPITestConstants.PATH_SUBSTRING + dataFileName;
