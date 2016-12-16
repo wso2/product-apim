@@ -104,52 +104,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>ant-execute</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target >
-                                <exec executable="mvn">
-                                    <arg value="docker:build"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                                <exec executable="mvn">
-                                    <arg value="docker:start"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                                <exec executable="mvn">
-                                    <arg value="failsafe:integration-test"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                                <exec executable="mvn">
-                                    <arg value="failsafe:verify"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                                <exec executable="mvn">
-                                    <arg value="docker:stop"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                                <exec executable="mvn">
-                                    <arg value="docker:remove"/>
-                                    <arg value="-f"/>
-                                    <arg value="integration-tests/pom.xml"/>
-                                </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </pluginManagement>
 </build>
