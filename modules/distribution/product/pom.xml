@@ -228,7 +228,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-            			<replace token= "PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">                                 
+            			<replace token= "PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
               			   <include name="entitlement.properties"/>
             			</replace>
                             </tasks>
@@ -471,13 +471,13 @@
                                     <token>(/repository/conf/security/Owasp.CsrfGuard.Carbon.properties)</token>
                                     <value>repository/conf/security/Owasp.CsrfGuard.Carbon.properties</value>
                                 </replacement>
-                            </replacements>	
+                            </replacements>
 			</configuration>
-                    </execution>		
+                    </execution>
                 </executions>
 	    </plugin>
 
-	    <!-- Add the scope validator to the identity.xml file -->
+            <!-- Add the scope validator to the identity.xml file -->
             <plugin>
                 <groupId>com.google.code.maven-config-processor-plugin</groupId>
                 <artifactId>config-processor-maven-plugin</artifactId>
@@ -489,21 +489,25 @@
                         <goals>
                             <goal>process</goal>
                         </goals>
-			<configuration>
-			    <failOnMissingXpath>false</failOnMissingXpath>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
                             <transformations>
-                                   <transformation>
-                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</input>
-					<output>../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml</output>
-                                        <config>identity_config_change.xml</config>
-                                    </transformation>
-			    </transformations>
-			    <namespaceContexts>
-				<s>http://wso2.org/projects/carbon/carbon.xml</s>
-        		    </namespaceContexts>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/identity.xml
+                                    </output>
+                                    <config>identity_config_change.xml</config>
+                                </transformation>
+                            </transformations>
+                            <namespaceContexts>
+                                <s>http://wso2.org/projects/carbon/carbon.xml</s>
+                            </namespaceContexts>
                         </configuration>
                     </execution>
-		    <execution>
+                    <execution>
                         <id>init-claim-manager</id>
                         <phase>prepare-package</phase>
                         <goals>
@@ -512,16 +516,44 @@
                         <configuration>
                             <failOnMissingXpath>false</failOnMissingXpath>
                             <transformations>
-                                   <transformation>
-                                        <input>${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</input>
-                                        <output>../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</output>
-                                        <config>user_mgt_config_change.xml</config>
-                                    </transformation>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml
+                                    </output>
+                                    <config>user_mgt_config_change.xml</config>
+                                </transformation>
                             </transformations>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>add-mime-types</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingXpath>false</failOnMissingXpath>
+                            <transformations>
+                                <transformation>
+                                    <input>
+                                        ${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
+                                    </input>
+                                    <output>
+                                        ../../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml
+                                    </output>
+                                    <config>tomcat_web_xml_change.xml</config>
+                                </transformation>
+                            </transformations>
+                            <namespaceContexts>
+                                <tom>http://java.sun.com/xml/ns/javaee</tom>
+                            </namespaceContexts>
+                        </configuration>
+                    </execution>
                 </executions>
-             </plugin>
+            </plugin>
 
 	    <!-- Skip deploying the product zip to nexus -->
 	    <plugin>
