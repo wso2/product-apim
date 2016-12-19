@@ -30,7 +30,7 @@ public class APIMIntegrationConstants {
     public static final String AM_GATEWAY_WRK_INSTANCE = "gateway-wrk";
     public static final String AM_KEY_MANAGER_INSTANCE = "keyManager";
     public static final String BACKEND_SERVER_INSTANCE = "backend-server";
-    public static final String REST_API_VERSION = "v0.10";
+    public static final String REST_API_VERSION = "v0.11";
 
     //Response element names
     public static final String API_RESPONSE_ELEMENT_NAME_ERROR = "error";

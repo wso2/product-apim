@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "GET",
-                    "url": "api/am/publisher/v0.10//tiers/api",
+                    "url": "api/am/publisher/v0.11//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -29,7 +29,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.10//tiers/api",
+                    "url": "api/am/publisher/v0.11//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -54,7 +54,7 @@
                 },
                 "data": {
                     "method": "PUT",
-                    "url": "api/am/publisher/v0.10//tiers/api/NewTier",
+                    "url": "api/am/publisher/v0.11//tiers/api/NewTier",
                     "query-parameters": {
                         "tierName": "NewTier",
                         "Content-Type": "application/json"
@@ -83,7 +83,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.10//tiers/api/NewTier",
+                    "url": "api/am/publisher/v0.11//tiers/api/NewTier",
                     "query-parameters": {
                         "tierName": "NewTier"
                     },

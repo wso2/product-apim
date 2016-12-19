@@ -6,7 +6,7 @@
                 },
                 "data": {
                     "method": "POST",
-                    "url": "api/am/publisher/v0.10//tiers/api",
+                    "url": "api/am/publisher/v0.11//tiers/api",
                     "query-parameters": "",
                     "request-headers": {
                         "Authorization": "Bearer"
@@ -30,7 +30,7 @@
                },
                "data":{
                   "method":"POST",
-                  "url":"/api/am/publisher/v0.10//apis",
+                  "url":"/api/am/publisher/v0.11//apis",
                   "query-parameters":"",
                   "request-headers":{
                      "Authorization":"Bearer"
@@ -89,7 +89,7 @@
                  },
                  "data":{
                     "method":"GET",
-                    "url":"/api/am/store/v0.10//tags",
+                    "url":"/api/am/store/v0.11//tags",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -111,7 +111,7 @@
                  },
                  "data":{
                     "method":"DELETE",
-                    "url":"/api/am/publisher/v0.10//apis/{apiId}",
+                    "url":"/api/am/publisher/v0.11//apis/{apiId}",
                     "query-parameters":"",
                     "request-headers":{
                        "Authorization":"Bearer"
@@ -133,7 +133,7 @@
                 },
                 "data": {
                     "method": "DELETE",
-                    "url": "api/am/publisher/v0.10//tiers/api/TempTier",
+                    "url": "api/am/publisher/v0.11//tiers/api/TempTier",
                     "query-parameters": {
                         "tierName": "TempTier"
                     },
