@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <registry provider="org.wso2.carbon.mediation.registry.WSO2Registry">
+        <parameter name="cachableDuration">15000</parameter>
+    </registry>
+    <sequence name="fault">
+        <log category="INFO" level="full" separator=",">
+            <property name="MESSAGE" value="Executing default 'fault' sequence"/>
+            <property expression="get-property('ERROR_CODE')" name="ERROR_CODE"/>
+            <property expression="get-property('ERROR_MESSAGE')" name="ERROR_MESSAGE"/>
+        </log>
+        <drop/>
+    </sequence>
+    <sequence name="main">
+        <in>
+            <log category="INFO" level="full" separator=","/>
+            <filter regex="http://localhost:9000.*" source="get-property('To')">
+                <then>
+                    <send/>
+                </then>
+                <else/>
+            </filter>
+        </in>
+        <out>
+            <send/>
+        </out>
+        <description>The main sequence for the message mediation</description>
+    </sequence>
+    <api context="/services/client/" name="ClientApi">
+        <resource methods="GET" uri-template="/urlEncoded?queryParam={+value}">
+            <inSequence>
+                <log level="custom">
+                    <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
+                </log>
+                <send>
+                    <endpoint>
+                        <http method="GET"
+                              uri-template="http://localhost:8780/services/test/urlEncoded?queryParam={uri.var.value}"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <resource methods="GET" uri-template="/escapeUrlEncoded?queryParam={+value}">
+            <inSequence>
+                <log level="custom">
+                    <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
+                </log>
+                <send>
+                    <endpoint>
+                        <http method="GET"
+                              uri-template="http://localhost:8780/services/test/escapeUrlEncoded?queryParam={+uri.var.value}"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <resource methods="GET" uri-template="/urlEncoded/{+value}">
+            <inSequence>
+                <log level="custom">
+                    <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
+                </log>
+                <send>
+                    <endpoint>
+                        <http method="GET" uri-template="http://localhost:8780/services/test_2/{uri.var.value}"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <resource methods="GET" uri-template="/escapeUrlEncoded/{+value}">
+            <inSequence>
+                <log level="custom">
+                    <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
+                </log>
+                <send>
+                    <endpoint>
+                        <http method="GET" uri-template="http://localhost:8780/services/test_2/{+uri.var.value}"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+        <resource methods="GET" uri-template="/special_case/{+value}">
+            <inSequence>
+                <log level="custom">
+                    <property name="decodedQueryParamValue" expression="get-property('uri.var.value')"></property>
+                </log>
+                <send>
+                    <endpoint>
+                        <http method="GET" uri-template="{uri.var.value}"/>
+                    </endpoint>
+                </send>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+    <api context="/services/test" name="ServerApi_v1">
+        <resource methods="GET">
+            <inSequence>
+                <log level="custom">
+                    <property expression="$axis2:REST_URL_POSTFIX" name="queryParamValue"/>
+                </log>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+    <api context="/services/test_2" name="ServerApi_v2">
+        <resource methods="GET">
+            <inSequence>
+                <log level="full">
+                </log>
+            </inSequence>
+            <outSequence>
+                <send/>
+            </outSequence>
+        </resource>
+    </api>
+</definitions>
