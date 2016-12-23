@@ -511,7 +511,7 @@
 
                                 <!-- MB Features -->
                                 <featureArtifactDef>
-                                    org.wso2.carbon.messaging:org.wso2.carbon.andes.feature:${carbon.messaging.version}
+                                    org.wso2.carbon.messaging:org.wso2.carbon.andes.server.feature:${carbon.messaging.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.metrics:org.wso2.carbon.metrics.feature:${carbon.metrics.version}
@@ -1180,7 +1180,7 @@
 
                                 <!-- MB features -->
                                 <feature>
-                                    <id>org.wso2.carbon.messaging.andes.feature.group</id>
+                                    <id>org.wso2.carbon.andes.server.feature.group</id>
                                     <version>${carbon.messaging.version}</version>
                                 </feature>
 
@@ -3503,7 +3503,7 @@
 
                                 <!-- MB features -->
                                 <feature>
-                                    <id>org.wso2.carbon.messaging.andes.feature.group</id>
+                                    <id>org.wso2.carbon.andes.server.feature.group</id>
                                     <version>${carbon.messaging.version}</version>
                                 </feature>
 
