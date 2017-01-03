@@ -36,7 +36,8 @@
                 <exclude>**/conf/synapse.xml</exclude>
                 <exclude>**/conf/security/Owasp.CsrfGuard.Carbon.properties</exclude>
                 <exclude>**/conf/security/authenticators.xml</exclude>
-		        <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+                <exclude>**/conf/tomcat/carbon/WEB-INF/web.xml</exclude>
+                <exclude>**/conf/tomcat/web.xml</exclude>
 		        <exclude>**/log4j.properties</exclude>
                 <exclude>**/services/sample01.aar</exclude>
                 <exclude>**/repository/services/version/**</exclude>
@@ -952,9 +953,14 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-	<file>
+        <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/user-mgt.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/web.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/tomcat/</outputDirectory>
             <fileMode>644</fileMode>
         </file>
 	<file>
