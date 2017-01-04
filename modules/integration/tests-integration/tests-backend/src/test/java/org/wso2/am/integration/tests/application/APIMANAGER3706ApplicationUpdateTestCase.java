@@ -38,7 +38,7 @@ import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceException;
+import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceIdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.stub.OAuthAdminServiceStub;
 import org.wso2.carbon.identity.oauth.stub.dto.OAuthConsumerAppDTO;
 
@@ -175,11 +175,11 @@ public class APIMANAGER3706ApplicationUpdateTestCase extends APIMIntegrationBase
      * @param consumerKey Auth application consumer key
      * @return return OAuthConsumerAppDTO
      * @throws RemoteException            occur if connection error occurred
-     * @throws OAuthAdminServiceException occur if OAuthAdminService invocation error occurred
+     * @throws OAuthAdminServiceIdentityOAuthAdminException occur if OAuthAdminService invocation error occurred
      * @throws XPathExpressionException   occurred if xpath evaluation occurred
      */
     private OAuthConsumerAppDTO getAuthAppDetails(String consumerKey)
-            throws RemoteException, OAuthAdminServiceException, XPathExpressionException {
+            throws RemoteException, XPathExpressionException, OAuthAdminServiceIdentityOAuthAdminException {
 
         OAuthAdminServiceStub stub = new OAuthAdminServiceStub(getKeyManagerURLHttps() + "services/OAuthAdminService");
         ServiceClient client = stub._getServiceClient();

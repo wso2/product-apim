@@ -930,12 +930,12 @@
         <carbon.mediation.version>4.6.9</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.6.59</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>5.2.28</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.7.5</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>5.3.2</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.4</carbon.identity-user-ws.version>
-        <carbon.identity-carbon-auth-saml2.version>5.1.6</carbon.identity-carbon-auth-saml2.version>
+        <carbon.identity-carbon-auth-saml2.version>5.2.0</carbon.identity-carbon-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.2.1</carbon.identity-inbound-auth-openid.version>
-        <carbon.identity-local-auth-basicauth.version>5.2.3</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-local-auth-basicauth.version>5.3.0</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.4</carbon.identity-outbound-auth-samlsso.version>
 
         <!-- carbon deployment -->
