@@ -23,14 +23,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta content="text/html; charset=iso-8859-1" http-equiv="content-type"/>
-    <title>WSO2 API Manager v2.0.0 - 28nd July 2016</title>
+    <title>WSO2 API Manager v2.1.0 - 6th January 2017</title>
 </head>
 <body>
 <div id="main-content">
-<h1>The WSO2 API Manager 2.0.0 Released!</h1>
+<h1>The WSO2 API Manager 2.1.0 Released!</h1>
 
 <p>
-    The WSO2 API Manager team is pleased to announce the release of version 2.0.0 of
+    The WSO2 API Manager team is pleased to announce the release of version 2.1.0 of
     the Open Source API Manager.
 </p>
 
@@ -71,7 +71,7 @@
 <p>
     For more information on WSO2 API Manager please visit <a href="http://wso2.com/products/api-manager">
     http://wso2.com/products/api-manager</a>. Also take a look at the online product
-    <a href="https://docs.wso2.com/display/AM200/WSO2+API+Manager+Documentation">documentation</a>.
+    <a href="https://docs.wso2.com/display/AM210/WSO2+API+Manager+Documentation">documentation</a>.
 </p>
 
 <h2>How to Run</h2>
@@ -87,153 +87,77 @@
     <li>Use "admin", "admin" as the username and password to login as an admin</li>
 </ol>
 
-<h2>New Features in 2.0.0</h2>
-<ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3314'>APIMANAGER-3314</a>] -         Alert configurations in AM using CEP
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4605'>APIMANAGER-4605</a>] -         Notify subscribers of new API Versions
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4606'>APIMANAGER-4606</a>] -         API Manager latency Breakdown Graph On API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4629'>APIMANAGER-4629</a>] -         Use the WSO2 Bootstrap theme for the Publisher and Store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4660'>APIMANAGER-4660</a>] -         Advanced Throttling Implementation based on CEP
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5112'>APIMANAGER-5112</a>] -         New REST API for Admin-Dashboard Related functionality including new Throttling Implementation
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5113'>APIMANAGER-5113</a>] -         New operations for Publisher CXF REST API related to thumbnails and sequences
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5260'>APIMANAGER-5260</a>] -         Real Time Analytics (Alerts) on API Manager
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5261'>APIMANAGER-5261</a>] -         Geo Location Indicator of API caller
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5262'>APIMANAGER-5262</a>] -         User Agent based Analytics on API Manager
-</li>
-</ul>
+    <h2>New Features in 2.1.0</h2>
+    <ul>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-1339'>APIMANAGER-1339</a>] -         Add websocket support to API Manager
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4598'>APIMANAGER-4598</a>] -         Client side SDK generation feature
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5114'>APIMANAGER-5114</a>] -         New operation for sequence upload/download in Publisher CXF REST API
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5438'>APIMANAGER-5438</a>] -         Enjoyhint Feature
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5457'>APIMANAGER-5457</a>] -         Workflow for API lifecycle state change
+        </li>
+    </ul>
 
-<h2>Improvements in 2.0.0</h2>
-<ul>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-643'>APIMANAGER-643</a>] -         Versions tab of the publisher API view need to provide means of creating a new version then and there. 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-859'>APIMANAGER-859</a>] -         Implement Rate Limiting Policies
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-931'>APIMANAGER-931</a>] -         Improve fileUpload UI for API Documentations
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-948'>APIMANAGER-948</a>] -         For IP based throttling we should first look at x- forward for header and use it as client IP
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3846'>APIMANAGER-3846</a>] -         Improvement in endpoint listing
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-3965'>APIMANAGER-3965</a>] -         Per API CORS Configuration
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4383'>APIMANAGER-4383</a>] -         Change the error message into a meaningful one that get after exceeding the hard throttling limit in APIM logs.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4413'>APIMANAGER-4413</a>] -         Include different error codes when throttling out in different throttling levels
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4475'>APIMANAGER-4475</a>] -         API authentication error response should bear the message type provided the Accept header of the request
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4476'>APIMANAGER-4476</a>] -         Need an automation test for testing the Default Endpoint feature
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4488'>APIMANAGER-4488</a>] -         Performance issue when updating an application
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4492'>APIMANAGER-4492</a>] -         More log information about APISecurityException
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4527'>APIMANAGER-4527</a>] -         Upgrade Swagger Editor and UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4531'>APIMANAGER-4531</a>] -         Prevent the Signature Verification Error log for tenants
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4555'>APIMANAGER-4555</a>] -         WSO2 Product APIM builds unstable
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4592'>APIMANAGER-4592</a>] -         Make KeyValidation Client pool configurable
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4595'>APIMANAGER-4595</a>] -         Message type of &quot;invalid token&quot; error message should change based on the Content-Type Header
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4600'>APIMANAGER-4600</a>] -         Provide a configuration to allow for disabling the Forum in the API Store UI
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4612'>APIMANAGER-4612</a>] -         Make APIPublisher and Store apps section 508 Compliance
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4619'>APIMANAGER-4619</a>] -         Administrators should have the ability to moderate inappropriate comments in APIS in Store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4644'>APIMANAGER-4644</a>] -         Performance optimization - Close database resources before generating JWT
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4659'>APIMANAGER-4659</a>] -         Adding new Statistics graphs for the APIM publisher
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4680'>APIMANAGER-4680</a>] -         [admin-dashboard]Edit and Delete options are not visible as links in admin-dashboard
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4689'>APIMANAGER-4689</a>] -         No error message when import an invalid API Definition
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4708'>APIMANAGER-4708</a>] -         Update the info message for a successful subscription
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4719'>APIMANAGER-4719</a>] -         Error message doesn&#39;t convey it&#39;s purpose in API Versioning
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4736'>APIMANAGER-4736</a>] -         Include Add API Resource Level Policy and Edit API Resource Level Policy as heading when adding and editing an API resource level tier
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4740'>APIMANAGER-4740</a>] -         Remove Exception thrown when subscribing to blocked subscription
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4755'>APIMANAGER-4755</a>] -         Add lifecycle state transition visaulization view
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4760'>APIMANAGER-4760</a>] -         Improve a tooltip or a help when blocking an API entity in dashboard, to mention the context. 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4762'>APIMANAGER-4762</a>] -         Inverter option (switching off the policy) in &quot;Blocking entities&quot; in admin dashboard does not have any label to identify 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4775'>APIMANAGER-4775</a>] -         Adding Custom CK/CS providing feature of Key Generation to the APIM documentation
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4793'>APIMANAGER-4793</a>] -         users when rejecting a task should be able to add comments 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4797'>APIMANAGER-4797</a>] -         the status of an application is shown as ACTIVE with 1 subscription even after a subscription was rejected
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4798'>APIMANAGER-4798</a>] -         No horizontal scrolling for Design API page
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4802'>APIMANAGER-4802</a>] -         Support for WSDLs with WSDL/XSD imports with relative paths when creating an API using the WSDL
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4808'>APIMANAGER-4808</a>] -         Give a proper message when you try to save a API resource level tier without a tier name
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4822'>APIMANAGER-4822</a>] -         Subscription policy selection not clear
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4823'>APIMANAGER-4823</a>] -         No indication of API saving
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4848'>APIMANAGER-4848</a>] -         system should support sending specific alerts to specific emails
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4852'>APIMANAGER-4852</a>] -         system should allow to delete alerts that are shown on admin dashboard
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4854'>APIMANAGER-4854</a>] -         Add wsdl support for WSO2 API Manager rest APIs.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4867'>APIMANAGER-4867</a>] -         need more detailed information for health of an API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4870'>APIMANAGER-4870</a>] -         Tier limit hitting alert behavior is not clear 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4890'>APIMANAGER-4890</a>] -         Supporting concatenate search in API Store and Publisher 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4907'>APIMANAGER-4907</a>] -         User should be logged out when the password has been changed in Store
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4914'>APIMANAGER-4914</a>] -         Include a tip when adding blocking entity for tenant API context.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4948'>APIMANAGER-4948</a>] -         Hide Advance Level Throttling Header Configurations when the parameters are disabled.
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5019'>APIMANAGER-5019</a>] -         Add audit logs for the important activities
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5025'>APIMANAGER-5025</a>] -         better to support the blocking of a IP address range
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5057'>APIMANAGER-5057</a>] -         Unable to configure endpoint secure scheme while adding API through the REST API
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5084'>APIMANAGER-5084</a>] -         APIM 1.10 Publisher: forward slash in API version will break the platform
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5101'>APIMANAGER-5101</a>] -         Nice to have a frame which supports zoom in zoom out for graphs
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5103'>APIMANAGER-5103</a>] -         X axis range should be consistent according to the selected time picker
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5218'>APIMANAGER-5218</a>] -         Add test case to validate JWT signature 
-</li>
-<li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5236'>APIMANAGER-5236</a>] -         Ability to create an API on behalf of other user using REST API Publisher
-</li>
-</ul>
+    <h2>Improvements in 2.1.0</h2>
+    <ul>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4527'>APIMANAGER-4527</a>] -         Upgrade Swagger Editor and UI
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4569'>APIMANAGER-4569</a>] -         Support updating an API with API import tool
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4610'>APIMANAGER-4610</a>] -         Support SSO without enabling single logout
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4863'>APIMANAGER-4863</a>] -         No message on workflow enabled App creation.
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-4985'>APIMANAGER-4985</a>] -         No option to select scope for the first time token generation in api store
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5100'>APIMANAGER-5100</a>] -         Display Error message in UI when backend fails due to errors in the inline script in prototyped APIs
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5324'>APIMANAGER-5324</a>] -         Make the description field support rich text
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5336'>APIMANAGER-5336</a>] -         Change severity level from Error to Warn when logging access token related user errors
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5339'>APIMANAGER-5339</a>] -         Support SSO SAML Request Signing and Sending ACS in Publisher
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5351'>APIMANAGER-5351</a>] -         Update Swagger SDK Generation library
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5401'>APIMANAGER-5401</a>] -         Allow to define conditional groups with query parameter values as null
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5406'>APIMANAGER-5406</a>] -         Use different keystore for Data Bridge Configuration
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5443'>APIMANAGER-5443</a>] -         Provide &quot;Get API&quot; in store RESTapi&#39;s
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5446'>APIMANAGER-5446</a>] -         Need to add a method to check user existance within roles.
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5454'>APIMANAGER-5454</a>] -         Manage Alert Types UI is not intuitive to the user on entering email addresses.
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5455'>APIMANAGER-5455</a>] -         Improve &quot;View In Store&quot; link to open in a new tab
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5459'>APIMANAGER-5459</a>] -         Allowing a comma separated email list for subscribing to Alert Types.
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5496'>APIMANAGER-5496</a>] -         Advance throttling issue with adding query parameters
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5505'>APIMANAGER-5505</a>] -         Unlimited subscription tier returned from APIUtil.getTierFromCache() method doesn?t have a tier plan
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5517'>APIMANAGER-5517</a>] -         Provide an option to set JWT exp time when Token cache is enabled.
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5523'>APIMANAGER-5523</a>] -         Increasing size of VALUE column of AM_BLOCK_CONDITIONS table
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5524'>APIMANAGER-5524</a>] -         Remove ERROR stack trace for API authentication failures
+        </li>
+        <li>[<a href='https://wso2.org/jira/browse/APIMANAGER-5537'>APIMANAGER-5537</a>] -         Save document contents in the local storage
+        </li>
+    </ul>
 
 
-<h2>Resolved Issues</h2>
-<ul>
-    <li>
-        <a href="https://wso2.org/jira/issues/?filter=13132">WSO2 API Manager 2.0.0 resolved issues</a>
-    </li>
-</ul>
+    <h2>Resolved Issues</h2>
+    <ul>
+        <li>
+            <a href="https://wso2.org/jira/issues/?filter=13623">WSO2 API Manager 2.1.0 resolved issues</a>
+        </li>
+    </ul>
 
 <h2>Key Features of WSO2 API Manager</h2>
 <p>
@@ -373,7 +297,7 @@
 </p>
 <ul>
     <li>
-        <a href="https://wso2.org/jira/issues/?filter=13133">
+        <a href="https://wso2.org/jira/issues/?filter=13621">
             Known Issues
         </a>
     </li>
