@@ -193,7 +193,7 @@
         <carbon.transport.version>2.1.6</carbon.transport.version>
         <carbon.transport.package.import.version.range>[2.0.0, 2.2.0)</carbon.transport.package.import.version.range>
 
-        <carbon.messaging.version>1.0.10</carbon.messaging.version>
+        <carbon.messaging.version>1.0.11</carbon.messaging.version>
         <carbon.messaging.package.import.version.range>[0.0.0, 2.0.0)</carbon.messaging.package.import.version.range>
 
         <osgi.framework.import.version.range>[1.8.0, 2.0.0)</osgi.framework.import.version.range>
@@ -209,7 +209,7 @@
         <carbon.jndi.version>1.0.1</carbon.jndi.version>
         <carbon.metrics.version>2.0.0</carbon.metrics.version>
         <wso2.msf4j.version>2.1.0</wso2.msf4j.version>
-        <carbon.uuf.version>1.0.0-m7</carbon.uuf.version>
+        <carbon.uuf.version>1.0.0-m9</carbon.uuf.version>
         <carbon.security.caas.version>1.0.0-m2</carbon.security.caas.version>
         <carbon.cache.version>1.0.0</carbon.cache.version>
         <javax.cache-api.version>1.0.0</javax.cache-api.version>
