@@ -301,6 +301,9 @@
         <fileSet>
             <directory>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaggeryapps/portal/</directory>
             <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
+            <excludes>
+                <exclude>jaggery.conf</exclude>
+            </excludes>
         </fileSet>
         <!-- Shindig webapp. Needed for DAS feature/portal> -->
         <fileSet>
@@ -376,6 +379,13 @@
         <fileSet>
             <directory>src/main/conf/governance</directory>
             <outputDirectory>wso2am-${pom.version}/repository/resources</outputDirectory>
+            <includes>
+                <include>**/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/conf/portal_conf</directory>
+            <outputDirectory>wso2am-${pom.version}/repository/deployment/server/jaggeryapps/portal</outputDirectory>
             <includes>
                 <include>**/**</include>
             </includes>
@@ -679,8 +689,6 @@
                 <include>**/web.xml</include>
             </includes>
         </fileSet>
-
-
     </fileSets>
 
     <dependencySets>
