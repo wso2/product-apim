@@ -49,6 +49,7 @@ public class APIManagerLifecycleBaseTest extends APIMIntegrationBaseTest {
     private static final Log log = LogFactory.getLog(APIManagerLifecycleBaseTest.class);
     protected static final String CARBON_HOME = FrameworkPathUtil.getCarbonHome();
     protected static final int HTTP_RESPONSE_CODE_OK = Response.Status.OK.getStatusCode();
+    protected static final int HTTP_RESPONSE_CODE_CREATED = Response.Status.CREATED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_UNAUTHORIZED = Response.Status.UNAUTHORIZED.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_NOT_FOUND = Response.Status.NOT_FOUND.getStatusCode();
     protected static final int HTTP_RESPONSE_CODE_SERVICE_UNAVAILABLE =
