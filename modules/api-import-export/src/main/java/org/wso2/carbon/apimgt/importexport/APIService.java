@@ -18,43 +18,41 @@
 
 package org.wso2.carbon.apimgt.importexport;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.google.gson.Gson;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.POST;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import java.io.File;
-import java.io.InputStream;
-
-import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
-import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
-import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
-
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
+import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
+import org.wso2.carbon.apimgt.importexport.utils.AuthenticatorUtil;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 /**
- * This class provides JAX-RS services for exporting and importing APIs.
- * These services provides functionality for exporting and importing single API at a time.
+ * This class provides JAX-RS services for exporting and importing APIs. These
+ * services provides functionality for exporting and importing single API at a
+ * time.
  */
 @Path("/")
 public class APIService {
@@ -62,14 +60,17 @@ public class APIService {
     private static final Log log = LogFactory.getLog(APIService.class);
 
     /**
-     * This service exports an API from API Manager for a given API ID
-     * Meta information, API icon, documentation, WSDL and sequences are exported
-     * This service generates a zipped archive which contains all the above mentioned resources
-     * for a given API
+     * This service exports an API from API Manager for a given API ID Meta
+     * information, API icon, documentation, WSDL and sequences are exported
+     * This service generates a zipped archive which contains all the above
+     * mentioned resources for a given API
      *
-     * @param name         Name of the API that needs to be exported
-     * @param version      Version of the API that needs to be exported
-     * @param providerName Provider name of the API that needs to be exported
+     * @param name
+     *            Name of the API that needs to be exported
+     * @param version
+     *            Version of the API that needs to be exported
+     * @param providerName
+     *            Provider name of the API that needs to be exported
      * @return Zipped API as the response to the service call
      */
     @GET
@@ -82,8 +83,7 @@ public class APIService {
         if (name == null || version == null || providerName == null) {
             log.error("Invalid API Information ");
 
-            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid API Information")
-                    .type(MediaType.APPLICATION_JSON).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid API Information").type(MediaType.APPLICATION_JSON).build();
         }
         log.info("Retrieving API for API-Id : " + name + "-" + version + "-" + providerName);
         APIIdentifier apiIdentifier;
@@ -97,33 +97,32 @@ public class APIService {
             }
 
             userName = AuthenticatorUtil.getAuthenticatedUserName();
-            //provider names with @ signs are only accepted
+            // provider names with @ signs are only accepted
             String apiDomain = MultitenantUtils.getTenantDomain(providerName);
             String apiRequesterDomain = MultitenantUtils.getTenantDomain(userName);
-            //Allows to export APIs created only in current tenant domain
+            // Allows to export APIs created only in current tenant domain
             if (!apiDomain.equals(apiRequesterDomain)) {
-                //not authorized to export requested API
-                log.error("Not authorized to " +
-                        "export API :" + name + "-" + version + "-" + providerName);
-                return Response.status(Response.Status.FORBIDDEN).entity("Not authorized to export API :" +
-                        name + "-" + version + "-" + providerName).type(MediaType.APPLICATION_JSON).build();
+                // not authorized to export requested API
+                log.error("Not authorized to " + "export API :" + name + "-" + version + "-" + providerName);
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity("Not authorized to export API :" + name + "-" + version + "-" + providerName)
+                        .type(MediaType.APPLICATION_JSON).build();
             }
 
             apiIdentifier = new APIIdentifier(APIUtil.replaceEmailDomain(providerName), name, version);
 
-            //create temp location for storing API data to generate archive
+            // create temp location for storing API data to generate archive
             String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
-            String createdFolders = File.separator + RandomStringUtils.
-                    randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) + File.separator;
+            String createdFolders = File.separator + RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH)
+                    + File.separator;
             File exportFolder = new File(currentDirectory + createdFolders);
             APIExportUtil.createDirectory(exportFolder.getPath());
             String archiveBasePath = exportFolder.toString();
 
             APIExportUtil.setArchiveBasePath(archiveBasePath);
 
-            //Start tenant flow for the entire export process
-            if (apiRequesterDomain != null &&
-                !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
+            // Start tenant flow for the entire export process
+            if (apiRequesterDomain != null && !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(apiRequesterDomain)) {
                 PrivilegedCarbonContext.startTenantFlow();
                 PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(apiRequesterDomain, true);
                 isTenantFlowStarted = true;
@@ -131,7 +130,8 @@ public class APIService {
 
             Response apiResourceRetrievalResponse = APIExportUtil.retrieveApiToExport(apiIdentifier, userName);
 
-            //Retrieve resources : thumbnail, meta information, wsdl, sequences and documents
+            // Retrieve resources : thumbnail, meta information, wsdl, sequences
+            // and documents
             // available for the exporting API
             if (!(Response.Status.OK.getStatusCode() == apiResourceRetrievalResponse.getStatus())) {
                 return apiResourceRetrievalResponse;
@@ -143,14 +143,12 @@ public class APIService {
 
             File file = new File(archiveBasePath + ".zip");
             Response.ResponseBuilder response = Response.ok(file);
-            response.header("Content-Disposition", "attachment; filename=\"" + file.getName() +
-                    "\"");
+            response.header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
             return response.build();
 
         } catch (APIExportException e) {
             log.error("APIExportException occurred while exporting ", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
-                    .type(MediaType.APPLICATION_JSON).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
@@ -160,66 +158,75 @@ public class APIService {
     }
 
     /**
-     * This is the service which is used to import an API. All relevant API data will be included upon the creation of
-     * the API. Depending on the choice of the user, provider of the imported API will be preserved or modified.
+     * This is the service which is used to import an API. All relevant API data
+     * will be included upon the creation of the API. Depending on the choice of
+     * the user, provider of the imported API will be preserved or modified.
      *
-     * @param uploadedInputStream uploadedInputStream input stream from the REST request
-     * @param defaultProviderStatus     user choice to keep or replace the API provider
-     * @param httpHeaders         HTTP headers for the authentication mechanism
+     * @param uploadedInputStream
+     *            uploadedInputStream input stream from the REST request
+     * @param defaultProviderStatus
+     *            user choice to keep or replace the API provider
+     * @param httpHeaders
+     *            HTTP headers for the authentication mechanism
      * @return response for the API process
      */
     @POST
     @Path("/import-api")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response importAPI(@Multipart("file") InputStream uploadedInputStream, @QueryParam("preserveProvider")
-    String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
+    public Response importAPI(@Multipart("file") InputStream uploadedInputStream,
+            @QueryParam("preserveProvider") String defaultProviderStatus, @Context HttpHeaders httpHeaders) {
 
         boolean isProviderPreserved = true;
         boolean isTenantFlowStarted = false;
 
-        //Check if the URL parameter value is specified, otherwise the default value "true" is used
+        // Check if the URL parameter value is specified, otherwise the default
+        // value "true" is used
         if (APIImportExportConstants.STATUS_FALSE.equalsIgnoreCase(defaultProviderStatus)) {
             isProviderPreserved = false;
         }
-
+        Map<String, String> extraProperties = new HashMap<String, String>();
+        for (String header : httpHeaders.getRequestHeaders().keySet()) {
+            log.info("Inspecting header: " + header);
+            if (header.toLowerCase().startsWith(APIImportExportConstants.WSO_HEADER_PREFIX.toLowerCase())) {
+                extraProperties.put(header.toLowerCase(), httpHeaders.getRequestHeader(header).get(0));
+            }
+        }
         try {
             Response authorizationResponse = AuthenticatorUtil.authorizeUser(httpHeaders);
 
-            //Process continues only if the user is authorized
+            // Process continues only if the user is authorized
             if (Response.Status.OK.getStatusCode() == authorizationResponse.getStatus()) {
 
                 String currentUser = AuthenticatorUtil.getAuthenticatedUserName();
                 APIImportUtil.initializeProvider(currentUser);
 
-                //Temporary directory is used to create the required folders
+                // Temporary directory is used to create the required folders
                 String currentDirectory = System.getProperty(APIImportExportConstants.TEMP_DIR);
-                String createdFolders = File.separator +
-                        RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH) +
-                        File.separator;
+                String createdFolders = File.separator + RandomStringUtils.randomAlphanumeric(APIImportExportConstants.TEMP_FILENAME_LENGTH)
+                        + File.separator;
                 File importFolder = new File(currentDirectory + createdFolders);
                 boolean folderCreateStatus = importFolder.mkdirs();
 
-                //API import process starts only if the required folder is created successfully
+                // API import process starts only if the required folder is
+                // created successfully
                 if (folderCreateStatus) {
 
                     String uploadFileName = APIImportExportConstants.UPLOAD_FILE_NAME;
                     String absolutePath = currentDirectory + createdFolders;
                     APIImportUtil.transferFile(uploadedInputStream, uploadFileName, absolutePath);
 
-                    String extractedFolderName = APIImportUtil.extractArchive(
-                            new File(absolutePath + uploadFileName), absolutePath);
+                    String extractedFolderName = APIImportUtil.extractArchive(new File(absolutePath + uploadFileName), absolutePath);
 
                     String tenantDomain = MultitenantUtils.getTenantDomain(currentUser);
-                    if (tenantDomain != null &&
-                        !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME
-                                .equals(tenantDomain)) {
+                    if (tenantDomain != null
+                            && !org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
                         PrivilegedCarbonContext.startTenantFlow();
                         PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain, true);
                         isTenantFlowStarted = true;
                     }
 
-                    APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved);
+                    APIImportUtil.importAPI(absolutePath + extractedFolderName, currentUser, isProviderPreserved, extraProperties);
 
                     importFolder.deleteOnExit();
                     return Response.status(Status.CREATED).entity("API imported successfully.\n").build();

@@ -89,4 +89,7 @@ public final class APIImportExportConstants {
 
     public static final String CHARSET = "UTF-8";
 
+    public static final String WSO_HEADER_PREFIX = "X-WSO2-";
+    
+    public static final String WSO_HEADER_TEMPLATE_MANAGER = "X-WSO2-TEMPLATECLASS";
 }
