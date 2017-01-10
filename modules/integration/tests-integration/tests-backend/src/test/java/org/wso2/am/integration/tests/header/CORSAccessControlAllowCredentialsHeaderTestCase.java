@@ -173,7 +173,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         org.apache.http.HttpResponse response = httpclient.execute(get);
 
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        List<Integer> responseCodes = new ArrayList<Integer>();
+        responseCodes.add(HTTP_RESPONSE_CODE_OK);
+        responseCodes.add(HTTP_RESPONSE_CODE_CREATED);
+        assertTrue(responseCodes.contains(response.getStatusLine().getStatusCode()), "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
 
