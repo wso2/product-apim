@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
+import org.wso2.carbon.apimgt.importexport.template.TemplateManager;
 import org.wso2.carbon.apimgt.importexport.utils.APIExportUtil;
 import org.wso2.carbon.apimgt.importexport.utils.APIImportUtil;
 import org.wso2.carbon.apimgt.importexport.utils.ArchiveGeneratorUtil;
@@ -188,7 +189,7 @@ public class APIService {
         Map<String, String> extraProperties = new HashMap<String, String>();
         for (String header : httpHeaders.getRequestHeaders().keySet()) {
             log.info("Inspecting header: " + header);
-            if (header.toLowerCase().startsWith(APIImportExportConstants.WSO_HEADER_PREFIX.toLowerCase())) {
+            if (header.toLowerCase().startsWith(TemplateManager.WSO_HEADER_PREFIX.toLowerCase())) {
                 extraProperties.put(header.toLowerCase(), httpHeaders.getRequestHeader(header).get(0));
             }
         }

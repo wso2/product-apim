@@ -303,15 +303,16 @@ public final class APIImportUtil {
 
             provider.addAPI(importedApi);
 
-            //Swagger definition will only be available of API type HTTP. Web socket api does not have it.
+            // Swagger definition will only be available of API type HTTP. Web
+            // socket api does not have it.
             if (!APIConstants.APIType.WS.toString().equalsIgnoreCase(importedApi.getType())) {
 
-                String swaggerContent = FileUtils.readFileToString(
-                        new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
+                String swaggerContent = FileUtils
+                        .readFileToString(new File(pathToArchive + APIImportExportConstants.SWAGGER_DEFINITION_LOCATION));
 
                 addSwaggerDefinition(importedApi.getId(), swaggerContent);
 
-                //Load required properties from swagger to the API
+                // Load required properties from swagger to the API
                 Set<URITemplate> uriTemplates = definitionFromSwagger20.getURITemplates(importedApi, swaggerContent);
                 importedApi.setUriTemplates(uriTemplates);
                 Set<Scope> scopes = definitionFromSwagger20.getScopes(swaggerContent);
@@ -321,16 +322,16 @@ public final class APIImportUtil {
                     Scope scope = uriTemplate.getScope();
                     if (scope != null && !(APIUtil.isWhiteListedScope(scope.getKey()))) {
                         if (provider.isScopeKeyAssigned(importedApi.getId(), scope.getKey(),
-                                                        PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true))) {
-                            String errorMessage =
-                                    "Error in adding API. Scope " + scope.getKey() + " is already assigned " +
-                                    "by another API \n";
+                                PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(true))) {
+                            String errorMessage = "Error in adding API. Scope " + scope.getKey() + " is already assigned "
+                                    + "by another API \n";
                             log.error(errorMessage);
                             throw new APIImportException(errorMessage);
                         }
                     }
                 }
-                // This is required to make url templates and scopes get effected.
+                // This is required to make url templates and scopes get
+                // effected.
                 provider.updateAPI(importedApi);
             }
 
@@ -366,11 +367,10 @@ public final class APIImportUtil {
         try {
             VelocityContext context = new VelocityContext();
             for (Entry<String, String> entry : extraProperties.entrySet()) {
-                context.put(StringUtils.substringAfter(entry.getKey(), APIImportExportConstants.WSO_HEADER_PREFIX.toLowerCase()),
-                        entry.getValue());
+                context.put(StringUtils.substringAfter(entry.getKey(), TemplateManager.WSO_HEADER_PREFIX.toLowerCase()), entry.getValue());
             }
             TemplateManager templateManager = (TemplateManager) Class
-                    .forName(extraProperties.get(APIImportExportConstants.WSO_HEADER_TEMPLATE_MANAGER.toLowerCase())).newInstance();
+                    .forName(extraProperties.get(TemplateManager.WSO_HEADER_TEMPLATE_MANAGER.toLowerCase())).newInstance();
             for (Entry<String, Object> entry : templateManager.getProperties(extraProperties).entrySet()) {
                 context.put(entry.getKey(), entry.getValue());
             }
@@ -716,7 +716,8 @@ public final class APIImportUtil {
                 // for an API
                 log.error("Error in creating the WSDL resource in the registry. ", e);
             } catch (FaultGatewaysException e) {
-                //This is logged and process is continued because WSDL is optional for an API
+                // This is logged and process is continued because WSDL is
+                // optional for an API
                 log.error("Failed to update API after adding WSDL. ", e);
             }
         }
