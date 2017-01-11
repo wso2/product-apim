@@ -2782,11 +2782,6 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>
-                             
                                 <!-- Features related to Asset Store -->
                                 <feature>
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
