@@ -404,9 +404,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.carbon.auth.saml2:org.wso2.carbon.identity.authenticator.saml2.sso.feature:${carbon.identity-carbon-auth-saml2.version}
                                 </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.identity.framework:org.wso2.carbon.identity.mgt.feature:${carbon.identity.version}
-                                </featureArtifactDef>
 
                                 <!--Asset Store Feature list -->
                                 <featureArtifactDef>
@@ -2782,11 +2779,6 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>
-                             
                                 <!-- Features related to Asset Store -->
                                 <feature>
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
