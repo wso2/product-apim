@@ -50,6 +50,7 @@
         <module>modules/features</module>
         <module>modules/p2-profile</module>
         <module>modules/distribution</module>
+	<module>modules/api-import-export-templating</module>
         <module>modules/api-import-export</module>
         <module>modules/integration</module>
     </modules>

@@ -186,5 +186,10 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.am</groupId>
+            <artifactId>api-import-export-template-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
