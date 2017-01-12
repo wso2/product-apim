@@ -188,7 +188,6 @@ public class APIService {
         }
         Map<String, String> extraProperties = new HashMap<String, String>();
         for (String header : httpHeaders.getRequestHeaders().keySet()) {
-            log.info("Inspecting header: " + header);
             if (header.toLowerCase().startsWith(TemplateManager.WSO_HEADER_PREFIX.toLowerCase())) {
                 extraProperties.put(header.toLowerCase(), httpHeaders.getRequestHeader(header).get(0));
             }
