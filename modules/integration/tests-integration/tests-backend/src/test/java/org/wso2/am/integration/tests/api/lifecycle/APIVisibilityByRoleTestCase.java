@@ -22,7 +22,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
@@ -31,10 +30,10 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.UserManagementClient;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -211,10 +210,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         publishAPI(apiIdentifierAdminVisibility, apiPublisherClientCarbonSuperUser1, false);
 
-        waitForAPIDeploymentSync(apiIdentifierAdminVisibility.getProviderName(),
-                                 apiIdentifierAdminVisibility.getApiName(),
-                                 apiIdentifierAdminVisibility.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeployment();
 
         APICreationRequestBean apiCreationReqBeanVisibilityInternalSubscriber =
                 new APICreationRequestBean(API_NAME_SUBSCRIBER_VISIBILITY, API_CONTEXT2, API_VERSION_1_0_0,
@@ -227,11 +223,7 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
         publishAPI(apiIdentifierSubscriberVisibility, apiPublisherClientCarbonSuperUser1, false);
 
-        waitForAPIDeploymentSync(apiIdentifierSubscriberVisibility.getProviderName(),
-                                 apiIdentifierSubscriberVisibility.getApiName(),
-                                 apiIdentifierSubscriberVisibility.getVersion(),
-                                 APIMIntegrationConstants.IS_API_EXISTS);
-
+        waitForAPIDeployment();
 
         List<APIIdentifier> apiPublisherAPIIdentifierList =
                 APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(
