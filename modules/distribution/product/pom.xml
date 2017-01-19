@@ -159,14 +159,27 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <property name="tempdir" value="target/docs-temp" />
-                                <mkdir dir="${tempdir}" />
+                                <property name="tempdir" value="target/docs-temp"/>
+                                <property name="hideMenu"
+                                          value="&lt;/Security&gt;${line.separator}
+                                          ${line.separator}    &lt;!--Hide unnecessary menu Items--&gt;
+                                          ${line.separator}    &lt;HideMenuItemIds&gt;
+                                          ${line.separator}        &lt;HideMenuItemId&gt;claim_mgt_menu&lt;/HideMenuItemId&gt;
+                                          ${line.separator}        &lt;HideMenuItemId&gt;identity_mgt_emailtemplate_menu&lt;/HideMenuItemId&gt;
+                                          ${line.separator}        &lt;HideMenuItemId&gt;identity_security_questions_menu&lt;/HideMenuItemId&gt;
+                                          ${line.separator}    &lt;/HideMenuItemIds&gt;"/>
+
+                                <mkdir dir="${tempdir}"/>
                                 <unzip dest="${tempdir}">
                                     <fileset dir="target">
                                         <include name="wso2am-${project.version}.zip" />
                                     </fileset>
                                 </unzip>
-                                <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/" overwrite="false">
+                                <replace
+                                        file="target/wso2carbon-core-${carbon.kernel.version}/repository/conf/carbon.xml"
+                                        token="&lt;/Security&gt;" value="${hideMenu}"/>
+                                <copy todir="target/wso2carbon-core-${carbon.kernel.version}/repository/components/"
+                                      overwrite="false">
                                     <fileset dir="${tempdir}/wso2am-${project.version}/repository/components/">
                                     </fileset>
                                 </copy>
@@ -223,30 +236,35 @@
                             </tasks>
                         </configuration>
                     </execution>
-		    <execution>
+                    <execution>
                         <id>modify_entitlement_properties</id>
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-            			<replace token= "PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
-              			   <include name="entitlement.properties"/>
-            			</replace>
+                                <replace
+                                        token="PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP"
+                                        value="#PIP.AttributeDesignators.Designator.2=org.wso2.carbon.identity.application.authz.xacml.pip.AuthenticationContextAttributePIP"
+                                        dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="entitlement.properties"/>
+                                </replace>
                             </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
                     </execution>
-		    <execution>
+                    <execution>
                         <id>modify_application_authenticaton</id>
                         <phase>prepare-package</phase>
                         <configuration>
                             <tasks>
-                                <replace token= "&lt;AuthorizationHandler&gt;" value="&lt;!--AuthorizationHandler&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
-                                   <include name="application-authentication.xml"/>
+                                <replace token="&lt;AuthorizationHandler&gt;" value="&lt;!--AuthorizationHandler&gt;"
+                                         dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="application-authentication.xml"/>
                                 </replace>
-				<replace token= "&lt;/AuthorizationHandler&gt;" value="&lt;/AuthorizationHandler--&gt;" dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
-                                   <include name="application-authentication.xml"/>
+                                <replace token="&lt;/AuthorizationHandler&gt;" value="&lt;/AuthorizationHandler--&gt;"
+                                         dir="${basedir}/../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/">
+                                    <include name="application-authentication.xml"/>
                                 </replace>
                             </tasks>
                         </configuration>
@@ -254,7 +272,7 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-		    <execution>
+                    <execution>
                         <id>clean_target</id>
                         <phase>install</phase>
                         <configuration>
