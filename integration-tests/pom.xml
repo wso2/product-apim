@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.wso2.carbon.apimgt.server</groupId>
     <artifactId>org.wso2.carbon.apimgt.server.parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${product.apim.version}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -163,7 +163,7 @@
                         <id>wso2am-c5</id>
                         <files>
                           <file>
-                            <source>${project.basedir}/../product/target/WSO2APIManager-1.0.0-SNAPSHOT.zip</source>
+			    <source>${project.basedir}/../product/target/wso2apim-${project.version}.zip</source>
                             <outputDirectory>./</outputDirectory>
                             <destName>wso2am.zip</destName>
                           </file>
