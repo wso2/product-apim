@@ -17,7 +17,7 @@
   -->
 <assembly>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>WSO2APIManager-${project.version}</baseDirectory>
+    <baseDirectory>wso2apim-${project.version}</baseDirectory>
     <id>API Management Server</id>
     <formats>
         <format>zip</format>
