@@ -28,7 +28,7 @@
     <groupId>org.wso2.carbon.apimgt.server</groupId>
     <artifactId>org.wso2.carbon.apimgt.server.parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${product.apim.version}</version>
     <name>WSO2 Carbon - Product API Management Server Parent</name>
 
     <scm>
@@ -172,6 +172,7 @@
 
     <properties>
 	<carbon.apimgt.version>7.0.0-SNAPSHOT</carbon.apimgt.version>
+	<product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>

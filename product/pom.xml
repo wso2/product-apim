@@ -23,11 +23,11 @@
     <parent>
         <groupId>org.wso2.carbon.apimgt.server</groupId>
         <artifactId>org.wso2.carbon.apimgt.server.parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+	<version>${product.apim.version}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>WSO2APIManager</artifactId>
+    <artifactId>wso2apim</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 API Management Server - Distribution</name>
     <description>WSO2 API Management Server - Distribution</description>
