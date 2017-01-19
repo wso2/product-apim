@@ -29,6 +29,8 @@ import java.rmi.RemoteException;
 
 public class APIStatusProvider {
 
+    private static final String CARBON_XML_HOSTNAME = "HostName";
+
     public String[] getAllApisDeployed(String user, String password) {
         try {
             return this.getRestAPIAdmin(user, password).getApiNames();
@@ -75,11 +77,13 @@ public class APIStatusProvider {
     }
 
     private RestApiAdminStub getRestAPIAdmin(String username, String password) throws AxisFault {
-            int port = 9443 + getPortOffset();
-        RestApiAdminStub restApiAdminStub = new RestApiAdminStub(null,"https://localhost:"+port+"/services/RestApiAdmin");
-        CarbonUtils.setBasicAccessSecurityHeaders(username,password,true,restApiAdminStub._getServiceClient());
+        int port = 9443 + getPortOffset();
+        RestApiAdminStub restApiAdminStub = new RestApiAdminStub(null, "https://" + getServiceHostname() + ':' + port +
+                "/services/RestApiAdmin");
+        CarbonUtils.setBasicAccessSecurityHeaders(username, password, true, restApiAdminStub._getServiceClient());
         return restApiAdminStub;
     }
+
     private static int getPortOffset() {
         ServerConfiguration carbonConfig = ServerConfiguration.getInstance();
         String portOffset = System.getProperty(APIConstants.PORT_OFFSET_SYSTEM_VAR,
@@ -93,5 +97,13 @@ public class APIStatusProvider {
         } catch (NumberFormatException e) {
             return 0;
         }
+    }
+
+    private static String getServiceHostname() {
+        String hostname = ServerConfiguration.getInstance().getFirstProperty(CARBON_XML_HOSTNAME);
+        if (hostname != null) {
+            return hostname;
+        }
+        return "localhost";
     }
 }
