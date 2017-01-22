@@ -3,7 +3,7 @@
     <property name="token_url" value="http://localhost:8280/token"/>
     <property name="consumer_key" value=""/>
     <property name="consumer_secret" value=""/>
-    <property name="version" value="2.0.0"/>
+    <property name="version" value="2.1.0"/>
     <property name="class.dir" value="target/classes"/>
     <property name="jna.dir" value="./jna"/>
 
