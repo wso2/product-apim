@@ -183,19 +183,19 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.apimgt.web</groupId>
+            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.web.store.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.apimgt.web</groupId>
+            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.web.publisher.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.apimgt.web</groupId>
+            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.web.editor.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
