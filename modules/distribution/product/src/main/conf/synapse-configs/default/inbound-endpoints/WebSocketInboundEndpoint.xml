@@ -13,5 +13,6 @@
       <parameter name="dispatch.custom.sequence">true</parameter>
       <parameter name="ws.outflow.dispatch.fault.sequence">fault</parameter>
       <parameter name="ws.client.side.broadcast.level">0</parameter>
+      <parameter name="ws.use.port.offset">true</parameter>
    </parameters>
 </inboundEndpoint>
