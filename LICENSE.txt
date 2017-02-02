@@ -474,6 +474,7 @@ org.wso2.carbon.identity.entitlement.stub_5.2.0.jar                             
 org.wso2.carbon.identity.entitlement.stub_5.7.5.jar                             bundle         apache2   10751     
 org.wso2.carbon.identity.entitlement_5.7.5.jar                                  bundle         apache2   10749     
 org.wso2.carbon.identity.governance.stub_5.7.5.jar                              bundle         apache2   10747     
+org.wso2.carbon.identity.idp.metadata.saml2_1.0.1.jar                           bundle         apache2   10746
 org.wso2.carbon.identity.notification.mgt_5.7.5.jar                             bundle         apache2   10742     
 org.wso2.carbon.identity.oauth.common_5.3.4.jar                                 bundle         apache2   10944     
 org.wso2.carbon.identity.oauth.dcr_5.3.4.jar                                    bundle         apache2   10943     
