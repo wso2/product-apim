@@ -937,6 +937,7 @@
         <carbon.identity-inbound-auth-openid.version>5.2.1</carbon.identity-inbound-auth-openid.version>
         <carbon.identity-local-auth-basicauth.version>5.3.0</carbon.identity-local-auth-basicauth.version>
         <carbon.identity-outbound-auth-samlsso.version>5.1.5</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-metadata-saml2.version>1.0.1</carbon.identity-metadata-saml2.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.0</carbon.deployment.version>
