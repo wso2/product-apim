@@ -171,9 +171,15 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.lifecycle.manager.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
+            <groupId>org.wso2.carbon.lcm</groupId>
+            <artifactId>org.wso2.carbon.lcm.sql.feature</artifactId>
+            <version>${carbon.lcm.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.lcm</groupId>
+            <artifactId>org.wso2.carbon.lcm.core.feature</artifactId>
+            <version>${carbon.lcm.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -286,6 +292,14 @@
                                 </feature>
                                 <!--APIM Features-->
                                 <feature>
+                                    <id>org.wso2.carbon.lcm.sql.feature</id>
+                                    <version>${carbon.lcm.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.lcm.core.feature</id>
+                                    <version>${carbon.lcm.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -299,10 +313,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.lifecycle.manager.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -435,6 +445,14 @@
                                     <id>org.wso2.carbon.metrics.das.core.feature</id>
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.lcm.sql.feature</id>
+                                    <version>${carbon.lcm.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.lcm.core.feature</id>
+                                    <version>${carbon.lcm.version}</version>
+                                </feature>
                                 <!--APIM Features-->
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.core.feature</id>
@@ -450,10 +468,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.lifecycle.manager.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
