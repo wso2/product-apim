@@ -209,7 +209,7 @@
         <carbon.datasources.version>1.0.0</carbon.datasources.version>
         <carbon.jndi.version>1.0.1</carbon.jndi.version>
         <carbon.metrics.version>2.0.0</carbon.metrics.version>
-        <wso2.msf4j.version>2.1.0</wso2.msf4j.version>
+        <wso2.msf4j.version>2.1.1</wso2.msf4j.version>
         <carbon.uuf.version>1.0.0-m12</carbon.uuf.version>
         <carbon.security.caas.version>1.0.0-m2</carbon.security.caas.version>
         <carbon.cache.version>1.0.0</carbon.cache.version>
