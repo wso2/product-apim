@@ -187,11 +187,35 @@ public class RESTAPITestUtil {
                     JSONArray preserveListArray = configObject.getJSONArray(RESTAPITestConstants.PRESERVE_LIST);
                     if (preserveListArray != null && preserveListArray.length() > 0) {
                         for (int j = 0; j < preserveListArray.length(); j++) {
-                            String parameterName = preserveListArray.getJSONObject(j).
-                                    getString(RESTAPITestConstants.PRESERVED_ATTRIBUTE_NAME);
-                            String parameterValue = new JSONObject(outputText).get(preserveListArray.getJSONObject(j).
-                                    getString(RESTAPITestConstants.RESPONSE_LOCATION)).toString();
-                            preservedAttributes.put(parameterName, parameterValue);
+                            JSONObject preserveListObj = preserveListArray.getJSONObject(j);
+                            String parameterName = preserveListObj.getString(RESTAPITestConstants.PRESERVED_ATTRIBUTE_NAME);
+                            String responseType = preserveListObj.optString(RESTAPITestConstants.RESPONSE_OBJECT_STRUCTURE);
+                            if (responseType != null && !responseType.isEmpty()) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("response-type: " + responseType);
+                                }
+                                if (RESTAPITestConstants.RESPONSE_STRUCTURE_ARRAY.equals(responseType)) {
+                                    // if response-type is defined as 'array', means the response is an array. Hence find
+                                    // the parameter value from the object with the specified index
+                                    int objIndex = Integer.parseInt(preserveListObj.getString(RESTAPITestConstants.
+                                            RESPONSE_OBJECT_INDEX));
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("object-index: " + objIndex);
+                                    }
+                                    JSONObject objAtIndexPosition = new JSONArray(outputText).getJSONObject(objIndex);
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("object at index: " + objAtIndexPosition.toString());
+                                    }
+                                    String parameterValue = objAtIndexPosition.getString(preserveListObj.getString
+                                            (RESTAPITestConstants.RESPONSE_LOCATION));
+                                    preservedAttributes.put(parameterName, parameterValue);
+                                }
+                            } else {
+                                String parameterValue = new JSONObject(outputText).get(preserveListObj.
+                                        getString(RESTAPITestConstants.RESPONSE_LOCATION)).toString();
+                                preservedAttributes.put(parameterName, parameterValue);
+
+                            }
                         }
                     }
                 }
