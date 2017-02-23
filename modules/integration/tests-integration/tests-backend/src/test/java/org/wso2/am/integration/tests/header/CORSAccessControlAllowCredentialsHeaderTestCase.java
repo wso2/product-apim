@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -127,8 +128,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
         get.addHeader("Authorization", "Bearer " + accessToken);
 
         org.apache.http.HttpResponse response = httpclient.execute(get);
-
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        List<Integer> responseCodes = new ArrayList<Integer>();
+        responseCodes.add(HTTP_RESPONSE_CODE_OK);
+        responseCodes.add(HTTP_RESPONSE_CODE_CREATED);
+        assertTrue(responseCodes.contains(response.getStatusLine().getStatusCode()), "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
 
@@ -170,7 +173,10 @@ public class CORSAccessControlAllowCredentialsHeaderTestCase extends APIManagerL
 
         org.apache.http.HttpResponse response = httpclient.execute(get);
 
-        assertEquals(response.getStatusLine().getStatusCode(), HTTP_RESPONSE_CODE_OK, "Response code mismatch.");
+        List<Integer> responseCodes = new ArrayList<Integer>();
+        responseCodes.add(HTTP_RESPONSE_CODE_OK);
+        responseCodes.add(HTTP_RESPONSE_CODE_CREATED);
+        assertTrue(responseCodes.contains(response.getStatusLine().getStatusCode()), "Response code mismatch.");
 
         Header[] responseHeaders = response.getAllHeaders();
 

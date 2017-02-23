@@ -101,8 +101,8 @@ public class RegistryLifeCycleInclusionTest extends APIManagerLifecycleBaseTest{
         assertEquals(resp.getData().contains("Publish"), true, "'Publish' not visible");  
         
         //check for checklist items
-        assertEquals(resp.getData().contains("Require re-subscription"), true,
-                "'Require re-subscription' checklist item not visible");
+        assertEquals(resp.getData().contains("Requires re-subscription"), true,
+                "'Requires re-subscription' checklist item not visible");
         assertEquals(resp.getData().contains("Deprecate old versions"), true,
                 "'Deprecate old versions' checklist item not visible");
         

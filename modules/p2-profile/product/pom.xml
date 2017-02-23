@@ -332,16 +332,19 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.application.authentication.framework.server.feature:${carbon.identity.version}
-			    	</featureArtifactDef>
+                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.user.ws:org.wso2.carbon.um.ws.service.server.feature:${carbon.identity-user-ws.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.user.ws:org.wso2.carbon.um.ws.service.client.feature:${carbon.identity-user-ws.version}
-			        </featureArtifactDef>
-				<featureArtifactDef>
-				    org.wso2.carbon.identity.framework:org.wso2.carbon.directory.service.mgr.feature:${carbon.identity.version}
-				</featureArtifactDef>
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.framework:org.wso2.carbon.directory.service.mgr.feature:${carbon.identity.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.identity.metadata.saml2:org.wso2.carbon.identity.idp.metadata.saml2.server.feature:${carbon.identity-metadata-saml2.version}
+                                </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.commons:org.wso2.carbon.ntask.core.feature:${carbon.commons.version}
                                 </featureArtifactDef>
@@ -403,9 +406,6 @@
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.carbon.auth.saml2:org.wso2.carbon.identity.authenticator.saml2.sso.feature:${carbon.identity-carbon-auth-saml2.version}
-                                </featureArtifactDef>
-                                <featureArtifactDef>
-                                    org.wso2.carbon.identity.framework:org.wso2.carbon.identity.mgt.feature:${carbon.identity.version}
                                 </featureArtifactDef>
 
                                 <!--Asset Store Feature list -->
@@ -970,6 +970,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.user.registration.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.idp.metadata.saml2.server.feature.group</id>
+                                    <version>${carbon.identity-metadata-saml2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.tenant.mgt.common.server.feature.group</id>
@@ -2782,11 +2786,6 @@
                                     <id>org.wso2.carbon.registry.contentsearch.feature.group</id>
                                     <version>${carbon.registry.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>
-                             
                                 <!-- Features related to Asset Store -->
                                 <feature>
                                     <id>org.wso2.carbon.ndatasource.feature.group</id>
@@ -2929,6 +2928,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.identity.application.authenticator.samlsso.server.feature.group</id>
                                     <version>${carbon.identity-outbound-auth-samlsso.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.idp.metadata.saml2.server.feature.group</id>
+                                    <version>${carbon.identity-metadata-saml2.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.core.common.feature.group</id>

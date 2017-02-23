@@ -77,7 +77,6 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
     private final String apiName = "WebSocketAPI";
     private final String applicationName = "WebSocketApplication";
     private final String testMessage = "Web Socket Test Message";
-    private final int inboundWebSocketPort = 9099;
     private String apiEndPoint;
     private APIPublisherRestClient apiPublisher;
     private String provider;
@@ -150,7 +149,7 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
                 storeContext.getContextTenant().getContextUser().getPassword());
 
         // replace port with inbound endpoint port
-        apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion, inboundWebSocketPort);
+        apiEndPoint = getWebSocketAPIInvocationURL(apiContext, apiVersion);
         log.info("API Endpoint URL" + apiEndPoint);
 
         List<APIIdentifier> publisherAPIList = APIMTestCaseUtils.

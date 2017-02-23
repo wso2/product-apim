@@ -24,7 +24,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.integration.common.admin.client.LogViewerClient;
@@ -252,9 +251,8 @@ public class UriTemplateReservedCharacterEncodingTest extends APIMIntegrationBas
     public void testURITemplateSpecialCaseVariableWithFullURL() throws Exception {
         boolean isPercentEncoded = false;
         logViewerClient.clearLogs();
-        HttpResponse response = HttpRequestUtil.sendGetRequest(
-                getAPIInvocationURLHttp("services/client/special_case/http://localhost:8780/services/test_2"
-                        + "/special_case"),
+        HttpResponse response = HttpRequestUtil.sendGetRequest(getAPIInvocationURLHttp(
+                "services/client/special_case/" + getAPIInvocationURLHttp("services/test_2") + "/special_case"),
                 null);
         LogEvent[] logs = logViewerClient.getAllSystemLogs();
         for (LogEvent logEvent : logs) {

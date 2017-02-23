@@ -902,10 +902,10 @@
     <properties>
 
         <project.scm.id>scm-server</project.scm.id>
-        <carbon.analytics.common.version>5.1.4</carbon.analytics.common.version>
+        <carbon.analytics.common.version>5.1.7</carbon.analytics.common.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>6.1.19</carbon.apimgt.version>
+        <carbon.apimgt.version>6.1.66</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.0.0, 7.0.0)</carbon.apimgt.imp.pkg.version>
 
         <!-- Carbon Registry -->
@@ -917,7 +917,7 @@
         <carbon.governance.version>4.7.0</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.4.10</carbon.kernel.version>
+        <carbon.kernel.version>4.4.11</carbon.kernel.version>
         <apimserver.version>2.1.0-SNAPSHOT</apimserver.version>
         <ws.feature.version>1.4.2</ws.feature.version>
 
@@ -927,16 +927,17 @@
         <carbon.kernel.imp.pkg.version>[4.4.0, 5.0.0)</carbon.kernel.imp.pkg.version>
 
         <!-- carbon mediation -->
-        <carbon.mediation.version>4.6.9</carbon.mediation.version>
+        <carbon.mediation.version>4.6.10</carbon.mediation.version>
 
         <!-- carbon identity -->
-        <carbon.identity.version>5.6.59</carbon.identity.version>
-        <carbon.identity-inbound-auth-oauth.version>5.2.28</carbon.identity-inbound-auth-oauth.version>
+        <carbon.identity.version>5.7.5</carbon.identity.version>
+        <carbon.identity-inbound-auth-oauth.version>5.3.4</carbon.identity-inbound-auth-oauth.version>
         <carbon.identity-user-ws.version>5.1.4</carbon.identity-user-ws.version>
-        <carbon.identity-carbon-auth-saml2.version>5.1.6</carbon.identity-carbon-auth-saml2.version>
+        <carbon.identity-carbon-auth-saml2.version>5.2.0</carbon.identity-carbon-auth-saml2.version>
         <carbon.identity-inbound-auth-openid.version>5.2.1</carbon.identity-inbound-auth-openid.version>
-        <carbon.identity-local-auth-basicauth.version>5.2.3</carbon.identity-local-auth-basicauth.version>
-        <carbon.identity-outbound-auth-samlsso.version>5.1.4</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-local-auth-basicauth.version>5.3.0</carbon.identity-local-auth-basicauth.version>
+        <carbon.identity-outbound-auth-samlsso.version>5.1.5</carbon.identity-outbound-auth-samlsso.version>
+        <carbon.identity-metadata-saml2.version>1.0.1</carbon.identity-metadata-saml2.version>
 
         <!-- carbon deployment -->
         <carbon.deployment.version>4.7.0</carbon.deployment.version>
@@ -954,7 +955,7 @@
         <analytics.shared.version>1.0.1</analytics.shared.version>
 
 
-        <axis2-transports.wso2.version>1.1.1-wso2v2</axis2-transports.wso2.version>
+        <axis2-transports.wso2.version>2.0.0-wso2v1</axis2-transports.wso2.version>
         <cxf-bundle.version>2.6.1.wso2v2</cxf-bundle.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.13</log4j.version>
@@ -963,7 +964,7 @@
         <opencsv.version>1.8</opencsv.version>
         <poi.version>3.0-FINAL</poi.version>
         <woden.version>1.0.0.M8-wso2v1</woden.version>
-        <synapse.version>2.1.7-wso2v9</synapse.version>
+        <synapse.version>2.1.7-wso2v10</synapse.version>
         <passthru.transport.patch.version>1.0.2</passthru.transport.patch.version>
         <axis2.wso2.version>1.6.1.wso2v17</axis2.wso2.version>
         <axiom.wso2.version>1.2.11.wso2v10</axiom.wso2.version>
@@ -1034,7 +1035,7 @@
         <carbon.metrics.version>1.2.0</carbon.metrics.version>
         <!-- MB Features -->
         <carbon.messaging.version>3.1.6</carbon.messaging.version>
-        <carbon.event-processing.version>2.1.4</carbon.event-processing.version>
+        <carbon.event-processing.version>2.1.6</carbon.event-processing.version>
         <andes.version>3.1.6</andes.version>
         <orbit.version.geronimo-jms_1.1_spec>1.1.0.wso2v1</orbit.version.geronimo-jms_1.1_spec>
         <commons-digester.version>1.8.1</commons-digester.version>
