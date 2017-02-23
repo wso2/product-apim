@@ -205,6 +205,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.EnvironmentTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.SubscriptionTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.MultipleSubscriptionsTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
