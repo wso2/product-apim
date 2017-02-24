@@ -1,7 +1,7 @@
 package $package;
 import ballerina.net.http;
 
-@http:BasePath("/$apiContext")
+@http:BasePath("$apiContext")
 service $serviceName {
 
 #foreach($uri in $apiResources)
