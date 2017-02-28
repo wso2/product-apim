@@ -83,6 +83,11 @@
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
+            <directory>carbon-home/resources/composer</directory>
+            <outputDirectory>resources/composer</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
             <directory>carbon-home/samples</directory>
             <outputDirectory>samples</outputDirectory>
             <fileMode>644</fileMode>
