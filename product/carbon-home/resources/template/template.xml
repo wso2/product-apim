@@ -4,16 +4,16 @@ import ballerina.net.http;
 @http:BasePath("$apiContext")
 service $serviceName {
 
-#foreach($uri in $apiResources)
+#foreach($url in $apiResources)
 
-    @http:$uri.httpVerb
-    #if(!$StringUtils.isEmpty($uri.consumes))@Consumes ($uri.consumes)#end
-    #if(!$StringUtils.isEmpty($uri.produces))@Produces ($uri.produces)#end
-	@http:Path("$uri.uriTemplate")
-    resource $uri.templateId (message m) {
-        #if($uri.productionEndpoint)http:ClientConnector productionEndpoint = create http:ClientConnector(getUrlFromKey("$uri.productionEndpoint"));#end
+    @http:$url.httpVerb
+    #if(!$StringUtils.isEmpty($url.consumes))@Consumes ($url.consumes)#end
+    #if(!$StringUtils.isEmpty($url.produces))@Produces ($url.produces)#end
+	@http:Path("$url.uriTemplate")
+    resource $url.templateId (message m) {
+        #if($url.productionEndpoint)http:ClientConnector productionEndpoint = create http:ClientConnector(getUrlFromKey("$url.productionEndpoint"));#end
 
-        #if($uri.sandboxEndpoint)http:ClientConnector sandboxEndpoint = create http:ClientConnector(getUrlFromKey("$uri.sandboxEndpoint"));#end
+        #if($url.sandboxEndpoint)http:ClientConnector sandboxEndpoint = create http:ClientConnector(getUrlFromKey("$url.sandboxEndpoint"));#end
 
         message response;
         string endpointType;
@@ -24,9 +24,9 @@ service $serviceName {
         productionType = "production";
 
         if (endpointType == productionType) {
-            response = http:ClientConnector.execute(productionEndpoint, "$uri.httpVerb.toLowerCase()", "", m);
+            response = http:ClientConnector.execute(productionEndpoint, "$url.httpVerb.toLowerCase()", "", m);
         } else {
-            response = http:ClientConnector.execute(sandboxEndpoint, "$uri.httpVerb.toLowerCase()", "", m);
+            response = http:ClientConnector.execute(sandboxEndpoint, "$url.httpVerb.toLowerCase()", "", m);
         }
 
         reply response;
