@@ -111,6 +111,8 @@
             <class name="org.wso2.am.integration.tests.rest.URLMappingRESTTestCase"/>
             <!--  <class name="org.wso2.am.integration.tests.other.SubscriptionWFHTTPRedirectTest"/>-->
             <class name="org.wso2.am.integration.tests.other.APIMANAGER2611EndpointValidationTestCase"/>
+            <!--Un comment following test case when carbon.analytics.common.version updated to 5.1.5-->
+            <!--<class name="org.wso2.am.integration.tests.other.CANALYTCOM8PeriodicDataEndpointExceptionTestCase"/>-->
             <class name="org.wso2.am.integration.tests.other.APIScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TokenEncryptionScopeTestCase"/>
             <class name="org.wso2.am.integration.tests.other.LocationHeaderTestCase"/>

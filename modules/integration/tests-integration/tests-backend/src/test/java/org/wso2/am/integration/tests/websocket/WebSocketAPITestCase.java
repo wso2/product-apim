@@ -420,11 +420,11 @@ public class WebSocketAPITestCase extends APIMIntegrationBaseTest {
             //port available
             return true;
         } finally {
-            if (s != null) {
+            if( s != null){
                 try {
                     s.close();
                 } catch (IOException e) {
-                    throw new RuntimeException("Unable to close connection ", e);
+                    throw new RuntimeException("Unable to close connection ",e);
                 }
             }
         }
