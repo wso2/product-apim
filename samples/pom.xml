@@ -25,7 +25,6 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.0-SNAPSHOT</version>
     <artifactId>org.wso2.carbon.apimgt.server.samples</artifactId>
     <packaging>pom</packaging>
     <name>WSO2 API Management Server - Samples Module</name>

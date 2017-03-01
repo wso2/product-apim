@@ -172,7 +172,7 @@
     </dependencyManagement>
 
     <properties>
-	<carbon.apimgt.version>7.0.0-SNAPSHOT</carbon.apimgt.version>
+	<carbon.apimgt.version>7.0.1</carbon.apimgt.version>
 	<product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
