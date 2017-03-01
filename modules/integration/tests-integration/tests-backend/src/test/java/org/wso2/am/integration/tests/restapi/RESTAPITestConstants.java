@@ -141,4 +141,12 @@ public final class RESTAPITestConstants {
     //text to represent response-location element
     public static final String RESPONSE_LOCATION = "response-location";
 
+    //text to represent non-simple response object structures as arrays, etc.
+    public static final String RESPONSE_OBJECT_STRUCTURE = "response-structure";
+
+    //text to represent array response object structure
+    public static final String RESPONSE_STRUCTURE_ARRAY = "array";
+
+    //text to represent index of particular object, in case of a response consisting of an array of objects
+    public static final String RESPONSE_OBJECT_INDEX = "object-index";
 }
