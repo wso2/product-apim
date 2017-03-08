@@ -1,0 +1,188 @@
+<!--
+ ~ Copyright (c) 2010, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~ http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<!-- 
+     Contains the email templates which is used by identity recovery, account confirmation, OTP and account unlock features.
+     This will be only loaded once. There after you need to use "Email templates" from Configuration menu for changes.
+  -->
+
+<configurations>
+    <configuration type="passwordReset">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Password Reset</subject>
+        <body>
+            Hi {first-name}
+
+            We received a request to change the password on the {user-name} account associated with this e-mail address.
+            If you made this request, please click the link below to securely change your password:
+
+            https://localhost:9443/store/site/pages/reset.jag?confirmation={confirmation-code}&amp;userstoredomain={userstore-domain}&amp;id={url:user-name}&amp;tenantdomain={tenant-domain}
+
+            If clicking the link doesn't seem to work, you can copy and paste the link into your browser's address
+            window.
+
+            If you did not request to have your {user-name} password reset, simply disregard this email and no changes
+            to your account will be made.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Carbon Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="accountIdRecovery">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Account Recovery</subject>
+        <body>
+            Hi {first-name}
+
+            We received a request to recover your account user name. The account associated with us indicates that the
+            user name is : {user-name}
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Carbon Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="accountConfirmation">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Account Confirmation</subject>
+        <body>
+            Hi {first-name},
+
+            You have created an account with following user name
+
+            User Name: {user-name}
+
+            Please click the following link to unlock. If clicking the link doesn't seem to work, you can copy and paste
+            the
+            link into your browser's address window.
+
+            https://localhost:8443/InfoRecoverySample/confirmReg?confirmation={confirmation-code}&amp;userstoredomain={userstore-domain}&amp;username={url:user-name}&amp;tenantdomain={tenant-domain}
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="temporaryPassword">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Temporary Password</subject>
+        <body>
+            Hi {first-name},
+
+            Please find your temporary password below.
+
+            User Name: {user-name}
+            Temporary Password: {temporary-password}
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="otp">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - One Time Password Reset</subject>
+        <body>
+            Hi {first-name},
+
+            Please use the password {otp-password} as the new password for your next login.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="askPassword">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Password Change for New Account</subject>
+        <body>
+            Hi {first-name}
+
+            Please change your password for the newly created account : {user-name}. Please click the link below to
+            create the password.
+
+            https://localhost:8443/InfoRecoverySample/infoRecover/verify?confirmation={confirmation-code}&amp;userstoredomain={userstore-domain}&amp;username={url:user-name}&amp;tenantdomain={tenant-domain}
+
+            If clicking the link doesn't seem to work, you can copy and paste the
+            link into your browser's address window.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Carbon Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="accountUnLock">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Your account unlocked</subject>
+        <body>
+            Hi {first-name},
+
+            Please note that the account registered with us with the user name : {user-name} has been unlocked.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="accountEnable">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Your account enabled</subject>
+        <body>
+            Hi {first-name},
+
+            Please note that the account registered with us with the user name : {user-name} has been enabled.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+    <configuration type="accountDisable">
+        <targetEpr></targetEpr>
+        <subject>WSO2 Carbon - Your account disabled</subject>
+        <body>
+            Hi {first-name},
+
+            Please note that the account registered with us with the user name : {user-name} has been disabled.
+        </body>
+        <footer>
+            Best Regards,
+            WSO2 Identity Server Team
+            http://www.wso2.com
+        </footer>
+        <redirectPath></redirectPath>
+    </configuration>
+</configurations>
+
