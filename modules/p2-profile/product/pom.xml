@@ -361,7 +361,6 @@
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.identity.mgt.feature:${carbon.identity.version}
                                 </featureArtifactDef>
-				<!-- end of as runtime features-->
                                 <featureArtifactDef>
                                     org.wso2.carbon.identity.framework:org.wso2.carbon.claim.mgt.feature:${carbon.identity.version}
                                 </featureArtifactDef>                                
@@ -760,10 +759,7 @@
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.identity.xacml.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -1271,6 +1267,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.analytics.shared.data.agents.log4j.feature.group</id>
                                     <version>${analytics.shared.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1997,10 +1997,7 @@
                                     <id>org.wso2.carbon.identity.notification.mgt.feature.group</id>
                                     <version>${carbon.identity.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
-                                    <version>${carbon.identity.version}</version>
-                                </feature>
+
                                 <feature>
                                     <id>org.wso2.carbon.identity.xacml.server.feature.group</id>
                                     <version>${carbon.identity.version}</version>
@@ -2413,6 +2410,10 @@
                                 <feature>
                                     <id>org.wso2.carbon.mediator.publishevent.feature.group</id>
                                     <version>${carbon.mediation.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.identity.mgt.feature.group</id>
+                                    <version>${carbon.identity.version}</version>
                                 </feature>
                             </features>
                         </configuration>

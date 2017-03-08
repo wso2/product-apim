@@ -820,6 +820,11 @@
             <destName>thrift-authentication.xml</destName>
         </file>
         <file>
+            <source>src/main/conf/email-admin-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/email</outputDirectory>
+            <destName>email-admin-config.xml</destName>
+        </file>
+        <file>
             <source>src/main/conf/log4j.properties</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>log4j.properties</destName>
@@ -1094,12 +1099,6 @@
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-processor.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf</outputDirectory>
             <filtered>true</filtered>
-        </file>
-        <file>
-            <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/email/email-admin-config.xml</source>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/email</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
         </file>
         <file>
             <source>../../p2-profile/product/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/input-event-adapters.xml</source>
