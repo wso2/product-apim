@@ -84,6 +84,7 @@
 
                 <exclude>**/lib/endorsed/xalan*.jar</exclude>
                 <exclude>**/conf/thrift-authentication.xml</exclude>
+                <exclude>**/conf/email/email-admin-config.xml</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/store/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.store_${carbon.apimgt.version}/admin/**</exclude>
                 <exclude>**/repository/components/features/org.wso2.carbon.apimgt.publisher_${carbon.apimgt.version}/publisher/**</exclude>
@@ -817,6 +818,11 @@
             <source>src/main/conf/thrift-authentication.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
             <destName>thrift-authentication.xml</destName>
+        </file>
+        <file>
+            <source>src/main/conf/email-admin-config.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/conf/email</outputDirectory>
+            <destName>email-admin-config.xml</destName>
         </file>
         <file>
             <source>src/main/conf/log4j.properties</source>
