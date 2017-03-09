@@ -1,0 +1,131 @@
+<!--
+ ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 Inc. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<aspect name="API_LIFECYCLE" class="org.wso2.carbon.governance.registry.extensions.aspects.DefaultLifeCycle">
+    <configuration type="literal">
+        <lifecycle>
+            <scxml xmlns="http://www.w3.org/2005/07/scxml"
+                   version="1.0"
+                   initialstate="Created">
+
+                <state id="Created">
+                    <datamodel>
+
+                        <data name="checkItems">
+                            <item name="Deprecate old versions after publish the API" forTarget="">
+                            </item>
+                            <item name="Require re-subscription when publish the API" forTarget="">
+                            </item>
+                        </data>
+
+                        <data name="transitionExecution">
+                            <execution forTarget="Prototyped"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Published"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                        </data>
+                    </datamodel>
+                    <transition event="Publish" target="Published"/>
+                    <transition event="Deploy as a Prototype" target="Prototyped"/>
+
+                </state>
+
+                <state id="Prototyped">
+                    <datamodel>
+                        <data name="checkItems">
+                            <item name="Deprecate old versions after publish the API" forTarget="">
+                            </item>
+                            <item name="Require re-subscription when publish the API" forTarget="">
+                            </item>
+                        </data>
+
+                        <data name="transitionExecution">
+                            <execution forTarget="Published"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Created"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                        </data>
+                    </datamodel>
+                    <transition event="Publish" target="Published"/>
+                    <transition event="Demote to Created" target="Created"/>
+                    <transition event="Deploy as a Prototype" target="Prototyped"/>
+                </state>
+
+
+                <state id="Published">
+
+                    <datamodel>
+
+                        <data name="transitionExecution">
+                            <execution forTarget="Blocked"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Deprecated"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Created"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Prototyped"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+
+                        </data>
+                    </datamodel>
+                    <transition event="Block" target="Blocked"/>
+                    <transition event="Deploy as a Prototype" target="Prototyped"/>
+                    <transition event="Demote to Created" target="Created"/>
+                    <transition event="Deprecate" target="Deprecated"/>
+                    <transition event="Publish" target="Published"/>
+                </state>
+
+                <state id="Blocked">
+                    <datamodel>
+                        <data name="transitionExecution">
+                            <execution forTarget="Published"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                            <execution forTarget="Deprecated"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                        </data>
+                    </datamodel>
+                    <transition event="Deprecate" target="Deprecated"/>
+                    <transition event="Re-Publish" target="Published"/>
+                </state>
+
+                <state id="Deprecated">
+                    <datamodel>
+                        <data name="transitionExecution">
+                            <execution forTarget="Retired"
+                                       class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
+                            </execution>
+                        </data>
+                    </datamodel>
+                    <transition event="Retire" target="Retired"/>
+                </state>
+
+                <state id="Retired">
+                </state>
+            </scxml>
+        </lifecycle>
+    </configuration>
+</aspect>
