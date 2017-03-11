@@ -215,7 +215,7 @@
         <carbon.security.caas.version>1.0.0-m2</carbon.security.caas.version>
         <carbon.cache.version>1.0.0</carbon.cache.version>
         <javax.cache-api.version>1.0.0</javax.cache-api.version>
-        <carbon.lcm.version>1.0.1</carbon.lcm.version>
+        <carbon.lcm.version>1.0.2</carbon.lcm.version>
     </properties>
 
     <modules>
