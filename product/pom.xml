@@ -113,12 +113,6 @@
             <version>${carbon.cache.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.security.caas</groupId>
-            <artifactId>org.wso2.carbon.security.caas.feature</artifactId>
-            <version>${carbon.security.caas.version}</version>
-            <type>zip</type>
-        </dependency>
        <!-- UUF Features-->
         <dependency>
             <groupId>org.wso2.carbon.uuf</groupId>
@@ -211,17 +205,49 @@
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.deployment</groupId>
+            <artifactId>org.wso2.carbon.deployment.engine.feature</artifactId>
+            <version>${carbon.deployment.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.connector.framework.feature</artifactId>
+            <version>${carbon.transport.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <configuration>
+                    <format>{0,date,dd MMM yyyy}</format>
+                    <items>
+                        <item>timestamp</item>
+                    </items>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>1-unpack-p2-agent-distribution</id>
+                        <id>unpack-equinox-executable</id>
                         <phase>test</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -284,6 +310,14 @@
                                     <version>${carbon.metrics.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.connector.framework.feature</id>
+                                    <version>${carbon.transport.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.deployment.engine.feature</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.msf4j.feature</id>
                                     <version>${wso2.msf4j.version}</version>
                                 </feature>
@@ -342,10 +376,6 @@
                                 </feature>
                                 <!--UUF Dependencies-->
                                 <feature>
-                                    <id>org.wso2.carbon.security.caas.feature</id>
-                                    <version>${carbon.security.caas.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.caching.feature</id>
                                     <version>${carbon.cache.version}</version>
                                 </feature>
@@ -388,16 +418,14 @@
                         <id>materialize-product</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>generate-profile</goal>
+                            <goal>generate-runtime</goal>
                         </goals>
                         <configuration>
                             <productConfigurationFile>${basedir}/carbon.product
                             </productConfigurationFile>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
-                            <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi
-                            </targetPath>
-                            <profile>profiles/default</profile>
+                            <targetPath>file:${basedir}/target/WSO2Carbon/wso2</targetPath>
+                            <runtime>default</runtime>
                         </configuration>
                     </execution>
                     <execution>
@@ -407,12 +435,10 @@
                             <goal>install</goal>
                         </goals>
                         <configuration>
-                            <profile>profiles/default</profile>
+                            <runtime>default</runtime>
                             <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
-                            <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi
-                            </destination>
-                            <deleteOldProfileFiles>true</deleteOldProfileFiles>
+                            <destination>${basedir}/target/WSO2Carbon/wso2</destination>
+                            <deleteOldRuntimeFiles>true</deleteOldRuntimeFiles>
                             <features>
                                 <feature>
                                     <id>org.wso2.carbon.kernel.feature.group</id>
@@ -437,6 +463,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.jndi.feature</id>
                                     <version>${carbon.jndi.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.deployment.engine.feature</id>
+                                    <version>${carbon.deployment.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.connector.framework.feature</id>
+                                    <version>${carbon.transport.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.msf4j.feature</id>
@@ -504,10 +538,6 @@
                                     <id>org.wso2.carbon.caching.feature</id>
                                     <version>${carbon.cache.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.security.caas.feature</id>
-                                    <version>${carbon.security.caas.version}</version>
-                                </feature>
                                 <!--UUF Features-->
                                 <feature>
                                     <id>org.wso2.carbon.uuf.core.feature</id>
@@ -539,7 +569,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <replace dir="target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi" token="false" value="true">
+                                <replace dir="target/WSO2Carbon" token="false" value="true">
                                     <include name="**/bundles.info" />
                                 </replace>
                             </tasks>
@@ -557,8 +587,9 @@
                                 <delete dir="target/dependency-maven-plugin-markers" />
                                 <delete dir="target/org.eclipse.equinox.executable-3.5.0.v20110530-7P7NFUFFLWUl76mart" />
                                 <delete dir="target/p2-repo" />
+                                <!-- TODO: Figure out a way to delete tmp.* files -->
                                 <delete file="target/tmp" />
-                                <delete dir="target/wso2carbon-kernel-${carbon.kernel.product.version}" />
+                                <delete dir="target/WSO2Carbon" />
                                 <delete dir="target/antrun" />
                             </target>
                         </configuration>
@@ -592,6 +623,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>
