@@ -25,7 +25,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>target/wso2carbon-kernel-${carbon.kernel.product.version}</directory>
+            <directory>target/WSO2Carbon</directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
                 <exclude>README.txt</exclude>
@@ -35,6 +35,8 @@
                 <exclude>**/*.iwr</exclude>
                 <exclude>**/*.eclipse</exclude>
                 <exclude>**/netty-transports.yml</exclude>
+                <!--  change this to config provider format an add it again-->
+                <exclude>**/workflow-extensions.yml</exclude>
             </excludes>
         </fileSet>
 
