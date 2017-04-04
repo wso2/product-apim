@@ -182,7 +182,7 @@
     </dependencyManagement>
 
     <properties>
-	<carbon.apimgt.version>7.0.4-SNAPSHOT</carbon.apimgt.version>
+	<carbon.apimgt.version>7.0.4</carbon.apimgt.version>
 	<product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
@@ -212,7 +212,8 @@
         <osgi.service.tracker.import.version.range>[1.5.1, 2.0.0)</osgi.service.tracker.import.version.range>
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
         <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
-        <!--<gateway.type-converters.version>1.0.0-SNAPSHOT</gateway.type-converters.version>-->
+        <!--<gateway.type-converters.version>1.0.0-
+OT</gateway.type-converters.version>-->
 
         <antlr4.runtime.version>4.5.1.wso2v1</antlr4.runtime.version>
         <plugin.version.antlr>4.5.1</plugin.version.antlr>
