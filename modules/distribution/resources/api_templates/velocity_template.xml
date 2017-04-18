@@ -282,7 +282,7 @@
 
 ## check and set response caching
 #if($responseCacheEnabled)
-<cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.DOMHASHGenerator" timeout="$!responseCacheTimeOut">
+<cache scope="per-host" collector="false" hashGenerator="org.wso2.carbon.mediator.cache.digest.REQUESTHASHGenerator" timeout="$!responseCacheTimeOut">
     <implementation type="memory" maxSize="500"/>
 </cache>
 #end
