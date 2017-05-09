@@ -130,8 +130,8 @@
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
             <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
-
+         <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
+          <class name="org.wso2.am.integration.tests.other.APIMANAGER5750MultipleVersionAPISTestCase"/>
         </classes>
     </test>
 
