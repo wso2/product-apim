@@ -1,29 +1,21 @@
-Ballerina is a general purpose, concurrent, and strongly typed programming language with both textual 
-and graphical syntaxes. It is designed to make it easier to write programs that integrate with data sources, 
-services, and network-connected APIs of all kinds. It is optimized primarily for such programs - while it can 
-be use to program anything, it is not recommended to use Ballerina if a significant portion of the program is 
-not related to integrating with data sources, services, or network-connected APIs.
+WSO2 API Gateway
 
-Ballerina has been inspired by Java, Go, and other languages, but it has a concurrency model built around a 
-sequence diagram metaphor.
+This is WSO2 API Gateway powered by Ballerina. 
 
-Getting started
-==================
-You can download the Ballerina distribution, try samples, and read the documentation at http://ballerinalang.org.
 
 Building from the source
-==================================
-If you want to build Ballerina from the source code:
 
-1. Get a clone or download the source from this repository:
-    https://github.com/ballerinalang/ballerina
-2. Run the following Maven command from the ballerina directory: 
-    mvn clean install
-3. Extract the Ballerina distribution created at `ballerina/modules/distribution/target/ballerina-<version>-SNAPSHOT.zip`
-to your local directory.
+If you want to build APIM Gateway from the source code:
 
-Running samples
-==================================
-The website http://ballerinalang.org has several samples you can try out right there in the page. Or go to the
-Samples directory in Github (https://github.com/ballerinalang/ballerina/tree/master/samples) to view all the 
-Ballerina samples. These samples are also available in the `<ballerina_home>/samples` directory in your Ballerina distribution.
+1. Install Java 8(http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+1. Install Apache Maven 3.x.x(https://maven.apache.org/download.cgi#)
+1. Get a clone or download the source from this repository (https://github.com/wso2/product-apimgt).
+1. Run the Maven command ``mvn clean install`` from the ``product-apimgt/gateway`` directory.
+1. Extract the WSO2 APIM Gateway distribution created at `product-apimgt/gateway/target/wso2apim-gateway-<version>-SNAPSHOT.zip` to your local directory.
+
+Starting the server
+
+1. Go to `product-apimgt/gateway/target/wso2apim-gateway-<version>-SNAPSHOT` directory
+1. Execute the below command.
+``./ballerina run service org/wso2/carbon/apimgt/gateway``
+
