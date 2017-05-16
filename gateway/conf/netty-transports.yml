@@ -13,39 +13,36 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 ################################################################################
-disruptorConfigurations:
+transportProperties:
  -
-  id: "CPU-bound"
-  parameters:
-    -
-     name: "disruptor.wait.strategy"
-     value: BUSY_SPIN
-    -
-     name: "disruptor.buffer.size"
-     value: 1024
-    -
-     name: "disruptor.count"
-     value: 1
-    -
-     name: "disruptor.eventhandler.count"
-     value: 1
+  name: "latency.metrics.enabled"
+  value: true
  -
-  id: "IO-bound"
-  parameters:
-    -
-     name: "disruptor.wait.strategy"
-     value: BUSY_SPIN
-    -
-     name: "disruptor.buffer.size"
-     value: 1024
-    -
-     name: "disruptor.count"
-     value: 1
-    -
-     name: "disruptor.eventhandler.count"
-     value: 1
+  name: "server.bootstrap.socket.timeout"
+  value: 60
+ -
+  name: "client.bootstrap.socket.timeout"
+  value: 60
 
-threadPoolConfigurations:
+listenerConfigurations:
  -
-  noOfThreads: 20
-  enable: true
+  id: "default"
+  host: "0.0.0.0"
+  port: 9090
+ -
+  id: "https"
+  host: "0.0.0.0"
+  port: 9092
+  scheme: https
+  keyStoreFile: "${ballerina.home}/bre/security/wso2carbon.jks"
+  keyStorePass: wso2carbon
+  certPass: wso2carbon
+
+senderConfigurations:
+ -
+  id: "http-sender"
+ -
+  id: "https-sender"
+  scheme: "https"
+  trustStoreFile: "${ballerina.home}/bre/security/client-truststore.jks"
+  trustStorePass: "wso2carbon"
