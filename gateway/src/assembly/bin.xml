@@ -94,7 +94,7 @@
         </fileSet>
 	<fileSet>
             <directory>
-                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${apimgt.gateway.version}
             </directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
