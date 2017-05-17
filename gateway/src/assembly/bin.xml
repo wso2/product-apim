@@ -24,22 +24,6 @@
     </formats>
 
     <fileSets>
-	
-	<fileSet>
-            <directory>target/WSO2Carbon</directory>
-            <outputDirectory>.</outputDirectory>
-            <excludes>
-                <exclude>README.txt</exclude>
-                <exclude>LICENSE.txt</exclude>
-                <exclude>release-notes.html</exclude>
-                <exclude>**/*.ipr</exclude>
-                <exclude>**/*.iwr</exclude>
-                <exclude>**/*.eclipse</exclude>
-                <exclude>**/netty-transports.yml</exclude>
-                <!--  change this to config provider format an add it again-->
-                <exclude>**/workflow-extensions.yml</exclude>
-            </excludes>
-        </fileSet>
 
         <fileSet>
             <directory>./</directory>
