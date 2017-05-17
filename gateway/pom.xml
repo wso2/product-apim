@@ -136,7 +136,7 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>apim-ballerina-configs</artifactId>
-            <version>${apimgt.gateway.version}</version>
+            <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
     </dependencies>
@@ -223,6 +223,5 @@
 	<log4j.version>2.8</log4j.version>
 	<commons-vfs2.wso2.version>2.0-wso2v15</commons-vfs2.wso2.version>
 	<javax.jms.version>2.0.1</javax.jms.version>
-	<apimgt.gateway.version>7.0.10-SNAPSHOT</apimgt.gateway.version>
     </properties>
 </project>
