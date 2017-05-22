@@ -130,7 +130,17 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-	    <version>${slf4j.version}</version>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atomikos.wso2</groupId>
+            <artifactId>atomikos</artifactId>
+            <version>${atomikos-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+            <version>${javax-transaction-version}</version>
         </dependency>
 	<!-- APIM Features -->
         <dependency>
@@ -216,12 +226,14 @@
     </build>
 
     <properties>
-	<ballerina.runtime.version>0.87-SNAPSHOT</ballerina.runtime.version>
-	<carbon.kernel.version>5.1.0</carbon.kernel.version>
-	<carbon.transport.version>4.3.0</carbon.transport.version>
-	<testng.version>6.9.4</testng.version>
-	<log4j.version>2.8</log4j.version>
-	<commons-vfs2.wso2.version>2.0-wso2v15</commons-vfs2.wso2.version>
-	<javax.jms.version>2.0.1</javax.jms.version>
+        <ballerina.runtime.version>0.88-SNAPSHOT</ballerina.runtime.version>
+        <carbon.kernel.version>5.1.0</carbon.kernel.version>
+        <carbon.transport.version>4.3.0</carbon.transport.version>
+        <testng.version>6.9.4</testng.version>
+        <log4j.version>2.8</log4j.version>
+        <commons-vfs2.wso2.version>2.0-wso2v15</commons-vfs2.wso2.version>
+        <javax.jms.version>2.0.1</javax.jms.version>
+        <javax-transaction-version>1.2</javax-transaction-version>
+        <atomikos-version>3.8.0.wso2v1</atomikos-version>
     </properties>
 </project>
