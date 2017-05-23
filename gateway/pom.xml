@@ -21,152 +21,131 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wso2.carbon.apimgt.server</groupId>
-        <artifactId>org.wso2.carbon.apimgt.server.parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <groupId>org.wso2.am</groupId>
+        <artifactId>am-parent</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wso2iserver</artifactId>
+    <artifactId>wso2apim-gateway</artifactId>
     <packaging>pom</packaging>
-    <name>WSO2 Integration Server For API Management - Distribution</name>
-    <description>WSO2 Integration Server For API Management - Distribution</description>
+    <name>WSO2 API Management Gateway - Distribution</name>
+    <description>WSO2 API Management Gateway - Distribution</description>
     <url>http://wso2.org</url>
 
     <dependencies>
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <groupId>org.ballerinalang</groupId>
+            <artifactId>ballerina-core</artifactId>
+	    <version>${ballerina.runtime.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.launcher</artifactId>
+            <groupId>org.ballerinalang</groupId>
+            <artifactId>ballerina-native</artifactId>
+	    <version>${ballerina.runtime.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.kernel.feature</artifactId>
-            <version>${carbon.kernel.version}</version>
+            <groupId>org.ballerinalang</groupId>
+            <artifactId>ballerina-launcher</artifactId>
+	    <version>${ballerina.runtime.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ballerinalang</groupId>
+            <artifactId>ballerina-samples</artifactId>
+	    <version>${ballerina.runtime.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
-            <artifactId>org.wso2.carbon.runtime.feature</artifactId>
-            <version>${carbon.kernel.version}</version>
-            <type>zip</type>
+            <artifactId>org.wso2.carbon.core</artifactId>
+	    <version>${carbon.kernel.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina</groupId>
-            <artifactId>org.wso2.ballerina.core.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+	    <version>${testng.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.inbounds</groupId>
-            <artifactId>org.wso2.ballerina.inbounds.http.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.transport.file</artifactId>
+	    <version>${carbon.transport.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.outbounds</groupId>
-            <artifactId>org.wso2.ballerina.outbounds.http.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.transport.http.netty</artifactId>
+	    <version>${carbon.transport.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.transport</groupId>
             <artifactId>org.wso2.carbon.transport.http.netty.feature</artifactId>
-            <version>${carbon.transport.version}</version>
+  	    <version>${carbon.transport.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.messaging</groupId>
-            <artifactId>org.wso2.carbon.messaging.feature</artifactId>
-            <version>${carbon.messaging.version}</version>
-            <type>zip</type>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.connector.framework</artifactId>
+	    <version>${carbon.transport.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.mediators</groupId>
-            <artifactId>org.wso2.ballerina.mediators.samplemediator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.wso2.carbon.transport</groupId>
+            <artifactId>org.wso2.carbon.transport.jms</artifactId>
+	    <version>${carbon.transport.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.mediators</groupId>
-            <artifactId>org.wso2.ballerina.mediators.headermediator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+	    <version>${log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.mediators</groupId>
-            <artifactId>org.wso2.ballerina.mediators.xmltojsontestmediator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+	    <version>${log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.mediators</groupId>
-            <artifactId>org.wso2.ballerina.mediators.jsontoxmltestmediator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.apache.commons.wso2</groupId>
+            <artifactId>commons-vfs2</artifactId>
+	    <version>${commons-vfs2.wso2.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.converters</groupId>
-            <artifactId>org.wso2.ballerina.converters.xmltojson.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+	    <version>${javax.jms.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.converters</groupId>
-            <artifactId>org.wso2.ballerina.converters.jsontoxml.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+	    <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina</groupId>
-            <artifactId>org.wso2.ballerina.message.readers.jsonreader</artifactId>
-            <version>${ballerina.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+	    <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina</groupId>
-            <artifactId>org.wso2.ballerina.message.readers.jsonreader.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+	    <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina</groupId>
-            <artifactId>org.wso2.ballerina.message.readers.xmlreader</artifactId>
-            <version>${ballerina.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina</groupId>
-            <artifactId>org.wso2.ballerina.message.readers.xmlreader.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
+            <groupId>org.atomikos.wso2</groupId>
+            <artifactId>atomikos</artifactId>
+            <version>${atomikos-version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.ballerina.evaluators</groupId>
-            <artifactId>org.wso2.ballerina.evaluators.xpathevaluator</artifactId>
-            <version>${ballerina.version}</version>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+            <version>${javax-transaction-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.ballerina.evaluators</groupId>
-            <artifactId>org.wso2.ballerina.evaluators.xpathevaluator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.ballerina.evaluators</groupId>
-            <artifactId>org.wso2.ballerina.evaluators.jsonpathevaluator</artifactId>
-            <version>${ballerina.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.ballerina.evaluators</groupId>
-            <artifactId>org.wso2.ballerina.evaluators.jsonpathevaluator.feature</artifactId>
-            <version>${ballerina.version}</version>
-            <type>zip</type>
-        </dependency>
+	<!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.gateway.extension.feature</artifactId>
+            <artifactId>apim-ballerina-configs</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
@@ -177,278 +156,26 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <inherited>false</inherited>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
-                        <id>1-unpack-p2-agent-distribution</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.eclipse.equinox</groupId>
-                                    <artifactId>org.eclipse.equinox.executable</artifactId>
-                                    <version>3.5.0.v20110530-7P7NFUFFLWUl76mart</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>target</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wso2.carbon.maven</groupId>
-                <artifactId>carbon-feature-plugin</artifactId>
-                <version>${carbon.feature.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>p2-repo-generation</id>
+                        <id>unpack-dependencies-runtime</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>generate-repo</goal>
+                            <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <targetRepository>file:${basedir}/target/p2-repo</targetRepository>
-                            <features>
-                                <feature>
-                                    <id>org.wso2.carbon.kernel.feature</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.runtime.feature</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.core.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.transport.http.netty.feature</id>
-                                    <version>${carbon.transport.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.messaging.feature</id>
-                                    <version>${carbon.messaging.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.inbounds.http.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.outbounds.http.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.samplemediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.headermediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.converters.xmltojson.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.converters.jsontoxml.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.message.readers.jsonreader.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.message.readers.xmlreader.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.evaluators.xpathevaluator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.evaluators.jsonpathevaluator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                            </features>
+                            <includeArtifactIds>
+                                ballerina-native,ballerina-samples,apim-ballerina-configs
+                            </includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/extracted-distributions
+                            </outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <useSubDirectoryPerArtifact>true</useSubDirectoryPerArtifact>
+                            <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>publishing products</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>publish-product</goal>
-                        </goals>
-                        <configuration>
-                            <productConfigurationFile>${basedir}/carbon.product
-                            </productConfigurationFile>
-                            <executable>
-                                ${basedir}/target/org.eclipse.equinox.executable_3.5.0.v20110530-7P7NFUFFLWUl76mart
-                            </executable>
-                            <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>materialize-product</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate-profile</goal>
-                        </goals>
-                        <configuration>
-                            <productConfigurationFile>${basedir}/carbon.product
-                            </productConfigurationFile>
-                            <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
-                            <targetPath>
-                                file:${basedir}/target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi
-                            </targetPath>
-                            <profile>profiles/default</profile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>feature-installation</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>install</goal>
-                        </goals>
-                        <configuration>
-                            <profile>profiles/default</profile>
-                            <repositoryURL>file:${basedir}/target/p2-repo</repositoryURL>
-                            <destination>
-                                ${basedir}/target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi
-                            </destination>
-                            <deleteOldProfileFiles>true</deleteOldProfileFiles>
-                            <features>
-                                <feature>
-                                    <id>org.wso2.carbon.kernel.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.runtime.feature.group</id>
-                                    <version>${carbon.kernel.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.core.feature.group</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.transport.http.netty.feature.group</id>
-                                    <version>${carbon.transport.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.messaging.feature.group</id>
-                                    <version>${carbon.messaging.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.inbounds.http.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.outbounds.http.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.samplemediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.headermediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.jsontoxmltestmediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.mediators.xmltojsontestmediator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.converters.xmltojson.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.converters.jsontoxml.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.message.readers.jsonreader.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.message.readers.xmlreader.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.evaluators.xpathevaluator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.ballerina.evaluators.jsonpathevaluator.feature</id>
-                                    <version>${ballerina.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.gateway.extension.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                            </features>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <configuration>
-                            <tasks>
-                                <replace dir="target/wso2carbon-kernel-${carbon.kernel.product.version}/osgi" token="false"
-                                         value="true">
-                                    <include name="**/bundles.info"/>
-                                </replace>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>clean_target</id>
-                        <phase>install</phase>
-                        <configuration>
-                            <target>
-                                <delete dir="target/archive-tmp"/>
-                                <delete dir="target/dependency-maven-plugin-markers"/>
-                                <delete dir="target/org.eclipse.equinox.executable-3.5.0.v20110530-7P7NFUFFLWUl76mart"/>
-                                <delete dir="target/p2-repo"/>
-                                <delete file="target/tmp"/>
-                                <delete dir="target/wso2carbon-kernel-${carbon.kernel.product.version}"/>
-                                <delete dir="target/antrun"/>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-
                 </executions>
             </plugin>
 
@@ -458,7 +185,7 @@
                 <version>2.5.2</version>
                 <executions>
                     <execution>
-                        <id>distribution</id>
+                        <id>distribution1</id>
                         <phase>package</phase>
                         <goals>
                             <goal>attached</goal>
@@ -470,17 +197,43 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/bin.xml</descriptor>
                             </descriptors>
+                            <finalName>${artifactId}-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete dir="${project.build.directory}/extracted-distributions" includeemptydirs="true" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <properties>
-        <carbon.apimgt.version>7.0.0-SNAPSHOT</carbon.apimgt.version>
-        <ballerina.version>1.0.0-SNAPSHOT</ballerina.version>
+        <ballerina.runtime.version>0.88-SNAPSHOT</ballerina.runtime.version>
+        <carbon.kernel.version>5.1.0</carbon.kernel.version>
+        <carbon.transport.version>4.3.0</carbon.transport.version>
+        <testng.version>6.9.4</testng.version>
+        <log4j.version>2.8</log4j.version>
+        <commons-vfs2.wso2.version>2.0-wso2v15</commons-vfs2.wso2.version>
+        <javax.jms.version>2.0.1</javax.jms.version>
+        <javax-transaction-version>1.2</javax-transaction-version>
+        <atomikos-version>3.8.0.wso2v1</atomikos-version>
     </properties>
 </project>
