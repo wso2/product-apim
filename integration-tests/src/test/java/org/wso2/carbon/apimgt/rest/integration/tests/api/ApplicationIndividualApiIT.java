@@ -25,8 +25,10 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.ApiException;
-import org.junit.Test;
+import org.wso2.carbon.apimgt.rest.integration.tests.model.Application;
 
 /**
  * API tests for ApplicationIndividualApi
@@ -46,13 +48,13 @@ public class ApplicationIndividualApiIT {
      */
     @Test
     public void applicationsApplicationIdGetTest() throws ApiException {
-        String applicationId = null;
+        String applicationId = "33a0ccff-78e4-45e2-bfbf-aa38d709b191";
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        // Application response = api.applicationsApplicationIdGet(applicationId, accept, ifNoneMatch, ifModifiedSince);
+        Application response = api.applicationsApplicationIdGet(applicationId, accept, ifNoneMatch, ifModifiedSince);
 
-        // TODO: test validations
+        Assert.assertEquals(response.getName(), "test", "application name mismatch");
     }
     
 }

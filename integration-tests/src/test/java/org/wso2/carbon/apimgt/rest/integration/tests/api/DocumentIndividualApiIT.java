@@ -25,10 +25,16 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api;
 
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.model.Document;
+import org.wso2.carbon.apimgt.rest.integration.tests.model.*;
+
 import java.io.File;
-import org.junit.Test;
+import java.util.ArrayList;
+
 
 /**
  * API tests for DocumentIndividualApi
@@ -36,108 +42,198 @@ import org.junit.Test;
 public class DocumentIndividualApiIT {
 
     private final DocumentIndividualApi api = new DocumentIndividualApi();
+    private final DocumentCollectionApi docApi = new DocumentCollectionApi();
+    private final APICollectionApi apiSetup = new APICollectionApi();
+    private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
 
-    
+    private String APIID = null;
+    private String DOCID = null;
+
+    @BeforeClass
+    public void beforeClass() throws ApiException {
+
+        // Create an API for testing
+        API body = new API();
+        String contentType = "application/json";
+        if (body != null) {
+            body.setApiDefinition("{ \t\"paths\": { \t\t\"/order\": { \t\t\t\"post\": { \t\t\t\t\"x-auth-type\": " +
+                    "\"Application & Application User\", \t\t\t\t\"x-throttling-tier\": \"Unlimited\", \t\t\t\t\"description\":" +
+                    " \"Create a new Order\", \t\t\t\t\"parameters\": [{ \t\t\t\t\t\"schema\": { \t\t\t\t\t\t\"$ref\"" +
+                    ": \"#/definitions/Order\" \t\t\t\t\t}, \t\t\t\t\t\"description\": \"Order object that needs to be added\"," +
+                    " \t\t\t\t\t\"name\": \"body\", \t\t\t\t\t\"required\": true, \t\t\t\t\t\"in\": \"body\" \t\t\t\t}]," +
+                    " \t\t\t\t\"responses\": { \t\t\t\t\t\"201\": { \t\t\t\t\t\t\"headers\": { \t\t\t\t\t\t\t\"Location\"" +
+                    ": { \t\t\t\t\t\t\t\t\"description\": \"The URL of the newly created resource.\", \t\t\t\t\t\t\t\t\"type" +
+                    "\": \"string\" \t\t\t\t\t\t\t} \t\t\t\t\t\t}, \t\t\t\t\t\t\"schema\": { \t\t\t\t\t\t\t\"$ref\":" +
+                    " \"#/definitions/Order\" \t\t\t\t\t\t}, \t\t\t\t\t\t\"description\": \"Created.\" \t\t\t\t\t} " +
+                    "\t\t\t\t} \t\t\t} \t\t}, \t\t\"/menu\": { \t\t\t\"get\": { \t\t\t\t\"x-auth-type\": " +
+                    "\"Application & Application User\", \t\t\t\t\"x-throttling-tier\": \"Unlimited\", " +
+                    "\t\t\t\t\"description\": \"Return a list of available menu items\", \t\t\t\t\"parameters\":" +
+                    " [], \t\t\t\t\"responses\": { \t\t\t\t\t\"200\": { \t\t\t\t\t\t\"headers\": {}, \t\t\t\t\t\t\"schema\":" +
+                    " { \t\t\t\t\t\t\t\"title\": \"Menu\", \t\t\t\t\t\t\t\"properties\": { \t\t\t\t\t\t\t\t\"list\": " +
+                    "{ \t\t\t\t\t\t\t\t\t\"items\": { \t\t\t\t\t\t\t\t\t\t\"$ref\": \"#/definitions/MenuItem\" " +
+                    "\t\t\t\t\t\t\t\t\t}, \t\t\t\t\t\t\t\t\t\"type\": \"array\" \t\t\t\t\t\t\t\t} \t\t\t\t\t\t\t}, " +
+                    "\t\t\t\t\t\t\t\"type\": \"object\" \t\t\t\t\t\t}, \t\t\t\t\t\t\"description\": \"OK.\" \t\t\t\t\t} " +
+                    "\t\t\t\t} \t\t\t} \t\t} \t}, \t\"schemes\": [\"https\"], \t\"produces\": [\"application/json\"]," +
+                    " \t\"swagger\": \"2.0\", \t\"definitions\": { \t\t\"MenuItem\": { \t\t\t\"title\": \"Pizza menu Item\", " +
+                    "\t\t\t\"properties\": { \t\t\t\t\"price\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"description\":" +
+                    " { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"name\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}," +
+                    " \t\t\t\t\"image\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t} \t\t\t}, \t\t\t\"required\": [\"name\"] \t\t}," +
+                    " \t\t\"Order\": { \t\t\t\"title\": \"Pizza Order\", \t\t\t\"properties\": { \t\t\t\t\"customerName\": " +
+                    "{ \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"delivered\": { \t\t\t\t\t\"type\":" +
+                    " \"boolean\" \t\t\t\t}, \t\t\t\t\"address\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}," +
+                    " \t\t\t\t\"pizzaType\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"creditCardNumber\":" +
+                    " { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"quantity\": { \t\t\t\t\t\"type\": \"number\" \t\t\t\t}, " +
+                    "\t\t\t\t\"orderId\": { \t\t\t\t\t\"type\": \"integer\" \t\t\t\t} \t\t\t}, \t\t\t\"required\": " +
+                    "[\"orderId\"] \t\t} \t}, \t\"consumes\": [\"application/json\"], \t\"info\": { \t\t\"title\": " +
+                    "\"PizzaShackAPI\", \t\t\"description\":" +
+                    " \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\n\", \t\t\"license\": " +
+                    "{ \t\t\t\"name\": \"Apache 2.0\", \t\t\t\"url\": \"http://www.apache.org/licenses/LICENSE-2.0.html\" \t\t}, " +
+                    "\t\t\"contact\": { \t\t\t\"email\": \"architecture@pizzashack.com\", \t\t\t\"name\": \"John Doe\", " +
+                    "\t\t\t\"url\": \"http://www.pizzashack.com\" \t\t}, \t\t\"version\": \"1.0.0\" \t} }");
+        }
+        body.setName("DocsAPI");
+        body.setContext("docss");
+        body.setVersion("1.0.0");
+        body.setProvider("admin");
+        body.setLifeCycleStatus("CREATED");
+        body.setTransport(new ArrayList<String>() {{
+            add("http");
+        }});
+        body.setCacheTimeout(100);
+        body.setPolicies(new ArrayList<String>() {{
+            add("Unlimited");
+        }});
+        body.setVisibility(API.VisibilityEnum.PUBLIC);
+        body.setTags(new ArrayList<String>());
+        body.setMaxTps(new APIMaxTps());
+        body.setVisibleRoles(new ArrayList<String>());
+        body.setVisibleTenants(new ArrayList<String>());
+        body.setEndpointSecurity(new APIEndpointSecurity());
+        body.setSequences(new ArrayList<Sequence>());
+        body.setBusinessInformation(new APIBusinessInformation());
+        body.setCorsConfiguration(new APICorsConfiguration());
+        API response = apiSetup.apisPost(body, contentType);
+        APIID = response.getId();
+
+
+        Document docBody = new Document();
+        docBody.setName("Help");
+        docBody.setType(Document.TypeEnum.HOWTO);
+        docBody.setSourceType(Document.SourceTypeEnum.INLINE);
+        docBody.setVisibility(Document.VisibilityEnum.API_LEVEL);
+        docBody.setInlineContent("This is the inline content");
+        Document docResponse = docApi.apisApiIdDocumentsPost(response.getId(), docBody, contentType);
+        DOCID = docResponse.getDocumentId();
+    }
+
     /**
      * Get the content of an API document
+     * <p>
+     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
      *
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60; 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
     @Test
     public void apisApiIdDocumentsDocumentIdContentGetTest() throws ApiException {
-        String apiId = null;
-        String documentId = null;
+        String apiId = APIID;
+        String documentId = DOCID;
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        // api.apisApiIdDocumentsDocumentIdContentGet(apiId, documentId, accept, ifNoneMatch, ifModifiedSince);
+        //api.apisApiIdDocumentsDocumentIdContentGet(apiId, documentId, accept, ifNoneMatch, ifModifiedSince);
 
-        // TODO: test validations
+        // TODO: test validations (void method)
     }
-    
+
     /**
      * Upload the content of an API document
+     * <p>
+     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
      *
-     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
-    @Test
+    @Test(enabled = false)
     public void apisApiIdDocumentsDocumentIdContentPostTest() throws ApiException {
-        String apiId = null;
-        String documentId = null;
-        String contentType = null;
+        String apiId = APIID;
+        String documentId = DOCID;
+        String contentType = "text/xml";
         File file = null;
-        String inlineContent = null;
+        String inlineContent = "content change";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        // Document response = api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, contentType, file, inlineContent, ifMatch, ifUnmodifiedSince);
+        Document response = api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, contentType, file, inlineContent, ifMatch, ifUnmodifiedSince);
 
+        Assert.assertEquals(response.getInlineContent(), inlineContent, "inline content update mismatch");
         // TODO: test validations
     }
-    
+
     /**
      * Delete a document of an API
+     * <p>
+     * This operation can be used to delete a document associated with an API.
      *
-     * This operation can be used to delete a document associated with an API. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
-    @Test
+    @Test(expectedExceptions = ApiException.class, dependsOnMethods = "apisApiIdDocumentsDocumentIdContentGetTest", enabled = true)
     public void apisApiIdDocumentsDocumentIdDeleteTest() throws ApiException {
-        String apiId = null;
-        String documentId = null;
+        String apiId = APIID;
+        String documentId = DOCID;
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        // api.apisApiIdDocumentsDocumentIdDelete(apiId, documentId, ifMatch, ifUnmodifiedSince);
+        api.apisApiIdDocumentsDocumentIdDelete(apiId, documentId, ifMatch, ifUnmodifiedSince);
 
-        // TODO: test validations
+        Document response = api.apisApiIdDocumentsDocumentIdGet(apiId, documentId, null, null, null);
     }
-    
+
     /**
      * Get a document of an API
+     * <p>
+     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
      *
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
     @Test
     public void apisApiIdDocumentsDocumentIdGetTest() throws ApiException {
-        String apiId = null;
-        String documentId = null;
+        String apiId = APIID;
+        String documentId = DOCID;
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        // Document response = api.apisApiIdDocumentsDocumentIdGet(apiId, documentId, accept, ifNoneMatch, ifModifiedSince);
+        Document response = api.apisApiIdDocumentsDocumentIdGet(apiId, documentId, accept, ifNoneMatch, ifModifiedSince);
 
-        // TODO: test validations
+        Assert.assertEquals(response.getName(), "Help", "Document name mismatch");
     }
-    
+
     /**
      * Update a document of an API
+     * <p>
+     * This operation can be used to update metadata of an API&#39;s document.
      *
-     * This operation can be used to update metadata of an API&#39;s document. 
+     * TODO - Check if the usage is correct.
      *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
     @Test
     public void apisApiIdDocumentsDocumentIdPutTest() throws ApiException {
-        String apiId = null;
-        String documentId = null;
-        Document body = null;
-        String contentType = null;
+        String apiId = APIID;
+        String documentId = DOCID;
+        Document body = new Document();
+        body.setName("Help");
+        body.setSourceType(Document.SourceTypeEnum.INLINE);
+        body.setType(Document.TypeEnum.HOWTO);
+        body.setVisibility(Document.VisibilityEnum.OWNER_ONLY);
+        String contentType = "text/xml";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        // Document response = api.apisApiIdDocumentsDocumentIdPut(apiId, documentId, body, contentType, ifMatch, ifUnmodifiedSince);
+        Document response = api.apisApiIdDocumentsDocumentIdPut(apiId, documentId, body, contentType, ifMatch, ifUnmodifiedSince);
 
-        // TODO: test validations
+        Assert.assertEquals(response.getVisibility(), Document.VisibilityEnum.OWNER_ONLY, "visibility update mismatch");
     }
-    
+
+    @AfterClass
+    public void afterClass() throws ApiException {
+        // remove DocAPI
+        APIList response = apiSetup.apisGet(1, 1, null, null, null);
+        apiIndividualApi.apisApiIdDelete(response.getList().get(0).getId(), null, null);
+    }
 }

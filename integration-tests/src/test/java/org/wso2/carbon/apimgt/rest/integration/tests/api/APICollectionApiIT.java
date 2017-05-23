@@ -26,6 +26,7 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.api;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.model.*;
 import org.testng.annotations.Test;
@@ -39,54 +40,65 @@ public class APICollectionApiIT {
 
     private final APICollectionApi api = new APICollectionApi();
     private static String apiID;
-    
-    /**
-     * Retrieve/Search APIs 
-     *
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test(dependsOnMethods = "apisPostTest")
-    public void apisGetTest() throws ApiException {
-        Integer limit = null;
-        Integer offset = null;
-        String query = null;
-        String accept = null;
-        String ifNoneMatch = null;
-         APIList response = api.apisGet(10, 2, "", accept, ifNoneMatch);
-        System.out.println("======================================"+response.getCount());
-        // TODO: test validations
-    }
-    
-    /**
-     * Check given API attibute name is already exist 
-     *
-     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test
-    public void apisHeadTest() throws ApiException {
-        String query = null;
-        String accept = null;
-        String ifNoneMatch = null;
-        // api.apisHead(query, accept, ifNoneMatch);
 
-        // TODO: test validations
+    /**
+     * Retrieve/Search APIs
+     * <p>
+     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(dependsOnMethods = "apisPostTest", enabled = true)
+    public void apisGetTest() throws ApiException {
+        Integer limit = 10;
+        Integer offset = 2;
+        String query = null;
+        String accept = null;
+        String ifNoneMatch = null;
+        APIList response = api.apisGet(limit, offset, query, accept, ifNoneMatch);
+        Assert.assertEquals(response.getList().get(0).getName(), "API-117", "API name mismatch");
     }
-    
+
+    /**
+     * Check given API attibute name is already exist
+     * <p>
+     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(dependsOnMethods = "apisPostTest", enabled = true)
+    public void apisHeadTest() throws ApiException {
+        String query = "name:API-117";
+        String accept = null;
+        String ifNoneMatch = null;
+        api.apisHead(query, accept, ifNoneMatch);
+
+        // TODO: test validations (will thrown API Not Found exception if not available)
+    }
+
+    /**
+     * Check for error if given API attribute does not exist
+     * <p>
+     * TODO: Check if this is required (NO IHMO)
+     *
+     * @throws ApiException
+     */
+    @Test(dependsOnMethods = "apisHeadTest", expectedExceptions = ApiException.class)
+    public void apisHeadFailureTest() throws ApiException {
+        String query = "name:DoesNotExist";
+        String accept = null;
+        String ifNoneMatch = null;
+        api.apisHead(query, accept, ifNoneMatch);
+    }
+
     /**
      * Create a new API
+     * <p>
+     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI.
      *
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
-    @Test
+    @Test(enabled = true)
     public void apisPostTest() throws ApiException {
         API body = new API();
         String contentType = "application/json";
@@ -119,7 +131,7 @@ public class APICollectionApiIT {
                     " \t\t\t\t\"pizzaType\": { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"creditCardNumber\":" +
                     " { \t\t\t\t\t\"type\": \"string\" \t\t\t\t}, \t\t\t\t\"quantity\": { \t\t\t\t\t\"type\": \"number\" \t\t\t\t}, " +
                     "\t\t\t\t\"orderId\": { \t\t\t\t\t\"type\": \"integer\" \t\t\t\t} \t\t\t}, \t\t\t\"required\": " +
-                    "[\"orderId\"] \t\t} \t}, \t\"consumes\": [\"application/json\"], \t\"info\": { \t\t\"title\": " +
+                    "[\"orderId\"] \t\t } \t}, \t\"consumes\": [\"application/json\"], \t\"info\": { \t\t\"title\": " +
                     "\"PizzaShackAPI\", \t\t\"description\":" +
                     " \"This document describe a RESTFul API for Pizza Shack online pizza delivery store.\\n\", \t\t\"license\": " +
                     "{ \t\t\t\"name\": \"Apache 2.0\", \t\t\t\"url\": \"http://www.apache.org/licenses/LICENSE-2.0.html\" \t\t}, " +
@@ -132,10 +144,12 @@ public class APICollectionApiIT {
         body.setProvider("admin");
         body.setLifeCycleStatus("CREATED");
         body.setTransport(new ArrayList<String>() {{
-            add("http");}});
+            add("http");
+        }});
         body.setCacheTimeout(100);
         body.setPolicies(new ArrayList<String>() {{
-            add("Unlimited");}});
+            add("Unlimited");
+        }});
         body.setVisibility(API.VisibilityEnum.PUBLIC);
         body.setTags(new ArrayList<String>());
         body.setMaxTps(new APIMaxTps());
@@ -146,9 +160,20 @@ public class APICollectionApiIT {
         body.setBusinessInformation(new APIBusinessInformation());
         body.setCorsConfiguration(new APICorsConfiguration());
         API response = api.apisPost(body, contentType);
-        System.out.println("================================================="+response.getId());
         this.apiID = response.getId();
         Assert.assertTrue(true);
     }
-    
+
+    @AfterClass
+    public void afterClass() throws ApiException {
+        APIIndividualApi apiClient = new APIIndividualApi();
+
+        APIList response = api.apisGet(1, 1, null, null, null);
+
+        String apiId = response.getList().get(0).getId();
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        apiClient.apisApiIdDelete(apiId, ifMatch, ifUnmodifiedSince);
+    }
+
 }
