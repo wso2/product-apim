@@ -44,6 +44,12 @@
             <outputDirectory>logs</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
+  
+        <fileSet>
+            <directory>jms-client-libs</directory>
+            <outputDirectory>bre/lib</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
 
         <fileSet>
             <directory>./ballerina-home/resources/security</directory>
