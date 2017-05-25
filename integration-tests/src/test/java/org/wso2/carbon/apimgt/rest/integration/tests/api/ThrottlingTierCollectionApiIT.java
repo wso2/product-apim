@@ -25,9 +25,11 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api;
 
+import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.model.Tier;
-import org.junit.Test;
+import org.wso2.carbon.apimgt.rest.integration.tests.model.TierList;
+
 
 /**
  * API tests for ThrottlingTierCollectionApi
@@ -47,12 +49,12 @@ public class ThrottlingTierCollectionApiIT {
      */
     @Test
     public void policiesTierLevelGetTest() throws ApiException {
-        String tierLevel = null;
-        Integer limit = null;
-        Integer offset = null;
+        String tierLevel = "unlimited";
+        Integer limit = 2;
+        Integer offset = 2;
         String accept = null;
         String ifNoneMatch = null;
-        // TierList response = api.policiesTierLevelGet(tierLevel, limit, offset, accept, ifNoneMatch);
+        //TierList response = api.policiesTierLevelGet(tierLevel, limit, offset, accept, ifNoneMatch);
 
         // TODO: test validations
     }
