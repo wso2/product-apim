@@ -72,7 +72,7 @@ public class ThrottlingTierIndividualApiIT {
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        // Tier response = api.policiesTierLevelTierNameGet(tierName, tierLevel, accept, ifNoneMatch, ifModifiedSince);
+        //Tier response = api.policiesTierLevelTierNameGet(tierName, tierLevel, accept, ifNoneMatch, ifModifiedSince);
 
         // TODO: test validations
     }
