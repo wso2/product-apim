@@ -13,43 +13,41 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.http.HttpMethod;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
+import okio.BufferedSink;
+import okio.Okio;
+import org.wso2.carbon.apimgt.rest.integration.tests.auth.ApiKeyAuth;
+import org.wso2.carbon.apimgt.rest.integration.tests.auth.Authentication;
+import org.wso2.carbon.apimgt.rest.integration.tests.auth.HttpBasicAuth;
+import org.wso2.carbon.apimgt.rest.integration.tests.auth.OAuth;
 
-import java.lang.reflect.Type;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.net.URLEncoder;
-import java.net.URLConnection;
-
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -57,32 +55,38 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
-
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import okio.BufferedSink;
-import okio.Okio;
-
-import org.wso2.carbon.apimgt.rest.integration.tests.auth.Authentication;
-import org.wso2.carbon.apimgt.rest.integration.tests.auth.HttpBasicAuth;
-import org.wso2.carbon.apimgt.rest.integration.tests.auth.ApiKeyAuth;
-import org.wso2.carbon.apimgt.rest.integration.tests.auth.OAuth;
-
 public class ApiClient {
     public static final double JAVA_VERSION;
     public static final boolean IS_ANDROID;
     public static final int ANDROID_SDK_VERSION;
+
+    private static String consumerKey = null;
+    private static String consumerSecret = null;
 
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
@@ -113,7 +117,7 @@ public class ApiClient {
      */
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-    private String basePath = "https://apis.wso2.com:9292/api/am/publisher/v1.0";
+    private String basePath = "https://localhost:9292/api/am/publisher/v1.0";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -168,7 +172,9 @@ public class ApiClient {
         authentications = new HashMap<String, Authentication>();
         // Prevent the authentications from being modified.
         //authentications = Collections.unmodifiableMap(authentications);
-        addDefaultHeader("Authorization", "Bearer 7b1ee8e7-5485-4161-ae4c-8aa464eeb46f");
+        addDefaultHeader("Authorization", "Bearer " + getAccessToken("apim:subscribe apim:signup " +
+                "apim:workflow_approve apim:api_view apim:api_create apim:api_publish apim:tier_view " +
+                "apim:tier_manage apim:subscription_view apim:subscription_block apim:workflow_approve"));
     }
 
     /**
@@ -320,8 +326,9 @@ public class ApiClient {
      * @return Date
      */
     public Date parseDate(String str) {
-        if (str == null)
+        if (str == null) {
             return null;
+        }
         try {
             return dateFormat.parse(str);
         } catch (ParseException e) {
@@ -351,8 +358,9 @@ public class ApiClient {
      * @see <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>
      */
     public Date parseDatetime(String str) {
-        if (str == null)
+        if (str == null) {
             return null;
+        }
 
         DateFormat format;
         if (lenientDatetimeFormat) {
@@ -390,12 +398,13 @@ public class ApiClient {
      * @return Date representation of the string
      */
     public Date parseDateOrDatetime(String str) {
-        if (str == null)
+        if (str == null) {
             return null;
-        else if (str.length() <= dateLength)
+        } else if (str.length() <= dateLength) {
             return parseDate(str);
-        else
+        } else {
             return parseDatetime(str);
+        }
     }
 
     /**
@@ -665,7 +674,9 @@ public class ApiClient {
         List<Pair> params = new ArrayList<Pair>();
 
         // preconditions
-        if (name == null || name.isEmpty() || value == null) return params;
+        if (name == null || name.isEmpty() || value == null) {
+            return params;
+        }
 
         Collection valueCollection = null;
         if (value instanceof Collection) {
@@ -826,10 +837,11 @@ public class ApiClient {
 
         String respBody;
         try {
-            if (response.body() != null)
+            if (response.body() != null) {
                 respBody = response.body().string();
-            else
+            } else {
                 respBody = null;
+            }
         } catch (IOException e) {
             throw new ApiException(e);
         }
@@ -898,7 +910,6 @@ public class ApiClient {
             File file = prepareDownloadFile(response);
             BufferedSink sink = Okio.buffer(Okio.sink(file));
             sink.writeAll(response.body().source());
-            sink.close();
             return file;
         } catch (IOException e) {
             throw new ApiException(e);
@@ -938,14 +949,16 @@ public class ApiClient {
                 suffix = filename.substring(pos);
             }
             // File.createTempFile requires the prefix to be at least three characters long
-            if (prefix.length() < 3)
+            if (prefix.length() < 3) {
                 prefix = "download-";
+            }
         }
 
-        if (tempFolderPath == null)
+        if (tempFolderPath == null) {
             return File.createTempFile(prefix, suffix);
-        else
+        } else {
             return File.createTempFile(prefix, suffix, new File(tempFolderPath));
+        }
     }
 
     /**
@@ -1171,7 +1184,9 @@ public class ApiClient {
     public void updateParamsForAuth(String[] authNames, List<Pair> queryParams, Map<String, String> headerParams) {
         for (String authName : authNames) {
             Authentication auth = authentications.get(authName);
-            if (auth == null) throw new RuntimeException("Authentication undefined: " + authName);
+            if (auth == null) {
+                throw new RuntimeException("Authentication undefined: " + authName);
+            }
             auth.applyToParams(queryParams, headerParams);
         }
     }
@@ -1278,7 +1293,7 @@ public class ApiClient {
                     }
                 };
                 SSLContext sslContext = SSLContext.getInstance("TLS");
-                trustManagers = new TrustManager[]{trustAll};
+                trustManagers = new TrustManager[] {trustAll};
                 hostnameVerifier = new HostnameVerifier() {
                     @Override
                     public boolean verify(String hostname, SSLSession session) {
@@ -1323,6 +1338,145 @@ public class ApiClient {
             return keyStore;
         } catch (IOException e) {
             throw new AssertionError(e);
+        }
+    }
+
+    private static String getAccessTokenForStore() {
+        return getAccessToken("apim:subscribe apim:signup apim:workflow_approve");
+    }
+
+
+    private static String getAccessTokenForPublisher() {
+        return getAccessToken("apim:api_view apim:api_create apim:api_publish apim:tier_view apim:tier_manage " +
+                "apim:subscription_view apim:subscription_block apim:workflow_approve");
+    }
+
+    private static String getAccessToken(String scopeList) {
+        if (consumerKey == null) {
+            makeDCRRequest();
+        }
+
+        URL url;
+        HttpURLConnection urlConn = null;
+
+        //calling token endpoint
+        try {
+            createSSLConnection();
+            url = new URL("https://localhost:9443/oauth2/token");
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String clientEncoded = Base64.getEncoder().encodeToString(
+                    (consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
+            String postParams = "grant_type=client_credentials";
+
+            if (!scopeList.isEmpty()) {
+                postParams += "&scope=" + scopeList;
+            }
+
+            urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                return obj.get("access_token").getAsString();
+
+            } else {
+                throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String msg = "Error while creating the new token for token regeneration.";
+            throw new RuntimeException(msg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static void makeDCRRequest() {
+        String applicationName = "Integration_Test_App";
+
+        URL url;
+        HttpURLConnection urlConn = null;
+        try {
+            //Create json payload for DCR endpoint
+            JsonObject json = new JsonObject();
+            JsonArray callbackArray = new JsonArray();
+            callbackArray.add("http://test.callback.lk/");
+            json.add("redirect_uris", callbackArray);
+            json.addProperty("client_name", applicationName);
+            json.addProperty("ext_param_owner", "admin");
+            JsonArray grantArray = new JsonArray();
+            grantArray.add("client_credentials");
+            json.add("grant_types", grantArray);
+
+            createSSLConnection();
+
+            // Calling DCR endpoint
+            String dcrEndpoint = "http://localhost:9763/identity/connect/register";
+            url = new URL(dcrEndpoint);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            String clientEncoded = Base64.getEncoder().encodeToString((System.getProperty("systemUsername",
+                    "admin") + ':' + System.getProperty("systemUserPwd", "admin"))
+                    .getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
+            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 201) {  //If the DCR call is success
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                consumerKey = jObj.getAsJsonPrimitive("client_id").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("client_secret").getAsString();
+            } else { //If DCR call fails
+                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String errorMsg = "Can not create OAuth application  : " + applicationName;
+            throw new RuntimeException(errorMsg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static void createSSLConnection() throws RuntimeException {
+        TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[0];
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }};
+
+
+        try {
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getResponseString(InputStream input) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input))) {
+            return buffer.lines().collect(Collectors.joining("\n"));
         }
     }
 }
