@@ -146,8 +146,18 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>apim-ballerina-configs</artifactId>
-            <version>${carbon.apimgt.version}</version>
+            <version>${apimgt.ballerina.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.ballerina.native</artifactId>
+            <version>${apimgt.ballerina.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.caching</groupId>
+            <artifactId>org.wso2.carbon.caching</artifactId>
+            <version>${carbon.caching.version}</version>
         </dependency>
     </dependencies>
 
@@ -235,5 +245,8 @@
         <javax.jms.version>2.0.1</javax.jms.version>
         <javax-transaction-version>1.2</javax-transaction-version>
         <atomikos-version>3.8.0.wso2v1</atomikos-version>
+        
+        <apimgt.ballerina.version>0.10-SNAPSHOT</apimgt.ballerina.version>
+        <carbon.caching.version>1.1.4-SNAPSHOT</carbon.caching.version>
     </properties>
 </project>
