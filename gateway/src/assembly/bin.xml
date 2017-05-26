@@ -84,7 +84,7 @@
         </fileSet>
 	<fileSet>
             <directory>
-                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${apimgt.ballerina.version}
             </directory>
             <outputDirectory>.</outputDirectory>
             <excludes>
@@ -192,6 +192,8 @@
                 <include>javax.jms:javax.jms-api</include>
                 <include>javax.transaction:javax.transaction-api</include>
                 <include>org.atomikos.wso2:atomikos</include>
+                <include>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.ballerina.native</include>
+                <include>org.wso2.carbon.caching:org.wso2.carbon.caching</include>
             </includes>
         </dependencySet>
     </dependencySets>
