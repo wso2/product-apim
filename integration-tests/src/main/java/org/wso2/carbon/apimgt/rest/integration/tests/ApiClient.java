@@ -73,10 +73,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -133,6 +130,7 @@ public class ApiClient {
      * The datetime format to be used when <code>lenientDatetimeFormat</code> is enabled.
      */
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final String TLS_PROTOCOL = "TLS";
 
     private String basePath = "https://localhost:9292/api/am/publisher/v1.0";
     private boolean lenientOnJson = false;
@@ -1316,7 +1314,7 @@ public class ApiClient {
             }
 
             if (trustManagers != null) {
-                SSLContext sslContext = SSLContext.getInstance("TLS");
+                SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
                 sslContext.init(null, trustManagers, new SecureRandom());
                 httpClient.setSslSocketFactory(sslContext.getSocketFactory());
             } else {
@@ -1373,7 +1371,7 @@ public class ApiClient {
             }
 
             urlConn.setHostnameVerifier((s, sslSession) -> true);
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
             sslContext.init(null, new TrustManager[]{trustAll}, new SecureRandom());
             urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
             urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
