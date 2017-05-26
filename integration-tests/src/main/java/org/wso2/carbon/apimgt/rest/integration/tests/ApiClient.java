@@ -76,6 +76,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -87,6 +88,7 @@ public class ApiClient {
 
     private static String consumerKey = null;
     private static String consumerSecret = null;
+    private static TrustManager trustAll;
 
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
@@ -110,6 +112,21 @@ public class ApiClient {
             }
         }
         ANDROID_SDK_VERSION = sdkVersion;
+
+        trustAll = new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
     }
 
     /**
@@ -1274,32 +1291,11 @@ public class ApiClient {
      */
     private void applySslSettings() {
         try {
-            KeyManager[] keyManagers = null;
             TrustManager[] trustManagers = null;
             HostnameVerifier hostnameVerifier = null;
             if (!verifyingSsl) {
-                TrustManager trustAll = new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                    }
-
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                    }
-
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-                };
-                SSLContext sslContext = SSLContext.getInstance("TLS");
                 trustManagers = new TrustManager[] {trustAll};
-                hostnameVerifier = new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
-                    }
-                };
+                hostnameVerifier = (hostname, session) -> true;
             } else if (sslCaCert != null) {
                 char[] password = null; // Any password will work.
                 CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
@@ -1313,14 +1309,15 @@ public class ApiClient {
                     String certificateAlias = "ca" + Integer.toString(index++);
                     caKeyStore.setCertificateEntry(certificateAlias, certificate);
                 }
-                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory
+                        .getDefaultAlgorithm());
                 trustManagerFactory.init(caKeyStore);
                 trustManagers = trustManagerFactory.getTrustManagers();
             }
 
-            if (keyManagers != null || trustManagers != null) {
+            if (trustManagers != null) {
                 SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(keyManagers, trustManagers, new SecureRandom());
+                sslContext.init(null, trustManagers, new SecureRandom());
                 httpClient.setSslSocketFactory(sslContext.getSocketFactory());
             } else {
                 httpClient.setSslSocketFactory(null);
@@ -1341,29 +1338,28 @@ public class ApiClient {
         }
     }
 
-    private static String getAccessTokenForStore() {
+    private String getAccessTokenForStore() {
         return getAccessToken("apim:subscribe apim:signup apim:workflow_approve");
     }
 
 
-    private static String getAccessTokenForPublisher() {
+    private String getAccessTokenForPublisher() {
         return getAccessToken("apim:api_view apim:api_create apim:api_publish apim:tier_view apim:tier_manage " +
                 "apim:subscription_view apim:subscription_block apim:workflow_approve");
     }
 
-    private static String getAccessToken(String scopeList) {
+    private String getAccessToken(String scopeList) {
         if (consumerKey == null) {
             makeDCRRequest();
         }
 
         URL url;
-        HttpURLConnection urlConn = null;
+        HttpsURLConnection urlConn = null;
 
         //calling token endpoint
         try {
-            createSSLConnection();
             url = new URL("https://localhost:9443/oauth2/token");
-            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn = (HttpsURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
             urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -1376,6 +1372,10 @@ public class ApiClient {
                 postParams += "&scope=" + scopeList;
             }
 
+            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{trustAll}, new SecureRandom());
+            urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
             urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
             int responseCode = urlConn.getResponseCode();
             if (responseCode == 200) {
@@ -1387,7 +1387,7 @@ public class ApiClient {
             } else {
                 throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             String msg = "Error while creating the new token for token regeneration.";
             throw new RuntimeException(msg, e);
         } finally {
@@ -1413,8 +1413,6 @@ public class ApiClient {
             JsonArray grantArray = new JsonArray();
             grantArray.add("client_credentials");
             json.add("grant_types", grantArray);
-
-            createSSLConnection();
 
             // Calling DCR endpoint
             String dcrEndpoint = "http://localhost:9763/identity/connect/register";
@@ -1448,34 +1446,8 @@ public class ApiClient {
         }
     }
 
-    private static void createSSLConnection() throws RuntimeException {
-        TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new java.security.cert.X509Certificate[0];
-                    }
-
-                    public void checkClientTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-
-                    public void checkServerTrusted(
-                            java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                }};
-
-
-        try {
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String getResponseString(InputStream input) throws IOException {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input))) {
+    private static String getResponseString(InputStream input) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             return buffer.lines().collect(Collectors.joining("\n"));
         }
     }
