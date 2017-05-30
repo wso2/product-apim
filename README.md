@@ -1,6 +1,6 @@
 # WSO2 API Management
 
-WSO2 API Management is an Open Source API Management tool that allows APIs/Services to be Secured, Monitored and Rate Controlled. This tool allows API Developers to design, pubilsh, version and manage API lifecycles. It allows application developers to discover and start consuming APIs. The lightweight API Gateway intercepts all API requests applying Security, Rate Limiting and Monitoring aspects on your APIs.
+WSO2 API Management is an Open Source API Management tool that allows APIs/Services to be Secured, Monitored and Rate Controlled. This tool allows API Developers to design, publish, version and manage API lifecycles. It allows application developers to discover and start consuming APIs. The lightweight API Gateway intercepts all API requests applying Security, Rate Limiting and Monitoring aspects on your APIs.
 
 More information about this product can be found [here](http://wso2.com/api-management/)
 
