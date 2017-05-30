@@ -16,7 +16,7 @@ More information about this product can be found [here](http://wso2.com/api-mana
 ## Running the product
 ----------------------
 
-1. Download the WSO2 Identity Server from here (http://wso2.com/identity-and-access-management#download)
+1. Download the WSO2 Identity Server from [here](http://wso2.com/identity-and-access-management#download)
 2. Extract the downloaded wso2is-5.3.0.zip file
 3. Go to the wso2is-5.3.0/bin directory and execute the wso2server.sh script using the command ``./wso2server.sh start``
 4. Find the API Manager product distribution from product-apim/product/target
