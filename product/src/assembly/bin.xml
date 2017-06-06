@@ -97,6 +97,11 @@
                 <exclude>empty.txt</exclude>
             </excludes>
         </fileSet>
+        <fileSet>
+            <directory>carbon-home/lib</directory>
+            <outputDirectory>lib</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
     </fileSets>
 
     <files>
