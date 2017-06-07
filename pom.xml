@@ -232,6 +232,7 @@
         <module>samples</module>
         <module>product</module>
         <module>gateway</module>
+        <module>analyzer</module>
         <module>integration-tests</module>
     </modules>
 </project>
