@@ -1,0 +1,22 @@
+        @Plan:name('app_10PerMin')
+        @Plan:description('ExecutionPlan for app_10PerMin')
+
+        @source(type='inMemory', topic='apim', @map(type='passThrough'))
+        define stream RequestStream (messageID string, appKey string, appTier string, subscriptionKey string, apiKey string, apiTier string, subscriptionTier string, resourceKey string, resourceTier string, userId string,  apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, propertiesMap string);
+
+        @sink(type='jms', @map(type='text'),
+factory.initial='org.apache.activemq.jndi.ActiveMQInitialContextFactory', provider.url='tcp://localhost:61616', destination='TEST.FOO', connection.factory.type='topic',
+connection.factory.jndi.name='TopicConnectionFactory')
+        define stream GlobalThrottleStream (throttleKey string, isThrottled bool, expiryTimeStamp long);
+
+        FROM RequestStream
+        SELECT messageID, (appTier == '10PerMin') AS isEligible, appKey AS throttleKey, propertiesMap
+        INSERT INTO EligibilityStream;
+
+                FROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min, 0)
+                select throttleKey, (count(messageID) >= 10) as isThrottled, expiryTimeStamp group by throttleKey
+                INSERT ALL EVENTS into ResultStream;
+        
+        from ResultStream#throttler:emitOnStateChange(throttleKey, isThrottled)
+        select *
+        insert into GlobalThrottleStream;
