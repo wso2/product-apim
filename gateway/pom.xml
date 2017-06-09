@@ -236,7 +236,7 @@
     </build>
 
     <properties>
-        <ballerina.runtime.version>0.88-SNAPSHOT</ballerina.runtime.version>
+        <ballerina.runtime.version>0.87</ballerina.runtime.version>
         <carbon.kernel.version>5.1.0</carbon.kernel.version>
         <carbon.transport.version>4.3.0</carbon.transport.version>
         <testng.version>6.9.4</testng.version>
