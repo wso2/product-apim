@@ -221,6 +221,51 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.io.jms</groupId>
+                                    <artifactId>siddhi-io-jms</artifactId>
+                                    <version>${siddhi.extension.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.io.http</groupId>
+                                    <artifactId>siddhi-io-http</artifactId>
+                                    <version>${siddhi.extension.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.store.solr</groupId>
+                                    <artifactId>siddhi-store-solr</artifactId>
+                                    <version>${siddhi.extension.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wso2.extension.siddhi.store.mongodb</groupId>
+                                    <artifactId>siddhi-store-mongodb</artifactId>
+                                    <version>${siddhi.extension.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.geronimo.specs</groupId>
+                                    <artifactId>geronimo-jms_1.1_spec</artifactId>
+                                    <version>1.1.1</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/extensions</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
             <plugin>
@@ -889,9 +934,10 @@
         </resources>
     </build>
 
-    <properties>
-        <carbon.analytics.version>2.0.15</carbon.analytics.version>
-        <siddhi.version>4.0.0-M3</siddhi.version>
+     <properties>
+        <carbon.analytics.version>2.0.24</carbon.analytics.version>
+        <siddhi.version>4.0.0-M5</siddhi.version>
+        <siddhi.extension.version>1.0.0</siddhi.extension.version>
 
         <!-- Maven plugins -->
         <!--Bundle Plugin - Overridden from parent due to a bug in latest version related to capability providers-->
