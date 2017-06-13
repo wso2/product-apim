@@ -50,12 +50,6 @@
 	    <version>${ballerina.runtime.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.ballerinalang</groupId>
-            <artifactId>ballerina-samples</artifactId>
-	    <version>${ballerina.runtime.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.core</artifactId>
 	    <version>${carbon.kernel.version}</version>
@@ -236,7 +230,7 @@
     </build>
 
     <properties>
-        <ballerina.runtime.version>0.87</ballerina.runtime.version>
+        <ballerina.runtime.version>0.88</ballerina.runtime.version>
         <carbon.kernel.version>5.1.0</carbon.kernel.version>
         <carbon.transport.version>4.3.0</carbon.transport.version>
         <testng.version>6.9.4</testng.version>

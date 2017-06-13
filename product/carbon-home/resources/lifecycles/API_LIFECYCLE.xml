@@ -75,7 +75,7 @@
                     <datamodel>
 
                         <data name="transitionExecution">
-                            <execution forTarget="Blocked"
+                            <execution forTarget="Maintenance"
                                        class="org.wso2.carbon.apimgt.core.executors.APIExecutor">
                             </execution>
                             <execution forTarget="Deprecated"
@@ -90,14 +90,14 @@
 
                         </data>
                     </datamodel>
-                    <transition event="Block" target="Blocked"/>
+                    <transition event="Move to Maintenance" target="Maintenance"/>
                     <transition event="Deploy as a Prototype" target="Prototyped"/>
                     <transition event="Demote to Created" target="Created"/>
                     <transition event="Deprecate" target="Deprecated"/>
                     <transition event="Publish" target="Published"/>
                 </state>
 
-                <state id="Blocked">
+                <state id="Maintenance">
                     <datamodel>
                         <data name="transitionExecution">
                             <execution forTarget="Published"
