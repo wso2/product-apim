@@ -915,7 +915,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/src/assembly/bin.xml</descriptor>
                             </descriptors>
-                            <finalName>wso2das-${project.version}</finalName>
+                            <finalName>wso2apim-das-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
