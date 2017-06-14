@@ -17,7 +17,7 @@
   -->
 <assembly>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>wso2das-${project.version}</baseDirectory>
+    <baseDirectory>wso2apim-das-${project.version}</baseDirectory>
     <id>WSO2 Data Analytics Server Distribution</id>
     <formats>
         <format>zip</format>
