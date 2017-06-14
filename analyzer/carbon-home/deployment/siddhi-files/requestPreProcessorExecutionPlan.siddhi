@@ -7,7 +7,7 @@
 /* define streams/tables and write queries here ... */
 
 @source(type='inMemory', topic='symbol', @map(type='passThrough'))
-define stream PreRequestStream (messageID string, appKey string, appTier string, apiKey string, apiTier string, subscriptionKey string, subscriptionTier string, resourceKey string, resourceTier string, userId string, apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, properties string);
+define stream PreRestquestStream (messageID string, appKey string, appTier string, apiKey string, apiTier string, subscriptionKey string, subscriptionTier string, resourceKey string, resourceTier string, userId string, apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, properties string);
 
 @sink(type='inMemory', topic='apim', @map(type='passThrough'))
 define stream RequestStream (messageID string, appKey string, appTier string, subscriptionKey string, apiKey string, apiTier string, subscriptionTier string, resourceKey string, resourceTier string, userId string, apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, propertiesMap string);
