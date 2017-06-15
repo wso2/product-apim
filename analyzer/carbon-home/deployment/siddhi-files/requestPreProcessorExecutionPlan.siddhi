@@ -1,0 +1,19 @@
+/* Enter a unique ExecutionPlan */
+@Plan:name('requestPreProcessorExecutionPlan')
+
+/* Enter a unique description for ExecutionPlan */
+@Plan:description('ExecutionPlan to perform some preprocessing eg:- convert properties json to map')
+
+/* define streams/tables and write queries here ... */
+
+@source(type='inMemory', topic='symbol', @map(type='passThrough'))
+define stream PreRequestStream (messageID string, appKey string, appTier string, apiKey string, apiTier string, subscriptionKey string, subscriptionTier string, resourceKey string, resourceTier string, userId string, apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, properties string);
+
+@sink(type='inMemory', topic='apim', @map(type='passThrough'))
+define stream RequestStream (messageID string, appKey string, appTier string, subscriptionKey string, apiKey string, apiTier string, subscriptionTier string, resourceKey string, resourceTier string, userId string, apiContext string, apiVersion string, appTenant string, apiTenant string, appId string, apiName string, propertiesMap string);
+
+FROM PreRequestStream
+SELECT messageID, appKey , appTier , subscriptionKey , apiKey , apiTier , subscriptionTier, resourceKey , resourceTier , userId , apiContext, apiVersion, appTenant, apiTenant, appId, apiName ,
+/*cast(map:createFromJSON(properties), 'string') as propertiesMap*/
+properties as propertiesMap
+INSERT INTO RequestStream;
