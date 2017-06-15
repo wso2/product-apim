@@ -63,25 +63,6 @@
             </directory>
             <outputDirectory>src</outputDirectory>
         </fileSet>
-        <fileSet>
-            <directory>
-                ${project.build.directory}/extracted-distributions/ballerina-samples-zip/ballerina-samples-${ballerina.runtime.version}
-            </directory>
-            <outputDirectory>samples</outputDirectory>
-            <excludes>
-                <exclude>target/**</exclude>
-                <exclude>scripts/**</exclude>
-                <exclude>pom.xml</exclude>
-                <exclude>README.txt</exclude>
-                <exclude>LICENSE.txt</exclude>
-                <exclude>release-notes.html</exclude>
-                <exclude>**/*.ipr</exclude>
-                <exclude>**/*.iwr</exclude>
-                <exclude>**/*.eclipse</exclude>
-                <exclude>**/*.iml</exclude>
-            </excludes>
-            <fileMode>644</fileMode>
-        </fileSet>
 	<fileSet>
             <directory>
                 ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
@@ -164,6 +145,7 @@
                 <include>com.jayway.jsonpath:json-path</include>
                 <include>org.apache.ws.commons.axiom:axiom-api</include>
                 <include>org.apache.ws.commons.axiom:axiom-impl</include>
+                <include>org.apache.ws.commons.axiom:axiom-dom</include>
                 <include>jaxen:jaxen</include>
                 <include>org.wso2.orbit.org.apache.tapestry:tapestry-json</include>
                 <include>org.apache.geronimo.specs:geronimo-activation_1.1_spec</include>
@@ -192,6 +174,8 @@
                 <include>javax.jms:javax.jms-api</include>
                 <include>javax.transaction:javax.transaction-api</include>
                 <include>org.atomikos.wso2:atomikos</include>
+                <include>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.ballerina.native</include>
+                <include>org.wso2.carbon.caching:org.wso2.carbon.caching</include>
             </includes>
         </dependencySet>
     </dependencySets>

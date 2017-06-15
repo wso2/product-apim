@@ -1,0 +1,3 @@
+streamDefinitions: 
+ - "{'name':'org.wso2.esb.MediatorStatistics', 'version':'1.3.0', 'nickName':'Stock Quote Information', 'description':'Some Desc', 'metaData':[{'name':'ipAdd','type':'STRING'}], 'payloadData':[{'name':'symbol','type':'STRING'}, {'name':'price','type':'DOUBLE'}, {'name':'volume','type':'INT'}, {'name':'max','type':'DOUBLE'}, {'name':'min','type':'Double'}]}"
+ - "{'name':'org.wso2.esb.MediatorStatistics', 'version':'1.3.4', 'nickName':'Stock Quote Information', 'description':'Some Other Desc', 'metaData':[{'name':'ipAdd','type':'STRING'}], 'payloadData':[{'name':'symbol','type':'STRING'}, {'name':'price','type':'DOUBLE'}, {'name':'volume','type':'INT'}]}"
