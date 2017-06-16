@@ -16,8 +16,7 @@
   ~ * limitations under the License.
   ~ */
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -48,12 +47,6 @@
             <groupId>org.ballerinalang</groupId>
             <artifactId>ballerina-launcher</artifactId>
 	    <version>${ballerina.runtime.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ballerinalang</groupId>
-            <artifactId>ballerina-samples</artifactId>
-	    <version>${ballerina.runtime.version}</version>
-            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -142,12 +135,27 @@
             <artifactId>javax.transaction-api</artifactId>
             <version>${javax-transaction-version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.ws.commons.axiom</groupId>
+            <artifactId>axiom-dom</artifactId>
+            <version>${orbit.version.axiom}</version>
+        </dependency>
 	<!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>apim-ballerina-configs</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.ballerina.native</artifactId>
+            <version>${carbon.apimgt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.caching</groupId>
+            <artifactId>org.wso2.carbon.caching</artifactId>
+            <version>${carbon.caching.version}</version>
         </dependency>
     </dependencies>
 
@@ -226,14 +234,17 @@
     </build>
 
     <properties>
-        <ballerina.runtime.version>0.88-SNAPSHOT</ballerina.runtime.version>
+        <ballerina.runtime.version>0.88</ballerina.runtime.version>
         <carbon.kernel.version>5.1.0</carbon.kernel.version>
-        <carbon.transport.version>4.3.0</carbon.transport.version>
+        <carbon.transport.version>4.4.3</carbon.transport.version>
         <testng.version>6.9.4</testng.version>
         <log4j.version>2.8</log4j.version>
         <commons-vfs2.wso2.version>2.0-wso2v15</commons-vfs2.wso2.version>
         <javax.jms.version>2.0.1</javax.jms.version>
         <javax-transaction-version>1.2</javax-transaction-version>
         <atomikos-version>3.8.0.wso2v1</atomikos-version>
+        <orbit.version.axiom>1.2.20</orbit.version.axiom>
+        
+        <carbon.caching.version>1.1.3</carbon.caching.version>
     </properties>
 </project>

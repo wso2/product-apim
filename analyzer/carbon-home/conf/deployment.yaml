@@ -1,0 +1,80 @@
+################################################################################
+#   Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved
+#
+#   Licensed under the Apache License, Version 2.0 (the \"License\");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an \"AS IS\" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+################################################################################
+
+  # Carbon Configuration Parameters
+wso2.carbon:
+    # value to uniquely identify a server
+  id: wso2-das
+    # server name
+  name: WSO2 Data Analytics Server
+    # ports used by this server
+  ports:
+      # port offset
+    offset: 0
+
+  # Configuration used for the databridge communication
+databridge.config:
+    # No of worker threads to consume events
+    # THIS IS A MANDATORY FIELD
+  workerThreads: 10
+    # Maximum amount of messages that can be queued internally in MB
+    # THIS IS A MANDATORY FIELD
+  maxEventBufferCapacity: 10000000
+    # Queue size; the maximum number of events that can be stored in the queue
+    # THIS IS A MANDATORY FIELD
+  eventBufferSize: 2000
+    # Keystore file path
+    # THIS IS A MANDATORY FIELD
+  keyStoreLocation : ${carbon.home}/resources/security/wso2carbon.jks
+    # Keystore password
+    # THIS IS A MANDATORY FIELD
+  keyStorePassword : wso2carbon
+    # Session Timeout value in mins
+    # THIS IS A MANDATORY FIELD
+  clientTimeoutMin: 30
+    # Data receiver configurations
+    # THIS IS A MANDATORY FIELD
+  dataReceivers:
+  -
+      # Data receiver configuration
+    dataReceiver:
+        # Data receiver type
+        # THIS IS A MANDATORY FIELD
+      type: Thrift
+        # Data receiver properties
+      properties:
+        tcpPort: '7611'
+        sslPort: '7711'
+
+  -
+      # Data receiver configuration
+    dataReceiver:
+        # Data receiver type
+        # THIS IS A MANDATORY FIELD
+      type: Binary
+        # Data receiver properties
+      properties:
+        tcpPort: '9611'
+        sslPort: '9711'
+        tcpReceiverThreadPoolSize: '100'
+        sslReceiverThreadPoolSize: '100'
+        hostName: 0.0.0.0
+
+  # Deployment configuration parameters
+wso2.artifact.deployment:
+    # Scheduler update interval
+  updateInterval: 5
+
