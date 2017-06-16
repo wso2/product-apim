@@ -165,6 +165,12 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.rest.api.authenticator.feature</artifactId>
+            <version>${carbon.apimgt.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.rest.api.publisher.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
@@ -202,12 +208,6 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.web.store.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.web.publisher.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
@@ -373,6 +373,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.authenticator.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -386,10 +390,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.web.store.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
@@ -544,6 +544,10 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
+                                    <id>org.wso2.carbon.apimgt.rest.api.authenticator.feature</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.admin.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -561,10 +565,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.web.store.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
