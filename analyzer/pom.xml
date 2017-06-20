@@ -191,7 +191,19 @@
             <type>zip</type>
         </dependency>
 
-
+        <!--APIM features-->
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.apimgt.analytics.feature</artifactId>
+            <version>${carbon.apim.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.apimgt.throttling.feature</artifactId>
+            <version>${carbon.apim.version}</version>
+            <type>zip</type>
+        </dependency>
 
     </dependencies>
 
@@ -384,6 +396,17 @@
                                     <id>org.wso2.carbon.databridge.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
+
+                                <!--APIM features-->
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+
 
                             </features>
                         </configuration>
@@ -582,6 +605,17 @@
                                     <id>org.wso2.carbon.databridge.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
+
+                                <!--APIM features-->
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -675,6 +709,17 @@
                                     <id>org.wso2.carbon.databridge.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
+
+                                <!--APIM features-->
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+
                             </features>
                         </configuration>
                     </execution>
@@ -749,6 +794,16 @@
                                 <feature>
                                     <id>org.wso2.carbon.security.caas.feature</id>
                                     <version>${carbon.security.version}</version>
+                                </feature>
+
+                                <!--APIM features-->
+                                <feature>
+                                    <id>org.wso2.apimgt.analytics.feature</id>
+                                    <version>${carbon.apim.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.apimgt.throttling.feature</id>
+                                    <version>${carbon.apim.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -935,6 +990,8 @@
     </build>
 
      <properties>
+        <carbon.apim.version>7.0.34-SNAPSHOT</carbon.apim.version>
+
         <carbon.analytics.version>2.0.24</carbon.analytics.version>
         <siddhi.version>4.0.0-M5</siddhi.version>
         <siddhi.extension.version>1.0.0</siddhi.extension.version>
