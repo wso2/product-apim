@@ -104,15 +104,6 @@
         </fileSet>
 
         <fileSet>
-            <directory>carbon-home/deployment/siddhi-files</directory>
-            <outputDirectory>deployment/siddhi-files</outputDirectory>
-            <fileMode>644</fileMode>
-            <excludes>
-                <exclude>empty.txt</exclude>
-            </excludes>
-        </fileSet>
-
-        <fileSet>
             <directory>.</directory>
             <outputDirectory>deployment/workspace</outputDirectory>
             <excludes>
