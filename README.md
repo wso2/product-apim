@@ -16,8 +16,11 @@ More information about this product can be found [here](http://wso2.com/api-mana
 1. Download the WSO2 Identity Server from [here](http://wso2.com/identity-and-access-management#download)
 2. Extract the downloaded wso2is-5.3.0.zip file
 3. Go to the wso2is-5.3.0/bin directory and execute the wso2server.sh script using the command ``./wso2server.sh start``
-4. Find the API Manager product distribution from product-apim/product/target
-5. Extract the distribution. Ex: unzip wso2apim-3.0.0.zip
-6. Go to the wso2apim/bin directory and execute the carbon.sh script
-7. Open your web browser and type the URL https://localhost:9292/publisher to go to the API Publisher application which allows you to design and publish APIs.
-8. On the web browser type the URL https://localhost:9292/store to visit the API Store to discover and consume APIs.
+4. Download Apache ActiveMQ from [here](http://activemq.apache.org/activemq-5140-release.html)
+5. Extract the downloaded apache-activemq-5.14.0-bin.tar.gz file
+6. Go to the apache-activemq-5.14.0 directory and execute the activemq script using the command ``./bin/activemq start``
+7. Find the API Manager product distribution from product-apim/product/target
+8. Extract the distribution. Ex: unzip wso2apim-3.0.0.zip
+9. Go to the wso2apim/bin directory and execute the carbon.sh script
+10. Open your web browser and type the URL https://localhost:9292/publisher to go to the API Publisher application which allows you to design and publish APIs.
+11. On the web browser type the URL https://localhost:9292/store to visit the API Store to discover and consume APIs.
