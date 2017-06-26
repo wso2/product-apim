@@ -31,7 +31,7 @@ data.agent.config:
         # Data publisher strategy
       publishingStrategy: async
         # Trust store path
-      trustStorePath: '/home/rukshan/apim/m3/wso2apim-gateway-3.0.0-m3/bre/security/das/wso2carbon.jks'
+      trustStorePath: '${ballerina.home}/bre/security/das/wso2carbon.jks'
         # Trust store password
       trustStorePassword: 'wso2carbon'
         # Queue Size
@@ -80,7 +80,7 @@ data.agent.config:
         # Data publisher strategy
       publishingStrategy: async
         # Trust store path
-      trustStorePath: '/home/rukshan/apim/m3/wso2apim-gateway-3.0.0-m3/bre/security/das/wso2carbon.jks'
+      trustStorePath: '${ballerina.home}/bre/security/das/wso2carbon.jks'
         # Trust store password
       trustStorePassword: 'wso2carbon'
         # Queue Size
