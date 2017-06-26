@@ -992,8 +992,8 @@
      <properties>
         <carbon.apim.version>7.0.34-SNAPSHOT</carbon.apim.version>
 
-        <carbon.analytics.version>2.0.24</carbon.analytics.version>
-        <siddhi.version>4.0.0-M5</siddhi.version>
+        <carbon.analytics.version>2.0.37</carbon.analytics.version>
+        <siddhi.version>4.0.0-M9</siddhi.version>
         <siddhi.extension.version>1.0.0</siddhi.extension.version>
 
         <!-- Maven plugins -->

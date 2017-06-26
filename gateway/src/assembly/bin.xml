@@ -176,6 +176,14 @@
                 <include>org.atomikos.wso2:atomikos</include>
                 <include>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.ballerina.native</include>
                 <include>org.wso2.carbon.caching:org.wso2.carbon.caching</include>
+                <include>org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.ballerina.publisher</include>
+                <include>org.wso2.carbon.analytics:org.wso2.carbon.databridge.agent</include>
+                <include>org.wso2.carbon.analytics:org.wso2.carbon.databridge.commons.binary</include>
+                <include>org.wso2.carbon.analytics:org.wso2.carbon.databridge.commons.thrift</include>
+                <include>org.wso2.carbon.analytics:org.wso2.carbon.databridge.commons</include>
+                <include>libthrift.wso2:libthrift</include>
+                <include>org.wso2.orbit.com.lmax:disruptor</include>
+                <include>org.json.wso2:json</include>
             </includes>
         </dependencySet>
     </dependencySets>
