@@ -1,5 +1,5 @@
 ################################################################################
-#   Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved
+#   Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved
 #
 #   Licensed under the Apache License, Version 2.0 (the \"License\");
 #   you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ data.agent.config:
         # Data publisher strategy
       publishingStrategy: async
         # Trust store path
-      trustStorePath: '${carbon.home}/resources/security/client-truststore.jks'
+      trustStorePath: '${ballerina.home}/bre/security/client-truststore.jks'
         # Trust store password
       trustStorePassword: 'wso2carbon'
         # Queue Size
@@ -139,7 +139,7 @@ data.agent.config:
         # Data publisher strategy
       publishingStrategy: async
         # Trust store path
-      trustStorePath: '${carbon.home}/resources/security/client-truststore.jks'
+      trustStorePath: '${ballerina.home}/bre/security/client-truststore.jks'
         # Trust store password
       trustStorePassword: 'wso2carbon'
         # Queue Size
@@ -181,4 +181,3 @@ data.agent.config:
 wso2.artifact.deployment:
     # Scheduler update interval
   updateInterval: 5
-

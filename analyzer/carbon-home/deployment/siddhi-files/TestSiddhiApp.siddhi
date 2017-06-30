@@ -1,0 +1,8 @@
+@App:name('TestSiddhiApp')
+define stream FooStream (symbol string, price float, volume long);
+
+@source(type='inMemory', topic='symbol', @map(type='passThrough'))Define stream BarStream (symbol string, price float, volume long);
+
+from FooStream
+select symbol, price, volume
+insert into BarStream;

@@ -62,6 +62,11 @@
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
+            <directory>carbon-home/conf/security</directory>
+            <outputDirectory>conf/security</outputDirectory>
+            <fileMode>644</fileMode>
+        </fileSet>
+        <fileSet>
             <directory>carbon-home/resources/security</directory>
             <outputDirectory>resources/security</outputDirectory>
             <fileMode>644</fileMode>
@@ -138,11 +143,21 @@
             </excludes>
             <fileMode>644</fileMode>
         </fileSet>
-
         <fileSet>
-            <directory>carbon-home/lib</directory>
+            <directory>target/extensions</directory>
             <outputDirectory>lib</outputDirectory>
-            <fileMode>644</fileMode>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+            <fileMode>664</fileMode>
+        </fileSet>
+        <fileSet>
+            <directory>carbon-home/external-libs</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>**/*.jar</include>
+            </includes>
+            <fileMode>664</fileMode>
         </fileSet>
     </fileSets>
 
