@@ -143,6 +143,7 @@
             <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM16LoginToTheAPIPublisherThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.APIMANAGER5834APICreationWithInvalidInputsTestCase"/>
             <!--Disable the test case due to APIMANAGER-4039-->
             <class name="org.wso2.am.integration.tests.publisher.APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
