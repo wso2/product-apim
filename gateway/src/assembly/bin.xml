@@ -82,6 +82,16 @@
             </excludes>
             <fileMode>644</fileMode>
         </fileSet>
+
+        <fileSet>
+            <directory>ballerina_lib/handler</directory>
+            <outputDirectory>handler</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>ballerina_lib/services</directory>
+            <outputDirectory>.</outputDirectory>
+        </fileSet>
+
     </fileSets>
 
     <files>
