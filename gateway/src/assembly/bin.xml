@@ -65,7 +65,7 @@
         </fileSet>
         <fileSet>
             <directory>
-                ${project.build.directory}/extracted-distributions/ballerina-samples-zip/ballerina-samples-${ballerina.runtime.version}
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
             </directory>
             <outputDirectory>samples</outputDirectory>
             <excludes>
@@ -80,6 +80,28 @@
                 <exclude>**/*.eclipse</exclude>
                 <exclude>**/*.iml</exclude>
             </excludes>
+            <fileMode>644</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+            </directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>*.bsz</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+            </directory>
+            <outputDirectory>./handler</outputDirectory>
+            <includes>
+                <include>*.bmz</include>
+            </includes>
             <fileMode>644</fileMode>
         </fileSet>
 
