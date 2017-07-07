@@ -28,7 +28,7 @@ ballerina.config:
         # Enable Service interception
         enable: true
         # Interceptor deployment directory
-        deploymentDirectory: /home/rukshan/apim/gw/ballerina-tools-0.89/handler
+        deploymentDirectory: ${sys:ballerina.home}/handler
         # Service interceptor List. Interceptors are engaged in the way they are defined.
         serviceInterceptors:
           -
@@ -38,14 +38,14 @@ ballerina.config:
             archiveName: auth.bmz
           -
             # Package name of the request interceptor.
-            packageName: org.wso2.carbon.apimgt.gateway.handler
+            packageName: org.wso2.carbon.apimgt.gateway
             # Ballerina Archive name.
-            archiveName: analytics.bmz
+            archiveName: throttle.bmz
           #-
             # Package name of the request interceptor.
-            # packageName: org.wso2.carbon.apimgt.gateway
+            # packageName: org.wso2.carbon.apimgt.gateway.handler
             # Ballerina Archive name.
-            # archiveName: throttle.bmz
+            # archiveName: analytics.bmz
 
 wso2.securevault:
   secretRepository:
