@@ -114,6 +114,11 @@
             <outputDirectory>.</outputDirectory>
         </fileSet>
 
+        <fileSet> <!-- Create empty Bal file deployment directory -->
+            <outputDirectory>./org/wso2/carbon/apimgt/gateway</outputDirectory>
+            <excludes><exclude>**/*</exclude></excludes>
+        </fileSet>
+
     </fileSets>
 
     <files>
