@@ -163,6 +163,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIResourceWithTemplateTestCase"/>
             <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
             <class name="org.wso2.am.integration.tests.rest.DocAPIParameterTamperingTest"/>
+            <class name="org.wso2.am.integration.tests.other.APIMANAGER5843WSDLHostnameTestCase"/>
         </classes>
     </test>
 
