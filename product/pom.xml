@@ -219,12 +219,6 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.web.admin.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.web.editor.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
@@ -403,10 +397,6 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.web.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.web.editor.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -575,10 +565,6 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.web.store.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.admin.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
