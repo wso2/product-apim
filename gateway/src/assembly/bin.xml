@@ -63,11 +63,11 @@
             </directory>
             <outputDirectory>src</outputDirectory>
         </fileSet>
-	<fileSet>
+        <fileSet>
             <directory>
                 ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
             </directory>
-            <outputDirectory>.</outputDirectory>
+            <outputDirectory>samples</outputDirectory>
             <excludes>
                 <exclude>target/**</exclude>
                 <exclude>scripts/**</exclude>
@@ -82,6 +82,43 @@
             </excludes>
             <fileMode>644</fileMode>
         </fileSet>
+
+        <fileSet>
+            <directory>
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+            </directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>*.bsz</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>
+                ${project.build.directory}/extracted-distributions/apim-ballerina-configs-zip/apim-ballerina-configs-${carbon.apimgt.version}
+            </directory>
+            <outputDirectory>./handler</outputDirectory>
+            <includes>
+                <include>*.bmz</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>ballerina_lib/handler</directory>
+            <outputDirectory>handler</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>ballerina_lib/services</directory>
+            <outputDirectory>.</outputDirectory>
+        </fileSet>
+
+        <fileSet> <!-- Create empty Bal file deployment directory -->
+            <outputDirectory>./org/wso2/carbon/apimgt/gateway</outputDirectory>
+            <excludes><exclude>**/*</exclude></excludes>
+        </fileSet>
+
     </fileSets>
 
     <files>
@@ -99,6 +136,18 @@
         </file>
         <file>
             <source>bin/ballerina.bat</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>bin/ciphertool</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>bin/ciphertool.bat</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
@@ -131,12 +180,16 @@
                 <include>org.ballerinalang:ballerina-core:jar</include>
                 <include>org.ballerinalang:ballerina-launcher:jar</include>
                 <include>org.ballerinalang:ballerina-native:jar</include>
+                <include>org.ballerinalang:ballerina-logging:jar</include>
                 <include>org.wso2.orbit.org.antlr:antlr4-runtime</include>
                 <include>org.wso2.carbon.transport:org.wso2.carbon.transport.http.netty</include>
                 <include>org.wso2.carbon.transport:org.wso2.carbon.transport.file</include>
                 <include>org.wso2.carbon.transport:org.wso2.carbon.connector.framework</include>
                 <include>org.wso2.carbon.transport:org.wso2.carbon.transport.jms</include>
                 <include>org.wso2.carbon.messaging:org.wso2.carbon.messaging</include>
+                <include>org.wso2.carbon.config:org.wso2.carbon.config</include>
+                <include>org.wso2.carbon.secvault:org.wso2.carbon.secvault</include>
+                <include>org.wso2.carbon.utils:carbon-utils</include>
                 <include>org.apache.commons.wso2:commons-vfs2</include>
                 <include>org.wso2.orbit.net.sf.saxon:Saxon-HE</include>
                 <include>com.fasterxml.jackson.core:jackson-databind</include>
@@ -184,6 +237,14 @@
                 <include>libthrift.wso2:libthrift</include>
                 <include>org.wso2.orbit.com.lmax:disruptor</include>
                 <include>org.json.wso2:json</include>
+            </includes>
+        </dependencySet>
+
+        <!-- Cipher tool specific artifacts -->
+        <dependencySet>
+            <outputDirectory>bre/lib/bootstrap/tools/ciphertool</outputDirectory>
+            <includes>
+                <include>org.wso2.carbon.secvault:org.wso2.carbon.secvault.ciphertool:jar</include>
             </includes>
         </dependencySet>
     </dependencySets>
