@@ -36,12 +36,13 @@ More information about this product can be found [here](http://wso2.com/api-mana
 ### Running WSO2 API Manager Gateway
 1. Find the API Manager gateway distribution from product-apim/gateway/target
 2. Extract the distribution. Ex: unzip wso2apim-gateway-3.0.0.zip
-3. Go to the wso2apim-gateway-3.0.0 directory and execute ``bin/ballerina run service org/wso2/carbon/apimgt/gateway``
+3. Go to the wso2apim-gateway-3.0.0 directory and execute ``bin/ballerina run service services.bsz``
 
 #### Note:
 
 * Make sure you start the Gateway from ``wso2apim-gateway-3.0.0`` root directory; not inside ``/bin`` directory.
 * Make sure you start the Gateway at the end, after starting all the other servers.
+* After Publishing an API to gateway make sure that you restart the gateway by executing ``bin/ballerina run service services.bsz org/wso2/carbon/apimgt/gateway``
 
 ### Testing
 
