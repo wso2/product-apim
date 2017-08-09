@@ -81,6 +81,8 @@ public class APIMIntegrationBaseTest {
     protected String storeURLHttp;
     protected String keymanagerSessionCookie;
     protected String keymanagerSuperTenantSessionCookie;
+    protected final int inboundWebSocketPort = 9099;
+    protected final int portOffset = 500;  //This need to be properly fixed rather than hard coding
 
     /**
      * This method will initialize test environment
@@ -371,6 +373,24 @@ public class APIMIntegrationBaseTest {
         String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
                 replace("http", "ws");
         url = url.substring(0, url.lastIndexOf(":") + 1) + inboundWebSocketPort + "/" + apiContext + "/" + version;
+        return url;
+    }
+
+    protected String getWebSocketAPIInvocationURL(String apiContext, String version)
+            throws XPathExpressionException {
+        String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
+                replace("http", "ws");
+        url = url.substring(0, url.lastIndexOf(":") + 1) + (inboundWebSocketPort + portOffset) + "/" + apiContext + "/" + version;
+        return url;
+    }
+
+    protected String getWebSocketTenantAPIInvocationURL(String apiContext, String version, String tenantDomain)
+            throws XPathExpressionException  {
+        String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
+                replace("http", "ws");
+
+        url = url.substring(0, url.lastIndexOf(":") + 1) + (inboundWebSocketPort + portOffset)
+                + "/t/" + tenantDomain + "/" + apiContext + "/" + version;
         return url;
     }
 
