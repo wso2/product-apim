@@ -28,14 +28,14 @@
     <groupId>org.wso2.am</groupId>
     <artifactId>am-parent</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-m5</version>
     <name>WSO2 API Manager - Aggregator Module</name>
 
     <scm>
         <url>https://github.com/wso2/product-apim.git</url>
         <developerConnection>scm:git:https://github.com/wso2/product-apim.git</developerConnection>
         <connection>scm:git:https://github.com/wso2/product-apim.git</connection>
-        <tag>HEAD</tag>
+        <tag>v3.0.0-m5</tag>
     </scm>
 
     <pluginRepositories>
