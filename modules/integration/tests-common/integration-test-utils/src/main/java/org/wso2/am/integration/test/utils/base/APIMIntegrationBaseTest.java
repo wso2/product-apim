@@ -386,24 +386,6 @@ public class APIMIntegrationBaseTest {
         return url;
     }
 
-    protected String getWebSocketAPIInvocationURL(String apiContext, String version)
-            throws XPathExpressionException {
-        String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
-                replace("http", "ws");
-        url = url.substring(0, url.lastIndexOf(":") + 1) + (inboundWebSocketPort + portOffset) + "/" + apiContext + "/" + version;
-        return url;
-    }
-
-    protected String getWebSocketTenantAPIInvocationURL(String apiContext, String version, String tenantDomain)
-            throws XPathExpressionException  {
-        String url = gatewayContextWrk.getContextUrls().getServiceUrl().replace("/services", "").
-                replace("http", "ws");
-
-        url = url.substring(0, url.lastIndexOf(":") + 1) + (inboundWebSocketPort + portOffset)
-                + "/t/" + tenantDomain + "/" + apiContext + "/" + version;
-        return url;
-    }
-
     protected String getAPIInvocationURLHttps(String apiContext) throws XPathExpressionException {
         return gatewayContextWrk.getContextUrls().getSecureServiceUrl().replace("/services", "") + "/" + apiContext;
     }
