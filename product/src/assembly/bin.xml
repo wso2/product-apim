@@ -37,6 +37,7 @@
                 <exclude>**/netty-transports.yml</exclude>
                 <!--  change this to config provider format an add it again-->
                 <exclude>**/workflow-extensions.yml</exclude>
+                <exclude>wso2/lib/features/**</exclude>
             </excludes>
         </fileSet>
 
