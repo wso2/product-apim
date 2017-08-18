@@ -113,31 +113,6 @@
             <version>${carbon.cache.version}</version>
             <type>zip</type>
         </dependency>
-       <!-- UUF Features-->
-        <dependency>
-            <groupId>org.wso2.carbon.uuf</groupId>
-            <artifactId>org.wso2.carbon.uuf.core.feature</artifactId>
-            <version>${carbon.uuf.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.uuf</groupId>
-            <artifactId>org.wso2.carbon.uuf.renderablecreator.hbs.feature</artifactId>
-            <version>${carbon.uuf.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.uuf</groupId>
-            <artifactId>org.wso2.carbon.uuf.renderablecreator.html.feature</artifactId>
-            <version>${carbon.uuf.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.uuf</groupId>
-            <artifactId>org.wso2.carbon.uuf.httpconnector.msf4j.feature</artifactId>
-            <version>${carbon.uuf.version}</version>
-            <type>zip</type>
-        </dependency>
         <!-- APIM Features -->
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
@@ -208,24 +183,6 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.rest.api.commons.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.web.store.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.web.admin.feature</artifactId>
-            <version>${carbon.apimgt.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.web.editor.feature</artifactId>
             <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
@@ -395,22 +352,6 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.rest.api.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.store.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.editor.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -418,23 +359,6 @@
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature</id>
                                     <version>${carbon.cache.version}</version>
-                                </feature>
-                                <!--UUF Features-->
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.core.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.renderablecreator.hbs.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.renderablecreator.html.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.httpconnector.msf4j.feature</id>
-                                    <version>${carbon.uuf.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -553,7 +477,7 @@
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>
+                                <feature>`
                                     <id>org.wso2.carbon.apimgt.rest.api.webserver.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
@@ -562,13 +486,9 @@
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
-                                    <id>org.wso2.carbon.apimgt.rest.api.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.publisher.feature</id>
                                     <version>${carbon.apimgt.version}</version>
-                                </feature>
+                                </feature>``
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.core.feature</id>
                                     <version>${carbon.apimgt.version}</version>
@@ -577,39 +497,10 @@
                                     <id>org.wso2.carbon.apimgt.rest.api.commons.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.store.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.admin.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.apimgt.web.editor.feature</id>
-                                    <version>${carbon.apimgt.version}</version>
-                                </feature>
                                 <!--UUF Dependencies-->
                                 <feature>
                                     <id>org.wso2.carbon.caching.feature</id>
                                     <version>${carbon.cache.version}</version>
-                                </feature>
-                                <!--UUF Features-->
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.core.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.renderablecreator.hbs.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.renderablecreator.html.feature</id>
-                                    <version>${carbon.uuf.version}</version>
-                                </feature>
-                                <feature>
-                                    <id>org.wso2.carbon.uuf.httpconnector.msf4j.feature</id>
-                                    <version>${carbon.uuf.version}</version>
                                 </feature>
                             </features>
                         </configuration>
