@@ -477,7 +477,7 @@
                                     <id>org.wso2.carbon.apimgt.rest.api.store.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
-                                <feature>`
+                                <feature>
                                     <id>org.wso2.carbon.apimgt.rest.api.webserver.feature</id>
                                     <version>${carbon.apimgt.version}</version>
                                 </feature>
