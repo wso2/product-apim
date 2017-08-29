@@ -194,6 +194,8 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
     public void testVisibilityForCreatorInPublisher() throws APIManagerIntegrationTestException,
                                                              MalformedURLException,
                                                              XPathExpressionException {
+
+        // This testCase will test the visibility of API in Publisher for admin in same domain"
         apiIdentifierAdminVisibility =
                 new APIIdentifier(providerName, API_NAME_ADMIN_VISIBILITY, API_VERSION_1_0_0);
         apiIdentifierSubscriberVisibility =
@@ -252,25 +254,8 @@ public class APIVisibilityByRoleTestCase extends APIManagerLifecycleBaseTest {
 
     }
 
-
-    @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Publisher for admin in same domain ",
-          dependsOnMethods = "testVisibilityForCreatorInStore")
-    public void testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInPublisher()
-            throws APIManagerIntegrationTestException {
-        List<APIIdentifier> apiPublisherAPIIdentifierList =
-                APIMTestCaseUtils.getAPIIdentifierListFromHttpResponse(apiPublisherClientCarbonSuperAdmin.getAllAPIs());
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierAdminVisibility, apiPublisherAPIIdentifierList),
-                   "API with  Role admin  visibility is not visible to Admin user with Admin and subscriber role in same" +
-                   " domain in API Publisher." +
-                   getAPIIdentifierString(apiIdentifierAdminVisibility));
-        assertTrue(APIMTestCaseUtils.isAPIAvailable(apiIdentifierSubscriberVisibility, apiPublisherAPIIdentifierList),
-                   "API with  Role Internal/subscriber  visibility is not visible to Admin user with Admin and subscriber" +
-                   " role in same domain  in API Publisher." +
-                   getAPIIdentifierString(apiIdentifierSubscriberVisibility));
-    }
-
     @Test(groups = {"wso2.am"}, description = "Test the visibility of API in Store for admin in same domain ",
-          dependsOnMethods = "testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInPublisher")
+          dependsOnMethods = "testVisibilityForCreatorInPublisher")
     public void testVisibilityForAdminUserWithAdminAndSubscriberRoleInSameDomainInStore()
             throws APIManagerIntegrationTestException {
         List<APIIdentifier> apiStoreAPIIdentifierList =
