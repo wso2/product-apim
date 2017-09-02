@@ -216,6 +216,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.TagTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APILifecycleTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
         </classes>
     </test>
     <test name="apim-mediation-tests" preserve-order="true" parallel="false">
