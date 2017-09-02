@@ -1,0 +1,114 @@
+{
+  "testCase": [
+    {
+      "init": {
+        "scope": "apim:api_create",
+        "username": "admin",
+        "password": "admin"
+      },
+      "data": {
+        "method": "POST",
+        "url": "api/am/publisher/v0.10//apis",
+        "query-parameters": {},
+        "request-headers": {
+          "Authorization": "Bearer"
+        },
+        "request-payload": "{\r\n          \"sequences\": [],\r\n          \"tiers\": [\r\n            \"Gold\"\r\n          ],\r\n          \"thumbnailUri\": \"https://upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png\",\r\n          \"visibility\": \"PUBLIC\",\r\n          \"visibleRoles\": [],\r\n          \"visibleTenants\": [],\r\n          \"cacheTimeout\": 300,\r\n          \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\" http://ws.cdyne.com/phoneverify/phoneverify.asmx\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n          \"subscriptionAvailability\": null,\r\n          \"subscriptionAvailableTenants\": [],\r\n          \"destinationStatsEnabled\": \"Disabled\",\r\n          \"apiDefinition\": \"{\\\"paths\\\":{\\\"/*\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{\\\"description\\\":\\\"OK\\\"}},\\\"x-scope\\\":\\\"sampleapi1_read\\\"}},\\\"/abc\\\":{\\\"post\\\":{\\\"responses\\\":{\\\"200\\\":{}},\\\"parameters\\\":[{\\\"name\\\":\\\"Payload\\\",\\\"description\\\":\\\"Request Body\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\"}}],\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"x-scope\\\":\\\"sampleapi1_write\\\"}}},\\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[{\\\"name\\\":\\\"sampleapi1_read\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"sampleapi1_read\\\",\\\"roles\\\":\\\"admin\\\"},{\\\"name\\\":\\\"sampleapi1_write\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"sampleapi1_write\\\",\\\"roles\\\":\\\"admin\\\"}]}},\\\"swagger\\\":\\\"2.0\\\",\\\"info\\\":{\\\"title\\\":\\\"PhoneVerification\\\",\\\"description\\\":\\\"Verify a phone number\\\",\\\"contact\\\":{\\\"email\\\":\\\"xx@ee.com\\\",\\\"name\\\":\\\"xx\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\",\r\n          \"responseCaching\": \"Disabled\",\r\n          \"isDefaultVersion\": true,\r\n          \"gatewayEnvironments\": \"Production and Sandbox\",\r\n          \"businessInformation\": {\r\n            \"technicalOwner\": \"xx\",\r\n            \"technicalOwnerEmail\": \"ggg@ww.com\",\r\n            \"businessOwner\": \"xx\",\r\n            \"businessOwnerEmail\": \"xx@ee.com\"\r\n          },\r\n          \"transport\": [\r\n            \"http\",\r\n            \"https\"\r\n          ],\r\n          \"tags\": [\r\n            \"phone\",\r\n            \"multimedia\",\r\n            \"mobile\"\r\n          ],\r\n          \"provider\": \"admin\",\r\n          \"version\": \"1.0.0\",\r\n          \"description\": \"API with Thumbnail\",\r\n          \"name\": \"SampleAPIWithThumbnailUrl\",\r\n          \"context\": \"/apiwiththumbnail\"\r\n        }",
+        "response-headers": "",
+        "response-payload": ""
+      },
+      "asserts": {
+        "header-asserts": {
+          "status-code": "201"
+        },
+        "body-asserts": []
+      },
+      "preserve-list": [
+        {
+          "attribute-name": "apiwiththumbnailId",
+          "response-location": "id"
+        }
+      ]
+    },
+    {
+      "init": {
+        "scope": "apim:api_create",
+        "username": "admin",
+        "password": "admin"
+      },
+      "data": {
+        "method": "PUT",
+        "url": "api/am/publisher/v0.10//apis/{apiwiththumbnailId}",
+        "query-parameters": {},
+        "request-headers": {
+          "Authorization": "Bearer"
+        },
+        "request-payload": "{\r\n          \"sequences\": [],\r\n          \"tiers\": [\r\n            \"Gold\"\r\n          ],\r\n          \"thumbnailUri\": null,\r\n          \"visibility\": \"PUBLIC\",\r\n          \"visibleRoles\": [],\r\n          \"visibleTenants\": [],\r\n          \"cacheTimeout\": 300,\r\n          \"endpointConfig\": \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\" http://ws.cdyne.com/phoneverify/phoneverify.asmx\\\",\\\"config\\\":null},\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n          \"subscriptionAvailability\": null,\r\n          \"subscriptionAvailableTenants\": [],\r\n          \"destinationStatsEnabled\": \"Disabled\",\r\n          \"apiDefinition\": \"{\\\"paths\\\":{\\\"/*\\\":{\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{\\\"description\\\":\\\"OK\\\"}},\\\"x-scope\\\":\\\"sampleapi1_read\\\"}},\\\"/abc\\\":{\\\"post\\\":{\\\"responses\\\":{\\\"200\\\":{}},\\\"parameters\\\":[{\\\"name\\\":\\\"Payload\\\",\\\"description\\\":\\\"Request Body\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\"}}],\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"x-scope\\\":\\\"sampleapi1_write\\\"}},\\\"/specialresourcethatisadded\\\":{\\\"put\\\":{\\\"responses\\\":{\\\"200\\\":{}},\\\"parameters\\\":[{\\\"name\\\":\\\"Payload\\\",\\\"description\\\":\\\"Request Body\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\",\\\"schema\\\":{\\\"type\\\":\\\"object\\\"}}],\\\"x-auth-type\\\":\\\"Application & Application User\\\",\\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"x-scope\\\":\\\"sampleapi1_write\\\"}}},\\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[{\\\"name\\\":\\\"sampleapi1_read\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"sampleapi1_read\\\",\\\"roles\\\":\\\"admin\\\"},{\\\"name\\\":\\\"sampleapi1_write\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"sampleapi1_write\\\",\\\"roles\\\":\\\"admin\\\"}]}},\\\"swagger\\\":\\\"2.0\\\",\\\"info\\\":{\\\"title\\\":\\\"PhoneVerification\\\",\\\"description\\\":\\\"Verify a phone number\\\",\\\"contact\\\":{\\\"email\\\":\\\"xx@ee.com\\\",\\\"name\\\":\\\"xx\\\"},\\\"version\\\":\\\"1.0.0\\\"}}\",\r\n          \"responseCaching\": \"Disabled\",\r\n          \"isDefaultVersion\": true,\r\n          \"gatewayEnvironments\": \"Production and Sandbox\",\r\n          \"businessInformation\": {\r\n            \"technicalOwner\": \"xx\",\r\n            \"technicalOwnerEmail\": \"ggg@ww.com\",\r\n            \"businessOwner\": \"xx\",\r\n            \"businessOwnerEmail\": \"xx@ee.com\"\r\n          },\r\n          \"transport\": [\r\n            \"http\",\r\n            \"https\"\r\n          ],\r\n          \"tags\": [\r\n            \"phone\",\r\n            \"multimedia\",\r\n            \"mobile\"\r\n          ],\r\n          \"provider\": \"admin\",\r\n          \"version\": \"1.0.0\",\r\n          \"description\": \"API with Scopes\",\r\n          \"name\": \"SampleAPIWithScopes\",\r\n          \"context\": \"/apiwithscopes\"\r\n        }",
+        "response-headers": "",
+        "response-payload": ""
+      },
+      "asserts": {
+        "header-asserts": {
+          "status-code": "200"
+        },
+        "body-asserts": [{
+          "jsonPath" : "$.thumbnailUri",
+          "regex" : ".*thumbnail"
+        }]
+      },
+      "preserve-list": [
+        {
+          "attribute-name": "apia1Id",
+          "response-location": "id"
+        }
+      ]
+    },
+    {
+      "init": {
+        "scope": "apim:api_view"
+      },
+      "data": {
+        "method": "GET",
+        "url": "api/am/publisher/v0.10//apis",
+        "query-parameters": {},
+        "request-headers": {
+          "Authorization": "Bearer"
+        },
+        "request-payload": "",
+        "response-headers": "",
+        "response-payload": ""
+      },
+      "asserts": {
+        "header-asserts": {
+          "status-code": "200"
+        },
+        "body-asserts": [{
+           "jsonPath" : "$.list[0].thumbnailUri",
+           "regex" : ".*thumbnail"
+         }]
+      }
+    },
+    {
+      "init": {
+        "scope": "apim:api_create"
+      },
+      "data": {
+        "method": "DELETE",
+        "url": "api/am/publisher/v0.10//apis/{apiwiththumbnailId}",
+        "query-parameters": {},
+        "request-headers": {
+          "Authorization": "Bearer"
+        },
+        "request-payload": "",
+        "response-headers": "",
+        "response-payload": ""
+      },
+      "asserts": {
+        "header-asserts": {
+          "status-code": "200"
+        },
+        "body-asserts": []
+      }
+    }
+  ]
+}
