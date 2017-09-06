@@ -84,7 +84,7 @@
         },
         "body-asserts": [{
            "jsonPath" : "$.list[0].thumbnailUri",
-           "regex" : ".*thumbnail"
+           "regex" : ".*?"
          }]
       }
     },

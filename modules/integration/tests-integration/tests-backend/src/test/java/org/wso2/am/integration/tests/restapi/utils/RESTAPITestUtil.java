@@ -255,7 +255,8 @@ public class RESTAPITestUtil {
                                 }
                             } else if (bodyAssert.has(RESTAPITestConstants.BODY_ASSERTS_REGEX)) {
                                 String regex = bodyAssert.getString(RESTAPITestConstants.BODY_ASSERTS_REGEX);
-                                if (!Pattern.matches(regex, actualValue.toString())) {
+
+                                if (!Pattern.matches(regex, (actualValue + ""))) {
                                     log.error("Json path actual value mismatches with provided regex. jsonPath: \""
                                             + jsonPath + "\", regex: \"" + regex + "\", actual value: \"" + actualValue
                                             + "\", response payload: " + outputText);
