@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://ws.apache.org/ns/synapse">
+    <api context="/jsonAPI" name="jsonAPI">
+        <resource methods="POST" protocol="http" context="/jsonapi/1.0.0"
+                  version="1.0.0"
+                  version-type="context">
+            <inSequence>
+                <validate>
+                    <schema key="stockquote-json-schema"/>
+                    <on-fail>
+                        <payloadFactory media-type="json">
+                            <format>{"Error":"$1"}</format>
+                            <args>
+                                <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+                            </args>
+                        </payloadFactory>
+                        <respond/>
+                    </on-fail>
+                </validate>
+                <payloadFactory media-type="json">
+                    <format>{"Success":$1"}</format>
+                    <args>
+                        <arg evaluator="xml" expression="$ctx:ERROR_MESSAGE"/>
+                    </args>
+                </payloadFactory>
+                <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                <respond/>
+            </inSequence>
+        </resource>
+    </api>
+    <localEntry key="stockquote-json-schema"><![CDATA[{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "getQuote": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "pattern": "[a-z\\d~+-]+"
+            }
+          },
+          "required": [
+            "symbol"
+          ]
+        }
+      },
+      "required": [
+        "request"
+      ]
+    }
+  },
+  "required": [
+    "getQuote"
+  ]
+}]]><description/>
+    </localEntry>
+</definitions>
