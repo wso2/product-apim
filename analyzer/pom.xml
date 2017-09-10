@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.wso2.carbon.transport</groupId>
             <artifactId>org.wso2.carbon.connector.framework.feature</artifactId>
-            <version>${org.wso2.carbon.transport.version}</version>
+            <version>${carbon.transport.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
@@ -194,13 +194,13 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.apimgt.analytics.feature</artifactId>
-            <version>${carbon.apim.version}</version>
+            <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.apimgt.throttling.feature</artifactId>
-            <version>${carbon.apim.version}</version>
+            <version>${carbon.apimgt.version}</version>
             <type>zip</type>
         </dependency>
 
@@ -315,10 +315,10 @@
                                     <type>jar</type>
                                 </artifactItem>
                                 <!--<artifactItem>-->
-                                    <!--<groupId>org.wso2.extension.siddhi.io.http</groupId>-->
-                                    <!--<artifactId>siddhi-io-http</artifactId>-->
-                                    <!--<version>${siddhi.extension.version}</version>-->
-                                    <!--<type>jar</type>-->
+                                <!--<groupId>org.wso2.extension.siddhi.io.http</groupId>-->
+                                <!--<artifactId>siddhi-io-http</artifactId>-->
+                                <!--<version>${siddhi.extension.version}</version>-->
+                                <!--<type>jar</type>-->
                                 <!--</artifactItem>-->
                                 <!--Map Extensions-->
                                 <artifactItem>
@@ -401,7 +401,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.connector.framework.feature</id>
-                                    <version>${org.wso2.carbon.transport.version}</version>
+                                    <version>${carbon.transport.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.messaging.feature</id>
@@ -489,11 +489,11 @@
                                 <!--APIM features-->
                                 <feature>
                                     <id>org.wso2.apimgt.analytics.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.apimgt.throttling.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
 
@@ -683,7 +683,7 @@
                                     <id>org.wso2.siddhi.feature</id>
                                     <version>${carbon.analytics.version}</version>
                                 </feature>
-                                
+
                                 <!-- CAAS Security Feature -->
                                 <feature>
                                     <id>org.wso2.carbon.security.caas.feature</id>
@@ -698,11 +698,11 @@
                                 <!--APIM features-->
                                 <feature>
                                     <id>org.wso2.apimgt.analytics.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.apimgt.throttling.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
                             </features>
@@ -802,11 +802,11 @@
                                 <!--APIM features-->
                                 <feature>
                                     <id>org.wso2.apimgt.analytics.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.apimgt.throttling.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
 
                             </features>
@@ -888,11 +888,11 @@
                                 <!--APIM features-->
                                 <feature>
                                     <id>org.wso2.apimgt.analytics.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.apimgt.throttling.feature</id>
-                                    <version>${carbon.apim.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                             </features>
                         </configuration>
@@ -1077,9 +1077,7 @@
         </resources>
     </build>
 
-     <properties>
-        <carbon.apim.version>7.0.39</carbon.apim.version>
-
+    <properties>
         <carbon.analytics.version>2.0.38</carbon.analytics.version>
         <siddhi.version>4.0.0-M9</siddhi.version>
         <siddhi.extension.version>1.0.0</siddhi.extension.version>
@@ -1095,24 +1093,8 @@
         <testng.version>6.9.4</testng.version>
         <plugin.version.antlr>4.5.1</plugin.version.antlr>
 
-        <!-- OSGI -->
-        <osgi.api.version>6.0.0</osgi.api.version>
-        <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
-        <equinox.osgi.services.version>3.4.0.v20140312-2051</equinox.osgi.services.version>
-
-        <osgi.framework.import.version.range>[1.8.0, 2.0.0)</osgi.framework.import.version.range>
-        <osgi.service.tracker.import.version.range>[1.5.1, 2.0.0)</osgi.service.tracker.import.version.range>
-
-        <!-- Dependencies -->
-        <carbon.kernel.version>5.2.0-m3</carbon.kernel.version>
-        <carbon.kernel.package.import.version.range>[5.0.0, 6.0.0)</carbon.kernel.package.import.version.range>
-        <carbon.kernel.pax.version>5.2.0-m3</carbon.kernel.pax.version>
-
         <org.wso2.carbon.transport.http.netty.version>4.3.0-m2</org.wso2.carbon.transport.http.netty.version>
-        <carbon.transport.package.import.version.range>[4.0.0, 5.0.0)</carbon.transport.package.import.version.range>
-        <org.wso2.carbon.transport.version>4.3.0-m2</org.wso2.carbon.transport.version>
 
-        <carbon.messaging.version>2.3.2</carbon.messaging.version>
         <carbon.messaging.package.import.version.range>[0.0.0, 3.0.0)</carbon.messaging.package.import.version.range>
 
         <carbon.deployment.version>5.1.0</carbon.deployment.version>
@@ -1124,9 +1106,6 @@
         <carbon.jndi.version>1.0.2</carbon.jndi.version>
         <carbon.cache.version>1.1.3</carbon.cache.version>
 
-        <slf4j.version>1.7.5</slf4j.version>
-        <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)
-        </slf4j.logging.package.import.version.range>
 
         <antlr4.runtime.version>4.5.1.wso2v1</antlr4.runtime.version>
 
