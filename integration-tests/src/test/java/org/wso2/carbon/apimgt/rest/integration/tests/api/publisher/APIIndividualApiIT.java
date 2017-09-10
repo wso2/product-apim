@@ -62,8 +62,8 @@ public class APIIndividualApiIT {
         // Create an API for testing
         API body = new API();
         String contentType = "application/json";
-        body.setName("Api1236");
-        body.setContext("api1236");
+        body.setName("Api");
+        body.setContext("api");
         body.setVersion("1.0.0");
         body.setProvider("admin");
         body.setLifeCycleStatus("CREATED");
@@ -156,7 +156,7 @@ public class APIIndividualApiIT {
         String ifNoneMatch = null;
         String ifModifiedSince = null;
         API response = api.apisApiIdGet(apiId, ifNoneMatch, ifModifiedSince);
-        Assert.assertEquals(response.getName(), "Api101", "API name mismatch");
+        Assert.assertEquals(response.getName(), "Api", "API name mismatch");
     }
 
     /* NF - Get API details for an invalid Api ID.
