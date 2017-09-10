@@ -34,3 +34,58 @@ wso2.securevault:
     type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
     parameters:
       masterKeyReaderFile: ${sys:carbon.home}/conf/${sys:wso2.runtime}/master-keys.yaml
+
+wso2.datasources:
+    # datasources
+  dataSources:
+  - name: WSO2_AM_DB
+    description: The datasource used for APIM
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2AMDB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/AM_DB;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=60000'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: false
+
+  - name: WSO2_LIFECYCLE_DB
+    description: The datasource used for Lifecycle framework
+      # JNDI mapping of a data source
+    jndiConfig:
+        # JNDI name
+        # THIS IS A MANDATORY FIELD
+      name: jdbc/WSO2LifecycleDB
+        # JNDI Reference Flag
+      useJndiReference: false
+      # data source definition
+    definition:
+        # data source type
+        # THIS IS A MANDATORY FIELD
+      type: RDBMS
+        # data source configuration
+      configuration:
+        jdbcUrl: 'jdbc:h2:./database/WSO2LIFECYCLE_DB;DB_CLOSE_ON_EXIT=FALSE;MVCC=true'
+        username: wso2carbon
+        password: wso2carbon
+        driverClassName: org.h2.Driver
+        maxPoolSize: 50
+        idleTimeout: 60000
+        connectionTestQuery: SELECT 1
+        validationTimeout: 30000
+        isAutoCommit: false
