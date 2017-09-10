@@ -182,16 +182,19 @@
     </dependencyManagement>
 
     <properties>
-	<carbon.apimgt.version>7.0.40-SNAPSHOT</carbon.apimgt.version>
+	<carbon.apimgt.version>7.0.41-SNAPSHOT</carbon.apimgt.version>
 	<product.apim.version>3.0.0-SNAPSHOT</product.apim.version>
         <!-- Maven plugins -->
         <maven.checkstyleplugin.version>2.16</maven.checkstyleplugin.version>
         <maven.findbugsplugin.version>3.0.3</maven.findbugsplugin.version>
 
         <!-- Dependencies -->
-        <carbon.kernel.version>5.2.0-m3</carbon.kernel.version>
-        <carbon.kernel.product.version>5.2.0-m3</carbon.kernel.product.version>
-        <carbon.kernel.package.import.version.range>[5.0.0, 6.0.0)</carbon.kernel.package.import.version.range>
+        <carbon.kernel.version>5.2.0-alpha</carbon.kernel.version>
+        <carbon.kernel.product.version>5.2.0-alpha</carbon.kernel.product.version>
+        <carbon.kernel.package.import.version.range>[5.2.0, 6.0.0)</carbon.kernel.package.import.version.range>
+        <carbon.config.version>2.0.5</carbon.config.version>
+        <carbon.utils.version>2.0.2</carbon.utils.version>
+        <carbon.secvault.version>5.0.8</carbon.secvault.version>
 
         <osgi.api.version>6.0.0</osgi.api.version>
         <equinox.osgi.version>3.10.2.v20150203-1939</equinox.osgi.version>
@@ -202,30 +205,30 @@
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <!--TODO: Check why we need to depend on SNAPSHOT -->
 
-        <carbon.transport.version>4.3.0-m2</carbon.transport.version>
-        <carbon.transport.package.import.version.range>[4.2.0, 5.0.0)</carbon.transport.package.import.version.range>
+        <carbon.transport.version>5.0.0-m1</carbon.transport.version>
+        <carbon.transport.package.import.version.range>[5.0.0, 6.0.0)</carbon.transport.package.import.version.range>
 
-        <carbon.messaging.version>2.3.1</carbon.messaging.version>
-        <carbon.messaging.package.import.version.range>[2.0.0, 3.0.0)</carbon.messaging.package.import.version.range>
+        <carbon.messaging.version>3.0.0</carbon.messaging.version>
+        <carbon.messaging.package.import.version.range>[3.0.0, 4.0.0)</carbon.messaging.package.import.version.range>
 
         <osgi.framework.import.version.range>[1.8.0, 2.0.0)</osgi.framework.import.version.range>
         <osgi.service.tracker.import.version.range>[1.5.1, 2.0.0)</osgi.service.tracker.import.version.range>
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
-        <carbon.feature.plugin.version>3.0.0</carbon.feature.plugin.version>
+        <carbon.feature.plugin.version>3.1.1</carbon.feature.plugin.version>
+        <carbon.touchpoint.version>1.1.0</carbon.touchpoint.version>
         <!--<gateway.type-converters.version>1.0.0-SNAPSHOT</gateway.type-converters.version>-->
 
         <antlr4.runtime.version>4.5.1.wso2v1</antlr4.runtime.version>
         <plugin.version.antlr>4.5.1</plugin.version.antlr>
 
-        <carbon.datasources.version>1.1.0</carbon.datasources.version>
-        <carbon.jndi.version>1.0.2</carbon.jndi.version>
-        <carbon.metrics.version>2.0.1</carbon.metrics.version>
-        <wso2.msf4j.version>2.3.0-m1</wso2.msf4j.version>
-        <carbon.uuf.version>1.0.0-m14</carbon.uuf.version>
+        <carbon.datasources.version>1.1.2</carbon.datasources.version>
+        <carbon.jndi.version>1.0.3</carbon.jndi.version>
+        <carbon.metrics.version>2.3.0</carbon.metrics.version>
+        <wso2.msf4j.version>2.4.0-m1</wso2.msf4j.version>
         <carbon.cache.version>1.1.3</carbon.cache.version>
         <javax.cache-api.version>1.0.0</javax.cache-api.version>
-        <carbon.lcm.version>1.1.1</carbon.lcm.version>
-        <carbon.deployment.version>5.1.0</carbon.deployment.version>
+        <carbon.lcm.version>1.1.2</carbon.lcm.version>
+        <carbon.deployment.version>5.1.4</carbon.deployment.version>
     </properties>
 
     <modules>
