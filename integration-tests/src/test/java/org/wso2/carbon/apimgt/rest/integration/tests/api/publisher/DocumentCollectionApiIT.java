@@ -121,7 +121,6 @@ public class DocumentCollectionApiIT {
         body.setSourceType(Document.SourceTypeEnum.INLINE);
         body.setVisibility(Document.VisibilityEnum.API_LEVEL);
         body.setInlineContent("This is the inline content");
-        String contentType = "application/json";
         Document response = api.apisApiIdDocumentsPost(apiId, body,ifMatch,ifUnmodifiedSince);
 
         Assert.assertEquals(response.getName(), "Help", "Document name mismatch");

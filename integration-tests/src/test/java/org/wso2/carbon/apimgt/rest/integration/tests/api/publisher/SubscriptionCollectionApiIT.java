@@ -28,8 +28,6 @@ package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Tier;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.TierList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.SubscriptionCollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
@@ -102,16 +100,16 @@ public class SubscriptionCollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(enabled = false)
+    @Test
     public void subscriptionsGetTest() throws ApiException {
-        String apiId = "59fe4ecf-17a0-4f6a-9645-cd55c81b00bd";
+        String apiId = APIID;
         Integer limit = 2;
-        Integer offset = 2;
+        Integer offset = 0;
         String accept = null;
         String ifNoneMatch = null;
         SubscriptionList response = api.subscriptionsGet(apiId, limit, offset,ifNoneMatch);
+        System.out.println(response);
 
-        System.out.println(response.getList().get(0).getSubscriptionId());
         // TODO: test validations
     }
 

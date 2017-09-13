@@ -27,6 +27,7 @@ package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
@@ -54,10 +55,10 @@ public class APICollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(dependsOnMethods = "apisPostTest", enabled = true)
+    @Test(priority = 1)
     public void apisGetTest() throws ApiException {
         Integer limit = 10;
-        Integer offset = 2;
+        Integer offset = 0;
         String query = null;
         String accept = null;
         String ifNoneMatch = null;
@@ -72,29 +73,28 @@ public class APICollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(dependsOnMethods = "apisPostTest", enabled = true)
+    @Test(priority = 2)
     public void apisHeadTest() throws ApiException {
         String query = "name:API-117";
         String accept = null;
         String ifNoneMatch = null;
-        api.apisHead(query, ifNoneMatch);
-
-        // TODO: test validations (will thrown API Not Found exception if not available)
+        ApiResponse response = api.apisHeadWithHttpInfo(query, ifNoneMatch);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "status code mismatch");
     }
 
     /**
      * Check for error if given API attribute does not exist
-     * <p>
-     * TODO: Check if this is required (NO IHMO)
-     *
      * @throws ApiException
      */
-    @Test(dependsOnMethods = "apisHeadTest", expectedExceptions = ApiException.class)
+    @Test(priority = 3, description = "")
     public void apisHeadFailureTest() throws ApiException {
         String query = "name:DoesNotExist";
         String accept = null;
         String ifNoneMatch = null;
-        api.apisHead(query, ifNoneMatch);
+        ApiResponse response = api.apisHeadWithHttpInfo(query, ifNoneMatch);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 404, "status code mismatch");
     }
 
     /**
@@ -104,14 +104,14 @@ public class APICollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(enabled = true)
+    @Test(priority = 0)
     public void apisPostTest() throws ApiException {
         API body = new API();
         String contentType = "application/json";
 
         body.setName("API-117");
         body.setContext("API-117");
-        body.setVersion("111");
+        body.setVersion("1.0.0");
         body.setProvider("admin");
         body.setLifeCycleStatus("CREATED");
         body.setTransport(new ArrayList<String>() {{
@@ -130,14 +130,16 @@ public class APICollectionApiIT {
         body.setCorsConfiguration(new APICorsConfiguration());
         API response = api.apisPost(body);
         this.apiID = response.getId();
-        Assert.assertTrue(true);
+
+        String name = response.getName();
+        Assert.assertEquals(name, "API-117", "api name mismatch");
     }
 
     @AfterClass
     public void afterClass() throws ApiException {
         APIIndividualApi apiClient = new APIIndividualApi();
 
-        APIList response = api.apisGet(1, 1, null, null);
+        APIList response = api.apisGet(1, 0, null, null);
 
         String apiId = response.getList().get(0).getId();
         String ifMatch = null;

@@ -198,8 +198,8 @@ public class ApiClient {
         authentications.put("OAuth2Security", new OAuth());
 
         addDefaultHeader("Authorization", "Bearer " + getAccessToken("apim:subscribe apim:signup " +
-                "apim:workflow_approve apim:api_view apim:api_create apim:api_publish apim:tier_view " +
-                "apim:tier_manage apim:subscription_view apim:subscription_block apim:workflow_approve"));
+                "apim:workflow_approve apim:api_delete apim:api_update apim:api_view apim:api_create apim:api_publish apim:tier_view " +
+                "apim:tier_manage apim:subscription_view apim:apidef_update apim:subscription_block apim:workflow_approve"));
     }
 
     /**
@@ -1356,8 +1356,8 @@ public class ApiClient {
     }
 
     private String getAccessTokenForPublisher() {
-        return getAccessToken("apim:api_view apim:api_delete apim:api_create apim:api_publish apim:tier_view apim:tier_manage " +
-                "apim:subscription_view apim:subscription_block apim:workflow_approve");
+        return getAccessToken("apim:api_view apim:api_update apim:api_delete apim:api_create apim:api_publish apim:tier_view apim:tier_manage " +
+                "apim:subscription_view apim:subscription_block apim:apidef_update apim:workflow_approve");
     }
 
     private String getAccessToken(String scopeList) {

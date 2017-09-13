@@ -32,14 +32,8 @@ import org.testng.annotations.BeforeClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.*;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIBusinessInformation;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APICorsConfiguration;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.FileInfo;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleState;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
 
 import java.io.File;
 
@@ -61,9 +55,8 @@ public class APIIndividualApiIT {
 
         // Create an API for testing
         API body = new API();
-        String contentType = "application/json";
-        body.setName("Api");
-        body.setContext("api");
+        body.setName("Api101");
+        body.setContext("api101");
         body.setVersion("1.0.0");
         body.setProvider("admin");
         body.setLifeCycleStatus("CREATED");
@@ -86,63 +79,6 @@ public class APIIndividualApiIT {
     }
 
     /**
-     * Delete an API
-     * <p>
-     * This operation can be used to delete an existing API proving the Id of the API.
-     *
-     * @throws ApiException if the Api call fails
-     */
-
-    @Test(dependsOnMethods = "apisApiIdGetTest", enabled = true)
-    public void apisApiIdDeleteTest() throws ApiException {
-        String apiId = APIID;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        api.apisApiIdDelete(apiId, ifMatch, ifUnmodifiedSince);
-
-        // TODO - assert API not found
-
-        System.out.println("response is: ");
-    }
-
-    /**
-     * Get gateway definition
-     * <p>
-     * This operation can be used to retrieve the gateway configuration of an API.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test(dependsOnMethods = "apisApiIdGetTest", enabled = true)
-    public void apisApiIdGatewayConfigGetTest() throws ApiException {
-        String apiId = APIID;
-        String accept = null;
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        api.apisApiIdGatewayConfigGet(apiId,ifNoneMatch, ifModifiedSince);
-
-        // TODO: test validations return type void
-    }
-
-    /**
-     * Update gateway configuration
-     * <p>
-     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test(enabled = true)
-    public void apisApiIdGatewayConfigPutTest() throws ApiException {
-        String apiId = APIID;
-        String gatewayConfig = null;
-        String contentType = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        api.apisApiIdGatewayConfigPut(apiId, gatewayConfig, ifMatch, ifUnmodifiedSince);
-
-        // TODO: test validations return type void
-    }
-
-    /**
      * Get details of a specific API
      * <p>
      * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
@@ -152,12 +88,285 @@ public class APIIndividualApiIT {
     @Test(priority = 0)
     public void apisApiIdGetTest() throws ApiException {
         String apiId = APIID;
-        String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
         API response = api.apisApiIdGet(apiId, ifNoneMatch, ifModifiedSince);
-        Assert.assertEquals(response.getName(), "Api", "API name mismatch");
+        Assert.assertEquals(response.getName(), "Api101", "API name mismatch");
     }
+
+    /**
+     * Update an API
+     * <p>
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 1)
+    public void apisApiIdPutTest() throws ApiException {
+
+        String newApiDescription = "New API Description";
+        String apiId = APIID;
+        API body = api.apisApiIdGet(APIID, null, null);
+        body.setDescription(newApiDescription);
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        API response = api.apisApiIdPut(apiId, body, ifMatch, ifUnmodifiedSince);
+        Assert.assertEquals(response.getDescription(), newApiDescription, "description mismatch");
+    }
+
+    /**
+     * Get swagger definition
+     * <p>
+     * This operation can be used to retrieve the swagger definition of an API.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 2)
+    public void apisApiIdSwaggerGetTest() throws ApiException {
+        String apiId = APIID;
+        String ifModifiedSince = null;
+        String ifNoneMatch = null;
+        ApiResponse response = api.apisApiIdSwaggerGetWithHttpInfo(APIID, ifNoneMatch,ifModifiedSince );
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status Code mismatch");
+    }
+
+    /**
+     * Update swagger definition
+     * <p>
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 3)
+    public void apisApiIdSwaggerPutTest() throws ApiException {
+        String apiId = APIID;
+        String ifMatch = null;
+        String endPointId = "{\\r\\n\\t\\\"swagger\\\": \\\"2.0\\\",\\r\\n\\t\\\"info\\\": {\\r\\n\\t\\t\\\"version\\\": \\\"1.0.0\\\",\\r\\n\\t\\t\\\"title\\\": \\\"Api101\\\",\\r\\n\\t\\t\\\"contact\\\": {}\\r\\n\\t},\\r\\n\\t\\\"paths\\\": {\\r\\n\\t\\t\\\"\\/\\\": {\\r\\n\\t\\t\\t\\\"get\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"get\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"Updated\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t\\\"head\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"head\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"OK\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t\\\"post\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"post\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [{\\r\\n\\t\\t\\t\\t\\t\\\"in\\\": \\\"body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"name\\\": \\\"Payload\\\",\\r\\n\\t\\t\\t\\t\\t\\\"description\\\": \\\"Request Body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"required\\\": false,\\r\\n\\t\\t\\t\\t\\t\\\"schema\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"properties\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\\"payload\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\t\\\"type\\\": \\\"string\\\"\\r\\n\\t\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"OK\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t\\\"put\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"put\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [{\\r\\n\\t\\t\\t\\t\\t\\\"in\\\": \\\"body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"name\\\": \\\"Payload\\\",\\r\\n\\t\\t\\t\\t\\t\\\"description\\\": \\\"Request Body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"required\\\": false,\\r\\n\\t\\t\\t\\t\\t\\\"schema\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"properties\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\\"payload\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\t\\\"type\\\": \\\"string\\\"\\r\\n\\t\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"OK\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t\\\"delete\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"delete\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"OK\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t},\\r\\n\\t\\t\\t\\\"patch\\\": {\\r\\n\\t\\t\\t\\t\\\"operationId\\\": \\\"patch\\\",\\r\\n\\t\\t\\t\\t\\\"parameters\\\": [{\\r\\n\\t\\t\\t\\t\\t\\\"in\\\": \\\"body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"name\\\": \\\"Payload\\\",\\r\\n\\t\\t\\t\\t\\t\\\"description\\\": \\\"Request Body\\\",\\r\\n\\t\\t\\t\\t\\t\\\"required\\\": false,\\r\\n\\t\\t\\t\\t\\t\\\"schema\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"properties\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\\"payload\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\t\\t\\\"type\\\": \\\"string\\\"\\r\\n\\t\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}],\\r\\n\\t\\t\\t\\t\\\"responses\\\": {\\r\\n\\t\\t\\t\\t\\t\\\"200\\\": {\\r\\n\\t\\t\\t\\t\\t\\t\\\"description\\\": \\\"OK\\\"\\r\\n\\t\\t\\t\\t\\t}\\r\\n\\t\\t\\t\\t}\\r\\n\\t\\t\\t}\\r\\n\\t\\t}\\r\\n\\t}\\r\\n}";
+         String ifUnmodifiedSince = null;
+        ApiResponse response = api.apisApiIdSwaggerPutWithHttpInfo(apiId, endPointId, ifMatch, ifUnmodifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status Code mismatch");
+    }
+
+    /**
+     * Get thumbnail image
+     * <p>
+     * This operation can be used to download a thumbnail image of an API.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 5)
+    public void apisApiIdThumbnailGetTest() throws ApiException {
+        String apiId = APIID;
+        String accept = null;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        ApiResponse response = api.apisApiIdThumbnailGetWithHttpInfo(apiId, ifNoneMatch, ifModifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode,200, "Status code mismatch");
+
+    }
+
+    /**
+     * Upload a thumbnail image
+     * <p>
+     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 4)
+    public void apisApiIdThumbnailPostTest() throws ApiException {
+        String apiId = APIID;
+        File file = new File(getClass().getResource("/img1.jpg").getFile());
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        ApiResponse response = api.apisApiIdThumbnailPostWithHttpInfo(apiId, file, ifMatch, ifUnmodifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200 , "Status code does not match ");
+    }
+
+    @Test(priority = 6)
+    public void apisApiIdWsdlGetTest() throws ApiException {
+        String apiId = APIID;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        ApiResponse response = api.apisApiIdWsdlGetWithHttpInfo(apiId, ifNoneMatch, ifModifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status code mismatch");
+
+    }
+
+    @Test(priority = 7)
+    public void apisApiIdWsdlPutTest() throws ApiException {
+        String apiId = APIID;
+        File file = null;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        ApiResponse response = api.apisApiIdWsdlPutWithHttpInfo(apiId, file, ifMatch, ifUnmodifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status code mismatch");
+    }
+
+    /**
+     * Create a new API version
+     * <p>
+     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 8)
+    public void apisCopyApiPostTest() throws ApiException {
+        String newVersion = "2.0.1";
+        String apiId = APIID;
+        ApiResponse response = api.apisCopyApiPostWithHttpInfo(newVersion, apiId);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode,200, "Status code mismatch");
+    }
+
+    /**
+     * Change API Status
+     * <p>
+     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information.
+     *
+     * @throws ApiException if the Api call fails
+     */
+
+    @Test(priority = 13)
+    public void apisChangeLifecyclePostTest() throws ApiException {
+        String action = null;
+        String apiId = APIID;
+        String lifecycleChecklist = null;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        API response;
+
+        // Created --> Published
+        api.apisChangeLifecyclePost("Published", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Published", response.getLifeCycleStatus(), "API status mismatch in Published state");
+
+        // Published --> Created
+        api.apisChangeLifecyclePost("Created", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Created", response.getLifeCycleStatus(), "API status mismatch in Published state");
+
+        // Created --> Published
+        api.apisChangeLifecyclePost("Published", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Published", response.getLifeCycleStatus(), "API status mismatch in Published state");
+
+        // Published --> Prototyped
+        api.apisChangeLifecyclePost("Prototyped", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Prototyped", response.getLifeCycleStatus(), "API status mismatch in Prototyped state");
+
+        // Prototyped --> Published
+        api.apisChangeLifecyclePost("Published", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Published", response.getLifeCycleStatus(), "API status mismatch in Published state");
+
+        // Blocked --> Deprecated
+        api.apisChangeLifecyclePost("Deprecated", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Deprecated", response.getLifeCycleStatus(), "API status mismatch in Published state");
+
+        // Deprecated --> Retired
+        api.apisChangeLifecyclePost("Retired", apiId, null, null, null);
+        response = api.apisApiIdGet(apiId, null, null);
+        Assert.assertEquals("Retired", response.getLifeCycleStatus(), "API status mismatch in Published state");
+    }
+
+    /**
+     * Get Lifecycle state data of the API.
+     *
+     * This operation can be used to retrieve Lifecycle state data of the API.
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test(priority = 9)
+    public void apisApiIdLifecycleGetTest() throws ApiException {
+        String apiId = APIID;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        LifecycleState response = api.apisApiIdLifecycleGet(apiId, ifNoneMatch, ifModifiedSince);
+        String lifeCycleState = response.getState();
+        Assert.assertEquals(lifeCycleState, "Created", "Api lifecycle state mismatch");
+    }
+
+    /**
+     * Get Lifecycle state change history of the API.
+     *
+     * This operation can be used to retrieve Lifecycle state change history of the API.
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test(priority = 10)
+    public void apisApiIdLifecycleHistoryGetTest() throws ApiException {
+        String apiId = APIID;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        ApiResponse response = api.apisApiIdLifecycleHistoryGetWithHttpInfo(apiId, ifNoneMatch, ifModifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode,200, "Status code mismatch");
+    }
+
+    /**
+     * Get gateway definition
+     * <p>
+     * This operation can be used to retrieve the gateway configuration of an API.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 11)
+    public void apisApiIdGatewayConfigGetTest() throws ApiException {
+        String apiId = APIID;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        ApiResponse response = api.apisApiIdGatewayConfigGetWithHttpInfo(apiId,ifNoneMatch, ifModifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode,200, "Status code mismatch");
+    }
+
+    /**
+     * Update gateway configuration
+     * <p>
+     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;.
+     *
+     * @throws ApiException if the Api call fails
+     */
+    @Test(priority = 12)
+    public void apisApiIdGatewayConfigPutTest() throws ApiException {
+        String apiId = APIID;
+        String gatewayConfig = null;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        api.apisApiIdGatewayConfigPut(apiId, gatewayConfig, ifMatch, ifUnmodifiedSince);
+
+        // TODO: test validations return type void
+    }
+
+
+    /**
+     * Delete an API
+     * <p>
+     * This operation can be used to delete an existing API proving the Id of the API.
+     *
+     * @throws ApiException if the Api call fails
+     */
+
+    @Test(priority = 14)
+    public void apisApiIdDeleteTest() throws ApiException {
+        String apiId = APIID;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        ApiResponse response = api.apisApiIdDeleteWithHttpInfo(apiId, ifMatch, ifUnmodifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status Code mismatch");
+    }
+
 
     /* NF - Get API details for an invalid Api ID.
     *  This testcase verifies if response 404 needs to be returned once an invalid id is passed.
@@ -180,245 +389,15 @@ public class APIIndividualApiIT {
         //Assert.assertEquals(response.getName(), "Api100", "API name mismatch");
     }*/
 
-    /**
-     * Update an API
-     * <p>
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test
-    public void apisApiIdPutTest() throws ApiException {
 
-        String newApiDescription = "New API Description";
-        String apiId = APIID;
-        API body = api.apisApiIdGet(APIID, null, null);
-        body.setDescription(newApiDescription);
-        String contentType = "application/json";
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        API response = api.apisApiIdPut(apiId, body, ifMatch, ifUnmodifiedSince);
-        Assert.assertEquals(response.getDescription(), newApiDescription, "description mismatch");
-    }
-
-    /**
-     * Get swagger definition
-     * <p>
-     * This operation can be used to retrieve the swagger definition of an API.
-     *
-     * @throws ApiException if the Api call fails
-     */
-
-    @Test(priority = 1)
-    public void apisApiIdSwaggerGetTest() throws ApiException {
-        String apiId = APIID;
-        String ifModifiedSince = null;
-        String ifNoneMatch = null;
-        ApiResponse response = api.apisApiIdSwaggerGetWithHttpInfo(APIID, ifNoneMatch,ifModifiedSince );
-        int statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode, 200, "Status Code mismatch");
-    }
-
-    /**
-     * Update swagger definition
-     * <p>
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test
-    public void apisApiIdSwaggerPutTest() throws ApiException {
-        String apiId = APIID;
-        String endPointId = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        api.apisApiIdSwaggerPut(apiId, endPointId, ifMatch, ifUnmodifiedSince);
-
-        // TODO: test validations
-    }
-
-    /**
-     * Get thumbnail image
-     * <p>
-     * This operation can be used to download a thumbnail image of an API.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test
-    public void apisApiIdThumbnailGetTest() throws ApiException {
-        String apiId = APIID;
-        String accept = null;
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        api.apisApiIdThumbnailGet(apiId, ifNoneMatch, ifModifiedSince);
-
-        // TODO: test validations
-    }
-
-    /**
-     * Upload a thumbnail image
-     * <p>
-     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test
-    public void apisApiIdThumbnailPostTest() throws ApiException {
-        String apiId = APIID;
-        File file = new File(getClass().getResource("/img1.jpg").getFile());
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        //FileInfo response = api.apisApiIdThumbnailPost(apiId, file, ifMatch, ifUnmodifiedSince);
-        ApiResponse response = api.apisApiIdThumbnailPostWithHttpInfo(apiId, file, ifMatch, ifUnmodifiedSince);
-        int statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode, 200 , "Status code does not match ");
-
-        // TODO: test validations
-    }
-
-    /**
-     * Change API Status
-     * <p>
-     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    /*
-    @Test
-    public void apisChangeLifecyclePostTest() throws ApiException {
-        String action = null;
-        String apiId = APIID;
-        String lifecycleChecklist = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        API response;
-
-        // Created --> Published
-        api.apisChangeLifecyclePost("Published", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Published", response.getLifeCycleStatus(), "API status mismatch in Published state");
-
-        // Published --> Prototyped
-        api.apisChangeLifecyclePost("Prototyped", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Prototyped", response.getLifeCycleStatus(), "API status mismatch in Prototyped state");
-
-        // Prototyped --> Published
-        api.apisChangeLifecyclePost("Published", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Published", response.getLifeCycleStatus(), "API status mismatch in Published state");
-
-        /*
-        // Published --> Blocked
-        api.apisChangeLifecyclePost("Blocked", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Blocked", response.getLifeCycleStatus(), "API status mismatch in Published state");
-*/
-       /*
-        // Blocked --> Deprecated
-        api.apisChangeLifecyclePost("Deprecated", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Deprecated", response.getLifeCycleStatus(), "API status mismatch in Published state");
-
-        // Deprecated --> Retired
-        api.apisChangeLifecyclePost("Retired", apiId, null, null, null);
-        response = api.apisApiIdGet(apiId, null, null);
-        Assert.assertEquals("Retired", response.getLifeCycleStatus(), "API status mismatch in Published state");
-    }
-    */
-    /**
-     * Create a new API version
-     * <p>
-     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state.
-     *
-     * @throws ApiException if the Api call fails
-     */
-    @Test
-    public void apisCopyApiPostTest() throws ApiException {
-        String newVersion = "1.1.0";
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        String apiId = APIID;
-        api.apisCopyApiPost(newVersion, apiId);
-       // API response1 = api.apisApiIdGet(apiId, ifNoneMatch, ifModifiedSince);
-        //System.out.println("Version: " +response1.getVersion());
-
-        // TODO - needs search implementation to assert properly - commented.
-        //APIList response = apiSetup.apisGet(1, 1, "version:1.1.0", null, null);
-        //Assert.assertEquals(response.getList().get(0).getVersion(), newVersion, "API version mismatch on new API");
-    }
-
-    @Test
-    public void apisApiIdWsdlGetTest() throws ApiException {
-        String apiId = APIID;
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        ApiResponse response = api.apisApiIdWsdlGetWithHttpInfo(apiId, ifNoneMatch, ifModifiedSince);
-        int statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode, 200, "Status code does not match");
-
-    }
-
-    @Test
-    public void apisApiIdWsdlPutTest() throws ApiException {
-        String apiId = APIID;
-        File file = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        ApiResponse response = api.apisApiIdWsdlPutWithHttpInfo(apiId, file, ifMatch, ifUnmodifiedSince);
-        int statusCode = response.getStatusCode();
-        Assert.assertEquals(statusCode, 200, "Status code mismatch");
-
-    }
-
-    /**
-     * Get Lifecycle state data of the API.
-     *
-     * This operation can be used to retrieve Lifecycle state data of the API.
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test
-    public void apisApiIdLifecycleGetTest() throws ApiException {
-        String apiId = APIID;
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        LifecycleState response = api.apisApiIdLifecycleGet(apiId, ifNoneMatch, ifModifiedSince);
-        System.out.println("response: "+response);
-        // TODO: test validations
-    }
-
-    /**
-     * Get Lifecycle state change history of the API.
-     *
-     * This operation can be used to retrieve Lifecycle state change history of the API.
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test
-    public void apisApiIdLifecycleHistoryGetTest() throws ApiException {
-        String apiId = APIID;
-        String ifNoneMatch = null;
-        String ifModifiedSince = null;
-        api.apisApiIdLifecycleHistoryGet(apiId, ifNoneMatch, ifModifiedSince);
-
-        // TODO: test validations
-    }
-
-    @Test
-    public void apisApiIdLifecycleLifecyclePendingTaskDeleteTest() throws ApiException {
-        String apiId = APIID;
-        api.apisApiIdLifecycleLifecyclePendingTaskDelete(apiId);
-
-        // TODO: test validations
-    }
 
     @AfterClass
     public void afterClass() throws ApiException {
-        // remove IndivAPI version 1.1.0
         APIList response = apiSetup.apisGet(1, 0, null, null);
-        api.apisApiIdDelete(response.getList().get(0).getId(), null, null);
+        if(response.getCount() != 0)
+        {
+            api.apisApiIdDelete(response.getList().get(0).getId(), null, null);
+        }
+
     }
 }

@@ -29,6 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.DocumentCollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.DocumentIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
@@ -112,9 +113,9 @@ public class DocumentIndividualApiIT {
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        //api.apisApiIdDocumentsDocumentIdContentGet(apiId, documentId, accept, ifNoneMatch, ifModifiedSince);
-
-        // TODO: test validations (void method)
+        ApiResponse response = api.apisApiIdDocumentsDocumentIdContentGetWithHttpInfo(apiId, documentId, ifNoneMatch, ifModifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "status code mismatch");
     }
 
     /**
@@ -124,19 +125,17 @@ public class DocumentIndividualApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(enabled = false)
+    @Test
     public void apisApiIdDocumentsDocumentIdContentPostTest() throws ApiException {
         String apiId = APIID;
         String documentId = DOCID;
-        String contentType = "text/xml";
-        File file = null;
-        String inlineContent = "content change";
+        File file = new File(getClass().getResource("/file.txt").getFile());
+        String inlineContent = "content changed";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
         Document response = api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, file, inlineContent, ifMatch, ifUnmodifiedSince);
-
+        System.out.println(response);
         Assert.assertEquals(response.getInlineContent(), inlineContent, "inline content update mismatch");
-        // TODO: test validations
     }
 
     /**
@@ -146,15 +145,15 @@ public class DocumentIndividualApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(expectedExceptions = ApiException.class, dependsOnMethods = "apisApiIdDocumentsDocumentIdContentGetTest", enabled = true)
+    @Test(priority = 1)
     public void apisApiIdDocumentsDocumentIdDeleteTest() throws ApiException {
         String apiId = APIID;
         String documentId = DOCID;
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        api.apisApiIdDocumentsDocumentIdDelete(apiId, documentId, ifMatch, ifUnmodifiedSince);
-
-        Document response = api.apisApiIdDocumentsDocumentIdGet(apiId, documentId, null, null);
+        ApiResponse response = api.apisApiIdDocumentsDocumentIdDeleteWithHttpInfo(apiId, documentId, ifMatch, ifUnmodifiedSince);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode, 200, "Status code mismatch");
     }
 
     /**
@@ -164,7 +163,7 @@ public class DocumentIndividualApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test
+    @Test(priority = 0)
     public void apisApiIdDocumentsDocumentIdGetTest() throws ApiException {
         String apiId = APIID;
         String documentId = DOCID;
@@ -172,7 +171,6 @@ public class DocumentIndividualApiIT {
         String ifNoneMatch = null;
         String ifModifiedSince = null;
         Document response = api.apisApiIdDocumentsDocumentIdGet(apiId, documentId, ifNoneMatch, ifModifiedSince);
-
         Assert.assertEquals(response.getName(), "Help", "Document name mismatch");
     }
 
@@ -190,16 +188,14 @@ public class DocumentIndividualApiIT {
         String apiId = APIID;
         String documentId = DOCID;
         Document body = new Document();
-        body.setName("Help");
+        body.setName("Help2");
         body.setSourceType(Document.SourceTypeEnum.INLINE);
         body.setType(Document.TypeEnum.HOWTO);
         body.setVisibility(Document.VisibilityEnum.OWNER_ONLY);
-        String contentType = "text/xml";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        Document response = api.apisApiIdDocumentsDocumentIdPut(apiId, documentId, body,ifMatch, ifUnmodifiedSince);
-
-        Assert.assertEquals(response.getVisibility(), Document.VisibilityEnum.OWNER_ONLY, "visibility update mismatch");
+        ApiResponse response = api.apisApiIdDocumentsDocumentIdPutWithHttpInfo(apiId, documentId, body,ifMatch, ifUnmodifiedSince);
+        Assert.assertEquals(response.getStatusCode(), 201, "status code mismatch");
     }
 
     @AfterClass

@@ -26,14 +26,69 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
 import org.junit.Test;
+import org.testng.annotations.BeforeClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.SubscriptionIndividualApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.*;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
 /**
  * API tests for SubscriptionIndividualApi
  */
 public class SubscriptionIndividualApiIT {
 
     private final SubscriptionIndividualApi api = new SubscriptionIndividualApi();
+    private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
+    private final APICollectionApi apiCollectionApi = new APICollectionApi();
+
+    private String APIID = null;
+    private String SUBSCRIPTIONID = null;
+
+    @BeforeClass
+    public void beforeClass() throws ApiException {
+
+        // Create an API for testing
+        API body = new API();
+        String contentType = "application/json";
+
+        body.setName("IndivAPI");
+        body.setContext("iapi");
+        body.setVersion("1.0.0");
+        body.setProvider("admin");
+        body.setLifeCycleStatus("CREATED");
+        body.setTransport(new ArrayList<String>() {{
+            add("http");
+        }});
+        body.setCacheTimeout(100);
+        body.setPolicies(new ArrayList<String>() {{
+            add("Unlimited");
+        }});
+        body.setVisibility(API.VisibilityEnum.PUBLIC);
+        body.setTags(new ArrayList<String>());
+        body.setVisibleRoles(new ArrayList<String>());
+        body.setVisibleTenants(new ArrayList<String>());
+        body.setSequences(new ArrayList<Sequence>());
+        body.setBusinessInformation(new APIBusinessInformation());
+        body.setCorsConfiguration(new APICorsConfiguration());
+        API response = apiCollectionApi.apisPost(body);
+        APIID = response.getId();
+
+        apiIndividualApi.apisChangeLifecyclePost("Published", APIID, null, null, null);
+
+        Subscription subscription = new Subscription();
+
+        subscription.setPolicy("Unlimited");
+        subscription.setSubscriptionId("0001111AAA");
+
+        SubscriptionList subscriptionList = new SubscriptionList();
+        subscriptionList.addListItem(subscription);
+
+        SUBSCRIPTIONID = subscription.getSubscriptionId();
+    }
 
     
     /**
@@ -46,7 +101,7 @@ public class SubscriptionIndividualApiIT {
      */
     @Test
     public void subscriptionsBlockSubscriptionPostTest() throws ApiException {
-        String subscriptionId = null;
+        String subscriptionId = SUBSCRIPTIONID;
         String blockState = null;
         String ifMatch = null;
         String ifUnmodifiedSince = null;
@@ -65,11 +120,12 @@ public class SubscriptionIndividualApiIT {
      */
     @Test
     public void subscriptionsSubscriptionIdGetTest() throws ApiException {
-        String subscriptionId = null;
+        String subscriptionId = SUBSCRIPTIONID;
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        // Subscription response = api.subscriptionsSubscriptionIdGet(subscriptionId, accept, ifNoneMatch, ifModifiedSince);
+        Subscription response = api.subscriptionsSubscriptionIdGet(subscriptionId, ifNoneMatch, ifModifiedSince);
+        System.out.println(response);
 
         // TODO: test validations
     }
