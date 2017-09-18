@@ -47,7 +47,6 @@ public class APICollectionApiIT {
 
     private final APICollectionApi api = new APICollectionApi();
     private static String apiID;
-
     /**
      * Retrieve/Search APIs
      * <p>
@@ -63,7 +62,13 @@ public class APICollectionApiIT {
         String accept = null;
         String ifNoneMatch = null;
         APIList response = api.apisGet(limit, offset, query, ifNoneMatch);
+        System.out.println(response);
         Assert.assertEquals(response.getList().get(0).getName(), "API-117", "API name mismatch");
+        Assert.assertEquals(response.getList().get(0).getId(), apiID, "API Id mismatch");
+        Assert.assertEquals(response.getList().get(0).getDescription(), "This is the api description", "API description mismatch");
+        Assert.assertEquals(response.getList().get(0).getContext(), "API-117", "API description mismatch");
+        Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
+        Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
     }
 
     /**
@@ -87,7 +92,7 @@ public class APICollectionApiIT {
      * Check for error if given API attribute does not exist
      * @throws ApiException
      */
-    @Test(priority = 3, description = "")
+    @Test(priority = 3)
     public void apisHeadFailureTest() throws ApiException {
         String query = "name:DoesNotExist";
         String accept = null;
@@ -110,6 +115,7 @@ public class APICollectionApiIT {
         String contentType = "application/json";
 
         body.setName("API-117");
+        body.setDescription("This is the api description");
         body.setContext("API-117");
         body.setVersion("1.0.0");
         body.setProvider("admin");
@@ -131,8 +137,47 @@ public class APICollectionApiIT {
         API response = api.apisPost(body);
         this.apiID = response.getId();
 
-        String name = response.getName();
-        Assert.assertEquals(name, "API-117", "api name mismatch");
+        Assert.assertEquals(response.getName(), "API-117", "api name mismatch");
+        Assert.assertEquals(response.getDescription(), "This is the api description", "API description mismatch");
+        Assert.assertEquals(response.getContext(), "API-117", "API context mismatch");
+        Assert.assertEquals(response.getVersion(), "1.0.0", "API version mismatch");
+        Assert.assertEquals(response.getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+
+    }
+
+    @Test(priority = 4)
+    public void apisPostTest_NF() throws ApiException {
+            API body = new API();
+            String contentType = "application/json";
+
+            try {
+                //body.setName("API-117");
+                body.setDescription("This is the api description");
+                body.setContext("API-117");
+                body.setVersion("1.0.0");
+                body.setProvider("admin");
+                body.setLifeCycleStatus("CREATED");
+                body.setTransport(new ArrayList<String>() {{
+                    add("http");
+                }});
+                body.setCacheTimeout(100);
+                body.setPolicies(new ArrayList<String>() {{
+                    add("Unlimited");
+                }});
+                body.setVisibility(API.VisibilityEnum.PUBLIC);
+                body.setTags(new ArrayList<String>());
+                body.setVisibleRoles(new ArrayList<String>());
+                body.setVisibleTenants(new ArrayList<String>());
+                body.setSequences(new ArrayList<Sequence>());
+                body.setBusinessInformation(new APIBusinessInformation());
+                body.setCorsConfiguration(new APICorsConfiguration());
+                API response = api.apisPost(body);
+                this.apiID = response.getId();
+            }catch (Exception e)
+            {
+                System.out.println("response is "+e.getMessage());
+                Assert.assertEquals(e.getMessage(), "name: may not be null", "Exception message mismatch");
+            }
     }
 
     @AfterClass
