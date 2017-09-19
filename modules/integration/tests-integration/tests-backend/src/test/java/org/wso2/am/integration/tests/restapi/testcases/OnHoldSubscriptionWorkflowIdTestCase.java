@@ -114,9 +114,8 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
                 originalWFExtentionsXML);
         // remove custom workflow executor
-        serverConfigurationManager.removeFromComponentLib(getAMResourceLocation() + File.separator +
-                "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar");
-        serverConfigurationManager.restartGracefully();
+        serverConfigurationManager.removeFromComponentLib("subs-workflow-1.0.0.jar");
+        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 
