@@ -119,6 +119,10 @@
             <excludes><exclude>**/*</exclude></excludes>
         </fileSet>
 
+        <fileSet> <!-- Create empty Bal file deployment directory -->
+            <directory>microgateway</directory>
+            <excludes><exclude>**/*</exclude></excludes>
+        </fileSet>
     </fileSets>
 
     <files>
@@ -148,6 +152,12 @@
         </file>
         <file>
             <source>bin/ciphertool.bat</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>bin/gatewayInit.sh</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
