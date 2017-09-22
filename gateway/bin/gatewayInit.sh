@@ -10,14 +10,14 @@
 
 
 export GW_HOME="$PWD";
+bin/ballerina run service microservices.bsz microgateway;
 
+#DIR="microgateway"
 
-DIR="microgateway"
-
-if [ "$(ls -A $DIR)" ]; then
+#if [ "$(ls -A $DIR)" ]; then
 #     echo "Take action $DIR is not Empty"
-     bin/ballerina run service microservices.bsz microgateway;
-else
+#     bin/ballerina run service microservices.bsz microgateway;
+#else
 #    echo "$DIR is Empty"
-    bin/ballerina run service services.bsz org/wso2/carbon/apimgt/gateway;
-fi
+#    bin/ballerina run service services.bsz org/wso2/carbon/apimgt/gateway;
+#fi
