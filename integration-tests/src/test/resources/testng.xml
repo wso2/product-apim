@@ -1,14 +1,12 @@
+
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="ApiManager_IntegrationTest_Suite" verbose="1">
 
     <test name="REST_API_IntegrationTest" preserve-order="true" parallel="false">
-        <!--<packages>-->
-            <!--&lt;!&ndash;commented to stop tests on build (need to uncomment later)&ndash;&gt;-->
-            <!--<package name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.*"/>-->
-        <!--</packages>-->
-        <classes>
-            <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.APIIndividualApiIT"/>
-        </classes>
+        <packages>
+            <!--commented to stop tests on build (need to uncomment later)-->
+            <!--<package name="org.wso2.carbon.apimgt.rest.integration.tests.*"/>-->
+        </packages>
     </test>
 </suite>

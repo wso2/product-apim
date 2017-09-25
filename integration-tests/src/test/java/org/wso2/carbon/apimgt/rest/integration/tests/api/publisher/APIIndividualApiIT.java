@@ -25,6 +25,8 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -100,6 +102,24 @@ public class APIIndividualApiIT {
         Assert.assertEquals(response.getLifeCycleStatus(), "Created", "API lifecycle status mismatch");
     }
 
+    @Test(description = "This testcase verifies if an api can be retrieved when given an invalid api Id - Negative")
+    public void apisApiIdGetTest_NF() throws ApiException {
+        try {
+            String apiId = "InvalidApiId";
+            String ifNoneMatch = null;
+            String ifModifiedSince = null;
+            api.apisApiIdGet(apiId, ifNoneMatch, ifModifiedSince);
+        }
+        catch (ApiException ae)
+        {
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch");
+        }
+    }
+
     /**
      * Update an API
      * <p>
@@ -113,12 +133,33 @@ public class APIIndividualApiIT {
 
         String newApiDescription = "New API Description";
         String apiId = APIID;
-        API body = api.apisApiIdGet(APIID, null, null);
+        API body = api.apisApiIdGet(apiId, null, null);
         body.setDescription(newApiDescription);
         String ifMatch = null;
         String ifUnmodifiedSince = null;
         API response = api.apisApiIdPut(apiId, body, ifMatch, ifUnmodifiedSince);
         Assert.assertEquals(response.getDescription(), newApiDescription, "description mismatch");
+    }
+
+    @Test(description = "This testcase verifies if an existing API can be updated when an invalid APIID is provided. ")
+    public void apisApiIdPutTest_NF() throws ApiException {
+        try {
+            String newApiDescription = "New API Description";
+            String apiId = "invalidID";
+            API body = api.apisApiIdGet(APIID, null, null);
+            body.setDescription(newApiDescription);
+            String ifMatch = null;
+            String ifUnmodifiedSince = null;
+            api.apisApiIdPut(apiId, body, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException ae)
+        {
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
+            Assert.assertEquals(ae.getCode(), 404, "status code mismatch");
+        }
     }
 
     /**
@@ -140,6 +181,27 @@ public class APIIndividualApiIT {
      * due to this issue response cannot be taken to be compared. Therefore disabling this test until the issue is fixed.
     **/
      }
+
+    /* FAILS
+     * please refer https://github.com/wso2/product-apim/issues/1611
+    */
+    @Test(enabled = true, description = "This testcase verifies if API's swagger definition can be retrieved when an invalid APIID is provided. ")
+    public void apisApiIdSwaggerGetTest_NF() throws ApiException {
+        try{
+        String apiId = "invalidId";
+        String ifModifiedSince = null;
+        String ifNoneMatch = null;
+        api.apisApiIdSwaggerGet(apiId, ifNoneMatch,ifModifiedSince );
+        }
+        catch(ApiException ae)
+        {
+            Assert.assertEquals(ae.getCode(), 404, "status code mismatch");
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
+        }
+    }
 
     /**
      * Update swagger definition
@@ -265,6 +327,23 @@ public class APIIndividualApiIT {
         LifecycleState response = api.apisApiIdLifecycleGet(apiId, ifNoneMatch, ifModifiedSince);
         String lifeCycleState = response.getState();
         Assert.assertEquals(lifeCycleState, "Created", "Api lifecycle state mismatch");
+    }
+
+    @Test(description = "Verify if specific api's lifecycle state can be retrieved when an invalid Api Id is provided.")
+    public void apisApiIdLifecycleGetTest_NF() throws ApiException {
+        try {
+            String apiId = "invalidId";
+            String ifNoneMatch = null;
+            String ifModifiedSince = null;
+            api.apisApiIdLifecycleGet(apiId, ifNoneMatch, ifModifiedSince);
+        }catch (ApiException ae)
+        {
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
+            Assert.assertEquals(ae.getCode(), 404, "status code mismatch");
+        }
     }
 
     /**
@@ -396,6 +475,10 @@ public class APIIndividualApiIT {
         testUtils.deleteApi();
     }
 
+    /* Failing
+     * please refer
+     * https://github.com/wso2/product-apim/issues/1610
+     */
     @Test(description = "This testcase verifies if change of an api life cycle can be done - NF")
     public void apisChangeLifecyclePostTest_NF() throws ApiException {
         try {
@@ -409,8 +492,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Created --> Maintenance");
             testUtils.deleteApi();
         }
 
@@ -425,8 +507,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Created --> Deprecated");
             testUtils.deleteApi();
         }
 
@@ -442,8 +523,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Prototyped --> Maintenance");
             testUtils.deleteApi();
         }
 
@@ -458,8 +538,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Created --> Retired");
             testUtils.deleteApi();
         }
 
@@ -476,8 +555,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Deprecated --> Maintenance");
             testUtils.deleteApi();
         }
 
@@ -495,8 +573,7 @@ public class APIIndividualApiIT {
         }
         catch (ApiException ae)
         {
-            System.out.println(ae.getCode());
-            System.out.println(ae.getResponseBody());
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch. Retired --> Deprecated");
             testUtils.deleteApi();
         }
         testUtils.deleteApi();
@@ -527,21 +604,25 @@ public class APIIndividualApiIT {
             assert (true);
     }
 
-    @Test(description = "This testcase verifies if an api can be retrieved when given an invalid api Id - Negative")
-    public void apisApiIdGetTest_NF() throws ApiException {
+    @Test(description = "This testcase verifies if an API can be deleted when an invalid Api Id is provided.")
+    public void apisApiIdDeleteTest_NF() throws ApiException {
         try {
-            String apiId = "InvalidApiId";
-            String ifNoneMatch = null;
-            String ifModifiedSince = null;
-            api.apisApiIdGet(apiId, ifNoneMatch, ifModifiedSince);
+            String apiId = "invaliApi";
+            String ifMatch = null;
+            String ifUnmodifiedSince = null;
+            api.apisApiIdDelete(apiId, ifMatch, ifUnmodifiedSince);
         }
         catch (ApiException ae)
         {
-            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch");
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(ae.getCode(), 404, "Response code mismatch.");
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
         }
 
-
     }
+
     
     @AfterClass
     public void afterClass() throws ApiException {

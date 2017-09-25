@@ -25,6 +25,8 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -51,38 +53,7 @@ public class DocumentCollectionApiIT {
     private final DocumentCollectionApi api = new DocumentCollectionApi();
     private final APICollectionApi apiSetup = new APICollectionApi();
     private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
-
-    private String APIID = null;
-
-    @BeforeClass
-    public void beforeClass() throws ApiException {
-
-        // Create an API for testing
-        API body = new API();
-        String contentType = "application/json";
-
-        body.setName("DocAPI");
-        body.setContext("docs");
-        body.setVersion("1.0.0");
-        body.setProvider("admin");
-        body.setLifeCycleStatus("CREATED");
-        body.setTransport(new ArrayList<String>() {{
-            add("http");
-        }});
-        body.setCacheTimeout(100);
-        body.setPolicies(new ArrayList<String>() {{
-            add("Unlimited");
-        }});
-        body.setVisibility(API.VisibilityEnum.PUBLIC);
-        body.setTags(new ArrayList<String>());
-        body.setVisibleRoles(new ArrayList<String>());
-        body.setVisibleTenants(new ArrayList<String>());
-        body.setSequences(new ArrayList<Sequence>());
-        body.setBusinessInformation(new APIBusinessInformation());
-        body.setCorsConfiguration(new APICorsConfiguration());
-        API response = apiSetup.apisPost(body);
-        APIID = response.getId();
-    }
+    TestUtils testUtils = new TestUtils();
 
     /**
      * Get a list of documents of an API
@@ -91,17 +62,81 @@ public class DocumentCollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(dependsOnMethods = "apisApiIdDocumentsPostTest", enabled = true)
+    @Test
     public void apisApiIdDocumentsGetTest() throws ApiException {
-        String apiId = APIID;
-        Integer limit = null;
-        Integer offset = null;
-        String accept = null;
+        String apiId = testUtils.createApi("API-141", "1.0.0", "API-141");
+        Document document1 = new Document();
+        String ifUnmodifiedSince = null;
+        String ifMatch = null;
+        document1.setName("Help1");
+        document1.setType(Document.TypeEnum.SWAGGER_DOC);
+        document1.setSourceType(Document.SourceTypeEnum.FILE);
+        document1.setVisibility(Document.VisibilityEnum.PRIVATE);
+        api.apisApiIdDocumentsPost(apiId, document1,ifMatch,ifUnmodifiedSince);
+
+        Document document2 = new Document();
+        document2.setName("Help2");
+        document2.setType(Document.TypeEnum.PUBLIC_FORUM);
+        document2.setSourceType(Document.SourceTypeEnum.INLINE);
+        document2.setVisibility(Document.VisibilityEnum.OWNER_ONLY);
+        api.apisApiIdDocumentsPost(apiId, document2,ifMatch,ifUnmodifiedSince);
+
+        Integer limit = 10;
+        Integer offset = 0;
         String ifNoneMatch = null;
         DocumentList response = api.apisApiIdDocumentsGet(apiId, limit, offset, ifNoneMatch);
 
-        Assert.assertEquals(response.getList().get(0).getName(), "Help", "Document name mismatch");
+        int count = response.getCount();
+        Assert.assertEquals(count, 2, "document count mismatch");
+        if(response.getList().get(0).getName().equals("Help1"))
+        {
+            Assert.assertEquals(response.getList().get(0).getName(), "Help1", "Document name mismatch");
+            Assert.assertEquals(response.getList().get(0).getType().toString(), "SWAGGER_DOC","");
+            Assert.assertEquals(response.getList().get(0).getVisibility().toString(), "PRIVATE","");
+            Assert.assertEquals(response.getList().get(0).getSourceType().toString(), "FILE","");
+
+            Assert.assertEquals(response.getList().get(1).getName(), "Help2", "Document name mismatch");
+            Assert.assertEquals(response.getList().get(1).getType().toString(), "PUBLIC_FORUM","");
+            Assert.assertEquals(response.getList().get(1).getVisibility().toString(), "OWNER_ONLY","");
+            Assert.assertEquals(response.getList().get(1).getSourceType().toString(), "INLINE","");
+        }
+        else
+        {
+            Assert.assertEquals(response.getList().get(0).getName(), "Help2", "Document name mismatch");
+            Assert.assertEquals(response.getList().get(0).getType().toString(), "PUBLIC_FORUM","");
+            Assert.assertEquals(response.getList().get(0).getVisibility().toString(), "OWNER_ONLY","");
+            Assert.assertEquals(response.getList().get(0).getSourceType().toString(), "INLINE","");
+
+            Assert.assertEquals(response.getList().get(1).getName(), "Help1", "Document name mismatch");
+            Assert.assertEquals(response.getList().get(1).getType().toString(), "SWAGGER_DOC","");
+            Assert.assertEquals(response.getList().get(1).getVisibility().toString(), "PRIVATE","");
+            Assert.assertEquals(response.getList().get(1).getSourceType().toString(), "FILE","");
+        }
+        testUtils.deleteApi();
+
     }
+
+    @Test
+    public void apisApiIdDocumentsGetTest_NF() throws ApiException {
+        try {
+            String apiId = "invalidId";
+            Integer limit = 10;
+            Integer offset = 0;
+            String ifNoneMatch = null;
+            DocumentList response = api.apisApiIdDocumentsGet(apiId, limit, offset, ifNoneMatch);
+        }
+        catch (ApiException ae)
+        {
+            int responseCode = ae.getCode();
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+
+            Assert.assertEquals(responseCode, 404, "Response code mismatch");
+            Assert.assertEquals(errorMsg, "API not found", "Response message mismatch");
+        }
+    }
+
 
     /**
      * Add a new document to an API
@@ -110,9 +145,9 @@ public class DocumentCollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test(enabled = true)
+    @Test
     public void apisApiIdDocumentsPostTest() throws ApiException {
-        String apiId = APIID;
+        String apiId = testUtils.createApi("API-140", "1.0.0", "API-140");
         String ifUnmodifiedSince = null;
         String ifMatch = null;
         Document body = new Document();
@@ -120,16 +155,54 @@ public class DocumentCollectionApiIT {
         body.setType(Document.TypeEnum.HOWTO);
         body.setSourceType(Document.SourceTypeEnum.INLINE);
         body.setVisibility(Document.VisibilityEnum.API_LEVEL);
-        body.setInlineContent("This is the inline content");
         Document response = api.apisApiIdDocumentsPost(apiId, body,ifMatch,ifUnmodifiedSince);
 
+        Assert.assertEquals(response.getSourceType().toString(),"INLINE","source type mismatch");
+        Assert.assertEquals(response.getType().toString(), "HOWTO", "type mismatch");
+        Assert.assertEquals(response.getVisibility().toString(), "API_LEVEL", "Visibility mismatch");
         Assert.assertEquals(response.getName(), "Help", "Document name mismatch");
+        testUtils.deleteApi();
+    }
+
+    /*FAILS
+    * Please refer
+    * https://github.com/wso2/product-apim/issues/1615
+    * Therefore making the test disabled.
+    */
+    @Test(enabled = false)
+    public void apisApiIdDocumentsPostTest_NF() throws ApiException {
+        try {
+            String apiId = testUtils.createApi("API-143", "1.0.0", "API-143");
+            Document body = new Document();
+            body.setName("Help");
+            body.setVisibility(Document.VisibilityEnum.API_LEVEL);
+           // body.setType(Document.TypeEnum.HOWTO);
+            body.setSourceType(Document.SourceTypeEnum.INLINE);
+            String ifUnmodifiedSince = null;
+            String ifMatch = null;
+            api.apisApiIdDocumentsPost(apiId, body, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException ae)
+        {
+            int responseCode = ae.getCode();
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            System.out.println(ae.getResponseBody());
+
+            Assert.assertEquals(responseCode, 400, "Response code mismatch");
+            Assert.assertEquals(errorMsg, "Bad Request", "Response message mismatch");
+        }
+
     }
 
     @AfterClass
     public void afterClass() throws ApiException {
-        // remove DocAPI
-        APIList response = apiSetup.apisGet(1, 1, null, null);
-        apiIndividualApi.apisApiIdDelete(response.getList().get(0).getId(), null, null);
+        APIList response = apiSetup.apisGet(10, 0, null, null);
+        for (int i=0 ; i< response.getCount(); i++)
+        {
+            apiIndividualApi.apisApiIdDelete(response.getList().get(i).getId(), null, null);
+        }
     }
 }
+

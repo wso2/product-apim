@@ -32,13 +32,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.SubscriptionC
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Subscription;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.SubscriptionList;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIBusinessInformation;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APICorsConfiguration;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Sequence;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.*;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -85,9 +79,11 @@ public class SubscriptionCollectionApiIT {
 
         apiIndividualApi.apisChangeLifecyclePost("Published", APIID, null, null, null);
 
+
         Subscription subscription = new Subscription();
         subscription.setSubscriptionId(UUID.randomUUID().toString());
         subscription.setPolicy("Unlimited");
+        subscription.setSubscriptionStatus(Subscription.SubscriptionStatusEnum.ACTIVE);
 
         SubscriptionList subscriptionList = new SubscriptionList();
         subscriptionList.addListItem(subscription);
@@ -105,7 +101,6 @@ public class SubscriptionCollectionApiIT {
         String apiId = APIID;
         Integer limit = 2;
         Integer offset = 0;
-        String accept = null;
         String ifNoneMatch = null;
         SubscriptionList response = api.subscriptionsGet(apiId, limit, offset,ifNoneMatch);
         System.out.println(response);
