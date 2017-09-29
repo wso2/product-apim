@@ -157,7 +157,7 @@
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>bin/gatewayInit.sh</source>
+            <source>bin/microgatewayinit.sh</source>
             <outputDirectory>bin/</outputDirectory>
             <filtered>true</filtered>
             <fileMode>644</fileMode>
