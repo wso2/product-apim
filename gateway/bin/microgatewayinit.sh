@@ -10,7 +10,7 @@
 
 
 export GW_HOME="$PWD";
-bin/ballerina run service microservices.bsz microgateway;
+bin/ballerina run service microgateway.bsz microgateway;
 
 #DIR="microgateway"
 
