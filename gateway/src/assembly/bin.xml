@@ -119,9 +119,9 @@
             <excludes><exclude>**/*</exclude></excludes>
         </fileSet>
 
-        <fileSet> <!-- Create empty Bal file deployment directory -->
+        <fileSet> <!-- microgateway with the ReadMe -->
             <directory>microgateway</directory>
-            <excludes><exclude>**/*</exclude></excludes>
+            <includes><include>README.txt</include></includes>
         </fileSet>
     </fileSets>
 
