@@ -15,8 +15,8 @@ If you want to build APIM Gateway from the source code:
 
 Starting the server
 
-1. Go to `product-apimgt/gateway/target/wso2apim-gateway-<version>-SNAPSHOT` directory
-2. Include 'apiKeys.json' in the microgateway folder where the data is in the following format,
+1. Go to "product-apimgt/gateway/target/wso2apim-gateway-<version>-SNAPSHOT" directory
+2. Create "apiKeys.json" file in the microgateway folder where the data is passed in the following format,
 {  
    "apis":[  
       {  
@@ -52,7 +52,11 @@ Starting the server
    ]
 }
 3. Include all the API.bal files in the microgateway folder.
-4. (optional) If you wish to start the gateway with analytics and throttling, uncomment the analytics and throttling in the gateway deployment.yaml file and include the 'microConf.json' where the data is in the following format.
+NOTE : Make sure the package name in each API file is changed to "microgateway"
+
+4. Create "microConf.json" file in the microgateway folder where the data is passed in the following format,
+NOTE : If you wish to start the gateway without analytics and throttling, this step is not needed.
+But you need to comment the analytics and throttling in the gateway "deployment.yaml" file.  
 
 {
 	"keyManagerInfo": {
@@ -90,10 +94,9 @@ Starting the server
 		}
 	}
 }
+5. Execute the below command from the gateway home.
+"bin/microgatewayinit.sh"
 
-
-5. Execute the below command.
-``bin/microgatewayinit.sh``
 
 
 
