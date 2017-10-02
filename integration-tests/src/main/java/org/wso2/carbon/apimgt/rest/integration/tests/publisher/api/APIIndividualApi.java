@@ -672,10 +672,6 @@ public class APIIndividualApi {
         com.squareup.okhttp.Call call = apisApiIdLifecycleGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
     }
 
     /**

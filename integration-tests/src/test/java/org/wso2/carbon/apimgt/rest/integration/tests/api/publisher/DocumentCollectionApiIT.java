@@ -55,13 +55,7 @@ public class DocumentCollectionApiIT {
     private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
     TestUtils testUtils = new TestUtils();
 
-    /**
-     * Get a list of documents of an API
-     * <p>
-     * This operation can be used to retrive a list of documents belonging to an API by providing the id of the API.
-     *
-     * @throws ApiException if the Api call fails
-     */
+
     @Test
     public void apisApiIdDocumentsGetTest() throws ApiException {
         String apiId = testUtils.createApi("API-141", "1.0.0", "API-141");
@@ -138,13 +132,6 @@ public class DocumentCollectionApiIT {
     }
 
 
-    /**
-     * Add a new document to an API
-     * <p>
-     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test
     public void apisApiIdDocumentsPostTest() throws ApiException {
         String apiId = testUtils.createApi("API-140", "1.0.0", "API-140");

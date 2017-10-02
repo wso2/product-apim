@@ -94,18 +94,9 @@ public class DocumentIndividualApiIT {
         docBody.setSummary("This is the summary.");
         docBody.setSourceType(Document.SourceTypeEnum.INLINE);
         docBody.setVisibility(Document.VisibilityEnum.API_LEVEL);
-        docBody.setInlineContent("This is the inline content");
         Document docResponse = docApi.apisApiIdDocumentsPost(response.getId(), docBody, ifMatch,ifUnmodifiedSince);
         DOCID = docResponse.getDocumentId();
     }
-
-    /**
-     * Get the content of an API document
-     * <p>
-     * This operation can be used to retrive the content of an API&#39;s document.  The document can be of 3 types. In each cases responses are different.  1. **Inline type**:    The content of the document will be retrieved in &#x60;text/plain&#x60; content type 2. **FILE type**:    The file will be downloaded with the related content type (eg. &#x60;application/pdf&#x60;) 3. **URL type**:     The client will recieve the URL of the document as the Location header with the response with - &#x60;303 See Other&#x60;
-     *
-     * @throws ApiException if the Api call fails
-     */
 
     /**
      *  please refer https://github.com/wso2/product-apim/issues/1575
@@ -122,33 +113,136 @@ public class DocumentIndividualApiIT {
 
     }
 
-    /**
-     * Upload the content of an API document
-     * <p>
-     * Thid operation can be used to upload a file or add inline content to an API document.  **IMPORTANT:** * Either **file** or **inlineContent** form data parameters should be specified at one time. * Document&#39;s source type should be **FILE** in order to upload a file to the document using **file** parameter. * Document&#39;s source type should be **INLINE** in order to add inline content to the document using **inlineContent** parameter.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test
-    public void apisApiIdDocumentsDocumentIdContentPostTest() throws ApiException {
+    public void apisApiIdDocumentsDocumentIdContentGet_failureTest_404_invalidDoc() throws ApiException {
+        String apiId = APIID;
+        String documentId = "invalidDocId";
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+
+        try {
+            api.apisApiIdDocumentsDocumentIdContentGet(apiId, documentId, ifNoneMatch, ifModifiedSince);
+            assert false;
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 404, "status code mismatch");
+        }
+
+    }
+
+    //FAILS
+    //this scenario has not defined
+    @Test(enabled = true)
+    public void apisApiIdDocumentsDocumentIdContentGet_failureTest_404_invalidApi() throws ApiException {
+        String apiId = "invalidApi";
+        String documentId = DOCID;
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+
+        try {
+            api.apisApiIdDocumentsDocumentIdContentGet(apiId, documentId, ifNoneMatch, ifModifiedSince);
+            assert false;
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 404, "status code mismatch");
+        }
+
+    }
+
+    @Test
+    public void apisApiIdDocumentsDocumentIdContentPostTest_INLINE() throws ApiException {
         String apiId = APIID;
         String documentId = DOCID;
-        File file = new File(getClass().getResource("/file1.pdf").getFile());
+        File file = null;
         String inlineContent = "The content";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        Document response = api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, file, null, ifMatch, ifUnmodifiedSince);
-        System.out.println(response);
-       // Assert.assertEquals(response.getInlineContent(), inlineContent, "inline content update mismatch");
+
+        ApiResponse response = api.apisApiIdDocumentsDocumentIdContentPostWithHttpInfo(apiId, documentId, file, inlineContent, ifMatch, ifUnmodifiedSince);
+        Assert.assertEquals(response.getStatusCode(), 201, "Status code mismatch - INLINE");
+    }
+    @Test
+    public void apisApiIdDocumentsDocumentIdContentPostTest_FILE() throws ApiException {
+        String apiId = APIID;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+
+        File file = new File(getClass().getResource("/file1.pdf").getFile());
+
+        Document docBody2 = new Document();
+        docBody2.setName("Help2");
+        docBody2.setType(Document.TypeEnum.HOWTO);
+        docBody2.setSummary("This is the summary.");
+        docBody2.setSourceType(Document.SourceTypeEnum.FILE);
+        docBody2.setVisibility(Document.VisibilityEnum.API_LEVEL);
+        Document docResponse = docApi.apisApiIdDocumentsPost(apiId, docBody2, ifMatch,ifUnmodifiedSince);
+        String documentId2 = docResponse.getDocumentId();
+
+        ApiResponse response2 = api.apisApiIdDocumentsDocumentIdContentPostWithHttpInfo(apiId, documentId2, file, null, ifMatch, ifUnmodifiedSince);
+        Assert.assertEquals(response2.getStatusCode(), 201, "Status code mismatch - FILE");
     }
 
-    /**
-     * Delete a document of an API
-     * <p>
-     * This operation can be used to delete a document associated with an API.
-     *
-     * @throws ApiException if the Api call fails
-     */
+    @Test
+    public void apisApiIdDocumentsDocumentIdContentPostTest_FILE_FailureTest_404() throws ApiException {
+        String apiId = APIID;
+        String documentId = "invalidDocID";
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        File file = new File(getClass().getResource("/file1.pdf").getFile());
+
+        try {
+            api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, file, null, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 404, "Status code mismatch - FILE");
+        }
+
+    }
+
+    @Test
+    public void apisApiIdDocumentsDocumentIdContentPostTest_FILE_FailureTest_400() throws ApiException {
+        String apiId = APIID;
+        String documentId = DOCID;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        File file = new File(getClass().getResource("/img1.jpg").getFile());
+
+        try {
+            api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, file, null, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 400, "Status code mismatch - FILE");
+        }
+
+    }
+
+    @Test
+    public void apisApiIdDocumentsDocumentIdContentPostTest_INLINE_FailureTest_404() throws ApiException {
+        String apiId = APIID;
+        String documentId = "invalidDocID";
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+        String inlineContent = "The content";
+
+        try {
+            api.apisApiIdDocumentsDocumentIdContentPost(apiId, documentId, null, inlineContent, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 404, "Status code mismatch - FILE");
+        }
+
+    }
+
     @Test
     public void apisApiIdDocumentsDocumentIdDeleteTest() throws ApiException {
         String ifNoneMatch = null;
@@ -184,6 +278,7 @@ public class DocumentIndividualApiIT {
         String ifUnmodifiedSince = null;
        try {
             api.apisApiIdDocumentsDocumentIdDelete(apiId, documentId, ifMatch, ifUnmodifiedSince);
+            assert false;
        }
        catch (ApiException ae)
         {
@@ -207,6 +302,7 @@ public class DocumentIndividualApiIT {
         String ifUnmodifiedSince = null;
         try {
             api.apisApiIdDocumentsDocumentIdDelete(apiId, documentId, ifMatch, ifUnmodifiedSince);
+            assert false;
         }
         catch (ApiException ae)
         {
@@ -217,13 +313,6 @@ public class DocumentIndividualApiIT {
 
     }
 
-    /**
-     * Get a document of an API
-     * <p>
-     * This operation can be used to retrieve a particular document&#39;s metadata associated with an API.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test
     public void apisApiIdDocumentsDocumentIdGetTest() throws ApiException {
         String apiId = APIID;
@@ -261,15 +350,6 @@ public class DocumentIndividualApiIT {
         }
     }
 
-    /**
-     * Update a document of an API
-     * <p>
-     * This operation can be used to update metadata of an API&#39;s document.
-     *
-     * TODO - Check if the usage is correct.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test
     public void apisApiIdDocumentsDocumentIdPutTest() throws ApiException {
         String apiId = APIID;
@@ -288,6 +368,52 @@ public class DocumentIndividualApiIT {
         Assert.assertEquals(response.getSourceType().toString(),"FILE", "Source Type update fails");
         Assert.assertEquals(response.getVisibility().toString(),"OWNER_ONLY", "Visibility update fails");
     }
+
+    @Test
+    public void apisApiIdDocumentsDocumentIdPut_failureTest_404() throws ApiException {
+        String apiId = "invalidId";
+        String documentId = DOCID;
+        Document body = new Document();
+        body.setSourceType(Document.SourceTypeEnum.FILE);
+        body.setType(Document.TypeEnum.SWAGGER_DOC);
+        body.setVisibility(Document.VisibilityEnum.OWNER_ONLY);
+        body.setSummary("Summary changed");
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+
+        try {
+            Document response = api.apisApiIdDocumentsDocumentIdPut(apiId, documentId, body, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 404, "status code mismatch");
+        }
+        }
+
+
+    /**
+     * FAILS
+     * please refer https://github.com/wso2/product-apim/issues/1629
+     */
+    @Test
+    public void apisApiIdDocumentsDocumentIdPut_failureTest_400() throws ApiException {
+        String apiId = APIID;
+        String documentId = DOCID;
+        Document body = new Document();
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+
+        try {
+            Document response = api.apisApiIdDocumentsDocumentIdPut(apiId, documentId, body, ifMatch, ifUnmodifiedSince);
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 400, "status code mismatch");
+        }
+    }
+
 
     @AfterClass
     public void afterClass() throws ApiException {

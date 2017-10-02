@@ -52,7 +52,7 @@ public class SubscriptionCollectionApiIT {
     public void beforeClass() throws ApiException {
 
         // Create an API for testing
-        API body = new API();
+        /*API body = new API();
         String contentType = "application/json";
 
         body.setName("IndivAPI");
@@ -78,15 +78,7 @@ public class SubscriptionCollectionApiIT {
         APIID = response.getId();
 
         apiIndividualApi.apisChangeLifecyclePost("Published", APIID, null, null, null);
-
-
-        Subscription subscription = new Subscription();
-        subscription.setSubscriptionId(UUID.randomUUID().toString());
-        subscription.setPolicy("Unlimited");
-        subscription.setSubscriptionStatus(Subscription.SubscriptionStatusEnum.ACTIVE);
-
-        SubscriptionList subscriptionList = new SubscriptionList();
-        subscriptionList.addListItem(subscription);
+*/
     }
 
     /**
@@ -98,11 +90,12 @@ public class SubscriptionCollectionApiIT {
      */
     @Test
     public void subscriptionsGetTest() throws ApiException {
+
         String apiId = APIID;
         Integer limit = 2;
         Integer offset = 0;
         String ifNoneMatch = null;
-        SubscriptionList response = api.subscriptionsGet(apiId, limit, offset,ifNoneMatch);
+        SubscriptionList response = api.subscriptionsGet(APIID, limit, offset,ifNoneMatch);
         System.out.println(response);
 
         // TODO: test validations

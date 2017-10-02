@@ -48,47 +48,6 @@ public class SubscriptionIndividualApiIT {
     private String APIID = null;
     private String SUBSCRIPTIONID = null;
 
-    @BeforeClass
-    public void beforeClass() throws ApiException {
-
-        // Create an API for testing
-        API body = new API();
-        String contentType = "application/json";
-
-        body.setName("IndivAPI");
-        body.setContext("iapi");
-        body.setVersion("1.0.0");
-        body.setProvider("admin");
-        body.setLifeCycleStatus("CREATED");
-        body.setTransport(new ArrayList<String>() {{
-            add("http");
-        }});
-        body.setCacheTimeout(100);
-        body.setPolicies(new ArrayList<String>() {{
-            add("Unlimited");
-        }});
-        body.setVisibility(API.VisibilityEnum.PUBLIC);
-        body.setTags(new ArrayList<String>());
-        body.setVisibleRoles(new ArrayList<String>());
-        body.setVisibleTenants(new ArrayList<String>());
-        body.setSequences(new ArrayList<Sequence>());
-        body.setBusinessInformation(new APIBusinessInformation());
-        body.setCorsConfiguration(new APICorsConfiguration());
-        API response = apiCollectionApi.apisPost(body);
-        APIID = response.getId();
-
-        apiIndividualApi.apisChangeLifecyclePost("Published", APIID, null, null, null);
-
-        Subscription subscription = new Subscription();
-
-        subscription.setPolicy("Unlimited");
-        subscription.setSubscriptionId("0001111AAA");
-
-        SubscriptionList subscriptionList = new SubscriptionList();
-        subscriptionList.addListItem(subscription);
-
-        SUBSCRIPTIONID = subscription.getSubscriptionId();
-    }
 
     
     /**
@@ -120,12 +79,18 @@ public class SubscriptionIndividualApiIT {
      */
     @Test
     public void subscriptionsSubscriptionIdGetTest() throws ApiException {
+
+        APIList response = apiCollectionApi.apisGet(10, 0, null, null);
+        APIID = response.getList().get(0).getId();
+        apiIndividualApi.apisChangeLifecyclePost("Published", APIID, null, null, null);
+
         String subscriptionId = SUBSCRIPTIONID;
         String accept = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        Subscription response = api.subscriptionsSubscriptionIdGet(subscriptionId, ifNoneMatch, ifModifiedSince);
-        System.out.println(response);
+        //System.out.println(SUBSCRIPTIONID);
+       // Subscription response = api.subscriptionsSubscriptionIdGet(subscriptionId, ifNoneMatch, ifModifiedSince);
+        System.out.println(APIID);
 
         // TODO: test validations
     }

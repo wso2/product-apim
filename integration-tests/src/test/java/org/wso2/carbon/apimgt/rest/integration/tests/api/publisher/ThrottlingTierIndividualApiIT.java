@@ -39,27 +39,7 @@ public class ThrottlingTierIndividualApiIT {
 
     private final ThrottlingTierIndividualApi api = new ThrottlingTierIndividualApi();
 
-    
-    /**
-     * Delete a Tier
-     *
-     * This operation can be used to delete an existing policy. The only supported policy level is &#x60;api&#x60; policies. &#x60;DELETE https://127.0.0.1:9443/api/am/publisher/v0.10/policies/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling policies modification related operations. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    /*
-    @Test
-    public void policiesTierLevelTierNameDeleteTest() throws ApiException {
-        String tierName = "50PerMin";
-        String tierLevel = "application";
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-      //  api.policiesTierLevelTierNameDelete(tierName, tierLevel, ifMatch, ifUnmodifiedSince);
 
-
-        // TODO: test validations
-    }*/
     
     /**
      * Get details of a policy
@@ -71,61 +51,15 @@ public class ThrottlingTierIndividualApiIT {
      */
     @Test
     public void policiesTierLevelTierNameGetTest() throws ApiException {
-        String tierName = null;
-        String tierLevel = null;
-        String accept = null;
+
+        String tierName = "10KPerMin";
+        String tierLevel = "api";
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        //Tier response = api.policiesTierLevelTierNameGet(tierName, tierLevel, accept, ifNoneMatch, ifModifiedSince);
-
+        Tier response = api.policiesTierLevelTierNameGet(tierName, tierLevel , ifNoneMatch, ifModifiedSince);
+        System.out.println(response);
         // TODO: test validations
     }
 
-    /*
-
-    /**
-     * Update a Tier
-     *
-     * This operation can be used to update an existing policy. The only supported policy level is &#x60;api&#x60; policies. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v0.10/policies/api/Low&#x60;  **IMPORTANT:** * This is only effective when Advanced Throttling is disabled in the Server. If enabled, we need to use Admin REST API for throttling policies modification related operations. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-
-    /*
-    @Test
-    public void policiesTierLevelTierNamePutTest() throws ApiException {
-        String tierName = null;
-        Tier body = null;
-        String tierLevel = null;
-        String contentType = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        //Tier response = api.policiesTierLevelTierNamePut(tierName, body, tierLevel, contentType, ifMatch, ifUnmodifiedSince);
-
-        // TODO: test validations
-    }
-    */
-    /**
-     * Update policy permission
-     *
-     * This operation can be used to update policy permissions which controls access for the particular policy based on the subscribers&#39; roles. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-
-    /*
-    @Test
-    public void policiesUpdatePermissionPostTest() throws ApiException {
-        String tierName = null;
-        String tierLevel = null;
-        String ifMatch = null;
-        String ifUnmodifiedSince = null;
-        //TierPermission permissions = null;
-        // List<Tier> response = api.policiesUpdatePermissionPost(tierName, tierLevel, ifMatch, ifUnmodifiedSince, permissions);
-
-        // TODO: test validations
-    }*/
     
 }

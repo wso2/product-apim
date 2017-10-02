@@ -13,73 +13,204 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointList;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.EndpointIndividualApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.*;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.EndpointCollectionApi;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 /**
  * API tests for EndpointCollectionApi
  */
-@Ignore
+
 public class EndpointCollectionApiIT {
 
     private final EndpointCollectionApi api = new EndpointCollectionApi();
+    private final EndpointIndividualApi endpointIndividualApi = new EndpointIndividualApi();
+    private final TestUtils testUtils = new TestUtils();
 
-    
-    /**
-     * Get all endpoints
-     *
-     * This operation can be used to retrieve the list of endpoints available. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
     public void endpointsGetTest() throws ApiException {
         String ifNoneMatch = null;
         String ifModifiedSince = null;
+        String endPointId1 = testUtils.createEndPoint("EndPoint-118", "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "admin","admin");
+        String endPointId2 = testUtils.createEndPoint("EndPoint-119", "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "user", "pass");
         EndPointList response = api.endpointsGet(ifNoneMatch, ifModifiedSince);
+        int endPointCount = response.getCount();
 
-        // TODO: test validations
+        Assert.assertEquals(endPointCount, 2, "EndPoint count mismatch");
+        if(response.getList().get(0).getName().equals("EndPoint-118"))
+        {
+            Assert.assertEquals(response.getList().get(0).getType(), "production", "EndPoint type mismatch");
+            Assert.assertEquals(response.getList().get(0).getMaxTps().longValue(), 1000, "EndPoint MaxTps mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "EndPoint config mismatch");
+            Assert.assertEquals(response.getList().get(0).getId(), endPointId1, "EndPoint id mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getUsername(), "admin", "EndPointSecurity username mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getPassword(), "admin", "EndPointSecurity password mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getEnabled().toString(), "false", "EndPointSecurity isEnable mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getType(), "http", "EndPointSecurity type mismatch");
+
+            Assert.assertEquals(response.getList().get(1).getName(),"EndPoint-119", "Endpoint Name mismatch - index(1)");
+            Assert.assertEquals(response.getList().get(1).getType(), "production", "EndPoint type mismatch");
+            Assert.assertEquals(response.getList().get(1).getMaxTps().longValue(), 1000, "EndPoint MaxTps mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "EndPoint config mismatch");
+            Assert.assertEquals(response.getList().get(1).getId(), endPointId2, "EndPoint id mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getUsername(), "user", "EndPointSecurity username mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getPassword(), "pass", "EndPointSecurity password mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getEnabled().toString(), "false", "EndPointSecurity isEnable mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getType(), "http", "EndPointSecurity type mismatch");
+
+        }
+        else
+        {
+            Assert.assertEquals(response.getList().get(0).getName(),"EndPoint-119", "Endpoint Name mismatch - index(0)");
+            Assert.assertEquals(response.getList().get(0).getType(), "production", "EndPoint type mismatch");
+            Assert.assertEquals(response.getList().get(0).getMaxTps().longValue(), 1000, "EndPoint MaxTps mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "EndPoint config mismatch");
+            Assert.assertEquals(response.getList().get(0).getId(), endPointId2, "EndPoint id mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getUsername(), "user", "EndPointSecurity username mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getPassword(), "pass", "EndPointSecurity password mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getEnabled().toString(), "false", "EndPointSecurity isEnable mismatch");
+            Assert.assertEquals(response.getList().get(0).getEndpointSecurity().getType(), "http", "EndPointSecurity type mismatch");
+
+            Assert.assertEquals(response.getList().get(1).getName(),"EndPoint-118", "Endpoint Name mismatch - index(1)");
+            Assert.assertEquals(response.getList().get(1).getType(), "production", "EndPoint type mismatch");
+            Assert.assertEquals(response.getList().get(1).getMaxTps().longValue(), 1000, "EndPoint MaxTps mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "EndPoint config mismatch");
+            Assert.assertEquals(response.getList().get(1).getId(), endPointId1, "EndPoint id mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getUsername(), "admin", "EndPointSecurity username mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getPassword(), "admin", "EndPointSecurity password mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getEnabled().toString(), "false", "EndPointSecurity isEnable mismatch");
+            Assert.assertEquals(response.getList().get(1).getEndpointSecurity().getType(), "http", "EndPointSecurity type mismatch");
+
+        }
+        testUtils.deleteEndPoint(endPointId1);
+        testUtils.deleteEndPoint(endPointId2);
     }
-    
-    /**
-     * Check given Endpoint is already exist 
-     *
-     * Using this operation, you can check a given Endpoint name is already used. You need to provide the name you want to check. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
+    @Test
+    public void endpointsHeadTest_NF() throws ApiException {
+        String ifNoneMatch = null;
+        String name = "invalidEndpoint";
+        try {
+            api.endpointsHead(name, ifNoneMatch);
+            assert false;
+        }
+        catch (ApiException ae)
+        {
+            Assert.assertEquals(ae.getCode(), 404, "status code mismatch");
+        }
+
+    }
+
     @Test
     public void endpointsHeadTest() throws ApiException {
-        String name = null;
+        String endpointId = testUtils.createEndPoint("Endpoint-120", "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "user", "user");
+        String name = "Endpoint-120";
         String ifNoneMatch = null;
-        api.endpointsHead(name, ifNoneMatch);
-
-        // TODO: test validations
+        ApiResponse response = api.endpointsHeadWithHttpInfo(name, ifNoneMatch);
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(200, statusCode, "status code mismatch");
+        testUtils.deleteEndPoint(endpointId);
     }
-    
-    /**
-     * Add a new endpoint
-     *
-     * This operation can be used to add a new endpoint. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void endpointsPostTest() throws ApiException {
-        EndPoint body = null;
         String ifNoneMatch = null;
         String ifModifiedSince = null;
-        EndPoint response = api.endpointsPost(body, ifNoneMatch, ifModifiedSince);
+        long MaxTps = 1000;
+        EndPointEndpointSecurity endPointEndpointSecurity = new EndPointEndpointSecurity();
+        endPointEndpointSecurity.setEnabled(false);
+        endPointEndpointSecurity.setType("http");
+        endPointEndpointSecurity.setUsername("admin");
+        endPointEndpointSecurity.setPassword("admin");
 
-        // TODO: test validations
+        EndPoint endPoint = new EndPoint();
+        endPoint.setId(UUID.randomUUID().toString());
+        endPoint.setName("Endpoint1");
+        endPoint.setEndpointSecurity(endPointEndpointSecurity);
+        endPoint.setType("production");
+        endPoint.setMaxTps(MaxTps);
+        endPoint.setEndpointConfig("{\"serviceUrl\":\"http://petstore.swagger.io/\"}");
+        EndPoint response = api.endpointsPost(endPoint, ifNoneMatch, ifModifiedSince);
+
+        Assert.assertEquals(response.getName(),"Endpoint1", "Endpoint name mismatch");
+        Assert.assertEquals(response.getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "endpoint config mismatch");
+        Assert.assertEquals(response.getMaxTps().longValue(), 1000l, "MaxTps mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getPassword(),"admin", "Endpoint Security password mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getUsername(),"admin", "Endpoint Security username mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getType(),"http", "Endpoint Security type mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getEnabled().toString(),"false", "Endpoint Security getEnabled mismatch");
+        Assert.assertEquals(response.getType(), "production", "type mismatch");
+
+        testUtils.deleteEndPoint(response.getId());
+
+    }
+
+    //response code not defined in Swagger
+    @Test
+    public void endpointsPost_failuretest_duplicateEndpoints() throws ApiException {
+        testUtils.createEndPoint("Endpoint200","{\"serviceUrl\":\"http://petstore.swagger.io/\"}","admin", "admin");
+        try {
+            testUtils.createEndPoint("Endpoint200","{\"serviceUrl\":\"http://petstore.swagger.io/\"}","user", "user");
+        }
+        catch (ApiException apiException)
+        {
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(apiException.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(errorMsg, "Endpoint already exists", "Response message mismatch");
+            System.out.println(apiException.getCode());
+        }
+
+    }
+
+    @Test
+    public void endpointsPostTest_NF() throws ApiException {
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        long MaxTps = 1000;
+        EndPointEndpointSecurity endPointEndpointSecurity = new EndPointEndpointSecurity();
+        endPointEndpointSecurity.setEnabled(false);
+        endPointEndpointSecurity.setType("http");
+        endPointEndpointSecurity.setUsername("admin");
+        endPointEndpointSecurity.setPassword("admin");
+
+        EndPoint endPoint = new EndPoint();
+        endPoint.setId(UUID.randomUUID().toString());
+        endPoint.setName("");
+        endPoint.setEndpointSecurity(endPointEndpointSecurity);
+        endPoint.setType("production");
+        endPoint.setMaxTps(MaxTps);
+        endPoint.setEndpointConfig("{\"serviceUrl\":\"http://petstore.swagger.io/\"}");
+        try {
+            api.endpointsPost(endPoint, ifNoneMatch, ifModifiedSince);
+            assert(false);
+        }
+        catch (ApiException ae)
+        {
+            Assert.assertEquals(ae.getCode(), 400, "status code mismatch");
+        }
+    }
+
+    @AfterClass
+    public void afterClass() throws ApiException {
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+
+            EndPointList response = api.endpointsGet(ifNoneMatch, ifModifiedSince);
+            for (int i = 0; i < response.getCount(); i++) {
+                String endpointId = response.getList().get(i).getId();
+                testUtils.deleteEndPoint(endpointId);
+            }
+
     }
     
 }

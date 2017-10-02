@@ -29,7 +29,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
@@ -50,70 +49,67 @@ public class APICollectionApiIT {
     private final APICollectionApi api = new APICollectionApi();
     private final TestUtils testUtils= new TestUtils();
     private static String apiID;
-    /**
-     * Retrieve/Search APIs
-     * <p>
-     * This operation provides you a list of available APIs qualifying under a given search condition.  Each retrieved API is represented with a minimal amount of attributes. If you want to get complete details of an API, you need to use **Get details of an API** operation.
-     *
-     * @throws ApiException if the Api call fails
-     */
+
     @Test(description = "This testcase verifies if created APIS can be viewed through Publisher REST API.")
     public void apisGetTest() throws ApiException{
         Integer limit = 10;
         Integer offset = 0;
         String query = null;
         String ifNoneMatch = null;
-        String apiId1 = testUtils.createApi("TestApi1", "1.0.0", "testapi1");
-        String apiId2 = testUtils.createApi("TestApi2", "1.0.0", "testapi2");
-        APIList response = api.apisGet(limit, offset, query, ifNoneMatch);
-        System.out.println(response.getList().get(0).getName());
-        System.out.println(response.getList().get(1).getName());
+
+        try {
+            String apiId1 = testUtils.createApi("TestApi1", "1.0.0", "testapi1");
+            String apiId2 = testUtils.createApi("TestApi2", "1.0.0", "testapi2");
+            APIList response = api.apisGet(limit, offset, query, ifNoneMatch);
+            System.out.println(response.getList().get(0).getName());
+            System.out.println(response.getList().get(1).getName());
 
 
-        if(response.getList().get(0).getName().equals("TestApi1"))
-        {
-            Assert.assertEquals(response.getList().get(0).getName(), "TestApi1", "API name mismatch");
-            Assert.assertEquals(response.getList().get(0).getId(), apiId1, "API Id mismatch");
-            Assert.assertEquals(response.getList().get(0).getDescription(), "This is the api description", "API description mismatch");
-            Assert.assertEquals(response.getList().get(0).getContext(), "testapi1", "API context mismatch");
-            Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
-            Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+            if (response.getList().get(0).getName().equals("TestApi1")) {
+                Assert.assertEquals(response.getList().get(0).getName(), "TestApi1", "API name mismatch");
+                Assert.assertEquals(response.getList().get(0).getId(), apiId1, "API Id mismatch");
+                Assert.assertEquals(response.getList().get(0).getDescription(), "This is the api description", "API description mismatch");
+                Assert.assertEquals(response.getList().get(0).getContext(), "testapi1", "API context mismatch");
+                Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
+                Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
 
-            Assert.assertEquals(response.getList().get(1).getName(), "TestApi2", "API name mismatch");
-            Assert.assertEquals(response.getList().get(1).getId(), apiId2, "API Id mismatch");
-            Assert.assertEquals(response.getList().get(1).getDescription(), "This is the api description", "API description mismatch");
-            Assert.assertEquals(response.getList().get(1).getContext(), "testapi2", "API context mismatch");
-            Assert.assertEquals(response.getList().get(1).getVersion(), "1.0.0", "API version mismatch");
-            Assert.assertEquals(response.getList().get(1).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+                Assert.assertEquals(response.getList().get(1).getName(), "TestApi2", "API name mismatch");
+                Assert.assertEquals(response.getList().get(1).getId(), apiId2, "API Id mismatch");
+                Assert.assertEquals(response.getList().get(1).getDescription(), "This is the api description", "API description mismatch");
+                Assert.assertEquals(response.getList().get(1).getContext(), "testapi2", "API context mismatch");
+                Assert.assertEquals(response.getList().get(1).getVersion(), "1.0.0", "API version mismatch");
+                Assert.assertEquals(response.getList().get(1).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+            } else {
+                Assert.assertEquals(response.getList().get(0).getName(), "TestApi2", "API name mismatch");
+                Assert.assertEquals(response.getList().get(0).getId(), apiId2, "API Id mismatch");
+                Assert.assertEquals(response.getList().get(0).getDescription(), "This is the api description", "API description mismatch");
+                Assert.assertEquals(response.getList().get(0).getContext(), "testapi2", "API context mismatch");
+                Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
+                Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+
+                Assert.assertEquals(response.getList().get(1).getName(), "TestApi1", "API name mismatch");
+                Assert.assertEquals(response.getList().get(1).getId(), apiId1, "API Id mismatch");
+                Assert.assertEquals(response.getList().get(1).getDescription(), "This is the api description", "API description mismatch");
+                Assert.assertEquals(response.getList().get(1).getContext(), "testapi1", "API context mismatch");
+                Assert.assertEquals(response.getList().get(1).getVersion(), "1.0.0", "API version mismatch");
+                Assert.assertEquals(response.getList().get(1).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
+
+            }
+            testUtils.deleteApi();
         }
-        else
+        catch (ApiException apiException)
         {
-            Assert.assertEquals(response.getList().get(0).getName(), "TestApi2", "API name mismatch");
-            Assert.assertEquals(response.getList().get(0).getId(), apiId2, "API Id mismatch");
-            Assert.assertEquals(response.getList().get(0).getDescription(), "This is the api description", "API description mismatch");
-            Assert.assertEquals(response.getList().get(0).getContext(), "testapi2", "API context mismatch");
-            Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
-            Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
-
-            Assert.assertEquals(response.getList().get(1).getName(), "TestApi1", "API name mismatch");
-            Assert.assertEquals(response.getList().get(1).getId(), apiId1, "API Id mismatch");
-            Assert.assertEquals(response.getList().get(1).getDescription(), "This is the api description", "API description mismatch");
-            Assert.assertEquals(response.getList().get(1).getContext(), "testapi1", "API context mismatch");
-            Assert.assertEquals(response.getList().get(1).getVersion(), "1.0.0", "API version mismatch");
-            Assert.assertEquals(response.getList().get(1).getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
-
+            System.out.println(apiException.getCode());
+            System.out.println(apiException.getResponseBody());
+            assert false;
         }
-        testUtils.deleteApi();
     }
 
     /**
-     * Check given API attibute name is already exist
-     * <p>
-     * Using this operation, you can check a given API context is already used. You need to provide the context name you want to check.
-     *
-     * @throws ApiException if the Api call fails
+     * Please refer https://github.com/wso2/product-apim/issues/1575
+     * Therefore making this test disabled.
      */
-    @Test
+    @Test(enabled = false)
     public void apisHeadTest() throws ApiException {
             try {
                 testUtils.createApi("API-117", "1.0.0", "API-117");
@@ -122,37 +118,21 @@ public class APICollectionApiIT {
                 String query_context = "context:API-117";
                 String ifNoneMatch = null;
 
-                ApiResponse response_name = api.apisHeadWithHttpInfo(query_name, ifNoneMatch);
-                int statusCode_name = response_name.getStatusCode();
-                System.out.println(statusCode_name);
+                api.apisHead(query_name, ifNoneMatch);
+                api.apisHead(query_version, ifNoneMatch);
+                api.apisHead(query_context, ifNoneMatch);
 
-                ApiResponse response_version = api.apisHeadWithHttpInfo(query_version, ifNoneMatch);
-                int statusCode_version = response_version.getStatusCode();
-                System.out.println(statusCode_version);
-
-                ApiResponse response_context = api.apisHeadWithHttpInfo(query_context, ifNoneMatch);
-                int statusCode_context = response_context.getStatusCode();
-                System.out.println(statusCode_context);
-
-                Assert.assertEquals(statusCode_name, 200, "status code mismatch");
-                Assert.assertEquals(statusCode_version, 200, "status code mismatch");
-                Assert.assertEquals(statusCode_context, 200, "status code mismatch");
                 testUtils.deleteApi();
             }
             catch(ApiException ae)
             {
                 testUtils.deleteApi();
                 Assert.assertEquals(ae.getCode(), 200, "status code mismatch");
-
             }
     }
 
-    /**
-     * Check for error if given API attribute does not exist
-     * @throws ApiException
-     */
     @Test
-    public void apisHeadFailureTest() throws ApiException {
+    public void apisHead_FailureTest() throws ApiException {
         try {
             String query = "name:DoesNotExist";
             String accept = null;
@@ -166,13 +146,6 @@ public class APICollectionApiIT {
         }
     }
 
-    /**
-     * Create a new API
-     * <p>
-     * This operation can be used to create a new API specifying the details of the API in the payload. The new API will be in &#x60;CREATED&#x60; state.  There is a special capability for a user who has &#x60;APIM Admin&#x60; permission such that he can create APIs on behalf of other users. For that he can to specify &#x60;\&quot;provider\&quot; : \&quot;some_other_user\&quot;&#x60; in the payload so that the API&#39;s creator will be shown as &#x60;some_other_user&#x60; in the UI.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test(description = "This testcase verifies if an API can be created successfully. ")
     public void apisPostTest() throws ApiException {
         try {
@@ -206,14 +179,17 @@ public class APICollectionApiIT {
             Assert.assertEquals(response.getVersion(), "1.0.0", "API version mismatch");
             Assert.assertEquals(response.getLifeCycleStatus(), "Created", "API Lifecycle status mismatch");
             testUtils.deleteApi();
-        }catch (ApiException ae)
+        }
+        catch (ApiException apiException)
         {
-            Assert.assertEquals(ae.getCode(), 200, "response code mismatch");
+            System.out.println(apiException.getResponseBody());
+            System.out.println(apiException.getCode());
+            assert false;
         }
     }
 
     @Test(description = "This testcase verifies if API name can be duplicated - The same name, different context")
-    public void createApi_existingName() throws ApiException
+    public void createApi_existingName_FailureTest() throws ApiException
     {
         try {
             testUtils.createApi("TestApi1", "1.0.0", "testapi1");
@@ -259,7 +235,7 @@ public class APICollectionApiIT {
     }
 
     @Test(description = "This testcase verifies if api can be created without providing the API name.", enabled = false)
-    public void apisPostTest_NF_withoutTheName() throws ApiException {
+    public void apisPostTest_NF_withoutTheName_FailureTest() throws ApiException {
             API body = new API();
             try {
                 body.setName(""); //sending a null value to name
@@ -301,7 +277,7 @@ public class APICollectionApiIT {
     }
 
     @Test(description = "This testcase verifies if api can be created without providing the API version.", enabled = false)
-    public void apisPostTest_NF_withoutTheVersion() throws ApiException {
+    public void apisPostTest_withoutTheVersion_FailureTest() throws ApiException {
         API body = new API();
         try {
             body.setName("API-117");

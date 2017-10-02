@@ -13,53 +13,71 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import org.testng.Assert;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.ImportConfigurationApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
 import java.io.File;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.testng.annotations.Test;
 
 /**
  * API tests for ImportConfigurationApi
  */
-@Ignore
 public class ImportConfigurationApiIT {
 
     private final ImportConfigurationApi api = new ImportConfigurationApi();
+    private final TestUtils testUtils = new TestUtils();
+    private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
 
-    
-    /**
-     * Imports API(s).
-     *
-     * This operation can be used to import one or more existing APIs. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
     public void importApisPostTest() throws ApiException {
-        File file = null;
-        String provider = null;
-        APIList response = api.importApisPost(file, provider);
+        File file = new File(getClass().getResource("/sampleapi.zip").getFile());
+        String provider = "admin";
 
-        // TODO: test validations
+            APIList response = api.importApisPost(file, provider);
+            Assert.assertEquals(response.getList().get(0).getName(),"SampleAPI", "API name mismatch");
+            Assert.assertEquals(response.getList().get(0).getContext(),"/sample-api", "API context mismatch");
+            Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(),"Created", "API lifecycle status mismatch");
+            Assert.assertEquals(response.getList().get(0).getVersion(),"1.0.0", "API version mismatch");
+            testUtils.deleteApi();
+
     }
-    
-    /**
-     * Imports API(s).
-     *
-     * This operation can be used to import one or more existing APIs. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
+    public void importApisPost_failureTest() throws ApiException {
+        File file = new File(getClass().getResource("/file1.txt").getFile());
+        String provider = "admin";
+
+        try {
+            api.importApisPost(file, provider);
+            assert false;
+        }
+        catch (ApiException apiException)
+        {
+            int statusCode = apiException.getCode();
+            Assert.assertEquals(statusCode, 400, "status code mismatch");
+        }
+
+
+    }
+
+    /**
+     * FAILS
+     * Please refer https://github.com/wso2/product-apim/issues/1625
+     * Therefore disabling this test.
+     */
+    @Test(enabled = false)
     public void importApisPutTest() throws ApiException {
-        File file = null;
-        String provider = null;
+        String apiId = testUtils.createApi("sampleapi","1.0.0", "/sample-api");
+        File file = new File(getClass().getResource("/sampleapi.zip").getFile());
+        API body = apiIndividualApi.apisApiIdGet(apiId, null, null);
+        System.out.println(body);
+        String provider = "admin";
         APIList response = api.importApisPut(file, provider);
+        System.out.println(response);
 
         // TODO: test validations
     }

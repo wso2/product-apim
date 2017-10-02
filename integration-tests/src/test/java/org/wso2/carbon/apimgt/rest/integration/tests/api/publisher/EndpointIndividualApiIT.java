@@ -13,75 +13,149 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.EndpointCollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPoint;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointEndpointSecurity;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.EndPointList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.EndpointIndividualApi;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.testng.annotations.Test;
 
 /**
  * API tests for EndpointIndividualApi
  */
-@Ignore
 public class EndpointIndividualApiIT {
 
     private final EndpointIndividualApi api = new EndpointIndividualApi();
+    private final TestUtils testUtils = new TestUtils();
+    private final EndpointCollectionApi endpointCollectionApi = new EndpointCollectionApi();
 
-    
-    /**
-     * Delete an endpoint
-     *
-     * This operation can be used to delete an existing Endpoint proving the Id of the Endpoint. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
     @Test
     public void endpointsEndpointIdDeleteTest() throws ApiException {
-        String endpointId = null;
+
+        String endPointId1 = testUtils.createEndPoint("Endpoint-145", "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "user", "user");
+        String endPointId2 = testUtils.createEndPoint("Endpoint-146", "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "user", "user");
+
+        String ifMatch = null;
+        String ifModifiedSince = null;
+        String ifNoneMatch = null;
+        String ifUnmodifiedSince = null;
+        api.endpointsEndpointIdDelete(endPointId1, ifMatch, ifUnmodifiedSince);
+        EndPointList response = endpointCollectionApi.endpointsGet(ifNoneMatch, ifModifiedSince);
+        for(int i =0; i< response.getCount(); i++)
+        {
+            if(response.getList().get(i).getName().equals("Endpoint-145"))
+            {
+                assert false;
+            }
+        }
+        assert true;
+
+    }
+
+    /**
+     * FAILS
+     * Please refer https://github.com/wso2/product-apim/issues/1630
+     */
+    @Test
+    public void endpointsEndpointIdDeleteTest_NF() throws ApiException {
+
+        String endPointId = "invalidEndPointId";
         String ifMatch = null;
         String ifUnmodifiedSince = null;
-        api.endpointsEndpointIdDelete(endpointId, ifMatch, ifUnmodifiedSince);
-
-        // TODO: test validations
+        try {
+            api.endpointsEndpointIdDelete(endPointId, ifMatch, ifUnmodifiedSince);
+            assert false;
+        }
+        catch (ApiException ae)
+        {
+            int statusCode = ae.getCode();
+            Assert.assertEquals(statusCode, 404, "status code mismatch");
+        }
     }
-    
-    /**
-     * Get specific endpoints
-     *
-     * This operation can be used to retrieve endpoint specific details. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
     public void endpointsEndpointIdGetTest() throws ApiException {
-        String endpointId = null;
-        String ifMatch = null;
+        String endPointName = "EndPoint-142";
+        String endPointConfig = "{\"serviceUrl\":\"http://petstore.swagger.io/\"}";
+        String username = "user";
+        String password = "pass";
+        String endpointId = testUtils.createEndPoint(endPointName, endPointConfig, username, password);
         String ifUnmodifiedSince = null;
+        String ifMatch = null;
         EndPoint response = api.endpointsEndpointIdGet(endpointId, ifMatch, ifUnmodifiedSince);
 
-        // TODO: test validations
+        Assert.assertEquals(response.getName(),"EndPoint-142", "Endpoint Name mismatch");
+        Assert.assertEquals(response.getType(), "production", "EndPoint type mismatch");
+        Assert.assertEquals(response.getMaxTps().longValue(), 1000, "EndPoint MaxTps mismatch");
+        Assert.assertEquals(response.getEndpointConfig(), "{\"serviceUrl\":\"http://petstore.swagger.io/\"}", "EndPoint config mismatch");
+        Assert.assertEquals(response.getId(), endpointId, "EndPoint id mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getUsername(), "user", "EndPointSecurity username mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getPassword(), "pass", "EndPointSecurity password mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getEnabled().toString(), "false", "EndPointSecurity isEnable mismatch");
+        Assert.assertEquals(response.getEndpointSecurity().getType(), "http", "EndPointSecurity type mismatch");
+
+        testUtils.deleteEndPoint(endpointId);
     }
-    
-    /**
-     * Update a Tier
-     *
-     * This operation can be used to update an existing endpoint. &#x60;PUT https://127.0.0.1:9443/api/am/publisher/v1.0/endpoints/api/Low&#x60; 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
+
     @Test
+    public void endpointsEndpointIdGetTest_NF() throws ApiException {
+        String endpointId = "invalidEndPointId";
+        String ifUnmodifiedSince = null;
+        String ifMatch = null;
+        try
+        {
+            api.endpointsEndpointIdGet(endpointId, ifMatch, ifUnmodifiedSince);
+            assert false;
+        }
+        catch (ApiException ae)
+        {
+            int statusCode = ae.getCode();
+            JsonParser parser= new JsonParser();
+            JsonObject responseBody = (JsonObject) parser.parse(ae.getResponseBody());
+            String errorMsg = responseBody.get("message").getAsString();
+            Assert.assertEquals(statusCode, 404, "status code mismatch");
+            Assert.assertEquals(errorMsg, "Endpoint Not Found", "Error message mismatch");
+        }
+    }
+
+    @Test(enabled = false)
     public void endpointsEndpointIdPutTest() throws ApiException {
-        String endpointId = null;
-        EndPoint body = null;
         String ifMatch = null;
         String ifUnmodifiedSince = null;
+        String endPointName = "EndPoint-209";
+        String endPointConfig = "{\"serviceUrl\":\"http://petstore.swagger.io/\"}";
+        String username = "user";
+        String password = "pass";
+        String endpointId = testUtils.createEndPoint(endPointName, endPointConfig, username, password);
+        System.out.println(endpointId);
+        String endPointConfig2 = "{\"serviceUrl\":\"http://ws.cdyne.com/phoneverify/phoneverify.asmx/\"}";
+        EndPoint body = new EndPoint();
+        body.setEndpointConfig(endPointConfig2);
         EndPoint response = api.endpointsEndpointIdPut(endpointId, body, ifMatch, ifUnmodifiedSince);
 
-        // TODO: test validations
+        System.out.println(response);
+
+        testUtils.deleteEndPoint(endpointId);
     }
-    
+
+    @AfterClass
+    public void afterClass() throws ApiException {
+        String ifNoneMatch = null;
+        String ifModifiedSince = null;
+        String ifMatch = null;
+        String ifUnmodifiedSince = null;
+
+        EndPointList response = endpointCollectionApi.endpointsGet(ifNoneMatch, ifModifiedSince);
+        for (int i = 0; i < response.getCount(); i++) {
+            String endpointId = response.getList().get(i).getId();
+            api.endpointsEndpointIdDelete(endpointId, ifMatch, ifUnmodifiedSince);
+            testUtils.deleteApi();
+        }
+    }
 }

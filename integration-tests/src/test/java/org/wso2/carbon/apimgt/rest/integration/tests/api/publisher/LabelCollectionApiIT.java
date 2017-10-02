@@ -12,22 +12,18 @@
 
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
-
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LabelList;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.LabelCollectionApi;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.*;
 
 /**
  * API tests for LabelCollectionApi
  */
-@Ignore
 public class LabelCollectionApiIT {
 
     private final LabelCollectionApi api = new LabelCollectionApi();
-
     
     /**
      * Get all labels
@@ -37,13 +33,35 @@ public class LabelCollectionApiIT {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
+    @Test(description = "This test verifies if set of labels can be retreived. A label includes label, Id, label name, access URL")
     public void labelsGetTest() throws ApiException {
         String ifNoneMatch = null;
         String ifModifiedSince = null;
         LabelList response = api.labelsGet(ifNoneMatch, ifModifiedSince);
 
-        // TODO: test validations
+        int labelCount = response.getCount();
+        boolean labelCountNotZero = false;
+        boolean nameAvailable = false;
+        boolean labelIdAvailable = false;
+
+        if(labelCount > 0)
+        {
+            labelCountNotZero = true;
+        }
+        if(response.getList().get(0).getLabelId() != null)
+        {
+            labelIdAvailable = true;
+        }
+        if(response.getList().get(0).getName() != null)
+        {
+            nameAvailable = true;
+        }
+
+        Assert.assertEquals(labelCountNotZero, true, "label count mismatch");
+        Assert.assertEquals(labelIdAvailable, true, "label id mismatch");
+        Assert.assertEquals(nameAvailable, true, "label name mismatch");
+
+
     }
     
 }

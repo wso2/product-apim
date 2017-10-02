@@ -16,34 +16,32 @@ package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.ExportConfigurationApi;
 import java.io.File;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 /**
  * API tests for ExportConfigurationApi
  */
-@Ignore
 public class ExportConfigurationApiIT {
 
     private final ExportConfigurationApi api = new ExportConfigurationApi();
+    private final TestUtils testUtils = new TestUtils();
 
-    
     /**
-     * Export information related to an API.
-     *
-     * This operation can be used to export information related to a particular API. 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * FAILS
+     * Please refer https://github.com/wso2/product-apim/issues/1622
+     * Therefore making this method disabled.
      */
-    @Test
+
+    @Test(enabled = true)
     public void exportApisGetTest() throws ApiException {
-        String query = null;
-        Integer limit = null;
-        Integer offset = null;
+        testUtils.createApi("API-180", "1.0.0", "API-180");
+        String query = "API-180";
+        Integer limit = 10;
+        Integer offset = 0;
         File response = api.exportApisGet(query, limit, offset);
 
-        // TODO: test validations
+
     }
     
 }
