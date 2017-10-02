@@ -36,16 +36,16 @@ ballerina.config:
             packageName: org.wso2.carbon.apimgt.gateway.auth
             # Ballerina Archive name.
             archiveName: auth.bmz
-          -
-            # Package name of the request interceptor.
-            packageName: org.wso2.carbon.apimgt.gateway.throttle
-            # Ballerina Archive name.
-            archiveName: throttle.bmz
-          -
-            # Package name of the request interceptor.
-            packageName: org.wso2.carbon.apimgt.gateway.handler
-            # Ballerina Archive name.
-            archiveName: analytics.bmz
+#          -
+#            # Package name of the request interceptor.
+#            packageName: org.wso2.carbon.apimgt.gateway.throttle
+#            # Ballerina Archive name.
+#            archiveName: throttle.bmz
+#          -
+#            # Package name of the request interceptor.
+#            packageName: org.wso2.carbon.apimgt.gateway.handler
+#            # Ballerina Archive name.
+#            archiveName: analytics.bmz
 
 
 wso2.securevault:
