@@ -25,6 +25,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -90,6 +91,21 @@ public class HTTPSClientUtils {
                                     Map<String, String> headers, String payload) throws IOException {
         CloseableHttpClient httpClient = getHttpsClient();
         HttpResponse response = sendPOSTMessage(httpClient, url, headers, payload);
+        return constructResponse(response);
+    }
+
+    /**
+     * do HTTP PUT operation for the given URL
+     *
+     * @param url           request URL
+     * @param headers       headers to be sent
+     * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    public static org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPut(String url,
+                                   Map<String, String> headers, String payload) throws IOException {
+        CloseableHttpClient httpClient = getHttpsClient();
+        HttpResponse response = sendPUTMessage(httpClient, url, headers, payload);
         return constructResponse(response);
     }
 
@@ -214,6 +230,28 @@ public class HTTPSClientUtils {
         }
         post.setEntity(new StringEntity(body));
         return httpClient.execute(post);
+    }
+
+    /**
+     * PUT function implementation
+     *
+     * @param httpClient    http client to use
+     * @param url           request URL
+     * @param headers       headers to be send
+     * @param body          payload to be send
+     * @return org.apache.http.HttpResponse
+     * @throws IOException if connection issue occurred
+     */
+    private static HttpResponse sendPUTMessage(CloseableHttpClient httpClient, String url, Map<String, String> headers,
+                                                String body) throws IOException {
+        HttpPut put = new HttpPut(url);
+        if (headers != null) {
+            for (Map.Entry<String, String> head : headers.entrySet()) {
+                put.addHeader(head.getKey(), head.getValue());
+            }
+        }
+        put.setEntity(new StringEntity(body));
+        return httpClient.execute(put);
     }
 
     /**

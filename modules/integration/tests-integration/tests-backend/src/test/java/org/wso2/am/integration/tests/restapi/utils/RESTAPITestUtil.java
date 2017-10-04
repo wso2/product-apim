@@ -362,7 +362,7 @@ public class RESTAPITestUtil {
      * @return generating access token
      * @throws APIManagerIntegrationTestException if an error occurs while generating access token
      */
-    private String generateOAuthAccessToken(String scope, Map<String, String> dataMap, String gatewayUrl)
+    public static String generateOAuthAccessToken(String scope, Map<String, String> dataMap, String gatewayUrl)
             throws APIManagerIntegrationTestException {
 
         try {
@@ -412,7 +412,7 @@ public class RESTAPITestUtil {
      * @return map which contains the consumer key and secret
      * @throws APIManagerIntegrationTestException if it fails to register OAuth Application
      */
-    private Map<String, String> registerOAuthApplication(String keyMangerUrl)
+    public static Map<String, String> registerOAuthApplication(String keyMangerUrl)
             throws APIManagerIntegrationTestException {
 
         String dcrEndpointURL = keyMangerUrl + RESTAPITestConstants.CLIENT_REGISTRATION_URL;
