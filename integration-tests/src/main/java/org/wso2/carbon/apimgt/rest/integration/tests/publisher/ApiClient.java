@@ -139,7 +139,7 @@ public class ApiClient {
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final String TLS_PROTOCOL = "TLS";
 
-    private String basePath = "https://localhost:9292/api/am/publisher/v1.0";
+    private String basePath = "https://wso2:9292/api/am/publisher/v1.0";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -1368,7 +1368,7 @@ public class ApiClient {
         HttpsURLConnection urlConn = null;
         //calling token endpoint
         try {
-            url = new URL("https://localhost:9443/oauth2/token");
+            url = new URL("https://wso2:9443/oauth2/token");
             urlConn = (HttpsURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
             urlConn.setRequestMethod("POST");
@@ -1420,7 +1420,7 @@ public class ApiClient {
             grantArray.add("client_credentials");
             json.add("grant_types", grantArray);
             // Calling DCR endpoint
-            String dcrEndpoint = "http://localhost:9763/identity/connect/register";
+            String dcrEndpoint = "http://wso2:9763/identity/connect/register";
             url = new URL(dcrEndpoint);
             urlConn = (HttpURLConnection) url.openConnection();
             urlConn.setDoOutput(true);
