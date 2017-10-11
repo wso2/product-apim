@@ -30,7 +30,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.TierList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.ThrottlingTierIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Tier;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 /**
  * API tests for ThrottlingTierIndividualApi
@@ -49,7 +49,7 @@ public class ThrottlingTierIndividualApiIT {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
+    @Test(enabled = false)
     public void policiesTierLevelTierNameGetTest() throws ApiException {
 
         String tierName = "10KPerMin";

@@ -88,7 +88,7 @@ public class SubscriptionCollectionApiIT {
      *
      * @throws ApiException if the Api call fails
      */
-    @Test
+    @Test(enabled = false)
     public void subscriptionsGetTest() throws ApiException {
 
         String apiId = APIID;

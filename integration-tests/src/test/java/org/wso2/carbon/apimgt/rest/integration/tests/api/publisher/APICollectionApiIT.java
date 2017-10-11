@@ -61,9 +61,6 @@ public class APICollectionApiIT {
             String apiId1 = testUtils.createApi("TestApi1", "1.0.0", "testapi1");
             String apiId2 = testUtils.createApi("TestApi2", "1.0.0", "testapi2");
             APIList response = api.apisGet(limit, offset, query, ifNoneMatch);
-            System.out.println(response.getList().get(0).getName());
-            System.out.println(response.getList().get(1).getName());
-
 
             if (response.getList().get(0).getName().equals("TestApi1")) {
                 Assert.assertEquals(response.getList().get(0).getName(), "TestApi1", "API name mismatch");
@@ -135,7 +132,6 @@ public class APICollectionApiIT {
     public void apisHead_FailureTest() throws ApiException {
         try {
             String query = "name:DoesNotExist";
-            String accept = null;
             String ifNoneMatch = null;
             api.apisHead(query, ifNoneMatch);
         }

@@ -167,7 +167,6 @@ public class EndpointCollectionApiIT {
             JsonObject responseBody = (JsonObject) parser.parse(apiException.getResponseBody());
             String errorMsg = responseBody.get("message").getAsString();
             Assert.assertEquals(errorMsg, "Endpoint already exists", "Response message mismatch");
-            System.out.println(apiException.getCode());
         }
 
     }

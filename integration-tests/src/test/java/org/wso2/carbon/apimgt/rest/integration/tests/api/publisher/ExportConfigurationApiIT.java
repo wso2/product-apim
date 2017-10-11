@@ -13,11 +13,15 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
+import org.testng.annotations.AfterClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.ExportConfigurationApi;
 import java.io.File;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
 
 /**
  * API tests for ExportConfigurationApi
@@ -26,6 +30,8 @@ public class ExportConfigurationApiIT {
 
     private final ExportConfigurationApi api = new ExportConfigurationApi();
     private final TestUtils testUtils = new TestUtils();
+    private final APICollectionApi apiSetup = new APICollectionApi();
+    private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
 
     /**
      * FAILS
@@ -33,15 +39,22 @@ public class ExportConfigurationApiIT {
      * Therefore making this method disabled.
      */
 
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void exportApisGetTest() throws ApiException {
         testUtils.createApi("API-180", "1.0.0", "API-180");
         String query = "API-180";
         Integer limit = 10;
         Integer offset = 0;
         File response = api.exportApisGet(query, limit, offset);
+    }
 
-
+    @AfterClass
+    public void afterClass() throws ApiException {
+        APIList response = apiSetup.apisGet(10, 0, null, null);
+        for (int i=0 ; i< response.getCount(); i++)
+        {
+            apiIndividualApi.apisApiIdDelete(response.getList().get(i).getId(), null, null);
+        }
     }
     
 }

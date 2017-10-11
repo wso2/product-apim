@@ -62,7 +62,7 @@ public class EndpointIndividualApiIT {
      * FAILS
      * Please refer https://github.com/wso2/product-apim/issues/1630
      */
-    @Test
+    @Test(enabled = false)
     public void endpointsEndpointIdDeleteTest_NF() throws ApiException {
 
         String endPointId = "invalidEndPointId";

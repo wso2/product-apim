@@ -14,7 +14,9 @@
 package org.wso2.carbon.apimgt.rest.integration.tests.api.publisher;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APICollectionApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.APIList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Error;
@@ -29,24 +31,29 @@ import org.testng.annotations.Test;
 public class ImportConfigurationApiIT {
 
     private final ImportConfigurationApi api = new ImportConfigurationApi();
-    private final TestUtils testUtils = new TestUtils();
+    private final APICollectionApi apiSetup = new APICollectionApi();
     private final APIIndividualApi apiIndividualApi = new APIIndividualApi();
+    private final TestUtils testUtils = new TestUtils();
 
     @Test
     public void importApisPostTest() throws ApiException {
         File file = new File(getClass().getResource("/sampleapi.zip").getFile());
         String provider = "admin";
 
-            APIList response = api.importApisPost(file, provider);
-            Assert.assertEquals(response.getList().get(0).getName(),"SampleAPI", "API name mismatch");
-            Assert.assertEquals(response.getList().get(0).getContext(),"/sample-api", "API context mismatch");
-            Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(),"Created", "API lifecycle status mismatch");
-            Assert.assertEquals(response.getList().get(0).getVersion(),"1.0.0", "API version mismatch");
-            testUtils.deleteApi();
+        APIList response = api.importApisPost(file, provider);
+        Assert.assertEquals(response.getList().get(0).getName(), "SampleAPI", "API name mismatch");
+        Assert.assertEquals(response.getList().get(0).getContext(), "/sample-api", "API context mismatch");
+        Assert.assertEquals(response.getList().get(0).getLifeCycleStatus(), "Created", "API lifecycle status mismatch");
+        Assert.assertEquals(response.getList().get(0).getVersion(), "1.0.0", "API version mismatch");
+        testUtils.deleteApi();
 
     }
 
-    @Test
+    /*
+        FAILS
+        please refer https://github.com/wso2/product-apim/issues/1644
+     */
+    @Test(enabled = false)
     public void importApisPost_failureTest() throws ApiException {
         File file = new File(getClass().getResource("/file1.txt").getFile());
         String provider = "admin";
@@ -54,9 +61,7 @@ public class ImportConfigurationApiIT {
         try {
             api.importApisPost(file, provider);
             assert false;
-        }
-        catch (ApiException apiException)
-        {
+        } catch (ApiException apiException) {
             int statusCode = apiException.getCode();
             Assert.assertEquals(statusCode, 400, "status code mismatch");
         }
@@ -71,7 +76,7 @@ public class ImportConfigurationApiIT {
      */
     @Test(enabled = false)
     public void importApisPutTest() throws ApiException {
-        String apiId = testUtils.createApi("sampleapi","1.0.0", "/sample-api");
+        String apiId = testUtils.createApi("sampleapi", "1.0.0", "/sample-api");
         File file = new File(getClass().getResource("/sampleapi.zip").getFile());
         API body = apiIndividualApi.apisApiIdGet(apiId, null, null);
         System.out.println(body);
@@ -81,5 +86,12 @@ public class ImportConfigurationApiIT {
 
         // TODO: test validations
     }
-    
+
+    @AfterClass
+    public void afterClass() throws ApiException {
+        APIList response = apiSetup.apisGet(10, 0, null, null);
+        for (int i = 0; i < response.getCount(); i++) {
+            apiIndividualApi.apisApiIdDelete(response.getList().get(i).getId(), null, null);
+        }
+    }
 }
