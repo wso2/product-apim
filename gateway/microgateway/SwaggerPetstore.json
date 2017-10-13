@@ -1,0 +1,119 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "SwaggerPetstore",
+    "contact": {}
+  },
+  "basePath": "/petstore",
+  "security": [
+    {
+      "api_key": [
+        "123456",
+        "113456",
+        "122456",
+        "189011"
+      ]
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "head": {
+        "operationId": "head",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "schema": {
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "operationId": "put",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "schema": {
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patch",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "schema": {
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
