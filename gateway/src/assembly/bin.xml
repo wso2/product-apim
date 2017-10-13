@@ -121,7 +121,11 @@
 
         <fileSet> <!-- microgateway with the ReadMe -->
             <directory>microgateway</directory>
-            <includes><include>README.txt</include></includes>
+            <includes>
+                <include>README.txt</include>
+                <include>**/*.bal</include>
+                <include>**/*.json</include>
+            </includes>
         </fileSet>
     </fileSets>
 
