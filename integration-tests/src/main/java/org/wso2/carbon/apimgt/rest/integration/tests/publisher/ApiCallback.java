@@ -13,6 +13,8 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher;
 
+import java.io.IOException;
+
 import java.util.Map;
 import java.util.List;
 

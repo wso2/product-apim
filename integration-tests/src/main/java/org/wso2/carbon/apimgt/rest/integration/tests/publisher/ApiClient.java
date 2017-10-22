@@ -29,6 +29,7 @@ import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
 
 import okio.BufferedSink;
 import okio.Okio;
+
 import java.lang.reflect.Type;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth.ApiKeyAuth;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth.Authentication;
@@ -38,6 +39,7 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth.OAuth;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
