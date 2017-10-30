@@ -78,6 +78,8 @@ public final class RESTAPITestConstants {
     public static final String BODY_ASSERTS_VALUE = "value";
     public static final String BODY_ASSERTS_REGEX = "regex";
 
+    public static final String BODY_NOT_ASSERTS = "body-not-asserts";
+
     //method element in data section in JSON file
     public static final String METHOD_ELEMENT = "method";
 
