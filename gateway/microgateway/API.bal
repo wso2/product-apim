@@ -4,10 +4,10 @@ import ballerina.lang.messages;
 import ballerina.lang.errors;
 import ballerina.lang.system;
 
-@http:config {basePath:"/petstore"}
-service<http> SwaggerPetstore_6e7e75ea_cec3_47ce_baae_4d336e16cff5 {
-							http:ClientConnector productionEndpoint = create http:ClientConnector("http://petstore.swagger.io");
-												http:ClientConnector sandBoxEndpoint = create http:ClientConnector("http://petstore.swagger.io");
+@http:config {basePath:"/api"}
+service<http> API_3392d18b_eb44_4c43_9a3a_2a7c9b6b9b86 {
+							http:ClientConnector productionEndpoint = create http:ClientConnector("http://www.mocky.io/v2/59a96c49100000300d3e0afa");
+												http:ClientConnector sandBoxEndpoint = create http:ClientConnector("http://www.mocky.io/v2/59a96c49100000300d3e0afa");
 				string KEY_TYPE = "KEY_TYPE";
 			    @http:POST{}
         	@http:Path{value:"/"}
