@@ -274,7 +274,6 @@ public class RESTAPITestUtil {
                 if (!isTestSuccess) {
                     break;
                 }
-
                 JSONArray bodyNotAsserts =  configObject.getJSONObject(RESTAPITestConstants.ASSERT_SECTION).has
                         (RESTAPITestConstants.BODY_NOT_ASSERTS) ? configObject.getJSONObject(RESTAPITestConstants
                         .ASSERT_SECTION).getJSONArray(RESTAPITestConstants.BODY_NOT_ASSERTS) : null;
@@ -293,12 +292,10 @@ public class RESTAPITestUtil {
                         isTestSuccess = true;
                     }
                 }
-
                 //if the current test fails no need to run the rest of the scenario, so break and return false
                 if (!isTestSuccess) {
                     break;
                 }
-
             }
 
         } catch (APIManagerIntegrationTestException integrationTestException) {
