@@ -8,8 +8,14 @@
             <!--commented to stop tests on build (need to uncomment later)-->
             <!--package name="org.wso2.carbon.apimgt.rest.integration.tests.*"/-->
         </packages>
+
       <!--  <classes>
             <class name="org.wso2.carbon.apimgt.rest.integration.tests.api.publisher.LabelCollectionApiIT"/>
         </classes> -->
+
+        <classes>
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.ApiClientTest" />
+        </classes>
+
     </test>
 </suite>
