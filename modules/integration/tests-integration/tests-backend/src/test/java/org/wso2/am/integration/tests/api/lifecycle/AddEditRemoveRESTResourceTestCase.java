@@ -48,13 +48,14 @@ import static org.testng.Assert.assertTrue;
  * Add , edit and remove rest resource and test the invocation of API
  */
 public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "EditRemoveRESTResourceTest";
-    private final String API_CONTEXT = "EditRemoveRESTResource";
+    private final String API_NAME = "APITest";
+    private final String API_CONTEXT = "{version}/api";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String APPLICATION_NAME = "AddEditRemoveRESTResourceTestCase";
+    private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
+    private final String APPLICATION_NAME = "ApplicationTest";
     private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
     private final String RESPONSE_POST = "Tom";
     private final String API_GET_ENDPOINT_METHOD = "/customers/123";
@@ -78,7 +79,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
                                     RemoteException, MalformedURLException {
         super.init();
-        postEndPointURL = getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_POST_ENDPOINT_METHOD;
+        postEndPointURL = getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_POST_ENDPOINT_METHOD;
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         APICreationRequestBean apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
@@ -101,7 +102,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of GET resource")
+    @Test(groups = {"webapp"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource() throws Exception {
         //Create application
         apiStoreClientUser1.addApplication(APPLICATION_NAME,
@@ -117,13 +118,14 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get the  access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        System.setProperty(APPLICATION_NAME+"-accessToken", accessToken);
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+        //waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
         assertEquals(httpResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request");
         assertTrue(httpResponse.getData().contains(RESPONSE_GET), "Response Data not match for GET request." +
@@ -131,7 +133,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of POST resource, before adding a POSt resource",
+    @Test(groups = {"webapp"}, description = "Test the invocation of POST resource, before adding a POSt resource",
           dependsOnMethods = "testInvokeGETResource")
     public void testInvokePOSTResourceBeforeAddingPOSTResource()
             throws APIManagerIntegrationTestException, MalformedURLException {
@@ -146,13 +148,13 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException with 405 when accessing a " +
                                                                   "POST resource which is not define yet. "
                                                                   + exceptionMessage);
-            assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
+            assertTrue(exceptionMessage.contains(INVOKABLE_API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
 
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of POST and GET resource, after adding a POST resource",
+    @Test(groups = {"webapp"}, description = "Test the invocation of POST and GET resource, after adding a POST resource",
           dependsOnMethods = "testInvokePOSTResourceBeforeAddingPOSTResource")
     public void testInvokePOSTAndGETResourceAfterAddingPOSTResource() throws Exception {
         APICreationRequestBean apiCreationRequestBean =
@@ -180,7 +182,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         waitForAPIDeployment();
 
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                                                                                "update the api with  both GET and POST resource");
@@ -188,8 +190,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                                                                      " update the api with  both GET and POST resource. Expected value :\"" + RESPONSE_GET + "\" not contains" +
                                                                      " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send POST Request
-        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT,
-                                                                                               API_VERSION_1_0_0) + API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
+        HttpResponse httpResponsePOST = HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT)
+                + API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
 
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                      "Invocation of  POST resource fail after update the api with  both GET and POST resource");
@@ -199,7 +201,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of POST and GET resource, after adding a URL pattern",
+    @Test(groups = {"webapp"}, description = "Test the invocation of POST and GET resource, after adding a URL pattern",
           dependsOnMethods = "testInvokePOSTAndGETResourceAfterAddingPOSTResource")
     public void testInvokePOSTAndGetResourceAfterAddingURLPattern() throws Exception {
         APICreationRequestBean apiCreationRequestBean =
@@ -229,7 +231,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                      "Update APi with new Resource information fail");
         //Send GET Request
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) +
                                       API_GET_ENDPOINT_METHOD, requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                                                                                "update the api with  URLPattern");
@@ -238,7 +240,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                                                                      " in response data:\"" + httpResponseGet.getData() + "\"");
         //Send GET Request with invalid url
         HttpResponse httpResponseGetInvalidUrl =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD +
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD +
                                       INVALID_URL, requestHeadersGet);
         assertEquals(httpResponseGetInvalidUrl.getResponseCode(), HTTP_RESPONSE_CODE_NOT_FOUND, "Invocation is not " +
                                                                                                 "forbidden when try to invoke GET resource  via invalid url pattern");
@@ -247,7 +249,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                                                                                               RESPONSE_GET + "\" not contains in response data:\"" + httpResponseGetInvalidUrl.getData() + "\"");
         //Send POST Request
         HttpResponse httpResponsePOST =
-                HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) +
+                HttpRequestUtil.doPost(new URL(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) +
                                                API_POST_ENDPOINT_METHOD), "id=25", requestHeadersPost);
         assertEquals(httpResponsePOST.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation of  POST resource fail after" +
                                                                                 " update the api with  URLPattern");
@@ -258,7 +260,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of POST and GET resource, after Remove POST resource",
+    @Test(groups = {"webapp"}, description = "Test the invocation of POST and GET resource, after Remove POST resource",
           dependsOnMethods = "testInvokePOSTAndGetResourceAfterAddingURLPattern")
     public void testInvokeGETAndPOSTResourceAfterRemovePOSTResource() throws Exception {
         APICreationRequestBean apiCreationRequestBean =
@@ -283,7 +285,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         waitForAPIDeployment();
 
         HttpResponse httpResponseGet =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0) + API_GET_ENDPOINT_METHOD,
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
         assertEquals(httpResponseGet.getResponseCode(), HTTP_RESPONSE_CODE_OK, "Invocation fails for GET request after " +
                                                                                "remove the POST resource from api");
@@ -300,7 +302,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         } finally {
             assertTrue(exceptionMessage.contains("Server returned HTTP response code: 405"), "Not Return IOException " +
                                           "with 405 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
-            assertTrue(exceptionMessage.contains(API_CONTEXT), "API Context is not in error message " + exceptionMessage);
+            assertTrue(exceptionMessage.contains(INVOKABLE_API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
     }
 
@@ -308,8 +310,8 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     @AfterClass(alwaysRun = true)
     public void cleanUpArtifacts()
             throws APIManagerIntegrationTestException, XPathExpressionException {
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
+        /*apiStoreClientUser1.removeApplication(APPLICATION_NAME);
+        deleteAPI(apiIdentifier, apiPublisherClientUser1);*/
 
     }
 

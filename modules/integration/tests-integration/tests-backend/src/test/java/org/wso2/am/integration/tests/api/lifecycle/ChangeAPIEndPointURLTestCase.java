@@ -50,17 +50,18 @@ import static org.testng.Assert.assertTrue;
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "ChangeAPIEndPointURLTest";
-    private final String API_CONTEXT = "ChangeAPIEndPointURLTest";
+    private final String API_NAME = "APITest";
+    private final String API_CONTEXT = "{version}/api";
     private final String API_TAGS = "testTag1, testTag2, testTag3";
 
     private final String API_DESCRIPTION = "This is test API create by API manager integration test";
-    private final String API1_END_POINT_METHOD = "customers/123";
+    private final String API1_END_POINT_METHOD = "/customers/123";
     private final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final String API_VERSION_1_0_0 = "1.0.0";
+    private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
     private final String API2_RESPONSE_DATA = "HelloWSO2";
     private final String API2_END_POINT_POSTFIX_URL = "name-check1_SB/name";
-    private final String APPLICATION_NAME = "ChangeAPIEndPointURLTestCase";
+    private final String APPLICATION_NAME = "ApplicationTest";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String api1EndPointUrl, api2EndPointUrl;
 
@@ -86,10 +87,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
 
         api1EndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        apiCreationRequestBean =
+        /*apiCreationRequestBean =
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api1EndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
+        apiCreationRequestBean.setDescription(API_DESCRIPTION);*/
         String publisherURLHttp = getPublisherURLHttp();
         String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
@@ -99,26 +100,26 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         //Login to API Store with  admin
         apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiStoreClientUser1
-                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");
+        /*apiStoreClientUser1
+                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");*/
     }
 
-    @Test(groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
+    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
     public void testAPIInvocationBeforeChangeTheEndPointURL() throws Exception {
-        //Create and publish  and subscribe API version 1.0.0
+        /*//Create and publish  and subscribe API version 1.0.0
         createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                apiStoreClientUser1, APPLICATION_NAME);
+                apiStoreClientUser1, APPLICATION_NAME);*/
         //get access token
-        String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
+        String accessToken = System.getProperty(APPLICATION_NAME + "-accessToken");
         // Create requestHeaders
         requestHeaders = new HashMap<String, String>();
         requestHeaders.put("accept", "*/*");
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+        //waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT,  API_VERSION_1_0_0)  + "/" + API1_END_POINT_METHOD,
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT)  + API1_END_POINT_METHOD,
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke api before change the end point URL");
@@ -129,7 +130,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test changing of the API end point URL",
+    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test changing of the API end point URL",
             dependsOnMethods = "testAPIInvocationBeforeChangeTheEndPointURL")
     public void testEditEndPointURL() throws APIManagerIntegrationTestException, MalformedURLException {
         //Create the API Request with new context
@@ -150,11 +151,11 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     }
 
 
-    @Test(groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
+    @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test the invocation of API using new end point URL" +
             "  after end point URL  change", dependsOnMethods = "testEditEndPointURL")
     public void testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL() throws Exception {
         HttpResponse oldVersionInvokeResponse =
-                HttpRequestUtil.doGet(getAPIInvocationURLHttp(API_CONTEXT, API_VERSION_1_0_0),
+                HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT),
                         requestHeaders);
         assertEquals(oldVersionInvokeResponse.getResponseCode(), HTTP_RESPONSE_CODE_OK,
                 "Response code mismatched when invoke  API  after change the end point URL");

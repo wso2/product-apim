@@ -73,7 +73,7 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception{
         super.init();
 
-        String sourcePath= TestConfigurationProvider.getResourceLocation()+ File.separator+
+        /*String sourcePath= TestConfigurationProvider.getResourceLocation()+ File.separator+
                 "artifacts"+File.separator+"AM"+File.separator+"lifecycletest"+File.separator+
                 "jaxrs_basic.war";
 
@@ -89,7 +89,7 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(),
                 sessionId, WEB_APP_FILE_NAME);
 
-        log.info("Web App Deployed");
+        log.info("Web App Deployed");*/
 
 
         String publisherUrlHttp=publisherUrls.getWebAppURLHttp();
@@ -100,7 +100,7 @@ public class CopyNewVersionTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"},description = "Copy new Version")
+    @Test(groups = {"webapp"}, description = "Copy new Version")
     public void copyApiNewVersion() throws Exception{
 
         List<APIResourceBean> resourceBeanList=new ArrayList<APIResourceBean>();

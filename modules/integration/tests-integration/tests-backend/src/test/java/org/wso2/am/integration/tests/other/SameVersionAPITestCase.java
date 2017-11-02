@@ -71,7 +71,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
     public void setEnvironment() throws Exception{
         super.init();
 
-        String sourcePath= TestConfigurationProvider.getResourceLocation()+ File.separator+
+        /*String sourcePath= TestConfigurationProvider.getResourceLocation()+ File.separator+
                 "artifacts"+File.separator+"AM"+File.separator+"lifecycletest"+File.separator+
                 "jaxrs_basic.war";
 
@@ -87,7 +87,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
         WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(),
                 sessionId, WEB_APP_FILE_NAME);
 
-        log.info("Web App Deployed");
+        log.info("Web App Deployed");*/
 
         String publisherUrlHttp=publisherUrls.getWebAppURLHttp();
         apiPublisher=new APIPublisherRestClient(publisherUrlHttp);
@@ -97,7 +97,7 @@ public class SameVersionAPITestCase extends APIMIntegrationBaseTest{
 
     }
 
-    @Test(groups = "wso2am", description = "Copy Same Version")
+    @Test(groups = "webapp", description = "Copy Same Version")
     public void copySameVersion() throws Exception{
         String gatewayUrl;
         if(gatewayContextWrk.getContextTenant().getDomain().equals("carbon.super")){

@@ -42,14 +42,14 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
     private static final Log log = LogFactory.getLog(PluggableVersioningStrategyTestCase.class);
 
-    private final String API_NAME = "PluggableVersionTestAPI";
-    private final String API_CONTEXT = "{version}/PluggableVersionTestAPI";
+    private final String API_NAME = "APITest";
+    private final String API_CONTEXT = "{version}/api";
     private final String API_VERSION_1_0_0 = "1.0.0";
-    private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/PluggableVersionTestAPI";
+    private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
     private final String API_TAGS = "Pluggable, Version, testTag3";
     private final String API_DESCRIPTION = "This is test API to test pluggable version strategy";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String APPLICATION_NAME = "PluggableVersionTestApp";
+    private final String APPLICATION_NAME = "ApplicationTest";
     private String providerName;
     private APIIdentifier apiIdentifier;
     private APIPublisherRestClient apiPublisherClientUser;
@@ -74,20 +74,20 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         apiStoreClientUser.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
 
-        apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
+        /*apiCreationRequestBean = new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName,
                                                             new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
         apiCreationRequestBean.setTier(TIER_GOLD);
-        apiCreationRequestBean.setTiersCollection(TIER_GOLD);
+        apiCreationRequestBean.setTiersCollection(TIER_GOLD);*/
     }
 
-    @Test(groups = {"wso2.am"}, description = "This test method tests the pluggable versioning stratergy")
+    @Test(groups = {"webapp"}, description = "This test method tests the pluggable versioning stratergy")
     public void testPluggableVersioningStratergy() throws Exception,
                                                           IOException, LogViewerLogViewerException {
 
         //Create an application with gold tier
-        apiStoreClientUser.addApplication(APPLICATION_NAME,
+        /*apiStoreClientUser.addApplication(APPLICATION_NAME,
                 APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
 
         //Create publish and subscribe an API
@@ -97,14 +97,15 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
                 apiIdentifier, apiCreationRequestBean, apiPublisherClientUser, apiStoreClientUser, APPLICATION_NAME);
 
         waitForAPIDeploymentSync(apiIdentifier.getProviderName(), apiIdentifier.getApiName(),
-                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);
+                                 apiIdentifier.getVersion(), APIMIntegrationConstants.IS_API_EXISTS);*/
 
         //Add request headers
         HashMap<String, String> requestHeadersGet = new HashMap<String, String>();
         requestHeadersGet.put("accept", "text/xml");
 
         //Get the  access token
-        String accessToken = generateApplicationKeys(apiStoreClientUser, APPLICATION_NAME).getAccessToken();
+        //String accessToken = generateApplicationKeys(apiStoreClientUser, APPLICATION_NAME).getAccessToken();
+        String accessToken = System.getProperty(APPLICATION_NAME + "-accessToken");
         requestHeadersGet.put("Authorization", "Bearer " + accessToken);
 
         //Send GET Request
@@ -120,7 +121,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        //Remove application and the subscription
+        /*//Remove application and the subscription
         if (apiStoreClientUser != null) {
             apiStoreClientUser.removeApplication(APPLICATION_NAME);
         }
@@ -128,6 +129,6 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
         //delete the API
         if (apiPublisherClientUser != null) {
             apiPublisherClientUser.deleteAPI(API_NAME, API_VERSION_1_0_0, providerName);
-        }
+        }*/
     }
 }

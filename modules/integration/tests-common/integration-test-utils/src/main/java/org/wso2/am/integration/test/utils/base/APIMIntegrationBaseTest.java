@@ -72,7 +72,7 @@ public class APIMIntegrationBaseTest {
     protected String executionMode;
     protected APIMURLBean storeUrls, publisherUrls, gatewayUrlsMgt, gatewayUrlsWrk, keyMangerUrl, backEndServerUrl;
     protected User user;
-    private static final long WAIT_TIME = 45 * 1000;
+    private static final long WAIT_TIME = 10 * 1000;
     protected APIPublisherRestClient apiPublisher;
     protected APIStoreRestClient apiStore;
     protected UserManagementClient userManagementClient;

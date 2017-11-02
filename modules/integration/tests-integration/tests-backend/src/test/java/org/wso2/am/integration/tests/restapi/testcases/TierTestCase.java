@@ -54,14 +54,14 @@ public class TierTestCase extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+        /*serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
-        serverConfigurationManager.restartGracefully();
+        serverConfigurationManager.restartGracefully();*/
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Tier handling test case")
+    @Test(groups = {"throttling"}, description = "REST API Implementation test : Tier handling test case")
     public void testTiers() {
 
         String gatewayURL = getGatewayURLNhttp();
@@ -78,7 +78,7 @@ public class TierTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
+        /*serverConfigurationManager.restoreToLastConfiguration();*/
     }
 
 }

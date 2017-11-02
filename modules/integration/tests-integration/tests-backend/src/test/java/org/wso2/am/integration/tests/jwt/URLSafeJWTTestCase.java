@@ -137,9 +137,9 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
                                                               "http://wso2.org/claims/lastname", "last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
+        /*ServerConfigurationManager serverConfigManagerForTenant =
                 new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
+        serverConfigManagerForTenant.restartGracefully();*/
         super.init(userMode);
 
         addAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);
@@ -336,9 +336,9 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
                 .setUserClaimValue(subscriberUser, "http://wso2.org/claims/lastname", "subscriber last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
+        /*ServerConfigurationManager serverConfigManagerForTenant =
                 new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
+        serverConfigManagerForTenant.restartGracefully();*/
         super.init(userMode);
 
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);

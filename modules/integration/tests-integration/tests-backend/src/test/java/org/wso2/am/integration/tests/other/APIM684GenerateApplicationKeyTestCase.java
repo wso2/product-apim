@@ -99,8 +99,8 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception{
         String fileFormat = ".war";
-        super.init(userMode);
-        log.info("Test Starting user mode:" + userMode);
+        super.init();
+        /*log.info("Test Starting user mode:" + userMode);
 
         //copy  .war file
         String path = TestConfigurationProvider.getResourceLocation() + File.separator +
@@ -114,7 +114,7 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
         webAppAdminClient.uploadWarFile(sourcePath);
         boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
                 (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
+        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);*/
 
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);
@@ -146,7 +146,7 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
 
     }
 
-    @Test(description = "Generate New Application Key")
+    @Test(groups = "webapp", description = "Generate New Application Key")
     public void generateApplicationKeyWithoutScope() throws Exception{
 
         apiCreationRequestBean = new APICreationRequestBean(apiName, context, version,

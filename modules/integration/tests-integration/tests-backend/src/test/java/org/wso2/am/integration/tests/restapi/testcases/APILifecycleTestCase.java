@@ -56,12 +56,12 @@ public class APILifecycleTestCase extends APIMIntegrationBaseTest {
     public void setEnvironment() throws Exception {
         super.init(userMode);
         serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-        serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+        /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" + File.separator + "api-manager.xml"));
-        serverConfigurationManager.restartGracefully();
+        serverConfigurationManager.restartGracefully();*/
     }
 
-    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API Lifecycle change test case")
+    @Test(groups = {"throttling"}, description = "REST API Implementation test : API Lifecycle change test case")
     public void testAPILifecycle() {
 
         String gatewayURL = getGatewayURLNhttp();
@@ -78,6 +78,6 @@ public class APILifecycleTestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
+        //serverConfigurationManager.restoreToLastConfiguration();
     }
 }

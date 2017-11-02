@@ -136,9 +136,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                                                               "http://wso2.org/claims/lastname", "last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
+        /*ServerConfigurationManager serverConfigManagerForTenant =
                 new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
+        serverConfigManagerForTenant.restartGracefully();*/
         super.init(userMode);
 
         addAndSubscribeToAPI(apiName1, apiVersion, apiContext1, description, tags, providerName, user);
@@ -325,9 +325,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                 .setUserClaimValue(subscriberUsername, "http://wso2.org/claims/lastname", "subscriber last name", profile);
 
         // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
+        /*ServerConfigurationManager serverConfigManagerForTenant =
                 new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
+        serverConfigManagerForTenant.restartGracefully();*/
         super.init(userMode);
 
         User subscriberUser = new User();
