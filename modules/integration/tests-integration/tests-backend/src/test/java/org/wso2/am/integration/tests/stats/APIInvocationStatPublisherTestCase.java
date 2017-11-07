@@ -104,6 +104,10 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         apiStore = new APIStoreRestClient(storeURLHttp);
 
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            /*serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            serverConfigurationManager.applyConfiguration(new File(
+                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "stats" + File.separator
+                            + "api-manager.xml"));*/
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionRequest(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionResponse(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionExecutionTime(), -1234);
@@ -111,10 +115,6 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionFault(), -1234);
             thriftTestServer.addStreamDefinition(StreamDefinitions.getStreamDefinitionThrottle(), -1234);
             thriftTestServer.start(thriftServerListenPort);
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfiguration(new File(
-                    getAMResourceLocation() + File.separator + "configFiles" + File.separator + "stats" + File.separator
-                            + "api-manager.xml"));
         }
         apiPublisher.login(user.getUserName(), user.getPassword());
         apiStore.login(user.getUserName(), user.getPassword());
@@ -431,7 +431,7 @@ public class APIInvocationStatPublisherTestCase extends APIMIntegrationBaseTest 
         super.cleanUp();
         thriftTestServer.stop();
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
+            //serverConfigurationManager.restoreToLastConfiguration();
         }
     }
 

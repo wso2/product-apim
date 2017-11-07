@@ -40,6 +40,7 @@ import java.util.List;
 public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTest {
     private static final Log log = LogFactory.getLog(APIManagerConfigurationChangeTest.class);
     WebAppAdminClient webAppAdminClient;
+    WebAppAdminClient webAppAdminClientForPublisher;
 
     @BeforeTest(alwaysRun = true)
     public void startDeployingWebAPPs() throws Exception {
@@ -69,7 +70,7 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(APIStatusMonitorWebAppSourcePath);
 
-        WebAppAdminClient webAppAdminClientForPublisher = new WebAppAdminClient(
+        webAppAdminClientForPublisher = new WebAppAdminClient(
                 publisherContext.getContextUrls().getBackEndUrl(), publisherSessionId);
         webAppAdminClientForPublisher.uploadWarFile(APIImportExportWebAppSourcePath);
 
@@ -98,13 +99,19 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
     public void unDeployWebApps() throws Exception {
         //TODO remove webAPPS
         List<String> webAppList = new ArrayList<String>();
-//        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.JAXRS_BASIC_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
+        webAppList.add(APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
+/*
+        webAppList.clear();
+        webAppList.add(APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
+        webAppAdminClientForPublisher
+                .deleteWebAppList(webAppList, publisherContext.getDefaultInstance().getHosts().get("default"));*/
     }
 }

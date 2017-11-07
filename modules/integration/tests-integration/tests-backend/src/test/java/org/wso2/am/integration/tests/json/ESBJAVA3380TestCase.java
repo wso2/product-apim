@@ -83,11 +83,11 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
            * configFiles/json_to_xml/synapse.properties
            */
 
-        serverConfigurationManager.applyConfigurationWithoutRestart(
+        /*serverConfigurationManager.applyConfigurationWithoutRestart(
                 new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
 
         serverConfigurationManager.applyConfiguration(
-                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));
+                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));*/
 
         super.init(userMode);
 
@@ -107,7 +107,7 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"wso2.am"}, description = "Json to XML Test other")
+    @Test(groups = {"noRestart"}, description = "Json to XML Test other")
     public void jsonToXmlTestCase() throws Exception {
 
         Map<String, String> requestHeaders = new HashMap<String, String>();
@@ -157,7 +157,7 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        serverConfigurationManager.restoreToLastConfiguration();
+        //serverConfigurationManager.restoreToLastConfiguration();
     }
 
 }

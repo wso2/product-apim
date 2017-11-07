@@ -109,19 +109,19 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         storeURLHttp = getStoreURLHttp();
 
         //enable JWT token generation
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+        /*if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
             serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
                 + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
             subscriberUserWithTenantDomain = subscriberUsername;
-        }
+        }*/
 
         providerName = user.getUserName();
     }
 
-    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, admin user claims", enabled = true)
+    @Test(groups = { "noRestart" }, description = "Enabling JWT Token generation, admin user claims", enabled = true)
     public void testEnableJWTAndClaims() throws Exception {
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
@@ -206,7 +206,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
      * and is hardcoded to 15 mins. So the test case will take approximately 15mins to complete and it will delay the
      * product build unnecessarily, hence the test case is disabled.
      */
-    @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
+    @Test(groups = { "noRestart" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
                    InterruptedException {
@@ -293,7 +293,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                    roles.contains("admin") && roles.contains("Internal/everyone"));
     }
 
-    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
+    @Test(groups = { "noRestart" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
             dependsOnMethods = "testEnableJWTAndClaims")
     public void testSpecificUserJWTClaims() throws Exception {
 
@@ -386,7 +386,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.removeApplication(applicationName);
     }
 
-    @Test(groups = { "wso2.am" }, description = "Invoking Prototype api with JWT enabled",
+    @Test(groups = { "noRestart" }, description = "Invoking Prototype api with JWT enabled",
             dependsOnMethods = "testSpecificUserJWTClaims")
     public void testPrototypeInvocationWithJWTEnabled() throws Exception {
 
@@ -437,9 +437,9 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
             userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
             userManagementClient1.deleteUser(subscriberUsername);
         }
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+        /*if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
             serverConfigurationManager.restoreToLastConfiguration();
-        }
+        }*/
     }
 
     private void addAndSubscribeToAPI(String apiName, String apiVersion, String apiContext, String description,

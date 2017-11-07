@@ -112,7 +112,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         File identityConfSourceFile = new File(identityConfigArtifactLocation);
         File identityConfTargetFile = new File(identityRepositoryConfigLocation);
 
-        serverManager = new ServerConfigurationManager(gatewayContextWrk);
+        /*serverManager = new ServerConfigurationManager(gatewayContextWrk);
 
         // apply configuration to  api-manager.xml
         serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
@@ -124,7 +124,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
         log.info("identity.xml configuration file copy from :" + identityConfigArtifactLocation +
                  " to :" + identityRepositoryConfigLocation);
 
-        serverManager.restartGracefully();
+        serverManager.restartGracefully();*/
         super.init();
 
         //Initialize publisher and store.
@@ -289,7 +289,7 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
         super.cleanUp();
-        serverManager.restoreToLastConfiguration();
+        //serverManager.restoreToLastConfiguration();
         log.info("Restored configuration and restarted gracefully...");
     }
 

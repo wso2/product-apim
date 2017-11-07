@@ -72,10 +72,10 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
             serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
 
             // apply configuration to  api-manager.xml
-            serverConfigurationManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
+            /*serverConfigurationManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
             log.info("api-manager.xml configuration file copied from :" + apimConfigArtifactLocation +
                     " to :" + apimRepositoryConfigLocation);
-            serverConfigurationManager.restartGracefully();
+            serverConfigurationManager.restartGracefully();*/
             super.init();
         }
 
@@ -120,7 +120,7 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
         apiPublisher.deleteAPI(apiName, apiRequest.getVersion(), apiRequest.getProvider());
         super.cleanUp();
         if (TestUserMode.TENANT_ADMIN == userMode && serverConfigurationManager != null) {
-            serverConfigurationManager.restoreToLastConfiguration();
+            //serverConfigurationManager.restoreToLastConfiguration();
         }
     }
 

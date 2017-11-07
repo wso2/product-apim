@@ -70,14 +70,14 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
     public void setEnvironment() throws Exception {
         super.init(userMode);
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            /*serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
             serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                     + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
                     File.separator + "api-manager.xml"));
             // add custom workflow executor
             serverConfigurationManager.copyToComponentLib(new File(getAMResourceLocation() + File.separator +
                     "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"));
-            serverConfigurationManager.restartGracefully();
+            serverConfigurationManager.restartGracefully();*/
         }
 
         resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().
@@ -93,7 +93,7 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
     }
 
-    @Test(groups = {"wso2.am"}, description = "Returning workflow external ref. id from subscriptions rest api in "
+    @Test(groups = {"throttling"}, description = "Returning workflow external ref. id from subscriptions rest api in "
             + "publisher when subscription is in ON_HOLD status")
     public void testSubscription() {
 
@@ -114,8 +114,8 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
                 originalWFExtentionsXML);
         // remove custom workflow executor
-        serverConfigurationManager.removeFromComponentLib("subs-workflow-1.0.0.jar");
-        serverConfigurationManager.restoreToLastConfiguration();
+       // serverConfigurationManager.removeFromComponentLib("subs-workflow-1.0.0.jar");
+        //serverConfigurationManager.restoreToLastConfiguration();
     }
 
 

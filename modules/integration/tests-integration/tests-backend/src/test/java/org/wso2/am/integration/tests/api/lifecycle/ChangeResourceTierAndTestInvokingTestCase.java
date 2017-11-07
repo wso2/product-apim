@@ -71,7 +71,6 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
 
     public void initialize() throws Exception {
         if (!isInitialised) {
-            new AdvancedThrottlingConfig().disableAdvancedThrottling();
             super.init();
             apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
             providerName = user.getUserName();
