@@ -49,7 +49,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
     private String apiContext = "apimanager5843";
     private String backendEndWSDL;
     private String backendEndUrl;
-    private static ServerConfigurationManager serverConfigurationManager;
     APIRequest apiRequest;
 
     @Factory(dataProvider = "userModeDataProvider")
@@ -61,21 +60,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
     public void setEnvironment() throws Exception {
         super.init(userMode);
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-            String apimConfigArtifactLocation = getAMResourceLocation() + File.separator + "configFiles" + File.separator
-                    + "soapwithmultiplegateways" + File.separator + "api-manager.xml";
-            String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                    File.separator + "conf" + File.separator + "api-manager.xml";
-
-            File apimConfSourceFile = new File(apimConfigArtifactLocation);
-            File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-
-            // apply configuration to  api-manager.xml
-            /*serverConfigurationManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-            log.info("api-manager.xml configuration file copied from :" + apimConfigArtifactLocation +
-                    " to :" + apimRepositoryConfigLocation);
-            serverConfigurationManager.restartGracefully();*/
             super.init();
         }
 
@@ -119,9 +103,6 @@ public class APIMANAGER5843WSDLHostnameTestCase extends APIMIntegrationBaseTest 
     public void destroy() throws Exception {
         apiPublisher.deleteAPI(apiName, apiRequest.getVersion(), apiRequest.getProvider());
         super.cleanUp();
-        if (TestUserMode.TENANT_ADMIN == userMode && serverConfigurationManager != null) {
-            //serverConfigurationManager.restoreToLastConfiguration();
-        }
     }
 
     @DataProvider

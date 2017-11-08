@@ -61,8 +61,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     private final String API_GET_ENDPOINT_METHOD = "/customers/123";
     private final String API_POST_ENDPOINT_METHOD = "/customers/name/";
     private final String INVALID_URL = "/invalid";
-    private final String INVALID_URL_INVOKE_RESPONSE =
-            "No matching resource found in the API for the given request";
     private final String INVALID_RESOURCE_INVOCATION =
             "No matching resource found for given API Request";
 
@@ -123,7 +121,7 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
 
-        //waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
+        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
@@ -304,15 +302,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                                           "with 405 when accessing a POST resource after deleting the POST resource from API. " + exceptionMessage);
             assertTrue(exceptionMessage.contains(INVOKABLE_API_CONTEXT), "API Context is not in error message " + exceptionMessage);
         }
-    }
-
-
-    @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts()
-            throws APIManagerIntegrationTestException, XPathExpressionException {
-        /*apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);*/
-
     }
 
 

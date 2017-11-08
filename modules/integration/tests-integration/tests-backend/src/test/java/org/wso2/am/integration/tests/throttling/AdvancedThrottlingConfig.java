@@ -20,9 +20,7 @@
 
 package org.wso2.am.integration.tests.throttling;
 
-import org.testng.annotations.AfterGroups;
 import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeGroups;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -32,6 +30,7 @@ import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+
 import java.io.File;
 
 import static org.testng.Assert.assertTrue;

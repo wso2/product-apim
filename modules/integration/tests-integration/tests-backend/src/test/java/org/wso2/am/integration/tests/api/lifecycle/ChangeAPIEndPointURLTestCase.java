@@ -62,12 +62,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     private final String API2_RESPONSE_DATA = "HelloWSO2";
     private final String API2_END_POINT_POSTFIX_URL = "name-check1_SB/name";
     private final String APPLICATION_NAME = "ApplicationTest";
-    private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private String api1EndPointUrl, api2EndPointUrl;
+    private String api2EndPointUrl;
 
     private APIIdentifier apiIdentifier;
     private String providerName;
-    private APICreationRequestBean apiCreationRequestBean;
     private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
@@ -85,12 +83,7 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
                 gatewayContextMgt.getContextUrls().getBackEndUrl(), createSession(gatewayContextMgt));
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
 
-        api1EndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
         providerName = user.getUserName();
-        /*apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(api1EndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);*/
         String publisherURLHttp = getPublisherURLHttp();
         String storeURLHttp = getStoreURLHttp();
         apiPublisherClientUser1 = new APIPublisherRestClient(publisherURLHttp);
@@ -100,15 +93,10 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         //Login to API Store with  admin
         apiStoreClientUser1.login(user.getUserName(), user.getPassword());
         apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        /*apiStoreClientUser1
-                .addApplication(APPLICATION_NAME, APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED, "", "");*/
     }
 
     @Test(dependsOnGroups = {"webapp"}, groups = {"wso2.am"}, description = "Test  invocation of API before change the  api end point URL.")
     public void testAPIInvocationBeforeChangeTheEndPointURL() throws Exception {
-        /*//Create and publish  and subscribe API version 1.0.0
-        createPublishAndSubscribeToAPI(apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1,
-                apiStoreClientUser1, APPLICATION_NAME);*/
         //get access token
         String accessToken = System.getProperty(APPLICATION_NAME + "-accessToken");
         // Create requestHeaders
@@ -117,7 +105,6 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
         requestHeaders.put("Authorization", "Bearer " + accessToken);
         //Invoke  old version
 
-        //waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse oldVersionInvokeResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT)  + API1_END_POINT_METHOD,
                         requestHeaders);

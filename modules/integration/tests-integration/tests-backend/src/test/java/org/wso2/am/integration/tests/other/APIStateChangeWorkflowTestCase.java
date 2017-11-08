@@ -107,19 +107,6 @@ public class APIStateChangeWorkflowTestCase extends APIManagerLifecycleBaseTest 
     public void setEnvironment() throws AutomationUtilException, XPathExpressionException, IOException,
             APIManagerIntegrationTestException, URISyntaxException, ResourceAdminServiceExceptionException {
         super.init();
-        /*if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-            String apimConfigArtifactLocation = getAMResourceLocation() + File.separator + "configFiles"
-                    + File.separator + "workflowapistatechange" + File.separator + "api-manager.xml";
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" + File.separator + "conf"
-                    + File.separator + APIM_CONFIG_XML;
-            File apimConfSourceFile = new File(apimConfigArtifactLocation);
-            File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-            // apply configuration to api-manager.xml
-            serverConfigurationManager.applyConfiguration(apimConfSourceFile, apimConfTargetFile);
-
-        }*/
 
         String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts"
                 + File.separator + "AM" + File.separator + "configFiles" + File.separator + "workflowapistatechange"

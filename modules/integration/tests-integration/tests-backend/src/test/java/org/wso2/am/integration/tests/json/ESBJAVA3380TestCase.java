@@ -83,12 +83,6 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
            * configFiles/json_to_xml/synapse.properties
            */
 
-        /*serverConfigurationManager.applyConfigurationWithoutRestart(
-                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "axis2.xml"));
-
-        serverConfigurationManager.applyConfiguration(
-                new File(getAMResourceLocation() + File.separator + "configFiles/json_to_xml/" + "synapse.properties"));*/
-
         super.init(userMode);
 
         gatewaySessionCookie = createSession(gatewayContextMgt);
@@ -157,7 +151,6 @@ public class ESBJAVA3380TestCase extends APIMIntegrationBaseTest {
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
         super.cleanUp();
-        //serverConfigurationManager.restoreToLastConfiguration();
     }
 
 }

@@ -26,9 +26,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
-import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
 
@@ -43,38 +41,12 @@ public class AdvancedConfigDeploymentConfig extends APIMIntegrationBaseTest {
                 TestUserMode.SUPER_TENANT_ADMIN);
         serverConfigurationManager = new ServerConfigurationManager(superTenantKeyManagerContext);
 
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                "configFiles" + File.separator + "common" + File.separator;
-
-        String identityConfigArtifactLocation = artifactsLocation + "identity.xml";
-
-        String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + "identity" + File.separator +
-                "identity.xml";
-
-        File identityConfSourceFile = new File(identityConfigArtifactLocation);
-        File identityConfTargetFile = new File(identityRepositoryConfigLocation);
-
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "common" +
                 File.separator + "api-manager.xml"));
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "common" +
                 File.separator + "axis2.xml"));
-        /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "carbon.xml"));
-        serverConfigurationManager
-                .applyConfigurationWithoutRestart(identityConfSourceFile, identityConfTargetFile, true);*/
-        /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "user-mgt.xml"));*/
-        /*serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                + File.separator + "configFiles" + File.separator + "common" +
-                File.separator + "log4j.properties"));*/
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "common" +
                 File.separator + "passthru-http.properties"));
