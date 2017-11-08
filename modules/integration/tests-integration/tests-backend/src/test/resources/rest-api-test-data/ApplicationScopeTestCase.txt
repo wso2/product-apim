@@ -1,0 +1,305 @@
+{
+	"testCase": [
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "/api/am/store/v0.11//applications",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer",
+                        "Content-Type": "application/json"
+                    },
+                    "request-payload":
+                        "{\n
+                            \"name\": \"AppToTestSubscriptions\",\n   \"keys\": [],\n
+                            \"applicationId\": \"2a183d28-d157-461d-a1a6-90e5e72b5b29\",\n   \"status\": \"APPROVED\",\n
+                            \"description\": \"This is to test.\",\n   \"throttlingTier\": \"Unlimited\",\n
+                            \"callbackUrl\": \"testURL\",\n   \"subscriber\": \"admin\",\n
+                            \"groupId\": \"testGroup\"
+                        \n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": []
+			    },
+			    "preserve-list": [
+                    {
+                        "attribute-name": "applicationId",
+                        "response-location": "applicationId"
+                    }
+			    ]
+		    },
+            {
+               "init":{
+                  "scope":"apim:api_create"
+               },
+               "data":{
+                  "method":"POST",
+                  "url":"/api/am/publisher/v0.11//apis",
+                  "query-parameters":"",
+                  "request-headers":{
+                     "Authorization":"Bearer"
+                  },
+                  "request-payload":"{\r\n   \"name\": \"APItoTestSubscription\",\r\n   \"context\": \"\/apiToTestSubscription\",\r\n
+                        \"id\": \"70eff997-8f9a-46cc-b2d2-390225bd8935\",\r\n   \"status\": \"CREATED\",\r\n
+                        \"tags\": [],\r\n   \"transport\":    [\r\n      \"http\",\r\n      \"https\"\r\n   ],\r\n
+                        \"cacheTimeout\": 300,\r\n   \"description\": null,\r\n   \"provider\": \"admin\",\r\n
+                        \"version\": \"1\",\r\n   \"sequences\": [],\r\n   \"tiers\": [\"Unlimited\"],\r\n
+                        \"thumbnailUri\": null,\r\n   \"visibility\": \"PUBLIC\",\r\n   \"visibleRoles\": [],\r\n
+                        \"visibleTenants\": [],\r\n
+                        \"endpointConfig\":
+                        \"{\\\"production_endpoints\\\":{\\\"url\\\":\\\"http:\/\/maps.googleapis.com\/maps\/api\/geocode\/json?address=Colombo\\\",
+                        \\\"config\\\":null},\\\"implementation_status\\\":\\\"managed\\\",\\\"endpoint_type\\\":\\\"http\\\"}\",\r\n
+                        \"subscriptionAvailability\": \"current_tenant\",\r\n   \"subscriptionAvailableTenants\": [],\r\n
+                        \"destinationStatsEnabled\": \"Disabled\",\r\n   \"apiDefinition\":
+                        \"{\\\"paths\\\":{\\\"\\\\\/*\\\":{\\\"put\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
+                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":
+                        \\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"post\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
+                        \\\"x-scope\\\":\\\"admin_scope\\\"
+                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},\\\"description\\\":\\\"Request Body\\\",
+                        \\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
+                        \\\"responses\\\":{\\\"200\\\":{}}},\\\"get\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"x-scope\\\":\\\"role1_scope\\\",
+                        \\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"delete\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",\\\"responses\\\":{\\\"200\\\":{}}},
+                        \\\"patch\\\":{\\\"x-auth-type\\\":\\\"Application & Application User\\\",
+                        \\\"x-throttling-tier\\\":\\\"Unlimited\\\",
+                        \\\"parameters\\\":[{\\\"schema\\\":{\\\"type\\\":\\\"object\\\"},
+                        \\\"description\\\":\\\"Request Body\\\",\\\"name\\\":\\\"Payload\\\",\\\"required\\\":false,\\\"in\\\":\\\"body\\\"}],
+                        \\\"responses\\\":{\\\"200\\\":{}}}}},\\\"swagger\\\":\\\"2.0\\\",
+                        \\\"info\\\":{\\\"title\\\":\\\"api1\\\",\\\"version\\\":\\\"1\\\"}
+                        \\\"x-wso2-security\\\":{\\\"apim\\\":{\\\"x-wso2-scopes\\\":[{\\\"name\\\":\\\"admin\\\",
+                        \\\"description\\\":\\\"\\\",\\\"key\\\":\\\"admin_scope\\\",\\\"roles\\\":\\\"admin\\\"},
+                        {\\\"name\\\":\\\"role1\\\",\\\"description\\\":\\\"\\\",\\\"key\\\":\\\"role1_scope\\\",
+                        \\\"roles\\\":\\\"role1\\\"}]}}}\",
+                        \r\n\"responseCaching\": \"Disabled\",\r\n   \"isDefaultVersion\": false,\r\n   \"businessInformation\":
+                        {\r\n      \"technicalOwner\": null,\r\n      \"technicalOwnerEmail\": null,\r\n
+                        \"businessOwner\": null,\r\n      \"businessOwnerEmail\": null\r\n   }\r\n}",
+
+                        "response-headers":"",
+                        "response-payload":""
+               },
+               "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": []
+                },
+               "preserve-list":[
+                    {
+                        "attribute-name":"apiId",
+                        "response-location":"id"
+                    }
+               ]
+            },
+            {
+                "init": {
+                    "scope": "apim:api_publish"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "/api/am/publisher/v0.11//apis/change-lifecycle?apiId={apiId}&action=Publish",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": []
+                }
+            },
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "POST",
+                    "url": "/api/am/store/v0.11//subscriptions",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "{\n   \"applicationId\": \"(applicationId)\",\n   \"status\": \"UNBLOCKED\",\n
+                     \"tier\": \"Unlimited\",\n   \"subscriptionId\": \"1633bb5a-a805-4ab2-a872-1bf647b0a06a\",\n
+                     \"apiIdentifier\": \"admin-APItoTestSubscription-1\"\n}",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "201"
+                    },
+                    "body-asserts": []
+                },
+			    "preserve-list": [
+                    {
+                        "attribute-name": "subscriptionId",
+                        "response-location": "subscriptionId"
+                    }
+			    ]
+            },
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "GET",
+                    "url": "/api/am/store/v0.11//applications/scopes/{applicationId}",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer",
+                         "Content-Type": "application/json"
+
+                    },
+                    "request-payload": "",
+                    "response-payload": "",
+                    "response-headers": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": [{
+                           "jsonPath" : "$.list[0].key",
+                           "regex" : ".*admin_scope"
+                       }]
+                }
+            },
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "GET",
+                    "url": "/api/am/store/v0.11//applications/scopes/{applicationId}",
+                    "query-parameters": {"filterByUserRoles" : "true"},
+                    "request-headers": {
+                        "Authorization": "Bearer",
+                         "Content-Type": "application/json"
+
+                    },
+                    "request-payload": "",
+                    "response-payload": "",
+                    "response-headers": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": [{
+                           "jsonPath" : "$.list[0].key",
+                           "regex" : ".*admin_scope"
+                       }],
+                   "body-not-asserts" : ["role1_scope"]
+                }
+            },
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "DELETE",
+                    "url": "/api/am/store/v0.11//subscriptions/{subscriptionId}",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload": "",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": []
+                }
+            },
+            {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "DELETE",
+                    "url": "/api/am/store/v0.11//applications/{applicationId}",
+                    "query-parameters": "",
+                    "request-headers": {
+                        "Authorization": "Bearer"
+                    },
+                    "request-payload":"",
+                    "response-headers": "",
+                    "response-payload": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": []
+                }
+            },
+             {
+                "init": {
+                    "scope": "apim:subscribe"
+                },
+                "data": {
+                    "method": "GET",
+                    "url": "/api/am/store/v0.11//applications/scopes/{applicationId}",
+                    "query-parameters": {"filterByUserRoles" : true},
+                    "request-headers": {
+                        "Authorization": "Bearer",
+                         "Content-Type": "application/json"
+
+                    },
+                    "request-payload": "",
+                    "response-payload": "",
+                    "response-headers": ""
+                },
+                "asserts": {
+                    "header-asserts": {
+                        "status-code": "404"
+                    },
+                    "body-asserts": []
+                }
+            },
+            {
+                 "init":{
+                    "scope":"apim:api_create"
+                 },
+                 "data":{
+                    "method":"DELETE",
+                    "url":"/api/am/publisher/v0.11//apis/{apiId}",
+                    "query-parameters":"",
+                    "request-headers":{
+                       "Authorization":"Bearer"
+                    },
+                    "request-payload":"",
+                    "response-headers":"",
+                    "response-payload":""
+                 },
+                 "asserts": {
+                    "header-asserts": {
+                        "status-code": "200"
+                    },
+                    "body-asserts": []
+                 }
+            }
+    ]
+}

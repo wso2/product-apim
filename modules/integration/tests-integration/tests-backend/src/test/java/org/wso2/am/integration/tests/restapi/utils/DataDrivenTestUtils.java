@@ -242,7 +242,7 @@ public class DataDrivenTestUtils {
 
         if (!(queryParamMap.size() <= 0)) {
             for (Map.Entry<String, String> queryParamEntry : queryParamMap.entrySet()) {
-                target.queryParam(queryParamEntry.getKey(), queryParamEntry.getValue());
+                target = target.queryParam(queryParamEntry.getKey(), queryParamEntry.getValue());
             }
         }
         Invocation.Builder builder = target.request(acceptMediaType);

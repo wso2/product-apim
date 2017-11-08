@@ -271,6 +271,27 @@ public class RESTAPITestUtil {
                     }
                 }
 
+                if (!isTestSuccess) {
+                    break;
+                }
+                JSONArray bodyNotAsserts =  configObject.getJSONObject(RESTAPITestConstants.ASSERT_SECTION).has
+                        (RESTAPITestConstants.BODY_NOT_ASSERTS) ? configObject.getJSONObject(RESTAPITestConstants
+                        .ASSERT_SECTION).getJSONArray(RESTAPITestConstants.BODY_NOT_ASSERTS) : null;
+                if (bodyNotAsserts != null && bodyNotAsserts.length() > 0) {
+                    if (!StringUtils.isBlank(outputText)) {
+                        for (int j = 0; j < bodyNotAsserts.length(); j++) {
+                            String bodyNotAssert = bodyNotAsserts.getString(j);
+                            if (outputText.contains(bodyNotAssert)) {
+                                log.error("Un-expected response body received, Output expected to not contain" +
+                                        bodyNotAssert + ", however response body received with the value.");
+                                isTestSuccess = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        isTestSuccess = true;
+                    }
+                }
                 //if the current test fails no need to run the rest of the scenario, so break and return false
                 if (!isTestSuccess) {
                     break;
