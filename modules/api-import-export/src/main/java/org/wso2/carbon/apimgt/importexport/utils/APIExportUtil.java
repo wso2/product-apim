@@ -783,6 +783,10 @@ public class APIExportUtil {
         // details are removed from api.json
         api.setScopes(new TreeSet<Scope>());
         //api.setUriTemplates(new TreeSet<URITemplate>());
+        // Secure endpoint password is removed, as it causes security issues. When importing need to add it manually, if Secure Endpoint is enabled.
+        if (api.getEndpointUTPassword() != null) {
+            api.setEndpointUTPassword("");
+        }
     }
 
     /**
