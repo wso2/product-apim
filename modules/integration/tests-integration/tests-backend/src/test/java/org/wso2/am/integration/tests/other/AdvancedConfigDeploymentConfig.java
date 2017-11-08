@@ -20,9 +20,7 @@
 
 package org.wso2.am.integration.tests.other;
 
-import org.testng.annotations.AfterGroups;
 import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeGroups;
 import org.testng.annotations.BeforeTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;

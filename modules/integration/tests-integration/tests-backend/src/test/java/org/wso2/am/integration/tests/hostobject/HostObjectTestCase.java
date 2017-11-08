@@ -41,6 +41,7 @@ import org.wso2.am.integration.test.utils.generic.APIMTestCaseUtils;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.utils.FileManipulator;
 import org.wso2.carbon.utils.ServerConstants;
 
@@ -368,6 +369,8 @@ public class HostObjectTestCase extends APIMIntegrationBaseTest {
                    "Error while search API by part of the provider (searchAPIs)");
         assertTrue(!array[34].contains("HostObjectTestAPI"),
                    "Error while search API by invalid search key (searchAPIs)");
+        assertTrue(array[35].contains("true"),
+                "Error while update Tier Permissions from API store host object (updateTierPermissions)");
 
         return true;
     }

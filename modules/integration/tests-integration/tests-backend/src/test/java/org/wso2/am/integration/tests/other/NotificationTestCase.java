@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.other;
 
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -43,6 +44,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
@@ -261,6 +263,15 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         }
         greenMail.stop();
+
+        String tenantConfSrcLocation = IOUtils.toString(new FileInputStream(
+                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "common"
+                        + File.separator + "tenant-conf.json"));
+        resourceAdminServiceClient =
+                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
+                        createSession(gatewayContextMgt));
+
+        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
 
         super.cleanUp();
     }
