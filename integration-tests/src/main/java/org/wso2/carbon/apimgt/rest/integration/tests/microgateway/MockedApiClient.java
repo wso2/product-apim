@@ -36,105 +36,57 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
-public class ApiClient {
-//    protected Logger log = Logger.getLogger(this.getClass());
-    public static void main(String[] args) throws Exception {
-        ApiClient client = new ApiClient();
-        System.out.println("Http GET Request Example\n");
-        client.get();
-        System.out.println("\nHttp POST Request Example\n");
-        client.post();
-    }
+public class MockedApiClient {
 
-    public String get() throws NoSuchAlgorithmException, KeyManagementException {
-        String line = "sabeena";
+    public static HttpClient createClient() {
+        HttpClient client = null;
         try {
-            SSLSocketFactory sf = null;
             SSLContext sslContext = SSLContext.getInstance("SSL");
-
-// set up a TrustManager that trusts everything
             sslContext.init(null, new TrustManager[] { new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() {
-                    System.out.println("getAcceptedIssuers =============");
                     return new X509Certificate[0];
                 }
 
-                public void checkClientTrusted(X509Certificate[] certs,
-                                               String authType) {
-                    System.out.println("checkClientTrusted =============");
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
                 }
 
-                public void checkServerTrusted(X509Certificate[] certs,
-                                               String authType) {
-                    System.out.println("checkServerTrusted =============");
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
                 }
             } }, new SecureRandom());
-
-            //try {
-
-            sf = new SSLSocketFactory(sslContext);
-           // } catch (NoSuchAlgorithmException e) {
-                //System.out.println("Failed to initialize SSL handling.", e);
-            //} catch (KeyManagementException e) {
-                //System.out.println("Failed to initialize SSL handling.", e);
-           // }
+            SSLSocketFactory sf = new SSLSocketFactory(sslContext);
             Scheme httpsScheme = new Scheme("https", 443, sf);
             SchemeRegistry schemeRegistry = new SchemeRegistry();
             schemeRegistry.register(httpsScheme);
-
-// apache HttpClient version >4.2 should use BasicClientConnectionManager
             BasicClientConnectionManager cm = new BasicClientConnectionManager(schemeRegistry);
-           // HttpClient client = new DefaultHttpClient(cm);
-
-
-            HttpClient client = new DefaultHttpClient(cm);
-            //9292
-            //9443
-
-            HttpGet request = new HttpGet("https://localhost:9092/api");
-          //  HttpGet request = new HttpGet("https://www.mocky.io/v2/59a96c49100000300d3e0afa");
-            request.addHeader("apikey","122456");
-            HttpResponse response = client.execute(request);
-
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            System.out.println("**GET** request Url: " + request.getURI());
-            System.out.println("Response Code: " + responseCode);
-            System.out.println("Content:-\n");
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-            line = rd.readLine();
-            System.out.println(line);
-//            SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-//            //URL url = new URL("https://localhost:9092/api");
-//            HttpClient client = HttpClientBuilder.create().build();
-//            HttpGet request = new HttpGet("https://localhost:9092/api");
-//            request.addHeader("apikey","122456");
-//            request.setSSLSocketFacory(sslsocketfactory);
-//            HttpResponse response = client.execute(request);
-//
-//            int responseCode = response.getStatusLine().getStatusCode();
-//
-//            System.out.println("**GET** request Url: " + request.getURI());
-//            System.out.println("Response Code: " + responseCode);
-//            System.out.println("Content:-\n");
-//            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-//            String string = null;
-//            while ((string = rd.readLine()) != null) {
-//                System.out.println("Received " + string);
-//            }
-
-
-
-        } catch (ClientProtocolException e) {
+            client = new DefaultHttpClient(cm);
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (UnsupportedOperationException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (KeyManagementException e) {
             e.printStackTrace();
         }
+        return client;
+    }
 
-        return line;
+    public String get(String apiKey, String context) throws NoSuchAlgorithmException, KeyManagementException {
+        String output = null;
+            HttpClient client = createClient();
+            HttpGet request = new HttpGet("https://localhost:9092/"+context);
+          //  HttpGet request = new HttpGet("https://www.mocky.io/v2/59a96c49100000300d3e0afa")
+        try {
+            request.addHeader("apikey",apiKey);
+            HttpResponse response = client.execute(request);
+            int responseCode = response.getStatusLine().getStatusCode();
+            System.out.println("Response Code: " + responseCode);
+            System.out.println("Mocked API Content:-");
+            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            output = rd.readLine();
+            System.out.println(output);
+        } catch (IOException ioe) {
+
+        }
+        return output;
     }
 
     public void post() {

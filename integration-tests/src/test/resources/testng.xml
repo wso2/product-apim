@@ -14,7 +14,8 @@
         </classes> -->
 
         <classes>
-            <class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.ApiClientTest" />
+            <class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.MockedApiClientTest" />
+            <!--<class name="org.wso2.carbon.apimgt.rest.integration.tests.microgateway.PetstoreApiClientTest" />-->
         </classes>
 
     </test>
