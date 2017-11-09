@@ -154,7 +154,7 @@ public class ApiClient {
     private HttpLoggingInterceptor loggingInterceptor;
 
     /*
-     * Constructor for ApiClient
+     * Constructor for MockedApiClient
      */
     public ApiClient() {
         httpClient = new OkHttpClient();
@@ -267,7 +267,7 @@ public class ApiClient {
      * NOTE: Do NOT set to false in production code, otherwise you would face multiple types of cryptographic attacks.
      *
      * @param verifyingSsl True to verify TLS/SSL connection
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setVerifyingSsl(boolean verifyingSsl) {
         this.verifyingSsl = verifyingSsl;
@@ -289,7 +289,7 @@ public class ApiClient {
      * Use null to reset to default.
      *
      * @param sslCaCert input stream for SSL CA cert
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setSslCaCert(InputStream sslCaCert) {
         this.sslCaCert = sslCaCert;
@@ -540,7 +540,7 @@ public class ApiClient {
      * Set the User-Agent header's value (by adding to the default header map).
      *
      * @param userAgent HTTP request's user agent
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setUserAgent(String userAgent) {
         addDefaultHeader("User-Agent", userAgent);
@@ -552,7 +552,7 @@ public class ApiClient {
      *
      * @param key   The header's key
      * @param value The header's value
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient addDefaultHeader(String key, String value) {
         defaultHeaderMap.put(key, value);
@@ -571,7 +571,7 @@ public class ApiClient {
      * Set LenientOnJson
      *
      * @param lenient True to enable lenientOnJson
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setLenientOnJson(boolean lenient) {
         this.lenientOnJson = lenient;
@@ -591,7 +591,7 @@ public class ApiClient {
      * Enable/disable debugging for this API client.
      *
      * @param debugging To enable (true) or disable (false) debugging
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setDebugging(boolean debugging) {
         if (debugging != this.debugging) {
@@ -624,7 +624,7 @@ public class ApiClient {
      * Set the tempoaray folder path (for downloading files)
      *
      * @param tempFolderPath Temporary folder path
-     * @return ApiClient
+     * @return MockedApiClient
      */
     public ApiClient setTempFolderPath(String tempFolderPath) {
         this.tempFolderPath = tempFolderPath;
