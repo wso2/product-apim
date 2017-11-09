@@ -56,7 +56,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
     private String tenantDomain = "paginationtest.com";
     private String[] APINames;
     private String providerName;
-    private int numberOfAPIs = 24;
+    private int numberOfAPIs = 5;
     private String APIVersion = "1.0.0";
     private APIPublisherRestClient apiPublisher;
 
@@ -160,16 +160,16 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
 
             //the second request to get APIs for the pages, is sent only if the login is successful and and cookie is ok
             if (isLoginSuccess && loginResponseCookie != null) {
-                int offset = 10;
+                int offset = 2;
                 //fetch the first page, this page should have 10 results
                 int countInFirstPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 0, offset);
                 //fetch the 2nd page, this page should have 10 results
-                int countInSecondPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 10, offset);
+                int countInSecondPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 2, offset);
                 //fetch the 3nd page, this page should have 4 results
-                int countInThirdPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 20, offset);
+                int countInThirdPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 4, offset);
 
-                //testing the output; added 24 APIs should be paginated as 10,10,4
-                if (countInFirstPage == 10 && countInSecondPage == 10 && countInThirdPage == 4) {
+                //testing the output; added 5 APIs should be paginated as 2,2,1
+                if (countInFirstPage == 2 && countInSecondPage == 2 && countInThirdPage == 1) {
                     isPaginationCorrect = true;
                 }
             }
