@@ -1,0 +1,2449 @@
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "0.11.0"
+  title: "WSO2 API Manager - Admin"
+  description: |
+    This document specifies a **RESTful API** for WSO2 **API Manager** - Admin Portal.
+    Please see [full swagger definition](https://raw.githubusercontent.com/wso2/carbon-apimgt/v6.1.66/components/apimgt/org.wso2.carbon.apimgt.rest.api.admin/src/main/resources/admin-api.yaml) of the API which is written using [swagger 2.0](http://swagger.io/) specification.
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/api-manager/"
+    email: "architecture@wso2.com"
+  license: 
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes: 
+  - https
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+host: apis.wso2.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+basePath: /api/am/admin/v0.11
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes: 
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requestor is specified in the Accept header field
+# of the corresponding request. 
+# The actual media type returned will be specfied in the Content-Type header field 
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces: 
+  - application/json
+
+x-wso2-security:
+  apim:
+    x-wso2-scopes:
+      - description: ""
+        roles: admin
+        name: apim:tier_view
+        key: apim:tier_view
+      - description: ""
+        roles: admin
+        name: apim:tier_manage
+        key: apim:tier_manage
+      - description: ""
+        roles: admin
+        name: apim:bl_view
+        key: apim:bl_view
+      - description: ""
+        roles: admin
+        name: apim:bl_manage
+        key: apim:bl_manage
+      - description: ""
+        roles: admin
+        name: apim:mediation_policy_view
+        key: apim:mediation_policy_view
+      - description: ""
+        roles: admin
+        name: apim:mediation_policy_create
+        key: apim:mediation_policy_create
+
+######################################################
+# The "API Collection" resource APIs
+######################################################
+paths:
+######################################################
+# The "Application Throttling Policy Collection" resource API
+######################################################
+  '/throttling/policies/application':
+
+#-----------------------------------------------------
+# Retrieve all Application level policies
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer e59e2657-4c2a-3cd0-8b48-0f4f39940c41\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application
+        Authorization: Bearer e59e2657-4c2a-3cd0-8b48-0f4f39940c41
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 4,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"aef4447a-f996-4b3c-9c47-d0a401ab913c\",\r\n      \"policyName\": \"50PerMin\",\r\n      \"displayName\": \"50PerMin\",\r\n      \"description\": \"Allows 50 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 50\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"472b573d-b162-4ac9-9984-531ee03d9d7c\",\r\n      \"policyName\": \"20PerMin\",\r\n      \"displayName\": \"20PerMin\",\r\n      \"description\": \"Allows 20 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 20\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"251d4f70-29f8-40f4-8aad-f2d1e7b8cfc2\",\r\n      \"policyName\": \"10PerMin\",\r\n      \"displayName\": \"10PerMin\",\r\n      \"description\": \"Allows 10 request per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 10\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"aaaef257-5453-42e6-b4a6-c48567864f92\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      }\r\n    }\r\n  ]\r\n}\r\n"
+      x-scope: apim:tier_view
+      summary: Get all Application Throttling Policies
+      description: |
+        Retrieves all existing application throttling policies.
+      parameters:
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Application Policy (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Application level Throttling Policy
+#-----------------------------------------------------  
+    post:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application -d @data.json"
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows 1 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
+      x-scope: apim:tier_manage
+      summary: Add an Application Throttling Policy
+      description: |
+        This operation can be used to add a new application level throttling policy.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Application level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+      tags:
+        - Application Policy (Collection)
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Policy object.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Application Throttling Policy" resource API
+######################################################
+  '/throttling/policies/application/{policyId}': 
+  
+#-----------------------------------------------------
+# Retrieve a certain Application Policy
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/6fc88136-dd36-4e81-ac6c-746225c5001b
+        Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6fc88136-dd36-4e81-ac6c-746225c5001b\",\r\n  \"policyName\": \"10PerMwin\",\r\n  \"displayName\": \"10PerwMin\",\r\n  \"description\": \"Allows 10 request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 10\r\n  }\r\n}\r\n"
+      x-scope: apim:tier_view
+      summary: Get an Application Policy
+      description: |
+        Retrieves an Application Policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Application Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Tier does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete an Application level throttling policy
+#-----------------------------------------------------  
+    delete:
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479"
+      x-wso2-request: |
+        DELETE https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK"
+      x-scope: apim:tier_manage
+      summary: Delete an Application Throttling policy
+      description: |
+        Deletes an Application level throttling policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Application Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update an Application throttling policy
+#-----------------------------------------------------
+    put:
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479 -d @data.json"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/application/f7becc49-9cc1-463f-bc2b-fc4c82582479\r\nAuthorization: Bearer 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"f7becc49-9cc1-463f-bc2b-fc4c82582479\",\r\n  \"policyName\": \"1PerMin\",\r\n  \"displayName\": \"1PerMin\",\r\n  \"description\": \"Allows single request per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 1\r\n  }\r\n}"
+      x-scope: apim:tier_manage
+      summary: Update an Application Throttling policy
+      description: |
+        Updates an existing Application level throttling policy. Upon succesfull, you will receive the updated application policy as the response.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Application Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/ApplicationThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional request.
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional reuquests.
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+  /policies/mediation:
+#-----------------------------------------------------------------------------------------
+# Retrieving the list of all global mediation sequences under a given search condition
+#-----------------------------------------------------------------------------------------
+    get:
+      x-scope: apim:mediation_policy_view
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21\" https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation"
+      x-wso2-request: "GET https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation\r\nAuthorization: Bearer 36a1644d-16c8-3f10-af2a-cedac82a6f21"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n   \"count\": 13,\r\n   \"next\": null,\r\n   \"previous\": null,\r\n   \"list\":    [\r\n            {\r\n         \"name\": \"debug_json_fault\",\r\n         \"id\": \"563de8f3-dd1d-4ec7-afc2-d158c663ed34\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_fault\",\r\n         \"id\": \"f9c36f4d-a2b6-41e7-b311-d358a47916be\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"debug_json_fault2\",\r\n         \"id\": \"378169d3-6fd2-427f-b0db-0f378e89ccea\",\r\n         \"type\": \"fault\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_in_message\",\r\n         \"id\": \"3921225b-7918-4b95-a851-22c4e4e3e911\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"debug_in_flow\",\r\n         \"id\": \"2bc15f93-4455-4763-89b8-83600fb9d731\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"log_in_message\",\r\n         \"id\": \"4d287cca-76ab-44ca-b22e-919fc27c50e3\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"preserve_accept_header\",\r\n         \"id\": \"3776b215-b3bc-40b6-bdcb-06efa7de64be\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_in_message\",\r\n         \"id\": \"50ac2002-769e-4f90-8549-6d0248dff7d2\",\r\n         \"type\": \"in\"\r\n      },\r\n            {\r\n         \"name\": \"xml_to_json_out_message\",\r\n         \"id\": \"2af75853-ed75-4d25-81aa-0ebbeca691ea\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"json_to_xml_out_message\",\r\n         \"id\": \"d9fa3ffc-f6b6-4171-ab97-eb44196cb66e\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"debug_out_flow\",\r\n         \"id\": \"260b7701-4071-46bd-9b66-900ac6fffed6\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"apply_accept_header\",\r\n         \"id\": \"15c17c2f-33e3-4c37-a262-04dfa49983a4\",\r\n         \"type\": \"out\"\r\n      },\r\n            {\r\n         \"name\": \"log_out_message\",\r\n         \"id\": \"d37dca41-c048-492a-82cf-9a2292c6fff0\",\r\n         \"type\": \"out\"\r\n      }\r\n   ]\r\n}"
+      summary: |
+        Get all global mediation policies
+      description: |
+        This operation provides you a list of available all global level mediation policies.
+      parameters:
+        - $ref : '#/parameters/limit'
+        - $ref : '#/parameters/offset'
+        - name : query
+          in: query
+          description: "-Not supported yet-"
+          type: string
+        - $ref : "#/parameters/Accept"
+        - $ref : "#/parameters/If-None-Match"
+      tags:
+        - Mediation Policy (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            List of mediation policies is returned.
+          schema:
+            $ref: '#/definitions/mediationList'
+          headers:
+            Content-Type:
+              description: The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported
+          schema:
+            $ref: '#/definitions/Error'
+
+
+#----------------------------------------------------------------------------
+# Upload a global mediation policy
+#----------------------------------------------------------------------------
+    post:
+      x-scope: apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\" -H \"Content-Type: application/json\" -X POST -d @data.json \"https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation\""
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation\r\nContent-Type: application/json\r\nAuthorization: Bearer 45c1e774-7d5a-3e2a-b76c-53f786efac6b\r\n\r\n{\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/registry/resource/_system/governance/apimgt/customsequences/fault/add_custom_header_fault.xml\r\nContent-Type: application/json\r\n\r\n{\r\n   \"id\": \"2e5cebbb-e48c-4345-a912-1f0a2058aa05\",\r\n   \"name\": \"add_custom_header_fault\",\r\n   \"type\": \"fault\",\r\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\r\n}"
+      summary: Add a global mediation policy
+      description: |
+        This operation can be used to add a new global mediation policy.
+      parameters:
+        - in: body
+          name: body
+          description: mediation policy to upload
+          required: true
+          schema:
+             $ref: '#/definitions/Mediation'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Mediation Policy (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Mediation policy added successfully.
+          schema:
+            $ref : '#/definitions/Mediation'
+          headers:
+            Location:
+              description: |
+                The URL of the uploaded thumbnail image of the API.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Individual global mediation sequence" resource
+######################################################
+  /policies/mediation/{mediationPolicyId}:
+
+#-----------------------------------------------------
+# Retrieve a particular global mediation policy
+#-----------------------------------------------------
+    get:
+      x-scope: apim:mediation_policy_view
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809\" https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05"
+      x-wso2-request: "GET https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/2e5cebbb-e48c-4345-a912-1f0a2058aa05\nAuthorization: Bearer da3b0521-5adb-3edc-8ab9-295b4c34c809"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"id\": \"2e5cebbb-e48c-4345-a912-1f0a2058aa05\",\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}"
+      summary: Get a global mediation policy
+      description: |
+        This operation can be used to retrieve a particular global mediation policy.
+      parameters:
+        - $ref: '#/parameters/mediationPolicyId'
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Mediation Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Mediation Policy returned.
+          schema:
+            $ref: '#/definitions/Mediation'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Document does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete the mediation policy
+#-----------------------------------------------------
+    delete:
+      x-scope: apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer fb2a0784-f60c-3276-8fde-5b0f70e61ecc\" -X DELETE https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b"
+      x-wso2-request: "DELETE https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/2c85844c-588f-4000-9ce5-f4cdc422cc8b\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f"
+      x-wso2-response: "HTTP/1.1 200 OK"
+      summary: Delete a global mediation policy
+      description: |
+        This operation can be used to delete an existing global mediation policy providing the Id of the mediation policy.
+      parameters:
+        - $ref: '#/parameters/mediationPolicyId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Mediation Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Mediation policy successfully deleted.
+        403:
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update the a mediation policy
+#-----------------------------------------------------
+    put:
+      x-scope: apim:mediation_policy_create
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\" -H \"Content-Type: application/json\" -X PUT -d @data.json https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/8242d72c-b7d7-4b51-9098-d24bd4a5ea3a"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/admin/v0.11/policies/mediation/76cc38e4-f41a-457a-a987-3a677c290dc6\nContent-Type: application/json\nAuthorization: Bearer 58b3b072-74bb-3381-a213-ce1ca2857c2f\n\n{\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}\n"
+      x-wso2-response: "HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n   \"id\": \"8242d72c-b7d7-4b51-9098-d24bd4a5ea3a\",\n   \"name\": \"add_custom_header_fault\",\n   \"type\": \"fault\",\n   \"config\": \"<sequence xmlns=\\\"http://ws.apache.org/ns/synapse\\\" name=\\\"add_custom_header_fault\\\">\\n    <property name=\\\"CustomHeader\\\" scope=\\\"transport\\\" value=\\\"example\\\"/>\\n<\\/sequence>\\n\"\n}"
+      summary: Update a global mediation policy
+      description: |
+        This operation can be used to update an existing global mediation policy.
+      parameters:
+        - $ref: '#/parameters/mediationPolicyId'
+        - in: body
+          name: body
+          description: |
+            Mediation policy object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Mediation'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Mediation Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Successful response with updated mediation policy object
+          schema:
+            $ref: '#/definitions/Mediation'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource. Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        403:
+          description: |
+            Forbidden.
+            The request must be conditional but no condition has been specified.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met.
+          schema:
+            $ref: '#/definitions/Error'
+######################################################
+# The "Subscription Throttling Policy Collection" resource API
+######################################################
+  '/throttling/policies/subscription':
+
+#-----------------------------------------------------
+# Retrieve all Subscription level policies
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 5,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"6fac9345-6e49-4a31-813b-3d520e09e38b\",\r\n      \"policyName\": \"Gold\",\r\n      \"displayName\": \"Gold\",\r\n      \"description\": \"Allows 5000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 5000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"851bf1b4-19da-4019-949a-9b371f53c8d6\",\r\n      \"policyName\": \"Silver\",\r\n      \"displayName\": \"Silver\",\r\n      \"description\": \"Allows 2000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"f0b88e6e-cb02-46d6-9c7c-6204729b39f2\",\r\n      \"policyName\": \"Bronze\",\r\n      \"displayName\": \"Bronze\",\r\n      \"description\": \"Allows 1000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 1000\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"880bd267-4b14-4248-ac35-37c52546851f\",\r\n      \"policyName\": \"Unauthenticated\",\r\n      \"displayName\": \"Unauthenticated\",\r\n      \"description\": \"Allows 500 request(s) per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 500\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    },\r\n    {\r\n      \"policyId\": \"c61f9682-a5f5-4991-b8f9-ea0f44147a5a\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      },\r\n      \"rateLimitCount\": 0,\r\n      \"rateLimitTimeUnit\": null,\r\n      \"customAttributes\": [],\r\n      \"stopOnQuotaReach\": true,\r\n      \"billingPlan\": \"FREE\"\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:tier_view
+      summary: Get all Subscription Throttling Policies
+      description: |
+        This operation can be used to retrieve all Subscription level throttling policies.
+      parameters:
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Subscription Policy (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Subscription level Throttling Policy
+#-----------------------------------------------------  
+    post:
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription -d @data.json"
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n    \"policyName\": \"Platinum\",\r\n    \"displayName\": \"Platinum\",\r\n    \"description\": \"Allows 4000 requests per minute\",\r\n    \"defaultLimit\":          {\r\n       \"type\": \"RequestCountLimit\",\r\n       \"timeUnit\": \"min\",\r\n       \"unitTime\": 1,\r\n       \"requestCount\": 4000\r\n    },\r\n    \"rateLimitCount\": -1,\r\n    \"rateLimitTimeUnit\": \"NA\",\r\n    \"customAttributes\":          [\r\n                   {\r\n          \"name\": \"customAttr1\",\r\n          \"value\": \"value1\"\r\n       },\r\n                   {\r\n          \"name\": \"customAttr2\",\r\n          \"value\": \"value2\"\r\n       }\r\n    ],\r\n    \"stopOnQuotaReach\": true,\r\n    \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 4000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-scope: apim:tier_manage
+      summary: Add a Subscription Throttling Policy
+      description: |
+        This operation can be used to add a Subscription level throttling policy specifying the details of the policy in the payload.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Subscripion level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+      tags:
+        - Subscription Policy (Collection)
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Policy object.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Subscription Throttling Policy" resource API
+######################################################
+  '/throttling/policies/subscription/{policyId}': 
+  
+#-----------------------------------------------------
+# Retrieve a certain Subscription Policy
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 4000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 4000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr2\",\r\n      \"value\": \"value2\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-scope: apim:tier_view
+      summary: Get a Subscription Policy
+      description: |
+        Retrieve a single subscription-level throttling policy. We should provide the Id of the policy as a path parameter.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Subscription Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Subscription level throttling policy
+#-----------------------------------------------------  
+    delete:
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8"
+      x-wso2-request: |
+        DELETE https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/3cc8902e-f7c7-49dc-987b-b146e9bd8ee8
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+        Content-Type: application/json
+      x-wso2-response: "HTTP/1.1 200 OK"
+      x-scope: apim:tier_manage
+      summary: Delete a Subscription Policy
+      description: |
+        This operation can be used to delete a subscription-level throttling policy specifying the Id of the policy as a path paramter.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Subscription Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update a Subscription Throttling Policy
+#-----------------------------------------------------
+    put:
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476 -d @data.json"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/subscription/6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n    \"policyName\": \"Platinum\",\r\n    \"displayName\": \"Platinum\",\r\n    \"description\": \"Allows 10000 requests per minute\",\r\n    \"defaultLimit\":          {\r\n       \"type\": \"RequestCountLimit\",\r\n       \"timeUnit\": \"min\",\r\n       \"unitTime\": 1,\r\n       \"requestCount\": 10000\r\n    },\r\n    \"isDeployed\": true,\r\n    \"rateLimitCount\": -1,\r\n    \"rateLimitTimeUnit\": \"NA\",\r\n    \"customAttributes\":          [\r\n                   {\r\n          \"name\": \"customAttr0\",\r\n          \"value\": \"value1\"\r\n       },\r\n                   {\r\n          \"name\": \"customAttr1\",\r\n          \"value\": \"value1\"\r\n       }\r\n    ],\r\n    \"stopOnQuotaReach\": true,\r\n    \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"6dd9fc11-bbe1-4daf-aee5-06a4d0e44476\",\r\n  \"policyName\": \"Platinum\",\r\n  \"displayName\": \"Platinum\",\r\n  \"description\": \"Allows 10000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 10000\r\n  },\r\n  \"rateLimitCount\": -1,\r\n  \"rateLimitTimeUnit\": \"NA\",\r\n  \"customAttributes\": [\r\n    {\r\n      \"name\": \"customAttr0\",\r\n      \"value\": \"value1\"\r\n    },\r\n    {\r\n      \"name\": \"customAttr1\",\r\n      \"value\": \"value1\"\r\n    }\r\n  ],\r\n  \"stopOnQuotaReach\": true,\r\n  \"billingPlan\": \"COMMERCIAL\"\r\n}"
+      x-scope: apim:tier_manage
+      summary: Update a Subscription Policy
+      description: |
+        Updates an existing subscription-level throttling policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Subscription Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/SubscriptionThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Custom Rule Collection" resource API
+######################################################
+  '/throttling/policies/custom':
+
+#-----------------------------------------------------
+# Retrieve all Custom Rules
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 1,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n      \"policyName\": \"custom1\",\r\n      \"displayName\": null,\r\n      \"description\": \"Allow 10 requests per minute for admin user\",\r\n      \"isDeployed\": true,\r\n      \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n      \"keyTemplate\": \"$userId\"\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:tier_view
+      summary: Get all Custom Rules
+      description: |
+        Retrieves all Custom Rules.
+        
+        **NOTE:**
+        * Only super tenant users are allowed for this operation.
+      parameters:
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Custom Rules (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/CustomRuleList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Custom Rule
+#-----------------------------------------------------  
+    post:
+      x-wso2-curl: "curl -k -H POST -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom -d @data.json"
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/22c71b7d-7013-4b80-bf7a-e86b471fb575\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"22c71b7d-7013-4b80-bf7a-e86b471fb575\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-scope: apim:tier_manage
+      summary: Add a Custom Rule
+      description: |
+        Adds a new Custom Rule.
+        
+        **NOTE:**
+        * Only super tenant users are allowed for this operation.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Custom Rule object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/CustomRule'
+        - $ref: '#/parameters/Content-Type'
+      tags:
+        - Custom Rules (Collection)
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Custom Rule" resource API
+######################################################
+  '/throttling/policies/custom/{ruleId}': 
+  
+#-----------------------------------------------------
+# Retrieve a certain Custom Rule
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-scope: apim:tier_view
+      summary: Get a Custom Rule
+      description: |
+        Retrieves a Custom Rule. We need to provide the policy Id as a path parameter.
+        
+        **NOTE:**
+        * Only super tenant users are allowed for this operation.
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Custom Rules (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Custom Rule
+#-----------------------------------------------------  
+    delete:
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4"
+      x-wso2-request: |
+        DELETE https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4
+        Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122
+      x-wso2-response: "HTTP/1.1 200 OK"
+      x-scope: apim:tier_manage
+      summary: Delete a Custom Rule
+      description: |
+        Delete a Custom Rule. We need to provide the Id of the policy as a path parameter.
+        
+        **NOTE:**
+        * Only super tenant users are allowed for this operation.
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Custom Rules (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update a Custom Rule
+#-----------------------------------------------------
+    put:
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4 -d @data.json"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/custom/33662a62-8db1-4d75-af08-afd63c6bd0b4\r\nAuthorization: Bearer 0d63e133-7ad6-3aeb-9ca9-9299e0708122\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyName\": \"custom1\",\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"33662a62-8db1-4d75-af08-afd63c6bd0b4\",\r\n  \"policyName\": \"custom1\",\r\n  \"displayName\": null,\r\n  \"description\": \"Allow 10 requests per minute for admin user\",\r\n  \"isDeployed\": true,\r\n  \"siddhiQuery\": \"FROM RequestStream\\nSELECT userId, ( userId == 'admin@carbon.super' ) AS isEligible , str:concat('admin@carbon.super','') as throttleKey\\nINSERT INTO EligibilityStream; \\n\\nFROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min) \\nSELECT throttleKey, (count(userId) >= 10) as isThrottled, expiryTimeStamp group by throttleKey \\nINSERT ALL EVENTS into ResultStream;\",\r\n  \"keyTemplate\": \"$userId\"\r\n}"
+      x-scope: apim:tier_manage
+      summary: Update a Custom Rule
+      description: |
+        Updates an existing Custom Rule.
+        
+        **NOTE:**
+        * Only super tenant users are allowed for this operation.
+      parameters:
+        - $ref: '#/parameters/ruleId'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/CustomRule'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Custom Rules (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/CustomRule'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+
+######################################################
+# The "Advanced Throttling Policy Collection" resource API
+######################################################
+  '/throttling/policies/advanced':
+
+#-----------------------------------------------------
+# Retrieve all Advanced level policies
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer aa5195d9-3977-33f4-839e-5779dabfe826\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced
+        Authorization: Bearer aa5195d9-3977-33f4-839e-5779dabfe826
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 4,\r\n  \"list\": [\r\n    {\r\n      \"policyId\": \"85c69cbe-05b7-4293-abff-56f424d51c9c\",\r\n      \"policyName\": \"50KPerMin\",\r\n      \"displayName\": \"50KPerMin\",\r\n      \"description\": \"Allows 50000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 50000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"46062a74-edfa-431a-a418-7cb52595baf8\",\r\n      \"policyName\": \"20KPerMin\",\r\n      \"displayName\": \"20KPerMin\",\r\n      \"description\": \"Allows 20000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 20000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"0637089f-2128-4a26-9bee-ffb6d85f0f81\",\r\n      \"policyName\": \"10KPerMin\",\r\n      \"displayName\": \"10KPerMin\",\r\n      \"description\": \"Allows 10000 requests per minute\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 10000\r\n      }\r\n    },\r\n    {\r\n      \"policyId\": \"c461d87e-dba1-4f57-bc5a-67b97025c1c8\",\r\n      \"policyName\": \"Unlimited\",\r\n      \"displayName\": \"Unlimited\",\r\n      \"description\": \"Allows unlimited requests\",\r\n      \"isDeployed\": true,\r\n      \"defaultLimit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"min\",\r\n        \"unitTime\": 1,\r\n        \"requestCount\": 2147483647\r\n      }\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:tier_view
+      summary: Get all Advanced throttling policies.
+      description: |
+        Retrieves all existing Advanced level throttling policies.
+      parameters:
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Advanced Policy (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Policies returned
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicyList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add an Advanced level throttling policy
+#-----------------------------------------------------  
+    post:
+      x-wso2-curl: "curl -k -H POST -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced -d @data.json"
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Location\",\r\n               \"headerValue\": \"google.com\"\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"lastAccess\",\r\n               \"parameterValue\": \"25-02-2016\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl1\",\r\n               \"attribute\": \"claimAttr\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      },\r\n            {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\": [         {\r\n            \"type\": \"IPCondition\",\r\n            \"invertCondition\": true,\r\n            \"ipConditionType\": \"IPRange\",\r\n            \"specificIP\": null,\r\n            \"startingIP\": \"0.0.0.0\",\r\n            \"endingIP\": \"1.1.1.1\"\r\n         }],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"a0c9f368-b7d2-4eec-a757-f67034160208\",\r\n  \"policyName\": \"100KBP2Min\",\r\n  \"displayName\": \"100KBP2Min\",\r\n  \"description\": \"description of the policy\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"BandwidthLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 2,\r\n    \"dataAmount\": 100,\r\n    \"dataUnit\": \"KB\"\r\n  },\r\n  \"conditionalGroups\": [\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": false,\r\n          \"ipConditionType\": \"IPSpecific\",\r\n          \"specificIP\": \"10.100.1.22\",\r\n          \"startingIP\": null,\r\n          \"endingIP\": null\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Location\",\r\n          \"headerValue\": \"google.com\"\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Host\",\r\n          \"headerValue\": \"10.100.7.77\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"name\",\r\n          \"parameterValue\": \"admin\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"lastAccess\",\r\n          \"parameterValue\": \"25-02-2016\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl0\",\r\n          \"attribute\": \"claimAttr0\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl1\",\r\n          \"attribute\": \"claimAttr\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    },\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": true,\r\n          \"ipConditionType\": \"IPRange\",\r\n          \"specificIP\": null,\r\n          \"startingIP\": \"0.0.0.0\",\r\n          \"endingIP\": \"1.1.1.1\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:tier_manage
+      summary: Add an Advanced Throttling Policy
+      description: |
+        Add a new Advanced level throttling policy.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Advanced level policy object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+      tags:
+        - Advanced Policy (Collection)
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                Location of the newly created Advanced Throttling Policy.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Advanced Throttling Policy" resource API
+######################################################
+  '/throttling/policies/advanced/{policyId}': 
+  
+#-----------------------------------------------------
+# Retrieve a certain Advanced Throttling Policy
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/ea4ee02d-6cfb-4eea-9e30-3f548783160b
+        Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"ea4ee02d-6cfb-4eea-9e30-3f548783160b\",\r\n  \"policyName\": \"50KPerMin\",\r\n  \"displayName\": \"50KPerMin\",\r\n  \"description\": \"Allows 50000 requests per minute\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"RequestCountLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 1,\r\n    \"requestCount\": 50000\r\n  },\r\n  \"conditionalGroups\": []\r\n}\r\n"
+      x-scope: apim:tier_view
+      summary: Get an Advanced Policy
+      description: |
+        Retrieves an Advanced Policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Advanced Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy returned
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Policy does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete an Advanced level throttling policy
+#-----------------------------------------------------  
+    delete:
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208"
+      x-wso2-request: |
+        DELETE https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208
+        Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7
+      x-wso2-response: "HTTP/1.1 200 OK"
+      x-scope: apim:tier_manage
+      summary: Delete an Advanced Throttling Policy
+      description: |
+        Deletes an Advanced level throttling policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Advanced Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Update an Advanced Throttling Policy
+#-----------------------------------------------------
+    put:
+      x-wso2-curl: "curl -k -X PUT -H \"Authorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208 -d @data.json"
+      x-wso2-request: "PUT https://127.0.0.1:9443/api/am/admin/v0.11/throttling/policies/advanced/a0c9f368-b7d2-4eec-a757-f67034160208\r\nAuthorization: Bearer f7058af8-65a3-36c0-8d61-bc30476755c7\r\nContent-Type: application/json\r\n\r\n{\r\n   \"policyName\": \"100KBP2Min\",\r\n   \"displayName\": \"100KBP2Min\",\r\n   \"description\": \"description of the policy\",\r\n   \"defaultLimit\":    {\r\n      \"type\": \"BandwidthLimit\",\r\n      \"timeUnit\": \"min\",\r\n      \"unitTime\": 2,\r\n      \"dataAmount\": 100,\r\n      \"dataUnit\": \"KB\"\r\n   },\r\n   \"conditionalGroups\":    [\r\n      {\r\n         \"description\": \"Sample description about condition group\",\r\n         \"conditions\":          [\r\n                        {\r\n               \"type\": \"IPCondition\",\r\n               \"invertCondition\": false,\r\n               \"ipConditionType\": \"IPSpecific\",\r\n               \"specificIP\": \"10.100.1.22\",\r\n               \"startingIP\": null,\r\n               \"endingIP\": null\r\n            },\r\n                        {\r\n               \"type\": \"HeaderCondition\",\r\n               \"invertCondition\": false,\r\n               \"headerName\": \"Host\",\r\n               \"headerValue\": \"10.100.7.77\"\r\n            },\r\n                        {\r\n               \"type\": \"QueryParameterCondition\",\r\n               \"invertCondition\": false,\r\n               \"parameterName\": \"name\",\r\n               \"parameterValue\": \"admin\"\r\n            },\r\n                        {\r\n               \"type\": \"JWTClaimsCondition\",\r\n               \"invertCondition\": true,\r\n               \"claimUrl\": \"claimUrl0\",\r\n               \"attribute\": \"claimAttr0\"\r\n            }\r\n         ],\r\n         \"limit\":          {\r\n            \"type\": \"RequestCountLimit\",\r\n            \"timeUnit\": \"sec\",\r\n            \"unitTime\": 60,\r\n            \"requestCount\": 0\r\n         }\r\n      }\r\n   ]\r\n}"
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"policyId\": \"a0c9f368-b7d2-4eec-a757-f67034160208\",\r\n  \"policyName\": \"100KBP2Min\",\r\n  \"displayName\": \"100KBP2Min\",\r\n  \"description\": \"description of the policy\",\r\n  \"isDeployed\": true,\r\n  \"defaultLimit\": {\r\n    \"type\": \"BandwidthLimit\",\r\n    \"timeUnit\": \"min\",\r\n    \"unitTime\": 2,\r\n    \"dataAmount\": 100,\r\n    \"dataUnit\": \"KB\"\r\n  },\r\n  \"conditionalGroups\": [\r\n    {\r\n      \"description\": \"Sample description about condition group\",\r\n      \"conditions\": [\r\n        {\r\n          \"type\": \"IPCondition\",\r\n          \"invertCondition\": false,\r\n          \"ipConditionType\": \"IPSpecific\",\r\n          \"specificIP\": \"10.100.1.22\",\r\n          \"startingIP\": null,\r\n          \"endingIP\": null\r\n        },\r\n        {\r\n          \"type\": \"HeaderCondition\",\r\n          \"invertCondition\": false,\r\n          \"headerName\": \"Host\",\r\n          \"headerValue\": \"10.100.7.77\"\r\n        },\r\n        {\r\n          \"type\": \"QueryParameterCondition\",\r\n          \"invertCondition\": false,\r\n          \"parameterName\": \"name\",\r\n          \"parameterValue\": \"admin\"\r\n        },\r\n        {\r\n          \"type\": \"JWTClaimsCondition\",\r\n          \"invertCondition\": true,\r\n          \"claimUrl\": \"claimUrl0\",\r\n          \"attribute\": \"claimAttr0\"\r\n        }\r\n      ],\r\n      \"limit\": {\r\n        \"type\": \"RequestCountLimit\",\r\n        \"timeUnit\": \"sec\",\r\n        \"unitTime\": 60,\r\n        \"requestCount\": 0\r\n      }\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:tier_manage
+      summary: Update an Advanced Throttling Policy
+      description: |
+        Updates an existing Advanced level throttling policy.
+      parameters:
+        - $ref: '#/parameters/policyId'
+        - in: body
+          name: body
+          description: |
+            Policy object that needs to be modified
+          required: true
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+        - $ref: '#/parameters/Content-Type'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Advanced Policy (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Policy updated.
+          schema:
+            $ref: '#/definitions/AdvancedThrottlePolicy'
+          headers:
+            Location:
+              description: |
+                The URL of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: |
+            Not Found.
+            The resource to be updated does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# The "Blocking Condition Collection" resource API
+######################################################
+  '/throttling/blacklist':
+
+#-----------------------------------------------------
+# Retrieve all Blocking conditions
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist"
+      x-wso2-request: |
+        GET https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist
+        Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"count\": 3,\r\n  \"list\": [\r\n    {\r\n      \"conditionId\": \"0b65b686-841b-48eb-b4c2-427d24584d71\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"127.0.0.332\"\r\n    },\r\n    {\r\n      \"conditionId\": \"3baa990c-f90b-4e3e-9db7-f29ee7f46f48\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"127.0.0.1\"\r\n    },\r\n    {\r\n      \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n      \"conditionType\": \"IP\",\r\n      \"conditionValue\": \"10.100.7.77\"\r\n    }\r\n  ]\r\n}"
+      x-scope: apim:bl_view
+      summary: Get all blocking condtions
+      description: |
+        Retrieves all existing blocking condtions.
+      parameters:
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Blacklist (Collection)
+      responses:
+        200:
+          description: |
+            OK.
+            Blocking conditions returned
+          schema:
+            $ref: '#/definitions/BlockingConditionList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Add a Custom Rule
+#-----------------------------------------------------  
+    post:
+      x-wso2-curl: "curl -k -X POST -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist"
+      x-wso2-request: "POST https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist\r\nAuthorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\r\nContent-Type: application/json\r\n\r\n{\r\n   \"conditionType\": \"IP\",\r\n   \"conditionValue\": \"10.100.7.77\"\r\n}\r\n"
+      x-wso2-response: "HTTP/1.1 201 Created\r\nLocation: https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\"\r\n}"
+      x-scope: apim:bl_manage
+      summary: Add a Blocking condition
+      description: |
+        Adds a new Blocking condition.
+      parameters:
+        - in: body
+          name: body
+          description: |
+            Blocking condition object that should to be added
+          required: true
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+        - $ref: '#/parameters/Content-Type'
+      tags:
+        - Blacklist (Collection)
+      responses:
+        201:
+          description: |
+            Created.
+            Successful response with the newly created object as entity in the body.
+            Location header contains URL of newly created entity.
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+          headers:
+            Location:
+              description: |
+                Location of the newly created resource.
+              type: string
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        400:
+          description: |
+            Bad Request.
+            Invalid request or validation error
+          schema:
+            $ref: '#/definitions/Error'
+        415:
+          description: |
+            Unsupported media type.
+            The entity of the request was in a not supported format.
+
+######################################################
+# The "Individual Blocking Condition" resource API
+######################################################
+  '/throttling/blacklist/{conditionId}': 
+  
+#-----------------------------------------------------
+# Retrieve a Blocking condition
+#-----------------------------------------------------
+    get:
+      x-wso2-curl: "curl -k -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c"
+      x-wso2-request: |
+        https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363c
+        Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
+      x-wso2-response: "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\r\n  \"conditionId\": \"b513eb68-69e8-4c32-92cf-852c101363cf\",\r\n  \"conditionType\": \"IP\",\r\n  \"conditionValue\": \"10.100.7.77\"\r\n}"
+      x-scope: apim:bl_view
+      summary: Get a Blocking Condition
+      description: |
+        Retrieves a Blocking Condition providing the condition Id
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - $ref: '#/parameters/If-None-Match'
+        - $ref: '#/parameters/If-Modified-Since'
+      tags:
+        - Blacklist (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Condition returned
+          schema:
+            $ref: '#/definitions/BlockingCondition'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+            ETag:
+              description: |
+                Entity Tag of the response resource.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+            Last-Modified:
+              description: |
+                Date and time the resource has been modifed the last time.
+                Used by caches, or in conditional requests (Will be supported in future).
+              type: string
+        304:
+          description: |
+            Not Modified.
+            Empty body because the client has already the latest version of the requested resource (Will be supported in future).
+        404:
+          description: |
+            Not Found.
+            Requested Condition does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        406:
+          description: |
+            Not Acceptable.
+            The requested media type is not supported.
+          schema:
+            $ref: '#/definitions/Error'
+
+#-----------------------------------------------------
+# Delete a Blocking condition
+#-----------------------------------------------------  
+    delete:
+      x-wso2-curl: "curl -k -X DELETE -H \"Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e\" -H \"Content-Type: application/json\" https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf"
+      x-wso2-request: |
+        DELETE https://127.0.0.1:9443/api/am/admin/v0.11/throttling/blacklist/b513eb68-69e8-4c32-92cf-852c101363cf
+        Authorization: Bearer a1e3951b-a15c-3d79-a15b-99f1d612843e
+      x-wso2-response: "HTTP/1.1 200 OK"
+      x-scope: apim:bl_manage
+      summary: Delete a Blocking condition
+      description: |
+        Deletes an existing Blocking condition
+      parameters:
+        - $ref: '#/parameters/conditionId'
+        - $ref: '#/parameters/If-Match'
+        - $ref: '#/parameters/If-Unmodified-Since'
+      tags:
+        - Blacklist (Individual)
+      responses:
+        200:
+          description: |
+            OK.
+            Resource successfully deleted.
+        404:
+          description: |
+            Not Found.
+            Resource to be deleted does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        412:
+          description: |
+            Precondition Failed.
+            The request has not been performed because one of the preconditions is not met (Will be supported in future).
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
+# Parameters - required by some of the APIs above
+######################################################
+parameters:
+
+# Throttling Policy Id
+# Specified as part of the path expression
+  policyId:
+    name: policyId
+    in: path
+    description: |
+      Thorttle policy UUID
+    type: string
+    required: true
+
+# Custom rule Id
+# Specified as part of the path expression
+  ruleId:
+    name: ruleId
+    in: path
+    description: |
+      Custom rule UUID
+    type: string
+    required: true
+
+# Blocking Condition Id
+# Specified as part of the path expression
+  conditionId:
+    name: conditionId
+    in: path
+    description: |
+      Blocking condition identifier 
+    type: string
+    required: true
+
+# The HTTP Accept header
+  Accept:
+    name: Accept
+    in: header
+    description: |
+      Media types acceptable for the response. Default is application/json.
+    default: application/json
+    type: string
+
+# The HTTP Content-Type header
+  Content-Type:
+    name: Content-Type
+    in: header
+    description: |
+      Media type of the entity in the body. Default is application/json.
+    default: application/json
+    required: true
+    type : string
+
+# The HTTP If-None-Match header
+# Used to avoid retrieving data that are already cached
+  If-None-Match:
+    name: If-None-Match
+    in: header
+    description: |
+      Validator for conditional requests; based on the ETag of the formerly retrieved
+      variant of the resource (Will be supported in future).
+    type : string
+
+# The HTTP If-Modified-Since header
+# Used to avoid retrieving data that are already cached
+  If-Modified-Since:
+    name: If-Modified-Since
+    in: header
+    description: |
+      Validator for conditional requests; based on Last Modified header of the
+      formerly retrieved variant of the resource (Will be supported in future).
+    type: string
+
+# The HTTP If-Match header
+# Used to avoid concurrent updates
+  If-Match:
+    name: If-Match
+    in: header
+    description: |
+      Validator for conditional requests; based on ETag (Will be supported in future).
+    type: string
+
+# The HTTP If-Unmodified-Since header
+# Used to avoid concurrent updates
+  If-Unmodified-Since:
+    name: If-Unmodified-Since
+    in: header
+    description: |
+      Validator for conditional requests; based on Last Modified header (Will be supported in future).
+    type: string
+
+# Used for pagination:
+# The maximum number of resoures to be returned by a GET
+  limit:
+    name: limit
+    in: query
+    description: |
+      Maximum size of resource array to return.
+    default: 25
+    type: integer
+
+# Used for pagination:
+# The order number of an instance in a qualified set of resoures
+# at which to start to return the next batch of qualified resources
+  offset:
+    name: offset
+    in: query
+    description: |
+      Starting point within the complete list of items qualified.
+    default: 0
+    type: integer
+
+# Mediation policy identifier
+# Specified as part of the path expression
+  mediationPolicyId:
+    name: mediationPolicyId
+    in: path
+    description: |
+      Mediation policy Id
+    required: true
+    type: string
+
+######################################################
+# The resources used by some of the APIs above within the message body
+######################################################
+definitions:
+
+#-----------------------------------------------------
+# The Error resource
+#-----------------------------------------------------
+  Error:
+    title: Error object returned with 4XX HTTP status
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+        description: Error code
+      message:
+        type: string
+        description: Error message.
+      description:
+        type: string
+        description: |
+          A detail description about the error message.
+      moreInfo:
+        type: string
+        description: |
+          Preferably an url with more details about the error.
+      error:
+        type: array
+        description: |
+          If there are more than one error list them out.
+          For example, list out validation errors by each field.
+        items:
+          $ref: '#/definitions/ErrorListItem'
+
+#-----------------------------------------------------
+# The Error List Item resource
+#-----------------------------------------------------
+  ErrorListItem:
+    title: Description of individual errors that may have occurred during a request.
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: string
+        description: Error code
+      message:
+        type: string
+        description: |
+          Description about individual errors occurred
+
+#-----------------------------------------------------
+# The Throttling Policy resource
+#-----------------------------------------------------
+  ThrottlePolicy :
+    title: Generic Throttling Policy
+    required:
+      - policyName
+    properties:
+      policyId:
+        type: string
+        description: Id of policy
+        example: 0c6439fd-9b16-3c2e-be6e-1086e0b9aa93
+      policyName:
+        type: string
+        description: Name of policy
+        example: Policy1
+      displayName:
+        type: string
+        description: Display name of the policy
+      description:
+        type: string
+        description: Description of the policy
+      isDeployed:
+        type: boolean
+        default: false
+        description: Indicates whether the policy is deployed successfully or not.
+  
+#-----------------------------------------------------
+# The Advanced Throttling Policy Info resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicyInfo : 
+    title: Advanced Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Advanced Throttling Policy resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicy : 
+    title: Advanced Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+          conditionalGroups:
+            type: array
+            items:
+              $ref: '#/definitions/ConditionalGroup'
+
+#-----------------------------------------------------
+# The Advanced Throttling Policy List resource
+#-----------------------------------------------------
+  AdvancedThrottlePolicyList:
+    title: Advanced Throttling Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Advanced Throttling Policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/AdvancedThrottlePolicyInfo'
+
+#-----------------------------------------------------
+# The Application Throttling Policy resource
+#-----------------------------------------------------
+  ApplicationThrottlePolicy:
+    title: Application Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Advanced Throttling Policy List resource
+#-----------------------------------------------------
+  ApplicationThrottlePolicyList:
+    title: Application Level Throttling Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Application Throttling Policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/ApplicationThrottlePolicy'
+
+#-----------------------------------------------------
+# The Subscription Throttling Policy resource
+#-----------------------------------------------------
+  SubscriptionThrottlePolicy:
+    title: Subscription Throttling Policy
+    required:
+      - defaultLimit
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          defaultLimit:
+            $ref: '#/definitions/ThrottleLimit'
+          rateLimitCount:
+            type: integer
+            default: 0
+            description: Burst control request count
+            example: 10
+          rateLimitTimeUnit:
+            type: string
+            description: Burst control time unit
+          customAttributes:
+            description: |
+              Custom attributes added to the Subscription Throttling Policy
+            type: array
+            items:
+              $ref: '#/definitions/CustomAttribute'
+            additionalProperties:
+              type: string
+            example: {}
+          stopOnQuotaReach:
+            type: boolean
+            default: false
+            description: |
+             This indicates the action to be taken when a user goes beyond the allocated quota. If checked, the user's requests will be dropped. If unchecked, the requests will be allowed to pass through.
+          billingPlan:
+            type: string
+            description: |
+              define whether this is Paid or a Free plan. Allowed values are FREE or COMMERCIAL.
+#-----------------------------------------------------
+# The Subscription Throttling Policy List resource
+#-----------------------------------------------------
+  SubscriptionThrottlePolicyList:
+    title: Subscription Level Throttling Policy List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Subscription Throttling Policies returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/SubscriptionThrottlePolicy'
+
+#-----------------------------------------------------
+# The Custom Rule resource
+#-----------------------------------------------------
+  CustomRule:
+    title: Custom Rule
+    required:
+      - siddhiQuery
+      - keyTemplate
+    allOf:
+      - $ref: '#/definitions/ThrottlePolicy'
+      - properties:
+          siddhiQuery:
+            type: string
+            description: Siddhi query which represents the custom throttling policy 
+            example: |
+
+          keyTemplate:
+            type: string
+            description: The specific combination of attributes that are checked in the policy.
+            example: $userId
+
+#-----------------------------------------------------
+# The Custom Rule List resource
+#-----------------------------------------------------
+  CustomRuleList:
+    title: Custom Rule List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Custom Rules returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/CustomRule'
+
+#-----------------------------------------------------
+# The Conditional Group resource
+#-----------------------------------------------------
+  ConditionalGroup :
+    title: Conditional Groups for Throttling
+    required:
+      - limit
+      - conditions
+    properties:
+      description:
+        type: string
+        description: Description of the Conditional Group
+      conditions:
+        type: array
+        items:
+          $ref: '#/definitions/ThrottleCondition'
+        description: |
+          Individual throttling conditions. They can be defined as either HeaderCondition, IPCondition, JWTClaimsCondition, QueryParameterCondition
+          Please see schemas of each of those throttling condition in Definitions section.
+        example: |
+      limit:
+        $ref: '#/definitions/ThrottleLimit'
+
+#-----------------------------------------------------
+# The Throttling Condition resource
+#-----------------------------------------------------
+  ThrottleCondition:
+    discriminator: type
+    x-wso2-subtypes:
+      - HeaderCondition
+      - IPCondition
+      - JWTClaimsCondition
+      - QueryParameterCondition
+    title: Conditions used for Throttling
+    description: Throttling Conditions
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum:
+          - HeaderCondition
+          - IPCondition
+          - JWTClaimsCondition
+          - QueryParameterCondition
+        description: |
+          Type of the thottling condition.
+          Allowed values are HeaderCondition, IPCondition, JWTClaimsCondition, QueryParameterCondition
+      invertCondition:
+        type: boolean
+        default: false
+        description: Specifies whether inversion of the condition to be matched against the request
+
+#-----------------------------------------------------
+# The Throttling HTTP Header Condition resource
+#-----------------------------------------------------
+  HeaderCondition:
+    title: HTTP Headerc based throttling condition
+    required:
+      - headerName
+      - headerValue
+    allOf:
+      - $ref: '#/definitions/ThrottleCondition'
+      - properties:
+          headerName:
+            type: string
+            description: Name of the header
+          headerValue:
+            type: string
+            description: Value of the header
+
+#-----------------------------------------------------
+# The Throttling IP Condition resource
+#-----------------------------------------------------
+  IPCondition:
+    title: IP based throttling condition
+    required:
+      - specificIP
+    allOf:
+      - $ref: '#/definitions/ThrottleCondition'
+      - properties:
+          ipConditionType:
+            type: string
+            enum:
+              - IPRange
+              - IPSpecific
+            description: Type of the IP condition. Allowed values are "IPRange" and "IPSpecific"
+          specificIP:
+            type: string
+            description: Specific IP when "IPSpecific" is used as the ipConditionType
+          startingIP:
+            type: string
+            description: Staring IP when "IPRange" is used as the ipConditionType
+          endingIP:
+            type: string
+            description: Ending IP when "IPRange" is used as the ipConditionType
+
+#-----------------------------------------------------
+# The JWT Claims Condition resource
+#-----------------------------------------------------
+  JWTClaimsCondition:
+    title:  JWT claim attibute based throttling condition
+    required:
+      - claimUrl
+      - attribute
+    allOf:
+      - $ref: '#/definitions/ThrottleCondition'
+      - properties:
+          claimUrl: 
+            type: string
+            description: JWT claim URL
+          attribute: 
+            type: string
+            description: Attribute to be matched
+
+#-----------------------------------------------------
+# The Query Parameter Condition resource
+#-----------------------------------------------------
+  QueryParameterCondition:
+    title: Query parameter based throttling condition
+    required:
+      - parameterName
+      - parameterValue
+    allOf:
+      - $ref: '#/definitions/ThrottleCondition'
+      - properties:
+          parameterName:
+            type: string
+            description: Name of the query parameter
+          parameterValue:
+            type: string
+            description: Value of the query parameter to be matched
+
+#-----------------------------------------------------
+# The Throttling Limit resource
+#-----------------------------------------------------
+  ThrottleLimit :
+    discriminator: type
+    x-wso2-subtypes:
+      - RequestCountLimit
+      - BandwidthLimit
+    required:
+      - type
+      - timeUnit
+      - unitTime
+    properties:
+      type:
+        type: string
+        enum:
+          - RequestCountLimit
+          - BandwidthLimit
+        description: |
+          Type of the throttling limit. Allowed values are "RequestCountLimit" and "BandwidthLimit".
+          Please see schemas of each of those throttling limit types in Definitions section.
+        example: RequestCountLimit
+      timeUnit:
+        type: string
+        description: Unit of the time. Allowed values are "sec", "min", "hour", "day"
+        example: min
+      unitTime:
+        type: integer
+        default: 0
+        description: Time limit that the throttling limit applies.
+        example: 10
+  
+#-----------------------------------------------------
+# The Throttling Bandwidth Limit resource
+#-----------------------------------------------------
+  BandwidthLimit :
+    required:
+      - dataAmount
+      - dataUnit
+    allOf:
+      - $ref: '#/definitions/ThrottleLimit'
+      - properties:
+          dataAmount:
+            type: integer
+            format: int64
+            description: Amount of data allowed to be transfered
+            example: 1000
+          dataUnit:
+            type: string
+            description: Unit of data allowed to be transfered. Allowed values are "KB", "MB" and "GB"
+            example: KB
+
+#-----------------------------------------------------
+# The Throttling Request Count Limit resource
+#-----------------------------------------------------
+  RequestCountLimit :
+    required:
+      - requestCount
+    allOf:
+      - $ref: '#/definitions/ThrottleLimit'
+      - properties:
+          requestCount:
+            type: integer
+            format: int64
+            example: 1000
+            description: Maximum number of requests allowed 
+
+#-----------------------------------------------------
+# The Throttling Blocking Condition resource
+#-----------------------------------------------------
+  BlockingCondition:
+    title: Blocking Conditions
+    description: Blocking Conditions
+    required:
+      - conditionType
+      - conditionValue
+    properties:
+      conditionId:
+        type: string
+        description: Id of the blocking condition
+        example: b513eb68-69e8-4c32-92cf-852c101363cf
+      conditionType:
+        type: string
+        description: Type of the blocking condition
+        example: IP
+      conditionValue:
+        type: string
+        description: Value of the blocking condition
+        example: 192.168.7.77
+
+#-----------------------------------------------------
+# The Throttling Blocking Condition List resource
+#-----------------------------------------------------
+  BlockingConditionList:
+    title: Blocking Conditions List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of Blocking Conditions returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/BlockingCondition'
+
+#-----------------------------------------------------
+# Custom Attribute object
+#-----------------------------------------------------
+  CustomAttribute:
+    title: Name-Value pair
+    required:
+      - name
+      - value
+    properties:
+      name:
+        type: string
+        description: Name of the custom attribute
+        example: customAttr1
+      value:
+        type: string
+        description: Value of the custom attribute
+        example: value1
+
+#-----------------------------------------------------
+# The Mediation List resource
+#-----------------------------------------------------
+  mediationList:
+    title: Mediation List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of mediation sequences returned.
+        example: 1
+      next:
+        type: string
+        description: |
+          Link to the next subset of sequences qualified.
+          Empty if no more sequences are to be returned.
+        example: ""
+      previous:
+        type: string
+        description: |
+          Link to the previous subset of sequences qualified.
+          Empty if current subset is the first subset returned.
+        example: ""
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/MediationInfo'
+
+#-----------------------------------------------------
+# The MediationInfo resource
+#-----------------------------------------------------
+  MediationInfo:
+    title: MediationInfo
+    required:
+      - name
+      - type
+      - id
+    properties:
+      name:
+        type: string
+        example: json_fault.xml
+      id:
+        type: string
+        example: 01234567-0123-0123-0123-012345678901
+      type:
+        type: string
+        enum:
+          - in
+          - out
+          - fault
+        example: in
+
+#-----------------------------------------------------
+# The Mediation resource
+#-----------------------------------------------------
+  Mediation:
+    title: Mediation
+    required:
+      - name
+      - type
+      - config
+    properties:
+      id:
+        type: string
+        example: 01234567-0123-0123-0123-012345678901
+      name:
+        type: string
+        example: json_fault.xml
+      type:
+        type: string
+        enum:
+          - in
+          - out
+          - fault
+        example: in
+      config:
+        type: string
+        example: '<sequence xmlns="http://ws.apache.org/ns/synapse" name="log_in_message">
+                      <log level="full">
+                          <property name="IN_MESSAGE" value="IN_MESSAGE_21133232"/>
+                      </log>
+                  </sequence>'
+
+#-----------------------------------------------------
+# END-OF-FILE
+#-----------------------------------------------------
