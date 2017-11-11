@@ -96,7 +96,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
                                               "Resource Tier: Unlimited.")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited() throws Exception {
         initialize();
@@ -163,7 +163,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
    "Resource Tier: Plus.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceUnlimited")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceSilver() throws Exception {
         initialize();
@@ -233,7 +233,7 @@ public class ChangeResourceTierAndTestInvokingTestCase extends APIManagerLifecyc
     }
 
 
-    @Test(groups = {"throttling"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
+    @Test(groups = {"wso2.am"}, description = "test  the  throttling of a API. API Tier :Gold, Application Tier: GOLD, " +
                                               "Resource Tier: Gold.", dependsOnMethods = "testInvokingWithAPIGoldTierApplicationGoldResourceSilver")
     public void testInvokingWithAPIGoldTierApplicationGoldResourceGold() throws Exception {
         initialize();

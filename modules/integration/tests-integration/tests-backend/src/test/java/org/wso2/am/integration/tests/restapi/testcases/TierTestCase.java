@@ -56,7 +56,7 @@ public class TierTestCase extends APIMIntegrationBaseTest {
 
     }
 
-    @Test(groups = {"throttling"}, description = "REST API Implementation test : Tier handling test case")
+    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : Tier handling test case")
     public void testTiers() {
 
         String gatewayURL = getGatewayURLNhttp();

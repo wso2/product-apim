@@ -106,12 +106,6 @@ public class APIManagerConfigurationChangeTest extends APIManagerLifecycleBaseTe
         webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.AM_MONITORING_WEB_APP_NAME);
         webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
-/*
-        webAppList.clear();
-        webAppList.add(APIMIntegrationConstants.AM_IMPORT_EXPORT_WEB_APP_NAME);
-        webAppAdminClientForPublisher
-                .deleteWebAppList(webAppList, publisherContext.getDefaultInstance().getHosts().get("default"));*/
     }
 }

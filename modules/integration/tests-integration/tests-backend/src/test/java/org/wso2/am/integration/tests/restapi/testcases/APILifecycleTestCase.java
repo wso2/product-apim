@@ -56,7 +56,7 @@ public class APILifecycleTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
     }
 
-    @Test(groups = {"throttling"}, description = "REST API Implementation test : API Lifecycle change test case")
+    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API Lifecycle change test case")
     public void testAPILifecycle() {
 
         String gatewayURL = getGatewayURLNhttp();

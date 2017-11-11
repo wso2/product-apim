@@ -82,7 +82,7 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION, newWFExtentionsXML);
     }
 
-    @Test(groups = {"throttling"}, description = "Returning workflow external ref. id from subscriptions rest api in "
+    @Test(groups = {"wso2.am"}, description = "Returning workflow external ref. id from subscriptions rest api in "
             + "publisher when subscription is in ON_HOLD status")
     public void testSubscription() {
 

@@ -56,7 +56,7 @@ public class TagTestCase extends APIMIntegrationBaseTest {
         super.init(userMode);
     }
 
-    @Test(groups = {"throttling"}, description = "REST API Implementation test : API tags test case")
+    @Test(groups = {"wso2.am"}, description = "REST API Implementation test : API tags test case")
     public void testAPITags() {
 
         String gatewayURL = getGatewayURLNhttp();

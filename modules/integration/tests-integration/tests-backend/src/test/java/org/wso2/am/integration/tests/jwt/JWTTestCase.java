@@ -71,6 +71,7 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 @SetEnvironment(executionEnvironments = { ExecutionEnvironment.STANDALONE })
 public class JWTTestCase extends APIMIntegrationBaseTest {
+    private ServerConfigurationManager serverConfigurationManager;
     private UserManagementClient userManagementClient1;
     private static final Log log = LogFactory.getLog(JWTTestCase.class);
 
@@ -107,6 +108,16 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         publisherURLHttp = getPublisherURLHttp();
         storeURLHttp = getStoreURLHttp();
 
+        //enable JWT token generation
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
+            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
+                    + File.separator + "configFiles" + File.separator + "tokenTest" + File.separator + "api-manager.xml"));
+            serverConfigurationManager.applyConfiguration(new File(getAMResourceLocation() + File.separator
+                    + "configFiles" + File.separator + "tokenTest" + File.separator + "log4j.properties"));
+            subscriberUserWithTenantDomain = subscriberUsername;
+        }
+
         providerName = user.getUserName();
     }
 
@@ -122,7 +133,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                                                               "http://wso2.org/claims/givenname", "first name", profile);
 
         remoteUserStoreManagerServiceClient.setUserClaimValue(user.getUserNameWithoutDomain(),
-                                                              "http://wso2.org/claims/lastname", "last name", profile);
+                "http://wso2.org/claims/lastname", "last name", profile);
 
         super.init(userMode);
 
@@ -307,7 +318,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                 .setUserClaimValue(subscriberUsername, "http://wso2.org/claims/givenname", "subscriber given name", profile);
 
         remoteUserStoreManagerServiceClient
-                .setUserClaimValue(subscriberUsername, "http://wso2.org/claims/lastname", "subscriber last name", profile);
+                .setUserClaimValue(subscriberUsername, "http://wso2.org/claims/lastname", "subscriber last name",
+                        profile);
 
         super.init(userMode);
 
@@ -417,6 +429,10 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         if(userManagementClient1 != null) {
             userManagementClient1.deleteRole(INTERNAL_ROLE_SUBSCRIBER);
             userManagementClient1.deleteUser(subscriberUsername);
+        }
+
+        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
+            serverConfigurationManager.restoreToLastConfiguration();
         }
     }
 

@@ -73,11 +73,15 @@ public class AdvancedThrottlingConfig extends APIMIntegrationBaseTest {
         String sourcePath = path + webApp + fileFormat;
 
         String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
         boolean isWebAppDeployed = WebAppDeploymentUtil
                 .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
+        if (!isWebAppDeployed) {
+            WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
+                    getBackEndUrl(), sessionId);
+            webAppAdminClient.uploadWarFile(sourcePath);
+            isWebAppDeployed = WebAppDeploymentUtil
+                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
+            assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
+        }
     }
 }
