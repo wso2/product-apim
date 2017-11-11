@@ -97,24 +97,9 @@ public class APIM684GenerateApplicationKeyTestCase extends APIMIntegrationBaseTe
     }
 
     @BeforeClass(alwaysRun = true)
-    public void setEnvironment() throws Exception{
-        String fileFormat = ".war";
+    public void setEnvironment() throws Exception {
         super.init();
-        /*log.info("Test Starting user mode:" + userMode);
-
-        //copy  .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);*/
+        log.info("Test Starting user mode:" + userMode);
 
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);

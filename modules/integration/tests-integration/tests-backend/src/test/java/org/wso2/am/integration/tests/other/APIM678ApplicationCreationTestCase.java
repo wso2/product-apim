@@ -59,7 +59,6 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     private static final String description = "NewApplicationCreation";
     private static final String appTier= APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED;
 
-    private final String webApp = "jaxrs_basic";
     private static final String callBackUrl = "http://myserver.com";
     private List<String> applicationsList = new ArrayList<String>();//list getting from the application creation response
     List<String> allAppsList = new ArrayList<String>(); //List getting from the getAllApplications() response
@@ -102,23 +101,8 @@ public class APIM678ApplicationCreationTestCase extends APIMIntegrationBaseTest 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
 
-        String fileFormat = ".war";
         super.init(userMode);
-        /*log.info("Test Starting user mode:" + userMode);
-
-        //copy  .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);*/
+        log.info("Test Starting user mode:" + userMode);
 
         String storeURLHttp = storeUrls.getWebAppURLHttp();
         apiStore = new APIStoreRestClient(storeURLHttp);

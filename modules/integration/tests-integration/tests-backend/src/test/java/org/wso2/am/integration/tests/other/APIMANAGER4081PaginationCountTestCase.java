@@ -94,7 +94,7 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
         HttpResponse storeLoginResponse = null;
         String successResponse = "{\"error\" : false}";
 
-        //create 24 APIs and publish them; these APIs should be paginated as 10,10,4
+        //create 5 APIs and publish them; these APIs should be paginated as 2,2,1
         try {
             for (int i = 0; i < numberOfAPIs; i++) {
                 String APIName = "PaginationTestAPI" + Integer.toString(i);
@@ -161,11 +161,11 @@ public class APIMANAGER4081PaginationCountTestCase extends APIMIntegrationBaseTe
             //the second request to get APIs for the pages, is sent only if the login is successful and and cookie is ok
             if (isLoginSuccess && loginResponseCookie != null) {
                 int offset = 2;
-                //fetch the first page, this page should have 10 results
+                //fetch the first page, this page should have 2 results
                 int countInFirstPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 0, offset);
-                //fetch the 2nd page, this page should have 10 results
+                //fetch the 2nd page, this page should have 2 results
                 int countInSecondPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 2, offset);
-                //fetch the 3nd page, this page should have 4 results
+                //fetch the 3nd page, this page should have 1 results
                 int countInThirdPage = getPaginationElementsCount(storeURLHttp, loginResponseCookie, 4, offset);
 
                 //testing the output; added 5 APIs should be paginated as 2,2,1

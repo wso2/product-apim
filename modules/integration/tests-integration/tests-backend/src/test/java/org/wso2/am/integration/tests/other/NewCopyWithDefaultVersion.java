@@ -59,7 +59,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     private String providerName;
     private String visibility = "public";
     private String description = "Test Description";
-    private static final String WEB_APP_FILE_NAME = "jaxrs_basic";
     private String tier= APIMIntegrationConstants.API_TIER.GOLD;
     private String resTier= APIMIntegrationConstants.RESOURCE_TIER.ULTIMATE;
     private String endPointType = "http";
@@ -72,24 +71,6 @@ public class NewCopyWithDefaultVersion extends APIMIntegrationBaseTest {
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception{
         super.init();
-
-        /*String sourcePath = TestConfigurationProvider.getResourceLocation()+ File.separator+
-                "artifacts"+File.separator+"AM"+File.separator+"lifecycletest"+File.separator+
-                "jaxrs_basic.war";
-
-        String targetPath = FrameworkPathUtil.getCarbonHome()+File.separator+"repository"+
-                File.separator+"deployment"+File.separator+"server"+File.separator+"webapps";
-
-        FileManager.copyResourceToFileSystem(sourcePath, targetPath, "jaxrs_basic.war");
-
-        //verify file Deployment
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient=
-                new WebAppAdminClient(gatewayContextWrk.getContextUrls().getBackEndUrl(),sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        WebAppDeploymentUtil.isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(),
-                sessionId,WEB_APP_FILE_NAME);
-        log.info("Web App Deployed");*/
 
         String publisherUrlHttp=publisherUrls.getWebAppURLHttp();
         apiPublisher=new APIPublisherRestClient(publisherUrlHttp);
