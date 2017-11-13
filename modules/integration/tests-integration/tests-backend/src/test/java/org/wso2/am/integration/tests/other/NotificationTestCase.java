@@ -32,6 +32,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -185,6 +186,12 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         HttpResponse newVersionResponse=apiPublisher.copyAPI(user.getUserName(), API_NAME, API_VERSION,
                                             NEW_API_VERSION, "");
         assertEquals(newVersionResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatch");
+
+        //Publisher new version
+        APIIdentifier apiIdentifier = new APIIdentifier(user.getUserName(), API_NAME, NEW_API_VERSION);
+        HttpResponse newVersionPublishResponse = apiPublisher.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
+        assertEquals(newVersionPublishResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatch");
 
         // checking whether message is received by greenmail
         greenMail.waitForIncomingEmail(50000, 1);
