@@ -23,7 +23,7 @@
     <parameter name="useDefaultListeners" value="false"/>
 
 
-    <test name="apim-integration-tests-api-lifecycle-new" preserve-order="true" parallel="false">
+    <test name="apim-integration-tests-api-common" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedWebAppDeploymentConfig"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.AddEditRemoveRESTResourceTestCase"/>
@@ -205,6 +205,7 @@
             <class name="org.wso2.am.integration.tests.restapi.testcases.APIMANAGER5872UpdateAPIWithoutThumbnailValueAndAPISummaryTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1628_OAuthAppUpdateViaRestApiTestCase"/>
             <class name="org.wso2.am.integration.tests.restapi.GIT_1638_UrlEncodedApiNameTestCase"/>
+            <class name="org.wso2.am.integration.tests.restapi.testcases.ApplicationScopeValidationTestCase"/>
         </classes>
     </test>
     <test name="apim-mediation-tests" preserve-order="true" parallel="false">
