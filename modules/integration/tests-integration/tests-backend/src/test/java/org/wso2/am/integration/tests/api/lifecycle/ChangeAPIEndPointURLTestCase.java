@@ -18,28 +18,21 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import java.io.File;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
@@ -50,18 +43,13 @@ import static org.testng.Assert.assertTrue;
  * Change the API end point URL and  test the invocation.
  */
 public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "APITest";
-    private final String API_CONTEXT = "{version}/api";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
 
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API1_END_POINT_METHOD = "/customers/123";
     private final String API1_RESPONSE_DATA = "<id>123</id><name>John</name></Customer>";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
     private final String API2_RESPONSE_DATA = "HelloWSO2";
     private final String API2_END_POINT_POSTFIX_URL = "name-check1_SB/name";
-    private final String APPLICATION_NAME = "ApplicationTest";
     private String api2EndPointUrl;
 
     private APIIdentifier apiIdentifier;
@@ -69,19 +57,11 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
     private Map<String, String> requestHeaders;
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
-    private WebAppAdminClient webAppAdminClient;
 
     @BeforeClass(alwaysRun = true)
     public void initialize() throws APIManagerIntegrationTestException, XPathExpressionException,
                                     MalformedURLException, RemoteException {
         super.init();
-        String testArtifactPath = TestConfigurationProvider.getResourceLocation() + File.separator + "artifacts" +
-                                  File.separator + "AM" + File.separator;
-
-        String testArtifactWarFilePath = testArtifactPath + "lifecycletest" + File.separator;
-        webAppAdminClient = new WebAppAdminClient(
-                gatewayContextMgt.getContextUrls().getBackEndUrl(), createSession(gatewayContextMgt));
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
 
         providerName = user.getUserName();
         String publisherURLHttp = getPublisherURLHttp();
@@ -155,18 +135,4 @@ public class ChangeAPIEndPointURLTestCase extends APIManagerLifecycleBaseTest {
                         ". Expected Response Data: " + API2_RESPONSE_DATA);
 
     }
-
-
-    @AfterClass(alwaysRun = true)
-    public void cleanUpArtifacts() throws Exception {
-        List<String> webAppList = new ArrayList<String>();
-        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
-        webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
-
-        apiStoreClientUser1.removeApplication(APPLICATION_NAME);
-        deleteAPI(apiIdentifier, apiPublisherClientUser1);
-        super.cleanUp();
-    }
-
-
 }

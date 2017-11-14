@@ -18,7 +18,6 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -27,19 +26,17 @@ import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.bean.APIResourceBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.exceptions.AutomationFrameworkException;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -47,15 +44,12 @@ import static org.testng.Assert.assertTrue;
 /**
  * Add , edit and remove rest resource and test the invocation of API
  */
-public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTest {
-    private final String API_NAME = "APITest";
-    private final String API_CONTEXT = "{version}/api";
-    private final String API_TAGS = "testTag1, testTag2, testTag3";
+public class
+        AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTest {
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
-    private final String API_DESCRIPTION = "This is test API create by API manager integration test";
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
-    private final String APPLICATION_NAME = "ApplicationTest";
+
     private final String RESPONSE_GET = "<id>123</id><name>John</name></Customer>";
     private final String RESPONSE_POST = "Tom";
     private final String API_GET_ENDPOINT_METHOD = "/customers/123";
@@ -68,7 +62,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
     private APIPublisherRestClient apiPublisherClientUser1;
     private APIStoreRestClient apiStoreClientUser1;
     private String providerName;
-    private APIIdentifier apiIdentifier;
     private String postEndPointURL;
     private HashMap<String, String> requestHeadersGet;
     private HashMap<String, String> requestHeadersPost;
@@ -79,10 +72,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         super.init();
         postEndPointURL = getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_POST_ENDPOINT_METHOD;
         apiEndPointUrl = getGatewayURLHttp() + API_END_POINT_POSTFIX_URL;
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
         providerName = user.getUserName();
         String publisherURLHttp = getPublisherURLHttp();
         String storeURLHttp = getStoreURLHttp();
@@ -102,18 +91,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
 
     @Test(groups = {"webapp"}, description = "Test the invocation of GET resource")
     public void testInvokeGETResource() throws Exception {
-        //Create application
-        apiStoreClientUser1.addApplication(APPLICATION_NAME,
-                APIMIntegrationConstants.APPLICATION_TIER.DEFAULT_APP_POLICY_FIFTY_REQ_PER_MIN, "", "");
-        //Create publish and subscribe a API
-        apiIdentifier = new APIIdentifier(providerName, API_NAME, API_VERSION_1_0_0);
-        apiIdentifier.setTier(APIMIntegrationConstants.API_TIER.GOLD);
-        APICreationRequestBean apiCreationRequestBean =
-                new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
-        apiCreationRequestBean.setTags(API_TAGS);
-        apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        createPublishAndSubscribeToAPI(
-                apiIdentifier, apiCreationRequestBean, apiPublisherClientUser1, apiStoreClientUser1, APPLICATION_NAME);
         //get the  access token
         String accessToken = generateApplicationKeys(apiStoreClientUser1, APPLICATION_NAME).getAccessToken();
         System.setProperty(APPLICATION_NAME+"-accessToken", accessToken);
@@ -121,7 +98,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
         requestHeadersPost.put("Authorization", "Bearer " + accessToken);
         //Send GET Request
 
-        waitForAPIDeploymentSync(user.getUserName(), API_NAME, API_VERSION_1_0_0, APIMIntegrationConstants.IS_API_EXISTS);
         HttpResponse httpResponse =
                 HttpRequestUtil.doGet(getAPIInvocationURLHttp(INVOKABLE_API_CONTEXT) + API_GET_ENDPOINT_METHOD,
                                       requestHeadersGet);
@@ -206,7 +182,6 @@ public class AddEditRemoveRESTResourceTestCase extends APIManagerLifecycleBaseTe
                 new APICreationRequestBean(API_NAME, API_CONTEXT, API_VERSION_1_0_0, providerName, new URL(apiEndPointUrl));
         apiCreationRequestBean.setTags(API_TAGS);
         apiCreationRequestBean.setDescription(API_DESCRIPTION);
-        //apiCreationRequestBean.setVersion(API_VERSION_1_0_0);
         apiCreationRequestBean.setVisibility("public");
         List<APIResourceBean> apiResourceBeansList = new ArrayList<APIResourceBean>();
         APIResourceBean apiResourceBeanGET = new APIResourceBean(APIMIntegrationConstants.HTTP_VERB_GET,

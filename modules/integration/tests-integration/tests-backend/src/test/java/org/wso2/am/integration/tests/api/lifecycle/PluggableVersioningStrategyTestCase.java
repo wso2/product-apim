@@ -16,23 +16,17 @@
 
 package org.wso2.am.integration.tests.api.lifecycle;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
-import org.wso2.am.integration.test.utils.bean.APICreationRequestBean;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
-import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.wso2.carbon.logging.view.stub.LogViewerLogViewerException;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 
 import static org.testng.Assert.assertEquals;
@@ -42,9 +36,7 @@ public class PluggableVersioningStrategyTestCase extends APIManagerLifecycleBase
 
     private static final Log log = LogFactory.getLog(PluggableVersioningStrategyTestCase.class);
 
-    private final String API_VERSION_1_0_0 = "1.0.0";
     private final String INVOKABLE_API_CONTEXT = API_VERSION_1_0_0 + "/api";
-    private final String APPLICATION_NAME = "ApplicationTest";
     private APIPublisherRestClient apiPublisherClientUser;
     private APIStoreRestClient apiStoreClientUser;
     private final static String API_GET_ENDPOINT_METHOD = "/customers/123";
