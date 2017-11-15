@@ -180,7 +180,7 @@ public class SampleUtils {
     }
 
     /**
-     * This methos id used to publish the created API.
+     * This method is used to publish the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
@@ -188,6 +188,40 @@ public class SampleUtils {
     public static void publishAPI(String apiId) throws ApiException {
         APIIndividualApi apiIndividualApi = new APIIndividualApi();
         apiIndividualApi.apisChangeLifecyclePost(Constants.PUBLISHED, apiId, null, null, null);
+    }
+
+
+    /**
+     * This method is used to publish the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void deprecateAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null, null);
+    }
+
+    /**
+     * This method is used to publish the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void blockAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null, null);
+    }
+
+    /**
+     * This method is used to publish the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void rejectAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.REJECT, apiId, null, null, null);
     }
 
     /**
