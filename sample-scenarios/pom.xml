@@ -31,6 +31,7 @@
         <module>clients</module>
         <module>sample-utils</module>
         <module>sample1</module>
+        <module>sample2</module>
     </modules>
     
     <repositories>
