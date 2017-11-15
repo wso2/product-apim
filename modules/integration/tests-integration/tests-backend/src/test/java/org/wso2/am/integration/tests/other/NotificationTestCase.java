@@ -106,38 +106,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Testing Notification Feature")
     public void notificationTestCase() throws Exception {
 
-        resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContextMgt));
-
-        String tenantConfSrcLocation = readFile(getAMResourceLocation() + File.separator + "configFiles"
-                + File.separator + "notification" + File.separator + "tenant-conf.json");
-
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
-
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                "configFiles" + File.separator + "notification" + File.separator;
-
-        String apimConfigArtifactLocation = artifactsLocation + ADAPTER_CONFIG_XML;
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + ADAPTER_CONFIG_XML;
-
-        File apimConfSourceFile = new File(apimConfigArtifactLocation);
-        File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            ServerConfigurationManager serverManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-            serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-            log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                    " to :" + apimRepositoryConfigLocation);
-
-            serverManager.restartGracefully();
-            super.init();
-        }
-
         //Setting greenMail server
         ServerSetup setup = new ServerSetup(SMTP_TEST_PORT, "localhost", "smtp");
         greenMail = new GreenMail(setup);
@@ -270,15 +238,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
             apiPublisher.deleteAPI(API_NAME, API_VERSION, user.getUserName());
         }
         greenMail.stop();
-
-        String tenantConfSrcLocation = IOUtils.toString(new FileInputStream(
-                getAMResourceLocation() + File.separator + "configFiles" + File.separator + "common"
-                        + File.separator + "tenant-conf.json"));
-        resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContextMgt));
-
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
 
         super.cleanUp();
     }

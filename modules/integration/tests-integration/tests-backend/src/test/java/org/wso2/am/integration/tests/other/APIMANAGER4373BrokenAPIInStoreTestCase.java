@@ -19,7 +19,9 @@ package org.wso2.am.integration.tests.other;
 import junit.framework.Assert;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.LogFactory;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
@@ -69,7 +71,7 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
     private String publisherURLHttp;
     private String storeURLHttp;
 
-    @BeforeMethod
+    @BeforeClass
     public void init() {
         try {
             super.init();
@@ -152,8 +154,9 @@ public class APIMANAGER4373BrokenAPIInStoreTestCase extends APIMIntegrationBaseT
         + response.getData());
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
+        userManagementClient1.updateRolesOfUser(FIRST_USER, new String[] {FIRST_ROLE, SECOND_ROLE});
         if (apiStoreRestClient != null) {
             apiStoreRestClient.removeAPISubscriptionByName(BROKEN_API, API_VERSION, contextUsername, APP_NAME);
             apiStoreRestClient.removeAPISubscriptionByName(HEALTHY_API, API_VERSION, contextUsername, APP_NAME);

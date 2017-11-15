@@ -124,7 +124,6 @@
             <class name="org.wso2.am.integration.tests.other.APIImportExportTestCase"/>
             <class name="org.wso2.am.integration.tests.other.InvalidAuthTokenLargePayloadTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APISearchAPIByTagTestCase"/>
-            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIM4765ResourceOrderInSwagger"/>
 
         </classes>
@@ -223,6 +222,7 @@
     <test name="apim-integration-tests-without-restarts" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.am.integration.tests.other.AdvancedConfigDeploymentConfig"/>
+            <class name="org.wso2.am.integration.tests.other.NotificationTestCase"/>
             <class name="org.wso2.am.integration.tests.json.ESBJAVA3380TestCase"/>
             <class name="org.wso2.am.integration.tests.stats.APIInvocationStatPublisherTestCase"/>
             <class name="org.wso2.am.integration.tests.other.APIStateChangeWorkflowTestCase"/>
