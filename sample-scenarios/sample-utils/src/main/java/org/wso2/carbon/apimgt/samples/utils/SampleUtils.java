@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.samples.utils;
 import org.apache.commons.io.IOUtils;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiClient;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
+import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiResponse;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APICollectionApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
@@ -162,6 +163,22 @@ public class SampleUtils {
         API response = api.apisPost(body, Constants.APPLICATION_JSON);
         return response.getId();
     }
+
+    /**
+     * This method is used to create a new API of the existing API.
+     *
+     * @param newVersion    new API version
+     * @param apiId         old API ID
+     * @return  apiID of the newly created api version.
+     * @throws ApiException Throws if an error occurs when creating the new API version.
+     */
+    public static String createNewAPIVersion(String newVersion, String apiId) throws ApiException {
+        APIIndividualApi api = new APIIndividualApi();
+        String apiLocation = api.apisCopyApiPostWithHttpInfo(newVersion, apiId).getHeaders().get("Location").get(0);
+        String[] splitValues = apiLocation.split("/");
+        return  splitValues[splitValues.length -1];
+    }
+
 
     /**
      * This method is used to get the API definition.

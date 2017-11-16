@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * This class is used to populate sample data to represent the sample Seven business scenario.
+ * This class is used to populate sample data to represent the sample Seven business scenario - API Lifecycle Management.
  */
 public class CreateSampleSevenRawData {
 
@@ -37,8 +37,9 @@ public class CreateSampleSevenRawData {
      */
     public static void main(String[] args) throws ApiException, IOException {
         //Creating API in PUBLISHED state
-        String apiIdOne = SampleUtils.createApi("Salary_details_API", "1.0.0", "/salaries", new ArrayList<>(), new ArrayList<>(),
-                API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
+        String apiIdOne = SampleUtils
+                .createApi("Salary_details_API", "1.0.0", "/salaries", new ArrayList<>(), new ArrayList<>(),
+                        API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
         SampleUtils.publishAPI(apiIdOne);
 
         //Creating API in CREATED state
@@ -46,25 +47,25 @@ public class CreateSampleSevenRawData {
                 API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
 
         //Creating API in DEPRECATED state
-        String apiIdThree = SampleUtils.createApi("Mobile_stock_API", "1.0.0", "/stocks", new ArrayList<>(), new ArrayList<>(),
-                API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
+        String apiIdThree = SampleUtils
+                .createApi("Mobile_stock_API", "1.0.0", "/stocks", new ArrayList<>(), new ArrayList<>(),
+                        API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
         SampleUtils.publishAPI(apiIdThree);
         SampleUtils.deprecateAPI(apiIdThree);
 
         //Creating the new version of the Mobile stock API which is in PUBLISHED STATE
-        String apiIdFour = SampleUtils.createApi("Mobile_stock_API", "2.0.0", "/stocks", new ArrayList<>(), new ArrayList<>(),
-                API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
+        String apiIdFour = SampleUtils.createNewAPIVersion("2.0.0", apiIdThree);
         SampleUtils.publishAPI(apiIdFour);
 
         //Creating a new API for sales_promotions which is in blocking state
-        String apiIdFive = SampleUtils.createApi("Sales_promotions_API", "2.0.0", "/promo", new ArrayList<>(), new ArrayList<>(),
-                API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
+        String apiIdFive = SampleUtils
+                .createApi("Sales_promotions_API", "2.0.0", "/promo", new ArrayList<>(), new ArrayList<>(),
+                        API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
         SampleUtils.publishAPI(apiIdFive);
         SampleUtils.blockAPI(apiIdFive);
 
         //Creating ad API for  for sales_promotions which is in RETIRED state
-        String apiIdSix = SampleUtils.createApi("Sales_promotions_API", "1.0.0", "/promo", new ArrayList<>(), new ArrayList<>(),
-                API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, new ArrayList<>());
+        String apiIdSix = SampleUtils.createNewAPIVersion("1.0.0", apiIdFive);
         SampleUtils.publishAPI(apiIdSix);
         SampleUtils.rejectAPI(apiIdSix);
     }
