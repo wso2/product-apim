@@ -19,6 +19,7 @@ package org.wso2.carbon.apimgt.samples.utils;
 import org.apache.commons.io.IOUtils;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiClient;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
+import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiResponse;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APICollectionApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
@@ -164,6 +165,22 @@ public class SampleUtils {
     }
 
     /**
+     * This method is used to create a new API of the existing API.
+     *
+     * @param newVersion    new API version
+     * @param apiId         old API ID
+     * @return  apiID of the newly created api version.
+     * @throws ApiException Throws if an error occurs when creating the new API version.
+     */
+    public static String createNewAPIVersion(String newVersion, String apiId) throws ApiException {
+        APIIndividualApi api = new APIIndividualApi();
+        String apiLocation = api.apisCopyApiPostWithHttpInfo(newVersion, apiId).getHeaders().get("Location").get(0);
+        String[] splitValues = apiLocation.split("/");
+        return  splitValues[splitValues.length -1];
+    }
+
+
+    /**
      * This method is used to get the API definition.
      *
      * @return API definition.
@@ -180,7 +197,7 @@ public class SampleUtils {
     }
 
     /**
-     * This methos id used to publish the created API.
+     * This method is used to publish the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
@@ -188,6 +205,40 @@ public class SampleUtils {
     public static void publishAPI(String apiId) throws ApiException {
         APIIndividualApi apiIndividualApi = new APIIndividualApi();
         apiIndividualApi.apisChangeLifecyclePost(Constants.PUBLISHED, apiId, null, null, null);
+    }
+
+
+    /**
+     * This method is used to deprecate the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void deprecateAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.DEPRECATE, apiId, null, null, null);
+    }
+
+    /**
+     * This method is used to block the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void blockAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.BLOCK, apiId, null, null, null);
+    }
+
+    /**
+     * This method is used to reject the created API.
+     *
+     * @param apiId API id that need to published.
+     * @throws ApiException throws if an error occurred when publishing the API.
+     */
+    public static void rejectAPI(String apiId) throws ApiException {
+        APIIndividualApi apiIndividualApi = new APIIndividualApi();
+        apiIndividualApi.apisChangeLifecyclePost(Constants.REJECT, apiId, null, null, null);
     }
 
     /**
@@ -203,4 +254,6 @@ public class SampleUtils {
         apiIndividualApi.setApiClient(apiClient);
         apiIndividualApi.apisChangeLifecyclePost(Constants.PUBLISHED, apiId, null, null, null);
     }
+
+
 }
