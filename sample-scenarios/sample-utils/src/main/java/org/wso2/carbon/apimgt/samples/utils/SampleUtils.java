@@ -192,7 +192,7 @@ public class SampleUtils {
 
 
     /**
-     * This method is used to publish the created API.
+     * This method is used to deprecate the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
@@ -203,7 +203,7 @@ public class SampleUtils {
     }
 
     /**
-     * This method is used to publish the created API.
+     * This method is used to block the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
@@ -214,7 +214,7 @@ public class SampleUtils {
     }
 
     /**
-     * This method is used to publish the created API.
+     * This method is used to reject the created API.
      *
      * @param apiId API id that need to published.
      * @throws ApiException throws if an error occurred when publishing the API.
@@ -237,4 +237,6 @@ public class SampleUtils {
         apiIndividualApi.setApiClient(apiClient);
         apiIndividualApi.apisChangeLifecyclePost(Constants.PUBLISHED, apiId, null, null, null);
     }
+
+
 }

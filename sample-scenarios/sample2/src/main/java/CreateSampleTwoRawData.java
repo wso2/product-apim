@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is used to populate sample data to represent the sample two business scenario.
+ */
 public class CreateSampleTwoRawData {
 
     private static final String hostname = "localhost";
@@ -36,6 +39,7 @@ public class CreateSampleTwoRawData {
     public static void main(String[] args) throws IOException, ApiException, InterruptedException {
 
         createTenants(rawDataList);
+        System.out.println("Waiting for tenant initialization...");
         createAPIsForTenants(rawDataList);
         publishAPIs(rawDataList);
 
@@ -84,7 +88,6 @@ public class CreateSampleTwoRawData {
             rawDataBean.setApi(api);
             rawDataBeans.set(rawDataBean.getId(), rawDataBean);
             System.out.println("Waiting the tenant " + tenant.getDomain() + " to be loaded...");
-            Thread.sleep(20000);
             System.out.println("API " + api.getApiName() + "-" + api.getApiVersion() + "created successfully.");
         }
         rawDataList = rawDataBeans;
