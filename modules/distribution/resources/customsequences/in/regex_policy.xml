@@ -4,7 +4,7 @@
     </log>
     <property name="regex" expression="get-property('regex')" value=".*'.*|.*ALTER.*|.*ALTER TABLE.*|.*ALTER VIEW.*|
     .*CREATE DATABASE.*|.*CREATE PROCEDURE.*|.*CREATE SCHEMA.*|.*create table.*|.*CREATE VIEW.*|.*DELETE.*|.
-    *DROP DATABASE.*|.*DROP PROCEDURE.*|.*DROP.*|.*SELECT.*|.*!--#(include.*|.*exec.*|.*echo.*|.*config.*|.*.*|.*.*"/>
+    *DROP DATABASE.*|.*DROP PROCEDURE.*|.*DROP.*|.*SELECT.*"/>
     <property name="enabledCheckBody" expression="get-property('checkBodyEnable')" value="false"/>
     <property name="enabledCheckQueryParams" expression="get-property('enabledCheckQueryParams')" value="true"/>
     <property name="enabledCheckPathParams" expression="get-property('enabledCheckPathParams')" value="true"/>
