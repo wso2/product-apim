@@ -1,0 +1,14 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="regex_policy">
+    <log level="custom">
+        <property name="IN_MESSAGE" value="IN_MESSAGE"/>
+    </log>
+    <property name="regex" expression="get-property('regex')" value=".*'.*|.*ALTER.*|.*ALTER TABLE.*|.*ALTER VIEW.*|
+    .*CREATE DATABASE.*|.*CREATE PROCEDURE.*|.*CREATE SCHEMA.*|.*create table.*|.*CREATE VIEW.*|.*DELETE.*|.
+    *DROP DATABASE.*|.*DROP PROCEDURE.*|.*DROP.*|.*SELECT.*|.*!--#(include.*|.*exec.*|.*echo.*|.*config.*|.*.*|.*.*"/>
+    <property name="enabledCheckBody" expression="get-property('checkBodyEnable')" value="false"/>
+    <property name="enabledCheckQueryParams" expression="get-property('enabledCheckQueryParams')" value="true"/>
+    <property name="enabledCheckPathParams" expression="get-property('enabledCheckPathParams')" value="true"/>
+    <class name="org.wso2.carbon.apimgt.gateway.mediators.RegularExpressionProtector"/>
+</sequence>
+
+
