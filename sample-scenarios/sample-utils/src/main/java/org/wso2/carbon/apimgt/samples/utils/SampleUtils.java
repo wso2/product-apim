@@ -148,7 +148,10 @@ public class SampleUtils {
         body.setCorsConfiguration(new APICorsConfiguration());
         body.setTags(tags);
         String endpointConfig;
-        String filePrefix = context.substring(1);
+
+        String[] splitData = context.split("/");
+        String filePrefix = splitData[splitData.length -1];
+
         try {
             endpointConfig = getJsonContent(Constants.ENDPOINT_DEFINITION + filePrefix + Constants.JSON_EXTENSION);
         } catch (IOException e) {
