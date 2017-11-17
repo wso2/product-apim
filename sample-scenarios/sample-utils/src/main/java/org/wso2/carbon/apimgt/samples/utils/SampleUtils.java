@@ -17,9 +17,9 @@
 package org.wso2.carbon.apimgt.samples.utils;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiClient;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
-import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiResponse;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APICollectionApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APIIndividualApi;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
@@ -35,8 +35,6 @@ import java.util.List;
  * This util class performs the actions related to API objects.
  */
 public class SampleUtils {
-
-    private static String apiDefinition = null;
 
     /**
      * This method is used to create an API.
@@ -67,7 +65,7 @@ public class SampleUtils {
         body.setDescription(Constants.API_DESCRIPTION);
         body.setProvider(Constants.PROVIDER_ADMIN);
         body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTP);
+            add(Constants.PROTOCOL_HTTPS);
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
@@ -79,14 +77,17 @@ public class SampleUtils {
         body.setBusinessInformation(new APIBusinessInformation());
         body.setCorsConfiguration(new APICorsConfiguration());
         body.setTags(tags);
-        String endpointConfig = "{\"production_endpoints\":{\"url\":\"https://" + hostname + ":" + port
-                + "/am/sample/pizzashack/v1/api/\",\"config\":null},\"sandbox_endpoints\":"
-                + "{\"url\":\"https://localhost:9443/am/sample/pizzashack/v1/api/\",\"config\":null},"
-                + "\"endpoint_type\":\"http\"}";
+        String endpointConfig;
+        String filePrefix = context.substring(1);
+        try {
+            endpointConfig = getJsonContent(Constants.ENDPOINT_DEFINITION + filePrefix + Constants.JSON_EXTENSION);
+        } catch (IOException e) {
+            throw new ApiException("Could not read End point definition");
+        }
 
         body.setEndpointConfig(endpointConfig);
         try {
-            body.setApiDefinition(getApiDefinition());
+            body.setApiDefinition(getJsonContent(Constants.API_DEFINITION + filePrefix + Constants.JSON_EXTENSION));
         } catch (IOException e) {
             throw new ApiException("Could not read API definition file");
         }
@@ -134,7 +135,7 @@ public class SampleUtils {
         body.setDescription(Constants.API_DESCRIPTION);
         body.setProvider(adminUsername + "-AT-" + tenantDomain);
         body.setTransport(new ArrayList<String>() {{
-            add(Constants.PROTOCOL_HTTP);
+            add(Constants.PROTOCOL_HTTPS);
         }});
         body.isDefaultVersion(false);
         body.setCacheTimeout(100);
@@ -146,14 +147,17 @@ public class SampleUtils {
         body.setBusinessInformation(new APIBusinessInformation());
         body.setCorsConfiguration(new APICorsConfiguration());
         body.setTags(tags);
-        String endpointConfig = "{\"production_endpoints\":{\"url\":\"https://" + hostname + ":" + port
-                + "/am/sample/pizzashack/v1/api/\",\"config\":null},\"sandbox_endpoints\":"
-                + "{\"url\":\"https://localhost:9443/am/sample/pizzashack/v1/api/\",\"config\":null},"
-                + "\"endpoint_type\":\"http\"}";
+        String endpointConfig;
+        String filePrefix = context.substring(1);
+        try {
+            endpointConfig = getJsonContent(Constants.ENDPOINT_DEFINITION + filePrefix + Constants.JSON_EXTENSION);
+        } catch (IOException e) {
+            throw new ApiException("Could not read End point definition");
+        }
 
         body.setEndpointConfig(endpointConfig);
         try {
-            body.setApiDefinition(getApiDefinition());
+            body.setApiDefinition(getJsonContent(Constants.API_DEFINITION + filePrefix + Constants.JSON_EXTENSION));
         } catch (IOException e) {
             throw new ApiException("Could not read API definition file");
         }
@@ -181,19 +185,18 @@ public class SampleUtils {
 
 
     /**
-     * This method is used to get the API definition.
+     * This method is used to get the JSON content.
      *
      * @return API definition.
      * @throws IOException  throws if an error occurred when creating the API.
      */
-    private static String getApiDefinition() throws IOException {
-        if (apiDefinition == null) {
-            apiDefinition = IOUtils.toString(
-                    SampleUtils.class.getClassLoader().getResourceAsStream(Constants.API_DEFINITION_JSON_FILE),
+    private static String getJsonContent(String fileName) throws IOException {
+        if (StringUtils.isNotEmpty(fileName)) {
+            return IOUtils.toString(
+                    SampleUtils.class.getClassLoader().getResourceAsStream(fileName),
                     StandardCharsets.UTF_8.name());
         }
-
-        return apiDefinition;
+        return null;
     }
 
     /**

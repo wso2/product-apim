@@ -38,10 +38,12 @@ public class Constants {
      */
     public static final String API_DESCRIPTION = "This is the api description";
     public static final String PROVIDER_ADMIN = "admin";
-    public static final String PROTOCOL_HTTP = "http";
+    public static final String PROTOCOL_HTTPS = "https";
     public static final String GATEWAY_ENVIRONMENTS = "Production and Sandbox";
     public static final String APPLICATION_JSON = "application/json";
-    public static final String API_DEFINITION_JSON_FILE = "api-definition.json";
+    public static final String API_DEFINITION = "api-definition-";
+    public static final String ENDPOINT_DEFINITION = "endpoint-config-";
+    public static final String JSON_EXTENSION = ".json";
     public static final String TIERS_UNLIMITED = "Unlimited";
     public static final String PUBLISHED = "Publish";
     public static final String DEPRECATE = "Deprecate";
