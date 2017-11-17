@@ -761,6 +761,11 @@
             <outputDirectory>wso2am-${pom.version}/repository/conf</outputDirectory>
         </file-->
         <file>
+            <source>src/main/conf/sslprofiles.xml</source>
+            <outputDirectory>wso2am-${pom.version}/repository/resources/security</outputDirectory>
+            <destName>sslprofiles.xml</destName>
+        </file>
+        <file>
             <source>src/main/conf/axis2.xml</source>
             <outputDirectory>wso2am-${pom.version}/repository/conf/axis2</outputDirectory>
             <destName>axis2.xml</destName>
