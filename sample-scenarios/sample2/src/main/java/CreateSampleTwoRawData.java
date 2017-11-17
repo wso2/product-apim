@@ -36,6 +36,12 @@ public class CreateSampleTwoRawData {
     private static final String serviceEndpoint = "https://" + hostname + ":" + port + "/services/";
     private static List<RawDataBean> rawDataList = createRawDataList();
 
+    /**
+     * This main method will be called when running sample two.
+     *
+     * @throws ApiException throws if an exception is thrown when API creation.
+     * @throws IOException  throws when if an error occurred when reading the api definition file.
+     */
     public static void main(String[] args) throws IOException, ApiException, InterruptedException {
 
         createTenants(rawDataList);

@@ -30,7 +30,7 @@ public class CreateSampleSevenRawData {
     private static final String port = "9443";
 
     /**
-     * This main method will be called when running sample one.
+     * This main method will be called when running sample seven.
      *
      * @throws ApiException throws if an exception is thrown when API creation.
      * @throws IOException  throws when if an error occurred when reading the api definition file.

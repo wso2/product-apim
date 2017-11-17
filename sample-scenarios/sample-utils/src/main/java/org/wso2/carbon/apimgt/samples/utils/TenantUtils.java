@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.samples.utils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.samples.utils.stubs.AuthenticateStub;
@@ -48,11 +49,16 @@ public class TenantUtils {
     public static boolean createTenant(String username, String password, String domainName,
             String firstName, String lastName, String backendUrl) {
 
-        System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE,
-                TenantUtils.class.getClassLoader().getResource(Constants.CLIENT_TRUSTORE_JKS).getPath());
-
-        System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, Constants.WSO2_CARBON);
-        System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE, Constants.JKS);
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE,
+                    TenantUtils.class.getClassLoader().getResource(Constants.CLIENT_TRUSTORE_JKS).getPath());
+        }
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_PASSWORD, Constants.WSO2_CARBON);
+        }
+        if (StringUtils.isEmpty(System.getProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE))) {
+            System.setProperty(Constants.JAVAX_NET_SSL_TRUST_STORE_TYPE, Constants.JKS);
+        }
 
         boolean isSuccess = false;
         try {

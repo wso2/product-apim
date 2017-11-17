@@ -24,9 +24,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>org.wso2.carbon.apimgt.samples.sample7</artifactId>
+    <artifactId>org.wso2.carbon.apimgt.samples.sample8</artifactId>
 
-    <name>Sample Seven</name>
+
+    <name>Sample Eight</name>
 
     <dependencies>
         <dependency>
@@ -43,7 +44,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>CreateSampleSevenRawData</mainClass>
+                            <mainClass>CreateSampleEightRawData</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
