@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "paths": {
-    "/salary/{empId}": {
+    "/salary/{id}": {
       "get": {
         "responses": {
           "200": {
