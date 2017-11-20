@@ -18,10 +18,13 @@ package server.obj;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "Employee")
-public class Employee {
+@XmlRootElement(name = "Salary")
+public class Salary {
+
     private int id;
-    private String name;
+    private long fixed;
+    private long allowance;
+    private String empId;
 
     public long getId() {
         return id;
@@ -31,11 +34,29 @@ public class Employee {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public long getFixed() {
+        return fixed;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFexed(long fixed) {
+        this.fixed = fixed;
     }
+
+    public long getAllowance() {
+        return allowance;
+    }
+
+    public void setAllowance(long allowance) {
+        this.allowance = allowance;
+    }
+
+    public String getEmpId() {
+        return empId;
+    }
+
+    public void setEmpId(String empId) {
+        this.empId = empId;
+    }
+
+
 }

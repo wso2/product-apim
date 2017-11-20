@@ -16,7 +16,7 @@
 
 package server.service;
 
-import server.obj.Employee;
+import server.obj.Salary;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,32 +29,36 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/employeeservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class EmployeeService {
+@Path("/salaryservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class SalaryService {
 
-    Map<String, Employee> employeeMap = new HashMap<String, Employee>();
+    Map<String, Salary> salaryMap = new HashMap<>();
 
     public void init() {
 
-        Employee employeeOne = new Employee();
-        employeeOne.setId(1);
-        employeeOne.setName("Alvin Reyes");
+        Salary employeeSalaryOne = new Salary();
+        employeeSalaryOne.setId(1);
+        employeeSalaryOne.setFexed(8000);
+        employeeSalaryOne.setAllowance(3000);
+        employeeSalaryOne.setEmpId("1");
 
-        Employee employeeTwo = new Employee();
-        employeeTwo.setId(2);
-        employeeTwo.setName("Rachelle Ann");
+        Salary employeeSalaryTwo = new Salary();
+        employeeSalaryTwo.setId(2);
+        employeeSalaryTwo.setFexed(10000);
+        employeeSalaryTwo.setAllowance(5000);
+        employeeSalaryTwo.setEmpId("2");
 
-        employeeMap.put("1", employeeOne);
-        employeeMap.put("2", employeeTwo);
+        salaryMap.put("1", employeeSalaryTwo);
+        salaryMap.put("2", employeeSalaryTwo);
 
     }
 
-    public EmployeeService() {
+    public SalaryService() {
         init();
     }
 
-    @GET @Path("/employee/{id}/") public Employee getEmployee(@PathParam("id") String id,
+    @GET @Path("/salary/{id}/") public Salary getEmployeeSalary(@PathParam("id") String id,
             @Context HttpHeaders headers) {
-        Employee employee = employeeMap.get(id);
-        return employee;
+        Salary salary = salaryMap.get(id);
+        return salary;
     }
 }

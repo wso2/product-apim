@@ -18,8 +18,9 @@ package server.obj;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "Employee")
-public class Employee {
+@XmlRootElement(name = "Promo")
+public class Promo {
+
     private int id;
     private String name;
 
@@ -38,4 +39,5 @@ public class Employee {
     public void setName(String name) {
         this.name = name;
     }
+
 }

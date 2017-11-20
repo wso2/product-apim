@@ -18,10 +18,12 @@ package server.obj;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "Employee")
-public class Employee {
+@XmlRootElement(name = "Task")
+public class Task {
+
     private int id;
     private String name;
+    private String duration;
 
     public long getId() {
         return id;
@@ -38,4 +40,13 @@ public class Employee {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
 }

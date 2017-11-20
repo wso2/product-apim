@@ -21,12 +21,24 @@
     </cxf:bus>
 
 	<bean id="employeeService" class="server.service.EmployeeService" init-method="init"></bean>
-	<bean id="jsonProvider" 
+	<bean id="mobilePriceService" class="server.service.MobilePriceService" init-method="init"></bean>
+	<bean id="pouchPriceService" class="server.service.PouchPriceService" init-method="init"></bean>
+	<bean id="promoService" class="server.service.PromoService" init-method="init"></bean>
+	<bean id="salaryService" class="server.service.SalaryService" init-method="init"></bean>
+	<bean id="stockService" class="server.service.StockService" init-method="init"></bean>
+	<bean id="taskService" class="server.service.TaskService" init-method="init"></bean>
+	<bean id="jsonProvider"
 		class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 	
-  	<jaxrs:server id="employees" address="/rservice">
+  	<jaxrs:server id="rservice" address="/rservice">
   		<jaxrs:serviceBeans>
   			<ref bean="employeeService"/>
+  			<ref bean="mobilePriceService"/>
+  			<ref bean="pouchPriceService"/>
+  			<ref bean="promoService"/>
+  			<ref bean="salaryService"/>
+  			<ref bean="stockService"/>
+  			<ref bean="taskService"/>
   		</jaxrs:serviceBeans>
   		<jaxrs:providers>
 			<ref bean='jsonProvider' />

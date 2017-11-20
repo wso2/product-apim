@@ -16,7 +16,7 @@
 
 package server.service;
 
-import server.obj.Employee;
+import server.obj.Promo;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,32 +29,31 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/employeeservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class EmployeeService {
+@Path("/promoservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class PromoService {
 
-    Map<String, Employee> employeeMap = new HashMap<String, Employee>();
+    Map<String, Promo> promoMap = new HashMap<>();
 
     public void init() {
 
-        Employee employeeOne = new Employee();
-        employeeOne.setId(1);
-        employeeOne.setName("Alvin Reyes");
+        Promo promoOne = new Promo();
+        promoOne.setId(1);
+        promoOne.setName("10 % discount from 24th Nov to 30th Nov.");
 
-        Employee employeeTwo = new Employee();
-        employeeTwo.setId(2);
-        employeeTwo.setName("Rachelle Ann");
+        Promo promoTwo = new Promo();
+        promoTwo.setId(2);
+        promoTwo.setName("But a Nokia phone and get a pouch free.");
 
-        employeeMap.put("1", employeeOne);
-        employeeMap.put("2", employeeTwo);
+        promoMap.put("1", promoOne);
+        promoMap.put("2", promoTwo);
 
     }
 
-    public EmployeeService() {
+    public PromoService() {
         init();
     }
 
-    @GET @Path("/employee/{id}/") public Employee getEmployee(@PathParam("id") String id,
-            @Context HttpHeaders headers) {
-        Employee employee = employeeMap.get(id);
-        return employee;
+    @GET @Path("/promo/{id}/") public Promo getPromo(@PathParam("id") String id, @Context HttpHeaders headers) {
+        Promo promo = promoMap.get(id);
+        return promo;
     }
 }

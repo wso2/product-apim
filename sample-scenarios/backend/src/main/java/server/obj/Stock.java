@@ -18,8 +18,8 @@ package server.obj;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "Employee")
-public class Employee {
+@XmlRootElement(name = "Stock")
+public class Stock {
     private int id;
     private String name;
 

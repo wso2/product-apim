@@ -16,7 +16,7 @@
 
 package server.service;
 
-import server.obj.Employee;
+import server.obj.Task;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,32 +29,32 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/employeeservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class EmployeeService {
+@Path("/taskservice/") @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) public class TaskService {
 
-    Map<String, Employee> employeeMap = new HashMap<String, Employee>();
+    Map<String, Task> taskMap = new HashMap<>();
 
     public void init() {
 
-        Employee employeeOne = new Employee();
-        employeeOne.setId(1);
-        employeeOne.setName("Alvin Reyes");
+        Task taskOne = new Task();
+        taskOne.setId(1);
+        taskOne.setName("Clean office floor area");
+        taskOne.setDuration("One day");
 
-        Employee employeeTwo = new Employee();
-        employeeTwo.setId(2);
-        employeeTwo.setName("Rachelle Ann");
+        Task taskTwo = new Task();
+        taskTwo.setId(2);
+        taskOne.setName("Fill the printer cartridges");
+        taskOne.setDuration("Ten minutes");
 
-        employeeMap.put("1", employeeOne);
-        employeeMap.put("2", employeeTwo);
+        taskMap.put("1", taskOne);
+        taskMap.put("2", taskTwo);
 
     }
 
-    public EmployeeService() {
+    public TaskService() {
         init();
     }
 
-    @GET @Path("/employee/{id}/") public Employee getEmployee(@PathParam("id") String id,
-            @Context HttpHeaders headers) {
-        Employee employee = employeeMap.get(id);
-        return employee;
+    @GET @Path("/task/{id}/") public Task getEmployee(@PathParam("id") String id, @Context HttpHeaders headers) {
+        return taskMap.get(id);
     }
 }
