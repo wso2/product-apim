@@ -93,8 +93,8 @@
             <class name="org.wso2.am.integration.tests.login.EmailUserNameLoginTestCase"/>
             <class name="org.wso2.am.integration.tests.other.DigestAuthenticationTestCase"/>
             <!--<class name="org.wso2.am.integration.tests.other.ErrorMessageTypeTestCase"/>-->
-            <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.jwt.JWTTestCase"/>
+            <class name="org.wso2.am.integration.tests.jwt.URLSafeJWTTestCase"/>
             <class name="org.wso2.am.integration.tests.other.HttpPATCHSupportTestCase"/>
             <class name="org.wso2.am.integration.tests.token.RefreshTokenTestCase"/>
             <class name="org.wso2.am.integration.tests.other.TagsRatingCommentTestCase"/>

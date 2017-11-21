@@ -1,3 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2017, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
 <APIManager>
     <!-- JNDI name of the data source to be used by the API publisher, API store and API
          key manager. This data source should be defined in the master-datasources.xml file
@@ -111,7 +129,7 @@
 	    <!-- JWT claims Cache expiry in seconds -->
         <!--JWTClaimCacheExpiry>900</JWTClaimCacheExpiry-->
         <!-- Expiry time for the apim key mgt validation info cache -->
-        <!--TokenCacheExpiry>900</TokenCacheExpiry-->
+        <TokenCacheExpiry>20</TokenCacheExpiry>
         <!-- This parameter specifies the expiration time of the TagCache. TagCache will
              only be created when this element is uncommented. When the specified
              time duration gets elapsed ,tag cache will get re-generated. -->

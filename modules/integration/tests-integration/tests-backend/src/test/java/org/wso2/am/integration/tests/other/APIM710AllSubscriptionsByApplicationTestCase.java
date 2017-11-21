@@ -161,8 +161,6 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
             JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
             assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
-            //giving some time to complete the API creation before create the next one
-            Thread.sleep(10000);
             count++;
         }
 

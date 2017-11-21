@@ -121,7 +121,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         providerName = user.getUserName();
     }
 
-    @Test(groups = { "noRestart" }, description = "Enabling JWT Token generation, admin user claims", enabled = true)
+    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, admin user claims", enabled = true)
     public void testEnableJWTAndClaims() throws Exception {
 
         RemoteUserStoreManagerServiceClient remoteUserStoreManagerServiceClient = new RemoteUserStoreManagerServiceClient(
@@ -196,13 +196,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT claim invalid  claim received", bExceptionOccured);
     }
 
-    /**
-     * This test case is a test for the fix fix for APIMANAGER-3912, where jwt claims are attempted to retrieve from
-     * an invalidated cache and hence failed. In carbon 4.2 products cache invalidation timeout is not configurable
-     * and is hardcoded to 15 mins. So the test case will take approximately 15mins to complete and it will delay the
-     * product build unnecessarily, hence the test case is disabled.
-     */
-    @Test(groups = { "noRestart" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
+    @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = true,
+            dependsOnMethods = "testEnableJWTAndClaims")
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
                    InterruptedException {
@@ -213,7 +208,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
         String tags = "token,jwt,cache";
-        int waitingSecs = 900;
+        int waitingSecs = 20;
 
         addAndSubscribeToAPI(apiName, apiVersion, apiContext, description, tags, providerName, user);
 
@@ -233,7 +228,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
+        String url = getAPIInvocationURLHttp(apiContext, apiVersion);
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
@@ -289,8 +284,8 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
                    roles.contains("admin") && roles.contains("Internal/everyone"));
     }
 
-    @Test(groups = { "noRestart" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
-            dependsOnMethods = "testEnableJWTAndClaims")
+    @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
+            dependsOnMethods = "testAPIAccessWhenJWTCachingEnabledTestCase")
     public void testSpecificUserJWTClaims() throws Exception {
 
         String accessToken;
@@ -379,7 +374,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         apiStoreRestClient.removeApplication(applicationName);
     }
 
-    @Test(groups = { "noRestart" }, description = "Invoking Prototype api with JWT enabled",
+    @Test(groups = { "wso2.am" }, description = "Invoking Prototype api with JWT enabled",
             dependsOnMethods = "testSpecificUserJWTClaims")
     public void testPrototypeInvocationWithJWTEnabled() throws Exception {
 
@@ -432,7 +427,7 @@ public class JWTTestCase extends APIMIntegrationBaseTest {
         }
 
         if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
+            serverConfigurationManager.restoreToLastConfiguration(false);
         }
     }
 
