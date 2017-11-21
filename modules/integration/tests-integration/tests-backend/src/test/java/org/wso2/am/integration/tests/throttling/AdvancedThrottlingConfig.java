@@ -20,21 +20,26 @@
 
 package org.wso2.am.integration.tests.throttling;
 
-import org.testng.annotations.AfterGroups;
-import org.testng.annotations.BeforeGroups;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.wso2.am.admin.clients.webapp.WebAppAdminClient;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
+import org.wso2.am.integration.test.utils.generic.TestConfigurationProvider;
+import org.wso2.am.integration.test.utils.webapp.WebAppDeploymentUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+
 import java.io.File;
 
+import static org.testng.Assert.assertTrue;
 
 public class AdvancedThrottlingConfig extends APIMIntegrationBaseTest {
     private ServerConfigurationManager serverConfigurationManager;
     private AutomationContext superTenantKeyManagerContext;
 
-    @BeforeGroups("throttling")
+    @BeforeTest(alwaysRun = true)
     public void disableAdvancedThrottling() throws Exception {
         superTenantKeyManagerContext = new AutomationContext(APIMIntegrationConstants.AM_PRODUCT_GROUP_NAME,
                 APIMIntegrationConstants.AM_KEY_MANAGER_INSTANCE,
@@ -44,12 +49,39 @@ public class AdvancedThrottlingConfig extends APIMIntegrationBaseTest {
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
                 + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
                 File.separator + "api-manager.xml"));
+        serverConfigurationManager.copyToComponentLib(new File(getAMResourceLocation() + File.separator +
+                "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"));
 
         serverConfigurationManager.restartGracefully();
+
+        deployWebApp();
     }
 
-    @AfterGroups("throttling")
+    @AfterTest(alwaysRun = true)
     public void enableAdvancedThrottling() throws Exception {
-        serverConfigurationManager.restoreToLastConfiguration();
+        serverConfigurationManager.removeFromComponentLib("subs-workflow-1.0.0.jar");
+        serverConfigurationManager.restoreToLastConfiguration(false);
+    }
+
+    private void deployWebApp() throws Exception {
+        super.init();
+        String fileFormat = ".war";
+        String webApp = "jaxrs_basic";
+        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
+                "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
+
+        String sourcePath = path + webApp + fileFormat;
+
+        String sessionId = createSession(gatewayContextWrk);
+        boolean isWebAppDeployed = WebAppDeploymentUtil
+                .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
+        if (!isWebAppDeployed) {
+            WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
+                    getBackEndUrl(), sessionId);
+            webAppAdminClient.uploadWarFile(sourcePath);
+            isWebAppDeployed = WebAppDeploymentUtil
+                    .isWebApplicationDeployed(gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
+            assertTrue(isWebAppDeployed, "Web APP is not deployed: " + webApp);
+        }
     }
 }

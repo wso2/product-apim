@@ -110,7 +110,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"throttling"}, description = "test availability of tiers in Permission Page before change tiers XML")
+    @Test(groups = {"wso2.am"}, description = "test availability of tiers in Permission Page before change tiers XML")
     public void testAvailabilityOfTiersInPermissionPageBeforeChangeTiersXML() throws Exception {
         initialize();
         //Create a API
@@ -128,7 +128,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"throttling"}, description = "Test availability of tiers in API Manage Page before change tiers XML",
+    @Test(groups = {"wso2.am"}, description = "Test availability of tiers in API Manage Page before change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInPermissionPageBeforeChangeTiersXML")
     public void testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML() throws Exception {
         initialize();
@@ -143,7 +143,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"throttling"}, description = "test availability of tiers in Permission Page after change tiers XML",
+    @Test(groups = {"wso2.am"}, description = "test availability of tiers in Permission Page after change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInAPIManagePageBeforeChangeTiersXML")
     public void testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML() throws Exception {
         initialize();
@@ -165,7 +165,7 @@ public class EditTiersXMLAndVerifyInPublisherTestCase extends APIManagerLifecycl
     }
 
 
-    @Test(groups = {"throttling"}, description = "Test availability of tiers in API Manage Page after change tiers XML",
+    @Test(groups = {"wso2.am"}, description = "Test availability of tiers in API Manage Page after change tiers XML",
             dependsOnMethods = "testAvailabilityOfTiersInPermissionPageAfterChangeTiersXML")
     public void testAvailabilityOfTiersInAPIManagePageAfterChangeTiersXML() throws Exception {
         initialize();

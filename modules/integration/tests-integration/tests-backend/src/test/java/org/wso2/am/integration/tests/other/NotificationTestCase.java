@@ -20,6 +20,7 @@ package org.wso2.am.integration.tests.other;
 
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -31,6 +32,7 @@ import org.wso2.am.integration.test.utils.base.APIMIntegrationConstants;
 import org.wso2.am.integration.test.utils.bean.*;
 import org.wso2.am.integration.test.utils.clients.APIPublisherRestClient;
 import org.wso2.am.integration.test.utils.clients.APIStoreRestClient;
+import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
 import org.wso2.carbon.automation.engine.annotations.SetEnvironment;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
@@ -43,6 +45,7 @@ import org.wso2.carbon.utils.ServerConstants;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
@@ -103,38 +106,6 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
     @Test(groups = {"wso2.am"}, description = "Testing Notification Feature")
     public void notificationTestCase() throws Exception {
 
-        resourceAdminServiceClient =
-                new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().getBackEndUrl(),
-                        createSession(gatewayContextMgt));
-
-        String tenantConfSrcLocation = readFile(getAMResourceLocation() + File.separator + "configFiles"
-                + File.separator + "notification" + File.separator + "tenant-conf.json");
-
-        resourceAdminServiceClient.updateTextContent(TENANT_CONFIG_LOCATION, tenantConfSrcLocation);
-
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                "configFiles" + File.separator + "notification" + File.separator;
-
-        String apimConfigArtifactLocation = artifactsLocation + ADAPTER_CONFIG_XML;
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                File.separator + "conf" + File.separator + ADAPTER_CONFIG_XML;
-
-        File apimConfSourceFile = new File(apimConfigArtifactLocation);
-        File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            ServerConfigurationManager serverManager = new ServerConfigurationManager(superTenantKeyManagerContext);
-
-            serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-            log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                    " to :" + apimRepositoryConfigLocation);
-
-            serverManager.restartGracefully();
-            super.init();
-        }
-
         //Setting greenMail server
         ServerSetup setup = new ServerSetup(SMTP_TEST_PORT, "localhost", "smtp");
         greenMail = new GreenMail(setup);
@@ -183,6 +154,12 @@ public class NotificationTestCase extends APIMIntegrationBaseTest {
         HttpResponse newVersionResponse=apiPublisher.copyAPI(user.getUserName(), API_NAME, API_VERSION,
                                             NEW_API_VERSION, "");
         assertEquals(newVersionResponse.getResponseCode(),Response.Status.OK.getStatusCode(),"Response Code Mismatch");
+
+        //Publisher new version
+        APIIdentifier apiIdentifier = new APIIdentifier(user.getUserName(), API_NAME, NEW_API_VERSION);
+        HttpResponse newVersionPublishResponse = apiPublisher.changeAPILifeCycleStatusToPublish(apiIdentifier, false);
+        assertEquals(newVersionPublishResponse.getResponseCode(), Response.Status.OK.getStatusCode(),
+                "Response Code Mismatch");
 
         // checking whether message is received by greenmail
         greenMail.waitForIncomingEmail(50000, 1);

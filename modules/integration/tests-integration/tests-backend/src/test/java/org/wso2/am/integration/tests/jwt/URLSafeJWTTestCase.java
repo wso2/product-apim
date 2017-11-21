@@ -136,10 +136,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         remoteUserStoreManagerServiceClient.setUserClaimValue(user.getUserNameWithoutDomain(),
                                                               "http://wso2.org/claims/lastname", "last name", profile);
 
-        // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
-                new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
         super.init(userMode);
 
         addAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);
@@ -208,13 +204,8 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         assertTrue("JWT claim invalid  claim received", bExceptionOccured);
     }
 
-    /**
-     * This test case is a test for the fix fix for APIMANAGER-3912, where jwt claims are attempted to retrieve from
-     * an invalidated cache and hence failed. In carbon 4.2 products cache invalidation timeout is not configurable
-     * and is hardcoded to 15 mins. So the test case will take approximately 15mins to complete and it will delay the
-     * product build unnecessarily, hence the test case is disabled.
-     */
-    @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = false)
+    @Test(groups = { "wso2.am" }, description = "JWT Token generation when JWT caching is enabled", enabled = true,
+            dependsOnMethods = "testEnableJWTAndClaims")
     public void testAPIAccessWhenJWTCachingEnabledTestCase()
             throws APIManagerIntegrationTestException, XPathExpressionException, IOException, JSONException,
                    InterruptedException {
@@ -224,12 +215,10 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         String apiContext = "JWTTokenCacheTestAPI";
         String apiVersion = "1.0.0";
         String description = "JWTTokenCacheTestAPI description";
-        String endpointURL = gatewayUrlsWrk.getWebAppURLNhttp() + "response";
-        String apiTier = APIMIntegrationConstants.API_TIER.GOLD;
         String tags = "token,jwt,cache";
-        int waitingSecs = 900;
+        int waitingSecs = 20;
 
-        addAPI(apiName, apiVersion, apiContext, description, endpointURL, tags, providerName);
+        addAPI(apiName, apiVersion, apiContext, description, backendURL, tags, providerName);
 
         APIStoreRestClient apiStoreRestClient = new APIStoreRestClient(storeURLHttp);
         apiStoreRestClient.login(storeContext.getContextTenant().getContextUser().getUserName(),
@@ -247,7 +236,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         JSONObject response = new JSONObject(responseString);
         String accessToken = response.getJSONObject("data").getJSONObject("key").get("accessToken").toString();
 
-        String url = gatewayUrlsWrk.getWebAppURLNhttp() + apiContext + "/" + apiVersion;
+        String url = getAPIInvocationURLHttp(apiContext, apiVersion);
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Authorization", "Bearer " + accessToken);
@@ -304,7 +293,7 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
     }
 
     @Test(groups = { "wso2.am" }, description = "Enabling JWT Token generation, specific user claims", enabled = true,
-            dependsOnMethods = "testEnableJWTAndClaims")
+            dependsOnMethods = "testAPIAccessWhenJWTCachingEnabledTestCase")
     public void testSpecificUserJWTClaims() throws Exception {
 
         String accessToken;
@@ -335,10 +324,6 @@ public class URLSafeJWTTestCase extends APIMIntegrationBaseTest {
         remoteUserStoreManagerServiceClient
                 .setUserClaimValue(subscriberUser, "http://wso2.org/claims/lastname", "subscriber last name", profile);
 
-        // restart the server since updated claims not picked unless cache expired
-        ServerConfigurationManager serverConfigManagerForTenant =
-                new ServerConfigurationManager(superTenantKeyManagerContext);
-        serverConfigManagerForTenant.restartGracefully();
         super.init(userMode);
 
         waitForAPIDeploymentSync(providerName, apiName, apiVersion, APIMIntegrationConstants.IS_API_EXISTS);

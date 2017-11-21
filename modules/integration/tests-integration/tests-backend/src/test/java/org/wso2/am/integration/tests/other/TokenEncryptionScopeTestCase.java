@@ -45,11 +45,11 @@ import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
 import org.wso2.carbon.user.mgt.stub.UserAdminUserAdminException;
 import org.wso2.carbon.utils.ServerConstants;
 
-import javax.xml.xpath.XPathExpressionException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import javax.xml.xpath.XPathExpressionException;
 
 @SetEnvironment(executionEnvironments = {ExecutionEnvironment.STANDALONE})
 public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
@@ -91,40 +91,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
 
         apiProvider = publisherContext.getSuperTenant().getContextUser().getUserName();
 
-        String carbonHome = System.getProperty(ServerConstants.CARBON_HOME);
-        String artifactsLocation = TestConfigurationProvider.getResourceLocation() +
-                                   File.separator + "artifacts" + File.separator + "AM" + File.separator +
-                                   "configFiles" + File.separator + "token_encryption" + File.separator;
-
-        String apimConfigArtifactLocation = artifactsLocation + APIM_CONFIG_XML;
-        String identityConfigArtifactLocation = artifactsLocation + IDENTITY_CONFIG_XML;
-
-        String apimRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                                              File.separator + "conf" + File.separator + APIM_CONFIG_XML;
-
-        String identityRepositoryConfigLocation = carbonHome + File.separator + "repository" +
-                                                  File.separator + "conf" + File.separator + "identity" + File.separator +
-                                                  IDENTITY_CONFIG_XML;
-
-        File apimConfSourceFile = new File(apimConfigArtifactLocation);
-        File apimConfTargetFile = new File(apimRepositoryConfigLocation);
-
-        File identityConfSourceFile = new File(identityConfigArtifactLocation);
-        File identityConfTargetFile = new File(identityRepositoryConfigLocation);
-
-        serverManager = new ServerConfigurationManager(gatewayContextWrk);
-
-        // apply configuration to  api-manager.xml
-        serverManager.applyConfigurationWithoutRestart(apimConfSourceFile, apimConfTargetFile, true);
-        log.info("api-manager.xml configuration file copy from :" + apimConfigArtifactLocation +
-                 " to :" + apimRepositoryConfigLocation);
-
-        // apply configuration to identity.xml
-        serverManager.applyConfigurationWithoutRestart(identityConfSourceFile, identityConfTargetFile, true);
-        log.info("identity.xml configuration file copy from :" + identityConfigArtifactLocation +
-                 " to :" + identityRepositoryConfigLocation);
-
-        serverManager.restartGracefully();
         super.init();
 
         //Initialize publisher and store.
@@ -289,7 +255,6 @@ public class TokenEncryptionScopeTestCase extends APIMIntegrationBaseTest {
             userManagementClient1.deleteRole(SUBSCRIBER_ROLE);
         }
         super.cleanUp();
-        serverManager.restoreToLastConfiguration();
         log.info("Restored configuration and restarted gracefully...");
     }
 
