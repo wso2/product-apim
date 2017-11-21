@@ -14,20 +14,28 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+echo "API Manage sample business scenarios sample data populator."
+echo
+echo "1 - Managing Public, Partner vs Private APIs"
+echo "2 - Ownership, permission and collaborative API development"
+echo "7 - API Lifecycle Management"
+echo "8 - API Versioning"
+echo
+
 set -e
 
 while [ -z $sample_number ]
 do
-  echo -n "Enter the sample number (1 to 8): "
+  echo "Enter the sample number from above listed samples: "
   read -r sample_number
 done
 
-echo "This script will deploy a sample backend run the sample" . $sample_number . " scenario."
+echo "This script will deploy a sample backend run the sample"$sample_number" scenario."
 echo
 
 while [ -z $CARBON_HOME ]
 do
-  echo -n "Enter location for CARBON_HOME: "
+  echo "Enter location for CARBON_HOME: "
   read -r CARBON_HOME
 done
 
@@ -35,7 +43,7 @@ ts_path=$CARBON_HOME/repository/resources/security/client-truststore.jks
 
 while [ -z $use_default ]
 do
-  echo -n "Use Trust Store ${ts_path} (y/n): "
+  echo "Use Trust Store ${ts_path} (y/n): "
   read -r use_default
 done
 
