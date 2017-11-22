@@ -137,6 +137,13 @@ public class GIT_1638_UrlEncodedApiNameTestCase extends APIMIntegrationBaseTest 
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String retrievedApiName = jsonObject.getAsJsonPrimitive("name").getAsString();
         Assert.assertEquals(apiName, retrievedApiName);
+
+        //checking publisher get APIs list
+        String publisherApisList = HTTPSClientUtils.doGet(publisherRestApiBaseUrl + "apis/", headers).getData();
+        Assert.assertTrue(publisherApisList.contains("pagination"), "Pagination data not present in response");
+        //checking store get APIs list
+        String storeApisList = HTTPSClientUtils.doGet(storeRestApiBaseUrl + "apis/", null).getData();
+        Assert.assertTrue(storeApisList.contains("pagination"), "Pagination data not present in response");
     }
 
     @Test(description = "api detail with API name having hyphen")
