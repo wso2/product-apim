@@ -47,7 +47,6 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
 
     private static final Log log = LogFactory.getLog(OnHoldSubscriptionWorkflowIdTestCase.class);
 
-    private ServerConfigurationManager serverConfigurationManager;
     private final String DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION =
             "/_system/governance/apimgt/applicationdata/workflow-extensions.xml";
     private ResourceAdminServiceClient resourceAdminServiceClient;
@@ -69,16 +68,6 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
         super.init(userMode);
-        if(TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager = new ServerConfigurationManager(gatewayContextWrk);
-            serverConfigurationManager.applyConfigurationWithoutRestart(new File(getAMResourceLocation()
-                    + File.separator + "configFiles" + File.separator + "apiManagerXmlWithoutAdvancedThrottling" +
-                    File.separator + "api-manager.xml"));
-            // add custom workflow executor
-            serverConfigurationManager.copyToComponentLib(new File(getAMResourceLocation() + File.separator +
-                    "configFiles" + File.separator + "APIM5898" + File.separator + "subs-workflow-1.0.0.jar"));
-            serverConfigurationManager.restartGracefully();
-        }
 
         resourceAdminServiceClient = new ResourceAdminServiceClient(gatewayContextMgt.getContextUrls().
                 getBackEndUrl(), createSession(gatewayContextMgt));
@@ -113,9 +102,6 @@ public class OnHoldSubscriptionWorkflowIdTestCase extends APIMIntegrationBaseTes
         // restore the original workflow-extentions.xml content.
         resourceAdminServiceClient.updateTextContent(DEFAULT_WF_EXTENTIONS_XML_REG_CONFIG_LOCATION,
                 originalWFExtentionsXML);
-        // remove custom workflow executor
-        serverConfigurationManager.removeFromComponentLib("subs-workflow-1.0.0.jar");
-        serverConfigurationManager.restoreToLastConfiguration();
     }
 
 

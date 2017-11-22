@@ -96,23 +96,8 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception{
 
-        String fileFormat = ".war";
         super.init(userMode);
         log.info("Test Starting user mode:" + userMode);
-
-        //copy first .war file
-        String path = TestConfigurationProvider.getResourceLocation() + File.separator +
-                      "artifacts" + File.separator + "AM" + File.separator + "lifecycletest" + File.separator;
-
-        String sourcePath = path + webApp + fileFormat;
-
-        String sessionId = createSession(gatewayContextWrk);
-        WebAppAdminClient webAppAdminClient = new WebAppAdminClient(gatewayContextWrk.getContextUrls().
-                getBackEndUrl(), sessionId);
-        webAppAdminClient.uploadWarFile(sourcePath);
-        boolean isWebAppDeployed = WebAppDeploymentUtil.isWebApplicationDeployed
-                (gatewayContextWrk.getContextUrls().getBackEndUrl(), sessionId, webApp);
-        assertTrue(isWebAppDeployed, "Web APP is not deployed");
 
         String publisherURLHttp = publisherUrls.getWebAppURLHttp();
         String storeURLHttp = storeUrls.getWebAppURLHttp();
@@ -176,8 +161,6 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 
             JSONObject statusUpdateJsonObject = new JSONObject(statusUpdateResponse.getData());
             assertFalse(statusUpdateJsonObject.getBoolean("error"), "API is not published");
-            //giving some time to complete the API creation before create the next one
-            Thread.sleep(10000);
             count++;
         }
 
@@ -237,7 +220,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
             Thread.sleep(3000);
         }
     }
-    @Test(description = "List all Subscriptions By Application Name")
+    @Test(groups = {"webapp"}, description = "List all Subscriptions By Application Name")
     public void testAllSubscriptionsByAppName() throws Exception{
 
         HttpResponse publishedApiByAppResponse;
@@ -283,7 +266,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
         assertTrue(isApisAvailable,"Response Error in Apis");
     }
 
-    @Test(description = "Remove Subscription by Application Name", dependsOnMethods = "testAllSubscriptionsByAppName")
+    @Test(groups = {"webapp"}, description = "Remove Subscription by Application Name", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppName() throws Exception{
 
         providerName=storeContext.getContextTenant().getContextUser().getUserName();
@@ -321,7 +304,7 @@ public class APIM710AllSubscriptionsByApplicationTestCase extends APIMIntegratio
 //        }
     }
 
-    @Test(description = "Remove Subscription By Application Id", dependsOnMethods = "testAllSubscriptionsByAppName")
+    @Test(groups = {"webapp"}, description = "Remove Subscription By Application Id", dependsOnMethods = "testAllSubscriptionsByAppName")
     public void testRemoveSubscriptionByAppId() throws Exception{
 
         defaultAppListIndex=numberOfApis-2;

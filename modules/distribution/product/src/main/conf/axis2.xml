@@ -543,6 +543,14 @@
                 <Password>wso2carbon</Password>
             </TrustStore>
         </parameter>
+        <!-- ============================================== -->
+        <!-- Configuration for Dynamic SSL Profile loading. -->
+        <!-- Configured for 10 mins. -->
+        <!-- ============================================== -->
+        <parameter name="dynamicSSLProfilesConfig">
+            <filePath>repository/resources/security/sslprofiles.xml</filePath>
+            <fileReadInterval>600000</fileReadInterval>
+        </parameter>
         <!--<parameter name="HostnameVerifier">DefaultAndLocalhost</parameter>-->
             <!--supports Strict|AllowAll|DefaultAndLocalhost or the default if none specified -->
     </transportSender>

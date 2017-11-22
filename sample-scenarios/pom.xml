@@ -32,6 +32,9 @@
         <module>sample-utils</module>
         <module>sample1</module>
         <module>sample2</module>
+        <module>sample7</module>
+        <module>sample8</module>
+        <module>backend</module>
     </modules>
     
     <repositories>

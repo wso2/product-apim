@@ -58,7 +58,7 @@ public class CreateSampleOneRawData {
         ArrayList<String> apiOneVisibleTenants = new ArrayList<>();
         apiOneVisibleTenants.add("finance.abc.com");
         ArrayList<String> apiOneTags = new ArrayList<>();
-        apiOneTags.add("Finance");
+        apiOneTags.add("finance");
         apiIds.add(SampleUtils
                 .createApi("Salary_details_API", "1.0.0", "/salaries", new ArrayList<>(), apiOneVisibleTenants,
                         API.SubscriptionAvailabilityEnum.SPECIFIC_TENANTS, hostname, port, apiOneTags));
@@ -88,8 +88,10 @@ public class CreateSampleOneRawData {
                 .createApi("Employee_info_API", "1.0.0", "/empInfo", new ArrayList<>(), apiFourVisibleTenants,
                         API.SubscriptionAvailabilityEnum.SPECIFIC_TENANTS, hostname, port, apiFourTags));
         ArrayList<String> apiFiveTags = new ArrayList<String>();
-        apiFiveTags.add("price");
+        apiFiveTags.add("phone");
         apiIds.add(SampleUtils.createApi("Phone_prices_API", "1.0.0", "/mobilePrices", new ArrayList<>(),
+                new ArrayList<String>(), API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, apiFiveTags));
+        apiIds.add(SampleUtils.createApi("Pouch_prices_API", "1.0.0", "/pouchPrices", new ArrayList<>(),
                 new ArrayList<String>(), API.SubscriptionAvailabilityEnum.ALL_TENANTS, hostname, port, apiFiveTags));
 
         return apiIds;

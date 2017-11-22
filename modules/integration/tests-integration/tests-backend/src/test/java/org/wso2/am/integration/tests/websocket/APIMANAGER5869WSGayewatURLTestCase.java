@@ -240,7 +240,7 @@ public class APIMANAGER5869WSGayewatURLTestCase extends APIMIntegrationBaseTest 
     public void destroy() throws Exception {
         super.cleanUp();
         if (TestUserMode.SUPER_TENANT_ADMIN == userMode) {
-            serverConfigurationManager.restoreToLastConfiguration();
+            serverConfigurationManager.restoreToLastConfiguration(false);
         }
     }
 

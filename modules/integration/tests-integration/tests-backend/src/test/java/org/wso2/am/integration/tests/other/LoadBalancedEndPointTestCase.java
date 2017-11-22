@@ -111,7 +111,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP1_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP2_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.PRODEP3_WEB_APP_NAME + ".war");
-        webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME + ".war");
         webAppAdminClient.uploadWarFile(testArtifactWarFilePath + APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME + ".war");
 
@@ -418,7 +417,6 @@ public class LoadBalancedEndPointTestCase extends APIMIntegrationBaseTest {
         webAppList.add(APIMIntegrationConstants.PRODEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.PRODEP3_WEB_APP_NAME);
-        webAppList.add(APIMIntegrationConstants.SANDBOXEP1_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP2_WEB_APP_NAME);
         webAppList.add(APIMIntegrationConstants.SANDBOXEP3_WEB_APP_NAME);
         webAppAdminClient.deleteWebAppList(webAppList, gatewayContextMgt.getDefaultInstance().getHosts().get("default"));
