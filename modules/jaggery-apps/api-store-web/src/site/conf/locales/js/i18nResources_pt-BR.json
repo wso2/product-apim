@@ -1,0 +1,77 @@
+{
+    "info": {
+        "appSelect": "Por favor selecione uma aplicação antes de subscrever-se",
+        "wait": "Aguarde por favor..." ,
+        "subscription": "Subscrição realizada com sucesso" ,
+        "subscriptionRejectTitle": "Subscriçao rejeitada" , 
+        "subscriptionSuccess": "Parabéns! Você subscreveu-se com sucesso à API. Vá por favor a página 'Minhas Subscrições' para revisar sua subscrição e gerar as Chaves de Acesso.",
+        "subscriptionPending": "Parabéns! Sua requisição de subscrição foi submetida e agora está aguardando aprovação.",
+		"subscriptionRejected": "Sua subscrição foi rejeitada, pois ela não combina com nenhum requisito de autenticação. Por favor contate o publicador da API para mais informações.", 	 	
+		"applicationSuccess": "Parabéns! Você incluiu a API com sucesso.", 	        
+		"applicationPending": "Parabéns! Sua requisição de aplicação foi submetida e agora aguarda aprovação.",         
+        "gotoSubsPage": "Ir a Minhas Subscrições",
+        "stayPage": "Permanecer nesta página",
+        "returntoAPIPage": "Voltar a página da API?",
+        "yes": "Sim",
+        "no": "Não",
+        "OK": "OK",
+        "charsLeft": "Caracteres restantes",
+		"replyAdded": "Reply Successfully Added", 	 	
+		"callBackHelpMsg": "Este parâmetro pode ser usado no tipo de liberação de autorização de código ao invocar a API. Por exemplo, assuma que ambos, cliente e API Gateway, estão executando no mesmo servidor e a URL de Autorização da API é https://localhost:8243/authorize. <strong> query component:</strong> “response_type=code&client_id=<consumer_key>&scope=PRODUCTION&redirect_uri=<application_callback_url>” e <strong>headers:</strong> Content-Type:application/x-www-form-urlencoded", 	 	
+		"tokenHelpMsg" : "O período depois do qual o token vai expirar após a geração. Um valor negativo garante que o token nunca vai expirar." 
+
+    },
+    "confirm": {
+        "delete": "Confirma exclusão",
+        "deleteMsg": "Tem certeza que deseja excluir a aplicação",
+        "deleteMsgPostfix": "Isto vai cancelar todas as subscrições e chaves associadas a esta aplicação.",
+		"deleteMsgForForumTopic": "Você quer remover o tópico ",
+		"deleteMsgForForumReply": "Você quer remover esta resposta ?" 
+    },
+    "titles":{
+        "save":"Salvar",
+        "cancel":"Cancelar",
+        "production":"Produção",
+        "sandbox":"Sandbox",
+        "hideKeys":" Ocultar Chaves",
+        "showKeys":" Mostrar Chaves",
+        "regenerate":"Gerar novamente"
+    },
+    "resultMsgs":{
+        "showKey":"As chaves estão disponíveis. Haga clic en el bot�n 'Mostrar Keys' para visualizarlas."
+
+    },
+    "validationMsgs":{
+        "invalidEmail": "Endereço de email inválido",
+        "fieldRequired": "Este campo é obrigatório.",
+        "exceedChars": "O nome excede o limite de caracteres (70)",
+        "illegalChars": "O nome contém um ou mais caracteres inválidos",
+        "illegalName": "O nome contém um ou mais caracteres inválidos",
+        "invalid": "Inválido",
+        "valid": "Válido",
+        "testUri": "Testar URI",
+        "validating": "Validando.."
+    },
+    "errorMsgs":{ 	
+	    	"login":"Não foi possível efetuar o login!",	
+	        "invalidDocUrl":"Formato da URL do Documento Inválido.", 	 	
+	        "inlineContent":"Desculpe. O conteúdo deste documento não pôde de ser carregado.", 	 	
+	        "apiResource":"Desculpe. Esta linha não pôde ser excluída. Pelo menos uma entrada de recurso deve estar disponível." , 	 	
+	        "uniqueUrlPattern":"Padrão de URL deve ser único. ", 	 	
+	        "emptyUrlPattern":"Padrão de URL não pode estar vazio. ", 	 	
+	        "emptyVerb":"Pelo menos um Verbo HTTP Verb deve ser checado para um recurso. ", 	 	
+	        "duplicateUrlPattern":"possui entradas duplicadas. ", 	 	
+	        "noData":"Nenhum Dado Encontrado ... ", 	 	
+	        "checkBAMConnectivity":" <a href='http://docs.wso2.org/wiki/display/AM180/Publishing+API+Runtime+Statistics' target='_blank' class='warningLink'>Acesse nosso wiki para configurar o BAM corretamente</a>", 	 	
+	        "unavailableData":"Dados não disponíveis", 	 	
+	        "login":"Não foi possível efetuar o login!", 	 	
+	        "cannotDeleteForumTopic" : "Não foi possível excluir o tópico. ", 	 	
+	        "cannotEditForumTopic" : "Não foi possível editar o tópico. " , 	 	
+	        "cannotDeleteForumReply" : "Não foi possível excluir a resposta. ", 	 	
+	        "cannotEditForumReply" : "Não foi possível editar a resposta. ", 	 	
+	        "topicSubjectCannotBeEmpty" : "O assunto do tópico não pode estar vazio.", 	 	
+	        "topicDescriptionCannotBeEmpty" : "A descrição do tópico não pode estar vazia.", 	 	
+	        "replyCannotBeEmpty" : "Resposta não pode estar vazia." 	 	
+	    }     
+
+}
