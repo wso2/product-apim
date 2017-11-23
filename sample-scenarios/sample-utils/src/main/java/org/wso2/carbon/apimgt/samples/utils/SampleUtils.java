@@ -18,6 +18,12 @@ package org.wso2.carbon.apimgt.samples.utils;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.api.AdvancedPolicyCollectionApi;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.api.AdvancedPolicyIndividualApi;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.AdvancedThrottlePolicy;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.BandwidthLimit;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.RequestCountLimit;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.ThrottleLimit;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiClient;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APICollectionApi;
@@ -25,6 +31,8 @@ import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.api.APIIndivid
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.API;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.APIBusinessInformation;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.APICorsConfiguration;
+import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.Tier;
+import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.model.TierList;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

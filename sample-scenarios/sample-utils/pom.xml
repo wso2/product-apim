@@ -69,6 +69,11 @@
             <artifactId>org.wso2.carbon.utils</artifactId>
             <version>${carbon.utils.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.user.mgt.stub</artifactId>
+            <version>${carbon.identity.version}</version>
+        </dependency>
 
     </dependencies>
 
@@ -79,6 +84,7 @@
         <admin.client.api.version>1.0.0</admin.client.api.version>
         <carbon.logging.version>4.4.11</carbon.logging.version>
         <carbon.utils.version>4.4.11</carbon.utils.version>
+        <carbon.identity.version>5.7.5</carbon.identity.version>
     </properties>
 
 </project>

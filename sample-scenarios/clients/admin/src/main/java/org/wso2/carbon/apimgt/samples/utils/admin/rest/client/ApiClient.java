@@ -13,6 +13,8 @@
 
 package org.wso2.carbon.apimgt.samples.utils.admin.rest.client;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -27,8 +29,14 @@ import com.squareup.okhttp.internal.http.HttpMethod;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -61,8 +69,10 @@ import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -83,6 +93,10 @@ public class ApiClient {
     public static final double JAVA_VERSION;
     public static final boolean IS_ANDROID;
     public static final int ANDROID_SDK_VERSION;
+    private static String consumerKey = null;
+    private static String consumerSecret = null;
+    private static final String TLS_PROTOCOL = "TLS";
+    private static TrustManager trustAll;
 
     static {
         JAVA_VERSION = Double.parseDouble(System.getProperty("java.specification.version"));
@@ -112,7 +126,7 @@ public class ApiClient {
      */
     public static final String LENIENT_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-    private String basePath = "https://apis.wso2.com/api/am/admin/v0.11";
+    private String basePath = "https://localhost:9443/api/am/admin/v0.11";
     private boolean lenientOnJson = false;
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -137,9 +151,12 @@ public class ApiClient {
      * Constructor for ApiClient
      */
     public ApiClient() {
+        consumerKey = null;
+        consumerSecret = null;
         httpClient = new OkHttpClient();
 
-        verifyingSsl = true;
+        verifyingSsl = false;
+        applySslSettings();
 
         json = new JSON(this);
 
@@ -163,6 +180,45 @@ public class ApiClient {
         authentications = new HashMap<String, Authentication>();
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
+
+        addDefaultHeader("Authorization", "Bearer " + getAccessToken("apim:tier_view " +
+                "apim:tier_manage apim:subscription_view apim:apidef_update apim:subscription_block apim:workflow_approve"));
+    }
+
+    public ApiClient(String tenantDomain, String adminUsername, String adminPassword) {
+        consumerKey = null;
+        consumerSecret = null;
+        httpClient = new OkHttpClient();
+
+        verifyingSsl = false;
+        applySslSettings();
+
+        json = new JSON(this);
+
+        /*
+         * Use RFC3339 format for date and datetime.
+         * See http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
+         */
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        // Always use UTC as the default time zone when dealing with date (without time).
+        this.dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        initDatetimeFormat();
+
+        // Be lenient on datetime formats when parsing datetime from string.
+        // See <code>parseDatetime</code>.
+        this.lenientDatetimeFormat = true;
+
+        // Set default User-Agent.
+        setUserAgent("Swagger-Codegen/1.0.0/java");
+
+        // Setup authentications (key: authentication name, value: authentication).
+        authentications = new HashMap<String, Authentication>();
+        // Prevent the authentications from being modified.
+        authentications = Collections.unmodifiableMap(authentications);
+
+        addDefaultHeader("Authorization", "Bearer " + getAccessTokenForTenant("apim:tier_view "
+                        + "apim:tier_manage apim:subscription_view apim:apidef_update apim:subscription_block apim:workflow_approve",
+                tenantDomain, adminUsername, adminPassword));
     }
 
     /**
@@ -1255,7 +1311,7 @@ public class ApiClient {
             TrustManager[] trustManagers = null;
             HostnameVerifier hostnameVerifier = null;
             if (!verifyingSsl) {
-                TrustManager trustAll = new X509TrustManager() {
+                trustAll = new X509TrustManager() {
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
                     @Override
@@ -1307,6 +1363,187 @@ public class ApiClient {
             return keyStore;
         } catch (IOException e) {
             throw new AssertionError(e);
+        }
+    }
+
+    private String getAccessToken(String scopeList) {
+        if (consumerKey == null) {
+            makeDCRRequest();
+        }
+        URL url;
+        HttpsURLConnection urlConn = null;
+        //calling token endpoint
+        try {
+            url = new URL("https://127.0.0.1:9443/oauth2/token");
+            urlConn = (HttpsURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String clientEncoded = Base64.getEncoder()
+                    .encodeToString((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
+            String postParams = "grant_type=client_credentials";
+            if (!scopeList.isEmpty()) {
+                postParams += "&scope=" + scopeList;
+            }
+            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
+            sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
+            urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
+            urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                return obj.get("access_token").getAsString();
+            } else {
+                throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
+            }
+        } catch (Exception e) {
+            String msg = "Error while creating the new token for token regeneration.";
+            throw new RuntimeException(msg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private String getAccessTokenForTenant(String scopeList, String tenantDomain, String adminUsername,
+            String adminPassword) {
+        makeDCRRequestForTenant(tenantDomain, adminUsername, adminPassword);
+        URL url;
+        HttpsURLConnection urlConn = null;
+        //calling token endpoint
+        try {
+            url = new URL("https://127.0.0.1:9443/oauth2/token");
+            urlConn = (HttpsURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String clientEncoded = Base64.getEncoder()
+                    .encodeToString((consumerKey + ':' + consumerSecret).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded);
+            String postParams = "grant_type=client_credentials";
+            if (!scopeList.isEmpty()) {
+                postParams += "&scope=" + scopeList;
+            }
+            urlConn.setHostnameVerifier((s, sslSession) -> true);
+            SSLContext sslContext = SSLContext.getInstance(TLS_PROTOCOL);
+            sslContext.init(null, new TrustManager[] { trustAll }, new SecureRandom());
+            urlConn.setSSLSocketFactory(sslContext.getSocketFactory());
+            urlConn.getOutputStream().write((postParams).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject obj = parser.parse(responseStr).getAsJsonObject();
+                return obj.get("access_token").getAsString();
+            } else {
+                throw new RuntimeException("Error occurred while getting token. Status code: " + responseCode);
+            }
+        } catch (Exception e) {
+            String msg = "Error while creating the new token for token regeneration.";
+            throw new RuntimeException(msg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static String getResponseString(InputStream input) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            return buffer.lines().collect(Collectors.joining("\n"));
+
+        }
+    }
+
+    private static void makeDCRRequest() {
+        String applicationName = "Integration_Test_App";
+        URL url;
+        HttpURLConnection urlConn = null;
+        try {
+            //Create json payload for DCR endpoint
+            JsonObject json = new JsonObject();
+            json.addProperty("callbackUrl", "http://test.callback.lk/");
+            json.addProperty("clientName", applicationName);
+            json.addProperty("tokenScope", "Production");
+            json.addProperty("owner", "admin");
+            json.addProperty("grantType", "client_credentials");
+            // Calling DCR endpoint
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.11/register";
+            url = new URL(dcrEndpoint);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            String clientEncoded = Base64.getEncoder().encodeToString(
+                    (System.getProperty("systemUsername", "admin") + ':' + System.getProperty("systemUserPwd", "admin"))
+                            .getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
+            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {  //If the DCR call is success
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
+            } else { //If DCR call fails
+                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String errorMsg = "Can not create OAuth application  : " + applicationName;
+            throw new RuntimeException(errorMsg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
+        }
+    }
+
+    private static void makeDCRRequestForTenant(String tenantDomain, String adminUsername, String adminPassword) {
+        String applicationName = "Integration_Test_App";
+        URL url;
+        HttpURLConnection urlConn = null;
+        try {
+            //Create json payload for DCR endpoint
+            JsonObject json = new JsonObject();
+            json.addProperty("callbackUrl", "http://test.callback.lk/");
+            json.addProperty("clientName", applicationName);
+            json.addProperty("tokenScope", "Production");
+            json.addProperty("owner", adminUsername + '@' + tenantDomain);
+            json.addProperty("grantType", "client_credentials");
+            // Calling DCR endpoint
+            String dcrEndpoint = "http://127.0.0.1:9763/client-registration/v0.11/register";
+            url = new URL(dcrEndpoint);
+            urlConn = (HttpURLConnection) url.openConnection();
+            urlConn.setDoOutput(true);
+            urlConn.setRequestMethod("POST");
+            urlConn.setRequestProperty("Content-Type", "application/json");
+            String clientEncoded = Base64.getEncoder().encodeToString(
+                    (adminUsername + '@' + tenantDomain + ':' + adminPassword).getBytes(StandardCharsets.UTF_8));
+            urlConn.setRequestProperty("Authorization", "Basic " + clientEncoded); //temp fix
+            urlConn.getOutputStream().write((json.toString()).getBytes("UTF-8"));
+            int responseCode = urlConn.getResponseCode();
+            if (responseCode == 200) {  //If the DCR call is success
+                String responseStr = getResponseString(urlConn.getInputStream());
+                JsonParser parser = new JsonParser();
+                JsonObject jObj = parser.parse(responseStr).getAsJsonObject();
+                consumerKey = jObj.getAsJsonPrimitive("clientId").getAsString();
+                consumerSecret = jObj.getAsJsonPrimitive("clientSecret").getAsString();
+            } else { //If DCR call fails
+                throw new RuntimeException("DCR call failed. Status code: " + responseCode);
+            }
+        } catch (IOException e) {
+            String errorMsg = "Can not create OAuth application  : " + applicationName;
+            throw new RuntimeException(errorMsg, e);
+        } finally {
+            if (urlConn != null) {
+                urlConn.disconnect();
+            }
         }
     }
 }

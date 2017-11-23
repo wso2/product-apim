@@ -37,14 +37,15 @@ public class TenantUtils {
     private static final Log log = LogFactory.getLog(TenantUtils.class);
 
     /**
+     * This method is used to create tenants.
      *
-     * @param username
-     * @param password
-     * @param domainName
-     * @param firstName
-     * @param lastName
-     * @param backendUrl
-     * @return
+     * @param username  username of the tenant.
+     * @param password  password of the tenant.
+     * @param domainName    tenant domain
+     * @param firstName tenant admins first name
+     * @param lastName  tenant admins last name
+     * @param backendUrl    tenant creation server url.
+     * @return  whether the tenant creation is successful or not.
      */
     public static boolean createTenant(String username, String password, String domainName,
             String firstName, String lastName, String backendUrl) {

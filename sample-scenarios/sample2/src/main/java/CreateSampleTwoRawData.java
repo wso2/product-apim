@@ -17,6 +17,8 @@
 import beans.RawDataBean;
 import org.wso2.carbon.apimgt.samples.utils.SampleUtils;
 import org.wso2.carbon.apimgt.samples.utils.TenantUtils;
+import org.wso2.carbon.apimgt.samples.utils.ThrottlingUtils;
+import org.wso2.carbon.apimgt.samples.utils.admin.rest.client.model.ThrottleLimit;
 import org.wso2.carbon.apimgt.samples.utils.beans.ApiBean;
 import org.wso2.carbon.apimgt.samples.utils.beans.TenantBean;
 import org.wso2.carbon.apimgt.samples.utils.publisher.rest.client.ApiException;
@@ -42,9 +44,11 @@ public class CreateSampleTwoRawData {
      * @throws ApiException throws if an exception is thrown when API creation.
      * @throws IOException  throws when if an error occurred when reading the api definition file.
      */
-    public static void main(String[] args) throws IOException, ApiException, InterruptedException {
+    public static void main(String[] args) throws IOException, ApiException, InterruptedException,
+            org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException {
 
         createTenants(rawDataList);
+        createThrottlePolicies();
         System.out.println("Waiting for tenant initialization...");
         createAPIsForTenants(rawDataList);
         publishAPIs(rawDataList);
@@ -181,5 +185,33 @@ public class CreateSampleTwoRawData {
         rawDataBeanList.add(rawDataBean2);
         rawDataBeanList.add(rawDataBean3);
         return rawDataBeanList;
+    }
+
+    /**
+     * This method is used to add custom throttle policies.
+     *
+     * @throws org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException Throws if an error occurred when
+     *                                                                             creating the custom throttle polices.
+     * @throws InterruptedException                                                Throws if an error occurs in
+     *                                                                             Thread.sleep
+     */
+    private static void createThrottlePolicies()
+            throws org.wso2.carbon.apimgt.samples.utils.admin.rest.client.ApiException, InterruptedException {
+        // Create advance throttle policies for super tenants.
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "finance.abc.com", "john",
+                        "123123");
+        Thread.sleep(2000);
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "core.abc.com", "tom",
+                        "123123");
+        Thread.sleep(2000);
+        ThrottlingUtils
+                .addAdvanceThrottlePolicyForTenants("100KPerMin", "100KPerMin", "Allows 100000 requests per minute",
+                        "min", 1, 100000L, ThrottleLimit.TypeEnum.REQUESTCOUNTLIMIT, 0, null, "operations.abc.com",
+                        "bob", "123123");
+        Thread.sleep(2000);
     }
 }
