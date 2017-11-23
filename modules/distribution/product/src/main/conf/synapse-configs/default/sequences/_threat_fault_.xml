@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~  Copyright (c) 2017, WSO2 Inc. (http://wso2.com) All Rights Reserved.
+  ~
+  ~  WSO2 Inc. licenses this file to you under the Apache License,
+  ~  Version 2.0 (the "License"); you may not use this file except
+  ~  in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing,
+  ~  software distributed under the License is distributed on an
+  ~  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~  KIND, either express or implied.  See the License for the
+  ~  specific language governing permissions and limitations
+  ~  under the License.
+  -->
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="_threat_fault_">
+    <log level="custom">
+        <property name="ERROR_CODE" expression="get-property('THREAT_CODE')"/>
+        <property name="ERROR_MESSAGE" expression="get-property('THREAT_MSG')"/>
+        <property name="ERROR_DESCRIPTION" expression="get-property('THREAT_DESC')"/>
+    </log>
+    <payloadFactory>
+        <format>
+            <am:fault xmlns:am="http://wso2.org/apimanager">
+                <am:code>$1</am:code>
+                <am:message>$2</am:message>
+                <am:description>$3</am:description>
+            </am:fault>
+        </format>
+        <args>
+            <arg expression="get-property('THREAT_CODE')"/>
+            <arg expression="get-property('THREAT_MSG')"/>
+            <arg expression="get-property('THREAT_DESC')"/>
+        </args>
+    </payloadFactory>
+    <property name="RESPONSE" value="true"/>
+    <header name="To" action="remove"/>
+    <property name="NO_ENTITY_BODY" scope="axis2" action="remove"/>
+    <property name="ContentType" scope="axis2" action="remove"/>
+    <property name="Authorization" scope="transport" action="remove"/>
+    <property name="Host" scope="transport" action="remove"/>
+    <property name="Accept" scope="transport" action="remove"/>
+    <property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+    <sequence key="_cors_request_handler_"/>
+    <send/>
+    <drop/>
+</sequence>
