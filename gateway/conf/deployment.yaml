@@ -46,6 +46,11 @@ ballerina.config:
             packageName: org.wso2.carbon.apimgt.gateway.handler
             # Ballerina Archive name.
             archiveName: analytics.bmz
+          -
+            # Package name of the request interceptor.
+            packageName: org.wso2.carbon.apimgt.gateway.threatprotection
+            # Ballerina Archive name.
+            archiveName: threatprotection.bmz
 
 wso2.securevault:
   secretRepository:
@@ -58,3 +63,4 @@ wso2.securevault:
     type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader
     parameters:
       masterKeyReaderFile: ${sys:ballerina.home}/bre/conf/master-keys.yaml
+
