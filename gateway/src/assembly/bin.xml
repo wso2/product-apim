@@ -123,9 +123,15 @@
             <directory>microgateway</directory>
             <includes>
                 <include>README.txt</include>
-                <include>**/*.bal</include>
-                <include>**/*.json</include>
+                <!--<include>**/*.bal</include>-->
+                <include>microConf.json</include>
             </includes>
+            <excludes>
+                <exclude>API.bal</exclude>
+                <exclude>API.json</exclude>
+                <exclude>Petstore.bal</exclude>
+                <exclude>Petstore.json</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 
