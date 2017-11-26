@@ -15,11 +15,10 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 
 import com.google.gson.annotations.SerializedName;
 import io.swagger.annotations.ApiModelProperty;
-<<<<<<< bead95f1e51ee883082063d73f52a8e98122833a:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/model/Environment.java
+
 
 import java.util.Objects;
-=======
->>>>>>> after java unit testing:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/model/Environment.java
+
 
 /**
  * Environment

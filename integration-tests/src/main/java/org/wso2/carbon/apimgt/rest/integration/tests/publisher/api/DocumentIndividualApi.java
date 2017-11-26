@@ -12,8 +12,6 @@
 
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
-<<<<<<< bead95f1e51ee883082063d73f52a8e98122833a:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/api/DocumentIndividualApi.java
-=======
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
@@ -23,25 +21,12 @@ import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
->>>>>>> after java unit testing:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/api/DocumentIndividualApi.java
+
 
 import com.google.gson.reflect.TypeToken;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Document;
 
 
-<<<<<<< bead95f1e51ee883082063d73f52a8e98122833a:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/api/DocumentIndividualApi.java
-=======
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Document;
-
->>>>>>> after java unit testing:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/api/DocumentIndividualApi.java
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;

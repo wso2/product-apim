@@ -16,16 +16,13 @@ package org.wso2.carbon.apimgt.rest.integration.tests.publisher.model;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-<<<<<<< bead95f1e51ee883082063d73f52a8e98122833a:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/model/API.java
+
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.io.IOException;
-=======
-import io.swagger.annotations.ApiModelProperty;
 
->>>>>>> after java unit testing:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/model/API.java
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

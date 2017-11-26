@@ -12,14 +12,9 @@
 
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.auth;
-<<<<<<< bead95f1e51ee883082063d73f52a8e98122833a:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/auth/HttpBasicAuth.java
-=======
 
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
->>>>>>> after java unit testing:integration-tests/src/main/java/org/wso2/carbon/apimgt/rest/integration/tests/publisher/auth/HttpBasicAuth.java
-
 import com.squareup.okhttp.Credentials;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
 
 import java.util.List;
 import java.util.Map;
