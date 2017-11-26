@@ -13,19 +13,17 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
 import com.google.gson.reflect.TypeToken;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Application;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
 import java.io.IOException;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,31 +52,31 @@ public class ApplicationIndividualApi {
     /* Build call for applicationsApplicationIdGet */
     private com.squareup.okhttp.Call applicationsApplicationIdGetCall(String applicationId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/applications/{applicationId}".replaceAll("\\{format\\}","json")
-        .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()));
+                .replaceAll("\\{" + "applicationId" + "\\}", apiClient.escapeString(applicationId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (accept != null)
-        localVarHeaderParams.put("Accept", apiClient.parameterToString(accept));
+            localVarHeaderParams.put("Accept", apiClient.parameterToString(accept));
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -89,8 +87,8 @@ public class ApplicationIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -98,28 +96,28 @@ public class ApplicationIndividualApi {
         String[] localVarAuthNames = new String[] {  };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call applicationsApplicationIdGetValidateBeforeCall(String applicationId, String accept, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'applicationId' is set
         if (applicationId == null) {
             throw new ApiException("Missing the required parameter 'applicationId' when calling applicationsApplicationIdGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = applicationsApplicationIdGetCall(applicationId, accept, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get details of an application
-     * This operation can be used to retrieve details of an individual application specifying the application id in the URI. 
+     * This operation can be used to retrieve details of an individual application specifying the application id in the URI.
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -134,7 +132,7 @@ public class ApplicationIndividualApi {
 
     /**
      * Get details of an application
-     * This operation can be used to retrieve details of an individual application specifying the application id in the URI. 
+     * This operation can be used to retrieve details of an individual application specifying the application id in the URI.
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
@@ -150,7 +148,7 @@ public class ApplicationIndividualApi {
 
     /**
      * Get details of an application (asynchronously)
-     * This operation can be used to retrieve details of an individual application specifying the application id in the URI. 
+     * This operation can be used to retrieve details of an individual application specifying the application id in the URI.
      * @param applicationId **Application Identifier** consisting of the UUID of the Application.  (required)
      * @param accept Media types acceptable for the response. Default is application/json.  (optional, default to application/json)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)

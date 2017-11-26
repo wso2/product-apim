@@ -13,27 +13,22 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
-
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
-
-
 import com.google.gson.reflect.TypeToken;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.API;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.LifecycleState;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.WorkflowResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.FileInfo;
 
-
 import java.io.File;
 import java.io.IOException;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,29 +66,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdDeleteCall(String apiId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -104,8 +99,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -113,28 +108,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDeleteValidateBeforeCall(String apiId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDelete(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDeleteCall(apiId, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Delete an API
-     * This operation can be used to delete an existing API proving the Id of the API. 
+     * This operation can be used to delete an existing API proving the Id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
@@ -146,7 +141,7 @@ public class APIIndividualApi {
 
     /**
      * Delete an API
-     * This operation can be used to delete an existing API proving the Id of the API. 
+     * This operation can be used to delete an existing API proving the Id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
@@ -160,7 +155,7 @@ public class APIIndividualApi {
 
     /**
      * Delete an API (asynchronously)
-     * This operation can be used to delete an existing API proving the Id of the API. 
+     * This operation can be used to delete an existing API proving the Id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
      * @param ifUnmodifiedSince Validator for conditional requests; based on Last Modified header.  (optional)
@@ -205,29 +200,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdGatewayConfigGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/gateway-config"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -238,8 +233,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -247,28 +242,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdGatewayConfigGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGatewayConfigGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdGatewayConfigGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get gateway definition
-     * This operation can be used to retrieve the gateway configuration of an API. 
+     * This operation can be used to retrieve the gateway configuration of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -280,7 +275,7 @@ public class APIIndividualApi {
 
     /**
      * Get gateway definition
-     * This operation can be used to retrieve the gateway configuration of an API. 
+     * This operation can be used to retrieve the gateway configuration of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -294,7 +289,7 @@ public class APIIndividualApi {
 
     /**
      * Get gateway definition (asynchronously)
-     * This operation can be used to retrieve the gateway configuration of an API. 
+     * This operation can be used to retrieve the gateway configuration of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -340,31 +335,31 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdGatewayConfigPutCall(String apiId, String gatewayConfig, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/gateway-config"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (gatewayConfig != null)
-        localVarFormParams.put("gatewayConfig", gatewayConfig);
+            localVarFormParams.put("gatewayConfig", gatewayConfig);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -375,8 +370,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -384,33 +379,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdGatewayConfigPutValidateBeforeCall(String apiId, String gatewayConfig, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGatewayConfigPut(Async)");
         }
-        
+
         // verify the required parameter 'gatewayConfig' is set
         if (gatewayConfig == null) {
             throw new ApiException("Missing the required parameter 'gatewayConfig' when calling apisApiIdGatewayConfigPut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdGatewayConfigPutCall(apiId, gatewayConfig, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update gateway configuration
-     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;. 
+     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param gatewayConfig gateway configuration of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -423,7 +418,7 @@ public class APIIndividualApi {
 
     /**
      * Update gateway configuration
-     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;. 
+     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param gatewayConfig gateway configuration of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -438,7 +433,7 @@ public class APIIndividualApi {
 
     /**
      * Update gateway configuration (asynchronously)
-     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;. 
+     * This operation can be used to update the gateway configuration of an existing API. gateway configuration to be updated is passed as a form data parameter &#x60;gatewayConfig&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param gatewayConfig gateway configuration of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -484,29 +479,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -517,8 +512,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -526,28 +521,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get details of an API
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -561,7 +556,7 @@ public class APIIndividualApi {
 
     /**
      * Get details of an API
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -576,7 +571,7 @@ public class APIIndividualApi {
 
     /**
      * Get details of an API (asynchronously)
-     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it. 
+     * Using this operation, you can retrieve complete details of a single API. You need to provide the Id of the API to retrive it.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -622,29 +617,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdLifecycleGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/lifecycle"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -655,8 +650,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -664,16 +659,16 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdLifecycleGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdLifecycleGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
@@ -681,7 +676,7 @@ public class APIIndividualApi {
 
     /**
      * Get Lifecycle state data of the API.
-     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * This operation can be used to retrieve Lifecycle state data of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -695,7 +690,7 @@ public class APIIndividualApi {
 
     /**
      * Get Lifecycle state data of the API.
-     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * This operation can be used to retrieve Lifecycle state data of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -710,7 +705,7 @@ public class APIIndividualApi {
 
     /**
      * Get Lifecycle state data of the API. (asynchronously)
-     * This operation can be used to retrieve Lifecycle state data of the API. 
+     * This operation can be used to retrieve Lifecycle state data of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -756,29 +751,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdLifecycleHistoryGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/lifecycle-history"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -789,8 +784,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -798,28 +793,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdLifecycleHistoryGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleHistoryGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdLifecycleHistoryGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get Lifecycle state change history of the API.
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * This operation can be used to retrieve Lifecycle state change history of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -831,7 +826,7 @@ public class APIIndividualApi {
 
     /**
      * Get Lifecycle state change history of the API.
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * This operation can be used to retrieve Lifecycle state change history of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -845,7 +840,7 @@ public class APIIndividualApi {
 
     /**
      * Get Lifecycle state change history of the API. (asynchronously)
-     * This operation can be used to retrieve Lifecycle state change history of the API. 
+     * This operation can be used to retrieve Lifecycle state change history of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -888,10 +883,10 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdLifecycleLifecyclePendingTaskDeleteCall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/lifecycle/lifecycle-pending-task"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
@@ -900,13 +895,13 @@ public class APIIndividualApi {
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -917,8 +912,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -926,28 +921,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "DELETE", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdLifecycleLifecyclePendingTaskDeleteValidateBeforeCall(String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdLifecycleLifecyclePendingTaskDelete(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdLifecycleLifecyclePendingTaskDeleteCall(apiId, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Delete pending lifecycle state change tasks.
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
@@ -957,7 +952,7 @@ public class APIIndividualApi {
 
     /**
      * Delete pending lifecycle state change tasks.
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @return ApiResponse&lt;Void&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -969,7 +964,7 @@ public class APIIndividualApi {
 
     /**
      * Delete pending lifecycle state change tasks. (asynchronously)
-     * This operation can be used to remove pending lifecycle state change requests that are in pending state 
+     * This operation can be used to remove pending lifecycle state change requests that are in pending state
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
@@ -1013,29 +1008,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdPutCall(String apiId, API body, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1046,8 +1041,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1055,33 +1050,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdPutValidateBeforeCall(String apiId, API body, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdPut(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apisApiIdPut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdPutCall(apiId, body, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update an API
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body API object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1096,7 +1091,7 @@ public class APIIndividualApi {
 
     /**
      * Update an API
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body API object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1112,7 +1107,7 @@ public class APIIndividualApi {
 
     /**
      * Update an API (asynchronously)
-     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation. 
+     * This operation can be used to update an existing API. But the properties &#x60;name&#x60;, &#x60;version&#x60;, &#x60;context&#x60;, &#x60;provider&#x60;, &#x60;state&#x60; will not be changed by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body API object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1159,29 +1154,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdSwaggerGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/swagger"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1192,8 +1187,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1201,28 +1196,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdSwaggerGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSwaggerGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdSwaggerGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get swagger definition
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1234,7 +1229,7 @@ public class APIIndividualApi {
 
     /**
      * Get swagger definition
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1248,7 +1243,7 @@ public class APIIndividualApi {
 
     /**
      * Get swagger definition (asynchronously)
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1294,31 +1289,31 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdSwaggerPutCall(String apiId, String endpointId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/swagger"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (endpointId != null)
-        localVarFormParams.put("endpointId", endpointId);
+            localVarFormParams.put("endpointId", endpointId);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1329,8 +1324,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1338,33 +1333,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdSwaggerPutValidateBeforeCall(String apiId, String endpointId, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdSwaggerPut(Async)");
         }
-        
+
         // verify the required parameter 'endpointId' is set
         if (endpointId == null) {
             throw new ApiException("Missing the required parameter 'endpointId' when calling apisApiIdSwaggerPut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdSwaggerPutCall(apiId, endpointId, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update swagger definition
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param endpointId Swagger definition of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1377,7 +1372,7 @@ public class APIIndividualApi {
 
     /**
      * Update swagger definition
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param endpointId Swagger definition of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1392,7 +1387,7 @@ public class APIIndividualApi {
 
     /**
      * Update swagger definition (asynchronously)
-     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;. 
+     * This operation can be used to update the swagger definition of an existing API. Swagger definition to be updated is passed as a form data parameter &#x60;apiDefinition&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param endpointId Swagger definition of the API (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1438,29 +1433,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdThumbnailGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/thumbnail"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1471,8 +1466,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1480,28 +1475,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdThumbnailGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdThumbnailGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdThumbnailGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get thumbnail image
-     * This operation can be used to download a thumbnail image of an API. 
+     * This operation can be used to download a thumbnail image of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1513,7 +1508,7 @@ public class APIIndividualApi {
 
     /**
      * Get thumbnail image
-     * This operation can be used to download a thumbnail image of an API. 
+     * This operation can be used to download a thumbnail image of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1527,7 +1522,7 @@ public class APIIndividualApi {
 
     /**
      * Get thumbnail image (asynchronously)
-     * This operation can be used to download a thumbnail image of an API. 
+     * This operation can be used to download a thumbnail image of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1573,31 +1568,31 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdThumbnailPostCall(String apiId, File file, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/thumbnail"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (file != null)
-        localVarFormParams.put("file", file);
+            localVarFormParams.put("file", file);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1608,8 +1603,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1617,33 +1612,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdThumbnailPostValidateBeforeCall(String apiId, File file, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdThumbnailPost(Async)");
         }
-        
+
         // verify the required parameter 'file' is set
         if (file == null) {
             throw new ApiException("Missing the required parameter 'file' when calling apisApiIdThumbnailPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdThumbnailPostCall(apiId, file, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Upload a thumbnail image
-     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file Image to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1658,7 +1653,7 @@ public class APIIndividualApi {
 
     /**
      * Upload a thumbnail image
-     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file Image to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1674,7 +1669,7 @@ public class APIIndividualApi {
 
     /**
      * Upload a thumbnail image (asynchronously)
-     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;. 
+     * This operation can be used to upload a thumbnail image of an API. The thumbnail to be uploaded should be given as a form data parameter &#x60;file&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file Image to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1721,29 +1716,29 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdWsdlGetCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/wsdl"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
         if (ifModifiedSince != null)
-        localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
+            localVarHeaderParams.put("If-Modified-Since", apiClient.parameterToString(ifModifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/octet-stream"
+                "application/octet-stream"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1754,8 +1749,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1763,28 +1758,28 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdWsdlGetValidateBeforeCall(String apiId, String ifNoneMatch, String ifModifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdWsdlGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdWsdlGetCall(apiId, ifNoneMatch, ifModifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get swagger definition
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1796,7 +1791,7 @@ public class APIIndividualApi {
 
     /**
      * Get swagger definition
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1810,7 +1805,7 @@ public class APIIndividualApi {
 
     /**
      * Get swagger definition (asynchronously)
-     * This operation can be used to retrieve the swagger definition of an API. 
+     * This operation can be used to retrieve the swagger definition of an API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param ifNoneMatch Validator for conditional requests; based on the ETag of the formerly retrieved variant of the resourec.  (optional)
      * @param ifModifiedSince Validator for conditional requests; based on Last Modified header of the formerly retrieved variant of the resource.  (optional)
@@ -1856,31 +1851,31 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisApiIdWsdlPutCall(String apiId, File file, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/wsdl"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
         if (file != null)
-        localVarFormParams.put("file", file);
+            localVarFormParams.put("file", file);
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "multipart/form-data"
+                "multipart/form-data"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -1891,8 +1886,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -1900,33 +1895,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "PUT", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdWsdlPutValidateBeforeCall(String apiId, File file, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdWsdlPut(Async)");
         }
-        
+
         // verify the required parameter 'file' is set
         if (file == null) {
             throw new ApiException("Missing the required parameter 'file' when calling apisApiIdWsdlPut(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdWsdlPutCall(apiId, file, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Update WSDL definition
-     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;. 
+     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file WSDL file or archive to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1939,7 +1934,7 @@ public class APIIndividualApi {
 
     /**
      * Update WSDL definition
-     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;. 
+     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file WSDL file or archive to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -1954,7 +1949,7 @@ public class APIIndividualApi {
 
     /**
      * Update WSDL definition (asynchronously)
-     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;. 
+     * This operation can be used to update the WSDL definition of an existing API. WSDL to be updated is passed as a form data parameter &#x60;inlineContent&#x60;.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param file WSDL file or archive to upload (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -2002,34 +1997,34 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisChangeLifecyclePostCall(String action, String apiId, String lifecycleChecklist, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/change-lifecycle";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (action != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "action", action));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "action", action));
         if (lifecycleChecklist != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "lifecycleChecklist", lifecycleChecklist));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "lifecycleChecklist", lifecycleChecklist));
         if (apiId != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -2040,8 +2035,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -2049,33 +2044,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisChangeLifecyclePostValidateBeforeCall(String action, String apiId, String lifecycleChecklist, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'action' is set
         if (action == null) {
             throw new ApiException("Missing the required parameter 'action' when calling apisChangeLifecyclePost(Async)");
         }
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisChangeLifecyclePost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisChangeLifecyclePostCall(action, apiId, lifecycleChecklist, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Change API Status
-     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information. 
+     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information.
      * @param action The action to demote or promote the state of the API.  Supported actions are [ **Publish, Deploy as a Prototype, Demote to Created, Demote to Prototyped, Move to Maintenance, Deprecate, Re-Publish, Retire **]  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param lifecycleChecklist  You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier.  Eg: \&quot;Deprecate Old Versions:true\&quot; will deprecate older versions of a particular API when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format.  Supported checklist items are as follows. 1. **Deprecate Old Versions**: Setting this to true will deprecate older versions of a particular API when it is promoted to Published state from Created state. 2. **Require Re-Subscription**: If you set this to true, users need to re subscribe to the API although they may have subscribed to an older version.  (optional)
@@ -2091,7 +2086,7 @@ public class APIIndividualApi {
 
     /**
      * Change API Status
-     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information. 
+     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information.
      * @param action The action to demote or promote the state of the API.  Supported actions are [ **Publish, Deploy as a Prototype, Demote to Created, Demote to Prototyped, Move to Maintenance, Deprecate, Re-Publish, Retire **]  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param lifecycleChecklist  You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier.  Eg: \&quot;Deprecate Old Versions:true\&quot; will deprecate older versions of a particular API when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format.  Supported checklist items are as follows. 1. **Deprecate Old Versions**: Setting this to true will deprecate older versions of a particular API when it is promoted to Published state from Created state. 2. **Require Re-Subscription**: If you set this to true, users need to re subscribe to the API although they may have subscribed to an older version.  (optional)
@@ -2108,7 +2103,7 @@ public class APIIndividualApi {
 
     /**
      * Change API Status (asynchronously)
-     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information. 
+     * This operation is used to change the lifecycle of an API. Eg: Publish an API which is in &#x60;CREATED&#x60; state. In order to change the lifecycle, we need to provide the lifecycle &#x60;action&#x60; as a query parameter.  For example, to Publish an API, &#x60;action&#x60; should be &#x60;Publish&#x60;.  Some actions supports providing additional paramters which should be provided as &#x60;lifecycleChecklist&#x60; parameter. Please see parameters table for more information.
      * @param action The action to demote or promote the state of the API.  Supported actions are [ **Publish, Deploy as a Prototype, Demote to Created, Demote to Prototyped, Move to Maintenance, Deprecate, Re-Publish, Retire **]  (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param lifecycleChecklist  You can specify additional checklist items by using an **\&quot;attribute:\&quot;** modifier.  Eg: \&quot;Deprecate Old Versions:true\&quot; will deprecate older versions of a particular API when it is promoted to Published state from Created state. Multiple checklist items can be given in \&quot;attribute1:true, attribute2:false\&quot; format.  Supported checklist items are as follows. 1. **Deprecate Old Versions**: Setting this to true will deprecate older versions of a particular API when it is promoted to Published state from Created state. 2. **Require Re-Subscription**: If you set this to true, users need to re subscribe to the API although they may have subscribed to an older version.  (optional)
@@ -2155,28 +2150,28 @@ public class APIIndividualApi {
      */
     public com.squareup.okhttp.Call apisCopyApiPostCall(String newVersion, String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/copy-api";
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (newVersion != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "newVersion", newVersion));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "newVersion", newVersion));
         if (apiId != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "apiId", apiId));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -2187,8 +2182,8 @@ public class APIIndividualApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -2196,33 +2191,33 @@ public class APIIndividualApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisCopyApiPostValidateBeforeCall(String newVersion, String apiId, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'newVersion' is set
         if (newVersion == null) {
             throw new ApiException("Missing the required parameter 'newVersion' when calling apisCopyApiPost(Async)");
         }
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisCopyApiPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisCopyApiPostCall(newVersion, apiId, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Create a new API version
-     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state. 
+     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state.
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
@@ -2233,7 +2228,7 @@ public class APIIndividualApi {
 
     /**
      * Create a new API version
-     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state. 
+     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state.
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @return ApiResponse&lt;Void&gt;
@@ -2246,7 +2241,7 @@ public class APIIndividualApi {
 
     /**
      * Create a new API version (asynchronously)
-     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state. 
+     * This operation can be used to create a new version of an existing API. The new version is specified as &#x60;newVersion&#x60; query parameter. New API will be in &#x60;CREATED&#x60; state.
      * @param newVersion Version of the new API. (required)
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API I. Should be formatted as **provider-name-version**.  (required)
      * @param callback The callback to be executed when the API call finishes

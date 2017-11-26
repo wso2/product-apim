@@ -13,21 +13,19 @@
 
 package org.wso2.carbon.apimgt.rest.integration.tests.publisher.api;
 
+import com.google.gson.reflect.TypeToken;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiCallback;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiClient;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Configuration;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiException;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.Pair;
-import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ApiResponse;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressResponseBody;
-
-import com.google.gson.reflect.TypeToken;
+import org.wso2.carbon.apimgt.rest.integration.tests.publisher.ProgressRequestBody;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.DocumentList;
 import org.wso2.carbon.apimgt.rest.integration.tests.publisher.model.Document;
 
 import java.io.IOException;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,31 +64,31 @@ public class DocumentCollectionApi {
      */
     public com.squareup.okhttp.Call apisApiIdDocumentsGetCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = null;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
         if (limit != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "limit", limit));
         if (offset != null)
-        localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
+            localVarQueryParams.addAll(apiClient.parameterToPairs("", "offset", offset));
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifNoneMatch != null)
-        localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
+            localVarHeaderParams.put("If-None-Match", apiClient.parameterToString(ifNoneMatch));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -101,8 +99,8 @@ public class DocumentCollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -110,28 +108,28 @@ public class DocumentCollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "GET", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsGetValidateBeforeCall(String apiId, Integer limit, Integer offset, String ifNoneMatch, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsGet(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsGetCall(apiId, limit, offset, ifNoneMatch, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Get a list of documents of an API
-     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API. 
+     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -146,7 +144,7 @@ public class DocumentCollectionApi {
 
     /**
      * Get a list of documents of an API
-     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API. 
+     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -162,7 +160,7 @@ public class DocumentCollectionApi {
 
     /**
      * Get a list of documents of an API (asynchronously)
-     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API. 
+     * This operation can be used to retrieve a list of documents belonging to an API by providing the id of the API.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param limit Maximum size of resource array to return.  (optional, default to 25)
      * @param offset Starting point within the complete list of items qualified.  (optional, default to 0)
@@ -210,29 +208,29 @@ public class DocumentCollectionApi {
      */
     public com.squareup.okhttp.Call apisApiIdDocumentsPostCall(String apiId, Document body, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
-        
+
         // create path and map variables
         String localVarPath = "/apis/{apiId}/documents"
-            .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
+                .replaceAll("\\{" + "apiId" + "\\}", apiClient.escapeString(apiId.toString()));
 
         List<Pair> localVarQueryParams = new ArrayList<Pair>();
 
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (ifMatch != null)
-        localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
+            localVarHeaderParams.put("If-Match", apiClient.parameterToString(ifMatch));
         if (ifUnmodifiedSince != null)
-        localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
+            localVarHeaderParams.put("If-Unmodified-Since", apiClient.parameterToString(ifUnmodifiedSince));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
         final String[] localVarAccepts = {
-            "application/json"
+                "application/json"
         };
         final String localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
         if (localVarAccept != null) localVarHeaderParams.put("Accept", localVarAccept);
 
         final String[] localVarContentTypes = {
-            "application/json"
+                "application/json"
         };
         final String localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
         localVarHeaderParams.put("Content-Type", localVarContentType);
@@ -243,8 +241,8 @@ public class DocumentCollectionApi {
                 public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
-                    .body(new ProgressResponseBody(originalResponse.body(), progressListener))
-                    .build();
+                            .body(new ProgressResponseBody(originalResponse.body(), progressListener))
+                            .build();
                 }
             });
         }
@@ -252,33 +250,33 @@ public class DocumentCollectionApi {
         String[] localVarAuthNames = new String[] { "OAuth2Security" };
         return apiClient.buildCall(localVarPath, "POST", localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarFormParams, localVarAuthNames, progressRequestListener);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private com.squareup.okhttp.Call apisApiIdDocumentsPostValidateBeforeCall(String apiId, Document body, String ifMatch, String ifUnmodifiedSince, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
-        
+
         // verify the required parameter 'apiId' is set
         if (apiId == null) {
             throw new ApiException("Missing the required parameter 'apiId' when calling apisApiIdDocumentsPost(Async)");
         }
-        
+
         // verify the required parameter 'body' is set
         if (body == null) {
             throw new ApiException("Missing the required parameter 'body' when calling apisApiIdDocumentsPost(Async)");
         }
-        
-        
+
+
         com.squareup.okhttp.Call call = apisApiIdDocumentsPostCall(apiId, body, ifMatch, ifUnmodifiedSince, progressListener, progressRequestListener);
         return call;
 
-        
-        
-        
-        
+
+
+
+
     }
 
     /**
      * Add a new document to an API
-     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body Document object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -293,7 +291,7 @@ public class DocumentCollectionApi {
 
     /**
      * Add a new document to an API
-     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body Document object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)
@@ -309,7 +307,7 @@ public class DocumentCollectionApi {
 
     /**
      * Add a new document to an API (asynchronously)
-     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation. 
+     * This operation can be used to add a new documentation to an API. This operation only adds the metadata of a document. To add the actual content we need to use **Upload the content of an API document ** API once we obtain a document Id by this operation.
      * @param apiId **API ID** consisting of the **UUID** of the API. The combination of the provider of the API, name of the API and the version is also accepted as a valid API ID. Should be formatted as **provider-name-version**.  (required)
      * @param body Document object that needs to be added  (required)
      * @param ifMatch Validator for conditional requests; based on ETag.  (optional)

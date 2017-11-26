@@ -56,7 +56,7 @@ public class PetstoreApiClient {
     public String getPetById() throws NoSuchAlgorithmException, KeyManagementException {
         String output = null;
         HttpClient client = createClient();
-        HttpGet request = new HttpGet("https://localhost:9092/v2/pet/707");
+        HttpGet request = new HttpGet("https://localhost:9092/v2/pet/808");
         try {
             request.addHeader("apikey","111111");
             HttpResponse response = client.execute(request);
