@@ -61,13 +61,13 @@ public class PetstoreApiClient {
             request.addHeader("apikey","111111");
             HttpResponse response = client.execute(request);
             int responseCode = response.getStatusLine().getStatusCode();
-            System.out.println("Response Code: " + responseCode);
-            System.out.println("Petstore API Content:-");
+            logger.info("Response Code: " + responseCode);
+            logger.info("Petstore API Content:-");
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             output = rd.readLine();
-            System.out.println(output);
+            logger.info(output);
         } catch (IOException ioe) {
-            logger.info("Error occured", ioe);
+            logger.error("Error occured", ioe);
         }
         return output;
     }
@@ -80,13 +80,13 @@ public class PetstoreApiClient {
             request.addHeader("apikey","111111");
             HttpResponse response = client.execute(request);
             int responseCode = response.getStatusLine().getStatusCode();
-            System.out.println("Response Code: " + responseCode);
-            System.out.println("Petstore API Content:-");
+            logger.info("Response Code: " + responseCode);
+            logger.info("Petstore API Content:-");
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             output = rd.readLine();
-            System.out.println(output);
+            logger.info(output);
         } catch (IOException ioe) {
-            logger.info("Error occured", ioe);
+            logger.error("Error occured", ioe);
         }
         return output;
     }

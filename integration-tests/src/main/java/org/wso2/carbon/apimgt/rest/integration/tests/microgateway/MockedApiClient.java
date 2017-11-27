@@ -65,13 +65,13 @@ public class MockedApiClient {
             request.addHeader("apikey",apiKey);
             HttpResponse response = client.execute(request);
             int responseCode = response.getStatusLine().getStatusCode();
-            System.out.println("Response Code: " + responseCode);
-            System.out.println("Mocked API Content:-");
+            logger.info("Response Code: " + responseCode);
+            logger.info("Mocked API Content:-");
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             output = rd.readLine();
-            System.out.println(output);
+            logger.info(output);
         } catch (IOException ioe) {
-            logger.info("Error occured", ioe);
+            logger.error("Error occured", ioe);
         }
         return output;
     }
