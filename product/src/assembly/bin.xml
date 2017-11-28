@@ -52,17 +52,17 @@
 
         <fileSet>
             <directory>carbon-home/conf/transports</directory>
-            <outputDirectory>conf/transports</outputDirectory>
+            <outputDirectory>conf/default/transports</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>carbon-home/conf/engine</directory>
-            <outputDirectory>conf/engine</outputDirectory>
+            <outputDirectory>conf/default/engine</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
             <directory>carbon-home/conf/osgi</directory>
-            <outputDirectory>conf/osgi</outputDirectory>
+            <outputDirectory>conf/default/osgi</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
@@ -77,7 +77,7 @@
         </fileSet>
         <fileSet>
             <directory>carbon-home/conf/datasources</directory>
-            <outputDirectory>conf/datasources</outputDirectory>
+            <outputDirectory>conf/default/datasources</outputDirectory>
             <fileMode>644</fileMode>
         </fileSet>
         <fileSet>
@@ -106,6 +106,17 @@
     </fileSets>
 
     <files>
-
+        <file>
+            <source>carbon-home/conf/deployment.yaml</source>
+            <outputDirectory>conf/default/</outputDirectory>
+            <fileMode>644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>target/WSO2Carbon/bin/kernel-version.txt</source>
+            <outputDirectory>bin/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 </assembly>
